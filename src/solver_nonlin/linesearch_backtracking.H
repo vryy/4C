@@ -45,8 +45,7 @@ namespace NLNSOL
    */
   class LineSearchBacktracking : public NLNSOL::LineSearchBase
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -81,9 +80,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 01/2015
      */
-    virtual void ComputeLSParam(
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeLSParam(double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr  ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //@}
@@ -99,18 +97,16 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! maximum number of backtracking steps
     int itermax_;
 
     //! factor for step size reduction per iteration
     double backtrackfac_;
 
-  }; // class LineSearchBacktracking
-} // namespace NLNSOL
+  };  // class LineSearchBacktracking
+}  // namespace NLNSOL
 
 
 

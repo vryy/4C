@@ -15,17 +15,16 @@
 
 namespace DRT
 {
-namespace INPUT
-{
+  namespace INPUT
+  {
+    class DatFileReaderStub : public DatFileReader
+    {
+     public:
+      DatFileReaderStub();
+      Teuchos::RCP<Epetra_Comm> Comm() const;
+    };
 
-class DatFileReaderStub : public DatFileReader
-{
- public:
-  DatFileReaderStub();
-  Teuchos::RCP<Epetra_Comm> Comm() const;
-};
-
-}
-}
+  }  // namespace INPUT
+}  // namespace DRT
 
 #endif

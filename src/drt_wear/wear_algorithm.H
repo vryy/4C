@@ -39,7 +39,7 @@ namespace ADAPTER
   class Structure;
   class FSIStructureWrapper;
   class AleWearWrapper;
-}
+}  // namespace ADAPTER
 
 namespace ALE
 {
@@ -64,9 +64,7 @@ namespace WEAR
 {
   class Algorithm : public ADAPTER::AlgorithmBase
   {
-
-  public:
-
+   public:
     //! create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
@@ -77,18 +75,16 @@ namespace WEAR
     virtual void TimeLoop() = 0;
 
     //! read restart data
-    virtual void ReadRestart(
-      int step  //!< step number where the calculation is continued
-      ) = 0;
+    virtual void ReadRestart(int step  //!< step number where the calculation is continued
+        ) = 0;
 
     //! access to structural field
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField(){return structure_;}
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField() { return structure_; }
 
     //! access to ALE field
     ADAPTER::AleWearWrapper& AleField() { return *ale_; }
 
-  private:
-
+   private:
     //! check compatibility if input parameters
     void CheckInput();
 
@@ -96,16 +92,16 @@ namespace WEAR
     void CreateMaterialInterface();
 
     //! @name Underlying fields
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>      structure_;  //! underlying structure
-    Teuchos::RCP<ADAPTER::AleWearWrapper>              ale_;        //! underlying ALE
+    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;  //! underlying structure
+    Teuchos::RCP<ADAPTER::AleWearWrapper> ale_;               //! underlying ALE
 
-  protected:
-    int                                                dim_;        //! problem dimension
+   protected:
+    int dim_;  //! problem dimension
     //@}
 
-    Teuchos::RCP<MORTAR::ManagerBase>                  cmtman_;        // contact manager
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> >   interfaces_;    // contact/wear interfaces
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> >   interfacesMat_; // contact interfaces in Mat.
+    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;                       // contact manager
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces_;     // contact/wear interfaces
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfacesMat_;  // contact interfaces in Mat.
 
   };  // Algorithm
 }  // namespace WEAR

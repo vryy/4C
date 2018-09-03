@@ -17,7 +17,8 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 
 
-// total (!) number of integration points, i.e. in 3D we have nphi/ntheta integration points in phi direction
+// total (!) number of integration points, i.e. in 3D we have nphi/ntheta integration points in phi
+// direction
 #define nphi 20
 // in case of 3D integration: number of integration points in theta direction
 #define ntheta 4
@@ -25,23 +26,18 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
-  /*! \brief Material parameters for biochemo-mechano cell contractibility model.
-   *
-   * \date 12/2016
-   * \author rauch (rauch@lnm.mw.tum.de)
-  */
+    /*! \brief Material parameters for biochemo-mechano cell contractibility model.
+     *
+     * \date 12/2016
+     * \author rauch (rauch@lnm.mw.tum.de)
+     */
     class BioChemoMechanoCellActiveFiber : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      BioChemoMechanoCellActiveFiber(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      BioChemoMechanoCellActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~BioChemoMechanoCellActiveFiber() { ; }
@@ -78,28 +74,26 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
     };  // class BioChemoMechanoCellActiveFiber
-  }  // namespace PAR
+  }     // namespace PAR
 
 
   /*! \brief Type BioChemoMechanoCellActiveFiberType.
    *
    * \date 12/2016
    * \author rauch (rauch@lnm.mw.tum.de)
-  */
+   */
   class BioChemoMechanoCellActiveFiberType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "BioChemoMechanoCellActiveFiberType"; }
 
-    static BioChemoMechanoCellActiveFiberType & Instance() { return instance_; };
+    static BioChemoMechanoCellActiveFiberType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static BioChemoMechanoCellActiveFiberType instance_;
-  }; //class ActiveFiberType
+  };  // class ActiveFiberType
 
 
   /*! \brief Implementation of Biochemo-Mechano Coupled Stress Fiber Formation and Dissociation.
@@ -110,17 +104,18 @@ namespace MAT
    *
    *   Exemplary Input Line:
    *
-   *    MAT 1 MAT_BIOCHEMOMECHANO_ACTIVE DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 200.0 KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3.183098862 KSTRESS 14.0 SOURCE 25.0e-5 METHOD 2DTrapez
+   *    MAT 1 MAT_BIOCHEMOMECHANO_ACTIVE DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 200.0
+   * KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3.183098862 KSTRESS 14.0 SOURCE 25.0e-5
+   * METHOD 2DTrapez
    *
    * See also test immersed_cell_biochemo_mechano_pureContraction_dashpot_h8.
    *
    * \date 12/2016
    * \author rauch (rauch@lnm.mw.tum.de)
-  */
+   */
   class BioChemoMechanoCellActiveFiber : public So3Material
   {
-  public:
-
+   public:
     /// construct empty material object
     BioChemoMechanoCellActiveFiber();
 
@@ -135,7 +130,10 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return BioChemoMechanoCellActiveFiberType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return BioChemoMechanoCellActiveFiberType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -168,26 +166,32 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biochemomechano_active; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_biochemomechano_active;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-    dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new BioChemoMechanoCellActiveFiber( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new BioChemoMechanoCellActiveFiber(*this));
+    }
 
     /// check if history variables are already initialized
-    bool Initialized() const
-    {
-      return ( isinit_ and (histdefgrdcurr_ != Teuchos::null) );
-    }
+    bool Initialized() const { return (isinit_ and (histdefgrdcurr_ != Teuchos::null)); }
 
     /// Setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse
+    /// analysis)
     virtual void ResetAll(int numgp);
 
     /// Update
@@ -197,66 +201,67 @@ namespace MAT
     virtual void ResetStep();
 
     /// Evaluate material
-    virtual void Evaluate(
-        const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
-        const LINALG::Matrix<6,1>* glstrain, ///< green lagrange strain
-        Teuchos::ParameterList& params,      ///< parameter list
-        LINALG::Matrix<6,1>* stress,         ///< 2nd PK-stress
-        LINALG::Matrix<6,6>* cmat,           ///< material stiffness matrix
-        const int eleGID                     ///< global id of element
-                          );
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,                  ///< green lagrange strain
+        Teuchos::ParameterList& params,                        ///< parameter list
+        LINALG::Matrix<6, 1>* stress,                          ///< 2nd PK-stress
+        LINALG::Matrix<6, 6>* cmat,                            ///< material stiffness matrix
+        const int eleGID                                       ///< global id of element
+    );
 
     /// Return density
-    virtual double Density() const {return params_->density_;}
+    virtual double Density() const { return params_->density_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
     /// Return parameter of this material
-    MAT::PAR::BioChemoMechanoCellActiveFiber* GetMaterialParams(){return params_;};
+    MAT::PAR::BioChemoMechanoCellActiveFiber* GetMaterialParams() { return params_; };
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::BioChemoMechanoCellActiveFiber* params_;
 
     /// (current) fiber activation level
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > etacurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> etacurr_;
     /// fiber activation level of old timestep (last converged state)
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > etalast_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etalastphi_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etalastphisurf_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etacurrphi_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<nphi,1> > > etacurrphisurf_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> etalast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<nphi, 1>>> etalastphi_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<nphi, 1>>> etalastphisurf_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<nphi, 1>>> etacurrphi_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<nphi, 1>>> etacurrphisurf_;
     /// average intensity level at every point of the cytoplasm
-    Teuchos::RCP<std::vector<double> > Nfil_;
-    Teuchos::RCP<std::vector<double> > Nfillast_;
-    Teuchos::RCP<std::vector<double> > rate_;
-    Teuchos::RCP<std::vector<double> > D_;
-    Teuchos::RCP<std::vector<double> > ccurr_;
-    Teuchos::RCP<std::vector<double> > clast_;
-    Teuchos::RCP<std::vector<double> > nsfhor_;
-    Teuchos::RCP<std::vector<double> > nsfver_;
-    Teuchos::RCP<std::vector<double> > nsfdiagup_;
-    Teuchos::RCP<std::vector<double> > nsfdiagdown_;
+    Teuchos::RCP<std::vector<double>> Nfil_;
+    Teuchos::RCP<std::vector<double>> Nfillast_;
+    Teuchos::RCP<std::vector<double>> rate_;
+    Teuchos::RCP<std::vector<double>> D_;
+    Teuchos::RCP<std::vector<double>> ccurr_;
+    Teuchos::RCP<std::vector<double>> clast_;
+    Teuchos::RCP<std::vector<double>> nsfhor_;
+    Teuchos::RCP<std::vector<double>> nsfver_;
+    Teuchos::RCP<std::vector<double>> nsfdiagup_;
+    Teuchos::RCP<std::vector<double>> nsfdiagdown_;
 
     /// (current) deformation gradient
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > histdefgrdcurr_; ///< active history deformation gradient
-    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > >strainratecurr_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > >strainratecurrsurf_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > histdefgrdcurrsurf_; ///< active history deformation gradient
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>>
+        histdefgrdcurr_;  ///< active history deformation gradient
+    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>> strainratecurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>> strainratecurrsurf_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>>
+        histdefgrdcurrsurf_;  ///< active history deformation gradient
     /// deformation gradient of old timestep (last converged state)
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > histdefgrdlast_; ///< active history of deformation gradient
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>>
+        histdefgrdlast_;  ///< active history of deformation gradient
     // active history of deformation gradient at surface for scatra boundary calculation
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > histdefgrdlastsurf_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > >strainratelast_;
-    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > >strainratelastsurf_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> histdefgrdlastsurf_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>> strainratelast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>> strainratelastsurf_;
     /// passive material
     Teuchos::RCP<MAT::So3Material> matpassive_;
     /// indicates if material is initialized
@@ -264,108 +269,67 @@ namespace MAT
 
 
     /// Setup defgrd rate, rotation tensor, strain rate and rotation rate
-    void SetupRates(
-        LINALG::Matrix<3,3> defgrd,
-        LINALG::Matrix<3,3> invdefgrd,
-        Teuchos::ParameterList& params,
-        LINALG::Matrix<3,3>& defgrdrate,
-        LINALG::Matrix<3,3>& R,
-        LINALG::Matrix<6,1>& strainrate,
-        LINALG::Matrix<3,3>& rotationrate,
-        const int& gp,
-        const double& dt
-    );
+    void SetupRates(LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3> invdefgrd,
+        Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R,
+        LINALG::Matrix<6, 1>& strainrate, LINALG::Matrix<3, 3>& rotationrate, const int& gp,
+        const double& dt);
 
 
     /// Calc Dissociation
-    void Dissociation(
-      double rate,
-      double& D,
-      double k_B,
-      double ratemax
-      );
+    void Dissociation(double rate, double& D, double k_B, double ratemax);
 
     /// Calculation of Nodal values from GP values
-    void GPtoNodes(
-        LINALG::Matrix<8,1> invalue,
-        LINALG::Matrix<8,1>& outvalue
-        );
+    void GPtoNodes(LINALG::Matrix<8, 1> invalue, LINALG::Matrix<8, 1>& outvalue);
 
     /// Calculation of Nodal values from GP values for eta
-    void EtaGPtoNodes(
-        LINALG::Matrix<nphi,1>& node1,
-        LINALG::Matrix<nphi,1>& node2,
-        LINALG::Matrix<nphi,1>& node3,
-        LINALG::Matrix<nphi,1>& node4,
-        LINALG::Matrix<nphi,1>& node5,
-        LINALG::Matrix<nphi,1>& node6,
-        LINALG::Matrix<nphi,1>& node7,
-        LINALG::Matrix<nphi,1>& node8
-        );
+    void EtaGPtoNodes(LINALG::Matrix<nphi, 1>& node1, LINALG::Matrix<nphi, 1>& node2,
+        LINALG::Matrix<nphi, 1>& node3, LINALG::Matrix<nphi, 1>& node4,
+        LINALG::Matrix<nphi, 1>& node5, LINALG::Matrix<nphi, 1>& node6,
+        LINALG::Matrix<nphi, 1>& node7, LINALG::Matrix<nphi, 1>& node8);
 
     /// Calculation of eta at specific Boundary GP xsi from Scatra Brdy calc
-    void EtaAtBrdyGP(
-            LINALG::Matrix<nphi,1>& outvalue,
-            Teuchos::ParameterList& params
-            );
+    void EtaAtBrdyGP(LINALG::Matrix<nphi, 1>& outvalue, Teuchos::ParameterList& params);
 
     /// Calculation of cROCKused at Boundary GP
-    void cROCKlastAtBrdyGP(
-            double& cROCKused,
-             Teuchos::ParameterList& params
-            );
+    void cROCKlastAtBrdyGP(double& cROCKused, Teuchos::ParameterList& params);
 
     /// Calculation of cROCKlast at Boundary GP
-    void cROCKusedAtBrdyGP(
-            double& cROCKused,
-             Teuchos::ParameterList& params
-            );
+    void cROCKusedAtBrdyGP(double& cROCKused, Teuchos::ParameterList& params);
 
     /// Calculation of deformation gradient at specific Boundary GP xsi
-    void DefGradAtBrdyGP(
-            LINALG::Matrix<6,1>& outvalue,
-            Teuchos::ParameterList& params
-            );
+    void DefGradAtBrdyGP(LINALG::Matrix<6, 1>& outvalue, Teuchos::ParameterList& params);
 
     /// Calculation of Nodal values from GP values for Deformation Gradient
-    void DefGradGPtoNodes(
-            LINALG::Matrix<6,1>& node1,
-            LINALG::Matrix<6,1>& node2,
-            LINALG::Matrix<6,1>& node3,
-            LINALG::Matrix<6,1>& node4,
-            LINALG::Matrix<6,1>& node5,
-            LINALG::Matrix<6,1>& node6,
-            LINALG::Matrix<6,1>& node7,
-            LINALG::Matrix<6,1>& node8
-            );
+    void DefGradGPtoNodes(LINALG::Matrix<6, 1>& node1, LINALG::Matrix<6, 1>& node2,
+        LINALG::Matrix<6, 1>& node3, LINALG::Matrix<6, 1>& node4, LINALG::Matrix<6, 1>& node5,
+        LINALG::Matrix<6, 1>& node6, LINALG::Matrix<6, 1>& node7, LINALG::Matrix<6, 1>& node8);
 
     /// Convert spatial stress to material stress
-    void CauchytoPK2(
-        LINALG::Matrix<6,1>& Sactive, ///< active material stress
-        LINALG::Matrix<3,3>& cauchystress, ///< cauchy stress in matrix notation
-        LINALG::Matrix<3,3> defgrd,   ///< deformation gradient
-        LINALG::Matrix<3,3> invdefgrd,///< inverse deformation gradient
-        LINALG::Matrix<6,1> sigma     ///< active spatial stress
-     );
+    void CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,  ///< active material stress
+        LINALG::Matrix<3, 3>& cauchystress,          ///< cauchy stress in matrix notation
+        LINALG::Matrix<3, 3> defgrd,                 ///< deformation gradient
+        LINALG::Matrix<3, 3> invdefgrd,              ///< inverse deformation gradient
+        LINALG::Matrix<6, 1> sigma                   ///< active spatial stress
+    );
 
     /// Convert material stress to spatial stress
-    void PK2toCauchy(
-        LINALG::Matrix<6,1> Spassive, ///< passive material stress
-        LINALG::Matrix<3,3>& PK2stress, ///< PK2 stress in matrix notation
-        LINALG::Matrix<3,3> defgrd,   ///< deformation gradient
-        LINALG::Matrix<6,1>& cauchystess     ///< passive spatial stress
-     );
+    void PK2toCauchy(LINALG::Matrix<6, 1> Spassive,  ///< passive material stress
+        LINALG::Matrix<3, 3>& PK2stress,             ///< PK2 stress in matrix notation
+        LINALG::Matrix<3, 3> defgrd,                 ///< deformation gradient
+        LINALG::Matrix<6, 1>& cauchystess            ///< passive spatial stress
+    );
 
 
     /// Transformation of strain rate tensor in (omega,phi) direction
     void TransformStrainRate(
-        LINALG::Matrix<6,1> strainrate, ///< strain rate tensor epsilonpunkt_ij at every point in cartesian coordinates
-        double * epsomegaphi ///< strain of fibers in (omega,phi) direction
+        LINALG::Matrix<6, 1> strainrate,  ///< strain rate tensor epsilonpunkt_ij at every point in
+                                          ///< cartesian coordinates
+        double* epsomegaphi               ///< strain of fibers in (omega,phi) direction
     );
 
 
-  }; //class BioChemoMechanoCellActiveFiber
-  } // namespace MAT
+  };  // class BioChemoMechanoCellActiveFiber
+}  // namespace MAT
 
 
 #endif /*BIOCHEMO_MECHANO_CELL_ACTIVEFIBER_H_*/

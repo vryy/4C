@@ -21,8 +21,7 @@
 void ADAPTER::StructureNOXCorrectionWrapper::PrepareTimeStep()
 {
   StructureWrapper::PrepareTimeStep();
-  if (disstepinc_!=Teuchos::null)
-    disstepinc_->PutScalar(0.);
+  if (disstepinc_ != Teuchos::null) disstepinc_->PutScalar(0.);
 }
 
 
@@ -40,17 +39,17 @@ void ADAPTER::StructureNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_
   //
   // x^n+1_i+1 = x^n     + disstepinc
 
-  if (disstepinc!=Teuchos::null)
+  if (disstepinc != Teuchos::null)
   {
     // iteration increments
     Teuchos::RCP<Epetra_Vector> disiterinc = Teuchos::rcp(new Epetra_Vector(*disstepinc));
-    if (disstepinc_!=Teuchos::null)
+    if (disstepinc_ != Teuchos::null)
     {
-      disiterinc->Update(-1.0,*disstepinc_,1.0);
+      disiterinc->Update(-1.0, *disstepinc_, 1.0);
 
       // update incremental displacement member to provided step increments
       // shortly: disinc_^<i> := disp^<i+1>
-      disstepinc_->Update(1.0,*disstepinc,0.0);
+      disstepinc_->Update(1.0, *disstepinc, 0.0);
     }
     else
     {

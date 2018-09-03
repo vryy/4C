@@ -26,41 +26,36 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    // forward declaration
+    class ArteryEleInterface;
 
-namespace ELEMENTS
-{
+    class ArtNetFactory
+    {
+     public:
+      //! ctor
+      ArtNetFactory() { return; }
 
-// forward declaration
-class ArteryEleInterface;
+      //! dtor
+      virtual ~ArtNetFactory() { return; }
 
-class ArtNetFactory
-{
-public:
-  //! ctor
-  ArtNetFactory(){ return; }
+      //! ProvideImpl
+      static ArteryEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
+          INPAR::ARTDYN::ImplType problem, const std::string& disname);
 
-  //! dtor
-  virtual ~ArtNetFactory(){ return; }
-
-  //! ProvideImpl
-  static ArteryEleInterface* ProvideImpl(
-    DRT::Element::DiscretizationType distype,
-    INPAR::ARTDYN::ImplType problem,
-    const std::string& disname);
-
-private:
-  //! define ArteryEle instances dependent on problem
-  template<DRT::Element::DiscretizationType distype>
-  static ArteryEleInterface* DefineProblemType(
-    INPAR::ARTDYN::ImplType problem,
-    const std::string& disname);
+     private:
+      //! define ArteryEle instances dependent on problem
+      template <DRT::Element::DiscretizationType distype>
+      static ArteryEleInterface* DefineProblemType(
+          INPAR::ARTDYN::ImplType problem, const std::string& disname);
 
 
-}; // end class ArtNetFactory
+    };  // end class ArtNetFactory
 
-} // end ELEMENTS
+  }  // namespace ELEMENTS
 
-} // end DRT
+}  // namespace DRT
 
 
 

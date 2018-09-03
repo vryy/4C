@@ -20,68 +20,64 @@ Maintainer: Alexander Popp
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
 
-DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance() { return instance_; }
 
 
-DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_shw6* object =
-    new DRT::ELEMENTS::So_shw6(-1,-1);
+  DRT::ELEMENTS::So_shw6* object = new DRT::ELEMENTS::So_shw6(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const std::string eletype,
-                                                            const std::string eledistype,
-                                                            const int id,
-                                                            const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create(
+    const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if ( eletype=="SOLIDSHW6" )
+  if (eletype == "SOLIDSHW6")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::So_shw6Type::NodalBlockInformation(
+    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
+    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
-void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSHW6"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSHW6"];
 
   defs["WEDGE6"]
-    .AddIntVector("WEDGE6",6)
-    .AddNamedInt("MAT")
-    .AddNamedString("KINEM")
-    .AddNamedString("EAS")
-    .AddOptionalTag("OPTORDER")
-    .AddOptionalNamedDoubleVector("RAD",3)
-    .AddOptionalNamedDoubleVector("AXI",3)
-    .AddOptionalNamedDoubleVector("CIR",3)
-    ;
+      .AddIntVector("WEDGE6", 6)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddNamedString("EAS")
+      .AddOptionalTag("OPTORDER")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3);
 }
 
 
@@ -89,8 +85,7 @@ void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition( std::map<std::string,st
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) :
-DRT::ELEMENTS::So_weg6(id,owner)
+DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, owner)
 {
   eastype_ = soshw6_easnone;
   neas_ = 0;
@@ -103,8 +98,7 @@ DRT::ELEMENTS::So_weg6(id,owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::So_shw6(const DRT::ELEMENTS::So_shw6& old) :
-DRT::ELEMENTS::So_weg6(old)
+DRT::ELEMENTS::So_shw6::So_shw6(const DRT::ELEMENTS::So_shw6& old) : DRT::ELEMENTS::So_weg6(old)
 {
   return;
 }
@@ -126,21 +120,21 @@ DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
   // add base class So_weg6 Element
   DRT::ELEMENTS::So_weg6::Pack(data);
   // eastype_
-  AddtoPack(data,eastype_);
+  AddtoPack(data, eastype_);
   // neas_
-  AddtoPack(data,neas_);
+  AddtoPack(data, neas_);
   // reordering
-  AddtoPack(data,optimal_parameterspace_map_);
-  AddtoPack(data,nodes_rearranged_);
+  AddtoPack(data, optimal_parameterspace_map_);
+  AddtoPack(data, nodes_rearranged_);
 
   return;
 }
@@ -155,22 +149,22 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   DRT::ELEMENTS::So_weg6::Unpack(basedata);
   // eastype_
-  eastype_ = static_cast<EASType>( ExtractInt(position,data) );
+  eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
-  ExtractfromPack(position,data,neas_);
+  ExtractfromPack(position, data, neas_);
   // reordering
-  optimal_parameterspace_map_ = ExtractInt(position,data);
-  nodes_rearranged_ = ExtractInt(position,data);
+  optimal_parameterspace_map_ = ExtractInt(position, data);
+  nodes_rearranged_ = ExtractInt(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -178,10 +172,7 @@ void DRT::ELEMENTS::So_shw6::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_shw6::~So_shw6()
-{
-  return;
-}
+DRT::ELEMENTS::So_shw6::~So_shw6() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -195,5 +186,3 @@ void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
-
-

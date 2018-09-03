@@ -33,20 +33,16 @@ using namespace DRT::UTILS;
  |Evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
-                                       DRT::Discretization&      discretization,
-                                       std::vector<int>&         lm,
-                                       Epetra_SerialDenseMatrix& elemat1,
-                                       Epetra_SerialDenseMatrix& elemat2,
-                                       Epetra_SerialDenseVector& elevec1,
-                                       Epetra_SerialDenseVector& elevec2,
-                                       Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
-
   DRT::ELEMENTS::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
 
   // get the action required
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
+  std::string action = params.get<std::string>("action", "none");
+  if (action == "none")
+    dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedInterAcinarDep::calc_sys_matrix_rhs;
   else if (action == "calc_sys_matrix_rhs_iad")
@@ -77,129 +73,104 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
     act = RedInterAcinarDep::eval_PO2_from_concentration;
   else
   {
-
     char errorout[200];
-    sprintf(errorout,"Unknown type of action (%s) for inter-acinar linker element",action.c_str());
+    sprintf(
+        errorout, "Unknown type of action (%s) for inter-acinar linker element", action.c_str());
 
     dserror(errorout);
   }
 
-/*
-  Here one must add the steps for evaluating an element
-*/
+  /*
+    Here one must add the steps for evaluating an element
+  */
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  switch(act)
+  switch (act)
   {
-  case calc_sys_matrix_rhs:
-  {
-    return DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(this,
-                                                                               params,
-                                                                               discretization,
-                                                                               lm,
-                                                                               elemat1,
-                                                                               elemat2,
-                                                                               elevec1,
-                                                                               elevec2,
-                                                                               elevec3,
-                                                                               mat);  }
-  break;
-  case calc_sys_matrix_rhs_iad:
-  {
+    case calc_sys_matrix_rhs:
+    {
+      return DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(
+          this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
+    }
+    break;
+    case calc_sys_matrix_rhs_iad:
+    {
+    }
+    break;
+    case get_initial_state:
+    {
+      DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Initial(
+          this, params, discretization, lm, elevec3, mat);
+    }
+    break;
+    case set_bc:
+    {
+      DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->EvaluateTerminalBC(
+          this, params, discretization, lm, elevec1, mat);
+    }
+    break;
+    case calc_flow_rates:
+    {
+    }
+    break;
+    case calc_elem_volumes:
+    {
+    }
+    break;
 
-  }
-  break;
-  case get_initial_state:
-  {
-    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Initial(this,
-                                                                       params,
-                                                                       discretization,
-                                                                       lm,
-                                                                       elevec3,
-                                                                       mat);
-
-  }
-  break;
-  case set_bc:
-  {
-    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->EvaluateTerminalBC(this,
-                                                                                  params,
-                                                                                  discretization,
-                                                                                  lm,
-                                                                                  elevec1,
-                                                                                  mat);
-
-  }
-  break;
-  case calc_flow_rates:
-  {
-  }
-  break;
-  case calc_elem_volumes:
-  {
-  }
-  break;
-
-  case get_coupled_values:
-  {
-    DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->GetCoupledValues(this,
-                                                                                params,
-                                                                                discretization,
-                                                                                lm,
-                                                                                mat);
-
-  }
-  break;
-  case get_junction_volume_mix:
-  {
-    // do nothing
-  }
-  break;
-  case solve_scatra:
-  {
-    //do nothing
-  }
-  break;
-  case calc_cfl:
-  {
-    //do nothing
-  }
-  break;
-  case solve_blood_air_transport:
-  {
-    // do nothing
-  }
-  break;
-  case eval_nodal_ess_vals:
-  {
-    // do nothing
-  }
-  break;
-  case eval_PO2_from_concentration:
-  {
-    // do nothing
-  }
-  break;
-  case update_scatra:
-  {
-    // do nothing
-  }
-  break;
-  default:
-    dserror("Unknown type of action for reduced dimensional acinuss");
-  break;
-  }// end of switch(act)
+    case get_coupled_values:
+    {
+      DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->GetCoupledValues(
+          this, params, discretization, lm, mat);
+    }
+    break;
+    case get_junction_volume_mix:
+    {
+      // do nothing
+    }
+    break;
+    case solve_scatra:
+    {
+      // do nothing
+    }
+    break;
+    case calc_cfl:
+    {
+      // do nothing
+    }
+    break;
+    case solve_blood_air_transport:
+    {
+      // do nothing
+    }
+    break;
+    case eval_nodal_ess_vals:
+    {
+      // do nothing
+    }
+    break;
+    case eval_PO2_from_concentration:
+    {
+      // do nothing
+    }
+    break;
+    case update_scatra:
+    {
+      // do nothing
+    }
+    break;
+    default:
+      dserror("Unknown type of action for reduced dimensional acinuss");
+      break;
+  }  // end of switch(act)
 
   return 0;
-} // end of DRT::ELEMENTS::RedInterAcinarDep::Evaluate
+}  // end of DRT::ELEMENTS::RedInterAcinarDep::Evaluate
 
 
 int DRT::ELEMENTS::RedInterAcinarDep::EvaluateNeumann(Teuchos::ParameterList& params,
-                                              DRT::Discretization& discretization,
-                                              DRT::Condition& condition,
-                                              std::vector<int>& lm,
-                                              Epetra_SerialDenseVector& elevec1,
-                                              Epetra_SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -211,10 +182,8 @@ int DRT::ELEMENTS::RedInterAcinarDep::EvaluateNeumann(Teuchos::ParameterList& pa
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(Teuchos::ParameterList& params,
-                                                DRT::Discretization&      discretization,
-                                                DRT::Condition&           condition,
-                                                std::vector<int>&         lm,
-                                                Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }
@@ -226,20 +195,19 @@ int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(Teuchos::ParameterList& 
  *----------------------------------------------------------------------*/
 GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(const DiscretizationType& distype)
 {
-
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
-    {
+  {
     case line2:
       rule = DRT::UTILS::intrule_line_2point;
-    break;
+      break;
     case line3:
       rule = DRT::UTILS::intrule_line_3point;
-    break;
+      break;
     default:
       dserror("Unknown number of nodes for Gaussrule initialization in inter-acinar linker.");
-    break;
-    }
+      break;
+  }
   return rule;
 }
 
@@ -249,20 +217,20 @@ GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(const Discreti
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedInterAcinarDep::isHigherOrderElement(
-  const DRT::Element::DiscretizationType  distype) const
+    const DRT::Element::DiscretizationType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
     case line3:
       hoel = true;
-    break;
+      break;
     case line2:
-       hoel = false;
-    break;
+      hoel = false;
+      break;
     default:
       dserror("distype unknown!");
-    break;
+      break;
   }
   return hoel;
 }

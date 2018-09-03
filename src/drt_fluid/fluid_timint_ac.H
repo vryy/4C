@@ -20,34 +20,29 @@
 
 namespace FLD
 {
+  class TimIntAC : public virtual FluidImplicitTimeInt
+  {
+   public:
+    /// Standard Constructor
+    TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntAC : public virtual FluidImplicitTimeInt
-{
-public:
-  /// Standard Constructor
-  TimIntAC(const Teuchos::RCP<DRT::Discretization>&     actdis,
-      const Teuchos::RCP<LINALG::Solver>&               solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&       params,
-      const Teuchos::RCP<IO::DiscretizationWriter>&     output,
-      bool                                              alefluid = false);
+    /// Destructor
+    virtual ~TimIntAC();
 
-  /// Destructor
-  virtual ~TimIntAC();
+    /// read restart from step
+    void ReadRestart(int step);
 
-  /// read restart from step
-  void ReadRestart(int step);
+    /// write output
+    virtual void Output();
 
-  /// write output
-  virtual void Output();
+   protected:
+   private:
+  };  // class TimIntAC
 
-protected:
-
-private:
-
-
-}; // class TimIntAC
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_AC_H

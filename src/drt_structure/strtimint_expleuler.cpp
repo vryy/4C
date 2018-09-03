@@ -26,63 +26,44 @@
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimIntExplEuler::TimIntExplEuler
-(
-  const Teuchos::ParameterList& timeparams,
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& sdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-)
-: TimIntExpl
-  (
-    timeparams,
-    ioparams,
-    sdynparams,
-    xparams,
-    actdis,
-    solver,
-    contactsolver,
-    output
-  ),
-  modexpleuler_(DRT::INPUT::IntegralValue<int>(sdynparams,"MODIFIEDEXPLEULER")==1),
-  fextn_(Teuchos::null),
-  fintn_(Teuchos::null),
-  fviscn_(Teuchos::null),
-  fcmtn_(Teuchos::null),
-  frimpn_(Teuchos::null)
+STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
+      modexpleuler_(DRT::INPUT::IntegralValue<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
+      fextn_(Teuchos::null),
+      fintn_(Teuchos::null),
+      fviscn_(Teuchos::null),
+      fcmtn_(Teuchos::null),
+      frimpn_(Teuchos::null)
 {
   // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // First do everything on the more basic objects like the discretizations, like e.g.
+  // redistribution of elements. Only then call the setup to this class. This will call the setup to
+  // all classes in the inheritance hierarchy. This way, this class may also override a method that
+  // is called during Setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExplEuler::Init
-(
-    const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver
-)
+void STR::TimIntExplEuler::Init(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
 {
   // call Init() in base class
-  STR::TimIntExpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+  STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
 
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with " <<  (modexpleuler_?"modified":"standard") << " forward Euler" << std::endl
-              << "lumping activated: " << (lumpmass_?"true":"false") << std::endl
+    std::cout << "with " << (modexpleuler_ ? "modified" : "standard") << " forward Euler"
+              << std::endl
+              << "lumping activated: " << (lumpmass_ ? "true" : "false") << std::endl
               << std::endl;
   }
 
@@ -105,10 +86,10 @@ void STR::TimIntExplEuler::Setup()
   ResizeMStep();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*DofRowMapView(), true);
-  fintn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
   fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_ = LINALG::CreateVector(*DofRowMapView(), true);
   frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   return;
@@ -141,7 +122,7 @@ int STR::TimIntExplEuler::IntegrateStep()
   // new displacements \f$D_{n+1}\f$, modified expl Euler uses veln_ for
   // updating disn_
   disn_->Update(1.0, *(*dis_)(0), 0.0);
-  if(modexpleuler_==true)
+  if (modexpleuler_ == true)
     disn_->Update(dt, *(*veln_)(0), 1.0);
   else
     disn_->Update(dt, *(*vel_)(0), 1.0);
@@ -164,7 +145,7 @@ int STR::TimIntExplEuler::IntegrateStep()
   fextn_->Update(1.0, *fifc_, 1.0);
 
   // TIMING
-  //double dtcpu = timer_->WallTime();
+  // double dtcpu = timer_->WallTime();
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -175,9 +156,7 @@ int STR::TimIntExplEuler::IntegrateStep()
     Epetra_Vector disinc = Epetra_Vector(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
-    ApplyForceInternal(timen_, dt,
-                       disn_, Teuchos::rcp(&disinc,false), veln_,
-                       fintn_);
+    ApplyForceInternal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
   }
 
   // *********** time measurement ***********
@@ -199,10 +178,12 @@ int STR::TimIntExplEuler::IntegrateStep()
   {
     fcmtn_->PutScalar(0.0);
 
-    if(cmtbridge_->HaveMeshtying())
-      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
-    if(cmtbridge_->HaveContact())
-      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
+    if (cmtbridge_->HaveMeshtying())
+      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(
+          disn_, stiff_, fcmtn_, stepn_, 0, false);
+    if (cmtbridge_->HaveContact())
+      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(
+          disn_, stiff_, fcmtn_, stepn_, 0, false);
   }
 
   // *********** time measurement ***********
@@ -236,7 +217,8 @@ int STR::TimIntExplEuler::IntegrateStep()
     accn_->PutScalar(0.0);
 
     // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
-    if (lumpmass_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_)==Teuchos::null)
+    if (lumpmass_ == false ||
+        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_) == Teuchos::null)
     {
       // refactor==false: This is not necessary, because we always
       // use the same constant mass matrix, which was firstly factorised
@@ -247,7 +229,8 @@ int STR::TimIntExplEuler::IntegrateStep()
     else
     {
       // extract the diagonal values of the mass matrix
-      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->RowMap(),false);
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(
+          (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->RowMap(), false);
       (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->ExtractDiagonalCopy(*diag);
       // A_{n+1} = M^{-1} . ( -fint + fext )
       accn_->ReciprocalMultiply(1.0, *diag, *frimpn_, 0.0);
@@ -302,16 +285,12 @@ void STR::TimIntExplEuler::UpdateStepElement()
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntExplEuler::ReadRestartForce()
-{
-  return;
-}
+void STR::TimIntExplEuler::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */

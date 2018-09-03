@@ -31,7 +31,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class MapExtractor;
   class Solver;
-}
+}  // namespace LINALG
 
 namespace DRT
 {
@@ -39,7 +39,7 @@ namespace DRT
   class DofSet;
   class ResultTest;
   class Element;
-}
+}  // namespace DRT
 
 namespace IO
 {
@@ -55,13 +55,13 @@ namespace FLD
   {
     class MapExtractor;
   }
-}
+}  // namespace FLD
 
 
 
 /// Algorithm adapter classes for use in multi-field problems
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /// general fluid field interface for multiphysics (FSI, ELCH, ...)
   /*!
 
@@ -95,8 +95,7 @@ namespace ADAPTER {
   */
   class Fluid
   {
-  public:
-
+   public:
     /// virtual destructor to get polymorph destruction
     virtual ~Fluid();
 
@@ -209,16 +208,20 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// set initial flow field
-    virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
+    virtual void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) = 0;
 
     /// set initial flow field
-    virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) = 0;
+    virtual void SetInitialPorosityField(
+        const INPAR::POROELAST::InitialField initfield, const int startfuncno) = 0;
 
     /// apply external forces to the fluid
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
 
-    /// apply contribution to neumann loads of the fluid (similar to ApplyExternalForces but without residual scaling)
-    virtual void AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
+    /// apply contribution to neumann loads of the fluid (similar to ApplyExternalForces but without
+    /// residual scaling)
+    virtual void AddContributionToExternalLoads(
+        const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
 
     /// expand dirichlet dbc set by provided map containing dofs to add
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) = 0;
@@ -228,28 +231,20 @@ namespace ADAPTER {
 
     ///  set scalar fields within outer iteration loop
     virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
-                                   Teuchos::RCP<const Epetra_Vector> scalaram,
-                                   Teuchos::RCP<const Epetra_Vector> scalardtam,
-                                   Teuchos::RCP<DRT::Discretization> scatradis,
-                                   int dofset=0) = 0;
+        Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
+        Teuchos::RCP<DRT::Discretization> scatradis, int dofset = 0) = 0;
 
     /// set scalar fields within outer iteration loop for low-Mach-number flow
     virtual void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
-                                         Teuchos::RCP<const Epetra_Vector> scalaram,
-                                         Teuchos::RCP<const Epetra_Vector> scalardtam,
-                                         Teuchos::RCP<const Epetra_Vector> fsscalaraf,
-                                         const double             thermpressaf,
-                                         const double             thermpressam,
-                                         const double             thermpressdtaf,
-                                         const double             thermpressdtam,
-                                         Teuchos::RCP<DRT::Discretization> scatradis) = 0;
+        Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
+        Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
+        const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
+        Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
     /// set scalar fields
     virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
-                                   const double             thermpressnp,
-                                   Teuchos::RCP<const Epetra_Vector> scatraresidual,
-                                   Teuchos::RCP<DRT::Discretization> scatradis,
-                                   const int                whichscalar = -1) = 0;
+        const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
+        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) = 0;
 
     /// set velocity field (separate computation)
     virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
@@ -261,10 +256,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<FLD::Vreman> Vreman() = 0;
 
     /// reset state vectors (needed for biofilm simulations)
-    virtual void Reset(
-        bool completeReset = false,
-        int numsteps = 1,
-        int iter = -1) = 0;
+    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) = 0;
 
     /// set fluid displacement vector due to biofilm growth
     virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) = 0;
@@ -273,7 +265,7 @@ namespace ADAPTER {
     //! @name Time step helpers
 
     /// run a complete simulation (for fluid stand-alone simulations)
-//    virtual void TimeLoop() = 0;
+    //    virtual void TimeLoop() = 0;
     virtual void Integrate() = 0;
 
     /// start new time step
@@ -294,7 +286,7 @@ namespace ADAPTER {
     ///
     /// with n and i being time and Newton iteration step
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
+        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
         ) = 0;
 
     /// convergence check
@@ -323,19 +315,16 @@ namespace ADAPTER {
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() = 0;
 
     /// access to map extractor for velocity and pressure
-   virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter()=0;
+    virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
 
     /// set restart
-    virtual void SetRestart(const int step,
-                    const double time,
-                    Teuchos::RCP<const Epetra_Vector> readvelnp,
-                    Teuchos::RCP<const Epetra_Vector> readveln,
-                    Teuchos::RCP<const Epetra_Vector> readvelnm,
-                    Teuchos::RCP<const Epetra_Vector> readaccnp,
-                    Teuchos::RCP<const Epetra_Vector> readaccn) = 0;
+    virtual void SetRestart(const int step, const double time,
+        Teuchos::RCP<const Epetra_Vector> readvelnp, Teuchos::RCP<const Epetra_Vector> readveln,
+        Teuchos::RCP<const Epetra_Vector> readvelnm, Teuchos::RCP<const Epetra_Vector> readaccnp,
+        Teuchos::RCP<const Epetra_Vector> readaccn) = 0;
 
     /// current time value
     virtual double Time() const = 0;
@@ -365,21 +354,22 @@ namespace ADAPTER {
      *  \author mayr.mt \date 12/2013
      */
     virtual void IndicateErrorNorms(
-        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
-        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
-        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
-        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
-        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
-        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
+        double& err,       ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,    ///< L-inf-norm of temporal discretization error based on all DOFs
+        double&
+            errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
         ) = 0;
 
     /// set time step size
     virtual void SetDt(const double dtold) = 0;
 
     /// set time and step
-    virtual void SetTimeStep(const double time, ///< time to set
-                             const int step     ///< time step number to set
-                            ) = 0;
+    virtual void SetTimeStep(const double time,  ///< time to set
+        const int step                           ///< time step number to set
+        ) = 0;
 
     //@}
 
@@ -442,7 +432,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() = 0;
 
     /// Map of all velocity dofs
-    virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap() = 0;
 
     /// Map of all pressure dofs
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() = 0;
@@ -450,12 +440,14 @@ namespace ADAPTER {
     /// the mesh map contains all velocity dofs that are covered by an ALE node
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm) = 0;
 
-    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit Newton [N]
+    /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
+    /// Newton [N]
     virtual double ResidualScaling() const = 0;
 
     /// Velocity-displacement conversion at the fsi interface
     /*! Time integration of the fsi interface reads:
-     *  \f$\mathbf{d}^{n+1} = \mathbf{d}^{n} + \tau(\mathbf{u}^{n+1}-\mathbf{u}^{n}) + \Delta t \mathbf{u}^{n}\f$
+     *  \f$\mathbf{d}^{n+1} = \mathbf{d}^{n} + \tau(\mathbf{u}^{n+1}-\mathbf{u}^{n}) + \Delta t
+     * \mathbf{u}^{n}\f$
      *
      *  Currently, two time integration schemes for the fsi interface
      *  are implemented:
@@ -470,10 +462,10 @@ namespace ADAPTER {
     virtual double TimIntParam() const = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const = 0;
 
     /// communication object at the interface (including pressure dofs)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const = 0;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const = 0;
 
     /// return type of time integration scheme
     virtual INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
@@ -483,10 +475,12 @@ namespace ADAPTER {
     /// with different vectors.
 
     /// Some applications need only access to velocity-related values of an fluid result vector.
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
+        Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
     /// Some applications need only access to pressure-related values of an fluid result vector.
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
+        Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
     //@}
 
@@ -569,8 +563,8 @@ namespace ADAPTER {
     virtual void CalculateError() = 0;
 
     /// return physical type of fluid algorithm
-    virtual INPAR::FLUID::PhysicalType PhysicalType() const =0;
+    virtual INPAR::FLUID::PhysicalType PhysicalType() const = 0;
   };
-}
+}  // namespace ADAPTER
 
 #endif

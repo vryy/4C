@@ -31,9 +31,10 @@
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
+    DRT::Element::DiscretizationType distype, std::string problem)
 {
-  switch(distype)
+  switch (distype)
   {
     case DRT::Element::hex8:
     {
@@ -98,17 +99,18 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(DRT::
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
-    }
+  }
   return NULL;
 }
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(std::string problem)
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(
+    std::string problem)
 {
   if (problem == "std")
     return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
@@ -129,10 +131,13 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     // for now we only build the hex8 and tet4 elements for xwall
     // later we might consider other kinds of elements
     if (distype == DRT::Element::hex8)
-      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>::Instance();
-    else if(distype == DRT::Element::tet4)
-      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4,DRT::ELEMENTS::Fluid::xwall>::Instance();
-    else dserror("only hex8 and tet4 elements compiled for xwall");
+      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,
+          DRT::ELEMENTS::Fluid::xwall>::Instance();
+    else if (distype == DRT::Element::tet4)
+      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4,
+          DRT::ELEMENTS::Fluid::xwall>::Instance();
+    else
+      dserror("only hex8 and tet4 elements compiled for xwall");
   }
   else
     dserror("Defined problem type does not exist!!");
@@ -144,11 +149,12 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
  |  special implementation of ProvideImpl for XFEM problems                 |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(DRT::Element::DiscretizationType distype, std::string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
+    DRT::Element::DiscretizationType distype, std::string problem)
 {
-  if(problem != "xfem") dserror("Call ProvideImplXFEM just for xfem problems!");
+  if (problem != "xfem") dserror("Call ProvideImplXFEM just for xfem problems!");
 
-  switch(distype)
+  switch (distype)
   {
     // only 3D elements
     case DRT::Element::hex8:
@@ -179,14 +185,15 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     {
       return DefineProblemTypeXFEM<DRT::Element::wedge15>(problem);
     }
-//    case DRT::Element::pyramid5:
-//    {
-//      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);
-//    }
+      //    case DRT::Element::pyramid5:
+      //    {
+      //      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);
+      //    }
     default:
-      dserror("Element shape %s not activated for XFEM problems. Just do it.",DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated for XFEM problems. Just do it.",
+          DRT::DistypeToString(distype).c_str());
       break;
-    }
+  }
   return NULL;
 }
 
@@ -194,8 +201,9 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
  |  special implementation of DefineProblemTypeX for XFEM problems          |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(std::string problem)
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(
+    std::string problem)
 {
   if (problem == "xfem")
     return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
@@ -204,4 +212,3 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
 
   return NULL;
 }
-

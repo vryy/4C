@@ -21,22 +21,17 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// parameters for "Yoghurt-type" material with nonlinear viscosity
     /// determined via power law by Oswald and extended by an Arrhenius-type
     /// term to account for temperature dependence
     class Yoghurt : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      Yoghurt(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      Yoghurt(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~Yoghurt() { ; }
@@ -69,27 +64,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class YoghurtType : public DRT::ParObjectType
-{
-public:
+  class YoghurtType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "YoghurtType"; }
 
-  std::string Name() const { return "YoghurtType"; }
+    static YoghurtType& Instance() { return instance_; };
 
-  static YoghurtType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static YoghurtType instance_;
-};
+   private:
+    static YoghurtType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for "Yoghurt-type" material
   class Yoghurt : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Yoghurt();
 
@@ -139,7 +131,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_yoghurt; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Yoghurt( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Yoghurt(*this)); }
 
     /// compute viscosity
     double ComputeViscosity(const double rateofstrain, const double temp) const;
@@ -165,18 +157,16 @@ private:
     /// specific gas constant R
     double GasConst() const { return params_->gasconst_; }
     /// safety factor
-    double Delta() const { return params_->delta_; }    //@}
+    double Delta() const { return params_->delta_; }  //@}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Yoghurt* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

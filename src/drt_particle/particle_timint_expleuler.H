@@ -23,7 +23,6 @@
 /* belongs to particle namespace */
 namespace PARTICLE
 {
-
   /*====================================================================*/
   /*!
    * \brief Explicit Euler:      1st order accurate,
@@ -34,24 +33,20 @@ namespace PARTICLE
    */
   class TimIntExplEuler : public PARTICLE::TimIntExpl
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntExplEuler
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& particledynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntExplEuler(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& particledynparams,     //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<IO::DiscretizationWriter> output        //!< the output
     );
 
     //! Destructor
-    virtual ~TimIntExplEuler(){ ; }
+    virtual ~TimIntExplEuler() { ; }
 
     //@}
 
@@ -66,8 +61,7 @@ namespace PARTICLE
 
     //@}
 
-  protected:
-
+   protected:
   };  // class TimIntExplEuler
 
 }  // namespace PARTICLE

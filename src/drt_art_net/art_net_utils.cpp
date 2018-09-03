@@ -25,14 +25,10 @@
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
-    INPAR::ARTDYN::TimeIntegrationScheme              timintscheme,
-    Teuchos::RCP<DRT::Discretization>                 dis,
-    const int                                         linsolvernumber,
-    const Teuchos::ParameterList&                     probparams,
-    const Teuchos::ParameterList&                     artparams,
-    FILE*                                             errfile,
-    Teuchos::RCP<IO::DiscretizationWriter>            output
-    )
+    INPAR::ARTDYN::TimeIntegrationScheme timintscheme, Teuchos::RCP<DRT::Discretization> dis,
+    const int linsolvernumber, const Teuchos::ParameterList& probparams,
+    const Teuchos::ParameterList& artparams, FILE* errfile,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // Creation of Coupled Problem algortihm.
   Teuchos::RCP<ADAPTER::ArtNet> algo = Teuchos::null;
@@ -42,35 +38,25 @@ Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
 
-  switch(timintscheme)
+  switch (timintscheme)
   {
-  case INPAR::ARTDYN::TimeIntegrationScheme::tay_gal:
-  {
-    // create algorithm
-    algo = Teuchos::rcp(new ART::ArtNetExplicitTimeInt(
-            dis,
-            linsolvernumber,
-            probparams,
-            artparams,
-            errfile,
-            *output));
-    break;
-  }
-  case INPAR::ARTDYN::TimeIntegrationScheme::stationary:
-  {
-    // create algorithm
-    algo = Teuchos::rcp(new ART::ArtNetImplStationary(
-            dis,
-            linsolvernumber,
-            probparams,
-            artparams,
-            errfile,
-            *output));
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for artery network problem");
-    break;
+    case INPAR::ARTDYN::TimeIntegrationScheme::tay_gal:
+    {
+      // create algorithm
+      algo = Teuchos::rcp(new ART::ArtNetExplicitTimeInt(
+          dis, linsolvernumber, probparams, artparams, errfile, *output));
+      break;
+    }
+    case INPAR::ARTDYN::TimeIntegrationScheme::stationary:
+    {
+      // create algorithm
+      algo = Teuchos::rcp(new ART::ArtNetImplStationary(
+          dis, linsolvernumber, probparams, artparams, errfile, *output));
+      break;
+    }
+    default:
+      dserror("Unknown time-integration scheme for artery network problem");
+      break;
   }
 
   return algo;
@@ -80,39 +66,34 @@ Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
  | exchange material pointers of both discretizations  kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void ART::UTILS::AssignMaterialPointers(
-    const std::string& artery_disname,
-    const std::string& scatra_disname)
+    const std::string& artery_disname, const std::string& scatra_disname)
 {
-
   DRT::Problem* problem = DRT::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> arterydis = problem->GetDis(artery_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
-  SetMaterialPointersMatchingGrid(arterydis,scatradis);
-
+  SetMaterialPointersMatchingGrid(arterydis, scatradis);
 }
 
 /*----------------------------------------------------------------------*
  | reset Material pointers after redistribution        kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void ART::UTILS::SetMaterialPointersMatchingGrid(
-    Teuchos::RCP<const DRT::Discretization> sourcedis,
+void ART::UTILS::SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis)
 {
   const int numelements = targetdis->NumMyColElements();
 
-  for (int i=0; i<numelements; ++i)
+  for (int i = 0; i < numelements; ++i)
   {
     DRT::Element* targetele = targetdis->lColElement(i);
     const int gid = targetele->Id();
 
     DRT::Element* sourceele = sourcedis->gElement(gid);
 
-    //for coupling we add the source material to the target element and vice versa
+    // for coupling we add the source material to the target element and vice versa
     targetele->AddMaterial(sourceele->Material());
     sourceele->AddMaterial(targetele->Material());
-
   }
 }
 
@@ -122,7 +103,7 @@ void ART::UTILS::SetMaterialPointersMatchingGrid(
 bool ART::ArteryScatraCloneStrategy::DetermineEleType(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
-  //clone the element
+  // clone the element
   DRT::ELEMENTS::Artery* myele = static_cast<DRT::ELEMENTS::Artery*>(actele);
   // only the pressure based artery supports this function so far
   if (myele->ImplType() == INPAR::ARTDYN::impltype_pressure_based)
@@ -140,10 +121,7 @@ bool ART::ArteryScatraCloneStrategy::DetermineEleType(
  | set the element data (protected)                    kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void ART::ArteryScatraCloneStrategy::SetElementData(
-    Teuchos::RCP<DRT::Element> newele,
-    DRT::Element* oldele,
-    const int matid,
-    const bool isnurbs)
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -151,10 +129,10 @@ void ART::ArteryScatraCloneStrategy::SetElementData(
 
   // note: SetMaterial() was reimplemented by the transport element!
   DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (trans!=NULL)
+  if (trans != NULL)
   {
     // set material
-    trans->SetMaterial(matid,oldele);
+    trans->SetMaterial(matid, oldele);
     // set distype as well!
     trans->SetDisType(oldele->Shape());
 
@@ -177,11 +155,8 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
-  if (
-      (mtype != INPAR::MAT::m_scatra) &&
-      (mtype != INPAR::MAT::m_matlist)
-     )
-    dserror("Material with ID %d is not admissible for scalar transport elements",matid);
+  if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist))
+    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 
@@ -190,13 +165,15 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> ART::ArteryScatraCloneStrategy::ConditionsToCopy()
 {
-  //map
-  std::map<std::string,std::string> conditions_to_copy;
+  // map
+  std::map<std::string, std::string> conditions_to_copy;
 
-  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportDirichlet","Dirichlet"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportPointNeumann","PointNeumann"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("ArtScatraCouplCon","ArtScatraCouplCon"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>("TransportDirichlet", "Dirichlet"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TransportPointNeumann", "PointNeumann"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("ArtScatraCouplCon", "ArtScatraCouplCon"));
 
   return conditions_to_copy;
 }

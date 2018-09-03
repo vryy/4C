@@ -15,44 +15,41 @@
 #include "ad_scatra_wrapper.H"
 
 // forward declarations
-namespace LINALG {
+namespace LINALG
+{
   class SparseOperator;
 }
 
 
-namespace ADAPTER {
-
-/*! \brief Specialized adapter for cell migration simulations.
- *
- * \date 12/2016
- * \author rauch (rauch@lnm.mw.tum.de)    */
-class AdapterScatraWrapperCellMigration : public AdapterScatraWrapper
+namespace ADAPTER
 {
+  /*! \brief Specialized adapter for cell migration simulations.
+   *
+   * \date 12/2016
+   * \author rauch (rauch@lnm.mw.tum.de)    */
+  class AdapterScatraWrapperCellMigration : public AdapterScatraWrapper
+  {
+   public:
+    /// constructor
+    explicit AdapterScatraWrapperCellMigration(Teuchos::RCP<ScatraInterface> scatra);
 
-public:
+    /// virtual to get polymorph destruction
+    virtual ~AdapterScatraWrapperCellMigration(){};
 
-  /// constructor
-  explicit AdapterScatraWrapperCellMigration(Teuchos::RCP<ScatraInterface> scatra);
+    /// compute contribution of mechanical state to eq. system
+    virtual void EvaluateAdditionalSolutionDependingModels(
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
+    );
 
-  /// virtual to get polymorph destruction
-  virtual ~AdapterScatraWrapperCellMigration() {};
+    /// add vector to rhs
+    void AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector>& contributing_vector);
 
-  /// compute contribution of mechanical state to eq. system
-  virtual void EvaluateAdditionalSolutionDependingModels(
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-      Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
-  );
+   private:
+    Teuchos::RCP<Epetra_Vector> rates_;
 
-  /// add vector to rhs
-  void AddContributionToRHS(
-      const Teuchos::RCP<const Epetra_Vector>& contributing_vector);
-
-private:
-
-  Teuchos::RCP<Epetra_Vector> rates_;
-
-}; // class AdapterScatraWrapperCellMigration
-} // namespace ADAPTER
+  };  // class AdapterScatraWrapperCellMigration
+}  // namespace ADAPTER
 
 
 #endif /* AD_SCATRA_WRAPPER_CELLMIGRATION_ */

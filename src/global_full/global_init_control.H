@@ -16,12 +16,11 @@
 #include <string>
 
 //! general initialization and routine
-void ntaini_ccadiscret(
-    int argc,                         //!< number of command line arguments
-    char** argv,                      //!< actual command line arguments
-    std::string& inputfile_name,      //!< input file name
-    std::string& outputfile_kenner,   //!< output file kenner
-    std::string& restartfile_kenner); //!< restart file kenner
+void ntaini_ccadiscret(int argc,       //!< number of command line arguments
+    char** argv,                       //!< actual command line arguments
+    std::string& inputfile_name,       //!< input file name
+    std::string& outputfile_kenner,    //!< output file kenner
+    std::string& restartfile_kenner);  //!< restart file kenner
 
 
 #endif

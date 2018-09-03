@@ -30,7 +30,7 @@ namespace DRT
 {
   class Discretization;
   class Node;
-}
+}  // namespace DRT
 
 
 /*
@@ -41,17 +41,14 @@ namespace DRT
 */
 class PostVtiWriter : public PostVtkWriter
 {
-public:
+ public:
   //! constructor. Initializes the writer to a certain field.
-  PostVtiWriter (PostField* field,
-             const std::string &name);
+  PostVtiWriter(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostVtiWriter()
-  {}
+  virtual ~PostVtiWriter() {}
 
-protected:
-
+ protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const;
 
@@ -74,37 +71,22 @@ protected:
   virtual const std::string& WriterSuffix() const;
 
   //! Write a single result step
-  virtual void WriteDofResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_Vector>&                            data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf,
-      const int                                                     from,
-      const bool                                                    fillzeros
-      );
+  virtual void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from,
+      const bool fillzeros);
 
   //! Write a single result step
-  virtual void WriteNodalResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_MultiVector>&                       data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf
-      );
+  virtual void WriteNodalResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf);
 
   //! Write a single result step
-  virtual void WriteElementResultStep(
-     std::ofstream&                                                file,
-     const Teuchos::RCP<Epetra_MultiVector>&                       data,
-     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-     const std::string&                                            groupname,
-     const std::string&                                            name,
-     const int                                                     numdf,
-     const int                                                     from
-     );
+  virtual void WriteElementResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from);
 
   //! write the geometry of one time step
   virtual void WriteGeo();
@@ -122,10 +104,10 @@ protected:
   int localextent_[6];
 
   //! Mapping between nodeids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
-  std::map<int,int> idmapping_;
+  std::map<int, int> idmapping_;
 
   //! Mapping between elementids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
-  std::map<int,int> eidmapping_;
+  std::map<int, int> eidmapping_;
 };
 
 #endif

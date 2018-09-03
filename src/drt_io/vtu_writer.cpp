@@ -25,8 +25,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-VtuWriter::VtuWriter() :
-    VtkWriterBase()
+VtuWriter::VtuWriter() : VtkWriterBase()
 {
   // empty constructor
 }
@@ -62,12 +61,11 @@ const std::vector<std::string>& VtuWriter::WriterPPieceTags() const
   static std::vector<std::string> tags;
   tags.clear();
 
-  for (size_t iproc=0; iproc<numproc_; ++iproc)
+  for (size_t iproc = 0; iproc < numproc_; ++iproc)
   {
     std::stringstream stream;
-    stream << "<Piece Source=\"" << filename_base_
-        << GetPartOfFileNameIndicatingProcessorId( iproc )
-        << ".vtu\"/>";
+    stream << "<Piece Source=\"" << filename_base_ << GetPartOfFileNameIndicatingProcessorId(iproc)
+           << ".vtu\"/>";
     tags.push_back(std::string(stream.str()));
   }
   return tags;
@@ -91,12 +89,9 @@ const std::string& VtuWriter::WriterPSuffix() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void
-VtuWriter::WriteGeometryUnstructuredGridContiguous(
-    const std::vector<double>& point_coordinates,
-    const std::vector<int32_t>& cell_offset,
-    const std::vector<uint8_t>& cell_types
-    )
+void VtuWriter::WriteGeometryUnstructuredGridContiguous(
+    const std::vector<double>& point_coordinates, const std::vector<int32_t>& cell_offset,
+    const std::vector<uint8_t>& cell_types)
 {
   // we assumed contiguous order of coordinates in this format, so fill the
   // vector with ascending numbers from 0 to num_points here
@@ -107,28 +102,19 @@ VtuWriter::WriteGeometryUnstructuredGridContiguous(
   const unsigned int num_points = point_coordinates.size() / num_spatial_dimensions;
 
   std::vector<int32_t> point_cell_connectivity;
-  point_cell_connectivity.reserve( num_points );
+  point_cell_connectivity.reserve(num_points);
 
-  for ( unsigned int i = 0; i < num_points; ++i )
-    point_cell_connectivity.push_back(i);
+  for (unsigned int i = 0; i < num_points; ++i) point_cell_connectivity.push_back(i);
 
   WriteGeometryUnstructuredGrid(
-      point_coordinates,
-      point_cell_connectivity,
-      cell_offset,
-      cell_types
-      );
+      point_coordinates, point_cell_connectivity, cell_offset, cell_types);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void
-VtuWriter::WriteGeometryUnstructuredGrid(
-    const std::vector<double>& point_coordinates,
-    const std::vector<int32_t>& point_cell_connectivity,
-    const std::vector<int32_t>& cell_offset,
-    const std::vector<uint8_t>& cell_types
-    )
+void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
+    const std::vector<int32_t>& point_cell_connectivity, const std::vector<int32_t>& cell_offset,
+    const std::vector<uint8_t>& cell_types)
 {
   // always assume 3D for now Todo maybe use this as template to allow for 2D case
   const unsigned int num_spatial_dimensions = 3;
@@ -138,44 +124,45 @@ VtuWriter::WriteGeometryUnstructuredGrid(
   const unsigned int num_cells = cell_types.size();
 
   // some sanity checks
-  if ( point_coordinates.size() % num_spatial_dimensions != 0 )
+  if (point_coordinates.size() % num_spatial_dimensions != 0)
     dserror("VtuWriter assumes 3D point coordinates here! Extend to 2D if needed");
 
-  if ( point_cell_connectivity.size() != num_points )
+  if (point_cell_connectivity.size() != num_points)
     dserror("VtuWriter: length of connectivity vector must equal number of points");
 
-  if ( cell_offset.size() != cell_types.size() )
-    dserror("VtuWriter: number of specified cell types does not equal number of "
+  if (cell_offset.size() != cell_types.size())
+    dserror(
+        "VtuWriter: number of specified cell types does not equal number of "
         "specified index offsets");
 
 
   // step 0: tell the master file that we specify point coordinates
   /*----------------------------------------------------------------------*/
-  if ( myrank_ == 0 )
+  if (myrank_ == 0)
   {
-    ThrowErrorIfInvalidFileStream( currentmasterout_ );
+    ThrowErrorIfInvalidFileStream(currentmasterout_);
 
     currentmasterout_ << "    <PPoints>\n";
     currentmasterout_ << "      <PDataArray type=\"Float64\" NumberOfComponents=\""
-        << num_spatial_dimensions << "\"/>\n";
+                      << num_spatial_dimensions << "\"/>\n";
     currentmasterout_ << "    </PPoints>\n";
   }
 
 
   // step 1: write point coordinates into file
   /*----------------------------------------------------------------------*/
-  ThrowErrorIfInvalidFileStream( currentout_ );
+  ThrowErrorIfInvalidFileStream(currentout_);
 
-  currentout_ << "    <Piece NumberOfPoints=\"" << num_points
-      <<"\" NumberOfCells=\"" << num_cells << "\" >\n"
-      << "      <Points>\n"
-      << "        <DataArray type=\"Float64\" NumberOfComponents=\""
-      << num_spatial_dimensions << "\"";
+  currentout_ << "    <Piece NumberOfPoints=\"" << num_points << "\" NumberOfCells=\"" << num_cells
+              << "\" >\n"
+              << "      <Points>\n"
+              << "        <DataArray type=\"Float64\" NumberOfComponents=\""
+              << num_spatial_dimensions << "\"";
 
-  if ( write_binary_output_ )
+  if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64:: writeCompressedBlock(point_coordinates, currentout_);
+    LIBB64::writeCompressedBlock(point_coordinates, currentout_);
   }
   else
   {
@@ -183,12 +170,12 @@ VtuWriter::WriteGeometryUnstructuredGrid(
 
     int counter = 1;
     for (std::vector<double>::const_iterator it = point_coordinates.begin();
-        it != point_coordinates.end(); ++it)
+         it != point_coordinates.end(); ++it)
     {
       currentout_ << std::setprecision(15) << std::scientific << *it;
 
       // single space between dimensions, new line upon completion of a point
-      if ( counter % num_spatial_dimensions != 0 )
+      if (counter % num_spatial_dimensions != 0)
         currentout_ << " ";
       else
         currentout_ << '\n';
@@ -201,7 +188,7 @@ VtuWriter::WriteGeometryUnstructuredGrid(
 
 
   currentout_ << "        </DataArray>\n"
-      << "      </Points>\n\n";
+              << "      </Points>\n\n";
 
 
 
@@ -210,7 +197,7 @@ VtuWriter::WriteGeometryUnstructuredGrid(
   currentout_ << "      <Cells>\n"
               << "        <DataArray type=\"Int32\" Name=\"connectivity\"";
 
-  if ( write_binary_output_ )
+  if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
     LIBB64::writeCompressedBlock(point_cell_connectivity, currentout_);
@@ -220,7 +207,7 @@ VtuWriter::WriteGeometryUnstructuredGrid(
     currentout_ << " format=\"ascii\">\n";
 
     for (std::vector<int32_t>::const_iterator it = point_cell_connectivity.begin();
-        it != point_cell_connectivity.end(); ++it)
+         it != point_cell_connectivity.end(); ++it)
       currentout_ << *it << " ";
   }
 
@@ -232,7 +219,7 @@ VtuWriter::WriteGeometryUnstructuredGrid(
   /*----------------------------------------------------------------------*/
   currentout_ << "        <DataArray type=\"Int32\" Name=\"offsets\"";
 
-  if ( write_binary_output_ )
+  if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
     LIBB64::writeCompressedBlock(cell_offset, currentout_);
@@ -240,8 +227,8 @@ VtuWriter::WriteGeometryUnstructuredGrid(
   else
   {
     currentout_ << " format=\"ascii\">\n";
-    for (std::vector<int32_t>::const_iterator it = cell_offset.begin();
-        it != cell_offset.end(); ++it)
+    for (std::vector<int32_t>::const_iterator it = cell_offset.begin(); it != cell_offset.end();
+         ++it)
       currentout_ << *it << " ";
   }
 
@@ -252,7 +239,7 @@ VtuWriter::WriteGeometryUnstructuredGrid(
   // step 4: write cell types
   /*----------------------------------------------------------------------*/
   currentout_ << "        <DataArray type=\"UInt8\" Name=\"types\"";
-  if ( write_binary_output_ )
+  if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
     LIBB64::writeCompressedBlock(cell_types, currentout_);
@@ -260,34 +247,28 @@ VtuWriter::WriteGeometryUnstructuredGrid(
   else
   {
     currentout_ << " format=\"ascii\">\n";
-    for (std::vector<uint8_t>::const_iterator it = cell_types.begin();
-        it != cell_types.end(); ++it)
+    for (std::vector<uint8_t>::const_iterator it = cell_types.begin(); it != cell_types.end(); ++it)
       currentout_ << (unsigned int)*it << " ";
   }
   currentout_ << "\n        </DataArray>\n";
 
   currentout_ << "      </Cells>\n\n";
-
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void
-VtuWriter::WritePointDataVector(
-    const std::vector<double>& data,
-    unsigned int num_components_per_point,
-    const std::string& name
-    )
+void VtuWriter::WritePointDataVector(
+    const std::vector<double>& data, unsigned int num_components_per_point, const std::string& name)
 {
   // start the point data section that will be written subsequently
   if (currentPhase_ == INIT)
   {
-    ThrowErrorIfInvalidFileStream( currentout_ );
+    ThrowErrorIfInvalidFileStream(currentout_);
     currentout_ << "  <PointData>\n";
 
     if (myrank_ == 0)
     {
-      ThrowErrorIfInvalidFileStream( currentmasterout_ );
+      ThrowErrorIfInvalidFileStream(currentmasterout_);
       currentmasterout_ << "    <PPointData>\n";
     }
 
@@ -295,34 +276,31 @@ VtuWriter::WritePointDataVector(
   }
 
   if (currentPhase_ != POINTS)
-    dserror("VtuWriter cannot write point data at this stage. Most likely, cell and "
+    dserror(
+        "VtuWriter cannot write point data at this stage. Most likely, cell and "
         "point data fields are mixed. First, all point data needs to be written, "
         "then all cell data!");
 
   this->WriteDataArray(data, num_components_per_point, name);
 
-  if ( myrank_ == 0 )
+  if (myrank_ == 0)
     IO::cout(IO::debug) << "\nVtuWriter: point data " << name << " written." << IO::endl;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void
-VtuWriter::WriteCellDataVector(
-    const std::vector<double>& data,
-    unsigned int num_components_per_cell,
-    const std::string& name
-    )
+void VtuWriter::WriteCellDataVector(
+    const std::vector<double>& data, unsigned int num_components_per_cell, const std::string& name)
 {
   // if required, end the point data section
   if (currentPhase_ == POINTS)
   {
-    ThrowErrorIfInvalidFileStream( currentout_ );
+    ThrowErrorIfInvalidFileStream(currentout_);
     currentout_ << "  </PointData>\n";
 
     if (myrank_ == 0)
     {
-      ThrowErrorIfInvalidFileStream( currentmasterout_ );
+      ThrowErrorIfInvalidFileStream(currentmasterout_);
       currentmasterout_ << "    </PPointData>\n";
     }
   }
@@ -330,12 +308,12 @@ VtuWriter::WriteCellDataVector(
   // start the cell data section that will be written subsequently
   if (currentPhase_ == INIT || currentPhase_ == POINTS)
   {
-    ThrowErrorIfInvalidFileStream( currentout_ );
+    ThrowErrorIfInvalidFileStream(currentout_);
     currentout_ << "  <CellData>\n";
 
     if (myrank_ == 0)
     {
-      ThrowErrorIfInvalidFileStream( currentmasterout_ );
+      ThrowErrorIfInvalidFileStream(currentmasterout_);
       currentmasterout_ << "    <PCellData>\n";
     }
 
@@ -343,12 +321,13 @@ VtuWriter::WriteCellDataVector(
   }
 
   if (currentPhase_ != CELLS)
-    dserror("VtuWriter cannot write cell data at this stage. Most likely, cell and "
+    dserror(
+        "VtuWriter cannot write cell data at this stage. Most likely, cell and "
         "point data fields are mixed. First, all point data needs to be written, "
         "then all cell data!");
 
   this->WriteDataArray(data, num_components_per_cell, name);
 
-  if ( myrank_ == 0 )
+  if (myrank_ == 0)
     IO::cout(IO::debug) << "\nVtuWriter: cell data " << name << " written." << IO::endl;
 }

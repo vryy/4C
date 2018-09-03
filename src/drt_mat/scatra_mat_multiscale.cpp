@@ -23,13 +23,11 @@
 /*--------------------------------------------------------------------*
  | constructor                                             fang 11/15 |
  *--------------------------------------------------------------------*/
-MAT::PAR::ScatraMatMultiScale::ScatraMatMultiScale(
-    Teuchos::RCP<MAT::PAR::Material> matdata
-    ) :
-ScatraMat(matdata),
-ScatraMultiScale(matdata),
-porosity_(matdata->GetDouble("POROSITY")),
-tortuosity_(matdata->GetDouble("TORTUOSITY"))
+MAT::PAR::ScatraMatMultiScale::ScatraMatMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : ScatraMat(matdata),
+      ScatraMultiScale(matdata),
+      porosity_(matdata->GetDouble("POROSITY")),
+      tortuosity_(matdata->GetDouble("TORTUOSITY"))
 {
   return;
 }
@@ -58,19 +56,14 @@ DRT::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& da
 /*--------------------------------------------------------------------*
  | construct empty material                                fang 11/15 |
  *--------------------------------------------------------------------*/
-MAT::ScatraMatMultiScale::ScatraMatMultiScale() :
-  params_(NULL)
-{
-  return;
-}
+MAT::ScatraMatMultiScale::ScatraMatMultiScale() : params_(NULL) { return; }
 
 
 /*--------------------------------------------------------------------*
  | construct material with specific material parameters    fang 11/15 |
  *--------------------------------------------------------------------*/
-MAT::ScatraMatMultiScale::ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* params) :
-  ScatraMat(params),
-  params_(params)
+MAT::ScatraMatMultiScale::ScatraMatMultiScale(MAT::PAR::ScatraMatMultiScale* params)
+    : ScatraMat(params), params_(params)
 {
   return;
 }
@@ -86,12 +79,11 @@ void MAT::ScatraMatMultiScale::Pack(DRT::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
 
   int matid = -1;
-  if(params_ != NULL)
-    matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  AddtoPack(data, matid);
 
   // pack base class material
   ScatraMat::Pack(data);
@@ -109,33 +101,34 @@ void MAT::ScatraMatMultiScale::Unpack(const std::vector<char>& data)
 
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
-  if(type != UniqueParObjectId())
-    dserror("Wrong instance type data!");
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId()) dserror("Wrong instance type data!");
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, matid);
   params_ = NULL;
-  if(DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if(DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if(mat->Type() == MaterialType())
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiScale*>(mat);
       else
-        dserror("Type of parameter material %d does not match calling type %d!", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not match calling type %d!", mat->Type(),
+            MaterialType());
     }
 
   // extract base class material
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   ScatraMat::Unpack(basedata);
 
   // final safety check
-  if(position != data.size())
-    dserror("Mismatch in size of data %d <-> %d!",data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d!", data.size(), position);
 
   return;
 }

@@ -20,37 +20,33 @@
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 namespace SCATRA
 {
+  /*!
+  \brief Solution strategy for heterogeneous reactions
 
-/*!
-\brief Solution strategy for heterogeneous reactions
+  To keep the scalar transport time integrator class and derived classes as plain as possible,
+  several algorithmic parts have been encapsulated within separate meshtying strategy classes.
+  These algorithmic parts include initializing the system matrix and other relevant objects,
+  computing meshtying residual terms and their linearizations, and solving the resulting
+  linear system of equations. By introducing a hierarchy of strategies for these algorithmic
+  parts, a bunch of unhandy if-else selections within the time integrator classes themselves
+  can be circumvented. This class contains the solution strategy for heterogeneous reactions.
 
-To keep the scalar transport time integrator class and derived classes as plain as possible,
-several algorithmic parts have been encapsulated within separate meshtying strategy classes.
-These algorithmic parts include initializing the system matrix and other relevant objects,
-computing meshtying residual terms and their linearizations, and solving the resulting
-linear system of equations. By introducing a hierarchy of strategies for these algorithmic
-parts, a bunch of unhandy if-else selections within the time integrator classes themselves
-can be circumvented. This class contains the solution strategy for heterogeneous reactions.
+  \author fang (fang@lnm.mw.tum.de)
+  */
 
-\author fang (fang@lnm.mw.tum.de)
-*/
-
-class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
-{
-  public:
-
+  class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
+  {
+   public:
     //! constructor
-    explicit HeterogeneousReactionStrategy(
-        SCATRA::ScaTraTimIntImpl* scatratimint
-        );
+    explicit HeterogeneousReactionStrategy(SCATRA::ScaTraTimIntImpl* scatratimint);
 
     //! destructor
-    virtual ~HeterogeneousReactionStrategy(){return;};
+    virtual ~HeterogeneousReactionStrategy() { return; };
 
     //! compute residual terms and their linearizations
     void EvaluateMeshtying();
@@ -83,17 +79,11 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
     \date 08/16
     \author rauch
     */
-    virtual void EvaluateCondition
-        (
-          Teuchos::ParameterList& params,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Epetra_Vector> systemvector1,
-          Teuchos::RCP<Epetra_Vector> systemvector2,
-          Teuchos::RCP<Epetra_Vector> systemvector3,
-          const std::string& condstring,
-          const int condid
-        );
+    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid);
 
     /*!
     \brief Set state on an discretization hidden in any MeshtyingStrategy.
@@ -110,15 +100,11 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
     \author rauch
     */
     virtual void SetState(
-        unsigned nds,
-        const std::string& name,
-        Teuchos::RCP<const Epetra_Vector> state
-        );
+        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
 
-  private:
-
+   private:
     //! the discretization for the reaction
-    Teuchos::RCP<DRT::Discretization>  discret_;
+    Teuchos::RCP<DRT::Discretization> discret_;
 
     //! private copy constructor
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);
@@ -126,42 +112,41 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
     //! check assumptions and conventions for heterogeneous reaction simulations
     void HeterogeneousReactionSanityCheck();
 
-  private:
-
+   private:
     //! flag indicating if class is setup
     bool issetup_;
 
     //! flag indicating if class is initialized
     bool isinit_;
 
-  protected:
-
+   protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup()
-    {return issetup_;};
+    bool IsSetup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit()
-    {return isinit_;};
+    bool IsInit() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
-    {if(not IsSetup()) dserror("Setup() was not called.");};
+    {
+      if (not IsSetup()) dserror("Setup() was not called.");
+    };
 
     //! check if \ref Init() was called
     void CheckIsInit()
-    {if(not IsInit()) dserror("Init(...) was not called.");};
+    {
+      if (not IsInit()) dserror("Init(...) was not called.");
+    };
 
-  public:
-
+   public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
+    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
 
-}; // class MeshtyingStrategyStd
-} // namespace SCATRA
+  };  // class MeshtyingStrategyStd
+}  // namespace SCATRA
 
 
 

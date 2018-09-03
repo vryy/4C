@@ -13,11 +13,11 @@
 #define TUTORIAL_DYN_H
 
 
-  //! global control routine for all tutorial toy problems
-  void tutorial_drt();
+//! global control routine for all tutorial toy problems
+void tutorial_drt();
 
-  //! print welcome message to screen
-  void printwelcomemessage();
+//! print welcome message to screen
+void printwelcomemessage();
 
 
 /*----------------------------------------------------------------------*/

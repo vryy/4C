@@ -26,15 +26,13 @@
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
-  Teuchos::RCP<DRT::Discretization>      actdis,
-  Teuchos::RCP<LINALG::Solver>           solver,
-  Teuchos::RCP<Teuchos::ParameterList>   params,
-  Teuchos::RCP<Teuchos::ParameterList>   sctratimintparams,
-  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-  Teuchos::RCP<IO::DiscretizationWriter> output)
-  : ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
-    TimIntCardiacMonodomain(actdis,solver,params,sctratimintparams,extraparams,output),
-    TimIntOneStepTheta(actdis,solver,sctratimintparams,extraparams,output)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
+      TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
+      TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
 {
   return;
 }
@@ -42,10 +40,7 @@ SCATRA::TimIntCardiacMonodomainOST::TimIntCardiacMonodomainOST(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                   ehrl 01/14 |
 *-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainOST::~TimIntCardiacMonodomainOST()
-{
-  return;
-}
+SCATRA::TimIntCardiacMonodomainOST::~TimIntCardiacMonodomainOST() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -85,7 +80,8 @@ void SCATRA::TimIntCardiacMonodomainOST::OutputRestart() const
   TimIntOneStepTheta::OutputRestart();
 
   // Cardiac Monodomain specific
-  output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
+  output_->WriteMesh(
+      step_, time_);  // add info to control file for reading all variables in restart
 
   return;
 }
@@ -93,20 +89,22 @@ void SCATRA::TimIntCardiacMonodomainOST::OutputRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(
+    const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntOneStepTheta::ReadRestart(step,input);
+  TimIntOneStepTheta::ReadRestart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
-  if(input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  if (input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
   reader->ReadVector(activation_time_np_, "activation_time_np");
-  reader->ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader->ReadHistoryData(step);  // Read all saved data in nodes and elements und call nodal and
+                                  // element Unpacking each global variable has to be read
 
   return;
 }
@@ -114,11 +112,12 @@ void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(const int step,Teuchos::RCP
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  hoe 06/16 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::TimIntCardiacMonodomainOST::AddTimeIntegrationSpecificVectors(
+    bool forcedincrementalsolver)
 {
   // Call function from baseclass
   TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
-  discret_->SetState("phin",phin_);
+  discret_->SetState("phin", phin_);
 
   return;
 }
@@ -127,15 +126,13 @@ void SCATRA::TimIntCardiacMonodomainOST::AddTimeIntegrationSpecificVectors(bool 
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
-    Teuchos::RCP<DRT::Discretization>      actdis,
-    Teuchos::RCP<LINALG::Solver>           solver,
-    Teuchos::RCP<Teuchos::ParameterList>   params,
-    Teuchos::RCP<Teuchos::ParameterList>   sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
-  TimIntCardiacMonodomain(actdis,solver,params,sctratimintparams,extraparams,output),
-  TimIntBDF2(actdis,solver,sctratimintparams,extraparams,output)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
+      TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
+      TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
 {
   return;
 }
@@ -143,10 +140,7 @@ SCATRA::TimIntCardiacMonodomainBDF2::TimIntCardiacMonodomainBDF2(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                   ehrl 01/14 |
 *-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainBDF2::~TimIntCardiacMonodomainBDF2()
-{
-  return;
-}
+SCATRA::TimIntCardiacMonodomainBDF2::~TimIntCardiacMonodomainBDF2() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -186,7 +180,8 @@ void SCATRA::TimIntCardiacMonodomainBDF2::OutputRestart() const
   TimIntBDF2::OutputRestart();
 
   // Cardiac Monodomain specific
-  output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
+  output_->WriteMesh(
+      step_, time_);  // add info to control file for reading all variables in restart
 
   return;
 }
@@ -195,20 +190,22 @@ void SCATRA::TimIntCardiacMonodomainBDF2::OutputRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(
+    const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntBDF2::ReadRestart(step,input);
+  TimIntBDF2::ReadRestart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
-  if(input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  if (input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   // Cardiac Monodomain specific
   reader->ReadVector(activation_time_np_, "activation_time_np");
-  reader->ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader->ReadHistoryData(step);  // Read all saved data in nodes and elements und call nodal and
+                                  // element Unpacking each global variable has to be read
 
   return;
 }
@@ -218,15 +215,13 @@ void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(const int step,Teuchos::RC
  |  Constructor (public)                                     ljag 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
-    Teuchos::RCP<DRT::Discretization>      actdis,
-    Teuchos::RCP<LINALG::Solver>           solver,
-    Teuchos::RCP<Teuchos::ParameterList>   params,
-    Teuchos::RCP<Teuchos::ParameterList>   sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
-  TimIntCardiacMonodomain(actdis,solver,params,sctratimintparams,extraparams,output),
-  TimIntGenAlpha(actdis,solver,sctratimintparams,extraparams,output)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
+      TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
+      TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
 {
   return;
 }
@@ -234,10 +229,7 @@ SCATRA::TimIntCardiacMonodomainGenAlpha::TimIntCardiacMonodomainGenAlpha(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                   ehrl 01/14 |
 *-----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomainGenAlpha::~TimIntCardiacMonodomainGenAlpha()
-{
-  return;
-}
+SCATRA::TimIntCardiacMonodomainGenAlpha::~TimIntCardiacMonodomainGenAlpha() { return; }
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                              ehrl 01/14 |
@@ -277,7 +269,8 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::OutputRestart() const
   TimIntGenAlpha::OutputRestart();
 
   // Cardiac Monodomain specific
-  output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
+  output_->WriteMesh(
+      step_, time_);  // add info to control file for reading all variables in restart
 
   return;
 }
@@ -286,16 +279,18 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::OutputRestart() const
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(
+    const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntGenAlpha::ReadRestart(step,input);
+  TimIntGenAlpha::ReadRestart(step, input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  IO::DiscretizationReader reader(discret_, step);
 
   // Cardiac Monodomain specific
   reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader.ReadHistoryData(step);  // Read all saved data in nodes and elements und call nodal and
+                                 // element Unpacking each global variable has to be read
 
   return;
 }
@@ -303,13 +298,13 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(const int step,Teuchos
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme  hoe 12/16 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+void SCATRA::TimIntCardiacMonodomainGenAlpha::AddTimeIntegrationSpecificVectors(
+    bool forcedincrementalsolver)
 {
   // Call function from baseclass
   TimIntGenAlpha::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
 
-  if (incremental_ or forcedincrementalsolver)
-    discret_->SetState("phin",phin_);
+  if (incremental_ or forcedincrementalsolver) discret_->SetState("phin", phin_);
 
   return;
 }

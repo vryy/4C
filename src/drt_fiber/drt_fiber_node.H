@@ -25,173 +25,166 @@
 */
 namespace DRT
 {
+  namespace FIBER
+  {
+    class FiberNodeType : public DRT::ParObjectType
+    {
+     public:
+      std::string Name() const { return "FiberNodeType"; }
 
-namespace FIBER
-{
+      static FiberNodeType& Instance() { return instance_; };
 
-class FiberNodeType : public DRT::ParObjectType
-{
-public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  std::string Name() const { return "FiberNodeType"; }
+     private:
+      static FiberNodeType instance_;
+    };
 
-  static FiberNodeType & Instance() { return instance_; };
+    /*!
+    \brief Node with additional fiber information
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+    */
+    class FiberNode : public DRT::Node
+    {
+     public:
+      //! @name Enums and Friends
 
-private:
+      /*!
+      \brief The Discretization is a friend of the fiber node
+      */
+      friend class Discretization;
 
-  static FiberNodeType instance_;
-};
+      //@}
 
-/*!
-\brief Node with additional fiber information
+      //! @name Constructors and destructors and related methods
 
-*/
-class FiberNode : public DRT::Node
-{
-public:
+      /*!
+      \brief Standard Constructor
 
-  //! @name Enums and Friends
+      \param id     (in): A globally unique fiber node
+      \param coords (in): vector of nodal coordinates, length 3
+      \param fiber  (in): fiber direction, length 3
+      \param cosy   (in): circumferential and transverse direction, length 6
+      \param angle  (in): helix and transverse angle, length 2
+      \param owner  (in): Owner of this node.
+      */
+      FiberNode(int id, const double* coords, const double* fiber, const double* cosy,
+          const double* angle, const int owner);
 
-  /*!
-  \brief The Discretization is a friend of the fiber node
-  */
-  friend class Discretization;
+      /*!
+      \brief Copy Constructor
 
-  //@}
+      Makes a deep copy of a fiber node
 
-  //! @name Constructors and destructors and related methods
+      \param old (in): The fiber node to copy
 
-  /*!
-  \brief Standard Constructor
+      */
+      FiberNode(const DRT::FIBER::FiberNode& old);
 
-  \param id     (in): A globally unique fiber node
-  \param coords (in): vector of nodal coordinates, length 3
-  \param fiber  (in): fiber direction, length 3
-  \param cosy   (in): circumferential and transverse direction, length 6
-  \param angle  (in): helix and transverse angle, length 2
-  \param owner  (in): Owner of this node.
-  */
-  FiberNode(int           id    ,
-         const double* coords,
-         const double* fiber,
-         const double* cosy,
-         const double* angle,
-         const int     owner );
+      /*!
+      \brief Deep copy the derived class and return
+             pointer to it
 
-  /*!
-  \brief Copy Constructor
+      */
+      virtual DRT::FIBER::FiberNode* Clone() const;
 
-  Makes a deep copy of a fiber node
+      /*!
+      \brief Destructor
 
-  \param old (in): The fiber node to copy
+      */
+      virtual ~FiberNode();
 
-  */
-  FiberNode(const DRT::FIBER::FiberNode& old);
+      /*!
+      \brief Return unique ParObject id
 
-  /*!
-  \brief Deep copy the derived class and return
-         pointer to it
+      every class implementing ParObject needs a unique
+      id defined at the top of drt_parobject.H.
 
-  */
-  virtual DRT::FIBER::FiberNode* Clone() const;
+      \return the parobject id
+      */
+      virtual int UniqueParObjectId() const
+      {
+        return FiberNodeType::Instance().UniqueParObjectId();
+      }
 
-  /*!
-  \brief Destructor
+      /*!
+      \brief Pack this class so it can be communicated
 
-  */
-  virtual ~FiberNode();
+      \ref Pack and \ref Unpack are used to communicate this node
 
-  /*!
-  \brief Return unique ParObject id
+      \param data (in/out): a char vector to pack the data into
 
-  every class implementing ParObject needs a unique
-  id defined at the top of drt_parobject.H.
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  \return the parobject id
-  */
-  virtual int UniqueParObjectId() const { return FiberNodeType::Instance().UniqueParObjectId(); }
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  /*!
-  \brief Pack this class so it can be communicated
+      \ref Pack and \ref Unpack are used to communicate this node
 
-  \ref Pack and \ref Unpack are used to communicate this node
+      \param data (in): a char vector to unpack the data from
 
-  \param data (in/out): a char vector to pack the data into
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
+      //@}
 
-  /*!
-  \brief Unpack data from a char vector into this class
+      //! @name Additional access methods
 
-  \ref Pack and \ref Unpack are used to communicate this node
+      /*!
+      \brief Return fiber direction
+      */
+      virtual inline const double* Fiber() const { return &fiber_[0]; }
 
-  \param data (in): a char vector to unpack the data from
+      /*!
+      \brief Return fiber direction
+      */
+      virtual inline const double* Cir() const { return &cir_[0]; }
 
-  */
-  virtual void Unpack(const std::vector<char>& data);
+      /*!
+      \brief Return fiber direction
+      */
+      virtual inline const double* Tan() const { return &tan_[0]; }
 
-  //@}
+      /*!
+      \brief Return fiber direction
+      */
+      virtual inline double Helix() const { return helix_; }
 
-  //! @name Additional access methods
+      /*!
+      \brief Return fiber direction
+      */
+      virtual inline double Transverse() const { return transverse_; }
 
-  /*!
-  \brief Return fiber direction
-  */
-  virtual inline const double* Fiber() const { return &fiber_[0]; }
+      /*!
+      \brief Print this node
 
-  /*!
-  \brief Return fiber direction
-  */
-  virtual inline const double* Cir() const { return &cir_[0]; }
+      \param os ofstrem
+      */
+      virtual void Print(std::ostream& os) const;
 
-  /*!
-  \brief Return fiber direction
-  */
-  virtual inline const double* Tan() const { return &tan_[0]; }
+      //@}
 
-  /*!
-  \brief Return fiber direction
-  */
-  virtual inline double Helix() const { return helix_; }
+     protected:
+      //! fiber direction
+      std::vector<double> fiber_;
 
-  /*!
-  \brief Return fiber direction
-  */
-  virtual inline double Transverse() const { return transverse_; }
+      //! circumferential direction
+      std::vector<double> cir_;
 
-  /*!
-  \brief Print this node
+      //! tangential direction
+      std::vector<double> tan_;
 
-  \param os ofstrem
-  */
-  virtual void Print(std::ostream& os) const ;
+      //! helix angle
+      double helix_;
 
-  //@}
+      //! transverse angle
+      double transverse_;
 
-protected:
+    };  // class FiberNode
 
-  //! fiber direction
-  std::vector<double> fiber_;
+  }  // namespace FIBER
 
-  //! circumferential direction
-  std::vector<double> cir_;
-
-  //! tangential direction
-  std::vector<double> tan_;
-
-  //! helix angle
-  double helix_;
-
-  //! transverse angle
-  double transverse_;
-
-}; // class FiberNode
-
-} // namespace FIBER
-
-} // namespace DRT
+}  // namespace DRT
 
 #endif  // #ifndef FIBER_NODE_H

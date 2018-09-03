@@ -28,545 +28,486 @@
 
 #include "cut_utils.H"
 
-namespace GEO {
-namespace CUT {
-namespace IMPL {
-
-  class PointLineFilter
+namespace GEO
+{
+  namespace CUT
   {
-  public:
-
-    virtual ~PointLineFilter() {}
-
-    virtual bool operator()( Line * line ) const = 0;
-  };
-
-}  // namespace IMPL
-
-  /// Points in a mesh. Both nodal points and cut points.
-  /*!
-   * A point knows its position with respect to the cut interface.
-   */
-  class Point
-  {
-  public:
-
-    enum PointPosition
+    namespace IMPL
     {
-      undecided = 0,
-      oncutsurface = -1,
-      inside = -2,
-      outside = -3
-    };
-
-    /// translate PointPosition enumerator to string
-    static inline const std::string PointPosition2String(const enum PointPosition& pos)
-    {
-      switch (pos)
+      class PointLineFilter
       {
-        case undecided:
-          return "undecided";
-        case oncutsurface:
-          return "oncutsurface";
-        case inside:
-          return "inside";
-        case outside:
-          return "outside";
-        default:
-          break;
-      }
-      return "Unknown PointPosition enum";
-    };
+       public:
+        virtual ~PointLineFilter() {}
 
-    static Point * NewPoint( Mesh & mesh, const double * x, double t,
-        Edge * cut_edge, Side * cut_side, double tolerance = 0.0 );
+        virtual bool operator()(Line* line) const = 0;
+      };
 
-    static Point * InsertCut( Edge * cut_edge, Side * cut_side, Node * n );
+    }  // namespace IMPL
 
-    /// constructor
-    Point( unsigned pid, double tolerance );
-
-    /// destructor
-    virtual ~Point() {};
-
-    int Id() const { return pid_; }
-
-    const double * X() const { return x_; }
-
-    PointPosition Position() const { return position_; }
-
-    void Position( PointPosition p );
-
-    /*! \brief Add this edge to the list of edges that are cut by this point */
-    void AddEdge( Edge* e );
-
-    /*! \brief Add this side to the list of sides that are cut by this point */
-    void AddSide( Side* s );
-
-    /*! \brief Add this element to the list of elements that are cut by this point */
-    void AddElement( Element* e ) { if ( e!=NULL ) { cut_elements_.insert( e ); } }
-
-    /*! \brief Returns true if the edge is cut by this point */
-    bool IsCut( Edge* e )
-    {
-      return cut_edges_.count( e )>0;
-    }
-
-    /*! \brief Returns true if the facet is cut by this point */
-    bool IsCut( Facet* f )
-    {
-      return facets_.count( f )>0;
-    }
-
-    /*! \brief Returns true if the side is cut by this point */
-    bool IsCut( Side* s )
-    {
-      return cut_sides_.count( s )>0;
-    }
-
-    /*! \brief Returns true if this point cuts the element */
-    bool IsCut( Element* s )
-    {
-      return cut_elements_.count( s )>0;
-    }
-
-    /*
-     * Return if this point associated with a facet which is either a cut-side or a marked side
-     *  Needed for the tessellation.
-     *  TODO: Look into this
-     *  winter 02/2017
+    /// Points in a mesh. Both nodal points and cut points.
+    /*!
+     * A point knows its position with respect to the cut interface.
      */
-    bool HasAssociatedBoundaryCellFacet();
-
-    /*! \brief Get the coordinates of this point */
-    virtual void Coordinates( double * x ) const = 0;
-
-    void Register( Line * line )
+    class Point
     {
-      lines_.insert( line );
-    }
-
-    void Register( Facet * facet )
-    {
-      facets_.insert( facet );
-    }
-
-    /*!
-    \brief Identifies the edges that are cut by considered point and given point
-    */
-    void CommonEdge( Point * other, plain_edge_set & edges );
-
-    /*!
-    \brief Identifies the sides that are cut by considered point and given point
-    */
-    void CommonSide( Point * other, plain_side_set & sides );
-
-    Line * CommonLine( Point * other );
-
-    Line * CutLine( Side * side, bool unique=true );
-
-    Line * CutLine( Line * line, Side * side, Element * element );
-
-    Line * CutLine( const IMPL::PointLineFilter & filter, bool unique=true );
-
-    Line * CutLine( Line * line, const IMPL::PointLineFilter & filter, bool unique=true );
-
-    void CutLines( const IMPL::PointLineFilter & filter, plain_line_set & cut_lines );
-
-    void CutLines( Side * side, plain_line_set & cut_lines );
-
-    //std::vector<Edge*> CutEdges( Point * other );
-
-    const plain_edge_set & CutEdges() { return cut_edges_; }
-
-    const plain_side_set & CutSides() { return cut_sides_; }
-
-    Side * CutSide( Side * side, Point * other );
-
-    void CutEdge( Side * side, Line * other_line, std::vector<Edge*> & matches );
-
-    void Print( std::ostream & stream=std::cout ) const
-    {
-      stream << "("
-             << pid_ << "; "
-             << std::setprecision( 16 ) << x_[0] << ","
-             << std::setprecision( 16 ) << x_[1] << ","
-             << std::setprecision( 16 ) << x_[2] << ")";
-    }
-
-    void Plot( std::ostream & f, int nid = -50 ) const
-    {
-      f << std::setprecision( 25 ) << x_[0] << " "
-        << std::setprecision( 25 ) << x_[1] << " "
-        << std::setprecision( 25 ) << x_[2] << " # "
-        << pid_<<" "
-        <<nid;
-      DumpDoubles( f, X(), 3 );
-      f << "\n";
-    }
-
-    /** \brief check if the given point lies on the edge and return the
-     *  corresponding local coordinate of this point on the edge
-     *
-     *  Return the parameter space coordinate \f$t\f$ of this point \f$x\f$ on
-     *  the given \c edge with begin node \f$\bar{x}_{0}\f$ and the end point
-     *  \f$\bar{x}_{1}\f$:
-     *
-     *  x = \sum\limits_{i=0}^{1} N_{i}(t) \bar{x}_{i}
-     *
-     *  \param edge (in) : edge which we want to check */
-    double t( Edge* edge );
-
-    //void t( Edge* edge, double pos ) { t_[edge] = pos; }
-
-    unsigned Pid() const { return pid_; }
-
-    bool NodalPoint( const std::vector<Node*> & nodes ) const;
-
-    Node * CutNode();
-
-    void Intersection( plain_edge_set & edges );
-
-    void Intersection( plain_side_set & sides );
-
-    void Intersection( plain_facet_set & facets );
-
-    void Intersection( plain_element_set & elements );
-
-    const plain_element_set & Elements() const { return cut_elements_; }
-
-    const plain_facet_set & Facets() const { return facets_; }
-
-    Edge * CommonCutEdge( Side * side );
-
-    /// Erase the cutside from this point because it is deleted in the selfcut
-    void EraseCutSide( Side * cutside ){ cut_sides_.erase( cutside ); }
-
-  /// Erase the cutsideedge from this point because it is deleted in the selfcut
-    void EraseCutSideEdge( Edge * cutsideedge ){ cut_edges_.erase( cutsideedge ); }
-
-    /// Return actual point tolerance
-    double Tolerance() {return tol_;}
-
-    /// Set new Tolerance (in case points are merged this is necessary)
-    void EnlargeTolerance(double newtol) {if(newtol > tol_){tol_ = newtol;}}
-
-  protected:
-    // internal stored point coordinates (always of dimension 3!)
-    double x_[3];
-
-  private:
-
-    // find the unique line that matches the filter criteria
-    template <class Filter>
-    Line * Find( Filter & filter, bool unique=true );
-
-    template <class Filter>
-    void Find( Filter & filter, plain_line_set & cut_lines );
-
-    unsigned pid_;
-    PointPosition position_;
-
-    std::map<Edge*, double> t_;
-
-    //precicion of the point
-    double tol_;
-
-    plain_edge_set cut_edges_;
-    plain_side_set cut_sides_;   // a set with all sides
-    plain_element_set cut_elements_;
-
-    plain_line_set lines_;
-    plain_facet_set facets_;
-  }; // class Point
-
-  /*--------------------------------------------------------------------------*/
-  /* \class ConcretePoint
-   *
-   * Necessary due to the different problem dimensions. Actually only the
-   * constructor and the Coordinates() function change, since the stored
-   * point coordinate stays 3. If probDim is smaller than three, the last
-   * coordinates are set to zero.
-   *
-   * \author hiermeier
-   * \date 11/16 */
-  template <unsigned probDim>
-  class ConcretePoint : public Point
-  {
-  public:
-    /// constructor
-    ConcretePoint( unsigned pid,
-        const double * x,
-        Edge * cut_edge,
-        Side * cut_side,
-        double tolerance )
-        : Point(pid,tolerance)
-    {
-      // copy the given coordinates into the base class member variable
-      std::copy( x, x+probDim, this->x_ );
-
-      // set the remaining entries to zero
-      std::fill(this->x_+probDim, this->x_+3, 0.0);
-
-      // The x_ coordinate must be set, before these methods are called!
-      if ( cut_edge!=NULL )
+     public:
+      enum PointPosition
       {
-        AddEdge( cut_edge );
-      }
-      if ( cut_side!=NULL )
+        undecided = 0,
+        oncutsurface = -1,
+        inside = -2,
+        outside = -3
+      };
+
+      /// translate PointPosition enumerator to string
+      static inline const std::string PointPosition2String(const enum PointPosition& pos)
       {
-        AddSide( cut_side );
+        switch (pos)
+        {
+          case undecided:
+            return "undecided";
+          case oncutsurface:
+            return "oncutsurface";
+          case inside:
+            return "inside";
+          case outside:
+            return "outside";
+          default:
+            break;
+        }
+        return "Unknown PointPosition enum";
+      };
+
+      static Point* NewPoint(Mesh& mesh, const double* x, double t, Edge* cut_edge, Side* cut_side,
+          double tolerance = 0.0);
+
+      static Point* InsertCut(Edge* cut_edge, Side* cut_side, Node* n);
+
+      /// constructor
+      Point(unsigned pid, double tolerance);
+
+      /// destructor
+      virtual ~Point(){};
+
+      int Id() const { return pid_; }
+
+      const double* X() const { return x_; }
+
+      PointPosition Position() const { return position_; }
+
+      void Position(PointPosition p);
+
+      /*! \brief Add this edge to the list of edges that are cut by this point */
+      void AddEdge(Edge* e);
+
+      /*! \brief Add this side to the list of sides that are cut by this point */
+      void AddSide(Side* s);
+
+      /*! \brief Add this element to the list of elements that are cut by this point */
+      void AddElement(Element* e)
+      {
+        if (e != NULL)
+        {
+          cut_elements_.insert(e);
+        }
       }
-    };
 
-    /// destructor
-    virtual ~ ConcretePoint() {};
+      /*! \brief Returns true if the edge is cut by this point */
+      bool IsCut(Edge* e) { return cut_edges_.count(e) > 0; }
 
-    /** \brief Get the coordinates of this point */
-    virtual void Coordinates( double * x ) const
+      /*! \brief Returns true if the facet is cut by this point */
+      bool IsCut(Facet* f) { return facets_.count(f) > 0; }
+
+      /*! \brief Returns true if the side is cut by this point */
+      bool IsCut(Side* s) { return cut_sides_.count(s) > 0; }
+
+      /*! \brief Returns true if this point cuts the element */
+      bool IsCut(Element* s) { return cut_elements_.count(s) > 0; }
+
+      /*
+       * Return if this point associated with a facet which is either a cut-side or a marked side
+       *  Needed for the tessellation.
+       *  TODO: Look into this
+       *  winter 02/2017
+       */
+      bool HasAssociatedBoundaryCellFacet();
+
+      /*! \brief Get the coordinates of this point */
+      virtual void Coordinates(double* x) const = 0;
+
+      void Register(Line* line) { lines_.insert(line); }
+
+      void Register(Facet* facet) { facets_.insert(facet); }
+
+      /*!
+      \brief Identifies the edges that are cut by considered point and given point
+      */
+      void CommonEdge(Point* other, plain_edge_set& edges);
+
+      /*!
+      \brief Identifies the sides that are cut by considered point and given point
+      */
+      void CommonSide(Point* other, plain_side_set& sides);
+
+      Line* CommonLine(Point* other);
+
+      Line* CutLine(Side* side, bool unique = true);
+
+      Line* CutLine(Line* line, Side* side, Element* element);
+
+      Line* CutLine(const IMPL::PointLineFilter& filter, bool unique = true);
+
+      Line* CutLine(Line* line, const IMPL::PointLineFilter& filter, bool unique = true);
+
+      void CutLines(const IMPL::PointLineFilter& filter, plain_line_set& cut_lines);
+
+      void CutLines(Side* side, plain_line_set& cut_lines);
+
+      // std::vector<Edge*> CutEdges( Point * other );
+
+      const plain_edge_set& CutEdges() { return cut_edges_; }
+
+      const plain_side_set& CutSides() { return cut_sides_; }
+
+      Side* CutSide(Side* side, Point* other);
+
+      void CutEdge(Side* side, Line* other_line, std::vector<Edge*>& matches);
+
+      void Print(std::ostream& stream = std::cout) const
+      {
+        stream << "(" << pid_ << "; " << std::setprecision(16) << x_[0] << ","
+               << std::setprecision(16) << x_[1] << "," << std::setprecision(16) << x_[2] << ")";
+      }
+
+      void Plot(std::ostream& f, int nid = -50) const
+      {
+        f << std::setprecision(25) << x_[0] << " " << std::setprecision(25) << x_[1] << " "
+          << std::setprecision(25) << x_[2] << " # " << pid_ << " " << nid;
+        DumpDoubles(f, X(), 3);
+        f << "\n";
+      }
+
+      /** \brief check if the given point lies on the edge and return the
+       *  corresponding local coordinate of this point on the edge
+       *
+       *  Return the parameter space coordinate \f$t\f$ of this point \f$x\f$ on
+       *  the given \c edge with begin node \f$\bar{x}_{0}\f$ and the end point
+       *  \f$\bar{x}_{1}\f$:
+       *
+       *  x = \sum\limits_{i=0}^{1} N_{i}(t) \bar{x}_{i}
+       *
+       *  \param edge (in) : edge which we want to check */
+      double t(Edge* edge);
+
+      // void t( Edge* edge, double pos ) { t_[edge] = pos; }
+
+      unsigned Pid() const { return pid_; }
+
+      bool NodalPoint(const std::vector<Node*>& nodes) const;
+
+      Node* CutNode();
+
+      void Intersection(plain_edge_set& edges);
+
+      void Intersection(plain_side_set& sides);
+
+      void Intersection(plain_facet_set& facets);
+
+      void Intersection(plain_element_set& elements);
+
+      const plain_element_set& Elements() const { return cut_elements_; }
+
+      const plain_facet_set& Facets() const { return facets_; }
+
+      Edge* CommonCutEdge(Side* side);
+
+      /// Erase the cutside from this point because it is deleted in the selfcut
+      void EraseCutSide(Side* cutside) { cut_sides_.erase(cutside); }
+
+      /// Erase the cutsideedge from this point because it is deleted in the selfcut
+      void EraseCutSideEdge(Edge* cutsideedge) { cut_edges_.erase(cutsideedge); }
+
+      /// Return actual point tolerance
+      double Tolerance() { return tol_; }
+
+      /// Set new Tolerance (in case points are merged this is necessary)
+      void EnlargeTolerance(double newtol)
+      {
+        if (newtol > tol_)
+        {
+          tol_ = newtol;
+        }
+      }
+
+     protected:
+      // internal stored point coordinates (always of dimension 3!)
+      double x_[3];
+
+     private:
+      // find the unique line that matches the filter criteria
+      template <class Filter>
+      Line* Find(Filter& filter, bool unique = true);
+
+      template <class Filter>
+      void Find(Filter& filter, plain_line_set& cut_lines);
+
+      unsigned pid_;
+      PointPosition position_;
+
+      std::map<Edge*, double> t_;
+
+      // precicion of the point
+      double tol_;
+
+      plain_edge_set cut_edges_;
+      plain_side_set cut_sides_;  // a set with all sides
+      plain_element_set cut_elements_;
+
+      plain_line_set lines_;
+      plain_facet_set facets_;
+    };  // class Point
+
+    /*--------------------------------------------------------------------------*/
+    /* \class ConcretePoint
+     *
+     * Necessary due to the different problem dimensions. Actually only the
+     * constructor and the Coordinates() function change, since the stored
+     * point coordinate stays 3. If probDim is smaller than three, the last
+     * coordinates are set to zero.
+     *
+     * \author hiermeier
+     * \date 11/16 */
+    template <unsigned probDim>
+    class ConcretePoint : public Point
     {
-      std::copy( this->x_, this->x_+probDim, x );
-    };
+     public:
+      /// constructor
+      ConcretePoint(unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
+          : Point(pid, tolerance)
+      {
+        // copy the given coordinates into the base class member variable
+        std::copy(x, x + probDim, this->x_);
 
-  };  // class ConcretePoint
+        // set the remaining entries to zero
+        std::fill(this->x_ + probDim, this->x_ + 3, 0.0);
 
-  /*--------------------------------------------------------------------------*/
-  /** \class PointFactory
-   *
-   *  This class creates a ConcretePoint object with correct problem dimension.
-   *  Don't call this class directly! Use the non-member function instead.
-   *
-   *  \date 11/16
-   *  \author hiermeier */
-  class PointFactory
-  {
-  public:
-    PointFactory() {};
+        // The x_ coordinate must be set, before these methods are called!
+        if (cut_edge != NULL)
+        {
+          AddEdge(cut_edge);
+        }
+        if (cut_side != NULL)
+        {
+          AddSide(cut_side);
+        }
+      };
+
+      /// destructor
+      virtual ~ConcretePoint(){};
+
+      /** \brief Get the coordinates of this point */
+      virtual void Coordinates(double* x) const { std::copy(this->x_, this->x_ + probDim, x); };
+
+    };  // class ConcretePoint
+
+    /*--------------------------------------------------------------------------*/
+    /** \class PointFactory
+     *
+     *  This class creates a ConcretePoint object with correct problem dimension.
+     *  Don't call this class directly! Use the non-member function instead.
+     *
+     *  \date 11/16
+     *  \author hiermeier */
+    class PointFactory
+    {
+     public:
+      PointFactory(){};
+
+      // non-member function to create a concrete point of desired dimension
+      Teuchos::RCP<GEO::CUT::Point> CreatePoint(unsigned pid, const double* x, Edge* cut_edge,
+          Side* cut_side, double tolerance, int probdim) const
+      {
+        Teuchos::RCP<GEO::CUT::Point> point = Teuchos::null;
+
+        switch (probdim)
+        {
+          case 2:
+            point = Teuchos::rcp(new ConcretePoint<2>(pid, x, cut_edge, cut_side, tolerance));
+            break;
+          case 3:
+            point = Teuchos::rcp(new ConcretePoint<3>(pid, x, cut_edge, cut_side, tolerance));
+            break;
+          default:
+            dserror("Unsupported problem dimension! (probdim=%d)", probdim);
+            break;
+        }
+        return point;
+      };
+    };  // class PointFactory
 
     // non-member function to create a concrete point of desired dimension
     Teuchos::RCP<GEO::CUT::Point> CreatePoint(
-        unsigned pid,
-        const double * x,
-        Edge * cut_edge,
-        Side * cut_side,
-        double tolerance,
-        int probdim ) const
-    {
-      Teuchos::RCP<GEO::CUT::Point> point = Teuchos::null;
+        unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
-      switch ( probdim )
+    inline int EntityId(const Point& p) { return p.Pid(); }
+
+    /// id based comparison for sorting and searching
+    template <class T>
+    class EntityIdLess
+    {
+     public:
+      bool operator()(const T& p1, const T& p2) const { return EntityId(p1) < EntityId(p2); }
+
+      bool operator()(const T* p1, const T* p2) const { return EntityId(*p1) < EntityId(*p2); }
+
+      bool operator()(const Teuchos::RCP<T> p1, const Teuchos::RCP<T> p2) const
       {
-        case 2:
-          point = Teuchos::rcp(new ConcretePoint<2>( pid, x, cut_edge, cut_side, tolerance ));
-          break;
-        case 3:
-          point = Teuchos::rcp(new ConcretePoint<3>( pid, x, cut_edge, cut_side, tolerance ));
-          break;
-        default:
-          dserror("Unsupported problem dimension! (probdim=%d)",
-              probdim);
-          break;
+        return EntityId(*p1) < EntityId(*p2);
       }
-      return point;
     };
-  }; // class PointFactory
 
-  // non-member function to create a concrete point of desired dimension
-  Teuchos::RCP<GEO::CUT::Point> CreatePoint(
-      unsigned pid,
-      const double * x,
-      Edge * cut_edge,
-      Side * cut_side,
-      double tolerance );
+    typedef EntityIdLess<Point> PointPidLess;
 
-  inline int EntityId( const Point & p ) { return p.Pid(); }
-
-  /// id based comparison for sorting and searching
-  template <class T>
-  class EntityIdLess
-  {
-  public:
-
-    bool operator()( const T& p1, const T& p2 ) const
+    /// position on edge based comparison for sorting and searching
+    class PointPositionLess
     {
-      return EntityId( p1 ) < EntityId( p2 );
-    }
+     public:
+      explicit PointPositionLess(Edge* edge) : edge_(edge) {}
 
-    bool operator()( const T* p1, const T* p2 ) const
-    {
-      return EntityId( *p1 ) < EntityId( *p2 );
-    }
-
-    bool operator()( const Teuchos::RCP<T> p1, const Teuchos::RCP<T> p2 ) const
-    {
-      return EntityId( *p1 ) < EntityId( *p2 );
-    }
-
-  };
-
-  typedef EntityIdLess<Point> PointPidLess;
-
-  /// position on edge based comparison for sorting and searching
-  class PointPositionLess
-  {
-  public:
-
-    explicit PointPositionLess( Edge* edge ) : edge_( edge ) {}
-
-    bool operator()( Point& p1, Point& p2 ) const
-    {
-      if ( not p1.IsCut( edge_ ) or not p2.IsCut( edge_ ) )
-        throw std::runtime_error( "point position compare only on cut edges" );
-      return p1.t( edge_ ) < p2.t( edge_ );
-    }
-
-    bool operator()( Point* p1, Point* p2 ) const
-    {
-      if ( not p1->IsCut( edge_ ) or not p2->IsCut( edge_ ) )
-        throw std::runtime_error( "point position compare only on cut edges" );
-      return p1->t( edge_ ) < p2->t( edge_ );
-    }
-
-  private:
-    Edge* edge_;
-  };
-
-  #ifdef CUT_USE_SORTED_VECTOR
-  typedef sorted_vector<Point*, true, PointPidLess> PointSet;
-  typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
-
-  typedef sorted_vector<Teuchos::RCP<Point>, true, PointPidLess> RCPPointSet;
-
-  #else
-  typedef std::set<Point*, PointPidLess> PointSet;
-  typedef std::set<Point*, PointPositionLess> PointPositionSet;
-
-  typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
-
-  #endif
-
-namespace IMPL {
-
-  class ExcludeLineFilter : public PointLineFilter
-  {
-  public:
-
-    ExcludeLineFilter( Line * line, const PointLineFilter & filter )
-      : line_( line ),
-        filter_( filter )
-    {
-    }
-
-    virtual bool operator()( Line * line ) const
-    {
-      return line!=line_ and filter_( line );
-    }
-
-  private:
-    Line * line_;
-    const PointLineFilter & filter_;
-  };
-
-  class SideCutFilter : public PointLineFilter
-  {
-  public:
-
-    SideCutFilter( Side * side )
-      : side_( side )
-    {
-    }
-
-    virtual bool operator()( Line * line ) const;
-
-  private:
-    Side * side_;
-  };
-
-  class SideElementCutFilter : public PointLineFilter
-  {
-  public:
-
-    SideElementCutFilter( Side * side, Element * element )
-      : side_( side ),
-        element_( element )
-    {
-    }
-
-    virtual bool operator()( Line * line ) const;
-
-  private:
-    Side * side_;
-    Element * element_;
-  };
-
-  class SideSideCutFilter : public PointLineFilter
-  {
-  public:
-
-    SideSideCutFilter( Side * side1, Side * side2 )
-      : side1_( side1 ),
-        side2_( side2 )
-    {
-    }
-
-    virtual bool operator()( Line * line ) const;
-
-  private:
-    Side * side1_;
-    Side * side2_;
-  };
-
-}  // namespace IMPL
-
-  /** \brief Find if the points in element share a common element,
-   *  (i.e. do all points lie on the same element?)
-   *
-   *  A point knows which cut_elements it is associated to.
-   *
-   *  \author hiermeier \date 11/16 */
-  void FindCommonElements( const std::vector<Point*> & element, plain_element_set & elements );
-
-  /// Find if the points in side (which is actually a tet...) share a common side,
-  ///   (i.e. do all points lie on the same surface?)
-  /// A point knows which cut_sides it is associated to.
-  inline void FindCommonSides( const std::vector<Point*> & side, plain_side_set & sides )
-  {
-    std::vector<Point*>::const_iterator is = side.begin();
-    //Get the sides this point cuts
-    //A cut-side which is a LevelSet-side is empty but is still present.
-    sides = ( *is )->CutSides();
-    for ( ++is; is!=side.end(); ++is )
-    {
-      Point * p = *is;
-      p->Intersection( sides );
-      if ( sides.size()==0 )
+      bool operator()(Point& p1, Point& p2) const
       {
-        break;
+        if (not p1.IsCut(edge_) or not p2.IsCut(edge_))
+          throw std::runtime_error("point position compare only on cut edges");
+        return p1.t(edge_) < p2.t(edge_);
+      }
+
+      bool operator()(Point* p1, Point* p2) const
+      {
+        if (not p1->IsCut(edge_) or not p2->IsCut(edge_))
+          throw std::runtime_error("point position compare only on cut edges");
+        return p1->t(edge_) < p2->t(edge_);
+      }
+
+     private:
+      Edge* edge_;
+    };
+
+#ifdef CUT_USE_SORTED_VECTOR
+    typedef sorted_vector<Point*, true, PointPidLess> PointSet;
+    typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
+
+    typedef sorted_vector<Teuchos::RCP<Point>, true, PointPidLess> RCPPointSet;
+
+#else
+    typedef std::set<Point*, PointPidLess> PointSet;
+    typedef std::set<Point*, PointPositionLess> PointPositionSet;
+
+    typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
+
+#endif
+
+    namespace IMPL
+    {
+      class ExcludeLineFilter : public PointLineFilter
+      {
+       public:
+        ExcludeLineFilter(Line* line, const PointLineFilter& filter) : line_(line), filter_(filter)
+        {
+        }
+
+        virtual bool operator()(Line* line) const { return line != line_ and filter_(line); }
+
+       private:
+        Line* line_;
+        const PointLineFilter& filter_;
+      };
+
+      class SideCutFilter : public PointLineFilter
+      {
+       public:
+        SideCutFilter(Side* side) : side_(side) {}
+
+        virtual bool operator()(Line* line) const;
+
+       private:
+        Side* side_;
+      };
+
+      class SideElementCutFilter : public PointLineFilter
+      {
+       public:
+        SideElementCutFilter(Side* side, Element* element) : side_(side), element_(element) {}
+
+        virtual bool operator()(Line* line) const;
+
+       private:
+        Side* side_;
+        Element* element_;
+      };
+
+      class SideSideCutFilter : public PointLineFilter
+      {
+       public:
+        SideSideCutFilter(Side* side1, Side* side2) : side1_(side1), side2_(side2) {}
+
+        virtual bool operator()(Line* line) const;
+
+       private:
+        Side* side1_;
+        Side* side2_;
+      };
+
+    }  // namespace IMPL
+
+    /** \brief Find if the points in element share a common element,
+     *  (i.e. do all points lie on the same element?)
+     *
+     *  A point knows which cut_elements it is associated to.
+     *
+     *  \author hiermeier \date 11/16 */
+    void FindCommonElements(const std::vector<Point*>& element, plain_element_set& elements);
+
+    /// Find if the points in side (which is actually a tet...) share a common side,
+    ///   (i.e. do all points lie on the same surface?)
+    /// A point knows which cut_sides it is associated to.
+    inline void FindCommonSides(const std::vector<Point*>& side, plain_side_set& sides)
+    {
+      std::vector<Point*>::const_iterator is = side.begin();
+      // Get the sides this point cuts
+      // A cut-side which is a LevelSet-side is empty but is still present.
+      sides = (*is)->CutSides();
+      for (++is; is != side.end(); ++is)
+      {
+        Point* p = *is;
+        p->Intersection(sides);
+        if (sides.size() == 0)
+        {
+          break;
+        }
       }
     }
-  }
 
-  inline void FindCommonSides( Point * p1, Point * p2, Point * p3, plain_side_set & sides )
-  {
-    sides = p1->CutSides();
-    p2->Intersection( sides );
-    p3->Intersection( sides );
-  }
+    inline void FindCommonSides(Point* p1, Point* p2, Point* p3, plain_side_set& sides)
+    {
+      sides = p1->CutSides();
+      p2->Intersection(sides);
+      p3->Intersection(sides);
+    }
 
-  inline void FindCommonSides( Point * p1, Point * p2, Point * p3, Point * p4, plain_side_set & sides )
-  {
-    sides = p1->CutSides();
-    p2->Intersection( sides );
-    p3->Intersection( sides );
-    p4->Intersection( sides );
-  }
+    inline void FindCommonSides(Point* p1, Point* p2, Point* p3, Point* p4, plain_side_set& sides)
+    {
+      sides = p1->CutSides();
+      p2->Intersection(sides);
+      p3->Intersection(sides);
+      p4->Intersection(sides);
+    }
 
-}  // namespace CUT
-}  // namepsace GEO
+  }  // namespace CUT
+}  // namespace GEO
 
 
-std::ostream & operator<<( std::ostream & stream, GEO::CUT::Point & point );
+std::ostream& operator<<(std::ostream& stream, GEO::CUT::Point& point);
 
-std::ostream & operator<<( std::ostream & stream, GEO::CUT::Point * point );
+std::ostream& operator<<(std::ostream& stream, GEO::CUT::Point* point);
 
 #endif

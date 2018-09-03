@@ -80,134 +80,101 @@ namespace LINALG
   \author gammi
   \date 04/09
   */
-class LinalgProjectedOperator : public Epetra_Operator
-{
-public:
-
-  /*!
-  \brief Standard Constructor
-
-  */
-  LinalgProjectedOperator(
-      Teuchos::RCP<Epetra_Operator> A,
-      bool project,
-      Teuchos::RCP<LINALG::KrylovProjector> projector
-      );
-
-  /*!
-  \brief Destructor
-
-  */
-  ~LinalgProjectedOperator();
-
-
-  //! @name Atribute set methods required to support the Epetra_Operator interface
-
-  virtual int SetUseTranspose (bool UseTranspose)
+  class LinalgProjectedOperator : public Epetra_Operator
   {
-    return(A_->SetUseTranspose(UseTranspose));
-  }
-  //! @}
+   public:
+    /*!
+    \brief Standard Constructor
 
-  //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
-  /*!
-    \brief (Modified) Apply call
+    */
+    LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A, bool project,
+        Teuchos::RCP<LINALG::KrylovProjector> projector);
 
-    Given the underlying Epetra_Operator A, we apply P^T*A using
+    /*!
+    \brief Destructor
 
-                                        T
-                         T         w * c
-                        P  x = x - ------ x
-                                    T
-                                   w * c                                    T
-
-    instead of A if projetion_ flag is set. If projection_ is false,
-    this is just the standard Apply call.
+    */
+    ~LinalgProjectedOperator();
 
 
-    See the following article for further reading
+    //! @name Atribute set methods required to support the Epetra_Operator interface
 
-    @article{1055401,
-     author = {Bochev,, Pavel and Lehoucq,, R. B.},
-     title = {On the Finite Element Solution of the Pure Neumann Problem},
-     journal = {SIAM Rev.},
-     volume = {47},
-     number = {1},
-     year = {2005},
-     issn = {0036-1445},
-     pages = {50--66},
-     doi = {http://dx.doi.org/10.1137/S0036144503426074},
-     publisher = {Society for Industrial and Applied Mathematics},
-     address = {Philadelphia, PA, USA},
-     }
+    virtual int SetUseTranspose(bool UseTranspose) { return (A_->SetUseTranspose(UseTranspose)); }
+    //! @}
 
-     and the documentation to LinalgPrecondOperator as well as the source
-     to LINALG::Solver::Solve_aztec.
+    //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
+    /*!
+      \brief (Modified) Apply call
 
-  */
-  //! @}
-  virtual int Apply (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+      Given the underlying Epetra_Operator A, we apply P^T*A using
 
-  virtual double NormInf () const
-  {
-    return(A_->NormInf());
-  }
-  //! @}
+                                          T
+                           T         w * c
+                          P  x = x - ------ x
+                                      T
+                                     w * c                                    T
 
-  //! @name Atribute access functions required to support the Epetra_Operator interface
-  virtual const char * Label () const
-  {
-    return(A_->Label());
-  }
+      instead of A if projetion_ flag is set. If projection_ is false,
+      this is just the standard Apply call.
 
-  virtual bool UseTranspose () const
-  {
-    return(A_->UseTranspose());
-  }
 
-  virtual bool HasNormInf () const
-  {
-    return(A_->HasNormInf());
-  }
+      See the following article for further reading
 
-  virtual const Epetra_Comm & Comm () const
-  {
-    return(A_->Comm());
-  }
+      @article{1055401,
+       author = {Bochev,, Pavel and Lehoucq,, R. B.},
+       title = {On the Finite Element Solution of the Pure Neumann Problem},
+       journal = {SIAM Rev.},
+       volume = {47},
+       number = {1},
+       year = {2005},
+       issn = {0036-1445},
+       pages = {50--66},
+       doi = {http://dx.doi.org/10.1137/S0036144503426074},
+       publisher = {Society for Industrial and Applied Mathematics},
+       address = {Philadelphia, PA, USA},
+       }
 
-  virtual const Epetra_Map & OperatorDomainMap () const
-  {
-    return(A_->OperatorDomainMap());
-  }
+       and the documentation to LinalgPrecondOperator as well as the source
+       to LINALG::Solver::Solve_aztec.
 
-  virtual const Epetra_Map & OperatorRangeMap () const
-  {
-    return(A_->OperatorRangeMap());
-  }
+    */
+    //! @}
+    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
-  virtual int ApplyInverse (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-  {
-    return(A_->ApplyInverse(X,Y));
-  }
+    virtual double NormInf() const { return (A_->NormInf()); }
+    //! @}
 
-  Teuchos::RCP<Epetra_Operator> UnprojectedOperator ()
-  {
-    return(A_);
-  }
+    //! @name Atribute access functions required to support the Epetra_Operator interface
+    virtual const char *Label() const { return (A_->Label()); }
 
-private:
+    virtual bool UseTranspose() const { return (A_->UseTranspose()); }
 
-  //! flag whether to do a projection or just pass through
-  bool                               project_;
+    virtual bool HasNormInf() const { return (A_->HasNormInf()); }
 
-  //! the actual unprojected operator
-  Teuchos::RCP<Epetra_Operator>      A_;
+    virtual const Epetra_Comm &Comm() const { return (A_->Comm()); }
 
-  //! Krylov space projector
-  Teuchos::RCP<LINALG::KrylovProjector>   projector_;
+    virtual const Epetra_Map &OperatorDomainMap() const { return (A_->OperatorDomainMap()); }
 
-};
+    virtual const Epetra_Map &OperatorRangeMap() const { return (A_->OperatorRangeMap()); }
 
-} // namespace LINALG
+    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    {
+      return (A_->ApplyInverse(X, Y));
+    }
 
-#endif // LINALG_PROJECTED_OPERATOR_H_
+    Teuchos::RCP<Epetra_Operator> UnprojectedOperator() { return (A_); }
+
+   private:
+    //! flag whether to do a projection or just pass through
+    bool project_;
+
+    //! the actual unprojected operator
+    Teuchos::RCP<Epetra_Operator> A_;
+
+    //! Krylov space projector
+    Teuchos::RCP<LINALG::KrylovProjector> projector_;
+  };
+
+}  // namespace LINALG
+
+#endif  // LINALG_PROJECTED_OPERATOR_H_

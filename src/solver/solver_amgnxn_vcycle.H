@@ -37,87 +37,82 @@ namespace LINALG
   {
     namespace AMGNXN
     {
-
       // class GenericSmoother;
 
-      class Vcycle:  public GenericSmoother
+      class Vcycle : public GenericSmoother
       {
-        public:
+       public:
+        Vcycle(int NumLevels, int NumSweeps, int FirstLevel);
 
-          Vcycle(int NumLevels, int NumSweeps, int FirstLevel);
+        void SetOperators(std::vector<Teuchos::RCP<BlockedMatrix>> Avec);
+        void SetProjectors(std::vector<Teuchos::RCP<BlockedMatrix>> Pvec);
+        void SetRestrictors(std::vector<Teuchos::RCP<BlockedMatrix>> Rvec);
+        void SetPreSmoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPre);
+        void SetPosSmoothers(std::vector<Teuchos::RCP<GenericSmoother>> SvecPos);
 
-          void SetOperators  (std::vector< Teuchos::RCP<BlockedMatrix> > Avec);
-          void SetProjectors (std::vector< Teuchos::RCP<BlockedMatrix> > Pvec);
-          void SetRestrictors(std::vector< Teuchos::RCP<BlockedMatrix> > Rvec);
-          void SetPreSmoothers (std::vector< Teuchos::RCP<GenericSmoother> > SvecPre);
-          void SetPosSmoothers (std::vector< Teuchos::RCP<GenericSmoother> > SvecPos);
+        virtual void Solve(
+            const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const;
 
-          virtual void Solve
-            (const BlockedVector& X,BlockedVector& Y, bool InitialGuessIsZero=false) const;
+       private:
+        void DoVcycle(
+            const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const;
 
-        private:
+        int NumLevels_;
+        int NumSweeps_;
+        int FirstLevel_;
 
-          void DoVcycle
-            (const BlockedVector& X,BlockedVector& Y, int level, bool InitialGuessIsZero) const;
+        std::vector<Teuchos::RCP<BlockedMatrix>> Avec_;
+        std::vector<Teuchos::RCP<BlockedMatrix>> Pvec_;
+        std::vector<Teuchos::RCP<BlockedMatrix>> Rvec_;
+        std::vector<Teuchos::RCP<GenericSmoother>> SvecPre_;
+        std::vector<Teuchos::RCP<GenericSmoother>> SvecPos_;
 
-          int NumLevels_;
-          int NumSweeps_;
-          int FirstLevel_;
-
-          std::vector< Teuchos::RCP<BlockedMatrix> > Avec_;
-          std::vector< Teuchos::RCP<BlockedMatrix> > Pvec_;
-          std::vector< Teuchos::RCP<BlockedMatrix> > Rvec_;
-          std::vector< Teuchos::RCP<GenericSmoother> > SvecPre_;
-          std::vector< Teuchos::RCP<GenericSmoother> > SvecPos_;
-
-          bool flag_set_up_A_;
-          bool flag_set_up_P_;
-          bool flag_set_up_R_;
-          bool flag_set_up_Pre_;
-          bool flag_set_up_Pos_;
-
+        bool flag_set_up_A_;
+        bool flag_set_up_P_;
+        bool flag_set_up_R_;
+        bool flag_set_up_Pre_;
+        bool flag_set_up_Pos_;
       };
 
       // This could be done better with templates
-      class VcycleSingle:  public SingleFieldSmoother
+      class VcycleSingle : public SingleFieldSmoother
       {
-        public:
+       public:
+        VcycleSingle(int NumLevels, int NumSweeps, int FirstLevel);
 
-          VcycleSingle(int NumLevels, int NumSweeps, int FirstLevel);
+        void SetOperators(std::vector<Teuchos::RCP<SparseMatrix>> Avec);
+        void SetProjectors(std::vector<Teuchos::RCP<SparseMatrix>> Pvec);
+        void SetRestrictors(std::vector<Teuchos::RCP<SparseMatrix>> Rvec);
+        void SetPreSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre);
+        void SetPosSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos);
 
-          void SetOperators  (std::vector< Teuchos::RCP<SparseMatrix> > Avec);
-          void SetProjectors (std::vector< Teuchos::RCP<SparseMatrix> > Pvec);
-          void SetRestrictors(std::vector< Teuchos::RCP<SparseMatrix> > Rvec);
-          void SetPreSmoothers (std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPre);
-          void SetPosSmoothers (std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPos);
+        virtual void Apply(
+            const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const;
 
-          virtual void Apply( const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const;
+       private:
+        void DoVcycle(const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level,
+            bool InitialGuessIsZero) const;
 
-        private:
+        int NumLevels_;
+        int NumSweeps_;
+        int FirstLevel_;
 
-          void DoVcycle ( const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const;
+        std::vector<Teuchos::RCP<SparseMatrix>> Avec_;
+        std::vector<Teuchos::RCP<SparseMatrix>> Pvec_;
+        std::vector<Teuchos::RCP<SparseMatrix>> Rvec_;
+        std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre_;
+        std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos_;
 
-          int NumLevels_;
-          int NumSweeps_;
-          int FirstLevel_;
-
-          std::vector< Teuchos::RCP<SparseMatrix> > Avec_;
-          std::vector< Teuchos::RCP<SparseMatrix> > Pvec_;
-          std::vector< Teuchos::RCP<SparseMatrix> > Rvec_;
-          std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPre_;
-          std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPos_;
-
-          bool flag_set_up_A_;
-          bool flag_set_up_P_;
-          bool flag_set_up_R_;
-          bool flag_set_up_Pre_;
-          bool flag_set_up_Pos_;
-
+        bool flag_set_up_A_;
+        bool flag_set_up_P_;
+        bool flag_set_up_R_;
+        bool flag_set_up_Pre_;
+        bool flag_set_up_Pos_;
       };
 
-    } //namespace AMGNXN
-  } //namespace LINALG
-} // namespace SOLVER
+    }  // namespace AMGNXN
+  }    // namespace SOLVER
+}  // namespace LINALG
 
-#endif // HAVE_MueLu
-#endif // AMGNXN_OPERATOR_H
+#endif  // HAVE_MueLu
+#endif  // AMGNXN_OPERATOR_H

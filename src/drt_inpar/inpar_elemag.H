@@ -20,7 +20,13 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -31,17 +37,17 @@ namespace INPAR
     // Type of time integrator
     enum DynamicType
     {
-      elemag_ost   // one-step-theta time integration
+      elemag_ost  // one-step-theta time integration
     };
 
     /// define all valid parameters for electromagnetic problem
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific electromagnetic conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
-  } // namespace ELEMAG
-} // namespace INPAR
+  }  // namespace ELEMAG
+}  // namespace INPAR
 
 
-#endif // #ifndef INPAR_ELEMAG_H
+#endif  // #ifndef INPAR_ELEMAG_H

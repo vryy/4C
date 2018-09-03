@@ -40,43 +40,37 @@ namespace LINALG
      */
     class TekoPreconditioner : public SOLVER::PreconditionerType
     {
-    public:
+     public:
+      TekoPreconditioner(FILE* outfile, Teuchos::ParameterList& tekolist);
 
-      TekoPreconditioner( FILE * outfile, Teuchos::ParameterList & tekolist);
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
+      virtual Epetra_Operator* PrecOperator() const { return &*prec_; }
 
       /// linear operator used for preconditioning
       virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return prec_; }
 
-      virtual void Print( std::ostream & stream )
-      {
-        stream << "TEKO " << type_ << " preconditioner";
-      }
+      virtual void Print(std::ostream& stream) { stream << "TEKO " << type_ << " preconditioner"; }
 
-      Teuchos::ParameterList& Params() {return tekolist_; };
+      Teuchos::ParameterList& Params() { return tekolist_; };
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "Teko Parameters"; }
-    private:
 
-      Teuchos::ParameterList & tekolist_;
+     private:
+      Teuchos::ParameterList& tekolist_;
 
       std::string type_;
 
       //! system of equations used for preconditioning used by P_ only
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase>       Pmatrix_;
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> Pmatrix_;
 
       /// preconditioner
       Teuchos::RCP<Teko::Epetra::EpetraBlockPreconditioner> prec_;
     };
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 #endif /* HAVE_TEKO */
 #endif /* SOLVER_TEKOPRECONDITIONER_H_ */

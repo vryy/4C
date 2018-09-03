@@ -1,16 +1,16 @@
-  /*!----------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file fps3i_partitioned_1wc.H
 \brief H-file associated with algorithmic routines for partitioned
-       solution approaches to fluid-porous-structure-scalar-scalar interaction
-       (FPS3I) specifically related to one-way-coupled problem
-       configurations
+     solution approaches to fluid-porous-structure-scalar-scalar interaction
+     (FPS3I) specifically related to one-way-coupled problem
+     configurations
 
 \level 3
 
 \maintainer Moritz Thon
-            thon@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10364
+          thon@mhpc.mw.tum.de
+          http://www.mhpc.mw.tum.de
+          089 - 289-10364
 
 
 *----------------------------------------------------------------------*/
@@ -27,8 +27,7 @@ namespace FS3I
 {
   class PartFPS3I_1WC : public PartFPS3I
   {
-  public:
-
+   public:
     //! constructor of one-way coupled FPS3I
     PartFPS3I_1WC(const Epetra_Comm& comm);
 
@@ -55,8 +54,7 @@ namespace FS3I
 
     //! check convergence of monolithic ScaTra problem
     virtual bool ScatraConvergenceCheck(int itnum);
-
   };
-}
+}  // namespace FS3I
 
 #endif

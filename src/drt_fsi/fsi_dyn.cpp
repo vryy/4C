@@ -99,8 +99,9 @@ void fluid_ale_drt()
   // We rely on this ordering in certain non-intuitive places!
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-  //check for xfem discretization
-  if (DRT::INPUT::IntegralValue<bool>((problem->XFluidDynamicParams().sublist("GENERAL")),"XFLUIDFLUID"))
+  // check for xfem discretization
+  if (DRT::INPUT::IntegralValue<bool>(
+          (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
   {
     FLD::XFluid::SetupFluidDiscretization();
   }
@@ -109,24 +110,24 @@ void fluid_ale_drt()
     fluiddis->FillComplete();
   }
 
-  Teuchos::RCP<DRT::Discretization> aledis   = problem->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   aledis->FillComplete();
 
   // create ale elements if the ale discretization is empty
-  if (aledis->NumGlobalNodes()==0)
+  if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
     aledis->FillComplete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
     aledis->Evaluate(params);
-
   }
   else  // filled ale discretization
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
-      dserror("Fluid and ALE nodes have the same node numbers. "
+    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+      dserror(
+          "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
@@ -159,17 +160,18 @@ void fluid_xfem_drt()
   FLD::XFluid::SetupFluidDiscretization();
 
   const Teuchos::ParameterList xfluid = problem->XFluidDynamicParams();
-  bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
+  bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
 
-  if (alefluid) //in ale case
+  if (alefluid)  // in ale case
   {
-    Teuchos::RCP<DRT::Discretization> aledis   = problem->GetDis("ale");
+    Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
     aledis->FillComplete();
 
     // create ale elements if the ale discretization is empty
-    if (aledis->NumGlobalNodes()==0)
+    if (aledis->NumGlobalNodes() == 0)
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(problem->GetDis("fluid"),aledis);
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+          problem->GetDis("fluid"), aledis);
       aledis->FillComplete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -178,17 +180,19 @@ void fluid_xfem_drt()
     }
     else  // filled ale discretization
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(problem->GetDis("fluid"),aledis))
-        dserror("Fluid and ALE nodes have the same node numbers. "
+      if (!FSI::UTILS::FluidAleNodesDisjoint(problem->GetDis("fluid"), aledis))
+        dserror(
+            "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
             "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
     }
   }
 
-  if(alefluid)
+  if (alefluid)
   {
     // create instance of fluid xfem algorithm, for moving interfaces
-    Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
+    Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo =
+        Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
@@ -211,7 +215,7 @@ void fluid_xfem_drt()
     const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
 
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo =
-        Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
+        Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
     //--------------------------------------------------------------
     // restart the simulation
@@ -231,7 +235,6 @@ void fluid_xfem_drt()
     problem->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
     problem->TestAll(comm);
   }
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -258,9 +261,9 @@ void fluid_freesurf_drt()
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
 
   // create ale elements if the ale discretization is empty
-  if (aledis->NumGlobalNodes()==0)
+  if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
     aledis->FillComplete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -269,8 +272,9 @@ void fluid_freesurf_drt()
   }
   else  // filled ale discretization
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
-      dserror("Fluid and ALE nodes have the same node numbers. "
+    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+      dserror(
+          "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
@@ -278,51 +282,51 @@ void fluid_freesurf_drt()
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
-  case fsi_iter_monolithicfluidsplit:
-  case fsi_iter_monolithicstructuresplit:
-  {
-
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy
-      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
-
-    if (linearsolverstrategy==INPAR::FSI::FSIAMG)
-      dserror("No FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
-
-    Teuchos::RCP<FSI::MonolithicMainFS> fsi;
-
-    // Monolithic Free Surface Algorithm
-
-    fsi = Teuchos::rcp(new FSI::MonolithicFS(comm,fsidyn));
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
+    case fsi_iter_monolithicfluidsplit:
+    case fsi_iter_monolithicstructuresplit:
     {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+          DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+
+      if (linearsolverstrategy == INPAR::FSI::FSIAMG)
+        dserror(
+            "No FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
+
+      Teuchos::RCP<FSI::MonolithicMainFS> fsi;
+
+      // Monolithic Free Surface Algorithm
+
+      fsi = Teuchos::rcp(new FSI::MonolithicFS(comm, fsidyn));
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->Timeloop(fsi);
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
+      break;
     }
+    default:
+    {
+      Teuchos::RCP<FSI::FluidAleAlgorithm> fluid;
 
-    fsi->Timeloop(fsi);
+      // Partitioned FS Algorithm
+      fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
 
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
-    break;
-  }
-  default:
-  {
-    Teuchos::RCP<FSI::FluidAleAlgorithm> fluid;
+      fluid->Timeloop();
 
-    // Partitioned FS Algorithm
-    fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-
-    fluid->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
-    break;
-  }
+      DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
+      break;
+    }
   }
 }
 
@@ -345,7 +349,8 @@ void fsi_ale_drt()
 
   structdis->FillComplete();
 
-  if (DRT::INPUT::IntegralValue<bool>((problem->XFluidDynamicParams().sublist("GENERAL")),"XFLUIDFLUID"))
+  if (DRT::INPUT::IntegralValue<bool>(
+          (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
   {
     FLD::XFluid::SetupFluidDiscretization();
   }
@@ -359,7 +364,7 @@ void fsi_ale_drt()
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
 
   // create ale elements if the ale discretization is empty
-  if (aledis->NumGlobalNodes() == 0) // empty ale discretization
+  if (aledis->NumGlobalNodes() == 0)  // empty ale discretization
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
     aledis->FillComplete();
@@ -370,31 +375,32 @@ void fsi_ale_drt()
   }
   else  // filled ale discretization (i.e. read from input file)
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
-      dserror("Fluid and ALE nodes have the same node numbers. "
+    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+      dserror(
+          "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
 
-    if(    (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(),"MATCHGRID_FLUIDALE"))
-        or (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(),"MATCHGRID_STRUCTALE")) )
+    if ((not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_FLUIDALE")) or
+        (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(), "MATCHGRID_STRUCTALE")))
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      std::vector<Teuchos::RCP<DRT::Discretization>> dis;
       dis.push_back(structdis);
       dis.push_back(fluiddis);
       dis.push_back(aledis);
 
-      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+      std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
+      std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
 
       // redistribute discr. with help of binning strategy
-      if(structdis->Comm().NumProc()>1)
+      if (structdis->Comm().NumProc() > 1)
       {
         // binning strategy is created and parallel redistribution is performed
         Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
             Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
         binningstrategy->Init(dis);
-        binningstrategy->WeightedPartitioning(dis,stdelecolmap,stdnodecolmap);
+        binningstrategy->WeightedPartitioning(dis, stdelecolmap, stdnodecolmap);
       }
     }
   }
@@ -441,61 +447,62 @@ void fsi_ale_drt()
 
       Teuchos::RCP<FSI::Monolithic> fsi;
 
-      INPAR::FSI::LinearBlockSolver linearsolverstrategy
-        = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+          DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       // call constructor to initialize the base class
-      if (coupling==fsi_iter_monolithicfluidsplit)
+      if (coupling == fsi_iter_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_monolithicstructuresplit)
+      else if (coupling == fsi_iter_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_lung_monolithicstructuresplit)
+      else if (coupling == fsi_iter_lung_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_lung_monolithicfluidsplit)
+      else if (coupling == fsi_iter_lung_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_constr_monolithicfluidsplit)
+      else if (coupling == fsi_iter_constr_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::ConstrMonolithicFluidSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_constr_monolithicstructuresplit)
+      else if (coupling == fsi_iter_constr_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::ConstrMonolithicStructureSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_mortar_monolithicstructuresplit)
+      else if (coupling == fsi_iter_mortar_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_mortar_monolithicfluidsplit)
+      else if (coupling == fsi_iter_mortar_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm, fsidyn));
       }
-      else if ( coupling==fsi_iter_fluidfluid_monolithicfluidsplit)
+      else if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(comm,fsidyn));
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(comm, fsidyn));
       }
-      else if ( coupling==fsi_iter_fluidfluid_monolithicstructuresplit)
+      else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm,fsidyn));
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_sliding_monolithicfluidsplit)
+      else if (coupling == fsi_iter_sliding_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::SlidingMonolithicFluidSplit(comm, fsidyn));
       }
-      else if (coupling==fsi_iter_sliding_monolithicstructuresplit)
+      else if (coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::SlidingMonolithicStructureSplit(comm, fsidyn));
       }
       else
       {
-        dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d", coupling, linearsolverstrategy);
+        dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",
+            coupling, linearsolverstrategy);
       }
 
       // read the restart information, set vectors and variables ---
@@ -511,54 +518,52 @@ void fsi_ale_drt()
 
       // possibly redistribute domain decomposition
       {
-        const INPAR::FSI::Redistribute redistribute = DRT::INPUT::IntegralValue<
-          INPAR::FSI::Redistribute>(fsimono, "REDISTRIBUTE");
+        const INPAR::FSI::Redistribute redistribute =
+            DRT::INPUT::IntegralValue<INPAR::FSI::Redistribute>(fsimono, "REDISTRIBUTE");
 
         const double weight1 = fsimono.get<double>("REDIST_WEIGHT1");
         const double weight2 = fsimono.get<double>("REDIST_WEIGHT2");
-        if (redistribute == INPAR::FSI::Redistribute_structure
-            or redistribute == INPAR::FSI::Redistribute_fluid)
+        if (redistribute == INPAR::FSI::Redistribute_structure or
+            redistribute == INPAR::FSI::Redistribute_fluid)
         {
           // redistribute either structure or fluid domain
-          fsi->RedistributeDomainDecomposition(redistribute, coupling, weight1,
-              weight2, comm,0);
+          fsi->RedistributeDomainDecomposition(redistribute, coupling, weight1, weight2, comm, 0);
 
           // do setup again after redistribution
           fsi->SetupSystem();
 
-          const double secweight1 = fsidyn.sublist("MONOLITHIC SOLVER").get<double>(
-              "REDIST_SECONDWEIGHT1");
-          const double secweight2 = fsidyn.sublist("MONOLITHIC SOLVER").get<double>(
-              "REDIST_SECONDWEIGHT2");
+          const double secweight1 =
+              fsidyn.sublist("MONOLITHIC SOLVER").get<double>("REDIST_SECONDWEIGHT1");
+          const double secweight2 =
+              fsidyn.sublist("MONOLITHIC SOLVER").get<double>("REDIST_SECONDWEIGHT2");
           if (secweight1 != -1.0)
           {
             // redistribute either structure or fluid domain
-            fsi->RedistributeDomainDecomposition(redistribute, coupling, secweight1,
-              secweight2, comm,0);
+            fsi->RedistributeDomainDecomposition(
+                redistribute, coupling, secweight1, secweight2, comm, 0);
 
             // do setup again after redistribution
             fsi->SetupSystem();
           }
         }
-        else if (redistribute==INPAR::FSI::Redistribute_both)
+        else if (redistribute == INPAR::FSI::Redistribute_both)
         {
-
           int numproc = comm.NumProc();
 
           // redistribute both structure and fluid domain
-          fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_structure,
-              coupling, weight1, weight2, comm, numproc/2);
+          fsi->RedistributeDomainDecomposition(
+              INPAR::FSI::Redistribute_structure, coupling, weight1, weight2, comm, numproc / 2);
 
-          // do setup again after redistribution (do this again here in between because the P matrix changed!)
+          // do setup again after redistribution (do this again here in between because the P matrix
+          // changed!)
           fsi->SetupSystem();
-          fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_fluid,
-              coupling, weight1, weight2, comm, numproc/2);
+          fsi->RedistributeDomainDecomposition(
+              INPAR::FSI::Redistribute_fluid, coupling, weight1, weight2, comm, numproc / 2);
 
           // do setup again after redistribution
           fsi->SetupSystem();
-
         }
-        else if (redistribute==INPAR::FSI::Redistribute_monolithic)
+        else if (redistribute == INPAR::FSI::Redistribute_monolithic)
         {
           fsi->RedistributeMonolithicGraph(coupling, comm);
 
@@ -579,7 +584,7 @@ void fsi_ale_drt()
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
       DRT::Problem::Instance()->AddFieldTest(fsitest);
 
       // do the actual testing
@@ -591,13 +596,13 @@ void fsi_ale_drt()
     case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
     {
       Teuchos::RCP<FSI::MonolithicNoNOX> fsi;
-      if ( coupling==fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
+      if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(comm,fsidyn));
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(comm, fsidyn));
       }
-      else if ( coupling==fsi_iter_fluidfluid_monolithicstructuresplit_nonox)
+      else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(comm,fsidyn));
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(comm, fsidyn));
       }
       else
         dserror("Unsupported monolithic XFFSI scheme");
@@ -624,7 +629,7 @@ void fsi_ale_drt()
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
       DRT::Problem::Instance()->AddFieldTest(fsitest);
 
       // do the actual testing
@@ -639,22 +644,23 @@ void fsi_ale_drt()
       Teuchos::RCP<FSI::Partitioned> fsi;
 
       INPAR::FSI::PartitionedCouplingMethod method =
-        DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
+          DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
-      if (method==INPAR::FSI::DirichletNeumannSlideale)
+      if (method == INPAR::FSI::DirichletNeumannSlideale)
       {
         fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
-        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannSlideale>(fsi,true)->Setup();
+        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannSlideale>(fsi, true)->Setup();
       }
-      else if (method==INPAR::FSI::DirichletNeumann)
+      else if (method == INPAR::FSI::DirichletNeumann)
       {
         fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi,true)->Setup();
+        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
       }
-      else if (method==INPAR::FSI::DirichletNeumannVolCoupl)
+      else if (method == INPAR::FSI::DirichletNeumannVolCoupl)
       {
         fsi = Teuchos::rcp(new FSI::DirichletNeumannVolCoupl(comm));
-        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVolCoupl>(fsi,true)->Setup();
+        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVolCoupl>(fsi, true)->Setup();
       }
       else
         dserror("unsupported partitioned FSI scheme");
@@ -699,35 +705,35 @@ void xfsi_drt()
     std::cout << "     _     _ _______ _______ _____" << std::endl;
     std::cout << "      \\\\__/  |______ |______   |  " << std::endl;
     std::cout << "     _/  \\\\_ |       ______| __|__" << std::endl;
-    std::cout <<  std::endl << std::endl;
+    std::cout << std::endl << std::endl;
   }
 
   DRT::Problem* problem = DRT::Problem::Instance();
-  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
   FLD::XFluid::SetupFluidDiscretization();
 
-  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid"); //at the moment, 'fluid'-discretization is used for ale!!!
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(
+      "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
-  //CREATE ALE
+  // CREATE ALE
   const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
-  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")),"ALE_XFluid");
+  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   Teuchos::RCP<DRT::Discretization> aledis;
   if (ale)
   {
     aledis = problem->GetDis("ale");
-    if(aledis == Teuchos::null)
-      dserror("XFSI DYNAMIC: ALE Discretization empty!!!");
+    if (aledis == Teuchos::null) dserror("XFSI DYNAMIC: ALE Discretization empty!!!");
 
-    aledis->FillComplete(true,true,true);
+    aledis->FillComplete(true, true, true);
 
-    //Create ALE elements if the ale discretization is empty
-    if (aledis->NumGlobalNodes()==0) // ALE discretization still empty
+    // Create ALE elements if the ale discretization is empty
+    if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
       aledis->FillComplete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -736,94 +742,95 @@ void xfsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
-        dserror("Fluid and ALE nodes have the same node numbers. "
-                "This it not allowed since it causes problems with Dirichlet BCs. "
-                "Use the ALE cloning functionality or ensure non-overlapping node numbering!"
-               );
-     }
+      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+        dserror(
+            "Fluid and ALE nodes have the same node numbers. "
+            "This it not allowed since it causes problems with Dirichlet BCs. "
+            "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
+    }
   }
 
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
-  case fsi_iter_xfem_monolithic:
-  {
-    // monolithic solver settings
-    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy
-      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
-
-    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
-      dserror("Only Newton-Krylov scheme with XFEM fluid");
-
-    // create the MonolithicXFEM object that does the whole work
-    Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
-
-    // read the restart information, set vectors and variables ---
-    // be careful, dofmaps might be changed here in a Redistribute call
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
+    case fsi_iter_xfem_monolithic:
     {
-      fsi->ReadRestart(restart);
+      // monolithic solver settings
+      const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+          DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+
+      if (linearsolverstrategy != INPAR::FSI::PreconditionedKrylov)
+        dserror("Only Newton-Krylov scheme with XFEM fluid");
+
+      // create the MonolithicXFEM object that does the whole work
+      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
+
+      // read the restart information, set vectors and variables ---
+      // be careful, dofmaps might be changed here in a Redistribute call
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        fsi->ReadRestart(restart);
+      }
+
+      // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
+      fsi->SetupSystem();
+
+      // here we go...
+      fsi->Timeloop();
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
+
+      //    // create FSI specific result test
+      //    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new
+      //    FSI::FSIResultTest(fsi,fsidyn)); DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
     }
-
-    // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
-    fsi->SetupSystem();
-
-    // here we go...
-    fsi->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-    fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
-
-//    // create FSI specific result test
-//    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-//    DRT::Problem::Instance()->AddFieldTest(fsitest);
-
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(comm);
-
-    break;
-  }
-  case fsi_pseudo_structureale:
-  case fsi_iter_monolithicfluidsplit:
-  case fsi_iter_monolithicstructuresplit:
-    dserror("Unreasonable choice");
-    break;
-  default:
-  {
-    // Any partitioned algorithm. Stable of working horses.
-
-    Teuchos::RCP<FSI::Partitioned> fsi;
-
-    INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
-
-    if (method==INPAR::FSI::DirichletNeumann)
+    case fsi_pseudo_structureale:
+    case fsi_iter_monolithicfluidsplit:
+    case fsi_iter_monolithicstructuresplit:
+      dserror("Unreasonable choice");
+      break;
+    default:
     {
-      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
-      fsi->Setup();
+      // Any partitioned algorithm. Stable of working horses.
+
+      Teuchos::RCP<FSI::Partitioned> fsi;
+
+      INPAR::FSI::PartitionedCouplingMethod method =
+          DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
+              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
+
+      if (method == INPAR::FSI::DirichletNeumann)
+      {
+        fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+        fsi->Setup();
+      }
+      else
+        dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->Timeloop(fsi);
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
     }
-    else
-      dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
-    {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
-    }
-
-    fsi->Timeloop(fsi);
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
-
-    break;
-  }
   }
 
   Teuchos::TimeMonitor::summarize();
@@ -846,33 +853,33 @@ void xfpsi_drt()
     std::cout << "     _     _ _______  ______  _______ _____" << std::endl;
     std::cout << "      \\\\__/  |______ ||____|  |______   |  " << std::endl;
     std::cout << "     _/  \\\\_ |       ||       ______| __|__" << std::endl;
-    std::cout <<  std::endl << std::endl;
+    std::cout << std::endl << std::endl;
   }
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  //1.-Initialization.
-   // setup of the discretizations, including clone strategy
-   POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+  // 1.-Initialization.
+  // setup of the discretizations, including clone strategy
+  POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
 
-   // setup of discretization for xfluid
-   FLD::XFluid::SetupFluidDiscretization();
-   Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid"); //at the moment, 'fluid'-discretization is used for ale!!!
+  // setup of discretization for xfluid
+  FLD::XFluid::SetupFluidDiscretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(
+      "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
   Teuchos::RCP<DRT::Discretization> aledis;
   const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
-  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")),"ALE_XFluid");
+  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   if (ale)
   {
-    aledis        = problem->GetDis("ale");
-    if(aledis == Teuchos::null) dserror("Ale Discretization empty!");
+    aledis = problem->GetDis("ale");
+    if (aledis == Teuchos::null) dserror("Ale Discretization empty!");
 
-    aledis->FillComplete(true,true,true);
+    aledis->FillComplete(true, true, true);
 
-    //3.- Create ALE elements if the ale discretization is empty
-    if (aledis->NumGlobalNodes()==0) // ALE discretization still empty
+    // 3.- Create ALE elements if the ale discretization is empty
+    if (aledis->NumGlobalNodes() == 0)  // ALE discretization still empty
     {
-
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
       aledis->FillComplete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -881,70 +888,75 @@ void xfpsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
-        dserror("Fluid and ALE nodes have the same node numbers. "
-                "This it not allowed since it causes problems with Dirichlet BCs. "
-                "Use the ALE cloning functionality or ensure non-overlapping node numbering!"
-               );
+      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+        dserror(
+            "Fluid and ALE nodes have the same node numbers. "
+            "This it not allowed since it causes problems with Dirichlet BCs. "
+            "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
     }
   }
 
   // print all dofsets
   fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());
 
-  //2.- Parameter reading
-  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+  // 2.- Parameter reading
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
 
   switch (coupling)
   {
-  case fsi_iter_xfem_monolithic:
-  {
-    // monolithic solver settings
-    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy
-      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
-
-    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
-      dserror("Only Newton-Krylov scheme with XFEM fluid");
-
-    Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn,ADAPTER::FieldWrapper::type_PoroField));;
-
-    // read the restart information, set vectors and variables ---
-
-    // be careful, dofmaps might be changed here in a Redistribute call
-    const int restart = DRT::Problem::Instance()->Restart(); //not adapated at the moment .... Todo check it .. ChrAg
-    if (restart)
+    case fsi_iter_xfem_monolithic:
     {
-      fsi->ReadRestart(restart);
+      // monolithic solver settings
+      const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+      INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+          DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+
+      if (linearsolverstrategy != INPAR::FSI::PreconditionedKrylov)
+        dserror("Only Newton-Krylov scheme with XFEM fluid");
+
+      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(
+          new FSI::MonolithicXFEM(comm, fsidyn, ADAPTER::FieldWrapper::type_PoroField));
+      ;
+
+      // read the restart information, set vectors and variables ---
+
+      // be careful, dofmaps might be changed here in a Redistribute call
+      const int restart =
+          DRT::Problem::Instance()
+              ->Restart();  // not adapated at the moment .... Todo check it .. ChrAg
+      if (restart)
+      {
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->SetupSystem();
+
+
+      // 3.2.- redistribute the FPSI interface
+      // Todo .... fsi->RedistributeInterface(); // this is required for paralles fpi-condition (not
+      // included in this commit)
+
+      // here we go...
+      fsi->Timeloop();
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+      break;
     }
-
-    fsi->SetupSystem();
-
-
-    //3.2.- redistribute the FPSI interface
-    //Todo .... fsi->RedistributeInterface(); // this is required for paralles fpi-condition (not included in this commit)
-
-    // here we go...
-    fsi->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-    fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
-
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(comm);
-    break;
-  }
-  case fsi_pseudo_structureale:
-  case fsi_iter_monolithicfluidsplit:
-  case fsi_iter_monolithicstructuresplit:
-    dserror("Unreasonable choice");
-    break;
-  default:
-  {
-    dserror("FPSI_XFEM: No Partitioned Algorithms implemented !!!");
-    break;
-  }
+    case fsi_pseudo_structureale:
+    case fsi_iter_monolithicfluidsplit:
+    case fsi_iter_monolithicstructuresplit:
+      dserror("Unreasonable choice");
+      break;
+    default:
+    {
+      dserror("FPSI_XFEM: No Partitioned Algorithms implemented !!!");
+      break;
+    }
   }
   Teuchos::TimeMonitor::summarize();
 }

@@ -11,11 +11,11 @@
 #ifndef IMMERSED_PROBLEM_DYN_H
 #define IMMERSED_PROBLEM_DYN_H
 
-  //! global immersed fsi algorithm.
-  void immersed_problem_drt();
+//! global immersed fsi algorithm.
+void immersed_problem_drt();
 
-  //! global immersed cell migration algorithm.
-  void CellMigrationControlAlgorithm();
+//! global immersed cell migration algorithm.
+void CellMigrationControlAlgorithm();
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef IMMERSED_PROBLEM_DYN_H*/

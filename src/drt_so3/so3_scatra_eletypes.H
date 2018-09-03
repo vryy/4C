@@ -25,222 +25,205 @@
 
 namespace DRT
 {
-// forward declarations
-class Discretization;
+  // forward declarations
+  class Discretization;
 
-namespace ELEMENTS
-{
-/*----------------------------------------------------------------------*
- |  HEX 8 Element                                       |
- *----------------------------------------------------------------------*/
-class So_hex8ScatraType : public So_hex8Type
-{
-public:
+  namespace ELEMENTS
+  {
+    /*----------------------------------------------------------------------*
+     |  HEX 8 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_hex8ScatraType : public So_hex8Type
+    {
+     public:
+      std::string Name() const { return "So_hex8ScatraType"; }
 
-  std::string Name() const { return "So_hex8ScatraType"; }
+      static So_hex8ScatraType& Instance();
 
-  static So_hex8ScatraType & Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static So_hex8ScatraType instance_;
+    };
 
-private:
 
-  static So_hex8ScatraType instance_;
-};
+    /*----------------------------------------------------------------------*
+     |  HEX 8 fbar Element                                        Thon 12/14 |
+     *----------------------------------------------------------------------*/
+    class So_hex8fbarScatraType : public So_hex8fbarType
+    {
+     public:
+      std::string Name() const { return "So_hex8fbarScatraType"; }
 
+      static So_hex8fbarScatraType& Instance();
 
-/*----------------------------------------------------------------------*
- |  HEX 8 fbar Element                                        Thon 12/14 |
- *----------------------------------------------------------------------*/
-class So_hex8fbarScatraType : public So_hex8fbarType
-{
-public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  std::string Name() const { return "So_hex8fbarScatraType"; }
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  static So_hex8fbarScatraType & Instance();
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+     private:
+      static So_hex8fbarScatraType instance_;
+    };
 
-  virtual int Initialize(DRT::Discretization& dis);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+    /*----------------------------------------------------------------------*
+     |  HEX 27 Solid Scatra Element                              thon 12/15 |
+     *----------------------------------------------------------------------*/
+    class So_hex27ScatraType : public So_hex27Type
+    {
+     public:
+      std::string Name() const { return "So_hex27ScatraType"; }
 
-private:
+      static So_hex27ScatraType& Instance();
 
-  static So_hex8fbarScatraType instance_;
-};
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-/*----------------------------------------------------------------------*
- |  HEX 27 Solid Scatra Element                              thon 12/15 |
- *----------------------------------------------------------------------*/
-class So_hex27ScatraType : public So_hex27Type
-{
-public:
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  std::string Name() const { return "So_hex27ScatraType"; }
+      virtual int Initialize(DRT::Discretization& dis);
 
-  static So_hex27ScatraType & Instance();
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+     private:
+      static So_hex27ScatraType instance_;
+    };
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+    /*----------------------------------------------------------------------*
+     |  TET 4 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_tet4ScatraType : public So_tet4Type
+    {
+     public:
+      std::string Name() const { return "So_tet4ScatraType"; }
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      static So_tet4ScatraType& Instance();
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-private:
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  static So_hex27ScatraType instance_;
-};
+      virtual int Initialize(DRT::Discretization& dis);
 
-/*----------------------------------------------------------------------*
- |  TET 4 Element                                       |
- *----------------------------------------------------------------------*/
-class So_tet4ScatraType : public So_tet4Type
-{
-public:
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  std::string Name() const { return "So_tet4ScatraType"; }
+     private:
+      static So_tet4ScatraType instance_;
+    };
 
-  static So_tet4ScatraType & Instance();
+    /*----------------------------------------------------------------------*
+     |  TET 10 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_tet10ScatraType : public So_tet10Type
+    {
+     public:
+      std::string Name() const { return "So_tet10ScatraType"; }
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      static So_tet10ScatraType& Instance();
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      virtual int Initialize(DRT::Discretization& dis);
 
-private:
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  static So_tet4ScatraType instance_;
-};
+     private:
+      static So_tet10ScatraType instance_;
+    };
 
-/*----------------------------------------------------------------------*
- |  TET 10 Element                                       |
- *----------------------------------------------------------------------*/
-class So_tet10ScatraType : public So_tet10Type
-{
-public:
+    /*----------------------------------------------------------------------*
+     |  WEDGE 6 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_weg6ScatraType : public So_weg6Type
+    {
+     public:
+      std::string Name() const { return "So_weg6ScatraType"; }
 
-  std::string Name() const { return "So_tet10ScatraType"; }
+      static So_weg6ScatraType& Instance();
 
-  static So_tet10ScatraType & Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static So_weg6ScatraType instance_;
+    };
 
-private:
 
-  static So_tet10ScatraType instance_;
-};
 
-/*----------------------------------------------------------------------*
- |  WEDGE 6 Element                                       |
- *----------------------------------------------------------------------*/
-class So_weg6ScatraType : public So_weg6Type
-{
-public:
+    /*----------------------------------------------------------------------*
+     |  NSTET 5 Element                                       |
+     *----------------------------------------------------------------------*/
 
-  std::string Name() const { return "So_weg6ScatraType"; }
+    /*
 
-  static So_weg6ScatraType & Instance();
+    class NStet5ScatraType : public NStet5Type
+    {
+    public:
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      std::string Name() const { return "NStet5ScatraType"; }
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      static NStet5ScatraType & Instance() { return instance_; };
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                                 const std::string eledistype,
+                                                 const int id,
+                                                 const int owner );
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-private:
+      virtual int Initialize(DRT::Discretization& dis);
 
-  static So_weg6ScatraType instance_;
-};
+      virtual void SetupElementDefinition(
+    std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
+    private:
 
-
-/*----------------------------------------------------------------------*
- |  NSTET 5 Element                                       |
- *----------------------------------------------------------------------*/
-
-/*
-
-class NStet5ScatraType : public NStet5Type
-{
-public:
-
-  std::string Name() const { return "NStet5ScatraType"; }
-
-  static NStet5ScatraType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
-
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
-
-  virtual int Initialize(DRT::Discretization& dis);
-
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-private:
-
-  static NStet5ScatraType instance_;
-};
-*/
-}
-}
+      static NStet5ScatraType instance_;
+    };
+    */
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif /* SO3_SCATRA_ELETYPES_H_ */

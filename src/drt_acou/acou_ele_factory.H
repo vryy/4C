@@ -22,32 +22,31 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    class AcouEleInterface;
 
-namespace ELEMENTS
-{
-  class AcouEleInterface;
+    class AcouFactory
+    {
+     public:
+      //! ctor
+      AcouFactory() { return; }
 
-class AcouFactory
-{
-public:
-  //! ctor
-  AcouFactory(){ return; }
+      //! dtor
+      virtual ~AcouFactory() { return; }
 
-  //! dtor
-  virtual ~AcouFactory(){ return; }
+      //! ProvideImpl
+      static AcouEleInterface* ProvideImpl(
+          DRT::Element::DiscretizationType distype, std::string problem);
 
-  //! ProvideImpl
-  static AcouEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem);
+     private:
+      //! define AcouEle instances dependent on problem
+      template <DRT::Element::DiscretizationType distype>
+      static AcouEleInterface* DefineProblemType(std::string problem);
+    };
 
-private:
-  //! define AcouEle instances dependent on problem
-  template<DRT::Element::DiscretizationType distype>
-  static AcouEleInterface* DefineProblemType(std::string problem);
+  }  // namespace ELEMENTS
 
-};
-
-} // namespace ELEMENTS
-
-} // namespace DRT
+}  // namespace DRT
 
 #endif /* ACOU_ELE_FACTORY_H_ */

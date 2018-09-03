@@ -22,56 +22,48 @@
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 namespace GEO
 {
-class CutWizard;
+  class CutWizard;
 }
 
 namespace XFEM
 {
-
-/// Alias dofset that shares dof numbers with another dofset
-/*!
-  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to nodes
-  belonging to two discretizations. This way two discretizations can assemble into the same position of the
-  system matrix.
-  As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a
-  sub-discretization, its dofs are assigned according to the dofs of the
-  source.
-  The source discretization can be a xfem discretization. In this case this  should be called with a
-  Fluidwizard not equal to zero to determine the  number of xfem dofs.
-
- */
-class XFEMTransparentIndependentDofSet : public virtual DRT::TransparentIndependentDofSet
-{
-public:
-
+  /// Alias dofset that shares dof numbers with another dofset
   /*!
-    \brief Standard Constructor
+    A special set of degrees of freedom, implemented in order to assign the same degrees of freedom
+    to nodes belonging to two discretizations. This way two discretizations can assemble into the
+    same position of the system matrix. As internal variable it holds a source discretization
+    (Constructor). If such a nodeset is assigned to a sub-discretization, its dofs are assigned
+    according to the dofs of the source. The source discretization can be a xfem discretization. In
+    this case this  should be called with a Fluidwizard not equal to zero to determine the  number
+    of xfem dofs.
+
    */
-  explicit XFEMTransparentIndependentDofSet(
-      Teuchos::RCP<DRT::Discretization> sourcedis,
-      bool parallel,
-      Teuchos::RCP<GEO::CutWizard> wizard
-  );
+  class XFEMTransparentIndependentDofSet : public virtual DRT::TransparentIndependentDofSet
+  {
+   public:
+    /*!
+      \brief Standard Constructor
+     */
+    explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
+        bool parallel, Teuchos::RCP<GEO::CutWizard> wizard);
 
-  /*!
-    \brief Destructor
-   */
-  virtual ~XFEMTransparentIndependentDofSet() { return; }
+    /*!
+      \brief Destructor
+     */
+    virtual ~XFEMTransparentIndependentDofSet() { return; }
 
-protected:
-  virtual int NumDofPerNode( const DRT::Node & node ) const;
+   protected:
+    virtual int NumDofPerNode(const DRT::Node& node) const;
 
 
-private:
-
-  Teuchos::RCP<GEO::CutWizard> wizard_;
-
-};
-}
+   private:
+    Teuchos::RCP<GEO::CutWizard> wizard_;
+  };
+}  // namespace XFEM
 
 #endif

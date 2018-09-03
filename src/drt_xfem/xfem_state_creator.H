@@ -25,32 +25,36 @@
 
 // forward declarations
 class Epetra_Vector;
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace DRT {
+}  // namespace Teuchos
+namespace DRT
+{
   class Discretization;
   class DiscretizationInterface;
   class DiscretizationXFEM;
-} // namespace DRT
-namespace GEO {
+}  // namespace DRT
+namespace GEO
+{
   class CutWizard;
-} // namespace GEO
-namespace XFEM {
+}  // namespace GEO
+namespace XFEM
+{
   class ConditionManager;
   class XFEMDofSet;
   class XFieldState;
 
   enum StateStatus
   {
-    state_unchanged =  0,
-    state_changed   =  1,
+    state_unchanged = 0,
+    state_changed = 1,
     state_undefined = -1
   };
 
-  static inline std::string StateStatus2String( enum StateStatus status )
+  static inline std::string StateStatus2String(enum StateStatus status)
   {
-    switch ( status )
+    switch (status)
     {
       case state_unchanged:
         return "state_unchanged";
@@ -61,26 +65,22 @@ namespace XFEM {
       default:
         return "Unknown XFEM::StateStatus";
     }
-    exit (EXIT_FAILURE);
+    exit(EXIT_FAILURE);
   }
 
   class StateCreator
   {
-  public:
+   public:
     //! constructor
     StateCreator();
 
     //! destructor
-    virtual ~StateCreator() {};
+    virtual ~StateCreator(){};
 
     //! initialize member variables
-    void Init(
-        const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::ParameterList&               params_xfem,
-        int                                         numdof,
-        int                                         maxnumdofsets,
-        int                                         minnumdofsets,
-        bool                                        include_inner);
+    void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+        const Teuchos::ParameterList& params_xfem, int numdof, int maxnumdofsets, int minnumdofsets,
+        bool include_inner);
 
     //! setup member variables
     virtual void Setup();
@@ -93,13 +93,9 @@ namespace XFEM {
      *  \param step          : current time step
      *  \param time          : current time
      */
-    Teuchos::RCP<XFieldState> Create(
-        const Teuchos::RCP<DRT::DiscretizationXFEM>& xfielddiscret,
-        Teuchos::RCP<const Epetra_Vector>            back_disp_col,
-        Teuchos::ParameterList &                     solver_params,
-        int                                          step,
-        double                                       time,
-        bool                                         dosetup);
+    Teuchos::RCP<XFieldState> Create(const Teuchos::RCP<DRT::DiscretizationXFEM>& xfielddiscret,
+        Teuchos::RCP<const Epetra_Vector> back_disp_col, Teuchos::ParameterList& solver_params,
+        int step, double time, bool dosetup);
 
     /*! create a state-object after a cut (XFEM with embedded standard mesh)
      *
@@ -112,21 +108,14 @@ namespace XFEM {
      *  \param dosetup       : call setup on the new state object
      */
     Teuchos::RCP<XFEM::XFieldState> Create(
-        const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret,
-        Teuchos::RCP<const Epetra_Vector>             back_disp_col,
-        Teuchos::ParameterList &                      solver_params,
-        int                                           step,
-        double                                        time,
-        bool                                          dosetup);
-    Teuchos::RCP<XFieldState> Create(
-        const Teuchos::RCP<DRT::DiscretizationXFEM>& xfielddiscret,
-        const Teuchos::RCP<DRT::Discretization> &    fielddiscret,
-        Teuchos::RCP<const Epetra_Vector>            back_disp_col,
-        Teuchos::ParameterList &                     solver_params,
-        int                                          step,
-        double                                       time,
-        bool                                         dosetup);
+        const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
+        const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret,
+        Teuchos::RCP<const Epetra_Vector> back_disp_col, Teuchos::ParameterList& solver_params,
+        int step, double time, bool dosetup);
+    Teuchos::RCP<XFieldState> Create(const Teuchos::RCP<DRT::DiscretizationXFEM>& xfielddiscret,
+        const Teuchos::RCP<DRT::Discretization>& fielddiscret,
+        Teuchos::RCP<const Epetra_Vector> back_disp_col, Teuchos::ParameterList& solver_params,
+        int step, double time, bool dosetup);
 
     /*! create a new cut wizard and complete the given state-object
      *
@@ -139,44 +128,33 @@ namespace XFEM {
      *  \param time          : current time
      *  \param dosetup       : call setup on the new state object
      */
-    void CompleteState(
-        const Teuchos::RCP<XFEM::XFieldState> & state,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret,
-        Teuchos::RCP<const Epetra_Vector> back_disp_col,
-        Teuchos::ParameterList &          solver_params,
-        int                               step,
-        double                            time,
-        bool                              dosetup);
-    void CompleteState(
-        const Teuchos::RCP<XFEM::XFieldState> &       state,
-        const Teuchos::RCP<DRT::DiscretizationXFEM> & xfielddiscret,
-        const Teuchos::RCP<DRT::Discretization> &     fielddiscret,
-        Teuchos::RCP<const Epetra_Vector>             back_disp_col,
-        Teuchos::ParameterList &                      solver_params,
-        int                                           step,
-        double                                        time,
-        bool                                          dosetup);
+    void CompleteState(const Teuchos::RCP<XFEM::XFieldState>& state,
+        const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
+        const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret,
+        Teuchos::RCP<const Epetra_Vector> back_disp_col, Teuchos::ParameterList& solver_params,
+        int step, double time, bool dosetup);
+    void CompleteState(const Teuchos::RCP<XFEM::XFieldState>& state,
+        const Teuchos::RCP<DRT::DiscretizationXFEM>& xfielddiscret,
+        const Teuchos::RCP<DRT::Discretization>& fielddiscret,
+        Teuchos::RCP<const Epetra_Vector> back_disp_col, Teuchos::ParameterList& solver_params,
+        int step, double time, bool dosetup);
 
-  protected:
+   protected:
     //! check the initialization indicator
     inline void CheckInit() const
     {
-      if (not isinit_)
-        dserror("Call Init() first!");
+      if (not isinit_) dserror("Call Init() first!");
     }
 
     //! check the initialization and setup indicators
     inline void CheckInitSetup() const
     {
-      if (not issetup_ or not isinit_)
-        dserror("Call Init() and Setup() first!");
+      if (not issetup_ or not isinit_) dserror("Call Init() and Setup() first!");
     }
 
-    void CreateCutWizard(
-        const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,
-        const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
-        Teuchos::RCP<GEO::CutWizard> &                wizard );
+    void CreateCutWizard(const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+        const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+        Teuchos::RCP<GEO::CutWizard>& wizard);
 
 
     //! factory routine to create the right xfield state corresponding to the problem type
@@ -185,12 +163,9 @@ namespace XFEM {
     //! factory routine to create the right xfield/field state corresponding to the problem type
     Teuchos::RCP<XFEM::XFieldState> CreateXFieldFieldState() const;
 
-  private:
-
-    enum StateStatus FinishBackgroundDiscretization(
-        const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
-        Teuchos::ParameterList &               solver_params,
-        DRT::DiscretizationXFEM &              xdiscret );
+   private:
+    enum StateStatus FinishBackgroundDiscretization(const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+        Teuchos::ParameterList& solver_params, DRT::DiscretizationXFEM& xdiscret);
 
     /*! \brief create wizard, perform cut, create new dofset and update xfem discretization
      *
@@ -202,13 +177,10 @@ namespace XFEM {
      *  \param step          : current time step
      *
      *  \return \c state_changed if the discretization dof set has been modified */
-    enum StateStatus CreateNewCutState(
-        Teuchos::RCP<XFEM::XFEMDofSet> &             xdofset,
-        Teuchos::RCP<GEO::CutWizard> &               wizard,
-        const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
-        const Teuchos::RCP<const Epetra_Vector> &    back_disp_col,
-        Teuchos::ParameterList &                     solver_params,
-        int                                          step);
+    enum StateStatus CreateNewCutState(Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+        Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+        const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+        Teuchos::ParameterList& solver_params, int step);
 
     /*! \brief add cutter states to the cut wizard if a condition manager was initialized
      *
@@ -216,7 +188,7 @@ namespace XFEM {
      */
     void AddCutterStates(Teuchos::RCP<GEO::CutWizard>& wizard);
 
-  protected:
+   protected:
     //! init indicator
     bool isinit_;
 
@@ -246,8 +218,8 @@ namespace XFEM {
 
     bool include_inner_;
 
-  }; // class StateCreator
-} // namespace XFEM
+  };  // class StateCreator
+}  // namespace XFEM
 
 
 #endif /* SRC_DRT_XFEM_XFEM_STATE_CREATOR_H_ */

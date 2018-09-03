@@ -13,7 +13,6 @@
 
 namespace STR
 {
-
   /*!
    * \brief Structural time integration with one-step-theta for cell migration
    *
@@ -32,20 +31,16 @@ namespace STR
    */
   class TimIntOneStepThetaImmersed : public TimIntOneStepTheta
   {
-
-public:
-
+   public:
     //! Constructor
-    TimIntOneStepThetaImmersed
-    (
-      const Teuchos::ParameterList& timeparams,  //!< time parameters
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntOneStepThetaImmersed(const Teuchos::ParameterList& timeparams,  //!< time parameters
+        const Teuchos::ParameterList& ioparams,                           //!< ioflags
+        const Teuchos::ParameterList& sdynparams,                         //!< input parameters
+        const Teuchos::ParameterList& xparams,                            //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     /*! \brief Initialize this object
@@ -69,12 +64,9 @@ public:
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -96,8 +88,7 @@ public:
     \author rauch  */
     virtual void Setup();
 
-protected:
-
+   protected:
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
     virtual void createFields();
 
@@ -105,17 +96,16 @@ protected:
     virtual void DetermineMass();
 
     //! check whether the initial conditions are fulfilled */
-    virtual void NonlinearMassSanityCheck
-    (
-      Teuchos::RCP<const Epetra_Vector> fext, ///< external forces
-      Teuchos::RCP<const Epetra_Vector> dis, ///< displacements
-      Teuchos::RCP<const Epetra_Vector> vel, ///< velocities
-      Teuchos::RCP<const Epetra_Vector> acc, ///< accelerations
-      const Teuchos::ParameterList* sdynparams=NULL ///< structural dynamics parameter list
-    ) const;
+    virtual void NonlinearMassSanityCheck(
+        Teuchos::RCP<const Epetra_Vector> fext,          ///< external forces
+        Teuchos::RCP<const Epetra_Vector> dis,           ///< displacements
+        Teuchos::RCP<const Epetra_Vector> vel,           ///< velocities
+        Teuchos::RCP<const Epetra_Vector> acc,           ///< accelerations
+        const Teuchos::ParameterList* sdynparams = NULL  ///< structural dynamics parameter list
+        ) const;
 
-  }; // class TimIntOneStepThetaCellmigration
-} // namespace STR
+  };  // class TimIntOneStepThetaCellmigration
+}  // namespace STR
 
 
 

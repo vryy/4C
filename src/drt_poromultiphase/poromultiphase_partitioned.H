@@ -18,25 +18,22 @@
 
 namespace POROMULTIPHASE
 {
-
   //! Base class of all solid-scatra algorithms
   class PoroMultiPhasePartitioned : public PoroMultiPhaseBase
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
-    PoroMultiPhasePartitioned(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);// Problem builder
+    PoroMultiPhasePartitioned(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     /// virtual destructor
     virtual ~PoroMultiPhasePartitioned(){};
 
 
-  }; //PoroMultiPhasePartitioned
+  };  // PoroMultiPhasePartitioned
 
 
-}
+}  // namespace POROMULTIPHASE
 
 
 #endif /* SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_PARTITIONED_H_ */

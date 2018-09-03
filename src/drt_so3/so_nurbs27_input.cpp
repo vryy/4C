@@ -18,24 +18,22 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(const std::string& eletype,
-                                                   const std::string& distype,
-                                                   DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  const int numgp=27;
+  const int numgp = 27;
   SolidMaterial()->Setup(numgp, linedef);
 
   // read possible gaussian points, obsolete for computation
   std::vector<int> ngp;
-  linedef->ExtractIntVector("GP",ngp);
-  for (int i=0; i<3; ++i)
-    if (ngp[i]!=3)
-      dserror("Only version with 3 GP for So_N27 implemented");
+  linedef->ExtractIntVector("GP", ngp);
+  for (int i = 0; i < 3; ++i)
+    if (ngp[i] != 3) dserror("Only version with 3 GP for So_N27 implemented");
 
   // we expect kintype to be total lagrangian
   kintype_ = INPAR::STR::kinem_nonlinearTotLag;

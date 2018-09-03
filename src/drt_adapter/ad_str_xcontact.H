@@ -21,31 +21,35 @@
 #include "ad_str_wrapper.H"
 #include "ad_str_structure_new.H"
 
-namespace XFEM {
+namespace XFEM
+{
   class XFieldState;
-} // namespace XFEM
-namespace XCONTACT {
+}  // namespace XFEM
+namespace XCONTACT
+{
   class MultiDiscretizationWrapper;
   class CutWizard;
   class StateCreator;
-} // namespace XCONTACT
-namespace STR {
-namespace MODELEVALUATOR {
-  class XContact;
-} // namespace MODELEVALUATOR
-} // namespace STR
-namespace ADAPTER {
+}  // namespace XCONTACT
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class XContact;
+  }  // namespace MODELEVALUATOR
+}  // namespace STR
+namespace ADAPTER
+{
   class StructureNew;
 
   class StructureXContact : public StructureWrapper
   {
-  public:
+   public:
     /// constructor
     explicit StructureXContact(const Teuchos::RCP<Structure>& structure);
 
     //! initialize member variables
-    void Init(const Teuchos::ParameterList& p_xfem_general,
-        const int& num_dof_per_node);
+    void Init(const Teuchos::ParameterList& p_xfem_general, const int& num_dof_per_node);
 
     //! setup member variables
     virtual void Setup();
@@ -69,33 +73,29 @@ namespace ADAPTER {
      * ToDo Add additional input variables.
      *
      * \date 06/16 */
-    void SetScaTraValuesInStructure_Np(
-        const Epetra_Vector& phi_np);
+    void SetScaTraValuesInStructure_Np(const Epetra_Vector& phi_np);
 
     /// access the weighted gap vector with slave normal dof row map layout (read-only)
-    const Epetra_Vector & GetWeightedGap() const;
+    const Epetra_Vector& GetWeightedGap() const;
 
-  protected:
+   protected:
     //! check the initialization indicator
     inline void CheckInit() const
     {
-      if (not isinit_)
-        dserror("Call Init() first!");
+      if (not isinit_) dserror("Call Init() first!");
     }
 
     //! check the initialization and setup indicators
     inline void CheckInitSetup() const
     {
-      if (not issetup_ or not isinit_)
-        dserror("Call Init() and Setup() first!");
+      if (not issetup_ or not isinit_) dserror("Call Init() and Setup() first!");
     }
 
     const Epetra_Comm& Comm() const;
 
     inline XCONTACT::StateCreator& StateCreator()
     {
-      if ( state_creator_ptr_.is_null() )
-        dserror( "The XFEM::StateCreator was not yet created!" );
+      if (state_creator_ptr_.is_null()) dserror("The XFEM::StateCreator was not yet created!");
       return *state_creator_ptr_;
     }
 
@@ -105,7 +105,10 @@ namespace ADAPTER {
 
     //! reference to the xstr multi discretization wrapper
     inline XCONTACT::MultiDiscretizationWrapper& MultiDiscret() { return *multi_discret_ptr_; }
-    inline const XCONTACT::MultiDiscretizationWrapper& MultiDiscret() const { return *multi_discret_ptr_; }
+    inline const XCONTACT::MultiDiscretizationWrapper& MultiDiscret() const
+    {
+      return *multi_discret_ptr_;
+    }
 
     //! get the xcontact model (read and write)
     STR::MODELEVALUATOR::XContact& XContactModel();
@@ -123,14 +126,14 @@ namespace ADAPTER {
 
     void PreSolve();
 
-  protected:
+   protected:
     //! initialization indicator
     bool isinit_;
 
     //! setup indicator
     bool issetup_;
 
-  private:
+   private:
     //! Pointer to the new structure object
     Teuchos::RCP<StructureNew> structure_ptr_;
 
@@ -151,9 +154,8 @@ namespace ADAPTER {
     int state_count_;
 
     bool iscontact_;
-
   };
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 
 #endif /* SRC_DRT_ADAPTER_AD_STR_XCONTACT_H_ */

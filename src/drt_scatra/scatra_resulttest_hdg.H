@@ -27,22 +27,19 @@ namespace SCATRA
   // class implementation
   class HDGResultTest : public ScaTraResultTest
   {
-    public:
+   public:
+    //! constructor
+    HDGResultTest(Teuchos::RCP<ScaTraTimIntImpl> timint);
 
-      //! constructor
-      HDGResultTest(Teuchos::RCP<ScaTraTimIntImpl> timint);
+   private:
+    //! get nodal result to be tested
+    virtual double ResultNode(const std::string quantity,  //! name of quantity to be tested
+        DRT::Node* node                                    //! node carrying the result to be tested
+        ) const;
 
-    private:
+    //! time integrator
+    Teuchos::RCP<const TimIntHDG> scatratiminthdg_;
 
-      //! get nodal result to be tested
-      virtual double ResultNode(
-          const std::string   quantity,   //! name of quantity to be tested
-          DRT::Node*          node        //! node carrying the result to be tested
-          ) const;
-
-      //! time integrator
-      Teuchos::RCP<const TimIntHDG> scatratiminthdg_;
-
-  }; // class HDGResultTest : public ScaTraResultTest
-} // namespace SCATRA
+  };  // class HDGResultTest : public ScaTraResultTest
+}  // namespace SCATRA
 #endif

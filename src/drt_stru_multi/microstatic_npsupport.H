@@ -24,5 +24,5 @@ namespace STRUMULTI
   void np_support_drt();
 
 
-} // namespace STRUMULTI
+}  // namespace STRUMULTI
 #endif

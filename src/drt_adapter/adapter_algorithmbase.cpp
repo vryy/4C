@@ -27,13 +27,11 @@ Maintainer: Martin Kronbichler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::AlgorithmBase::AlgorithmBase(const Epetra_Comm& comm,
-                                      const Teuchos::ParameterList& timeparams)
-  : comm_(comm),
-    printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
+ADAPTER::AlgorithmBase::AlgorithmBase(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : comm_(comm), printscreen_(DRT::Problem::Instance()->IOParams().get<int>("STDOUTEVRY"))
 {
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(IO::cout, timeparams);
+  if (comm_.MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, timeparams);
 
   step_ = 0;
   time_ = 0.;
@@ -56,14 +54,13 @@ void ADAPTER::AlgorithmBase::SetTimeStep(const double time, const int step)
 /*----------------------------------------------------------------------*/
 void ADAPTER::AlgorithmBase::PrintHeader()
 {
-  if (Comm().MyPID()==0 and printscreen_ and (step_%printscreen_==0))
+  if (Comm().MyPID() == 0 and printscreen_ and (step_ % printscreen_ == 0))
   {
     IO::cout << "\n"
              << method_ << "\n"
-             << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-             << "     DT = " << std::scientific << dt_
-             << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
-             << "\n\n";
+             << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
+             << "     DT = " << std::scientific << dt_ << "     STEP = " YELLOW_LIGHT
+             << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_ << "\n\n";
   }
 }
 

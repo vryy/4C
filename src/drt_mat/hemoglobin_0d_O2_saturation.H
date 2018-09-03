@@ -18,22 +18,19 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for Hemoglobin 0D O2 saturation material
     ///
     class Hemoglobin_0d_O2_saturation : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
       Hemoglobin_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Hemoglobin_0d_O2_saturation() { }
+      virtual ~Hemoglobin_0d_O2_saturation() {}
 
       /// @name material parameters
       //@{
@@ -59,16 +56,14 @@ namespace MAT
 
   class Hemoglobin_0d_O2_saturationType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "hemoglobin_0d_O2_saturationType"; }
 
-    static Hemoglobin_0d_O2_saturationType & Instance() { return instance_; };
+    static Hemoglobin_0d_O2_saturationType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static Hemoglobin_0d_O2_saturationType instance_;
   };
 
@@ -78,8 +73,7 @@ namespace MAT
   /// This object exists (several times) at every element
   class Hemoglobin_0d_O2_saturation : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Hemoglobin_0d_O2_saturation();
 
@@ -94,7 +88,10 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return Hemoglobin_0d_O2_saturationType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return Hemoglobin_0d_O2_saturationType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -125,13 +122,19 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_0d_o2_hemoglobin_saturation; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_0d_o2_hemoglobin_saturation;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Hemoglobin_0d_O2_saturation( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new Hemoglobin_0d_O2_saturation(*this));
+    }
 
-    ///how much of blood satisfies this rule
-    double PerVolumeBlood() const {return params_->per_volume_blood_;}
+    /// how much of blood satisfies this rule
+    double PerVolumeBlood() const { return params_->per_volume_blood_; }
 #if 0
     ///The dominating value of E at zero O2 saturation
     double EoLower() const {return params_->eo_lower_;}
@@ -154,23 +157,21 @@ namespace MAT
     ///Upper VO2 translator
     double VO2oUpper() const {return params_->vO2o_upper_;}
 #else
-    double O2SaturationPerVolumeBlood() const {return params_->o2_sat_per_vol_blood_;}
-    double ReferencePressure () const {return params_->p_half_;}
-    double SigmoidalPower() const {return params_->power_;}
+    double O2SaturationPerVolumeBlood() const { return params_->o2_sat_per_vol_blood_; }
+    double ReferencePressure() const { return params_->p_half_; }
+    double SigmoidalPower() const { return params_->power_; }
 #endif
-    ///Number of O2 moles per VO2
-    double NumO2PerVO2() const { return params_->nO2_per_VO2_;}
+    /// Number of O2 moles per VO2
+    double NumO2PerVO2() const { return params_->nO2_per_VO2_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Hemoglobin_0d_O2_saturation* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

@@ -24,25 +24,24 @@
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 namespace INVANA
 {
-// forward declarations
-class InvanaControl;
-class MatParManager;
+  // forward declarations
+  class InvanaControl;
+  class MatParManager;
 
 
-/*!
-\brief Invana specific result test class
+  /*!
+  \brief Invana specific result test class
 
-\author keh
-*/
-class InvanaResultTest : public DRT::ResultTest
-{
-public:
-
+  \author keh
+  */
+  class InvanaResultTest : public DRT::ResultTest
+  {
+   public:
     /*!
     \brief not documented yet
     */
@@ -51,16 +50,16 @@ public:
     virtual ~InvanaResultTest(){};
 
     /*!
-    Possible flag is the name of the material parameter as used by the material, e.g AAAstopro: YOUNG or BETA
+    Possible flag is the name of the material parameter as used by the material, e.g AAAstopro:
+    YOUNG or BETA
     */
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) {return;}
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) { return; }
 
-private:
-
+   private:
     //! pointer to discretization
     Teuchos::RCP<DRT::Discretization> discret_;
 
@@ -72,11 +71,8 @@ private:
 
     //! the inverse analysis algorithm object
     InvanaControl& ia_;
-
-
-
-};
-} //namespace INVANA
+  };
+}  // namespace INVANA
 
 
 #endif

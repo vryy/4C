@@ -24,21 +24,21 @@ Maintainer: Martin Kronbichler
 
 /*----------------------------------------------------------------------*/
 /* content */
-namespace DRT {
-
-  namespace INPUT {
-
+namespace DRT
+{
+  namespace INPUT
+  {
     /// Auxiliar routine to boolify integral Yes/No data
     ///
     /// Parameters consisting integral values for Yes/No tuples
     /// are removed and replaced by a bool parameter holding true/false
     /// respectively.
     void BoolifyValidInputParameters(
-      Teuchos::ParameterList& list  ///< the valid input parameter list
-      );
+        Teuchos::ParameterList& list  ///< the valid input parameter list
+    );
 
   }  // namespace INPUT
-}  // namespace NOX
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef DRT_BOOLIFYPARAMETERS_H

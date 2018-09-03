@@ -39,16 +39,13 @@ Maintainer: Alexander Seitz
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
     class PlasticNlnLogNeoHooke : public Parameter
     {
-    public:
-
+     public:
       //! standard constructor
       PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
 
@@ -89,16 +86,14 @@ namespace MAT
 
   class PlasticNlnLogNeoHookeType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "PlasticNlnLogNeoHookeType"; }
 
-    static PlasticNlnLogNeoHookeType & Instance() { return instance_; };
+    static PlasticNlnLogNeoHookeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static PlasticNlnLogNeoHookeType instance_;
 
   };  // class PlasticNlnLogNeoHookeType
@@ -107,8 +102,7 @@ namespace MAT
   //! wrapper for finite strain elasto-plastic material
   class PlasticNlnLogNeoHooke : public So3Material
   {
-  public:
-
+   public:
     //! construct empty material object
     PlasticNlnLogNeoHooke();
 
@@ -163,11 +157,16 @@ namespace MAT
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticNlnLogNeoHooke( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new PlasticNlnLogNeoHooke(*this));
+    }
 
     //! density
     virtual double Density() const { return params_->density_; }
@@ -180,17 +179,13 @@ namespace MAT
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double AccumulatedStrain(int gp)
-    const { return ( accplstrainlast_->at(gp) ); }
+    double AccumulatedStrain(int gp) const { return (accplstrainlast_->at(gp)); }
 
     //! check if history variables are already initialized
-    bool Initialized() const
-    {
-      return ( isinit_ and (accplstraincurr_!=Teuchos::null) );
-    }
+    bool Initialized() const { return (isinit_ and (accplstraincurr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     //! return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
@@ -210,31 +205,29 @@ namespace MAT
 
     //! evaluate material law
     virtual void Evaluate(
-      const LINALG::Matrix<3,3>* defgrd,  //!< input deformation gradient for multiplicative sp
-      const LINALG::Matrix<6,1>* glstrain,  //!< input Green-Lagrange strain (redundant with defo
-                                            //   but used for neo-hooke evaluation; maybe remove
-      Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
-      LINALG::Matrix<6,1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-      LINALG::Matrix<6,6>* cmat,  //!< output (mandatory) material stiffness matrix
-      const int eleGID
-      );
+        const LINALG::Matrix<3, 3>* defgrd,    //!< input deformation gradient for multiplicative sp
+        const LINALG::Matrix<6, 1>* glstrain,  //!< input Green-Lagrange strain (redundant with defo
+                                               //   but used for neo-hooke evaluation; maybe remove
+        Teuchos::ParameterList& params,        //!< input paramter list (e.g. Young's, ...)
+        LINALG::Matrix<6, 1>* stress,          //!< output (mandatory) second Piola-Kirchhoff stress
+        LINALG::Matrix<6, 6>* cmat,            //!< output (mandatory) material stiffness matrix
+        const int eleGID);
 
     //@}
 
-  private:
-
+   private:
     //! my material parameters
     MAT::PAR::PlasticNlnLogNeoHooke* params_;
 
     //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > invplrcglast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> invplrcglast_;
     //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > invplrcgcurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> invplrcgcurr_;
 
     //! old (i.e. at t_n) accumulated palstic strain
-    Teuchos::RCP<std::vector<double> > accplstrainlast_;
+    Teuchos::RCP<std::vector<double>> accplstrainlast_;
     //! current (i.e. at t_n+1) accumulated palstic strain
-    Teuchos::RCP<std::vector<double> > accplstraincurr_;
+    Teuchos::RCP<std::vector<double>> accplstraincurr_;
 
     //! indicator if #Initialize routine has been called
     bool isinit_;

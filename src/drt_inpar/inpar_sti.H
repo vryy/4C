@@ -26,7 +26,7 @@ namespace DRT
   {
     class ConditionDefinition;
   }
-}
+}  // namespace DRT
 
 namespace INPAR
 {
@@ -64,7 +64,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     //! set valid conditions for scatra-thermo interaction
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
-  } // namespace STI
-} // namespace INPAR
-#endif // #ifndef INPAR_STI_H
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+  }  // namespace STI
+}  // namespace INPAR
+#endif  // #ifndef INPAR_STI_H

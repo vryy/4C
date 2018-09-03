@@ -26,21 +26,21 @@
 
 namespace dealii
 {
- /**
-  * This class acts like the dealii::Triangulation class, but it
-  * distributes the mesh across a number of different processors when using
-  * MPI using the parallel distribution of DRT::Discretization. The functionality
-  * considerably reduced as compared to dealii::Triangulation, in particular,
-  * we do not allow the grid to be refined. This is because the parallel distribution
-  * of the mesh would change and there are no data communication facilities in deal.II
-  * for this cases. However, this is not expected, either, because we have the mesh
-  * available in DRT::Discretization and have no means to get reasonable data back from
-  * a different deal.II mesh.
-  */
+  /**
+   * This class acts like the dealii::Triangulation class, but it
+   * distributes the mesh across a number of different processors when using
+   * MPI using the parallel distribution of DRT::Discretization. The functionality
+   * considerably reduced as compared to dealii::Triangulation, in particular,
+   * we do not allow the grid to be refined. This is because the parallel distribution
+   * of the mesh would change and there are no data communication facilities in deal.II
+   * for this cases. However, this is not expected, either, because we have the mesh
+   * available in DRT::Discretization and have no means to get reasonable data back from
+   * a different deal.II mesh.
+   */
   template <int dim>
-  class DistributedTriangulation : public Triangulation<dim,dim>
+  class DistributedTriangulation : public Triangulation<dim, dim>
   {
-  public:
+   public:
     /**
      * A typedef that is used to to identify cell iterators. See the deal.II
      * documentation for details.
@@ -57,7 +57,7 @@ namespace dealii
      *
      * @ingroup Iterators
      */
-    typedef typename dealii::Triangulation<dim,dim>::cell_iterator        cell_iterator;
+    typedef typename dealii::Triangulation<dim, dim>::cell_iterator cell_iterator;
 
     /**
      * A typedef that is used to to identify "active cell iterators". See the
@@ -75,7 +75,7 @@ namespace dealii
      *
      * @ingroup Iterators
      */
-    typedef typename dealii::Triangulation<dim,dim>::active_cell_iterator active_cell_iterator;
+    typedef typename dealii::Triangulation<dim, dim>::active_cell_iterator active_cell_iterator;
 
     /**
      * Constructor.
@@ -112,9 +112,8 @@ namespace dealii
 
 
   template <int dim>
-  void assign_dg_dofs(const FiniteElement<dim> &fe,
-                      DoFHandler<dim>          &dof_handler);
-}
+  void assign_dg_dofs(const FiniteElement<dim> &fe, DoFHandler<dim> &dof_handler);
+}  // namespace dealii
 
 #endif
 

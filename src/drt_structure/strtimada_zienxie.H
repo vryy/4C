@@ -28,7 +28,6 @@
 /* belongs to structure namespace */
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Time step size adaptivity with Zienkiewicz-Xie error indicator
@@ -45,15 +44,11 @@ namespace STR
    */
   class TimAdaZienXie : public TimAda
   {
-
-  public:
-
+   public:
     //! Constructor
-    TimAdaZienXie
-    (
-      const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
-      const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-      Teuchos::RCP<TimInt> tis  //!< marching time integrator
+    TimAdaZienXie(const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
+        const Teuchos::ParameterList& adaparams,             //!< adaptive input flags
+        Teuchos::RCP<TimInt> tis                             //!< marching time integrator
     );
 
     //! Destructor
@@ -80,51 +75,31 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const
-    {
-      return INPAR::STR::timada_kind_zienxie;
-    }
+    enum INPAR::STR::TimAdaKind MethodName() const { return INPAR::STR::timada_kind_zienxie; }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyDis() const
-    {
-      return 3;
-    }
+    int MethodOrderOfAccuracyDis() const { return 3; }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyVel() const
-    {
-      return 2;
-    }
+    int MethodOrderOfAccuracyVel() const { return 2; }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const
-    {
-      return -1.0/24.0;
-    }
+    double MethodLinErrCoeffDis() const { return -1.0 / 24.0; }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const
-    {
-      return -1.0/12.0;
-    }
+    double MethodLinErrCoeffVel() const { return -1.0 / 12.0; }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis() const
-    {
-      return ada_upward;
-    }
+    enum AdaEnum MethodAdaptDis() const { return ada_upward; }
 
     //@}
 
-  protected:
-
+   protected:
     //! not wanted: = operator
-    TimAdaZienXie operator = (const TimAdaZienXie& old);
+    TimAdaZienXie operator=(const TimAdaZienXie& old);
 
     //! not wanted: copy constructor
     TimAdaZienXie(const TimAdaZienXie& old);
-
   };
 
 }  // namespace STR

@@ -11,20 +11,23 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
 }
 
-namespace INPAR {
-namespace LOCA {
-  //! Set valid loca continuation parameters
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+namespace INPAR
+{
+  namespace LOCA
+  {
+    //! Set valid loca continuation parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  void SetValidPredictorParams(Teuchos::ParameterList& predictor);
+    void SetValidPredictorParams(Teuchos::ParameterList& predictor);
 
-  void SetValidBorderedSolverMethod(Teuchos::ParameterList& list);
-} // namespace LOCA
-} // namespace INPAR
+    void SetValidBorderedSolverMethod(Teuchos::ParameterList& list);
+  }  // namespace LOCA
+}  // namespace INPAR
 
 
 #endif /* SRC_DRT_INPAR_INPAR_LOCA_CONTINUATION_H_ */

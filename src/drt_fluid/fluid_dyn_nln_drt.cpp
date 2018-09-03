@@ -54,8 +54,8 @@ void dyn_fluid_drt(const int restart)
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 
   // access to some parameter lists
-  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  // const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
 
   // prepares a turbulent flow simulation with generation of turbulent inflow during the
   // actual simulation
@@ -63,10 +63,11 @@ void dyn_fluid_drt(const int restart)
   // 1. computation of inflow until it reaches a fully turbulent state
   // 2. computation of the main problem after restart
   // Remark: we restart the simulation to save procs!
-  if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true) and
-     (restart<fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
+  if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+          true) and
+      (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
   {
-    if (comm.MyPID()==0)
+    if (comm.MyPID() == 0)
     {
       std::cout << "#-----------------------------------------------#" << std::endl;
       std::cout << "#      ENTER TURBULENT INFLOW COMPUTATION       #" << std::endl;
@@ -74,7 +75,8 @@ void dyn_fluid_drt(const int restart)
     }
 
     // create instance of fluid turbulent flow algorithm
-    Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo = Teuchos::rcp(new FLD::TurbulentFlowAlgorithm(comm,fdyn));
+    Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo =
+        Teuchos::rcp(new FLD::TurbulentFlowAlgorithm(comm, fdyn));
 
     // read the restart information, set vectors and variables
     if (restart) turbfluidalgo->ReadRestart(restart);
@@ -94,13 +96,14 @@ void dyn_fluid_drt(const int restart)
   else
   {
     // create instance of fluid basis algorithm
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo =
+        Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
 
     // read the restart information, set vectors and variables
     if (restart) fluidalgo->FluidField()->ReadRestart(restart);
 
     // run the simulation
-//    fluidalgo->FluidField()->TimeLoop();
+    //    fluidalgo->FluidField()->TimeLoop();
     fluidalgo->FluidField()->Integrate();
 
     // perform result tests if required
@@ -111,5 +114,4 @@ void dyn_fluid_drt(const int restart)
   // have fun with your results!
   return;
 
-} // end of dyn_fluid_drt()
-
+}  // end of dyn_fluid_drt()

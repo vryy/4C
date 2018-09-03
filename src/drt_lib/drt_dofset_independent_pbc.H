@@ -29,53 +29,48 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
-
-/*!
-\brief A set of degrees of freedom
-
-\author
-*/
-class IndependentPBCDofSet: public IndependentDofSet, public PBCDofSet
-{
-public:
+  class Discretization;
 
   /*!
-  \brief Standard Constructor
+  \brief A set of degrees of freedom
 
-
-  <pre>
-
-  create a dofset that is independent of the other dofsets
-
-  </pre>
-
-  \return void
-
+  \author
   */
-  IndependentPBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~IndependentPBCDofSet();
-
-  /// create a copy of this object
-  virtual Teuchos::RCP<DofSet> Clone()
+  class IndependentPBCDofSet : public IndependentDofSet, public PBCDofSet
   {
-    return Teuchos::rcp(new IndependentPBCDofSet(*this));
-  }
+   public:
+    /*!
+    \brief Standard Constructor
 
-  /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
-protected:
+    <pre>
 
-private:
+    create a dofset that is independent of the other dofsets
 
-}; // class IndependentPBCDofSet
+    </pre>
 
-} // namespace DRT
+    \return void
+
+    */
+    IndependentPBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
+
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~IndependentPBCDofSet();
+
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new IndependentPBCDofSet(*this)); }
+
+    /// Assign dof numbers using all elements and nodes of the discretization.
+    virtual int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start);
+
+   protected:
+   private:
+  };  // class IndependentPBCDofSet
+
+}  // namespace DRT
 
 #endif  // #ifndef DOFSET_INDEPENDENT_H

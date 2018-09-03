@@ -35,12 +35,10 @@ XFEM::XFieldState::XFieldState()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::XFieldState::Init(
-    const Teuchos::RCP<XFEM::ConditionManager> &     condition_manager,
-    const Teuchos::RCP<GEO::CutWizard> &             wizard,
-    const Teuchos::RCP<XFEM::XFEMDofSet> &           xdofset,
-    const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-    const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret)
+void XFEM::XFieldState::Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+    const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+    const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
+    const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret)
 {
   // Ensure, that the Setup() routines are called afterwards.
   issetup_ = false;
@@ -50,7 +48,7 @@ void XFEM::XFieldState::Init(
 
   xdofset_ = xdofset;
 
-   // store a pointer to the field discretization
+  // store a pointer to the field discretization
   field_discret_ptr_ = fielddiscret;
 
   // store a pointer to the xfield discretization
@@ -61,7 +59,7 @@ void XFEM::XFieldState::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFEM::XFieldState::SetNewState( const XFEM::XFieldState & xstate )
+void XFEM::XFieldState::SetNewState(const XFEM::XFieldState& xstate)
 {
   this->isinit_ = xstate.isinit_;
   this->issetup_ = xstate.issetup_;

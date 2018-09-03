@@ -2,7 +2,8 @@
 /*!
  \file poro_density_law.cpp
 
- \brief calculation classes for evaluation of constitutive relation for (mircroscopic) density in porous media
+ \brief calculation classes for evaluation of constitutive relation for (mircroscopic) density in
+ porous media
 
    \level 3
 
@@ -37,27 +38,28 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
     dserror("Sorry dude, no materials defined.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matID);
+  Teuchos::RCP<MAT::PAR::Material> curmat =
+      DRT::Problem::Instance(probinst)->Materials()->ById(matID);
 
   switch (curmat->Type())
   {
-  case INPAR::MAT::m_poro_densitylaw_constant:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
-    densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
-    break;
-  }
-  case INPAR::MAT::m_poro_densitylaw_exp:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));
-    densitylaw = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
-    break;
-  }
-  default:
-    dserror("invalid material for density law %d", curmat->Type());
-    break;
+    case INPAR::MAT::m_poro_densitylaw_constant:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
+      densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
+      break;
+    }
+    case INPAR::MAT::m_poro_densitylaw_exp:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));
+      densitylaw = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
+      break;
+    }
+    default:
+      dserror("invalid material for density law %d", curmat->Type());
+      break;
   }
 
   return densitylaw;
@@ -65,65 +67,49 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::PoroDensityLawExp::PoroDensityLawExp(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: PoroDensityLaw(matdata),
-  bulkmodulus_(matdata->GetDouble("BULKMODULUS"))
+MAT::PAR::PoroDensityLawExp::PoroDensityLawExp(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : PoroDensityLaw(matdata), bulkmodulus_(matdata->GetDouble("BULKMODULUS"))
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::PoroDensityLawExp::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::PoroDensityLawExp::CreateMaterial() { return Teuchos::null; }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::PAR::PoroDensityLawExp::ComputeCurDensity(const double& refdensity, const double& press)
 {
-  return Teuchos::null;
+  return refdensity * exp(press / bulkmodulus_);
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeCurDensity(
-    const double& refdensity,
-    const double& press
-    )
+ *----------------------------------------------------------------------*/
+double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensity(const double& press)
 {
-  return refdensity*exp(press/bulkmodulus_);
+  return exp(-1.0 * press / bulkmodulus_);
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensity(
-    const double& press
-    )
+ *----------------------------------------------------------------------*/
+double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensityDerivative(const double& press)
 {
-  return exp(-1.0*press/bulkmodulus_);
+  return -1.0 / bulkmodulus_ * exp(-1.0 * press / bulkmodulus_);
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
-double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensityDerivative(
-    const double& press
-    )
-{
-  return -1.0/bulkmodulus_*exp(-1.0*press/bulkmodulus_);
-}
-
-/*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 double MAT::PAR::PoroDensityLawExp::ComputeRefDensityToCurDensitySecondDerivative(
-    const double& press
-    )
+    const double& press)
 {
-  return 1.0/(bulkmodulus_*bulkmodulus_)*exp(-1.0*press/bulkmodulus_);
+  return 1.0 / (bulkmodulus_ * bulkmodulus_) * exp(-1.0 * press / bulkmodulus_);
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 double MAT::PAR::PoroDensityLawExp::ComputeCurDensityDerivative(
-    const double& refdensity,
-    const double& press
-    )
+    const double& refdensity, const double& press)
 {
-  return refdensity/bulkmodulus_*exp(press/bulkmodulus_);
+  return refdensity / bulkmodulus_ * exp(press / bulkmodulus_);
 }

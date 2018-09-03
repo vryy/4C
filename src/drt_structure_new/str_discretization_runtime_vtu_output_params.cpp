@@ -20,9 +20,7 @@
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams()
-    : isinit_(false),
-      issetup_(false),
-      output_displacement_state_(false)
+    : isinit_(false), issetup_(false), output_displacement_state_(false)
 {
   // empty constructor
 }
@@ -30,7 +28,7 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
-    const Teuchos::ParameterList& IO_vtk_structure_structure_paramslist )
+    const Teuchos::ParameterList& IO_vtk_structure_structure_paramslist)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -38,7 +36,7 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
   // initialize the parameter values
 
   output_displacement_state_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
 
   isinit_ = true;
 }
@@ -47,8 +45,7 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Setup()
 {
-  if ( not IsInit() )
-    dserror("Init() has not been called, yet!");
+  if (not IsInit()) dserror("Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -59,6 +56,5 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::CheckInitSetup() const
 {
-  if ( not IsInit() or not IsSetup() )
-    dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }

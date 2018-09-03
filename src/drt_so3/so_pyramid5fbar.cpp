@@ -19,41 +19,40 @@
 DRT::ELEMENTS::So_pyramid5fbarType DRT::ELEMENTS::So_pyramid5fbarType::instance_;
 
 
-DRT::ELEMENTS::So_pyramid5fbarType & DRT::ELEMENTS::So_pyramid5fbarType::Instance()
+DRT::ELEMENTS::So_pyramid5fbarType& DRT::ELEMENTS::So_pyramid5fbarType::Instance()
 {
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_pyramid5fbar* object = new DRT::ELEMENTS::So_pyramid5fbar(-1,-1);
+  DRT::ELEMENTS::So_pyramid5fbar* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create( const std::string eletype,
-                                                            const std::string eledistype,
-                                                            const int id,
-                                                            const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create(
+    const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if ( eletype=="SOLIDP5FBAR" )
+  if (eletype == "SOLIDP5FBAR")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation(
+    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -61,29 +60,30 @@ void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation( DRT::Element * d
   np = 0;
 }
 
-void DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace(
+    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
-void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDP5FBAR"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDP5FBAR"];
 
   defs["PYRAMID5"]
-    .AddIntVector("PYRAMID5",5)
-    .AddNamedInt("MAT")
-    .AddNamedString("KINEM")
-    .AddOptionalNamedDoubleVector("RAD",3)
-    .AddOptionalNamedDoubleVector("AXI",3)
-    .AddOptionalNamedDoubleVector("CIR",3)
-    .AddOptionalNamedDoubleVector("FIBER1",3)
-    .AddOptionalNamedDoubleVector("FIBER2",3)
-    .AddOptionalNamedDoubleVector("FIBER3",3)
-    .AddOptionalNamedDouble("HU")
-    .AddOptionalNamedDouble("lambda")
-    .AddOptionalNamedDouble("GROWTHTRIG")
-    ;
+      .AddIntVector("PYRAMID5", 5)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3)
+      .AddOptionalNamedDouble("HU")
+      .AddOptionalNamedDouble("lambda")
+      .AddOptionalNamedDouble("GROWTHTRIG");
 }
 
 
@@ -91,11 +91,11 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition( std::map<std::s
  |  ctor (public)                                           seitz 03/15 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner) :
-DRT::ELEMENTS::So_pyramid5(id,owner)
+DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
+    : DRT::ELEMENTS::So_pyramid5(id, owner)
 {
-  if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5,NUMGPT_SOP5+1));
+  if (pstype_ == INPAR::STR::prestress_mulf)
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
 }
 
@@ -103,8 +103,8 @@ DRT::ELEMENTS::So_pyramid5(id,owner)
  |  copy-ctor (public)                                      seitz 03/15 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(const DRT::ELEMENTS::So_pyramid5fbar& old) :
-DRT::ELEMENTS::So_pyramid5(old)
+DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(const DRT::ELEMENTS::So_pyramid5fbar& old)
+    : DRT::ELEMENTS::So_pyramid5(old)
 {
   return;
 }
@@ -125,12 +125,12 @@ DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_pyramid5fbar::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
   // add base class So_pyramid5 Element
   DRT::ELEMENTS::So_pyramid5::Pack(data);
 
@@ -146,25 +146,22 @@ void DRT::ELEMENTS::So_pyramid5fbar::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   DRT::ELEMENTS::So_pyramid5::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            seitz 03/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_pyramid5fbar::~So_pyramid5fbar()
-{
-  return;
-}
+DRT::ELEMENTS::So_pyramid5fbar::~So_pyramid5fbar() { return; }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              seitz 03/15 |
@@ -177,4 +174,3 @@ void DRT::ELEMENTS::So_pyramid5fbar::Print(std::ostream& os) const
   std::cout << data_;
   return;
 }
-

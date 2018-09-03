@@ -20,38 +20,45 @@
 #include "ad_str_structure.H"
 
 
-namespace Teuchos{
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace STR{
-namespace TIMINT{
-  class Base;
-  class BaseDataGlobalState;
-  class BaseDataSDyn;
-  class BaseDataIO;
-} // namespace TIMINT
-namespace MODELEVALUATOR {
-  class Generic;
-} // namespace MODELEVALUATOR
-} // namespace STR
-namespace LINALG{
+}  // namespace Teuchos
+namespace STR
+{
+  namespace TIMINT
+  {
+    class Base;
+    class BaseDataGlobalState;
+    class BaseDataSDyn;
+    class BaseDataIO;
+  }  // namespace TIMINT
+  namespace MODELEVALUATOR
+  {
+    class Generic;
+  }  // namespace MODELEVALUATOR
+}  // namespace STR
+namespace LINALG
+{
   class Solver;
-} // namespace LINALG
-namespace DRT{
+}  // namespace LINALG
+namespace DRT
+{
   class DiscretizationInterface;
-} // namespace DRT
-namespace XFEM {
+}  // namespace DRT
+namespace XFEM
+{
   class XFieldState;
-} // namespace XFEM
-namespace ADAPTER {
-
+}  // namespace XFEM
+namespace ADAPTER
+{
   class StructureNew : public Structure
   {
-  public:
-    StructureNew() {};
+   public:
+    StructureNew(){};
 
     /// virtual to get polymorph destruction
-    virtual ~StructureNew() {};
+    virtual ~StructureNew(){};
 
     /// @name General methods
     ///@{
@@ -70,56 +77,45 @@ namespace ADAPTER {
     /// unknown displacements at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> DispNp() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Dispnp() const
-    { return DispNp(); }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() const { return DispNp(); }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp()
-    { return WriteAccessDispNp(); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() { return WriteAccessDispNp(); }
 
     /// known displacements at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> DispN() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Dispn() const
-    { return DispN(); }
+    Teuchos::RCP<const Epetra_Vector> Dispn() const { return DispN(); }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispN() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispn()
-    { return WriteAccessDispN(); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessDispn() { return WriteAccessDispN(); }
 
     /// unknown velocity at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> VelNp() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Velnp() const
-    { return VelNp(); }
+    Teuchos::RCP<const Epetra_Vector> Velnp() const { return VelNp(); }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
-    { return WriteAccessVelNp(); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return WriteAccessVelNp(); }
 
     /// known velocity at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> VelN() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Veln() const
-    { return VelN(); }
+    Teuchos::RCP<const Epetra_Vector> Veln() const { return VelN(); }
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelN() = 0;
-    Teuchos::RCP<Epetra_Vector> WriteAccessVeln()
-    { return WriteAccessVelN(); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessVeln() { return WriteAccessVelN(); }
 
     /// known velocity at \f$t_{n-1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> VelNm() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Velnm() const
-    { return VelNm(); }
+    Teuchos::RCP<const Epetra_Vector> Velnm() const { return VelNm(); }
 
     /// unknown acceleration at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> AccNp() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Accnp() const
-    { return AccNp(); }
+    Teuchos::RCP<const Epetra_Vector> Accnp() const { return AccNp(); }
 
     /// known acceleration at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<const Epetra_Vector> AccN() const = 0;
-    Teuchos::RCP<const Epetra_Vector> Accn() const
-    { return AccN(); }
+    Teuchos::RCP<const Epetra_Vector> Accn() const { return AccN(); }
 
     /// resize the multi step class vector
     virtual void ResizeMStepTimAda() = 0;
@@ -134,20 +130,17 @@ namespace ADAPTER {
     /// Return current time \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual double GetTimeN() const = 0;
-    double TimeOld() const
-    { return GetTimeN(); }
+    double TimeOld() const { return GetTimeN(); }
 
     /// Sets the current time \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual void SetTimeN(const double time_n) = 0;
-    void SetTime(const double time_n)
-    { SetTimeN(time_n); }
+    void SetTime(const double time_n) { SetTimeN(time_n); }
 
     /// Return target time \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual double GetTimeNp() const = 0;
-    double Time() const
-    { return GetTimeNp(); }
+    double Time() const { return GetTimeNp(); }
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;
@@ -158,50 +151,42 @@ namespace ADAPTER {
     /// Sets the target time \f$t_{n+1}\f$ of this time step
     /// ToDo Replace the deprecated version with the new version
     virtual void SetTimeNp(const double time_np) = 0;
-    void SetTimen(const double time_np)
-    { SetTimeNp(time_np); }
+    void SetTimen(const double time_np) { SetTimeNp(time_np); }
 
     /// Get time step size \f$\Delta t_n\f$
     /// ToDo Replace the deprecated version with the new version
     virtual double GetDeltaTime() const = 0;
-    double Dt() const
-    { return GetDeltaTime(); }
+    double Dt() const { return GetDeltaTime(); }
 
     /// set time step size
     /// ToDo Replace the deprecated version with the new version
     virtual void SetDeltaTime(const double dt) = 0;
-    void SetDt(const double dt)
-    { SetDeltaTime(dt); }
+    void SetDt(const double dt) { SetDeltaTime(dt); }
 
     /// Return current step number $n$
     /// ToDo Replace the deprecated version with the new version
     virtual int GetStepN() const = 0;
-    int StepOld() const
-    { return GetStepN(); }
+    int StepOld() const { return GetStepN(); }
 
     /// Sets the current step \f$n\f$
     /// ToDo Replace the deprecated version with the new version
     virtual void SetStepN(int step_n) = 0;
-    void SetStep(int step_n)
-    { SetStepN(step_n); }
+    void SetStep(int step_n) { SetStepN(step_n); }
 
     /// Return current step number $n+1$
     /// ToDo Replace the deprecated version with the new version
     virtual int GetStepNp() const = 0;
-    int Step() const
-    { return GetStepNp(); }
+    int Step() const { return GetStepNp(); }
 
     /// Sets the current step \f$n+1\f$
     /// ToDo Replace the deprecated version with the new version
     virtual void SetStepNp(int step_np) = 0;
-    void SetStepn(int step_np)
-    { SetStepNp(step_np); }
+    void SetStepn(int step_np) { SetStepNp(step_np); }
 
     /// Get number of time steps
     /// ToDo Replace the deprecated version with the new version
     virtual int GetStepEnd() const = 0;
-    int NumStep() const
-    { return GetStepEnd(); }
+    int NumStep() const { return GetStepEnd(); }
 
     /// Sets number of time steps (in case of time adaptivity)
     virtual void SetStepEnd(int step_end) = 0;
@@ -210,9 +195,14 @@ namespace ADAPTER {
     /// \date 11/08
     virtual int Integrate() = 0;
 
-    /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is only called in STR::TIMINT::Implicit::Solve()
-    /// and not on the structure in the adapter time loop
-    INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv) {dserror("You should not be here"); return nonlinsoldiv;};
+    /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is
+    /// only called in STR::TIMINT::Implicit::Solve() and not on the structure in the adapter time
+    /// loop
+    INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
+    {
+      dserror("You should not be here");
+      return nonlinsoldiv;
+    };
 
     /// tests if there are more time steps to do
     virtual bool NotFinished() const = 0;
@@ -235,8 +225,8 @@ namespace ADAPTER {
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> disiterinc ///< displacement increment between Newton iteration i and i+1
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+            disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
@@ -263,16 +253,10 @@ namespace ADAPTER {
     virtual void PrepareOutput() = 0;
 
     // Get restart data
-    virtual void GetRestartData
-    (
-      Teuchos::RCP<int> step,
-      Teuchos::RCP<double> time,
-      Teuchos::RCP<Epetra_Vector> disn,
-      Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata,
-      Teuchos::RCP<std::vector<char> > nodedata
-    ) = 0;
+    virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+        Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
+        Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
+        Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
@@ -293,19 +277,12 @@ namespace ADAPTER {
     \author mayr.mt
     \date 08/2013
     */
-    virtual void ResetStep () = 0;
+    virtual void ResetStep() = 0;
 
     /// set restart information for parameter continuation
-    virtual void SetRestart
-    (
-      int step,
-      double time,
-      Teuchos::RCP<Epetra_Vector> disn,
-      Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata,
-      Teuchos::RCP<std::vector<char> > nodedata
-    ) = 0;
+    virtual void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
+        Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
+        Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict() = 0;
@@ -356,11 +333,14 @@ namespace ADAPTER {
     \note Can only be called after a valid structural solve.
     */
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
-        {dserror("In the new structural timeintegration this method is"
-                 "no longer needed inside the structure. Since this is"
-                 "FSI specific, the functionality is shifted to the"
-                 "STR::MODELEVALUATOR::PartitionedFSI.");
-        return Teuchos::null;};
+    {
+      dserror(
+          "In the new structural timeintegration this method is"
+          "no longer needed inside the structure. Since this is"
+          "FSI specific, the functionality is shifted to the"
+          "STR::MODELEVALUATOR::PartitionedFSI.");
+      return Teuchos::null;
+    };
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
@@ -377,10 +357,12 @@ namespace ADAPTER {
     /// Set forces due to interface with fluid, the force is expected external-force-like
     virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce)
     {
-      dserror("This method is deprecated. In the new structural time integration"
-              "this functionality is taken over by the problem specific model "
-              "evaluators. Remove this method as soon as possible.");
-      return;};
+      dserror(
+          "This method is deprecated. In the new structural time integration"
+          "this functionality is taken over by the problem specific model "
+          "evaluators. Remove this method as soon as possible.");
+      return;
+    };
 
     //! specific method for iterative staggered partitioned TSI
 
@@ -399,13 +381,11 @@ namespace ADAPTER {
     /// unknown material displacements at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp() = 0;
-    Teuchos::RCP<Epetra_Vector> DispMat()
-    { return WriteAccessDispMatNp(); }
+    Teuchos::RCP<Epetra_Vector> DispMat() { return WriteAccessDispMatNp(); }
 
     /// set/apply material displacements to structure field (structure with ale)
     virtual void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp) = 0;
-    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
-    { SetDispMatNp(dismat); };
+    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat) { SetDispMatNp(dismat); };
     ///@}
 
     /// @name Misc
@@ -422,8 +402,7 @@ namespace ADAPTER {
     /// domain map of system matrix (do we really need this?)
     /// ToDo Replace the deprecated version with the new version
     virtual const Epetra_Map& GetMassDomainMap() const = 0;
-    virtual const Epetra_Map& DomainMap() const
-    { return GetMassDomainMap(); }
+    virtual const Epetra_Map& DomainMap() const { return GetMassDomainMap(); }
 
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
@@ -446,8 +425,7 @@ namespace ADAPTER {
         INPAR::STR::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        INPAR::STR::ModelType mtype) = 0;
+    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -489,11 +467,17 @@ namespace ADAPTER {
     ///@{
     /// are there any spring dashpot bcs?
     virtual bool HaveSpringDashpot()
-    { dserror("This function seems to be unused!"); return false; }
+    {
+      dserror("This function seems to be unused!");
+      return false;
+    }
 
     /// get SpringDashpot manager defined in the structure
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager()
-    { dserror("This function seems to be unused!"); return Teuchos::null; }
+    {
+      dserror("This function seems to be unused!");
+      return Teuchos::null;
+    }
 
     ///@}
 
@@ -540,7 +524,7 @@ namespace ADAPTER {
      *  \author rauch
      *  \date 10/17
      */
-    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x) = 0;
 
     ///@}
 
@@ -557,7 +541,7 @@ namespace ADAPTER {
     virtual bool DestroyState() = 0;
 
     /// create a new xfield state ( should happen before you destroy the current state )
-    virtual void CreateNewXFieldState( const Teuchos::RCP<XFEM::XFieldState> & new_xstate ) const = 0;
+    virtual void CreateNewXFieldState(const Teuchos::RCP<XFEM::XFieldState>& new_xstate) const = 0;
 
     /// reset the non-standard / enrichment dofs of the xfield state object
     virtual void ResetXFieldNonStandardDofs() = 0;
@@ -569,17 +553,15 @@ namespace ADAPTER {
   /// structure field solver
   class StructureBaseAlgorithmNew
   {
-  public:
-
+   public:
     /// constructor
     StructureBaseAlgorithmNew();
 
     /// virtual destructor to support polymorph destruction
-    virtual ~StructureBaseAlgorithmNew() {};
+    virtual ~StructureBaseAlgorithmNew(){};
 
     /// initialize all class internal variables
-    virtual void Init(const Teuchos::ParameterList& prbdyn,
-        Teuchos::ParameterList& sdyn,
+    virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
         Teuchos::RCP<DRT::DiscretizationInterface> actdis);
 
     /// setup
@@ -591,19 +573,17 @@ namespace ADAPTER {
      *
      *  \date 11/16 */
     void RegisterModelEvaluator(
-        const std::string name,
-        Teuchos::RCP< ::STR::MODELEVALUATOR::Generic> me );
+        const std::string name, Teuchos::RCP<::STR::MODELEVALUATOR::Generic> me);
 
     /// structural field solver
     Teuchos::RCP<Structure> StructureField() { return str_wrapper_; }
 
-  public:
-
+   public:
     inline const bool& IsInit() const { return isinit_; };
 
     inline const bool& IsSetup() const { return issetup_; };
 
-  protected:
+   protected:
     /// setup structure algorithm of STR::TimInt::Implicit or STR::TimInt::Explicit type
     void SetupTimInt();
 
@@ -656,53 +636,41 @@ namespace ADAPTER {
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void SetModelTypes(
-        std::set<enum INPAR::STR::ModelType>& modeltypes) const;
+    void SetModelTypes(std::set<enum INPAR::STR::ModelType>& modeltypes) const;
 
     /// Set all found model types.
-    void DetectElementTechnologies(
-        std::set<enum INPAR::STR::EleTech>& eletechs) const;
+    void DetectElementTechnologies(std::set<enum INPAR::STR::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
-    virtual void SetParams(
-        Teuchos::ParameterList& ioflags,
-        Teuchos::ParameterList& xparams,
-        Teuchos::ParameterList& timeadaptivity
-        );
+    virtual void SetParams(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
+        Teuchos::ParameterList& timeadaptivity);
 
     /// Create, initialize and setup the global state data container
-    virtual void SetGlobalState(
-        Teuchos::RCP< ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+    virtual void SetGlobalState(Teuchos::RCP<::STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<const ::STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
-    virtual void SetTimeIntegrationStrategy(
-        Teuchos::RCP< ::STR::TIMINT::Base>& ti_strategy,
-        const Teuchos::RCP< ::STR::TIMINT::BaseDataIO>& dataio,
-        const Teuchos::RCP< ::STR::TIMINT::BaseDataSDyn>& datasdyn,
-        const Teuchos::RCP< ::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+    virtual void SetTimeIntegrationStrategy(Teuchos::RCP<::STR::TIMINT::Base>& ti_strategy,
+        const Teuchos::RCP<::STR::TIMINT::BaseDataIO>& dataio,
+        const Teuchos::RCP<::STR::TIMINT::BaseDataSDyn>& datasdyn,
+        const Teuchos::RCP<::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
         const int& restart);
 
     /// set the final structure time integrator object
-    virtual void SetStructureWrapper(
-        const Teuchos::ParameterList& ioflags,
-        const Teuchos::ParameterList& sdyn,
-        const Teuchos::ParameterList& xparams,
+    virtual void SetStructureWrapper(const Teuchos::ParameterList& ioflags,
+        const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
         const Teuchos::ParameterList& timeadaptivity,
-        Teuchos::RCP< ::STR::TIMINT::Base> ti_strategy);
+        Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
 
     /// create the adaptive time integrator wrapper
-    void CreateAdaptiveWrapper(
-        const Teuchos::ParameterList& ioflags,
-        const Teuchos::ParameterList& sdyn,
-        const Teuchos::ParameterList& xparams,
-        const Teuchos::ParameterList& taflags,
-        Teuchos::RCP< ::STR::TIMINT::Base> ti_strategy);
+    void CreateAdaptiveWrapper(const Teuchos::ParameterList& ioflags,
+        const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
+        const Teuchos::ParameterList& taflags, Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
 
     /// create the time integrator wrapper
-    void CreateWrapper(Teuchos::RCP< ::STR::TIMINT::Base> ti_strategy);
+    void CreateWrapper(Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
 
-  protected:
+   protected:
     /// structural field solver
     Teuchos::RCP<Structure> str_wrapper_;
 
@@ -721,6 +689,6 @@ namespace ADAPTER {
     /// setup flag
     bool issetup_;
   };  // class StructureBaseAlgorithmNew
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 #endif /* AD_STR_STRUCTURE_NEW_H_ */

@@ -26,7 +26,7 @@ namespace STR
   {
     class MapExtractor;
   }
-}
+}  // namespace STR
 
 namespace STR
 {
@@ -34,16 +34,14 @@ namespace STR
   {
     class PartitionedFSI;
   }
-}
+}  // namespace STR
 
 
 namespace ADAPTER
 {
-
   class FSIStructureWrapper : public StructureWrapper
   {
-  public:
-
+   public:
     /// constructor
     explicit FSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
@@ -51,10 +49,7 @@ namespace ADAPTER
     virtual ~FSIStructureWrapper() { ; }
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const
-    {
-      return interface_;
-    }
+    virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const { return interface_; }
 
     /// switch structure field to block matrix in fsi simulations
     virtual void UseBlockMatrix();
@@ -101,12 +96,11 @@ namespace ADAPTER
     /// set pointer to model evaluator
     void SetModelEvaluatorPtr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> me)
     {
-      fsi_model_evaluator_=me;
+      fsi_model_evaluator_ = me;
       return;
     }
 
-  protected:
-
+   protected:
     /// the interface map setup for interface <-> full translation
     Teuchos::RCP<STR::AUX::MapExtractor> interface_;
 
@@ -122,9 +116,12 @@ namespace ADAPTER
     Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> fsi_model_evaluator_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> FSIModelEvaluator(){return fsi_model_evaluator_;};
+    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI> FSIModelEvaluator()
+    {
+      return fsi_model_evaluator_;
+    };
 
-  }; // class FSIStructureWrapper
-} // namespace ADAPTER
+  };  // class FSIStructureWrapper
+}  // namespace ADAPTER
 
 #endif

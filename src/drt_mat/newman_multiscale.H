@@ -27,47 +27,41 @@ namespace MAT
     //! material parameters
     class NewmanMultiScale : public Newman, public ScatraMultiScale
     {
-      public:
+     public:
+      //! constructor
+      NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-        //! constructor
-        NewmanMultiScale(
-            Teuchos::RCP<MAT::PAR::Material> matdata
-            );
+      //! destructor
+      virtual ~NewmanMultiScale() { return; };
 
-        //! destructor
-        virtual ~NewmanMultiScale(){return;};
+      //! create instance of Newman multi-scale material
+      Teuchos::RCP<MAT::Material> CreateMaterial();
 
-        //! create instance of Newman multi-scale material
-        Teuchos::RCP<MAT::Material> CreateMaterial();
+      //! return electronic conductivity
+      double Sigma() const { return sigma_; };
 
-        //! return electronic conductivity
-        double Sigma() const {return sigma_;};
-
-      private:
-
-        //! @name parameters for Newman multi-scale material
-        //@{
-        //! electronic conductivity
-        const double sigma_;
-        //@}
-    }; // class MAT::PAR::NewmanMultiScale
-  } // namespace PAR
+     private:
+      //! @name parameters for Newman multi-scale material
+      //@{
+      //! electronic conductivity
+      const double sigma_;
+      //@}
+    };  // class MAT::PAR::NewmanMultiScale
+  }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
   class NewmanMultiScaleType : public DRT::ParObjectType
   {
-    public:
+   public:
+    std::string Name() const { return "NewmanMultiScaleType"; };
 
-      std::string Name() const {return "NewmanMultiScaleType";};
+    static NewmanMultiScaleType& Instance() { return instance_; };
 
-      static NewmanMultiScaleType& Instance(){return instance_;};
+    DRT::ParObject* Create(const std::vector<char>& data);
 
-      DRT::ParObject* Create(const std::vector<char>& data);
-
-    private:
-
-      static NewmanMultiScaleType instance_;
+   private:
+    static NewmanMultiScaleType instance_;
   };
 
 
@@ -75,65 +69,63 @@ namespace MAT
   //! wrapper for Newman multi-scale material
   class NewmanMultiScale : public Newman, public ScatraMultiScale
   {
-    public:
+   public:
+    //! construct empty Newman multi-scale material
+    NewmanMultiScale();
 
-      //! construct empty Newman multi-scale material
-      NewmanMultiScale();
+    //! construct Newman multi-scale material with specific material parameters
+    explicit NewmanMultiScale(MAT::PAR::NewmanMultiScale* params);
 
-      //! construct Newman multi-scale material with specific material parameters
-      explicit NewmanMultiScale(MAT::PAR::NewmanMultiScale* params);
+    //! @name packing and unpacking
+    /*!
+      \brief Return unique ParObject id
 
-      //! @name packing and unpacking
-      /*!
-        \brief Return unique ParObject id
+      Every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    int UniqueParObjectId() const { return NewmanMultiScaleType::Instance().UniqueParObjectId(); };
 
-        Every class implementing ParObject needs a unique id defined at the
-        top of drt_parobject.H (this file) and should return it in this method.
-      */
-      int UniqueParObjectId() const { return NewmanMultiScaleType::Instance().UniqueParObjectId(); };
+    /*!
+      \brief Pack this class so it can be communicated
 
-      /*!
-        \brief Pack this class so it can be communicated
+      Resizes the vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique ParObject ID delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
 
-        Resizes the vector data and stores all information of a class in it.
-        The first information to be stored in data has to be the
-        unique ParObject ID delivered by UniqueParObjectId() which will then
-        identify the exact class on the receiving processor.
+      \param data (in/out): char vector to store class information
+    */
+    void Pack(DRT::PackBuffer& data) const;
 
-        \param data (in/out): char vector to store class information
-      */
-      void Pack(DRT::PackBuffer& data) const;
+    /*!
+      \brief Unpack data from a char vector into this class
 
-      /*!
-        \brief Unpack data from a char vector into this class
+      The vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
 
-        The vector data contains all information to rebuild the
-        exact copy of an instance of a class on a different processor.
-        The first entry in data has to be an integer which is the unique
-        parobject id defined at the top of this file and delivered by
-        UniqueParObjectId().
+      \param data (in) : vector storing all data to be unpacked into this instance.
+    */
+    void Unpack(const std::vector<char>& data);
+    //@}
 
-        \param data (in) : vector storing all data to be unpacked into this instance.
-      */
-      void Unpack(const std::vector<char>& data);
-      //@}
+    //! return material type
+    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_newman_multiscale; };
 
-      //! return material type
-      INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_newman_multiscale;};
+    //! clone Newman multi-scale material
+    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new NewmanMultiScale(*this)); };
 
-      //! clone Newman multi-scale material
-      Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new NewmanMultiScale(*this));};
+    //! return electronic conductivity
+    double Sigma() const { return params_->Sigma(); };
 
-      //! return electronic conductivity
-      double Sigma() const {return params_->Sigma();};
+   private:
+    //! return material parameters
+    const MAT::PAR::ScatraMultiScale* Params() const { return params_; };
 
-    private:
-
-      //! return material parameters
-      const MAT::PAR::ScatraMultiScale* Params() const {return params_;};
-
-      //! material parameters
-      MAT::PAR::NewmanMultiScale* params_;
-  }; // wrapper for Newman multi-scale material
-} // namespace MAT
+    //! material parameters
+    MAT::PAR::NewmanMultiScale* params_;
+  };  // wrapper for Newman multi-scale material
+}  // namespace MAT
 #endif

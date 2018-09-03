@@ -38,74 +38,70 @@ namespace MAT
     //! parameters for electrode material
     class Electrode : public ElchSingleMat
     {
-      public:
+     public:
+      //! constructor
+      Electrode(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-        //! constructor
-        Electrode(
-            Teuchos::RCP<MAT::PAR::Material> matdata
-            );
+      //! destructor
+      virtual ~Electrode() { return; };
 
-        //! destructor
-        virtual ~Electrode(){return;};
+      //! create instance of electrode material
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-        //! create instance of electrode material
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      //! @name parameters for electrode material
+      //! @{
+      //! saturation value of intercalated Lithium concentration
+      const double cmax_;
 
-        //! @name parameters for electrode material
-        //! @{
-        //! saturation value of intercalated Lithium concentration
-        const double cmax_;
+      //! model for half cell open circuit potential
+      const OCPModels ocpmodel_;
 
-        //! model for half cell open circuit potential
-        const OCPModels ocpmodel_;
+      //! number of parameters underlying half cell open circuit potential model
+      const int ocpparanum_;
 
-        //! number of parameters underlying half cell open circuit potential model
-        const int ocpparanum_;
+      //! parameters underlying half cell open circuit potential model
+      const std::vector<double> ocppara_;
 
-        //! parameters underlying half cell open circuit potential model
-        const std::vector<double> ocppara_;
+      //! sampling points for cubic spline interpolation
+      std::vector<double> X_;
 
-        //! sampling points for cubic spline interpolation
-        std::vector<double> X_;
+      //! zeroth-order coefficients for cubic spline interpolation
+      std::vector<double> b_;
 
-        //! zeroth-order coefficients for cubic spline interpolation
-        std::vector<double> b_;
+      //! first-order coefficients for cubic spline interpolation
+      std::vector<double> a_;
 
-        //! first-order coefficients for cubic spline interpolation
-        std::vector<double> a_;
+      //! third-order coefficients for cubic spline interpolation
+      std::vector<double> m_;
 
-        //! third-order coefficients for cubic spline interpolation
-        std::vector<double> m_;
+      //! lower bound of validity (as a fraction of c_max) for prescribed open circuit potential
+      //! calculation model
+      const double xmin_;
 
-        //! lower bound of validity (as a fraction of c_max) for prescribed open circuit potential calculation model
-        const double xmin_;
+      //! upper bound of validity (as a fraction of c_max) for prescribed open circuit potential
+      //! calculation model
+      const double xmax_;
+      //! @}
 
-        //! upper bound of validity (as a fraction of c_max) for prescribed open circuit potential calculation model
-        const double xmax_;
-        //! @}
-
-      private:
-
-        //! convert string to model for half cell open circuit potential
-        OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
+     private:
+      //! convert string to model for half cell open circuit potential
+      OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
     };  // class MAT::PAR::Electrode
-  } // namespace PAR
+  }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
   class ElectrodeType : public DRT::ParObjectType
   {
-    public:
+   public:
+    std::string Name() const { return "ElectrodeType"; };
 
-      std::string Name() const {return "ElectrodeType";};
+    static ElectrodeType& Instance() { return instance_; };
 
-      static ElectrodeType& Instance(){return instance_;};
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
-
-    private:
-
-      static ElectrodeType instance_;
+   private:
+    static ElectrodeType instance_;
   };
 
 
@@ -113,88 +109,82 @@ namespace MAT
   //! wrapper for electrode material
   class Electrode : public ElchSingleMat
   {
-    public:
+   public:
+    //! construct empty electrode material
+    Electrode();
 
-      //! construct empty electrode material
-      Electrode();
+    //! construct electrode material with specific material parameters
+    explicit Electrode(MAT::PAR::Electrode* params);
 
-      //! construct electrode material with specific material parameters
-      explicit Electrode(MAT::PAR::Electrode* params);
+    //! @name packing and unpacking
+    /*!
+      \brief Return unique ParObject id
 
-      //! @name packing and unpacking
-      /*!
-        \brief Return unique ParObject id
+      Every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    virtual int UniqueParObjectId() const { return ElectrodeType::Instance().UniqueParObjectId(); };
 
-        Every class implementing ParObject needs a unique id defined at the
-        top of drt_parobject.H (this file) and should return it in this method.
-      */
-      virtual int UniqueParObjectId() const {return ElectrodeType::Instance().UniqueParObjectId();};
+    /*!
+      \brief Pack this class so it can be communicated
 
-      /*!
-        \brief Pack this class so it can be communicated
+      Resizes the vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique ParObject ID delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
 
-        Resizes the vector data and stores all information of a class in it.
-        The first information to be stored in data has to be the
-        unique ParObject ID delivered by UniqueParObjectId() which will then
-        identify the exact class on the receiving processor.
+      \param data (in/out): char vector to store class information
+    */
+    virtual void Pack(DRT::PackBuffer& data) const;
 
-        \param data (in/out): char vector to store class information
-      */
-      virtual void Pack(DRT::PackBuffer& data) const;
+    /*!
+      \brief Unpack data from a char vector into this class
 
-      /*!
-        \brief Unpack data from a char vector into this class
+      The vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
 
-        The vector data contains all information to rebuild the
-        exact copy of an instance of a class on a different processor.
-        The first entry in data has to be an integer which is the unique
-        parobject id defined at the top of this file and delivered by
-        UniqueParObjectId().
+      \param data (in) : vector storing all data to be unpacked into this instance.
+    */
+    virtual void Unpack(const std::vector<char>& data);
+    //@}
 
-        \param data (in) : vector storing all data to be unpacked into this instance.
-      */
-      virtual void Unpack(const std::vector<char>& data);
-      //@}
+    //! return material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_electrode; };
 
-      //! return material type
-      virtual INPAR::MAT::MaterialType MaterialType() const {return INPAR::MAT::m_electrode;};
+    //! clone electrode material
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Electrode(*this)); };
 
-      //! clone electrode material
-      virtual Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new Electrode(*this));};
+    //! return saturation value of intercalated Lithium concentration
+    double CMax() const { return params_->cmax_; };
 
-      //! return saturation value of intercalated Lithium concentration
-      double CMax() const {return params_->cmax_;};
+    //! compute half cell open circuit potential
+    double ComputeOpenCircuitPotential(const double concentration,  //!< concentration
+        const double faraday,                                       //!< Faraday constant
+        const double frt                                            //!< factor F/RT
+        ) const;
 
-      //! compute half cell open circuit potential
-      double ComputeOpenCircuitPotential(
-          const double concentration,   //!< concentration
-          const double faraday,         //!< Faraday constant
-          const double frt              //!< factor F/RT
-          ) const;
+    //! compute first derivative of half cell open circuit potential with respect to concentration
+    double ComputeFirstDerivOpenCircuitPotential(const double concentration,  //!< concentration
+        const double faraday,                                                 //!< Faraday constant
+        const double frt                                                      //!< factor F/RT
+        ) const;
 
-      //! compute first derivative of half cell open circuit potential with respect to concentration
-      double ComputeFirstDerivOpenCircuitPotential(
-          const double concentration,   //!< concentration
-          const double faraday,         //!< Faraday constant
-          const double frt              //!< factor F/RT
-          ) const;
+    //! compute second derivative of half cell open circuit potential with respect to concentration
+    double ComputeSecondDerivOpenCircuitPotential(const double concentration,  //!< concentration
+        const double faraday,                                                  //!< Faraday constant
+        const double frt                                                       //!< factor F/RT
+        ) const;
 
-      //! compute second derivative of half cell open circuit potential with respect to concentration
-      double ComputeSecondDerivOpenCircuitPotential(
-          const double concentration,   //!< concentration
-          const double faraday,         //!< Faraday constant
-          const double frt              //!< factor F/RT
-          ) const;
+   protected:
+    //! return material parameters
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    protected:
-
-      //! return material parameters
-      virtual MAT::PAR::Parameter* Parameter() const {return params_;}
-
-    private:
-
-      //! my material parameters
-      MAT::PAR::Electrode* params_;
+   private:
+    //! my material parameters
+    MAT::PAR::Electrode* params_;
   };
-}
+}  // namespace MAT
 #endif

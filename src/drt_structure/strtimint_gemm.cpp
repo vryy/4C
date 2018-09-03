@@ -19,64 +19,44 @@
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::TimIntGEMM::TimIntGEMM
-(
-  const Teuchos::ParameterList& timeparams,
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& sdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-)
-: TimIntImpl
-  (
-    timeparams,
-    ioparams,
-    sdynparams,
-    xparams,
-    actdis,
-    solver,
-    contactsolver,
-    output
-  ),
-  beta_(sdynparams.sublist("GEMM").get<double>("BETA")),
-  gamma_(sdynparams.sublist("GEMM").get<double>("GAMMA")),
-  alphaf_(sdynparams.sublist("GEMM").get<double>("ALPHA_F")),
-  alpham_(sdynparams.sublist("GEMM").get<double>("ALPHA_M")),
-  xi_(sdynparams.sublist("GEMM").get<double>("XI")),
-  dism_(Teuchos::null),
-  velm_(Teuchos::null),
-  accm_(Teuchos::null),
-  fintm_(Teuchos::null),
-  fext_(Teuchos::null),
-  fextm_(Teuchos::null),
-  fextn_(Teuchos::null),
-  finertm_(Teuchos::null),
-  fviscm_(Teuchos::null)
+STR::TimIntGEMM::TimIntGEMM(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
+      beta_(sdynparams.sublist("GEMM").get<double>("BETA")),
+      gamma_(sdynparams.sublist("GEMM").get<double>("GAMMA")),
+      alphaf_(sdynparams.sublist("GEMM").get<double>("ALPHA_F")),
+      alpham_(sdynparams.sublist("GEMM").get<double>("ALPHA_M")),
+      xi_(sdynparams.sublist("GEMM").get<double>("XI")),
+      dism_(Teuchos::null),
+      velm_(Teuchos::null),
+      accm_(Teuchos::null),
+      fintm_(Teuchos::null),
+      fext_(Teuchos::null),
+      fextm_(Teuchos::null),
+      fextn_(Teuchos::null),
+      finertm_(Teuchos::null),
+      fviscm_(Teuchos::null)
 {
   // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // First do everything on the more basic objects like the discretizations, like e.g.
+  // redistribution of elements. Only then call the setup to this class. This will call the setup to
+  // all classes in the inheritance hierarchy. This way, this class may also override a method that
+  // is called during Setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntGEMM::Init
-(
-    const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver
-)
+void STR::TimIntGEMM::Init(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
 {
   // call Init() in base class
-  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
@@ -135,7 +115,8 @@ void STR::TimIntGEMM::Setup()
 
   // GEMM time integrator cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
-    dserror("Gemm time integrator cannot handle nonlinear inertia forces "
+    dserror(
+        "Gemm time integrator cannot handle nonlinear inertia forces "
         "(flag: MASSLIN)");
 
 
@@ -152,15 +133,13 @@ void STR::TimIntGEMM::PredictConstDisConsistVelAcc()
 
   // consistent velocities following Newmark formulas
   veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
-  veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
-                (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
-                gamma_/(beta_*(*dt_)[0]));
+  veln_->Update((beta_ - gamma_) / beta_, *(*vel_)(0),
+      (2. * beta_ - gamma_) * (*dt_)[0] / (2. * beta_), *(*acc_)(0), gamma_ / (beta_ * (*dt_)[0]));
 
   // consistent accelerations following Newmark formulas
   accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
-  accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
-                (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
-                1./(beta_*(*dt_)[0]*(*dt_)[0]));
+  accn_->Update(-1. / (beta_ * (*dt_)[0]), *(*vel_)(0), (2. * beta_ - 1.) / (2. * beta_),
+      *(*acc_)(0), 1. / (beta_ * (*dt_)[0] * (*dt_)[0]));
 
   // watch out
   return;
@@ -177,15 +156,13 @@ void STR::TimIntGEMM::PredictConstVelConsistAcc()
 
   // consistent velocities following Newmark formulas
   veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
-  veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
-                (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
-                gamma_/(beta_*(*dt_)[0]));
+  veln_->Update((beta_ - gamma_) / beta_, *(*vel_)(0),
+      (2. * beta_ - gamma_) * (*dt_)[0] / (2. * beta_), *(*acc_)(0), gamma_ / (beta_ * (*dt_)[0]));
 
   // consistent accelerations following Newmark formulas
   accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
-  accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
-                (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
-                1./(beta_*(*dt_)[0]*(*dt_)[0]));
+  accn_->Update(-1. / (beta_ * (*dt_)[0]), *(*vel_)(0), (2. * beta_ - 1.) / (2. * beta_),
+      *(*acc_)(0), 1. / (beta_ * (*dt_)[0] * (*dt_)[0]));
 
   // That's it!
   return;
@@ -199,11 +176,11 @@ void STR::TimIntGEMM::PredictConstAcc()
   // extrapolated displacements based upon constant accelerations
   // d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n}
   disn_->Update(1.0, (*dis_)[0], (*dt_)[0], (*vel_)[0], 0.0);
-  disn_->Update((*dt_)[0] * (*dt_)[0] /2., (*acc_)[0], 1.0);
+  disn_->Update((*dt_)[0] * (*dt_)[0] / 2., (*acc_)[0], 1.0);
 
   // extrapolated velocities (equal to consistent velocities)
   // v_{n+1} = v_{n} + dt * a_{n}
-  veln_->Update(1.0, (*vel_)[0], (*dt_)[0], (*acc_)[0],  0.0);
+  veln_->Update(1.0, (*vel_)[0], (*dt_)[0], (*acc_)[0], 0.0);
 
   // constant accelerations (equal to consistent accelerations)
   accn_->Update(1.0, (*acc_)[0], 0.0);
@@ -219,8 +196,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
   // get info about prediction step from parameter list
   bool predict = false;
-  if(params.isParameter("predict"))
-    predict = params.get<bool>("predict");
+  if (params.isParameter("predict")) predict = params.get<bool>("predict");
 
   // build by last converged state and predicted target state
   // the predicted mid-state
@@ -241,7 +217,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+  fextm_->Update(1. - alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // ************************** (2) INTERNAL FORCES ***************************
 
@@ -249,12 +225,11 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   fintm_->PutScalar(0.0);
 
   // ordinary internal force and stiffness
-  disi_->Scale(1.-alphaf_);  // CHECK THIS
-  ApplyForceStiffInternalMid(timen_, (*dt_)[0], (*dis_)(0), disn_, disi_, veln_,
-                             fintm_, stiff_);
+  disi_->Scale(1. - alphaf_);  // CHECK THIS
+  ApplyForceStiffInternalMid(timen_, (*dt_)[0], (*dis_)(0), disn_, disi_, veln_, fintm_, stiff_);
 
   // apply forces and stiffness due to constraints
-  Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
+  Teuchos::ParameterList pcon;  // apply empty parameterlist, no scaling necessary
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_, pcon);
 
   // add forces and stiffness due to 0D cardiovascular coupling conditions
@@ -265,9 +240,9 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
-  psprdash.set("time_fac", gamma_/(beta_*(*dt_)[0]));
-  psprdash.set("dt", (*dt_)[0]); // needed only for cursurfnormal option!!
-  ApplyForceStiffSpringDashpot(stiff_,fintm_,disn_,veln_,predict,psprdash);
+  psprdash.set("time_fac", gamma_ / (beta_ * (*dt_)[0]));
+  psprdash.set("dt", (*dt_)[0]);  // needed only for cursurfnormal option!!
+  ApplyForceStiffSpringDashpot(stiff_, fintm_, disn_, veln_, predict, psprdash);
 
   // ************************** (3) INERTIAL FORCES ***************************
 
@@ -301,10 +276,10 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
   //                + (1 - alpha_f)*y/(beta*dt) C
   //                + K_{T;m}
-  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*(*dt_)[0]*(*dt_)[0]), 1.0);
+  stiff_->Add(*mass_, false, (1. - alpham_) / (beta_ * (*dt_)[0] * (*dt_)[0]), 1.0);
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
-    stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
+    stiff_->Add(*damp_, false, (1. - alphaf_) * gamma_ / (beta_ * (*dt_)[0]), 1.0);
   }
 
   // apply forces and stiffness due to contact / meshtying
@@ -313,7 +288,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   // mid-point n+1-alphaf, but use a linear combination of the old end-
   // point n and the new end-point n+1 instead:
   // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
+  ApplyForceStiffContactMeshtying(stiff_, fres_, disn_, predict);
 
   // close stiffness matrix
   stiff_->Complete();
@@ -331,7 +306,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& pa
   EvaluateForceStiffResidual(params);
 
   // overwrite the residual forces #fres_ with interface load
-  fres_->Update(-(1.0-alphaf_), *fifc_, 0.0);
+  fres_->Update(-(1.0 - alphaf_), *fifc_, 0.0);
 }
 
 /*----------------------------------------------------------------------*/
@@ -353,7 +328,7 @@ void STR::TimIntGEMM::EvaluateForceResidual()
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+  fextm_->Update(1. - alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // ************************** (2) INTERNAL FORCES ***************************
 
@@ -361,9 +336,8 @@ void STR::TimIntGEMM::EvaluateForceResidual()
   fintm_->PutScalar(0.0);
 
   // ordinary internal force and stiffness
-  disi_->Scale(1.-alphaf_);  // CHECK THIS
-  ApplyForceInternalMid(timen_, (*dt_)[0], (*dis_)(0), disn_, disi_, veln_,
-      fintm_);
+  disi_->Scale(1. - alphaf_);  // CHECK THIS
+  ApplyForceInternalMid(timen_, (*dt_)[0], (*dis_)(0), disn_, disi_, veln_, fintm_);
 
   // ************************** (3) INERTIAL FORCES ***************************
 
@@ -402,15 +376,15 @@ void STR::TimIntGEMM::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf_, *disn_, alphaf_, (*dis_)[0], 0.0);
+  dism_->Update(1. - alphaf_, *disn_, alphaf_, (*dis_)[0], 0.0);
 
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-  velm_->Update(1.-alphaf_, *veln_, alphaf_, (*vel_)[0], 0.0);
+  velm_->Update(1. - alphaf_, *veln_, alphaf_, (*vel_)[0], 0.0);
 
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  accm_->Update(1.-alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
+  accm_->Update(1. - alpham_, *accn_, alpham_, (*acc_)[0], 0.0);
 
   // jump
   return;
@@ -451,7 +425,8 @@ double STR::TimIntGEMM::CalcRefNormForce()
   freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   // determine worst value ==> charactersitic norm
-  return std::max(fviscnorm, std::max(finertnorm, std::max(fintnorm, std::max(fextnorm, freactnorm))));
+  return std::max(
+      fviscnorm, std::max(finertnorm, std::max(fintnorm, std::max(fextnorm, freactnorm))));
 }
 
 /*----------------------------------------------------------------------*/
@@ -459,8 +434,7 @@ double STR::TimIntGEMM::CalcRefNormForce()
 void STR::TimIntGEMM::UpdateIterIncrementally()
 {
   // auxiliary global vectors
-  Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*DofRowMapView(), false);
+  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*DofRowMapView(), false);
 
   // further auxiliary variables
   const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
@@ -471,18 +445,16 @@ void STR::TimIntGEMM::UpdateIterIncrementally()
 
   // new end-point velocities
   aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
-  aux->Update((beta_-gamma_)/beta_, (*vel_)[0],
-              (2.0*beta_-gamma_)*dt/(2.0*beta_), (*acc_)[0],
-              gamma_/(beta_*dt));
+  aux->Update((beta_ - gamma_) / beta_, (*vel_)[0], (2.0 * beta_ - gamma_) * dt / (2.0 * beta_),
+      (*acc_)[0], gamma_ / (beta_ * dt));
   // put new velocities only on non-DBC/free DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
 
   // new end-point accelerations
   aux->Update(1.0, *disn_, -1.0, (*dis_)[0], 0.0);
-  aux->Update(-1.0/(beta_*dt), (*vel_)[0],
-              (2.0*beta_-1.0)/(2.0*beta_), (*acc_)[0],
-              1.0/(beta_*dt*dt));
+  aux->Update(-1.0 / (beta_ * dt), (*vel_)[0], (2.0 * beta_ - 1.0) / (2.0 * beta_), (*acc_)[0],
+      1.0 / (beta_ * dt * dt));
   // put new accelerations only on free DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), accn_);
 
@@ -499,10 +471,10 @@ void STR::TimIntGEMM::UpdateIterIteratively()
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  veln_->Update(gamma_/(beta_*(*dt_)[0]), *disi_, 1.0);
+  veln_->Update(gamma_ / (beta_ * (*dt_)[0]), *disi_, 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(beta_*(*dt_)[0]*(*dt_)[0]), *disi_, 1.0);
+  accn_->Update(1.0 / (beta_ * (*dt_)[0] * (*dt_)[0]), *disi_, 1.0);
 
   // bye
   return;
@@ -564,30 +536,26 @@ void STR::TimIntGEMM::UpdateStepElement()
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
-  //p.set("delta time", (*dt_)[0]);
+  // p.set("delta time", (*dt_)[0]);
   // action for elements
-  //p.set("alpha f", alphaf_);
+  // p.set("alpha f", alphaf_);
   p.set("action", "calc_struct_update_istep");
   // go to elements
-  discret_->SetState("displacement",(*dis_)(0));
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->SetState("displacement", (*dis_)(0));
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force, its stiffness at mid-state */
-void STR::TimIntGEMM::ApplyForceStiffInternalMid
-(
-  const double time,
-  const double dt,
-  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state at t_n
-  const Teuchos::RCP<Epetra_Vector> disn,  // displacement state at t_{n+1}
-  const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
-  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-  Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
+void STR::TimIntGEMM::ApplyForceStiffInternalMid(const double time, const double dt,
+    const Teuchos::RCP<Epetra_Vector> dis,      // displacement state at t_n
+    const Teuchos::RCP<Epetra_Vector> disn,     // displacement state at t_{n+1}
+    const Teuchos::RCP<Epetra_Vector> disi,     // residual displacements
+    const Teuchos::RCP<Epetra_Vector> vel,      // velocity state
+    Teuchos::RCP<Epetra_Vector> fint,           // internal force
+    Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
 )
 {
   // *********** time measurement ***********
@@ -610,9 +578,8 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   discret_->SetState("displacement", disn);
   discret_->SetState("residual displacement", disi);
   if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
-  //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, stiff, Teuchos::null,
-                     fint, Teuchos::null, Teuchos::null);
+  // fintn_->PutScalar(0.0);  // initialise internal force vector
+  discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   // *********** time measurement ***********
@@ -624,16 +591,10 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force at mid-state */
-void STR::TimIntGEMM::ApplyForceInternalMid
-(
-  const double time,
-  const double dt,
-  const Teuchos::RCP<Epetra_Vector> dis,
-  const Teuchos::RCP<Epetra_Vector> disn,
-  const Teuchos::RCP<Epetra_Vector> disi,
-  const Teuchos::RCP<Epetra_Vector> vel,
-  Teuchos::RCP<Epetra_Vector> fint
-)
+void STR::TimIntGEMM::ApplyForceInternalMid(const double time, const double dt,
+    const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disn,
+    const Teuchos::RCP<Epetra_Vector> disi, const Teuchos::RCP<Epetra_Vector> vel,
+    Teuchos::RCP<Epetra_Vector> fint)
 {
   // *********** time measurement ***********
   double dtcpu = timer_->WallTime();
@@ -655,9 +616,8 @@ void STR::TimIntGEMM::ApplyForceInternalMid
   discret_->SetState("displacement", disn);
   discret_->SetState("residual displacement", disi);
   if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
-  //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     fint, Teuchos::null, Teuchos::null);
+  // fintn_->PutScalar(0.0);  // initialise internal force vector
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   // *********** time measurement ***********

@@ -41,9 +41,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::LineSearchBruteForce::LineSearchBruteForce()
- : NLNSOL::LineSearchBase(),
-   trialstepsize_(1.0)
+NLNSOL::LineSearchBruteForce::LineSearchBruteForce() : NLNSOL::LineSearchBase(), trialstepsize_(1.0)
 {
   return;
 }
@@ -52,7 +50,10 @@ NLNSOL::LineSearchBruteForce::LineSearchBruteForce()
 void NLNSOL::LineSearchBruteForce::Setup()
 {
   // make sure that Init() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
 
   trialstepsize_ = MyGetParameter<double>("line search: trial step size");
 
@@ -63,17 +64,22 @@ void NLNSOL::LineSearchBruteForce::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
-    bool& suffdecr) const
+void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam, bool& suffdecr) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchBruteForce::ComputeLSParam");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::LineSearchBruteForce::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // make sure that Init() and Setup() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // ---------------------------------------------------------------------------
   // start with a full step
@@ -83,8 +89,7 @@ void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
 
-  Teuchos::RCP<Epetra_MultiVector> fnew =
-      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
   ComputeF(*xnew, *fnew);
 
   double fnorm2 = 1.0e+12;
@@ -127,6 +132,3 @@ void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
 
   return;
 }
-
-
-

@@ -22,158 +22,143 @@
 
 namespace DRT
 {
-// forward declarations
-class Discretization;
+  // forward declarations
+  class Discretization;
 
-namespace ELEMENTS
-{
-/*----------------------------------------------------------------------*
- |  HEX 8 Element                                       |
- *----------------------------------------------------------------------*/
-class So_hex8PoroType : public So_hex8Type
-{
-public:
+  namespace ELEMENTS
+  {
+    /*----------------------------------------------------------------------*
+     |  HEX 8 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_hex8PoroType : public So_hex8Type
+    {
+     public:
+      std::string Name() const { return "So_hex8PoroType"; }
 
-  std::string Name() const { return "So_hex8PoroType"; }
+      static So_hex8PoroType& Instance();
 
-  static So_hex8PoroType & Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static So_hex8PoroType instance_;
+    };
 
-private:
+    /*----------------------------------------------------------------------*
+     |  TET 4 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_tet4PoroType : public So_tet4Type
+    {
+     public:
+      std::string Name() const { return "So_tet4PoroType"; }
 
-  static So_hex8PoroType instance_;
-};
+      static So_tet4PoroType& Instance();
 
-/*----------------------------------------------------------------------*
- |  TET 4 Element                                       |
- *----------------------------------------------------------------------*/
-class So_tet4PoroType : public So_tet4Type
-{
-public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  std::string Name() const { return "So_tet4PoroType"; }
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  static So_tet4PoroType & Instance();
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
-
-  virtual int Initialize(DRT::Discretization& dis);
-
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-private:
-
-  static So_tet4PoroType instance_;
-};
+     private:
+      static So_tet4PoroType instance_;
+    };
 
 
-/*----------------------------------------------------------------------*
- |  HEX 27 Element                                       |
- *----------------------------------------------------------------------*/
-class So_hex27PoroType : public So_hex27Type
-{
-public:
+    /*----------------------------------------------------------------------*
+     |  HEX 27 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_hex27PoroType : public So_hex27Type
+    {
+     public:
+      std::string Name() const { return "So_hex27PoroType"; }
 
-  std::string Name() const { return "So_hex27PoroType"; }
+      static So_hex27PoroType& Instance();
 
-  static So_hex27PoroType & Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual int Initialize(DRT::Discretization& dis);
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static So_hex27PoroType instance_;
+    };
 
-private:
+    /*----------------------------------------------------------------------*
+     |  TET 10 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_tet10PoroType : public So_tet10Type
+    {
+     public:
+      std::string Name() const { return "So_tet10PoroType"; }
 
-  static So_hex27PoroType instance_;
-};
+      static So_tet10PoroType& Instance();
 
-/*----------------------------------------------------------------------*
- |  TET 10 Element                                       |
- *----------------------------------------------------------------------*/
-class So_tet10PoroType : public So_tet10Type
-{
-public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  std::string Name() const { return "So_tet10PoroType"; }
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  static So_tet10PoroType & Instance();
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+     private:
+      static So_tet10PoroType instance_;
+    };
 
-  virtual int Initialize(DRT::Discretization& dis);
+    /*----------------------------------------------------------------------*
+     |  NURBS 27 Element                                       |
+     *----------------------------------------------------------------------*/
+    class So_nurbs27PoroType : public NURBS::So_nurbs27Type
+    {
+     public:
+      std::string Name() const { return "So_nurbs27PoroType"; }
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      static So_nurbs27PoroType& Instance();
 
-private:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  static So_tet10PoroType instance_;
-};
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-/*----------------------------------------------------------------------*
- |  NURBS 27 Element                                       |
- *----------------------------------------------------------------------*/
-class So_nurbs27PoroType : public NURBS::So_nurbs27Type
-{
-public:
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  std::string Name() const { return "So_nurbs27PoroType"; }
+      virtual int Initialize(DRT::Discretization& dis);
 
-  static So_nurbs27PoroType & Instance();
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
-
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
-
-  virtual int Initialize(DRT::Discretization& dis);
-
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-private:
-
-  static So_nurbs27PoroType instance_;
-};
+     private:
+      static So_nurbs27PoroType instance_;
+    };
 
 
-}//ELEMENTS
-}//DRT
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif /* SO3_PORO_ELETYPES_H_ */

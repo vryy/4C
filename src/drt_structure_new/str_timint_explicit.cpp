@@ -19,8 +19,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::Explicit::Explicit()
-    : STR::TIMINT::Base()
+STR::TIMINT::Explicit::Explicit() : STR::TIMINT::Base()
 {
   // empty
 }
@@ -62,16 +61,18 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
 void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   CheckInitSetup();
-  dserror("All monolithically coupled problems work with implicit time "
+  dserror(
+      "All monolithically coupled problems work with implicit time "
       "integration schemes. Thus, calling Evaluate() in an explicit scheme "
       "is not possible.");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::SetState(const Teuchos::RCP<Epetra_Vector> & x)
+void STR::TIMINT::Explicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  dserror("All coupled problems work with implicit time "
+  dserror(
+      "All coupled problems work with implicit time "
       "integration schemes. Thus, calling SetState() in an explicit scheme "
       "is not considered, yet.");
 }
@@ -137,7 +138,8 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Explicit::Integrate()
 {
-  dserror("The function is unused since the ADAPTER::StructureTimeLoop "
+  dserror(
+      "The function is unused since the ADAPTER::StructureTimeLoop "
       "wrapper gives you all the flexibility you need.");
   return 0;
 }
@@ -201,8 +203,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSystemMa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::UseBlockMatrix(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+void STR::TIMINT::Explicit::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
 {
   dserror("UseBlockMatrix() is not available for explicit time integration");

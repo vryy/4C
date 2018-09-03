@@ -15,29 +15,31 @@
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_AUG_ENUM_LISTS_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_ENUM_LISTS_H_
 
-namespace CONTACT {
-namespace AUG {
-  enum class MapType : char
+namespace CONTACT
+{
+  namespace AUG
   {
-    all_slave_nodes,
-    active_slave_nodes
-  };
+    enum class MapType : char
+    {
+      all_slave_nodes,
+      active_slave_nodes
+    };
 
-  enum class WGapGradientType : char
-  {
-    vague,
-    force_balance,
-    constraint_enforcement
-  };
+    enum class WGapGradientType : char
+    {
+      vague,
+      force_balance,
+      constraint_enforcement
+    };
 
-  enum class SideType : char
-  {
-    slave_master,
-    slave,
-    master
-  };
-} // namespace AUG
-} // namespace CONTACT
+    enum class SideType : char
+    {
+      slave_master,
+      slave,
+      master
+    };
+  }  // namespace AUG
+}  // namespace CONTACT
 
 
 #endif /* SRC_DRT_CONTACT_AUG_CONTACT_AUG_ENUM_LISTS_H_ */

@@ -20,27 +20,33 @@
 
 #include "../drt_mortar/mortar_paramsinterface.H"
 
-namespace INPAR {
-namespace STR {
-  enum PredEnum : int;
-} // namespace STR
-namespace CONTACT {
-  enum VariationalApproach : int;
-} // namespace CONTACT
-} // namespace INPAR
+namespace INPAR
+{
+  namespace STR
+  {
+    enum PredEnum : int;
+  }  // namespace STR
+  namespace CONTACT
+  {
+    enum VariationalApproach : int;
+  }  // namespace CONTACT
+}  // namespace INPAR
 
-namespace STR {
-namespace MODELEVALUATOR {
-  class Generic;
-} // namespace MODELEVALUATOR
-} // namespace STR
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class Generic;
+  }  // namespace MODELEVALUATOR
+}  // namespace STR
 
-namespace CONTACT {
+namespace CONTACT
+{
   class ParamsInterface : public MORTAR::ParamsInterface
   {
-  public:
+   public:
     //! destructor
-    virtual ~ParamsInterface() {};
+    virtual ~ParamsInterface(){};
 
     //! get the predictor status
     virtual bool IsPredictor() const = 0;
@@ -69,14 +75,13 @@ namespace CONTACT {
     virtual std::string GetOutputFilePath() const = 0;
 
     //! get the variational approach type
-    virtual enum INPAR::CONTACT::VariationalApproach
-    GetVariationalApproachType() const = 0;
+    virtual enum INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const = 0;
 
     //! get the variational approach type
     virtual void SetVariationalApproachType(
-        const enum INPAR::CONTACT::VariationalApproach var_type ) = 0;
+        const enum INPAR::CONTACT::VariationalApproach var_type) = 0;
   };
-}
+}  // namespace CONTACT
 
 
 #endif /* SRC_DRT_CONTACT_CONTACT_PARAMSINTERFACE_H_ */

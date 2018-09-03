@@ -29,66 +29,47 @@ namespace DRT
   class Discretization;
   class Element;
 
-namespace ELEMENTS
-{
-
-  /// Interface base class for ArteryEleCalc
-  /*!
-    This class exists to provide a common interface for all template
-    versions of ArteryEleCalc.
-   */
-  class ArteryEleInterface : public DRT::SingletonDestruction
+  namespace ELEMENTS
   {
-  public:
-
-    /// Empty constructor
-    ArteryEleInterface(){return;};
-
-    /// Empty destructor
-    virtual ~ArteryEleInterface(){return;};
-
-    /// Evaluate the element
+    /// Interface base class for ArteryEleCalc
     /*!
-      This class does not provide a definition for this function; it
-      must be defined in ScatraEleCalc.
+      This class exists to provide a common interface for all template
+      versions of ArteryEleCalc.
      */
-    virtual int Evaluate(Artery*                   ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization&          discretization,
-                         std::vector<int>&             lm,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra,
-                         Teuchos::RCP<MAT::Material> mat) = 0;
+    class ArteryEleInterface : public DRT::SingletonDestruction
+    {
+     public:
+      /// Empty constructor
+      ArteryEleInterface() { return; };
 
-    virtual int EvaluateService(Artery*                       ele,
-                                const ARTERY::Action          action,
-                                Teuchos::ParameterList&       params,
-                                DRT::Discretization&          discretization,
-                                std::vector<int>&             lm,
-                                Epetra_SerialDenseMatrix&     elemat1_epetra,
-                                Epetra_SerialDenseMatrix&     elemat2_epetra,
-                                Epetra_SerialDenseVector&     elevec1_epetra,
-                                Epetra_SerialDenseVector&     elevec2_epetra,
-                                Epetra_SerialDenseVector&     elevec3_epetra,
-                                Teuchos::RCP<MAT::Material> mat) = 0;
+      /// Empty destructor
+      virtual ~ArteryEleInterface() { return; };
 
-    virtual int ScatraEvaluate(Artery*                   ele,
-                         Teuchos::ParameterList&   params,
-                         DRT::Discretization&      discretization,
-                         std::vector<int>&         lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         Teuchos::RCP<MAT::Material> mat) = 0;
+      /// Evaluate the element
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in ScatraEleCalc.
+       */
+      virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, std::vector<int>& lm,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
 
-  };
-} // namespace Elements
-} // namespace DRT
+      virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+
+      virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, std::vector<int>& lm,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 
 

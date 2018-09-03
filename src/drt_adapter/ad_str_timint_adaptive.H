@@ -24,12 +24,12 @@ namespace STR
 {
   class TimInt;
   class TimAda;
-}
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /*====================================================================*/
   /*!
    * \brief Adapter to general implicit structural time integration
@@ -38,13 +38,9 @@ namespace ADAPTER {
    */
   class StructureTimIntAda : public StructureWrapper
   {
-  public:
-
+   public:
     /// Constructor
-    StructureTimIntAda(
-      Teuchos::RCP<STR::TimAda> sta,
-      Teuchos::RCP<Structure> sti
-    );
+    StructureTimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
 
     /// Destructor
     virtual ~StructureTimIntAda() { ; }
@@ -63,8 +59,7 @@ namespace ADAPTER {
 
     //@}
 
-  protected:
-
+   protected:
     //! Access routines
     //{@
 
@@ -72,8 +67,7 @@ namespace ADAPTER {
 
     //@}
 
-  private:
-
+   private:
     /// the actual structure algorithm
     Teuchos::RCP<STR::TimAda> structure_;
 

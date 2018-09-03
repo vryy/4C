@@ -16,132 +16,136 @@
 #ifndef NOX_NLN_LINESEARCH_BACKTRACK_H_
 #define NOX_NLN_LINESEARCH_BACKTRACK_H_
 
-#include "nox_nln_linesearch_generic.H" // base class
+#include "nox_nln_linesearch_generic.H"  // base class
 #include "nox_nln_inner_statustest_generic.H"
 
 #include <fenv.h>
 #include <NOX_StatusTest_Generic.H>
 
 // forward declaration
-namespace NOX {
+namespace NOX
+{
   class Utils;
-namespace MeritFunction {
-  class Generic;
-}
-namespace StatusTest {
-  class Generic;
-}
-
-namespace NLN {
-namespace INNER {
-namespace StatusTest {
-  class Generic;
-} // namespace StatusTest
-} // namespace INNER
-namespace LineSearch {
-  class Backtrack : public Generic
+  namespace MeritFunction
   {
-  public:
-    //! Constructor
-    Backtrack(const Teuchos::RCP<NOX::GlobalData>& gd,
-        const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
-        const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
-        Teuchos::ParameterList& params);
+    class Generic;
+  }
+  namespace StatusTest
+  {
+    class Generic;
+  }
 
-    //! Destructor
-    virtual ~Backtrack() {};
+  namespace NLN
+  {
+    namespace INNER
+    {
+      namespace StatusTest
+      {
+        class Generic;
+      }  // namespace StatusTest
+    }    // namespace INNER
+    namespace LineSearch
+    {
+      class Backtrack : public Generic
+      {
+       public:
+        //! Constructor
+        Backtrack(const Teuchos::RCP<NOX::GlobalData>& gd,
+            const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
+            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+            Teuchos::ParameterList& params);
 
-    bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
-           Teuchos::ParameterList& params);
+        //! Destructor
+        virtual ~Backtrack(){};
 
-    void reset();
+        bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
-    // derived
-    bool compute(NOX::Abstract::Group& newgrp, double& step,
-             const NOX::Abstract::Vector& dir,
-             const NOX::Solver::Generic& s);
+        void reset();
 
-    //! @name Access functionality
-    //@{
-    //! get the number of line search iterations
-    virtual const int& GetNumIterations() const;
+        // derived
+        bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
+            const NOX::Solver::Generic& s);
 
-    //! get the merit function
-    virtual const NOX::MeritFunction::Generic& GetMeritFunction() const;
+        //! @name Access functionality
+        //@{
+        //! get the number of line search iterations
+        virtual const int& GetNumIterations() const;
 
-    //! get the current search direction
-    virtual const NOX::Abstract::Vector& GetSearchDirection() const;
+        //! get the merit function
+        virtual const NOX::MeritFunction::Generic& GetMeritFunction() const;
 
-    //! get current step length
-    const double& GetStepLength() const;
+        //! get the current search direction
+        virtual const NOX::Abstract::Vector& GetSearchDirection() const;
 
-    //!@}
+        //! get current step length
+        const double& GetStepLength() const;
 
-    //! @name Mutator functionality
-    //! @{
-    //! set current step length
-    virtual void SetStepLength(double step);
-    //! @}
+        //!@}
 
-  protected:
-    //! print inner status test results
-    void PrintUpdate( std::ostream& os ) const;
+        //! @name Mutator functionality
+        //! @{
+        //! set current step length
+        virtual void SetStepLength(double step);
+        //! @}
 
-    //! Disable the internal exception checks during the evaluation
-    void DisableInternalExceptionChecks() const;
+       protected:
+        //! print inner status test results
+        void PrintUpdate(std::ostream& os) const;
 
-    //! Clear the internal exception storage
-    void ClearInternalExceptionChecks() const;
+        //! Disable the internal exception checks during the evaluation
+        void DisableInternalExceptionChecks() const;
 
-    //! Enable the internal exception checks during the evaluation
-    void EnableInternalExceptionChecks() const;
+        //! Clear the internal exception storage
+        void ClearInternalExceptionChecks() const;
 
-  private:
-    //! throw NOX error
-    void throwError(
-        const std::string& functionName,
-        const std::string& errorMsg) const;
+        //! Enable the internal exception checks during the evaluation
+        void EnableInternalExceptionChecks() const;
 
-  private:
-    //! allow exceptions during the evaluate procedure
-    bool allowExceptions_;
+       private:
+        //! throw NOX error
+        void throwError(const std::string& functionName, const std::string& errorMsg) const;
 
-    //! inner iteration counter
-    int lsIters_;
+       private:
+        //! allow exceptions during the evaluate procedure
+        bool allowExceptions_;
 
-    //! Printing Utilities
-    Teuchos::RCP<NOX::Utils> utils_;
+        //! inner iteration counter
+        int lsIters_;
 
-    //! Merit function
-    Teuchos::RCP<NOX::MeritFunction::Generic> meritFunctionPtr_;
+        //! Printing Utilities
+        Teuchos::RCP<NOX::Utils> utils_;
 
-    //! Current step pointer, points to the step variable of the NOX::NLN::Solver::LineSearchBased class
-    double* stepPtr_;
+        //! Merit function
+        Teuchos::RCP<NOX::MeritFunction::Generic> meritFunctionPtr_;
 
-    //! Default step
-    double defaultStep_;
+        //! Current step pointer, points to the step variable of the
+        //! NOX::NLN::Solver::LineSearchBased class
+        double* stepPtr_;
 
-    //! line search reduction factor
-    double reductionFactor_;
+        //! Default step
+        double defaultStep_;
 
-    //! inner status test checktype
-    NOX::StatusTest::CheckType checkType_;
+        //! line search reduction factor
+        double reductionFactor_;
 
-    //! inner status type
-    NOX::NLN::INNER::StatusTest::StatusType status_;
+        //! inner status test checktype
+        NOX::StatusTest::CheckType checkType_;
 
-    //! search direction
-    Teuchos::RCP<const NOX::Abstract::Vector> searchDirectionPtr_;
+        //! inner status type
+        NOX::NLN::INNER::StatusTest::StatusType status_;
 
-    //! outer convergence tests
-    Teuchos::RCP<NOX::StatusTest::Generic> outerTestsPtr_;
+        //! search direction
+        Teuchos::RCP<const NOX::Abstract::Vector> searchDirectionPtr_;
 
-    //! line search stopping tests
-    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTestsPtr_;
-  };
-} // namespace LineSearch
-} // namespace NLN
-} // namespace NOX
+        //! outer convergence tests
+        Teuchos::RCP<NOX::StatusTest::Generic> outerTestsPtr_;
+
+        //! line search stopping tests
+        Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTestsPtr_;
+      };
+    }  // namespace LineSearch
+  }    // namespace NLN
+}  // namespace NOX
 
 
 #endif /* NOX_NLN_LINESEARCH_BACKTRACK_H_ */

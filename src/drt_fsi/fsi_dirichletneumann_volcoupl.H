@@ -25,160 +25,140 @@
 
 namespace GEO
 {
-class SearchTree;
+  class SearchTree;
 }
 
-namespace FSI {
-
-class InterfaceCorrector;
-
-/// Dirichlet Neumann VolCoupled system
-/*!
-   documentation
-
-  \author u.kue
-  \date 06/07
- */
-class DirichletNeumannVolCoupl : public DirichletNeumann
+namespace FSI
 {
-public:
+  class InterfaceCorrector;
 
-  //constructor
-  explicit DirichletNeumannVolCoupl(const Epetra_Comm& comm);
+  /// Dirichlet Neumann VolCoupled system
+  /*!
+     documentation
 
-  /// setup this object
-  virtual void Setup();
+    \author u.kue
+    \date 06/07
+   */
+  class DirichletNeumannVolCoupl : public DirichletNeumann
+  {
+   public:
+    // constructor
+    explicit DirichletNeumannVolCoupl(const Epetra_Comm& comm);
 
-protected:
+    /// setup this object
+    virtual void Setup();
 
-  //setup
-  void SetupCouplingStructAle(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
+   protected:
+    // setup
+    void SetupCouplingStructAle(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
-  //setup
-  void SetupInterfaceCorrector(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
+    // setup
+    void SetupInterfaceCorrector(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
-  /// interface fluid operator
-  virtual Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
-                                              const FillType fillFlag);
-
-
-  void ExtractPreviousInterfaceSolution();
-
-  /// structure to ale mapping
-  Teuchos::RCP<Epetra_Vector> StuctureToAle(
-      Teuchos::RCP<Epetra_Vector> iv) const;
-
-  /// structure to ale mapping
-  Teuchos::RCP<Epetra_Vector> StructureToAle(
-      Teuchos::RCP<const Epetra_Vector> iv) const;
-
-  /// ale to structure mapping
-  Teuchos::RCP<Epetra_Vector> AleToStructure(
-      Teuchos::RCP<Epetra_Vector> iv) const;
-
-  /// ale to structure
-  Teuchos::RCP<Epetra_Vector> AleToStructure(
-      Teuchos::RCP<const Epetra_Vector> iv) const;
-
-private:
-
-  //! we couple based on displacements
-  bool displacementcoupling_;
-
-  /// coupling of structure and ale at the interface
-  Teuchos::RCP<ADAPTER::MortarVolCoupl>               coupsa_;
-
-  /// coupling of structure and ale at the interface
-  Teuchos::RCP<InterfaceCorrector>               icorrector_;
-
-};
-
-class VolCorrector;
-
-class InterfaceCorrector
-{
-public:
-  //constructor
-  InterfaceCorrector():idisp_(Teuchos::null){};
-
-  //destructor
-  virtual ~InterfaceCorrector(){};
-
-  virtual void Setup(Teuchos::RCP< ADAPTER::FluidAle> fluidale);
-
-  void SetInterfaceDisplacements(
-      Teuchos::RCP<Epetra_Vector>& idisp_struct,
-      ADAPTER::Coupling& icoupfs);
-
-  virtual void CorrectInterfaceDisplacements(
-      Teuchos::RCP<Epetra_Vector> idisp_fluid,
-      Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface);
-
-private:
-  Teuchos::RCP<const Epetra_Vector> idisp_;
-  Teuchos::RCP<ADAPTER::Coupling> icoupfs_;
-
-  Teuchos::RCP<Epetra_Vector> deltadisp_;
-  Teuchos::RCP< ADAPTER::FluidAle> fluidale_;
-
-  Teuchos::RCP< VolCorrector> volcorrector_;
-};
+    /// interface fluid operator
+    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag);
 
 
-class VolCorrector
-{
-public:
-  //constructor
-  VolCorrector():dim_(-1){};
+    void ExtractPreviousInterfaceSolution();
 
-  //destructor
-  virtual ~VolCorrector(){};
+    /// structure to ale mapping
+    Teuchos::RCP<Epetra_Vector> StuctureToAle(Teuchos::RCP<Epetra_Vector> iv) const;
 
-  virtual void Setup(const int dim,Teuchos::RCP< ADAPTER::FluidAle> fluidale);
+    /// structure to ale mapping
+    Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-  virtual void CorrectVolDisplacements(
-      Teuchos::RCP< ADAPTER::FluidAle> fluidale,
-      Teuchos::RCP<Epetra_Vector> deltadisp,
-      Teuchos::RCP<Epetra_Vector> idisp_fluid,
-      Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface);
+    /// ale to structure mapping
+    Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<Epetra_Vector> iv) const;
 
-private:
+    /// ale to structure
+    Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-  virtual void CorrectVolDisplacementsParaSpace(
-      Teuchos::RCP< ADAPTER::FluidAle> fluidale,
-      Teuchos::RCP<Epetra_Vector> deltadisp,
-      Teuchos::RCP<Epetra_Vector> idisp_fluid,
-      Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface);
+   private:
+    //! we couple based on displacements
+    bool displacementcoupling_;
 
-  virtual void CorrectVolDisplacementsPhysSpace(
-      Teuchos::RCP< ADAPTER::FluidAle> fluidale,
-      Teuchos::RCP<Epetra_Vector> deltadisp,
-      Teuchos::RCP<Epetra_Vector> idisp_fluid,
-      Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface);
+    /// coupling of structure and ale at the interface
+    Teuchos::RCP<ADAPTER::MortarVolCoupl> coupsa_;
 
-  void InitDopNormals();
+    /// coupling of structure and ale at the interface
+    Teuchos::RCP<InterfaceCorrector> icorrector_;
+  };
 
-  std::map<int, LINALG::Matrix<9, 2> > CalcBackgroundDops(
-      Teuchos::RCP<DRT::Discretization> searchdis);
+  class VolCorrector;
 
-  LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+  class InterfaceCorrector
+  {
+   public:
+    // constructor
+    InterfaceCorrector() : idisp_(Teuchos::null){};
 
-  std::vector<int> Search(
-      DRT::Element& ele,
-      std::map<int, LINALG::Matrix<9, 2> >& currentKDOPs);
+    // destructor
+    virtual ~InterfaceCorrector(){};
 
-  int dim_;
-  Teuchos::RCP<GEO::SearchTree> searchTree_;
-  LINALG::Matrix<9,3>                dopnormals_;      /// dop normals for seach algorithm
+    virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
 
-  std::map<int,std::vector<int> > fluidaleelemap_;
+    void SetInterfaceDisplacements(
+        Teuchos::RCP<Epetra_Vector>& idisp_struct, ADAPTER::Coupling& icoupfs);
 
-  std::map<int,std::vector<int> > fluidalenodemap_;
-  std::map<int,std::vector<int> > fluidalenodeFSImap_;
+    virtual void CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
-};
+   private:
+    Teuchos::RCP<const Epetra_Vector> idisp_;
+    Teuchos::RCP<ADAPTER::Coupling> icoupfs_;
+
+    Teuchos::RCP<Epetra_Vector> deltadisp_;
+    Teuchos::RCP<ADAPTER::FluidAle> fluidale_;
+
+    Teuchos::RCP<VolCorrector> volcorrector_;
+  };
 
 
-} // namespace FSI
+  class VolCorrector
+  {
+   public:
+    // constructor
+    VolCorrector() : dim_(-1){};
+
+    // destructor
+    virtual ~VolCorrector(){};
+
+    virtual void Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale);
+
+    virtual void CorrectVolDisplacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+        Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+
+   private:
+    virtual void CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+        Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+
+    virtual void CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+        Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+
+    void InitDopNormals();
+
+    std::map<int, LINALG::Matrix<9, 2>> CalcBackgroundDops(
+        Teuchos::RCP<DRT::Discretization> searchdis);
+
+    LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+
+    std::vector<int> Search(DRT::Element& ele, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs);
+
+    int dim_;
+    Teuchos::RCP<GEO::SearchTree> searchTree_;
+    LINALG::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm
+
+    std::map<int, std::vector<int>> fluidaleelemap_;
+
+    std::map<int, std::vector<int>> fluidalenodemap_;
+    std::map<int, std::vector<int>> fluidalenodeFSImap_;
+  };
+
+
+}  // namespace FSI
 
 #endif

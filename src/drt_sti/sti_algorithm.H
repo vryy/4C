@@ -30,99 +30,103 @@ namespace SCATRA
 {
   class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
-}
+}  // namespace SCATRA
 
 namespace STI
 {
   //! monolithic algorithm for scatra-thermo interaction
   class Algorithm : public ADAPTER::AlgorithmBase
   {
-    public:
+   public:
+    //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
+    //! iterations (partitioned algorithm)
+    const unsigned& Iter() const { return iter_; };
 
-      //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations (partitioned algorithm)
-      const unsigned& Iter() const {return iter_;};
+    //! read restart data
+    void ReadRestart(int step  //! time step for restart
+    );
 
-      //! read restart data
-      void ReadRestart(
-          int step   //! time step for restart
-          );
+    //! access scatra time integrator
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const { return scatra_; };
 
-      //! access scatra time integrator
-      const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const {return scatra_;};
+    //! access thermo time integrator
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const { return thermo_; };
 
-      //! access thermo time integrator
-      const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const {return thermo_;};
+    //! time loop
+    void TimeLoop();
 
-      //! time loop
-      void TimeLoop();
+   protected:
+    //! constructor
+    explicit Algorithm(const Epetra_Comm& comm,  //! communicator
+        const Teuchos::ParameterList& stidyn,    //! parameter list for scatra-thermo interaction
+        const Teuchos::ParameterList&
+            scatradyn,  //! scalar transport parameter list for scatra and thermo fields
+        const Teuchos::ParameterList&
+            solverparams_scatra,  //! solver parameter list for scatra field
+        const Teuchos::ParameterList&
+            solverparams_thermo  //! solver parameter list for thermo field
+    );
 
-    protected:
+    //! prepare time step
+    virtual void PrepareTimeStep();
 
-      //! constructor
-      explicit Algorithm(
-          const Epetra_Comm&              comm,                  //! communicator
-          const Teuchos::ParameterList&   stidyn,                //! parameter list for scatra-thermo interaction
-          const Teuchos::ParameterList&   scatradyn,             //! scalar transport parameter list for scatra and thermo fields
-          const Teuchos::ParameterList&   solverparams_scatra,   //! solver parameter list for scatra field
-          const Teuchos::ParameterList&   solverparams_thermo    //! solver parameter list for thermo field
-         );
+    //! pass scatra degrees of freedom to thermo discretization
+    void TransferScatraToThermo(
+        const Teuchos::RCP<const Epetra_Vector> scatra  //!< scatra state vector
+        ) const;
 
-      //! prepare time step
-      virtual void PrepareTimeStep();
+    //! pass thermo degrees of freedom to scatra discretization
+    void TransferThermoToScatra(
+        const Teuchos::RCP<const Epetra_Vector> thermo  //!< thermo state vector
+        ) const;
 
-      //! pass scatra degrees of freedom to thermo discretization
-      void TransferScatraToThermo(
-          const Teuchos::RCP<const Epetra_Vector>   scatra   //!< scatra state vector
-          ) const;
+    //! scatra time integrator
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
-      //! pass thermo degrees of freedom to scatra discretization
-      void TransferThermoToScatra(
-          const Teuchos::RCP<const Epetra_Vector>   thermo   //!< thermo state vector
-          ) const;
+    //! thermo time integrator
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
 
-      //! scatra time integrator
-      Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
+    //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategyscatra_;
 
-      //! thermo time integrator
-      Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
+    //! meshtying strategy for scatra-scatra interface coupling on thermo discretization
+    Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategythermo_;
 
-      //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-      Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategyscatra_;
+    //! input parameters for scatra and thermo fields
+    Teuchos::RCP<Teuchos::ParameterList> fieldparameters_;
 
-      //! meshtying strategy for scatra-scatra interface coupling on thermo discretization
-      Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategythermo_;
+    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
+    //! (partitioned algorithm)
+    unsigned int iter_;
 
-      //! input parameters for scatra and thermo fields
-      Teuchos::RCP<Teuchos::ParameterList> fieldparameters_;
+    //! maximum number of Newton-Raphson iterations (monolithic algorithm) or outer coupling
+    //! iterations (partitioned algorithm)
+    unsigned int itermax_;
 
-      //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations (partitioned algorithm)
-      unsigned int iter_;
+    //! tolerance for Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration
+    //! (partitioned algorithm)
+    double itertol_;
 
-      //! maximum number of Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations (partitioned algorithm)
-      unsigned int itermax_;
+    //! input parameters for scatra-thermo interaction
+    Teuchos::RCP<Teuchos::ParameterList> stiparameters_;
 
-      //! tolerance for Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration (partitioned algorithm)
-      double itertol_;
+    //! timer for Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration
+    //! (partitioned algorithm)
+    Teuchos::RCP<Epetra_Time> timer_;
 
-      //! input parameters for scatra-thermo interaction
-      Teuchos::RCP<Teuchos::ParameterList> stiparameters_;
+   private:
+    //! modify field parameters for thermo field
+    void ModifyFieldParametersForThermoField();
 
-      //! timer for Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration (partitioned algorithm)
-      Teuchos::RCP<Epetra_Time> timer_;
+    //! output solution to screen and files
+    void Output();
 
-    private:
+    //! evaluate time step using Newton-Raphson iteration (monolithic algorithm) or outer coupling
+    //! iteration (partitioned algorithm)
+    virtual void Solve() = 0;
 
-      //! modify field parameters for thermo field
-      void ModifyFieldParametersForThermoField();
-
-      //! output solution to screen and files
-      void Output();
-
-      //! evaluate time step using Newton-Raphson iteration (monolithic algorithm) or outer coupling iteration (partitioned algorithm)
-      virtual void Solve() = 0;
-
-      //! update scatra and thermo fields after time step evaluation
-      void Update();
-  }; // class Algorithm : public ADAPTER::AlgorithmBase
-} // namespace STI
+    //! update scatra and thermo fields after time step evaluation
+    void Update();
+  };  // class Algorithm : public ADAPTER::AlgorithmBase
+}  // namespace STI
 #endif

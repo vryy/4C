@@ -31,17 +31,14 @@ class PostField;
 */
 class PostVtpWriter : public PostVtkWriter
 {
-public:
+ public:
   //! constructor. Initializes the writer to a certain field.
-  PostVtpWriter (PostField* field,
-             const std::string &name);
+  PostVtpWriter(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostVtpWriter()
-  {}
+  virtual ~PostVtpWriter() {}
 
-protected:
-
+ protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const;
 
@@ -52,7 +49,7 @@ protected:
   virtual const std::vector<std::string>& WriterPPieceTags() const;
 
   //! Give every writer a chance to do preparations before writing
-  virtual void WriterPrepTimestep() {};
+  virtual void WriterPrepTimestep(){};
 
   //! Return the parallel file suffix including the dot for this file type
   virtual const std::string& WriterPSuffix() const;
@@ -64,40 +61,24 @@ protected:
   virtual const std::string& WriterSuffix() const;
 
   //! Write a single result step
-  virtual void WriteDofResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_Vector>&                            data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf,
-      const int                                                     from,
-      const bool                                                    fillzeros
-      );
+  virtual void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from,
+      const bool fillzeros);
 
   //! Write a single result step
-  virtual void WriteNodalResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_MultiVector>&                       data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf
-      );
+  virtual void WriteNodalResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf);
 
-  virtual void WriteElementResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_MultiVector>&                       data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf,
-      const int                                                     from
-      );
+  virtual void WriteElementResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from);
 
   //! write the geometry of one time step
   virtual void WriteGeo();
-
 };
 
 #endif

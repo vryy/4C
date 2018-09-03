@@ -24,48 +24,45 @@ namespace DRT
   class Discretization;
 }
 
-namespace ART{
-
-// forward declaration
+namespace ART
+{
+  // forward declaration
   class ArtNetExplicitTimeInt;
   class ArtNetImplStationary;
 
-/*!
-  \brief artnet specific result test class
-
-  \author Mahmoud Ismail
-  \date 11/11
-*/
-class ArteryResultTest: public DRT::ResultTest
-{
-public:
-
   /*!
-  \brief constructor
+    \brief artnet specific result test class
+
+    \author Mahmoud Ismail
+    \date 11/11
   */
-  ArteryResultTest(ArtNetExplicitTimeInt& art_net);
+  class ArteryResultTest : public DRT::ResultTest
+  {
+   public:
+    /*!
+    \brief constructor
+    */
+    ArteryResultTest(ArtNetExplicitTimeInt& art_net);
 
-  /*!
-  \brief constructor
-  */
-  ArteryResultTest(ArtNetImplStationary& art_net);
+    /*!
+    \brief constructor
+    */
+    ArteryResultTest(ArtNetImplStationary& art_net);
 
 
-  /// our version of nodal value tests
-  /*!
-    Possible position flags is only "phi"
-   */
-  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    /// our version of nodal value tests
+    /*!
+      Possible position flags is only "phi"
+     */
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-private:
+   private:
+    /// Teuchos::RCP to scalar transport discretization
+    Teuchos::RCP<DRT::Discretization> dis_;
+    /// Teuchos::RCP to solution vector
+    Teuchos::RCP<const Epetra_Vector> mysol_;
+  };
 
-  /// Teuchos::RCP to scalar transport discretization
-  Teuchos::RCP<DRT::Discretization> dis_;
-  /// Teuchos::RCP to solution vector
-  Teuchos::RCP<const Epetra_Vector>       mysol_;
+}  // namespace ART
 
-};
-
-} // namespace ART
-
-#endif //ART_NET_RESULTTEST_H
+#endif  // ART_NET_RESULTTEST_H

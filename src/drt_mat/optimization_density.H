@@ -30,12 +30,9 @@ namespace MAT
     /// parameters for optimization field
     class TopOptDens : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      TopOptDens(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-      );
+      TopOptDens(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~TopOptDens() { ; }
@@ -43,17 +40,17 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-      double PoroBdDown() const {return poro_bd_down_;};
-      double PoroBdUp() const {return poro_bd_up_;};
-      double SmearFac() const {return smear_fac_;};
+      double PoroBdDown() const { return poro_bd_down_; };
+      double PoroBdUp() const { return poro_bd_up_; };
+      double SmearFac() const { return smear_fac_; };
 
-      void UpdateSmearFac(const double new_smearfac) {
-        smear_fac_=new_smearfac;
+      void UpdateSmearFac(const double new_smearfac)
+      {
+        smear_fac_ = new_smearfac;
         std::cout << "smoothing factor updated to new value " << smear_fac_ << std::endl;
       };
 
-    private:
-
+     private:
       /// @name material parameters
       //@{
 
@@ -68,29 +65,26 @@ namespace MAT
 
     };  // class TopOptDens
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class TopOptDensType : public DRT::ParObjectType
-{
-public:
+  class TopOptDensType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "TopOptDensType"; }
 
-  std::string Name() const { return "TopOptDensType"; }
+    static TopOptDensType& Instance() { return instance_; };
 
-  static TopOptDensType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static TopOptDensType instance_;
-};
+   private:
+    static TopOptDensType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
   class TopOptDens : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     TopOptDens();
 
@@ -139,29 +133,25 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_opti_dens; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new TopOptDens( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new TopOptDens(*this)); }
 
     /// return upper boundary of porosity field
-    virtual double MaxPoro() const {return params_->PoroBdUp();}
+    virtual double MaxPoro() const { return params_->PoroBdUp(); }
 
     /// return upper boundary of porosity field
-    virtual double MinPoro() const {return params_->PoroBdDown();}
+    virtual double MinPoro() const { return params_->PoroBdDown(); }
 
     /// return upper boundary of porosity field
-    virtual double SmearFactor() const {return params_->SmearFac();}
+    virtual double SmearFactor() const { return params_->SmearFac(); }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::TopOptDens* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif /* OPTIMIZATION_DENSITY_H_ */
-
-

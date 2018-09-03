@@ -23,15 +23,17 @@ namespace DRT
   class Discretization;
 }
 
-namespace FS3I {
-namespace Biofilm {
-namespace UTILS {
+namespace FS3I
+{
+  namespace Biofilm
+  {
+    namespace UTILS
+    {
+      void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
+          Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
-  void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> dis,
-                          Teuchos::RCP<Epetra_Vector> disp);
-
-} /* namespace UTILS */
-} /* namespace BiofilmFSI */
+    } /* namespace UTILS */
+  }   // namespace Biofilm
 } /* namespace FS3I */
 
 #endif

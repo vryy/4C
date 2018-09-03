@@ -21,39 +21,39 @@
 
 namespace STI
 {
-    //! partitioned coupling algorithm for scatra-thermo interaction
+  //! partitioned coupling algorithm for scatra-thermo interaction
   class Partitioned : public Algorithm
   {
-    public:
+   public:
+    //! constructor
+    explicit Partitioned(const Epetra_Comm& comm,  //! communicator
+        const Teuchos::ParameterList& stidyn,      //! parameter list for scatra-thermo interaction
+        const Teuchos::ParameterList&
+            scatradyn,  //! scalar transport parameter list for scatra and thermo fields
+        const Teuchos::ParameterList&
+            solverparams_scatra,  //! solver parameter list for scatra field
+        const Teuchos::ParameterList&
+            solverparams_thermo  //! solver parameter list for thermo field
+    );
 
-      //! constructor
-      explicit Partitioned(
-          const Epetra_Comm&              comm,                  //! communicator
-          const Teuchos::ParameterList&   stidyn,                //! parameter list for scatra-thermo interaction
-          const Teuchos::ParameterList&   scatradyn,             //! scalar transport parameter list for scatra and thermo fields
-          const Teuchos::ParameterList&   solverparams_scatra,   //! solver parameter list for scatra field
-          const Teuchos::ParameterList&   solverparams_thermo    //! solver parameter list for thermo field
-          );
+   private:
+    //! convergence check for iterative staggered TSI solver
+    bool ExitOuterCoupling() const;
 
-    private:
+    //! evaluate time step using outer coupling iteration
+    void Solve();
 
-      //! convergence check for iterative staggered TSI solver
-      bool ExitOuterCoupling() const;
+    //! evaluate time step using one-way coupling iteration
+    void SolveOneWay() const;
 
-      //! evaluate time step using outer coupling iteration
-      void Solve();
+    //! evaluate time step using two-way coupling iteration
+    void SolveTwoWay();
 
-      //! evaluate time step using one-way coupling iteration
-      void SolveOneWay() const;
+    //! type of coupling between scatra and thermo fields
+    const INPAR::STI::CouplingType couplingtype_;
 
-      //! evaluate time step using two-way coupling iteration
-      void SolveTwoWay();
-
-      //! type of coupling between scatra and thermo fields
-      const INPAR::STI::CouplingType couplingtype_;
-
-      //! maximum value of Aitken relaxation parameter
-      const double omegamax_;
-  }; // class Partitioned : public Algorithm
-} // namespace STI
+    //! maximum value of Aitken relaxation parameter
+    const double omegamax_;
+  };  // class Partitioned : public Algorithm
+}  // namespace STI
 #endif

@@ -33,48 +33,34 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicLinearSystem::MonolithicLinearSystem(
-       Teuchos::ParameterList& printingParams,
-       Teuchos::ParameterList& linearSolverParams,
-       const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-       const Teuchos::RCP<Epetra_Operator>& J,
-       const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-       const Teuchos::RCP<Epetra_Operator>& M,
-       const NOX::Epetra::Vector& cloneVector,
-       const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject):
-NOX::Epetra::LinearSystemAztecOO(
-    printingParams,
-    linearSolverParams,
-    iJac,
-    J,
-    iPrec,
-    M,
-    cloneVector,
-    scalingObject),
-lsparams_(linearSolverParams)
+FSI::MonolithicLinearSystem::MonolithicLinearSystem(Teuchos::ParameterList& printingParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<Epetra_Operator>& J,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<Epetra_Operator>& M, const NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : NOX::Epetra::LinearSystemAztecOO(
+          printingParams, linearSolverParams, iJac, J, iPrec, M, cloneVector, scalingObject),
+      lsparams_(linearSolverParams)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicLinearSystem::~MonolithicLinearSystem()
-{
-}
+FSI::MonolithicLinearSystem::~MonolithicLinearSystem() {}
 
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicLinearSystem::applyJacobianInverse(
-    Teuchos::ParameterList &p,
-    const NOX::Epetra::Vector& input,
-    NOX::Epetra::Vector& result
-    )
+    Teuchos::ParameterList& p, const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result)
 {
   // AGS: Rare option, similar to Max Iters=1 but twice as fast.
-    if ( p.get("Use Preconditioner as Solver", false) )
-      return applyRightPreconditioning(false, p, input, result);
+  if (p.get("Use Preconditioner as Solver", false))
+    return applyRightPreconditioning(false, p, input, result);
 
   // Aztec crashes in reuses because its buggy
   Teuchos::RCP<Epetra_Operator> prec = solvePrecOpPtr;
@@ -93,13 +79,11 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
 
   // Zero out the delta X of the linear problem if requested by user.
-  if (zeroInitialGuess)
-    result.init(0.0);
+  if (zeroInitialGuess) result.init(0.0);
 
   // Create Epetra linear problem object for the linear solve
-  Epetra_LinearProblem Problem(jacPtr.get(),
-                               &(result.getEpetraVector()),
-                               &(nonConstInput.getEpetraVector()));
+  Epetra_LinearProblem Problem(
+      jacPtr.get(), &(result.getEpetraVector()), &(nonConstInput.getEpetraVector()));
 
   // Set objects in aztec solver.
   // RPP: Don't use "aztecSolverPtr->SetProblem(Problem);", it breaks
@@ -108,20 +92,20 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   this->setAztecOOJacobian();
   if (solvePrecOpPtr == Teuchos::null) dserror("Preconditioner is zero");
   aztecSolverPtr->SetPrecOperator(solvePrecOpPtr.get());
-  //this->setAztecOOPreconditioner();
+  // this->setAztecOOPreconditioner();
   aztecSolverPtr->SetLHS(&(result.getEpetraVector()));
   aztecSolverPtr->SetRHS(&(nonConstInput.getEpetraVector()));
 
 
   // ************* Begin linear system scaling *******************
-  if ( !Teuchos::is_null(scaling) ) {
-
-    if ( !manualScaling )
-      scaling->computeScaling(Problem);
+  if (!Teuchos::is_null(scaling))
+  {
+    if (!manualScaling) scaling->computeScaling(Problem);
 
     scaling->scaleLinearSystem(Problem);
 
-    if (utils.isPrintType(NOX::Utils::Details)) {
+    if (utils.isPrintType(NOX::Utils::Details))
+    {
       utils.out() << *scaling << std::endl;
     }
   }
@@ -129,9 +113,10 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
 
 
   // Make sure preconditioner was constructed if requested
-  if (!isPrecConstructed && (precAlgorithm != None_)) {
+  if (!isPrecConstructed && (precAlgorithm != None_))
+  {
     throwError("applyJacobianInverse",
-       "Preconditioner is not constructed!  Call createPreconditioner() first.");
+        "Preconditioner is not constructed!  Call createPreconditioner() first.");
   }
 
   // Get linear solver convergence parameters
@@ -150,31 +135,30 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   // flag to AZ_reuse.  When we call iterate, the first solve works,
   // but subsequent solves fail to find the preconditioner.
   // Will try get Alan to fix for release 7.0.
-  if (precAlgorithm == AztecOO_ &&
-      precReusePolicy == PRPT_REUSE)
+  if (precAlgorithm == AztecOO_ && precReusePolicy == PRPT_REUSE)
     aztecSolverPtr->SetAztecOption(AZ_pre_calc, AZ_calc);
 
   // build the status test
   {
-    Epetra_Operator* op  = jacPtr.get();
-    Epetra_Vector*   rhs = &(nonConstInput.getEpetraVector());
-    Epetra_Vector*   lhs = &(result.getEpetraVector());
+    Epetra_Operator* op = jacPtr.get();
+    Epetra_Vector* rhs = &(nonConstInput.getEpetraVector());
+    Epetra_Vector* lhs = &(result.getEpetraVector());
     if (!op || !rhs || !lhs) dserror("One of the objects in linear system is NULL");
 
     // max iterations
     aztest_maxiter_ = Teuchos::rcp(new AztecOO_StatusTestMaxIters(maxit));
     // L2 norm
-    aztest_norm2_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,tol));
-    aztest_norm2_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
-                                 AztecOO_StatusTestResNorm::TwoNorm);
-    aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
-                                   AztecOO_StatusTestResNorm::TwoNorm);
+    aztest_norm2_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op, *lhs, *rhs, tol));
+    aztest_norm2_->DefineResForm(
+        AztecOO_StatusTestResNorm::Implicit, AztecOO_StatusTestResNorm::TwoNorm);
+    aztest_norm2_->DefineScaleForm(
+        AztecOO_StatusTestResNorm::NormOfInitRes, AztecOO_StatusTestResNorm::TwoNorm);
     // Linf norm (demanded to be 1 times L2-norm now, to become an input parameter)
-    aztest_norminf_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
-    aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
-                                   AztecOO_StatusTestResNorm::InfNorm);
-    aztest_norminf_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
-                                     AztecOO_StatusTestResNorm::InfNorm);
+    aztest_norminf_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op, *lhs, *rhs, 1.0 * tol));
+    aztest_norminf_->DefineResForm(
+        AztecOO_StatusTestResNorm::Implicit, AztecOO_StatusTestResNorm::InfNorm);
+    aztest_norminf_->DefineScaleForm(
+        AztecOO_StatusTestResNorm::NormOfInitRes, AztecOO_StatusTestResNorm::InfNorm);
     // L2 AND Linf
     aztest_combo1_ = Teuchos::rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::AND));
     // maxiters OR (L2 AND Linf)
@@ -190,41 +174,37 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
   aztecStatus = aztecSolverPtr->Iterate(maxit, tol);
 
   // Unscale the linear system
-  if ( !Teuchos::is_null(scaling) )
-    scaling->unscaleLinearSystem(Problem);
+  if (!Teuchos::is_null(scaling)) scaling->unscaleLinearSystem(Problem);
 
   // Set the output parameters in the "Output" sublist
-  if (outputSolveDetails) {
+  if (outputSolveDetails)
+  {
     Teuchos::ParameterList& outputList = p.sublist("Output");
-    int prevLinIters =
-      outputList.get("Total Number of Linear Iterations", 0);
+    int prevLinIters = outputList.get("Total Number of Linear Iterations", 0);
     int curLinIters = 0;
     double achievedTol = -1.0;
     curLinIters = aztecSolverPtr->NumIters();
     achievedTol = aztecSolverPtr->ScaledResidual();
 
     outputList.set("Number of Linear Iterations", curLinIters);
-    outputList.set("Total Number of Linear Iterations",
-        (prevLinIters + curLinIters));
+    outputList.set("Total Number of Linear Iterations", (prevLinIters + curLinIters));
     outputList.set("Achieved Tolerance", achievedTol);
   }
 
   double endTime = timer.WallTime();
   timeApplyJacbianInverse += (endTime - startTime);
 
-  if (aztecStatus != 0)
-    return false;
+  if (aztecStatus != 0) return false;
 
   return true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicLinearSystem::softreset(
-                               Teuchos::ParameterList& linearSolverParams)
+void FSI::MonolithicLinearSystem::softreset(Teuchos::ParameterList& linearSolverParams)
 {
   // === soft means do not touch the preconditioner!!
-  //destroyPreconditioner();
+  // destroyPreconditioner();
 
   // Set the requested preconditioning.
   std::string prec = linearSolverParams.get("Preconditioner", "None");
@@ -242,7 +222,8 @@ void FSI::MonolithicLinearSystem::softreset(
     precAlgorithm = UserDefined_;
   else if (prec == "None")
     precAlgorithm = None_;
-  else {
+  else
+  {
     std::string errorMessage = "Option for \"Preconditioner\" is invalid!";
     throwError("reset()", errorMessage);
   }
@@ -251,19 +232,15 @@ void FSI::MonolithicLinearSystem::softreset(
   // preconditioning choice.
   checkPreconditionerValidity();
 
-  zeroInitialGuess =
-    linearSolverParams.get("Zero Initial Guess", false);
+  zeroInitialGuess = linearSolverParams.get("Zero Initial Guess", false);
 
-  manualScaling =
-    linearSolverParams.get("Compute Scaling Manually", true);
+  manualScaling = linearSolverParams.get("Compute Scaling Manually", true);
 
   // Place linear solver details in the "Output" sublist of the
   // "Linear Solver" parameter list
-  outputSolveDetails =
-    linearSolverParams.get("Output Solver Details", true);
+  outputSolveDetails = linearSolverParams.get("Output Solver Details", true);
 
-  throwErrorOnPrecFailure =
-    linearSolverParams.get("Throw Error on Prec Failure", true);
+  throwErrorOnPrecFailure = linearSolverParams.get("Throw Error on Prec Failure", true);
 
   // The first time a SetProblem is used on the AztecOO solver
   // it sets all aztec options based on the Epetra_LinearProblem
@@ -273,34 +250,36 @@ void FSI::MonolithicLinearSystem::softreset(
   // RPP: Not any more.  We don't set the solver objects with
   // the problem class.  It cause seg faults when new preconditioners
   // were computed during prec reuse.
-  //Epetra_LinearProblem& problem = *(new Epetra_LinearProblem);
-  //aztecSolverPtr->SetProblem(problem);
+  // Epetra_LinearProblem& problem = *(new Epetra_LinearProblem);
+  // aztecSolverPtr->SetProblem(problem);
 
   // Set the Jacobian in the solver. It must be set before
   // a preconditioner can be set.
-//   if ((jacType == EpetraRowMatrix) ||
-//       (jacType == EpetraVbrMatrix) ||
-//       (jacType == EpetraCrsMatrix)) {
-//     aztecSolverPtr->SetUserMatrix(dynamic_cast<Epetra_RowMatrix*>(jacPtr.get()));
-//   }
-//   else
-//     aztecSolverPtr->SetUserOperator(jacPtr.get());
+  //   if ((jacType == EpetraRowMatrix) ||
+  //       (jacType == EpetraVbrMatrix) ||
+  //       (jacType == EpetraCrsMatrix)) {
+  //     aztecSolverPtr->SetUserMatrix(dynamic_cast<Epetra_RowMatrix*>(jacPtr.get()));
+  //   }
+  //   else
+  //     aztecSolverPtr->SetUserOperator(jacPtr.get());
 
   // Set the major aztec options.  Must be called after the first
   // SetProblem() call.
   setAztecOptions(linearSolverParams, *aztecSolverPtr);
 
   // Setup the preconditioner reuse policy
-  std::string preReusePolicyName =
-    linearSolverParams.get("Preconditioner Reuse Policy", "Rebuild");
+  std::string preReusePolicyName = linearSolverParams.get("Preconditioner Reuse Policy", "Rebuild");
   if (preReusePolicyName == "Rebuild")
     precReusePolicy = PRPT_REBUILD;
   else if (preReusePolicyName == "Recompute")
     precReusePolicy = PRPT_RECOMPUTE;
   else if (preReusePolicyName == "Reuse")
     precReusePolicy = PRPT_REUSE;
-  else {
-    std::string errorMessage = "Option for \"Preconditioner Reuse Policy\" is invalid! \nPossible options are \"Reuse\", \"Rebuild\", and \"Recompute\".";
+  else
+  {
+    std::string errorMessage =
+        "Option for \"Preconditioner Reuse Policy\" is invalid! \nPossible options are \"Reuse\", "
+        "\"Rebuild\", and \"Recompute\".";
     throwError("reset()", errorMessage);
   }
   maxAgeOfPrec = linearSolverParams.get("Max Age Of Prec", 1);
@@ -311,8 +290,4 @@ void FSI::MonolithicLinearSystem::softreset(
   linearSolveCount = 0;
 #endif
 #endif
-
 }
-
-
-

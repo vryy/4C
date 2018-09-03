@@ -64,8 +64,7 @@ void STR::IMPLICIT::Gemm::AddViscoMassContributions(LINALG::SparseOperator& jac)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x,
-        Epetra_Vector& f)
+bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
   CheckInitSetup();
   return false;
@@ -73,8 +72,8 @@ bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Gemm::AssembleForce( Epetra_Vector& f,
-    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
+bool STR::IMPLICIT::Gemm::AssembleForce(
+    Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
   CheckInitSetup();
   return false;
@@ -82,9 +81,7 @@ bool STR::IMPLICIT::Gemm::AssembleForce( Epetra_Vector& f,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Gemm::ApplyStiff(
-    const Epetra_Vector& x,
-    LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::Gemm::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   return false;
@@ -93,9 +90,7 @@ bool STR::IMPLICIT::Gemm::ApplyStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::ApplyForceStiff(
-    const Epetra_Vector& x,
-    Epetra_Vector& f,
-    LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   return false;
@@ -104,8 +99,7 @@ bool STR::IMPLICIT::Gemm::ApplyForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Gemm::WriteRestart(
-    IO::DiscretizationWriter& iowriter,
-    const bool& forced_writerestart) const
+    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
@@ -121,8 +115,7 @@ void STR::IMPLICIT::Gemm::ReadRestart(IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Gemm::CalcRefNormForce(
-    const enum NOX::Abstract::Vector::NormType& type)
+double STR::IMPLICIT::Gemm::CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type)
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
@@ -157,9 +150,7 @@ void STR::IMPLICIT::Gemm::UpdateStepElement()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Gemm::PredictConstDisConsistVelAcc(
-    Epetra_Vector& disnp,
-    Epetra_Vector& velnp,
-    Epetra_Vector& accnp) const
+    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
@@ -168,9 +159,7 @@ void STR::IMPLICIT::Gemm::PredictConstDisConsistVelAcc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::PredictConstVelConsistAcc(
-    Epetra_Vector& disnp,
-    Epetra_Vector& velnp,
-    Epetra_Vector& accnp) const
+    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
@@ -180,9 +169,7 @@ bool STR::IMPLICIT::Gemm::PredictConstVelConsistAcc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::PredictConstAcc(
-    Epetra_Vector& disnp,
-    Epetra_Vector& velnp,
-    Epetra_Vector& accnp) const
+    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");

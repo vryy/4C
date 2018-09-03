@@ -22,88 +22,85 @@
 
 // forward declaration
 class Epetra_Comm;
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace CONTACT {
+}  // namespace Teuchos
+namespace CONTACT
+{
   class CoIntegrator;
-namespace INTEGRATOR {
-  class Factory
+  namespace INTEGRATOR
   {
-  public:
-    //! constructor
-    Factory();
-
-    //! destructor
-    virtual ~Factory() {};
-
-    /*! \brief Build the desired contact integrator
-     *
-     * \date 04/16
-     * \author hiermeier */
-    Teuchos::RCP<CONTACT::CoIntegrator> BuildIntegrator(
-        const INPAR::CONTACT::SolvingStrategy& stype,
-        Teuchos::ParameterList& p_mortar,
-        const DRT::Element::DiscretizationType& slave_type,
-        const Epetra_Comm& comm) const;
-
-  private:
-    /*! \brief Build the eXtended integrator considering the slave element type
-     *
-     *  \author hiermeier
-     *  \date 08/16 */
-    CONTACT::CoIntegrator* BuildXIntegrator(
-        Teuchos::ParameterList& p_mortar,
-        const DRT::Element::DiscretizationType& slave_type,
-        const Epetra_Comm& comm) const;
-
-    /*! \brief Build the eXtended integrator considering the problem dimension
-     *
-     *  \author hiermeier
-     *  \date 08/16 */
-    template < DRT::Element::DiscretizationType slave_type >
-    CONTACT::CoIntegrator* BuildConcreteXIntegrator(
-        Teuchos::ParameterList& p_mortar,
-        const Epetra_Comm& comm) const
+    class Factory
     {
-      const int probdim = p_mortar.get<int>("DIMENSION");
-      const int dim     = DRT::UTILS::DisTypeToDim<slave_type>::dim;
-      CONTACT::CoIntegrator* xintegrator = NULL;
+     public:
+      //! constructor
+      Factory();
 
-      if (probdim <= dim)
+      //! destructor
+      virtual ~Factory(){};
+
+      /*! \brief Build the desired contact integrator
+       *
+       * \date 04/16
+       * \author hiermeier */
+      Teuchos::RCP<CONTACT::CoIntegrator> BuildIntegrator(
+          const INPAR::CONTACT::SolvingStrategy& stype, Teuchos::ParameterList& p_mortar,
+          const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm) const;
+
+     private:
+      /*! \brief Build the eXtended integrator considering the slave element type
+       *
+       *  \author hiermeier
+       *  \date 08/16 */
+      CONTACT::CoIntegrator* BuildXIntegrator(Teuchos::ParameterList& p_mortar,
+          const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm) const;
+
+      /*! \brief Build the eXtended integrator considering the problem dimension
+       *
+       *  \author hiermeier
+       *  \date 08/16 */
+      template <DRT::Element::DiscretizationType slave_type>
+      CONTACT::CoIntegrator* BuildConcreteXIntegrator(
+          Teuchos::ParameterList& p_mortar, const Epetra_Comm& comm) const
       {
-        dserror("DIMENSION MISMATCH -- Problem dimension must be"
-            "larger than the element dimension! (probdim <= dim | "
-            "%d <= %d)",probdim,dim);
-      }
+        const int probdim = p_mortar.get<int>("DIMENSION");
+        const int dim = DRT::UTILS::DisTypeToDim<slave_type>::dim;
+        CONTACT::CoIntegrator* xintegrator = NULL;
 
-      switch (probdim)
-      {
-        case 2:
+        if (probdim <= dim)
         {
-          xintegrator = new XCONTACT::Integrator<2,slave_type>(p_mortar, comm);
-          break;
+          dserror(
+              "DIMENSION MISMATCH -- Problem dimension must be"
+              "larger than the element dimension! (probdim <= dim | "
+              "%d <= %d)",
+              probdim, dim);
         }
-        default:
+
+        switch (probdim)
         {
-          dserror("Currently unsupported problem dimension! (probdim = %d)",
-              probdim);
-          break;
+          case 2:
+          {
+            xintegrator = new XCONTACT::Integrator<2, slave_type>(p_mortar, comm);
+            break;
+          }
+          default:
+          {
+            dserror("Currently unsupported problem dimension! (probdim = %d)", probdim);
+            break;
+          }
         }
+
+        return xintegrator;
       }
+    };  // class Factory
 
-      return xintegrator;
-    }
-  }; // class Factory
-
-  // non-member function, please call this one from outside!
-  Teuchos::RCP<CONTACT::CoIntegrator> BuildIntegrator(
-      const INPAR::CONTACT::SolvingStrategy& stype,
-      Teuchos::ParameterList& p_mortar,
-      const DRT::Element::DiscretizationType& eletype,
-      const Epetra_Comm& comm);
-} // namespace INTEGRATOR
-} // namespace CONTACT
+    // non-member function, please call this one from outside!
+    Teuchos::RCP<CONTACT::CoIntegrator> BuildIntegrator(
+        const INPAR::CONTACT::SolvingStrategy& stype, Teuchos::ParameterList& p_mortar,
+        const DRT::Element::DiscretizationType& eletype, const Epetra_Comm& comm);
+  }  // namespace INTEGRATOR
+}  // namespace CONTACT
 
 
 #endif /* SRC_DRT_CONTACT_CONTACT_INTEGRATOR_FACTORY_H_ */

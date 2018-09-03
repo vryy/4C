@@ -26,33 +26,22 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupMyocard::CoupMyocard(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  n_(matdata->GetDouble("N"))
+MAT::ELASTIC::PAR::CoupMyocard::CoupMyocard(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), n_(matdata->GetDouble("N"))
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupMyocard::CoupMyocard(MAT::ELASTIC::PAR::CoupMyocard* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::CoupMyocard::CoupMyocard(MAT::ELASTIC::PAR::CoupMyocard* params) : params_(params) {}
 
 /*-----------------------------------------------------------------------/
  *                                                        pfaller Apr15 */
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoPrincipal(
-    const LINALG::Matrix<3,1>& prinv,
-    LINALG::Matrix<8,1>& mu,
-    LINALG::Matrix<33,1>& xi,
-    LINALG::Matrix<7,1>& rateinv,
-    Teuchos::ParameterList& params,
-    const int eleGID
-  )
+void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoPrincipal(const LINALG::Matrix<3, 1>& prinv,
+    LINALG::Matrix<8, 1>& mu, LINALG::Matrix<33, 1>& xi, LINALG::Matrix<7, 1>& rateinv,
+    Teuchos::ParameterList& params, const int eleGID)
 {
   // material parameter
   const double eta = params_->n_;

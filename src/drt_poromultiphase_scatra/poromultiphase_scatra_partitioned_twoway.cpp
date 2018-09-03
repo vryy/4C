@@ -13,7 +13,6 @@
 
 
 
-
 #include "poromultiphase_scatra_partitioned_twoway.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -31,63 +30,41 @@
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTraPartitionedTwoWay(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    PoroMultiPhaseScaTraPartitioned(comm, globaltimeparams),
-    scaincnp_(Teuchos::null),
-    structincnp_(Teuchos::null),
-    fluidincnp_(Teuchos::null),
-    itmax_(-1),
-    ittol_(-1)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : PoroMultiPhaseScaTraPartitioned(comm, globaltimeparams),
+      scaincnp_(Teuchos::null),
+      structincnp_(Teuchos::null),
+      fluidincnp_(Teuchos::null),
+      itmax_(-1),
+      ittol_(-1)
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | initialization                                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& algoparams,
-    const Teuchos::ParameterList& poroparams,
-    const Teuchos::ParameterList& structparams,
-    const Teuchos::ParameterList& fluidparams,
-    const Teuchos::ParameterList& scatraparams,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
+    const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
+    const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
+    const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
+    const std::string& struct_disname, const std::string& fluid_disname,
+    const std::string& scatra_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
     int ndsporofluid_scatra)
 {
-  //call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitioned::Init(
-      globaltimeparams,
-      algoparams,
-      poroparams,
-      structparams,
-      fluidparams,
-      scatraparams,
-      struct_disname,
-      fluid_disname,
-      scatra_disname,
-      isale,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure,
-      ndsporofluid_scatra);
+  // call base class
+  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitioned::Init(globaltimeparams, algoparams,
+      poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
+      scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
 
   // read input variables
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
 
   // initialize increment vectors
-  scaincnp_    = Teuchos::rcp(new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->Discretization()->DofRowMap())));
+  scaincnp_ = Teuchos::rcp(
+      new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->Discretization()->DofRowMap())));
   structincnp_ = Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructDofRowMap())));
-  fluidincnp_  = (Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidDofRowMap()))));
-
+  fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidDofRowMap()))));
 }
 
 /*----------------------------------------------------------------------*
@@ -114,9 +91,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
 {
-
   // Newton-Raphson iteration
-  PoroField()-> TimeStep();
+  PoroField()->TimeStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -126,18 +102,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout<<"\n";
-    std::cout<<"*****************************************************************************************************************\n";
-    std::cout<<"TRANSPORT SOLVER   \n";
-    std::cout<<"*****************************************************************************************************************\n";
-
+    std::cout << "\n";
+    std::cout << "*********************************************************************************"
+                 "********************************\n";
+    std::cout << "TRANSPORT SOLVER   \n";
+    std::cout << "*********************************************************************************"
+                 "********************************\n";
   }
 
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
   ScatraAlgo()->ScaTraField()->Solve();
-
 }
 
 /*----------------------------------------------------------------------*
@@ -145,20 +121,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PrintHeaderPartitioned()
 {
-
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
-    std::cout<<"\n";
-    std::cout<<"********************************************************************************" <<
-        "***************************************************************\n";
-    std::cout<<"* PARTITIONED OUTER ITERATION LOOP ----- MULTIPORO  <-------> SCATRA         " <<
-        "                                                                 *\n";
-    std::cout<<"* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
-        << std::setw(5) << std::setprecision(4) << std::scientific << NStep() << ", Time: "
-        << std::setw(11) << std::setprecision(4) << std::scientific << Time() << "/"
-        << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime() << ", Dt: "
-        << std::setw(11) << std::setprecision(4) << std::scientific << Dt() <<
-        "                                                                           *"<< std::endl;
+    std::cout << "\n";
+    std::cout << "********************************************************************************"
+              << "***************************************************************\n";
+    std::cout << "* PARTITIONED OUTER ITERATION LOOP ----- MULTIPORO  <-------> SCATRA         "
+              << "                                                                 *\n";
+    std::cout << "* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
+              << "/" << std::setw(5) << std::setprecision(4) << std::scientific << NStep()
+              << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
+              << "/" << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime()
+              << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
+              << "                                                                           *"
+              << std::endl;
   }
 
   return;
@@ -171,9 +147,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::IterUpdateStat
 {
   // store scalar from first solution for convergence check (like in
   // elch_algorithm: use current values)
-  scaincnp_->Update(1.0,*ScatraAlgo()->ScaTraField()->Phinp(),0.0);
-  structincnp_->Update(1.0,*PoroField()->StructDispnp(),0.0);
-  fluidincnp_->Update(1.0,*PoroField()->FluidPhinp(),0.0);
+  scaincnp_->Update(1.0, *ScatraAlgo()->ScaTraField()->Phinp(), 0.0);
+  structincnp_->Update(1.0, *PoroField()->StructDispnp(), 0.0);
+  fluidincnp_->Update(1.0, *PoroField()->FluidPhinp(), 0.0);
 
   return;
 }  // IterUpdateStates()
@@ -183,7 +159,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::IterUpdateStat
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceCheck(int itnum)
 {
-
   // convergence check based on the scalar increment
   bool stopnonliniter = false;
 
@@ -202,9 +177,9 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0,*(ScatraAlgo()->ScaTraField()->Phinp()),-1.0);
-  structincnp_->Update(1.0,*(PoroField()->StructDispnp()),-1.0);
-  fluidincnp_->Update(1.0,*(PoroField()->FluidPhinp()),-1.0);
+  scaincnp_->Update(1.0, *(ScatraAlgo()->ScaTraField()->Phinp()), -1.0);
+  structincnp_->Update(1.0, *(PoroField()->StructDispnp()), -1.0);
+  fluidincnp_->Update(1.0, *(PoroField()->FluidPhinp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
@@ -220,44 +195,62 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   {
-    std::cout<<"                                                                                                                                              *\n";
-    std::cout<<"+------------------------------------------------------------------------------------------------------+                                      *\n";
-    std::cout<<"| PARTITIONED OUTER ITERATION STEP ----- MULTIPORO  <-------> SCATRA                                   |                                      *\n";
-    printf("+--------------+------------------------+--------------------+--------------------+--------------------+                                      *\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc    --|--  disp-inc      --|--  fluid-inc     --|                                      *\n");
-    printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         | %10.3E         |",
-         itnum,itmax_,ittol_,scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2,fluidincnorm_L2/fluidnorm_L2);
+    std::cout << "                                                                                 "
+                 "                                                             *\n";
+    std::cout << "+--------------------------------------------------------------------------------"
+                 "----------------------+                                      *\n";
+    std::cout << "| PARTITIONED OUTER ITERATION STEP ----- MULTIPORO  <-------> SCATRA             "
+                 "                      |                                      *\n";
+    printf(
+        "+--------------+------------------------+--------------------+--------------------+-------"
+        "-------------+                                      *\n");
+    printf(
+        "|-  step/max  -|-  tol      [norm]     -|--  scalar-inc    --|--  disp-inc      --|--  "
+        "fluid-inc     --|                                      *\n");
+    printf(
+        "|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         | %10.3E         |",
+        itnum, itmax_, ittol_, scaincnorm_L2 / scanorm_L2, dispincnorm_L2 / dispnorm_L2,
+        fluidincnorm_L2 / fluidnorm_L2);
     printf("                                      *\n");
-    printf("+--------------+------------------------+--------------------+--------------------+--------------------+                                      *\n");
+    printf(
+        "+--------------+------------------------+--------------------+--------------------+-------"
+        "-------------+                                      *\n");
   }
 
   // converged
-  if ((scaincnorm_L2/scanorm_L2 <= ittol_) and
-      (dispincnorm_L2/dispnorm_L2 <= ittol_) and
-      (fluidincnorm_L2/fluidnorm_L2 <= ittol_)
-      )
+  if ((scaincnorm_L2 / scanorm_L2 <= ittol_) and (dispincnorm_L2 / dispnorm_L2 <= ittol_) and
+      (fluidincnorm_L2 / fluidnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID()==0 )
+    if (Comm().MyPID() == 0)
     {
-      printf("* MULTIPORO  <-------> SCATRA Outer Iteration loop converged after iteration %3d/%3d !                                                        *\n", itnum,itmax_);
-      printf("***********************************************************************************************************************************************\n");
+      printf(
+          "* MULTIPORO  <-------> SCATRA Outer Iteration loop converged after iteration %3d/%3d !  "
+          "                                                      *\n",
+          itnum, itmax_);
+      printf(
+          "****************************************************************************************"
+          "*******************************************************\n");
     }
   }
 
   // break the loop
   // timestep
-  if ((itnum==itmax_) and
-       ( (scaincnorm_L2/scanorm_L2 > ittol_) or (dispincnorm_L2/dispnorm_L2 > ittol_) or (fluidincnorm_L2/fluidnorm_L2 > ittol_) )
-     )
+  if ((itnum == itmax_) and
+      ((scaincnorm_L2 / scanorm_L2 > ittol_) or (dispincnorm_L2 / dispnorm_L2 > ittol_) or
+          (fluidincnorm_L2 / fluidnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID()==0) )
+    if ((Comm().MyPID() == 0))
     {
-      printf("* MULTIPORO  <-------> SCATRA Outer Iteration loop not converged in itemax steps                                                              *\n");
-      printf("***********************************************************************************************************************************************\n");
+      printf(
+          "* MULTIPORO  <-------> SCATRA Outer Iteration loop not converged in itemax steps        "
+          "                                                      *\n");
+      printf(
+          "****************************************************************************************"
+          "*******************************************************\n");
       printf("\n");
       printf("\n");
       dserror("Exit from loop");
@@ -270,49 +263,28 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 11/17 |
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::PoroMultiPhaseScaTraPartitionedTwoWayNested(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::
+    PoroMultiPhaseScaTraPartitionedTwoWayNested(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | initialization                                      kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& algoparams,
-    const Teuchos::ParameterList& poroparams,
-    const Teuchos::ParameterList& structparams,
-    const Teuchos::ParameterList& fluidparams,
-    const Teuchos::ParameterList& scatraparams,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
+    const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
+    const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
+    const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
+    const std::string& struct_disname, const std::string& fluid_disname,
+    const std::string& scatra_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
     int ndsporofluid_scatra)
 {
-  //call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
-      globaltimeparams,
-      algoparams,
-      poroparams,
-      structparams,
-      fluidparams,
-      scatraparams,
-      struct_disname,
-      fluid_disname,
-      scatra_disname,
-      isale,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure,
-      ndsporofluid_scatra);
+  // call base class
+  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
+      poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
+      scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
 }
 
 /*----------------------------------------------------------------------*
@@ -320,12 +292,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
 {
-  int  itnum = 0;
+  int itnum = 0;
   bool stopnonliniter = false;
 
   PrintHeaderPartitioned();
 
-  while (stopnonliniter==false)
+  while (stopnonliniter == false)
   {
     itnum++;
 
@@ -355,49 +327,28 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 11/17 |
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::PoroMultiPhaseScaTraPartitionedTwoWaySequential(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
+    PoroMultiPhaseScaTraPartitionedTwoWaySequential(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | initialization                                      kremheller 11/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init(
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& algoparams,
-    const Teuchos::ParameterList& poroparams,
-    const Teuchos::ParameterList& structparams,
-    const Teuchos::ParameterList& fluidparams,
-    const Teuchos::ParameterList& scatraparams,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
+    const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
+    const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
+    const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
+    const std::string& struct_disname, const std::string& fluid_disname,
+    const std::string& scatra_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
     int ndsporofluid_scatra)
 {
-  //call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
-      globaltimeparams,
-      algoparams,
-      poroparams,
-      structparams,
-      fluidparams,
-      scatraparams,
-      struct_disname,
-      fluid_disname,
-      scatra_disname,
-      isale,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure,
-      ndsporofluid_scatra);
+  // call base class
+  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
+      poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
+      scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
 }
 
 /*----------------------------------------------------------------------*
@@ -405,12 +356,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solve()
 {
-  int  itnum = 0;
+  int itnum = 0;
   bool stopnonliniter = false;
 
   PrintHeaderPartitioned();
 
-  while (stopnonliniter==false)
+  while (stopnonliniter == false)
   {
     itnum++;
 
@@ -419,7 +370,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
 
     // 1) set scatra and structure solution (on fluid field)
     SetScatraSolution();
-    PoroField()->SetStructSolution(PoroField()->StructureField()->Dispnp(),PoroField()->StructureField()->Velnp());
+    PoroField()->SetStructSolution(
+        PoroField()->StructureField()->Dispnp(), PoroField()->StructureField()->Velnp());
 
     // 2) solve fluid
     PoroField()->FluidField()->Solve();
@@ -446,4 +398,3 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solv
 
   return;
 }
-

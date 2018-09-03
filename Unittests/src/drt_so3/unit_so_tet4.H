@@ -15,7 +15,13 @@
 #include <Epetra_SerialComm.h>
 #include "src/drt_so3/so_tet4.H"
 
-namespace DRT { namespace ELEMENTS { class So_tet4_TestSuite; } }
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    class So_tet4_TestSuite;
+  }
+}  // namespace DRT
 
 class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
 {
@@ -28,13 +34,13 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   void setUp()
   {
     // create a discretization, that creates node to element pointers and keeps the nodes alive
-    testdis_ = Teuchos::rcp(new DRT::Discretization("dummy",Teuchos::rcp(new Epetra_SerialComm)));
+    testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
 
     // create 4 nodes
-    const int nodeids[] = {0,1,2,3};
-    double coords[] = {-0.1,-0.2,-0.5, 1.25,0.23,0.66, 1.20,0.99,0.5, -0.10,-0.2,1.96};
+    const int nodeids[] = {0, 1, 2, 3};
+    double coords[] = {-0.1, -0.2, -0.5, 1.25, 0.23, 0.66, 1.20, 0.99, 0.5, -0.10, -0.2, 1.96};
     for (int lid = 0; lid < 4; ++lid)
-      testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid,&coords[3*lid],0)));
+      testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, &coords[3 * lid], 0)));
 
     // create 1 element
     testele_ = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(0, 0));
@@ -54,8 +60,8 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
 
   void test_NumDofPerNode()
   {
-    double pd[3] = {1,2,3};
-    DRT::Node node_dummy(0,pd,false);
+    double pd[3] = {1, 2, 3};
+    DRT::Node node_dummy(0, pd, false);
     TS_ASSERT_EQUALS(testele_->NumDofPerNode(node_dummy), 3);
     TS_ASSERT_EQUALS(copytestele_->NumDofPerNode(node_dummy), 3);
   }
@@ -92,11 +98,11 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
 
   void test_ElementCenterRefeCoords()
   {
-    double midpoint[3] = {0.5625,0.2050,0.6550};
+    double midpoint[3] = {0.5625, 0.2050, 0.6550};
     for (int i = 0; i < 3; ++i)
     {
-      TS_ASSERT_DELTA(testele_->ElementCenterRefeCoords()[i],midpoint[i],1e-14);
-      TS_ASSERT_DELTA(copytestele_->ElementCenterRefeCoords()[i],midpoint[i],1e-14);
+      TS_ASSERT_DELTA(testele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
+      TS_ASSERT_DELTA(copytestele_->ElementCenterRefeCoords()[i], midpoint[i], 1e-14);
     }
   }
 };

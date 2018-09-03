@@ -37,65 +37,61 @@
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimAda::TimAda
-(
-  const Teuchos::ParameterList& timeparams, //!< TIS input parameters
-  const Teuchos::ParameterList& tap, //!< adaptive input flags
-  Teuchos::RCP<TimInt> tis //!< marching time integrator
-)
-: sti_(tis),
-  discret_(tis->Discretization()),
-  myrank_(discret_->Comm().MyPID()),
-  solver_(tis->Solver()),
-  output_(tis->DiscWriter()),
-  //
-  timeinitial_(0.0),
-  timefinal_(timeparams.get<double>("MAXTIME")),
-  timedirect_(Sign(timefinal_-timeinitial_)),
-  timestepinitial_(0),
-  timestepfinal_(timeparams.get<int>("NUMSTEP")),
-  stepsizeinitial_(timeparams.get<double>("TIMESTEP")),
-  //
-  stepsizemax_(tap.get<double>("STEPSIZEMAX")),
-  stepsizemin_(tap.get<double>("STEPSIZEMIN")),
-  sizeratiomax_(tap.get<double>("SIZERATIOMAX")),
-  sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
-  sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
-  errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-  errnorm_(DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(tap,"LOCERRNORM")),
-  errtol_(tap.get<double>("LOCERRTOL")),
-  errorder_(1),  // CHANGE THIS CONSTANT
-  adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),
-  //
-  time_(timeinitial_),
-  timestep_(0),
-  stepsizepre_(stepsizeinitial_),
-  stepsize_(timeparams.get<double>("TIMESTEP")),
-  locerrdisn_(Teuchos::null),
-  adaptstep_(0),
-  //
-  outsys_(false),
-  outstr_(false),
-  outene_(false),
-  outrest_(false),
-  outsysperiod_(tap.get<double>("OUTSYSPERIOD")),
-  outstrperiod_(tap.get<double>("OUTSTRPERIOD")),
-  outeneperiod_(tap.get<double>("OUTENEPERIOD")),
-  outrestperiod_(tap.get<double>("OUTRESTPERIOD")),
-  outsizeevery_(tap.get<int>("OUTSIZEEVERY")),
-  outsystime_(timeinitial_+outsysperiod_),
-  outstrtime_(timeinitial_+outstrperiod_),
-  outenetime_(timeinitial_+outeneperiod_),
-  outresttime_(timeinitial_+outrestperiod_),
-  outsizefile_(Teuchos::null)
+STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
+    const Teuchos::ParameterList& tap,                         //!< adaptive input flags
+    Teuchos::RCP<TimInt> tis                                   //!< marching time integrator
+    )
+    : sti_(tis),
+      discret_(tis->Discretization()),
+      myrank_(discret_->Comm().MyPID()),
+      solver_(tis->Solver()),
+      output_(tis->DiscWriter()),
+      //
+      timeinitial_(0.0),
+      timefinal_(timeparams.get<double>("MAXTIME")),
+      timedirect_(Sign(timefinal_ - timeinitial_)),
+      timestepinitial_(0),
+      timestepfinal_(timeparams.get<int>("NUMSTEP")),
+      stepsizeinitial_(timeparams.get<double>("TIMESTEP")),
+      //
+      stepsizemax_(tap.get<double>("STEPSIZEMAX")),
+      stepsizemin_(tap.get<double>("STEPSIZEMIN")),
+      sizeratiomax_(tap.get<double>("SIZERATIOMAX")),
+      sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
+      sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
+      errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
+      errnorm_(DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(tap, "LOCERRNORM")),
+      errtol_(tap.get<double>("LOCERRTOL")),
+      errorder_(1),  // CHANGE THIS CONSTANT
+      adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),
+      //
+      time_(timeinitial_),
+      timestep_(0),
+      stepsizepre_(stepsizeinitial_),
+      stepsize_(timeparams.get<double>("TIMESTEP")),
+      locerrdisn_(Teuchos::null),
+      adaptstep_(0),
+      //
+      outsys_(false),
+      outstr_(false),
+      outene_(false),
+      outrest_(false),
+      outsysperiod_(tap.get<double>("OUTSYSPERIOD")),
+      outstrperiod_(tap.get<double>("OUTSTRPERIOD")),
+      outeneperiod_(tap.get<double>("OUTENEPERIOD")),
+      outrestperiod_(tap.get<double>("OUTRESTPERIOD")),
+      outsizeevery_(tap.get<int>("OUTSIZEEVERY")),
+      outsystime_(timeinitial_ + outsysperiod_),
+      outstrtime_(timeinitial_ + outstrperiod_),
+      outenetime_(timeinitial_ + outeneperiod_),
+      outresttime_(timeinitial_ + outrestperiod_),
+      outsizefile_(Teuchos::null)
 {
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // check whether energyout_ file handle was attached
-  if ((not sti_->AttachedEnergyFile())
-      and (outeneperiod_ != 0.0)
-      and (myrank_ == 0))
+  if ((not sti_->AttachedEnergyFile()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
   {
     sti_->AttachEnergyFile();
   }
@@ -106,7 +102,8 @@ STR::TimAda::TimAda
     AttachFileStepSize();
   }
 
-  // enable restart for adaptive timestepping - however initial timestep size is still read from datfile! (mhv 01/2015)
+  // enable restart for adaptive timestepping - however initial timestep size is still read from
+  // datfile! (mhv 01/2015)
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart)
   {
@@ -116,11 +113,11 @@ STR::TimAda::TimAda
     timestepinitial_ = tis->StepOld();
 
     // update variables which depend on initial time and step
-    timedirect_ = Sign(timefinal_-timeinitial_);
-    outsystime_ = timeinitial_+outsysperiod_;
-    outstrtime_ = timeinitial_+outstrperiod_;
-    outenetime_ = timeinitial_+outeneperiod_;
-    outresttime_ = timeinitial_+outrestperiod_;
+    timedirect_ = Sign(timefinal_ - timeinitial_);
+    outsystime_ = timeinitial_ + outsysperiod_;
+    outstrtime_ = timeinitial_ + outstrperiod_;
+    outenetime_ = timeinitial_ + outeneperiod_;
+    outresttime_ = timeinitial_ + outrestperiod_;
   }
 
   return;
@@ -136,7 +133,9 @@ int STR::TimAda::Integrate()
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
-    dserror("This combination is not implemented ... Richardson's extrapolation ... Yoshida technique ...");
+    dserror(
+        "This combination is not implemented ... Richardson's extrapolation ... Yoshida technique "
+        "...");
 
   // initialise time loop
   time_ = timeinitial_;
@@ -177,11 +176,9 @@ int STR::TimAda::Integrate()
       // adjust step-size and prepare repetition of current step
       if (not accepted)
       {
-        IO::cout << "Repeating step with stepsize = " << stpsiznew
-                 << IO::endl;
+        IO::cout << "Repeating step with stepsize = " << stpsiznew << IO::endl;
         IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
-                 << " - - - - - - - - - - - - - - -"
-                 << IO::endl;
+                 << " - - - - - - - - - - - - - - -" << IO::endl;
 
         stepsize_ = stpsiznew;
 
@@ -195,8 +192,7 @@ int STR::TimAda::Integrate()
     // update or break
     if (accepted)
     {
-      if (myrank_ == 0)
-        std::cout << "Step size accepted" << std::endl;
+      if (myrank_ == 0) std::cout << "Step size accepted" << std::endl;
     }
     else if (adaptstep_ >= adaptstepmax_)
     {
@@ -227,7 +223,7 @@ int STR::TimAda::Integrate()
     sti_->PrintStep();
 
     // update
-//    Update();
+    //    Update();
     sti_->stepn_ = timestep_ += 1;
     sti_->timen_ = time_ += stepsize_;
     UpdateStepSize(stpsiznew);
@@ -238,14 +234,12 @@ int STR::TimAda::Integrate()
     // the user reads but rarely listens
     if (myrank_ == 0)
     {
-      std::cout << "Step " << timestep_
-                << ", Time " << time_
-                << ", StepSize " << stepsize_
+      std::cout << "Step " << timestep_ << ", Time " << time_ << ", StepSize " << stepsize_
                 << std::endl;
     }
   }
 
-  return 0; // ToDo Provide meaningful error code here
+  return 0;  // ToDo Provide meaningful error code here
 }
 
 /*----------------------------------------------------------------------*/
@@ -272,11 +266,7 @@ void STR::TimAda::EvaluateLocalErrorDis()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void STR::TimAda::Indicate
-(
-  bool& accepted,
-  double& stpsiznew
-)
+void STR::TimAda::Indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = sti_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
@@ -288,10 +278,8 @@ void STR::TimAda::Indicate
   // debug
   if (myrank_ == 0)
   {
-    std::cout << "LocErrNorm " << std::scientific << norm
-              << ", LocErrTol " << errtol_
-              << ", Accept " << std::boolalpha << accepted
-              << std::endl;
+    std::cout << "LocErrNorm " << std::scientific << norm << ", LocErrTol " << errtol_
+              << ", Accept " << std::boolalpha << accepted << std::endl;
   }
 
   stpsiznew = CalculateDt(norm);
@@ -311,16 +299,15 @@ double STR::TimAda::CalculateDt(const double norm)
 
   // optimal size ration with respect to given tolerance
   double sizrat = 1.0;
-  if (not (norm == 0.0)) // do not divide by zero
-    sizrat = std::pow(errtol_/norm, 1.0/(errorder_+1.0));
-  else // max increase if error norm == 0
+  if (not(norm == 0.0))  // do not divide by zero
+    sizrat = std::pow(errtol_ / norm, 1.0 / (errorder_ + 1.0));
+  else  // max increase if error norm == 0
     sizrat = sizeratiomax_ / sizeratioscale_;
 
   // debug
   if (myrank_ == 0)
   {
-    printf("sizrat %g, stepsize %g, stepsizepre %g\n",
-           sizrat, stepsize_, stepsizepre_);
+    printf("sizrat %g, stepsize %g, stepsizepre %g\n", sizrat, stepsize_, stepsizepre_);
   }
 
   // scaled by safety parameter
@@ -330,7 +317,7 @@ double STR::TimAda::CalculateDt(const double norm)
   double stpsiznew = sizrat * stepsize_;
 
   // redefine sizrat to be dt*_{n}/dt_{n-1}, ie true optimal ratio
-  sizrat = stpsiznew/stepsizepre_;
+  sizrat = stpsiznew / stepsizepre_;
 
   // limit #sizrat by maximum and minimum
   if (sizrat > sizeratiomax_)
@@ -370,8 +357,7 @@ void STR::TimAda::ResetStep()
 void STR::TimAda::SizeForOutput()
 {
   // check output of restart data first
-  if ( (fabs(time_ + stepsize_) >= fabs(outresttime_))
-       and (outrestperiod_ != 0.0) )
+  if ((fabs(time_ + stepsize_) >= fabs(outresttime_)) and (outrestperiod_ != 0.0))
 
   {
     stepsize_ = outresttime_ - time_;
@@ -379,8 +365,7 @@ void STR::TimAda::SizeForOutput()
   }
 
   // check output of system vectors
-  if ( (fabs(time_ + stepsize_) >= fabs(outsystime_))
-       and (outsysperiod_ != 0.0) )
+  if ((fabs(time_ + stepsize_) >= fabs(outsystime_)) and (outsysperiod_ != 0.0))
   {
     stepsize_ = outsystime_ - time_;
     outsys_ = true;
@@ -388,8 +373,7 @@ void STR::TimAda::SizeForOutput()
   }
 
   // check output of stress/strain
-  if ( (fabs(time_ + stepsize_) >= fabs(outstrtime_))
-       and (outstrperiod_ != 0.0) )
+  if ((fabs(time_ + stepsize_) >= fabs(outstrtime_)) and (outstrperiod_ != 0.0))
   {
     stepsize_ = outstrtime_ - time_;
     outstr_ = true;
@@ -398,8 +382,7 @@ void STR::TimAda::SizeForOutput()
   }
 
   // check output of energy
-  if ( (fabs(time_ + stepsize_) >= fabs(outenetime_))
-       and (outeneperiod_ != 0.0) )
+  if ((fabs(time_ + stepsize_) >= fabs(outenetime_)) and (outeneperiod_ != 0.0))
   {
     stepsize_ = outenetime_ - time_;
     outene_ = true;
@@ -413,10 +396,7 @@ void STR::TimAda::SizeForOutput()
 
 /*----------------------------------------------------------------------*/
 /* Prepare output to file(s)                                            */
-void STR::TimAda::PrepareOutputPeriod()
-{
-  sti_->PrepareOutput();
-}
+void STR::TimAda::PrepareOutputPeriod() { sti_->PrepareOutput(); }
 
 /*----------------------------------------------------------------------*/
 /* Output to file(s) */
@@ -435,7 +415,7 @@ void STR::TimAda::OutputPeriod()
   }
 
   // output results (not necessary if restart in same step)
-  if (outsys_ and (not datawritten) )
+  if (outsys_ and (not datawritten))
   {
     sti_->OutputState(datawritten);
   }
@@ -471,25 +451,17 @@ void STR::TimAda::UpdatePeriod()
 /* Write step size */
 void STR::TimAda::OutputStepSize()
 {
-  if ( (outsizeevery_ != 0)
-       and (timestep_%outsizeevery_ == 0)
-       and (myrank_ == 0) )
+  if ((outsizeevery_ != 0) and (timestep_ % outsizeevery_ == 0) and (myrank_ == 0))
   {
-    (*outsizefile_) << " " << std::setw(12) << timestep_
-                    << std::scientific << std::setprecision(8)
-                    << " " << time_
-                    << " " << stepsize_
-                    << " " << std::setw(2) << adaptstep_
+    (*outsizefile_) << " " << std::setw(12) << timestep_ << std::scientific << std::setprecision(8)
+                    << " " << time_ << " " << stepsize_ << " " << std::setw(2) << adaptstep_
                     << std::endl;
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* Print constants */
-void STR::TimAda::PrintConstants
-(
-  std::ostream& str
-) const
+void STR::TimAda::PrintConstants(std::ostream& str) const
 {
   str << "TimAda:  Constants" << std::endl
       << "   Initial time = " << timeinitial_ << std::endl
@@ -511,10 +483,7 @@ void STR::TimAda::PrintConstants
 
 /*----------------------------------------------------------------------*/
 /* Print variables */
-void STR::TimAda::PrintVariables
-(
-  std::ostream& str
-) const
+void STR::TimAda::PrintVariables(std::ostream& str) const
 {
   str << "TimAda:  Variables" << std::endl
       << "   Current time = " << time_ << std::endl
@@ -527,10 +496,7 @@ void STR::TimAda::PrintVariables
 
 /*----------------------------------------------------------------------*/
 /* Print */
-void STR::TimAda::Print
-(
-  std::ostream& str
-) const
+void STR::TimAda::Print(std::ostream& str) const
 {
   str << "TimAda" << std::endl;
   PrintConstants(str);
@@ -545,12 +511,9 @@ void STR::TimAda::AttachFileStepSize()
 {
   if (outsizefile_.is_null())
   {
-    std::string filename
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()
-      + ".stepsize";
+    std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName() + ".stepsize";
     outsizefile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
-    (*outsizefile_) << "# timestep time step-size adaptations"
-                    << std::endl;
+    (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }
 
   return;
@@ -579,17 +542,13 @@ void STR::TimAda::UpdateStepSize()
 /* Set new time step size                                               */
 void STR::TimAda::SetDt(const double dtnew)
 {
-  stepsize_ = dtnew;  // in the adaptive time integrator
-  sti_->SetDt(dtnew); // in the marching time integrator
+  stepsize_ = dtnew;   // in the adaptive time integrator
+  sti_->SetDt(dtnew);  // in the marching time integrator
 }
 
 /*======================================================================*/
 /* Out stream */
-std::ostream& operator<<
-(
-  std::ostream& str,
-  const STR::TimAda& ta
-)
+std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta)
 {
   ta.Print(str);
 

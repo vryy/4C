@@ -35,21 +35,14 @@ MORTAR::StratDataContainer::StratDataContainer()
       maxdof_(0),
       systype_(INPAR::CONTACT::system_none)
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase::StrategyBase(
-    const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    const Teuchos::ParameterList& params,
-    int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm,
-    double alphaf,
-    int maxdof)
+MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
+    const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
+    int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
     : probdofs_(data_ptr->ProbDofsPtr()),
       probnodes_(data_ptr->ProbNodesPtr()),
       comm_(data_ptr->CommPtr()),
@@ -69,5 +62,5 @@ MORTAR::StrategyBase::StrategyBase(
   Data().Dim() = dim;
   Data().AlphaF() = alphaf;
   Data().MaxDof() = maxdof;
-  Data().SysType() = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact_,"SYSTEM");
+  Data().SysType() = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
 }

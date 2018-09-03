@@ -6,10 +6,10 @@
 
         The input line should read (for example: 4 fluid phases, 2 volume fractions)
 
-        MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END
-        with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^
-              2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^
-              2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^
+        MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8
+ NUMFLUIDPHASES 4 END with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase ^^^^^^^ 2
+ volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^ 2 volume fraction
+ pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^
 
    \level 3
 
@@ -29,19 +29,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of single fluid phases
     class FluidPoroMultiPhase : public MatList
     {
-    public:
-
+     public:
       /// standard constructor
-      FluidPoroMultiPhase(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~FluidPoroMultiPhase() { ; }
@@ -78,27 +74,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class FluidPoroMultiPhaseType : public DRT::ParObjectType
-{
-public:
+  class FluidPoroMultiPhaseType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "FluidPoroMultiPhaseType"; }
 
-  std::string Name() const { return "FluidPoroMultiPhaseType"; }
+    static FluidPoroMultiPhaseType& Instance() { return instance_; };
 
-  static FluidPoroMultiPhaseType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static FluidPoroMultiPhaseType instance_;
-};
+   private:
+    static FluidPoroMultiPhaseType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of porous flow phases
   class FluidPoroMultiPhase : public MatList
   {
-  public:
-
+   public:
     /// construct empty material object
     FluidPoroMultiPhase();
 
@@ -113,7 +106,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return FluidPoroMultiPhaseType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return FluidPoroMultiPhaseType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -144,28 +140,25 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_fluidporo_multiphase; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_fluidporo_multiphase;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new FluidPoroMultiPhase( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new FluidPoroMultiPhase(*this));
+    }
 
     /// return permeability
-    double Permeability() const
-    {
-      return paramsporo_->permeability_;
-    }
+    double Permeability() const { return paramsporo_->permeability_; }
 
     /// return number of fluid phases
-    int NumFluidPhases() const
-    {
-      return paramsporo_->numfluidphases_;
-    }
+    int NumFluidPhases() const { return paramsporo_->numfluidphases_; }
 
     /// return number of volume fractions
-    int NumVolFrac() const
-    {
-      return paramsporo_->numvolfrac_;
-    }
+    int NumVolFrac() const { return paramsporo_->numvolfrac_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::FluidPoroMultiPhase* Parameter() const { return paramsporo_; }
@@ -174,46 +167,37 @@ private:
     virtual void Initialize();
 
     /// return whether reaction terms need to be evaluated
-    virtual bool IsReactive() const {return false;};
+    virtual bool IsReactive() const { return false; };
 
     /// evaluate the generalized(!) pressure and saturation of all phases
     void EvaluateGenPressureAndSaturation(
-        std::vector<double>& genpressure,
-        const std::vector<double>& phinp) const;
+        std::vector<double>& genpressure, const std::vector<double>& phinp) const;
 
     /// evaluate the generalized(!) pressure of all phases
     void EvaluateGenPressure(
-        std::vector<double>& genpressure,
-        const std::vector<double>& phinp) const;
+        std::vector<double>& genpressure, const std::vector<double>& phinp) const;
 
     /// evaluate saturation of all phases
-    void EvaluateSaturation(
-        std::vector<double>& saturation,
-        const std::vector<double>& phinp,
+    void EvaluateSaturation(std::vector<double>& saturation, const std::vector<double>& phinp,
         const std::vector<double>& pressure) const;
 
     //! transform generalized pressures to true pressures
     void TransformGenPresToTruePres(
-        const std::vector<double>& phi,
-        std::vector<double>& phi_transformed) const;
+        const std::vector<double>& phi, std::vector<double>& phi_transformed) const;
 
     //! evaluate derivative of degree of freedom with respect to pressure
     void EvaluateDerivOfDofWrtPressure(
-            Epetra_SerialDenseMatrix& derivs,
-            const std::vector<double>& state) const;
+        Epetra_SerialDenseMatrix& derivs, const std::vector<double>& state) const;
 
     //! evaluate derivative of saturation with respect to pressure
     void EvaluateDerivOfSaturationWrtPressure(
-        Epetra_SerialDenseMatrix& derivs,
-        const std::vector<double>& pressure) const;
+        Epetra_SerialDenseMatrix& derivs, const std::vector<double>& pressure) const;
 
     //! evaluate second derivative of saturation with respect to pressure
     void EvaluateSecondDerivOfSaturationWrtPressure(
-        std::vector<Epetra_SerialDenseMatrix>& derivs,
-        const std::vector<double>& pressure) const;
+        std::vector<Epetra_SerialDenseMatrix>& derivs, const std::vector<double>& pressure) const;
 
-  private:
-
+   private:
     /// clear everything
     void Clear();
 
@@ -221,7 +205,7 @@ private:
     MAT::PAR::FluidPoroMultiPhase* paramsporo_;
   };
 
-}
+}  // namespace MAT
 
 
 #endif /* SRC_DRT_MAT_FLUIDPORO_MULTIPHASE_H_ */

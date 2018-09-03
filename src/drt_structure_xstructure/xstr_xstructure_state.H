@@ -18,7 +18,8 @@
 #include "../drt_xfem/xfield_state.H"
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 
-namespace XSTR {
+namespace XSTR
+{
   /// Known and supported XSTR state vectors
   enum StateVectorName
   {
@@ -36,12 +37,12 @@ namespace XSTR {
     state_vec_fstructold
   };
 
-  inline std::string StateVectorName2String( enum StateVectorName name )
+  inline std::string StateVectorName2String(enum StateVectorName name)
   {
     std::stringstream enum_id;
     enum_id << " ( enum = " << name << " )";
 
-    switch ( name )
+    switch (name)
     {
       case state_vec_disnp:
         return "state_vec_disnp" + enum_id.str();
@@ -70,7 +71,7 @@ namespace XSTR {
       default:
         return "unknwon XSTR::StateVectorName" + enum_id.str();
     }
-    exit( EXIT_FAILURE );
+    exit(EXIT_FAILURE);
   }
 
   /// Known and supported XSTR state matrices
@@ -82,11 +83,11 @@ namespace XSTR {
     state_mat_damp = 3
   };
 
-  inline std::string StateMatrixName2String( enum StateMatrixName name )
+  inline std::string StateMatrixName2String(enum StateMatrixName name)
   {
     std::stringstream enum_id;
     enum_id << " ( enum = " << name << " )";
-    switch ( name )
+    switch (name)
     {
       case state_mat_jac:
         return "state_mat_jac" + enum_id.str();
@@ -99,78 +100,58 @@ namespace XSTR {
       default:
         return "unknwon XSTR::StateMatrixName";
     }
-    exit( EXIT_FAILURE );
+    exit(EXIT_FAILURE);
   }
 
-  typedef std::map<enum XSTR::StateVectorName, Teuchos::RCP<Epetra_Vector> * > XStateVecMap;
-  typedef std::map<enum XSTR::StateMatrixName, Teuchos::RCP<LINALG::SparseOperator> * > XStateMatMap;
+  typedef std::map<enum XSTR::StateVectorName, Teuchos::RCP<Epetra_Vector>*> XStateVecMap;
+  typedef std::map<enum XSTR::StateMatrixName, Teuchos::RCP<LINALG::SparseOperator>*> XStateMatMap;
 
-  class XStructureState : public XFEM::XFieldState,
-                          public STR::TIMINT::BaseDataGlobalState
+  class XStructureState : public XFEM::XFieldState, public STR::TIMINT::BaseDataGlobalState
   {
-  public:
+   public:
     /// constructor
     XStructureState();
 
     /// destructor
-    virtual ~XStructureState() {};
+    virtual ~XStructureState(){};
 
     /// setup of member variables
     virtual void Setup();
 
     virtual void TransferToNewState(
-        const DRT::DiscretizationInterface& new_discret,
-        XFEM::XFieldState & new_state ) const;
+        const DRT::DiscretizationInterface& new_discret, XFEM::XFieldState& new_state) const;
 
-    virtual void ResetNonStandardDofs( const DRT::DiscretizationInterface & full_discret );
+    virtual void ResetNonStandardDofs(const DRT::DiscretizationInterface& full_discret);
 
     virtual bool Destroy();
 
-    virtual void SetNewState( const XFEM::XFieldState & xstate );
+    virtual void SetNewState(const XFEM::XFieldState& xstate);
 
-    void SetNewState( const XSTR::XStructureState & xstate );
+    void SetNewState(const XSTR::XStructureState& xstate);
 
-    inline XStateVecMap::iterator XStateVectorBegin()
-    {
-      return xstate_vectors_.begin();
-    }
+    inline XStateVecMap::iterator XStateVectorBegin() { return xstate_vectors_.begin(); }
 
     inline XStateVecMap::const_iterator XStateVectorBegin() const
     {
       return xstate_vectors_.begin();
     }
 
-    inline XStateVecMap::iterator XStateVectorEnd()
-    {
-      return xstate_vectors_.end();
-    }
+    inline XStateVecMap::iterator XStateVectorEnd() { return xstate_vectors_.end(); }
 
-    inline XStateVecMap::const_iterator XStateVectorEnd() const
-    {
-      return xstate_vectors_.end();
-    }
+    inline XStateVecMap::const_iterator XStateVectorEnd() const { return xstate_vectors_.end(); }
 
-    inline XStateMatMap::iterator XStateMatrixBegin()
-    {
-      return xstate_matrices_.begin();
-    }
+    inline XStateMatMap::iterator XStateMatrixBegin() { return xstate_matrices_.begin(); }
 
     inline XStateMatMap::const_iterator XStateMatrixBegin() const
     {
       return xstate_matrices_.begin();
     }
 
-    inline XStateMatMap::iterator XStateMatrixEnd()
-    {
-      return xstate_matrices_.end();
-    }
+    inline XStateMatMap::iterator XStateMatrixEnd() { return xstate_matrices_.end(); }
 
-    inline XStateMatMap::const_iterator XStateMatrixEnd() const
-    {
-      return xstate_matrices_.end();
-    }
+    inline XStateMatMap::const_iterator XStateMatrixEnd() const { return xstate_matrices_.end(); }
 
-  protected:
+   protected:
     inline void CheckInit() const
     {
       XFEM::XFieldState::CheckInit();
@@ -183,29 +164,25 @@ namespace XSTR {
       STR::TIMINT::BaseDataGlobalState::CheckInitSetup();
     }
 
-  private:
-
+   private:
     void RegisterStateVectorsInMap();
 
     void RegisterStateMatricesInMap();
 
     Teuchos::RCP<Epetra_Map> BuildNewStandardDofRowMap(
-        const DRT::DiscretizationInterface & new_discret ) const;
+        const DRT::DiscretizationInterface& new_discret) const;
+
+    void NaturalExtensionOfNonStandardDofValues(enum StateVectorName state_name,
+        const DRT::DiscretizationInterface& new_discret, Epetra_Vector& new_xstate_vec) const;
 
     void NaturalExtensionOfNonStandardDofValues(
-        enum StateVectorName state_name,
-        const DRT::DiscretizationInterface & new_discret,
-        Epetra_Vector & new_xstate_vec ) const;
+        const DRT::DiscretizationInterface& new_discret, Epetra_Vector& new_xstate_vec) const;
 
-    void NaturalExtensionOfNonStandardDofValues(
-        const DRT::DiscretizationInterface & new_discret,
-        Epetra_Vector & new_xstate_vec ) const;
-
-  private:
+   private:
     XStateVecMap xstate_vectors_;
     XStateMatMap xstate_matrices_;
   };  // class XStructureState
-} // XSTR
+}  // namespace XSTR
 
 
 #endif /* SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STATE_H_ */

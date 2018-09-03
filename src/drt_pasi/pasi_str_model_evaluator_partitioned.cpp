@@ -32,12 +32,10 @@
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 01/2017 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI(
-    ) :
-    interface_force_np_ptr_(Teuchos::null)
+STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI() : interface_force_np_ptr_(Teuchos::null)
 {
   // empty
-} // STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
+}  // STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 
 /*----------------------------------------------------------------------*
  | setup class variables                                 sfuchs 03/2017 |
@@ -45,58 +43,53 @@ STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI(
 void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 {
   // pasi interface force at t_{n+1}
-  interface_force_np_ptr_ =
-      Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
+  interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
 
   // set flag
   issetup_ = true;
 
   return;
-} // STR::MODELEVALUATOR::PartitionedPASI::Setup()
+}  // STR::MODELEVALUATOR::PartitionedPASI::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::
-    GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::GetBlockDofRowMapPtr() const
 {
   CheckInitSetup();
   return GState().DofRowMap();
-} // STR::MODELEVALUATOR::PartitionedPASI::GetBlockDofRowMapPtr()
+}  // STR::MODELEVALUATOR::PartitionedPASI::GetBlockDofRowMapPtr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::
-    GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetCurrentSolutionPtr()
+    const
 {
   CheckInit();
   return GState().GetDisNp();
-} // STR::MODELEVALUATOR::PartitionedPASI::GetCurrentSolutionPtr()
+}  // STR::MODELEVALUATOR::PartitionedPASI::GetCurrentSolutionPtr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::
-    GetLastTimeStepSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetLastTimeStepSolutionPtr()
+    const
 {
   CheckInit();
   return GState().GetDisN();
-} // STR::MODELEVALUATOR::PartitionedPASI::GetLastTimeStepSolutionPtr()
+}  // STR::MODELEVALUATOR::PartitionedPASI::GetLastTimeStepSolutionPtr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedPASI::
-    AssembleForce(Epetra_Vector& f,
-      const double & timefac_np) const
+bool STR::MODELEVALUATOR::PartitionedPASI::AssembleForce(
+    Epetra_Vector& f, const double& timefac_np) const
 {
-  LINALG::AssembleMyVector(1.0,f,-timefac_np,*interface_force_np_ptr_);
+  LINALG::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
 
   return true;
-} // STR::MODELEVALUATOR::PartitionedPASI::AssembleForce()
+}  // STR::MODELEVALUATOR::PartitionedPASI::AssembleForce()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedPASI::
-     UpdateStepState(
-    const double& timefac_n)
+void STR::MODELEVALUATOR::PartitionedPASI::UpdateStepState(const double& timefac_n)
 {
   return;
-} // STR::MODELEVALUATOR::PartitionedPASI::UpdateStepState()
+}  // STR::MODELEVALUATOR::PartitionedPASI::UpdateStepState()

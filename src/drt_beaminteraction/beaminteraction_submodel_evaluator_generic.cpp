@@ -73,16 +73,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::CheckInit() const
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -127,8 +125,8 @@ Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const DRT::Discretization>
-BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr() const
+Teuchos::RCP<const DRT::Discretization> BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr()
+    const
 {
   CheckInit();
   return bindis_ptr_;
@@ -152,7 +150,8 @@ STR::TIMINT::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::G
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GStatePtr()
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GStatePtr()
 {
   CheckInit();
   return gstate_ptr_;
@@ -184,7 +183,8 @@ STR::TIMINT::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInO
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionDataState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState()
+STR::MODELEVALUATOR::BeamInteractionDataState&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState()
 {
   CheckInit();
   return *beaminteractiondatastate_;
@@ -192,7 +192,8 @@ STR::MODELEVALUATOR::BeamInteractionDataState& BEAMINTERACTION::SUBMODELEVALUATO
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataStatePtr()
+Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataStatePtr()
 {
   CheckInit();
   return beaminteractiondatastate_;
@@ -200,8 +201,8 @@ Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>& BEAMINTERACTION::SU
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionDataState const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState()
-    const
+STR::MODELEVALUATOR::BeamInteractionDataState const&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BeamInteractionDataState() const
 {
   CheckInit();
   return *beaminteractiondatastate_;
@@ -217,7 +218,8 @@ PARTICLE::ParticleHandler& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Particle
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<PARTICLE::ParticleHandler>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandlerPtr()
+Teuchos::RCP<PARTICLE::ParticleHandler>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandlerPtr()
 {
   CheckInit();
   return particlehandler_;
@@ -241,7 +243,8 @@ BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinSt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
+Teuchos::RCP<BINSTRATEGY::BinningStrategy>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 {
   CheckInit();
   return binstrategy_;
@@ -249,7 +252,8 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BEAMINTERACTION::SUBMODELEVALUATOR::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-PARTICLE::ParticleHandler const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler() const
+PARTICLE::ParticleHandler const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ParticleHandler()
+    const
 {
   CheckInit();
   return *particlehandler_;
@@ -265,7 +269,8 @@ GEO::MESHFREE::BoundingBox& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Periodi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::MESHFREE::BoundingBox>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBoxPtr()
+Teuchos::RCP<GEO::MESHFREE::BoundingBox>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBoxPtr()
 {
   CheckInit();
   return periodic_boundingbox_;
@@ -273,7 +278,8 @@ Teuchos::RCP<GEO::MESHFREE::BoundingBox>& BEAMINTERACTION::SUBMODELEVALUATOR::Ge
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-GEO::MESHFREE::BoundingBox const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox() const
+GEO::MESHFREE::BoundingBox const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::PeriodicBoundingBox()
+    const
 {
   CheckInit();
   return *periodic_boundingbox_;
@@ -281,7 +287,8 @@ GEO::MESHFREE::BoundingBox const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::P
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::UTILS::MapExtractor& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
+BEAMINTERACTION::UTILS::MapExtractor&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
 {
   CheckInit();
   eletypeextractor_->CheckForValidMapExtractor();
@@ -290,7 +297,8 @@ BEAMINTERACTION::UTILS::MapExtractor& BEAMINTERACTION::SUBMODELEVALUATOR::Generi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractorPtr()
+Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractorPtr()
 {
   CheckInit();
   eletypeextractor_->CheckForValidMapExtractor();
@@ -299,7 +307,8 @@ Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& BEAMINTERACTION::SUBMODELEVA
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::UTILS::MapExtractor const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
+BEAMINTERACTION::UTILS::MapExtractor const&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
 {
   CheckInit();
   eletypeextractor_->CheckForValidMapExtractor();

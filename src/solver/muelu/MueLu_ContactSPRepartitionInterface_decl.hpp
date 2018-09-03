@@ -27,67 +27,68 @@
 #include "MueLu_Utilities_fwd.hpp"
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
 #include "MueLu_NodeDefinition.hpp"
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class ContactSPRepartitionInterface
-    @brief Helper class which transforms an "AmalgamatedPartition" array to an unamalgamated "Partition".
+    @brief Helper class which transforms an "AmalgamatedPartition" array to an unamalgamated
+    "Partition".
 
-    This class is meant to be used with IsorropiaInterface which in general provides the amalgamated partition information
-    and an AmalgamationFactory which defines the amalgamation/unamalgamation process.
-    The output is a "Partition" (unamalgamated) which can be used by the RepartitionFactory class.
+    This class is meant to be used with IsorropiaInterface which in general provides the amalgamated
+    partition information and an AmalgamationFactory which defines the amalgamation/unamalgamation
+    process. The output is a "Partition" (unamalgamated) which can be used by the RepartitionFactory
+    class.
 
     Input: matrix A, unamalgamation information (that corresponds to matrix A)
   */
 
-  //FIXME: this class should not be templated
-  template <class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = KokkosSerialNode,
-            class LocalMatOps = typename KokkosClassic::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
-  class ContactSPRepartitionInterface : public SingleLevelFactoryBase {
-
+  // FIXME: this class should not be templated
+  template <class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal,
+      class Node = KokkosSerialNode,
+      class LocalMatOps =
+          typename KokkosClassic::DefaultKernels<void, LocalOrdinal, Node>::SparseOps>
+  class ContactSPRepartitionInterface : public SingleLevelFactoryBase
+  {
 #undef MUELU_CONTACTSPREPARTITIONINTERFACE_SHORT
 #include "MueLu_UseShortNames.hpp"
 
-  public:
-
+   public:
     //! @name Constructors/Destructors
     //@{
 
     //! Constructor
-    ContactSPRepartitionInterface() { }
+    ContactSPRepartitionInterface() {}
 
     //! Destructor
-    virtual ~ContactSPRepartitionInterface() { }
+    virtual ~ContactSPRepartitionInterface() {}
     //@}
 
-    Teuchos::RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+    Teuchos::RCP<const ParameterList> GetValidParameterList(
+        const ParameterList& paramList = ParameterList()) const;
 
     //! @name Input
     //@{
-    void DeclareInput(Level & level) const;
+    void DeclareInput(Level& level) const;
     //@}
 
     //! @name Build methods.
     //@{
-    void Build(Level &level) const;
+    void Build(Level& level) const;
 
     //@}
 
 
 
-  private:
+   private:
+  };  // class ContactSPRepartitionInterface
 
-
-
-  };  //class ContactSPRepartitionInterface
-
-} //namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_SHORT
 
-#endif // HAVE_MueLu
-#endif /* MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_ */
+#endif  // HAVE_MueLu
+#endif  /* MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_ */

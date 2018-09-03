@@ -25,276 +25,253 @@
 
 namespace DRT
 {
-namespace ELEMENTS
-{
-// forward declarations
-class PoroFluidMultiPhaseEleParameter;
-
-namespace POROFLUIDEVALUATOR
-{
-template<int, int> class EvaluatorInterface;
-}
-
-namespace POROFLUIDMANAGER
-{
-class PhaseManagerInterface;
-template<int,int> class VariableManagerInterface;
-}
-
-/*!
-\brief implementation of evaluation routines of porous fluid multiphase  element
-
-This singleton class is responsible for evaluating boundary terms.
-It provides the method Evaluate(...) which performs the actual evaluation
-depending on the action provided by the global algorithm.
-
-
-\author vuong
-*/
-  template<DRT::Element::DiscretizationType distype>
-  class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
+  namespace ELEMENTS
   {
-  protected:
+    // forward declarations
+    class PoroFluidMultiPhaseEleParameter;
 
-    /// protected constructor, since we are a Singleton.
-    /// this constructor is called from a derived class
-    /// -> therefore, it has to be protected instead of private
-    PoroFluidMultiPhaseEleCalc(const int numdofpernode, const std::string& disname);
+    namespace POROFLUIDEVALUATOR
+    {
+      template <int, int>
+      class EvaluatorInterface;
+    }
 
-  public:
+    namespace POROFLUIDMANAGER
+    {
+      class PhaseManagerInterface;
+      template <int, int>
+      class VariableManagerInterface;
+    }  // namespace POROFLUIDMANAGER
 
-    /// virtual destructor
-    virtual ~PoroFluidMultiPhaseEleCalc() {};
-
-    /// called upon destruction
-    virtual void Done();
-
-    //! Singleton access method
-    static PoroFluidMultiPhaseEleCalc<distype> * Instance(
-        const int numdofpernode,
-        const std::string& disname,
-        const PoroFluidMultiPhaseEleCalc* delete_me=NULL);
-
-    /*========================================================================*/
-    //! @name static member variables
-    /*========================================================================*/
-
-    //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-    //! number of space dimensions
-    static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-    //! number of components necessary to store second derivatives
-    // 1 component  for nsd=1:  (N,xx)
-    // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
-    // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-    static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
-
-    //! element-type specific flag if second derivatives are needed
-    static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
-
-    /// Evaluate the element
     /*!
-      Generic virtual interface function. Called via base pointer.
-     */
-    virtual int Evaluate(DRT::Element*                 ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization&          discretization,
-                         DRT::Element::LocationArray&  la,
-                         std::vector<Epetra_SerialDenseMatrix*>& elemat,
-                         std::vector<Epetra_SerialDenseVector*>& elevec);
+    \brief implementation of evaluation routines of porous fluid multiphase  element
 
-  protected:
-    /*========================================================================*/
-    //! @name general framework
-    /*========================================================================*/
+    This singleton class is responsible for evaluating boundary terms.
+    It provides the method Evaluate(...) which performs the actual evaluation
+    depending on the action provided by the global algorithm.
 
-    /// Setup element evaluation
-    virtual int SetupCalc(
-        DRT::Element*               ele,
-        DRT::Discretization&        discretization,
-        const POROFLUIDMULTIPHASE::Action& action
-        );
 
-    //! evaluate action
-    virtual int EvaluateAction(
-        DRT::Element*                           ele,
-        Teuchos::ParameterList&                 params,
-        DRT::Discretization&                    discretization,
-        const POROFLUIDMULTIPHASE::Action&      action,
-        DRT::Element::LocationArray&            la,
-        std::vector<Epetra_SerialDenseMatrix*>& elemat,
-        std::vector<Epetra_SerialDenseVector*>& elevec
-        );
+    \author vuong
+    */
+    template <DRT::Element::DiscretizationType distype>
+    class PoroFluidMultiPhaseEleCalc : public PoroFluidMultiPhaseEleInterface
+    {
+     protected:
+      /// protected constructor, since we are a Singleton.
+      /// this constructor is called from a derived class
+      /// -> therefore, it has to be protected instead of private
+      PoroFluidMultiPhaseEleCalc(const int numdofpernode, const std::string& disname);
 
-    //! extract element based or nodal values
-    //  return extracted values of phinp
-    virtual void ExtractElementAndNodeValues(
-      DRT::Element*                 ele,
-      Teuchos::ParameterList&       params,
-      DRT::Discretization&          discretization,
-      DRT::Element::LocationArray&  la
-    );
+     public:
+      /// virtual destructor
+      virtual ~PoroFluidMultiPhaseEleCalc(){};
 
-    /// Setup element evaluation
-    virtual void PrepareGaussPointLoop(
-        DRT::Element*                         ele        ///< the element whose matrix is calculated
-        );
+      /// called upon destruction
+      virtual void Done();
 
-    void GaussPointLoop(
-        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
-        DRT::Element*                              ele,              //!< current element
-        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-        DRT::Discretization&                       discretization,   //!< discretization
-        DRT::Element::LocationArray&               la                //!< location array
-        );
+      //! Singleton access method
+      static PoroFluidMultiPhaseEleCalc<distype>* Instance(const int numdofpernode,
+          const std::string& disname, const PoroFluidMultiPhaseEleCalc* delete_me = NULL);
 
-    void GaussPointLoopODStruct(
-        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
-        DRT::Element*                              ele,              //!< current element
-        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-        DRT::Discretization&                       discretization,   //!< discretization
-        DRT::Element::LocationArray&               la                //!< location array
-        );
+      /*========================================================================*/
+      //! @name static member variables
+      /*========================================================================*/
 
-    void GaussPointLoopODScatra(
-        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
-        DRT::Element*                              ele,              //!< current element
-        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-        DRT::Discretization&                       discretization,   //!< discretization
-        DRT::Element::LocationArray&               la                //!< location array
-        );
+      //! number of element nodes (nomenclature: T. Hughes, The finite element method)
+      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    //! calculate matrix and rhs. Here the whole thing is hidden.
-    void GaussPointLoop(
-        DRT::Element*                              ele,              //!< current element
-        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-        DRT::Discretization&                       discretization,   //!< discretization
-        DRT::Element::LocationArray&               la                //!< location array
-    );
+      //! number of space dimensions
+      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-    //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
-    void GaussPointLoopODStruct(
-        DRT::Element*                              ele,              //!< current element
-        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-        DRT::Discretization&                       discretization,   //!< discretization
-        DRT::Element::LocationArray&               la                //!< location array
-    );
+      //! number of components necessary to store second derivatives
+      // 1 component  for nsd=1:  (N,xx)
+      // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+      // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
-    //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
-    void GaussPointLoopODScatra(
-        DRT::Element*                              ele,              //!< current element
-        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-        DRT::Discretization&                       discretization,   //!< discretization
-        DRT::Element::LocationArray&               la                //!< location array
-    );
+      //! element-type specific flag if second derivatives are needed
+      static const bool use2ndderiv_ = POROFLUIDMULTIPHASE::ELEUTILS::Use2ndDerivs<distype>::use;
 
-    //! evaluate shape functions and their derivatives at current integration point
-    double EvalShapeFuncAndDerivsAtIntPoint(
-      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
-      const int                                    iquad      //!< id of current Gauss point
-    );
+      /// Evaluate the element
+      /*!
+        Generic virtual interface function. Called via base pointer.
+       */
+      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,
+          std::vector<Epetra_SerialDenseVector*>& elevec);
 
-    //! evaluate shape functions and their derivatives at current integration point
-    double EvalShapeFuncAndDerivsInParameterSpace();
+     protected:
+      /*========================================================================*/
+      //! @name general framework
+      /*========================================================================*/
 
-    // Compute Jacobian (determinant of deformation gradient) at node 'inode'
-    void ComputeJacobianAtNode(
-        const int                                  inode       //!< local node number
-        );
+      /// Setup element evaluation
+      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization,
+          const POROFLUIDMULTIPHASE::Action& action);
 
-    /*========================================================================*/
-    //! @name routines for additional element evaluations (called from EvaluateAction)
-    /*========================================================================*/
+      //! evaluate action
+      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
+          DRT::Element::LocationArray& la, std::vector<Epetra_SerialDenseMatrix*>& elemat,
+          std::vector<Epetra_SerialDenseVector*>& elevec);
 
-    //! loop over nodes and evaluate element
-    void NodeLoop(
-      DRT::Element*                              ele,              //!< current element
-      std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
-      std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
-      DRT::Discretization&                       discretization,   //!< discretization
-      DRT::Element::LocationArray&               la,               //!< location array
-      const bool                                 jacobian_needed   //!< necessary to compute Jacobian at node
-    );
+      //! extract element based or nodal values
+      //  return extracted values of phinp
+      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
-  private:
+      /// Setup element evaluation
+      virtual void PrepareGaussPointLoop(
+          DRT::Element* ele  ///< the element whose matrix is calculated
+      );
 
-    /*========================================================================*/
-    //! @name can be very useful
-    /*========================================================================*/
+      void GaussPointLoop(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          DRT::Element* ele,                                       //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
 
-    //! element
-    DRT::Element* ele_;
+      void GaussPointLoopODStruct(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          DRT::Element* ele,                                       //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
 
-    /*========================================================================*/
-    //! @name dofs and nodes
-    /*========================================================================*/
+      void GaussPointLoopODScatra(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          DRT::Element* ele,                                       //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
 
-    //! number of dof per node (= number of fluid phases + number of volume fractions)
-    const int totalnumdofpernode_;
+      //! calculate matrix and rhs. Here the whole thing is hidden.
+      void GaussPointLoop(DRT::Element* ele,               //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
 
-    //! number of fluid phases
-    int numfluidphases_;
+      //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
+      void GaussPointLoopODStruct(DRT::Element* ele,       //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
 
-    /*========================================================================*/
-    //! @name parameter lists
-    /*========================================================================*/
+      //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
+      void GaussPointLoopODScatra(DRT::Element* ele,       //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
 
-    //! pointer to general scalar transport parameter class
-    DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* para_;
+      //! evaluate shape functions and their derivatives at current integration point
+      double EvalShapeFuncAndDerivsAtIntPoint(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          const int iquad                                          //!< id of current Gauss point
+      );
 
-    /*========================================================================*/
-    //! @name Galerkin approximation and related
-    /*========================================================================*/
+      //! evaluate shape functions and their derivatives at current integration point
+      double EvalShapeFuncAndDerivsInParameterSpace();
 
-    //! coordinates of current integration point in reference coordinates
-    LINALG::Matrix<nsd_,1> xsi_;
-    //! initial node coordinates
-    LINALG::Matrix<nsd_,nen_> xyze0_;
-    //! current node coordinates
-    LINALG::Matrix<nsd_,nen_> xyze_;
-    //! array for shape functions
-    LINALG::Matrix<nen_,1> funct_;
-    //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<nsd_,nen_> deriv_;
-    //! array for second derivatives of shape function w.r.t r,s,t
-    LINALG::Matrix<numderiv2_,nen_> deriv2_;
-    //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<nsd_,nen_> derxy_;
-    //! global second derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<numderiv2_,nen_> derxy2_;
+      // Compute Jacobian (determinant of deformation gradient) at node 'inode'
+      void ComputeJacobianAtNode(const int inode  //!< local node number
+      );
 
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<nsd_,nsd_> xjm_;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<nsd_,nsd_> xij_;
-    //! determinant of jacobian "dx/ds"
-    double det_;
-    //! determinant of deformation gradient "dx/dX"
-    double J_;
+      /*========================================================================*/
+      //! @name routines for additional element evaluations (called from EvaluateAction)
+      /*========================================================================*/
 
-    /*========================================================================*/
-    //! @name scalar degrees of freedom and related
-    /*========================================================================*/
-    //! manager class for variables
-    Teuchos::RCP< POROFLUIDMANAGER::VariableManagerInterface<nsd_,nen_> > variablemanager_;
+      //! loop over nodes and evaluate element
+      void NodeLoop(DRT::Element* ele,                     //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la,                 //!< location array
+          const bool jacobian_needed  //!< necessary to compute Jacobian at node
+      );
 
-    //! manager class for handling phases and corresponding DOFs
-    Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager_;
+     private:
+      /*========================================================================*/
+      //! @name can be very useful
+      /*========================================================================*/
 
-    //! manager class for evaluation
-    Teuchos::RCP< POROFLUIDEVALUATOR::EvaluatorInterface<nsd_,nen_> > evaluator_;
+      //! element
+      DRT::Element* ele_;
 
-  };
+      /*========================================================================*/
+      //! @name dofs and nodes
+      /*========================================================================*/
 
-}
-}
+      //! number of dof per node (= number of fluid phases + number of volume fractions)
+      const int totalnumdofpernode_;
+
+      //! number of fluid phases
+      int numfluidphases_;
+
+      /*========================================================================*/
+      //! @name parameter lists
+      /*========================================================================*/
+
+      //! pointer to general scalar transport parameter class
+      DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* para_;
+
+      /*========================================================================*/
+      //! @name Galerkin approximation and related
+      /*========================================================================*/
+
+      //! coordinates of current integration point in reference coordinates
+      LINALG::Matrix<nsd_, 1> xsi_;
+      //! initial node coordinates
+      LINALG::Matrix<nsd_, nen_> xyze0_;
+      //! current node coordinates
+      LINALG::Matrix<nsd_, nen_> xyze_;
+      //! array for shape functions
+      LINALG::Matrix<nen_, 1> funct_;
+      //! array for shape function derivatives w.r.t r,s,t
+      LINALG::Matrix<nsd_, nen_> deriv_;
+      //! array for second derivatives of shape function w.r.t r,s,t
+      LINALG::Matrix<numderiv2_, nen_> deriv2_;
+      //! global derivatives of shape functions w.r.t x,y,z
+      LINALG::Matrix<nsd_, nen_> derxy_;
+      //! global second derivatives of shape functions w.r.t x,y,z
+      LINALG::Matrix<numderiv2_, nen_> derxy2_;
+
+      //! transposed jacobian "dx/ds"
+      LINALG::Matrix<nsd_, nsd_> xjm_;
+      //! inverse of transposed jacobian "ds/dx"
+      LINALG::Matrix<nsd_, nsd_> xij_;
+      //! determinant of jacobian "dx/ds"
+      double det_;
+      //! determinant of deformation gradient "dx/dX"
+      double J_;
+
+      /*========================================================================*/
+      //! @name scalar degrees of freedom and related
+      /*========================================================================*/
+      //! manager class for variables
+      Teuchos::RCP<POROFLUIDMANAGER::VariableManagerInterface<nsd_, nen_>> variablemanager_;
+
+      //! manager class for handling phases and corresponding DOFs
+      Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager_;
+
+      //! manager class for evaluation
+      Teuchos::RCP<POROFLUIDEVALUATOR::EvaluatorInterface<nsd_, nen_>> evaluator_;
+    };
+
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif /* SRC_DRT_POROFLUIDMULTIPHASE_ELE_FLUIDPOROMULTIPHASE_ELE_CALC_H_ */

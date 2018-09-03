@@ -22,22 +22,19 @@ Maintainer: Andreas Rauch
 /* definition of classes */
 namespace ADAPTER
 {
-/// fluid on ale in combination with immersed
-class FluidAleImmersed : public FluidAle
-{
-public:
+  /// fluid on ale in combination with immersed
+  class FluidAleImmersed : public FluidAle
+  {
+   public:
+    FluidAleImmersed(const Teuchos::ParameterList& prbdyn, std::string condname);
 
-  FluidAleImmersed(const Teuchos::ParameterList& prbdyn,
-                   std::string condname);
+    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
-  void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
-  void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void Output(const int step = -1, const double time = -1.0);
+  };
 
-  void Output(const int step = -1, const double time = -1.0);
-
-};
-
-}
+}  // namespace ADAPTER
 
 #endif

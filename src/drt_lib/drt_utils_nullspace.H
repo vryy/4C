@@ -19,23 +19,27 @@
 
 namespace DRT
 {
-// forward declarations
-class Discretization;
+  // forward declarations
+  class Discretization;
 
-/// collection of useful and important but less central stuff
-namespace UTILS
-{
+  /// collection of useful and important but less central stuff
+  namespace UTILS
+  {
+    void ComputeStructure3DNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    void ComputeStructure2DNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    void ComputeBeam2DNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    void ComputeBeam3DNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    void ComputeXFluidDNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    void ComputeFluidDNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
 
-
-  void ComputeStructure3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeStructure2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeBeam2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeXFluidDNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-  void ComputeFluidDNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-
-} // namespace UTILS
-} // namespace DRT
+  }  // namespace UTILS
+}  // namespace DRT
 
 
 #endif  // #ifndef UTILS_NULLSPACE_H

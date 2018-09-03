@@ -36,12 +36,12 @@ class Epetra_MultiVector;
 namespace NLNSOL
 {
   class LineSearchBase;
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -56,8 +56,7 @@ namespace NLNSOL
    */
   class NlnOperatorDInverse : public NlnOperatorBase
   {
-  public:
-
+   public:
     //! @name Construction
     //@{
 
@@ -65,7 +64,7 @@ namespace NLNSOL
     NlnOperatorDInverse();
 
     //! Destructor
-    virtual ~NlnOperatorDInverse(){}
+    virtual ~NlnOperatorDInverse() {}
 
     //@}
 
@@ -81,7 +80,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual void RebuildPrec(){ /* no action required */ };
+    virtual void RebuildPrec(){/* no action required */};
 
     //@}
 
@@ -95,9 +94,10 @@ namespace NLNSOL
      * \author mayr.mt \date 08/2014
      */
     virtual int ApplyInverse(
-        const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
-        Epetra_MultiVector& x ///< solution
-        )  const;
+        const Epetra_MultiVector&
+            f,  ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
+        Epetra_MultiVector& x  ///< solution
+        ) const;
 
     //! @name Attribute access functions
     //@{
@@ -110,10 +110,8 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! @name Setup
     //@{
 
@@ -137,19 +135,17 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2014
      */
-    virtual int ComputeSearchDirection(
-        const Epetra_MultiVector& rhs, ///< residual
-        Epetra_MultiVector& inc ///< increment (to be filled)
+    virtual int ComputeSearchDirection(const Epetra_MultiVector& rhs,  ///< residual
+        Epetra_MultiVector& inc                                        ///< increment (to be filled)
         ) const;
 
     //! Compute line search parameter (=step length)
-    virtual void ComputeStepLength(
-        const Epetra_MultiVector& x, ///< current solution
-        const Epetra_MultiVector& f, ///< residual at current solution
-        const Epetra_MultiVector& inc, ///< search direction
-        const double fnorm2, ///< current L2-norm of residual
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeStepLength(const Epetra_MultiVector& x,  ///< current solution
+        const Epetra_MultiVector& f,                             ///< residual at current solution
+        const Epetra_MultiVector& inc,                           ///< search direction
+        const double fnorm2,                                     ///< current L2-norm of residual
+        double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr    ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //@}
@@ -162,7 +158,7 @@ namespace NLNSOL
 
     //@}
 
-  }; // class NlnOperatorDInverse
-} // namespace NLNSOL
+  };  // class NlnOperatorDInverse
+}  // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_D_INVERSE_H */

@@ -22,7 +22,6 @@
 
 
 
-
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -31,9 +30,8 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
   filled_ = false;
   if (killdofs)
   {
-    havedof_= false;
-    for (unsigned i=0; i<dofsets_.size(); ++i)
-      dofsets_[i]->Reset();
+    havedof_ = false;
+    for (unsigned i = 0; i < dofsets_.size(); ++i) dofsets_[i]->Reset();
   }
 
   elerowmap_ = Teuchos::null;
@@ -49,8 +47,8 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
   // as early as possible
   if (killcond)
   {
-    std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator fool;
-    for (fool=condition_.begin(); fool != condition_.end(); ++fool)
+    std::multimap<std::string, Teuchos::RCP<DRT::Condition>>::iterator fool;
+    for (fool = condition_.begin(); fool != condition_.end(); ++fool)
     {
       fool->second->ClearGeometry();
     }
@@ -63,22 +61,22 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
-                                      bool initelements,
-                                      bool doboundaryconditions)
+int DRT::Discretization::FillComplete(
+    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // my processor id
   int myrank = Comm().MyPID();
 
   // print information to screen
-  if(myrank==0)
+  if (myrank == 0)
   {
-    IO::cout(IO::verbose)<<"+--------------------------------------------------+"<<IO::endl;
-    IO::cout(IO::verbose)<<"| FillComplete() on discretization "<< std::setw(16) << std::left << Name()<<"|" << IO::endl;
+    IO::cout(IO::verbose) << "+--------------------------------------------------+" << IO::endl;
+    IO::cout(IO::verbose) << "| FillComplete() on discretization " << std::setw(16) << std::left
+                          << Name() << "|" << IO::endl;
   }
 
   // set all maps to Teuchos::null
-  Reset(assigndegreesoffreedom,doboundaryconditions);
+  Reset(assigndegreesoffreedom, doboundaryconditions);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
   BuildNodeRowMap();
@@ -106,9 +104,9 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   // Assign degrees of freedom to elements and nodes
   if (assigndegreesoffreedom)
   {
-    if(myrank==0)
+    if (myrank == 0)
     {
-      IO::cout(IO::verbose)<<"| AssignDegreesOfFreedom() ...                     |"<<IO::endl;
+      IO::cout(IO::verbose) << "| AssignDegreesOfFreedom() ...                     |" << IO::endl;
     }
     AssignDegreesOfFreedom(0);
   }
@@ -116,9 +114,9 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   // call element routines to initialize
   if (initelements)
   {
-    if(myrank==0)
+    if (myrank == 0)
     {
-      IO::cout(IO::verbose)<<"| InitializeElements() ...                         |"<<IO::endl;
+      IO::cout(IO::verbose) << "| InitializeElements() ...                         |" << IO::endl;
     }
     InitializeElements();
   }
@@ -126,17 +124,17 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   // (Re)build the geometry of the boundary conditions
   if (doboundaryconditions)
   {
-    if(myrank==0)
+    if (myrank == 0)
     {
-      IO::cout(IO::verbose)<<"| BoundaryConditionsGeometry() ...                 |"<<IO::endl;
+      IO::cout(IO::verbose) << "| BoundaryConditionsGeometry() ...                 |" << IO::endl;
     }
 
     BoundaryConditionsGeometry();
   }
 
-  if(myrank==0)
+  if (myrank == 0)
   {
-    IO::cout(IO::verbose)<<"+--------------------------------------------------+"<<IO::endl;
+    IO::cout(IO::verbose) << "+--------------------------------------------------+" << IO::endl;
   }
 
   return 0;
@@ -150,7 +148,7 @@ void DRT::Discretization::InitializeElements()
 {
   if (!Filled()) dserror("FillComplete was not called");
 
-  ParObjectFactory::Instance().InitializeElements( *this );
+  ParObjectFactory::Instance().InitializeElements(*this);
 
   return;
 }
@@ -162,16 +160,15 @@ void DRT::Discretization::InitializeElements()
 void DRT::Discretization::BuildNodeRowMap()
 {
   const int myrank = Comm().MyPID();
-  int nummynodes     = 0;
-  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
-  for (curr=node_.begin(); curr != node_.end(); ++curr)
-    if (curr->second->Owner() == myrank)
-      ++nummynodes;
+  int nummynodes = 0;
+  std::map<int, Teuchos::RCP<DRT::Node>>::iterator curr;
+  for (curr = node_.begin(); curr != node_.end(); ++curr)
+    if (curr->second->Owner() == myrank) ++nummynodes;
   std::vector<int> nodeids(nummynodes);
   noderowptr_.resize(nummynodes);
 
-  int count=0;
-  for (curr=node_.begin(); curr != node_.end(); ++curr)
+  int count = 0;
+  for (curr = node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
     {
       nodeids[count] = curr->second->Id();
@@ -179,7 +176,7 @@ void DRT::Discretization::BuildNodeRowMap()
       ++count;
     }
   if (count != nummynodes) dserror("Mismatch in no. of nodes");
-  noderowmap_ = Teuchos::rcp(new Epetra_Map(-1,nummynodes,&nodeids[0],0,Comm()));
+  noderowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, &nodeids[0], 0, Comm()));
   return;
 }
 
@@ -192,9 +189,9 @@ void DRT::Discretization::BuildNodeColMap()
   std::vector<int> nodeids(nummynodes);
   nodecolptr_.resize(nummynodes);
 
-  int count=0;
-  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
-  for (curr=node_.begin(); curr != node_.end(); ++curr)
+  int count = 0;
+  std::map<int, Teuchos::RCP<DRT::Node>>::iterator curr;
+  for (curr = node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->Id();
     nodecolptr_[count] = curr->second.get();
@@ -202,7 +199,7 @@ void DRT::Discretization::BuildNodeColMap()
     ++count;
   }
   if (count != nummynodes) dserror("Mismatch in no. of nodes");
-  nodecolmap_ = Teuchos::rcp(new Epetra_Map(-1,nummynodes,&nodeids[0],0,Comm()));
+  nodecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, &nodeids[0], 0, Comm()));
   return;
 }
 
@@ -214,22 +211,21 @@ void DRT::Discretization::BuildElementRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-  for (curr=element_.begin(); curr != element_.end(); ++curr)
-    if (curr->second->Owner()==myrank)
-      nummyeles++;
+  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  for (curr = element_.begin(); curr != element_.end(); ++curr)
+    if (curr->second->Owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
   elerowptr_.resize(nummyeles);
-  int count=0;
-  for (curr=element_.begin(); curr != element_.end(); ++curr)
-    if (curr->second->Owner()==myrank)
+  int count = 0;
+  for (curr = element_.begin(); curr != element_.end(); ++curr)
+    if (curr->second->Owner() == myrank)
     {
       eleids[count] = curr->second->Id();
       elerowptr_[count] = curr->second.get();
       ++count;
     }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
-  elerowmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  elerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, &eleids[0], 0, Comm()));
   return;
 }
 
@@ -241,9 +237,9 @@ void DRT::Discretization::BuildElementColMap()
   int nummyeles = (int)element_.size();
   std::vector<int> eleids(nummyeles);
   elecolptr_.resize(nummyeles);
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-  int count=0;
-  for (curr=element_.begin(); curr != element_.end(); ++curr)
+  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  int count = 0;
+  for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
     eleids[count] = curr->second->Id();
     elecolptr_[count] = curr->second.get();
@@ -251,7 +247,7 @@ void DRT::Discretization::BuildElementColMap()
     ++count;
   }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
-  elecolmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  elecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, &eleids[0], 0, Comm()));
   return;
 }
 
@@ -260,12 +256,11 @@ void DRT::Discretization::BuildElementColMap()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToNodePointers()
 {
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
-  for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
+  std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
+  for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
-    if (!success)
-      dserror("Building element <-> node topology failed");
+    if (!success) dserror("Building element <-> node topology failed");
   }
   return;
 }
@@ -275,12 +270,11 @@ void DRT::Discretization::BuildElementToNodePointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToElementPointers()
 {
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
-  for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
+  std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
+  for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildElementPointers(element_);
-    if (!success)
-      dserror("Building element <-> element topology failed");
+    if (!success) dserror("Building element <-> element topology failed");
   }
   return;
 }
@@ -290,20 +284,22 @@ void DRT::Discretization::BuildElementToElementPointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeToElementPointers()
 {
-  std::map<int,Teuchos::RCP<DRT::Node> >::iterator nodecurr;
-  for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
+  std::map<int, Teuchos::RCP<DRT::Node>>::iterator nodecurr;
+  for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->ClearMyElementTopology();
 
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
-  for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
+  std::map<int, Teuchos::RCP<DRT::Element>>::iterator elecurr;
+  for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    const int  nnode = elecurr->second->NumNode();
+    const int nnode = elecurr->second->NumNode();
     const int* nodes = elecurr->second->NodeIds();
-    for (int j=0; j<nnode; ++j)
+    for (int j = 0; j < nnode; ++j)
     {
       DRT::Node* node = gNode(nodes[j]);
-      if (!node) dserror("Node %d is not on this proc %d",j,Comm().MyPID());
-      else node->AddElementPtr(elecurr->second.get());
+      if (!node)
+        dserror("Node %d is not on this proc %d", j, Comm().MyPID());
+      else
+        node->AddElementPtr(elecurr->second.get());
     }
   }
   return;
@@ -324,7 +320,7 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
   // implicit dependency here.
   havedof_ = true;
 
-  for (unsigned i=0; i<dofsets_.size(); ++i)
-    start = dofsets_[i]->AssignDegreesOfFreedom(*this,i,start);
+  for (unsigned i = 0; i < dofsets_.size(); ++i)
+    start = dofsets_[i]->AssignDegreesOfFreedom(*this, i, start);
   return start;
 }

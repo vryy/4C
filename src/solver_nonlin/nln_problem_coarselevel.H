@@ -35,13 +35,13 @@ class Epetra_MultiVector;
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 // baci
 namespace NLNSOL
 {
   class NlnProblem;
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -65,8 +65,7 @@ namespace NLNSOL
    */
   class NlnProblemCoarseLevel : public NlnProblemBase
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -121,7 +120,10 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual bool SetJacobianOperator() { /* nothing to do */ return true; }
+    virtual bool SetJacobianOperator()
+    { /* nothing to do */
+      return true;
+    }
 
     /*! \brief Set coarse level residual modifications for FAS
      *
@@ -137,9 +139,9 @@ namespace NLNSOL
      *  They are computed and stored for later use in ComputeF().
      */
     virtual void SetupResidualModification(
-        Teuchos::RCP<const Epetra_MultiVector> xbar, ///< \f$\bar{x}\f$
-        Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
-        );
+        Teuchos::RCP<const Epetra_MultiVector> xbar,  ///< \f$\bar{x}\f$
+        Teuchos::RCP<const Epetra_MultiVector> fbar   ///< \f$\bar{F}\f$
+    );
 
     //@}
 
@@ -161,9 +163,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void ComputeF(
-        const Epetra_MultiVector& xc, ///< current solution on coarse level
-        Epetra_MultiVector& fc ///< current residual on coarse level (to be filled)
+    virtual void ComputeF(const Epetra_MultiVector& xc,  ///< current solution on coarse level
+        Epetra_MultiVector& fc  ///< current residual on coarse level (to be filled)
         ) const;
 
     /*! \brief Compute the modified residual on a coarse level
@@ -171,7 +172,7 @@ namespace NLNSOL
      *  \author mayr.mt \date 06/2014
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
-        const Epetra_MultiVector& xc ///< current solution on coarse level
+        const Epetra_MultiVector& xc  ///< current solution on coarse level
         ) const;
 
     /*! \brief Evaluate Jacobian (linearization of residual)
@@ -219,18 +220,20 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::VectorType vt = IO::dofvector ///< vector type
+    virtual void WriteVector(
+        Teuchos::RCP<const Epetra_MultiVector> vec,  ///< vector with result data (to be outputted)
+        const std::string& description,              ///< description of output quantity
+        const IO::VectorType vt = IO::dofvector      ///< vector type
         ) const;
 
     /*! \brief Wrapper to write plain Epetra_MultiVector to output
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::VectorType vt = IO::dofvector ///<vector type
+    virtual void WriteVector(
+        const Epetra_MultiVector& vec,           ///< vector with result data (to be outputted)
+        const std::string& description,          ///< description of output quantity
+        const IO::VectorType vt = IO::dofvector  ///< vector type
         ) const;
 
     //@}
@@ -243,10 +246,8 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     /*! \brief Compute the plain residual on a coarse level
      *
      *  This is an ComputeF() in a variational way. Hence, we compute
@@ -260,7 +261,7 @@ namespace NLNSOL
      *  \author mayr.mt \date 10/2015
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputePlainF(
-        const Epetra_MultiVector& xc ///< current solution on coarse level
+        const Epetra_MultiVector& xc  ///< current solution on coarse level
         ) const;
 
     //! @name Access to members
@@ -295,7 +296,7 @@ namespace NLNSOL
     //! coarse level ID
     int levelid_;
 
-  }; // class NlnProblemCoarseLevel
-} // namespace NLNSOL
+  };  // class NlnProblemCoarseLevel
+}  // namespace NLNSOL
 
 #endif /* NLN_PROBLEM_COARSELEVEL_H */

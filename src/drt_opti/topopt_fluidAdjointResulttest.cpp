@@ -23,12 +23,10 @@ Maintainer: Martin Winklmaier
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(
-    const ImplicitTimeInt& adjointfluid
-)
-: DRT::ResultTest("ADJOINT"),
-  fluiddis_(adjointfluid.Discretization()),
-  mysol_(adjointfluid.Velnp())
+TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(const ImplicitTimeInt& adjointfluid)
+    : DRT::ResultTest("ADJOINT"),
+      fluiddis_(adjointfluid.Discretization()),
+      mysol_(adjointfluid.Velnp())
 {
   return;
 }
@@ -37,28 +35,24 @@ TOPOPT::ADJOINT::FluidAdjointResultTest::FluidAdjointResultTest(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(
-    DRT::INPUT::LineDefinition& res,
-    int& nerr,
-    int& test_count
-)
+    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
-  if (dis != fluiddis_->Name())
-    return;
+  res.ExtractString("DIS", dis);
+  if (dis != fluiddis_->Name()) return;
 
   int nodeGid;
-  res.ExtractInt("NODE",nodeGid);
+  res.ExtractInt("NODE", nodeGid);
   nodeGid -= 1;
 
   int havenode(fluiddis_->HaveGlobalNode(nodeGid));
   int isnodeofanybody(0);
-  fluiddis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  fluiddis_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
-  if (isnodeofanybody==0)
+  if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s",nodeGid+1,fluiddis_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", nodeGid + 1, fluiddis_->Name().c_str());
   }
   else
   {
@@ -67,8 +61,7 @@ void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(
       const DRT::Node* node = fluiddis_->gNode(nodeGid);
 
       // Test only, if actnode is a row node
-      if (node->Owner() != fluiddis_->Comm().MyPID())
-        return;
+      if (node->Owner() != fluiddis_->Comm().MyPID()) return;
 
       double result = 0.;
 
@@ -77,34 +70,33 @@ void TOPOPT::ADJOINT::FluidAdjointResultTest::TestNode(
       const int numdim = DRT::Problem::Instance()->NDim();
 
       std::string position;
-      res.ExtractString("QUANTITY",position);
-      if (position=="velx")
+      res.ExtractString("QUANTITY", position);
+      if (position == "velx")
       {
-        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,0))];
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, node, 0))];
       }
-      else if (position=="vely")
+      else if (position == "vely")
       {
-        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,1))];
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, node, 1))];
       }
-      else if (position=="velz")
+      else if (position == "velz")
       {
-        if (numdim==2)
-          dserror("Cannot test result for velz in 2D case.");
-        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,2))];
+        if (numdim == 2) dserror("Cannot test result for velz in 2D case.");
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, node, 2))];
       }
-      else if (position=="pressure")
+      else if (position == "pressure")
       {
-        if (numdim==2)
+        if (numdim == 2)
         {
-          if (fluiddis_->NumDof(0,node)<3)
-            dserror("too few dofs at node %d for pressure testing",node->Id());
-          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,2))];
+          if (fluiddis_->NumDof(0, node) < 3)
+            dserror("too few dofs at node %d for pressure testing", node->Id());
+          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, node, 2))];
         }
         else
         {
-          if (fluiddis_->NumDof(0,node)<4)
-            dserror("too few dofs at node %d for pressure testing",node->Id());
-          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,node,3))];
+          if (fluiddis_->NumDof(0, node) < 4)
+            dserror("too few dofs at node %d for pressure testing", node->Id());
+          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, node, 3))];
         }
       }
       else

@@ -37,41 +37,38 @@ namespace GEO
 
 namespace XFEM
 {
-
   class XFEMDofSet : public DRT::FixedSizeDofSet
   {
-  public:
-
+   public:
     /// constructor
-    XFEMDofSet( GEO::CutWizard& wizard,
-        int numMyReservedDofsperNode,
-        DRT::Discretization& dis )
-        : FixedSizeDofSet(numMyReservedDofsperNode, dis.NodeRowMap()->MaxAllGID()-dis.NodeRowMap()->MinAllGID()+1),
-          wizard_( wizard ),
+    XFEMDofSet(GEO::CutWizard& wizard, int numMyReservedDofsperNode, DRT::Discretization& dis)
+        : FixedSizeDofSet(numMyReservedDofsperNode,
+              dis.NodeRowMap()->MaxAllGID() - dis.NodeRowMap()->MinAllGID() + 1),
+          wizard_(wizard),
           dis_(dis)
     {
     }
 
-    /// equality relational operator for two XFEM::DofSets based on the number of nodal dofsets for all nodes
+    /// equality relational operator for two XFEM::DofSets based on the number of nodal dofsets for
+    /// all nodes
     bool operator==(XFEMDofSet const& other) const
     {
       const int numnode = dis_.NumMyRowNodes();
-      for(int lid=0; lid<numnode; lid++)
+      for (int lid = 0; lid < numnode; lid++)
       {
         int gid = dis_.NodeRowMap()->GID(lid);
         DRT::Node* node = dis_.gNode(gid);
-        if(NumDofPerNode( *node ) != other.NumDofPerNode( *node ))
-            return false; // dofsets not equal if at least one node has a different number of nodal dofsets
+        if (NumDofPerNode(*node) != other.NumDofPerNode(*node))
+          return false;  // dofsets not equal if at least one node has a different number of nodal
+                         // dofsets
       }
 
       return true;
     }
 
-    /// equality relational operator for two XFEM::DofSets based on the number of dofsets for all nodes
-    bool operator!=(XFEMDofSet const& other) const
-    {
-      return !(*this==other);
-    }
+    /// equality relational operator for two XFEM::DofSets based on the number of dofsets for all
+    /// nodes
+    bool operator!=(XFEMDofSet const& other) const { return !(*this == other); }
 
     /*!
     \brief Get the gid of all dofs of a node.
@@ -88,22 +85,20 @@ namespace XFEM
     \param node            (in) : the node
     \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node,
-        unsigned nodal_dofset_id) const;
+    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const;
 
-  protected:
-
+   protected:
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode( const DRT::Node & node ) const;
+    virtual int NumDofPerNode(const DRT::Node& node) const;
 
-  private:
-
+   private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node
     GEO::CutWizard& wizard_;
 
     /// background discretization
-    DRT::Discretization& dis_; ///< use reference instead of RCP to avoid Ringschluss in discretization
+    DRT::Discretization&
+        dis_;  ///< use reference instead of RCP to avoid Ringschluss in discretization
   };
-}
+}  // namespace XFEM
 
 #endif

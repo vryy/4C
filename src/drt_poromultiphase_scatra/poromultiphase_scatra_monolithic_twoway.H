@@ -28,40 +28,28 @@ namespace LINALG
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class Solver;
-}
+}  // namespace LINALG
 
 namespace POROMULTIPHASESCATRA
 {
-
   //! monolithic coupling algorithm of poromultiphasescatra framework
   class PoroMultiPhaseScaTraMonolithicTwoWay : public PoroMultiPhaseScaTraMonolithic
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseScaTraMonolithicTwoWay(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraMonolithicTwoWay(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& algoparams,
-        const Teuchos::ParameterList& poroparams,
-        const Teuchos::ParameterList& structparams,
-        const Teuchos::ParameterList& fluidparams,
-        const Teuchos::ParameterList& scatraparams,
-        const std::string& struct_disname,
-        const std::string& fluid_disname,
-        const std::string& scatra_disname,
-        bool isale,
-        int nds_disp,
-        int nds_vel,
-        int nds_solidpressure,
-        int ndsporofluid_scatra);
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
+        const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
+        const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
+        const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra);
 
     /// setup
     virtual void SetupSystem();
@@ -73,17 +61,13 @@ namespace POROMULTIPHASESCATRA
     void TimeStep();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
-    {
-      return blockrowdofmap_;
-    }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
 
 
-  protected:
-
+   protected:
     // Setup Newton-Raphson iteration
     void SetupNewton();
 
@@ -106,8 +90,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc
-    );
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! extract the field vectors from a given composed vector.
     /*!
@@ -117,17 +100,16 @@ namespace POROMULTIPHASESCATRA
      \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
      */
-    virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& stx,
-        Teuchos::RCP<const Epetra_Vector>& flx,
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx);
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> pv, //!< vector containing structural + fluid dofs, i.e. poro dofs
-        Teuchos::RCP<const Epetra_Vector> sv //!< vector containing only scatra dofs
-        );
+    void SetupVector(Epetra_Vector& f,  //!< vector of length of all dofs
+        Teuchos::RCP<const Epetra_Vector>
+            pv,  //!< vector containing structural + fluid dofs, i.e. poro dofs
+        Teuchos::RCP<const Epetra_Vector> sv  //!< vector containing only scatra dofs
+    );
 
     //! setup monolithic system matrix
     virtual void SetupSystemMatrix();
@@ -142,15 +124,15 @@ namespace POROMULTIPHASESCATRA
     void EquilibrateSystem();
 
     //! equilibrate matrix rows
-    void EquilibrateMatrixRows(
-        LINALG::SparseMatrix&                matrix,      //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&
+            invrowsums  //!< sums of absolute values of row entries in matrix
         ) const;
 
     //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(
-        const LINALG::SparseMatrix&          matrix,      //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&
+            invrowsums  //!< inverse sums of absolute values of row entries in matrix
         ) const;
 
     //! convergence check
@@ -184,13 +166,13 @@ namespace POROMULTIPHASESCATRA
     virtual void EvaluateScatra();
 
     //! evaluate porofluid-scatra coupling sparse matrix
-    void ApplyPoroFluidScatraCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_pfs);
+    void ApplyPoroFluidScatraCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_pfs);
 
     //! evaluate scatra-structure coupling sparse matrix
-    void ApplyScatraStructCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_sps);
+    void ApplyScatraStructCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sps);
 
     //! evaluate scatra-porofluid coupling sparse matrix
-    void ApplyScatraPoroFluidCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_spf);
+    void ApplyScatraPoroFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_spf);
 
     // update the single fields after convergence
     void PrintStructureDisabledInfo();
@@ -227,16 +209,16 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
     //! @name Global vectors
-    Teuchos::RCP<Epetra_Vector> zeros_; //!< a zero vector of full length
+    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of struct-fluid-scatra system
+    Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of struct-fluid-scatra system
 
-    Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
-    double solveradaptolbetter_;            //!< tolerance to which is adpated ?
-    bool solveradapttol_;                   //!< adapt solver tolerance
+    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;           //!< tolerance to which is adpated ?
+    bool solveradapttol_;                  //!< adapt solver tolerance
 
     // do we solve the structure?
     bool solve_structure_;
@@ -245,7 +227,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-scatra coupling matrix --> we do not have it (yet)
-    //Teuchos::RCP<LINALG::SparseMatrix> k_pss_;
+    // Teuchos::RCP<LINALG::SparseMatrix> k_pss_;
 
     //! fluid-scatra coupling matrix
     Teuchos::RCP<LINALG::SparseOperator> k_pfs_;
@@ -255,58 +237,56 @@ namespace POROMULTIPHASESCATRA
     //! scatra-fluid coupling matrix
     Teuchos::RCP<LINALG::SparseOperator> k_spf_;
 
-    double tolinc_;     //!< tolerance residual increment
-    double tolfres_;    //!< tolerance force residual
+    double tolinc_;   //!< tolerance residual increment
+    double tolfres_;  //!< tolerance force residual
 
-    double tolinc_struct_;     //!< tolerance residual increment for structure displacements
-    double tolfres_struct_;    //!< tolerance force residual for structure displacements
+    double tolinc_struct_;   //!< tolerance residual increment for structure displacements
+    double tolfres_struct_;  //!< tolerance force residual for structure displacements
 
-    double tolinc_fluid_;     //!< tolerance residual increment for fluid
-    double tolfres_fluid_;    //!< tolerance force residual for fluid
+    double tolinc_fluid_;   //!< tolerance residual increment for fluid
+    double tolfres_fluid_;  //!< tolerance force residual for fluid
 
-    double tolinc_scatra_;     //!< tolerance residual increment for scatra
-    double tolfres_scatra_;    //!< tolerance force residual for scatra
+    double tolinc_scatra_;   //!< tolerance residual increment for scatra
+    double tolfres_scatra_;  //!< tolerance force residual for scatra
 
     double normrhs_;  //!< norm of residual forces
     double norminc_;  //!< norm of residual unknowns
 
-    double normrhsfluid_;     //!< norm of residual forces (fluid )
-    double normincfluid_;     //!< norm of residual unknowns (fluid )
+    double normrhsfluid_;  //!< norm of residual forces (fluid )
+    double normincfluid_;  //!< norm of residual unknowns (fluid )
 
-    double normrhsstruct_;    //!< norm of residual forces (structure)
-    double normincstruct_;    //!< norm of residual unknowns (structure)
+    double normrhsstruct_;  //!< norm of residual forces (structure)
+    double normincstruct_;  //!< norm of residual unknowns (structure)
 
-    double normrhsscatra_;    //!< norm of residual forces (scatra)
-    double normincscatra_;    //!< norm of residual unknowns (scatra)
+    double normrhsscatra_;  //!< norm of residual forces (scatra)
+    double normincscatra_;  //!< norm of residual unknowns (scatra)
 
-    enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornormfres_;   //!< type of norm for residual
+    enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornormfres_;  //!< type of norm for residual
     enum INPAR::POROMULTIPHASESCATRA::VectorNorm vectornorminc_;   //!< type of norm for increments
 
-    Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
-    double dtsolve_; //!< linear solver time
-    double dtele_; //!< time for element evaluation + build-up of system matrix
+    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;           //!< linear solver time
+    double dtele_;             //!< time for element evaluation + build-up of system matrix
 
     //! flag for finite difference check
     INPAR::POROMULTIPHASESCATRA::FDCheck fdcheck_;
 
 
-  }; //PoroMultiPhaseScatraMonolithic
+  };  // PoroMultiPhaseScatraMonolithic
 
   //! monolithic coupling algorithm of poromultiphasescatra framework coupled with 1D artery network
-  class PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling : public PoroMultiPhaseScaTraMonolithicTwoWay
+  class PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling
+      : public PoroMultiPhaseScaTraMonolithicTwoWay
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(){};
 
-  private:
-
+   private:
     // Setup full map
     virtual void SetupMaps();
 
@@ -318,15 +298,12 @@ namespace POROMULTIPHASESCATRA
      x is the sum of all increments up to this point.
      \param x   (i) composed vector that contains all field vectors
      \param stx (o) structural vector (e.g. displacements)
-     \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations) and
-                    pressures of artery network
-     \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
-                    and mass fractions in 1D artery network
+     \param flx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
+     and pressures of artery network \param scx (o) scatra vector (primary variables of scatra
+     field, i.e. mass fraction) and mass fractions in 1D artery network
      */
-    virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& stx,
-        Teuchos::RCP<const Epetra_Vector>& flx,
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
         Teuchos::RCP<const Epetra_Vector>& scx);
 
     //! setup monolithic system matrix
@@ -348,7 +325,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<LINALG::SparseMatrix> ArteryScatraArteryCouplingMatrix();
 
     //! evaluate arteryscatra-artery coupling sparse matrix
-    void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP< LINALG::SparseOperator> k_asa);
+    void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_asa);
 
     //! build the block null spaces
     virtual void BuildBlockNullSpaces();
@@ -371,10 +348,10 @@ namespace POROMULTIPHASESCATRA
     //! flag if nodal coupling active or not
     bool nodal_coupl_inactive_;
 
-  }; //PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling
+  };  // PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling
 
 
-}
+}  // namespace POROMULTIPHASESCATRA
 
 
 

@@ -34,7 +34,8 @@
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
 ///
-/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac muscle tissue
+/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac
+/// muscle tissue
 ///
 /// d(r)/dt =  b*d*(\phi/d-r)
 /// d(\phi)/dt + c1*\phi*(\phi-a)*(\phi-1.0) + c2*\phi*r_ = 0
@@ -50,14 +51,13 @@
 class Myocard_Fitzhugh_Nagumo : public Myocard_General
 
 {
-
-public:
-
+ public:
   /// construct empty material object
   Myocard_Fitzhugh_Nagumo();
 
   /// construct empty material object
-  explicit Myocard_Fitzhugh_Nagumo(const double eps_deriv_myocard, const std::string tissue, int num_gp);
+  explicit Myocard_Fitzhugh_Nagumo(
+      const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
   /// destructor
   virtual ~Myocard_Fitzhugh_Nagumo() { ; }
@@ -96,10 +96,7 @@ public:
   void Update(const double phi, const double dt);
 
   /// get number of Gauss points
-  int GetNumberOfGP() const
-  {
-    return r0_.size();
-  };
+  int GetNumberOfGP() const { return r0_.size(); };
 
   /// resize internal state variables if number of Gauss point changes
   void ResizeInternalStateVariables(int gp)
@@ -111,18 +108,17 @@ public:
     mechanical_activation_.resize(gp);
   }
 
-private:
-
+ private:
   Myocard_Tools tools_;
 
   /// perturbation for numerical approximation of the derivative
   double eps_deriv_;
 
-   /// last gating variables MV
-  std::vector<double> r0_; /// fast inward current
+  /// last gating variables MV
+  std::vector<double> r0_;  /// fast inward current
 
   /// current gating variables MV
-  std::vector<double> r_; /// fast inward current
+  std::vector<double> r_;  /// fast inward current
 
   /// ionic currents
   std::vector<double> J1_;
@@ -136,11 +132,13 @@ private:
   double d_;
 
   // Variables for electromechanical coupling
-  std::vector<double> mechanical_activation_; // to store the variable for activation (phi in this case=)
-  double act_thres_ ; // activation threshold (so that activation = 1.0 if mechanical_activation_ >= act_thres_)
+  std::vector<double>
+      mechanical_activation_;  // to store the variable for activation (phi in this case=)
+  double act_thres_;  // activation threshold (so that activation = 1.0 if mechanical_activation_ >=
+                      // act_thres_)
 
 
-}; // Myocard_Fitzhugh_Nagumo
+};  // Myocard_Fitzhugh_Nagumo
 
 
 #endif

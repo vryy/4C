@@ -29,7 +29,6 @@
  *----------------------------------------------------------------------*/
 namespace THR
 {
-
   /*====================================================================*/
   /*!
    * \brief Generalised-alpha time integration
@@ -51,9 +50,7 @@ namespace THR
    */
   class TimIntGenAlpha : public TimIntImpl
   {
-
-  public:
-
+   public:
     //! verify if given coefficients are in admissable range
     //! prints also info to STDOUT
     void VerifyCoeff();
@@ -65,14 +62,13 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntGenAlpha(
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& tdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-      );
+    TimIntGenAlpha(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& tdynparams,           //!< input parameters
+        const Teuchos::ParameterList& xparams,              //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,           //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                //!< the solver
+        Teuchos::RCP<IO::DiscretizationWriter> output       //!< the output
+    );
 
     //! Destructor
     // ....
@@ -87,27 +83,21 @@ namespace THR
     //@{
 
     //! Return name
-    enum INPAR::THR::DynamicType MethodName() const
-    {
-      return INPAR::THR::dyna_genalpha;
-    }
+    enum INPAR::THR::DynamicType MethodName() const { return INPAR::THR::dyna_genalpha; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
     int MethodSteps() { return 1; }
 
     //! Give linear order of accuracy of temperature part
-    int MethodOrderOfAccuracy()
-    {
-      return (fabs(MethodLinErrCoeff()) < EPS6) ? 2 : 1;
-    }
+    int MethodOrderOfAccuracy() { return (fabs(MethodLinErrCoeff()) < EPS6) ? 2 : 1; }
 
     // TODO 2013-07-05 check the calculation of the factor again
     //! Return linear error coefficient of temperatures
     double MethodLinErrCoeff()
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1.0/2.0 - gamma_ + alphaf_ - alpham_;
+      return 1.0 / 2.0 - gamma_ + alphaf_ - alpham_;
     }
 
     //! Consistent predictor with constant temperatures
@@ -115,34 +105,31 @@ namespace THR
     void PredictConstTempConsistRate();
 
     //! Evaluate ordinary internal force, its tangent at state
-    void ApplyForceTangInternal(
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-      const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-      Teuchos::RCP<Epetra_Vector> fcap,  //!< capacity force
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-      );
+    void ApplyForceTangInternal(const double time,  //!< evaluation time
+        const double dt,                            //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,     //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,    //!< residual temperatures
+        Teuchos::RCP<Epetra_Vector> fcap,           //!< capacity force
+        Teuchos::RCP<Epetra_Vector> fint,           //!< internal force
+        Teuchos::RCP<LINALG::SparseMatrix> tang     //!< tangent matrix
+    );
 
     //! Evaluate ordinary internal force
-    void ApplyForceInternal(
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-      const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-      Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-      );
+    void ApplyForceInternal(const double time,    //!< evaluation time
+        const double dt,                          //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
+        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+    );
 
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
-    void ApplyForceExternalConv(
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> tempn,  //!< temperature state T_n
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
-      Teuchos::RCP<Epetra_Vector> fext,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-      );
+    void ApplyForceExternalConv(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> tempn,    //!< temperature state T_n
+        const Teuchos::RCP<Epetra_Vector> temp,     //!< temperature state T_n+1
+        Teuchos::RCP<Epetra_Vector> fext,           //!< internal force
+        Teuchos::RCP<LINALG::SparseMatrix> tang     //!< tangent matrix
+    );
 
     //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
@@ -191,16 +178,10 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
-    {
-      return fext_;
-    }
+    Teuchos::RCP<Epetra_Vector> Fext() { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
 
     //@}
 
@@ -210,8 +191,7 @@ namespace THR
     void EvaluateMidState();
     //@}
 
-  protected:
-
+   protected:
     //! equal operator is NOT wanted
     TimIntGenAlpha operator=(const TimIntGenAlpha& old);
 
@@ -244,10 +224,10 @@ namespace THR
     //! Maximal numerical dissipation at \f$\rho_\infty=0.0\f$: BDF2
     //! \f[ \alpha_f=1, \alpha_m=3/2, \gamma=1 \f]
     //@{
-    double gamma_;  //!< factor (0,1]
-    double alphaf_;  //!< factor [0,1]
-    double alpham_;  //!< factor [0,1.5]
-    double rho_inf_; //!< factor[0,1]
+    double gamma_;    //!< factor (0,1]
+    double alphaf_;   //!< factor [0,1]
+    double alpham_;   //!< factor [0,1.5]
+    double rho_inf_;  //!< factor[0,1]
     //@}
 
     //! @name Global mid-state vectors
@@ -261,17 +241,19 @@ namespace THR
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fint_;   //!< internal force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fintm_;  //!< internal mid-force at \f$t_{n+\alpha_f}\f$
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fext_;   //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextm_;  //!< external mid-force \f$t_{n+\alpha_f}\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
     Teuchos::RCP<Epetra_Vector> fcap_;  //!< capacity force \f$C\cdot\Theta_n\f$ at \f$t_n\f$
-    Teuchos::RCP<Epetra_Vector> fcapm_;  //!< capacity force \f$C\cdot\Theta_{n+\alpha_m}\f$ at \f$t_{n+\alpha_m}\f$
-    Teuchos::RCP<Epetra_Vector> fcapn_;  //!< capacity force \f$C\cdot\Theta_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>
+        fcapm_;  //!< capacity force \f$C\cdot\Theta_{n+\alpha_m}\f$ at \f$t_{n+\alpha_m}\f$
+    Teuchos::RCP<Epetra_Vector>
+        fcapn_;  //!< capacity force \f$C\cdot\Theta_{n+1}\f$ at \f$t_{n+1}\f$
 
     //@}
 

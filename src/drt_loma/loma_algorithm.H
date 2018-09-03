@@ -28,7 +28,6 @@
 */
 namespace LOMA
 {
-
   /// LOMA algorithm base
   /*!
 
@@ -42,14 +41,10 @@ namespace LOMA
    */
   class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    Algorithm(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& prbdyn,
-        const Teuchos::ParameterList& solverparams
-        );
+    Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn,
+        const Teuchos::ParameterList& solverparams);
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
@@ -75,13 +70,13 @@ namespace LOMA
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
-        );
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
+    );
 
     /*! \brief Setup all class internal objects and members
 
@@ -109,8 +104,7 @@ namespace LOMA
     /// read restart for preceding turbulent inflow simulation
     void ReadInflowRestart(int restart);
 
-  protected:
-
+   protected:
     /// do initial calculations
     void InitialCalculations();
 
@@ -136,7 +130,7 @@ namespace LOMA
     void EvaluateLomaODBlockMatFluid(Teuchos::RCP<LINALG::SparseMatrix> mat_fs);
 
     /// evaluate off-diagonal block with scatra weighting functions
-    //void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<LINALG::SparseMatrix> mat_sf);
+    // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<LINALG::SparseMatrix> mat_sf);
 
     /// set up right-hand-side for monolithic low-Mach-number system
     void SetupMonoLomaRHS();
@@ -187,10 +181,10 @@ namespace LOMA
     int stepmax_;
 
     /// (preliminary) maximum number of iterations and tolerance for outer iteration
-    int     itmax_;
-    int     itmaxpre_;
-    int     itmaxbs_;
-    double  ittol_;
+    int itmax_;
+    int itmaxpre_;
+    int itmaxbs_;
+    double ittol_;
 
     /// flag for constant thermodynamic pressure
     std::string consthermpress_;
@@ -206,13 +200,11 @@ namespace LOMA
     /// number of inflow steps
     int numinflowsteps_;
 
-  private:
-
+   private:
     //! problem dynamic parameters
     Teuchos::ParameterList probdyn_;
-
   };
 
-} // namespace LOMA
+}  // namespace LOMA
 
-#endif // LOMA_ALGORITHM_H
+#endif  // LOMA_ALGORITHM_H

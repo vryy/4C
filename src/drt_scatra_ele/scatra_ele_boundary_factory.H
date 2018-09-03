@@ -24,40 +24,30 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    class ScaTraBoundaryInterface;
 
-namespace ELEMENTS
-{
+    class ScaTraBoundaryFactory
+    {
+     public:
+      //! ctor
+      ScaTraBoundaryFactory() { return; };
 
-class ScaTraBoundaryInterface;
+      //! dtor
+      virtual ~ScaTraBoundaryFactory() { return; };
 
-class ScaTraBoundaryFactory
-{
+      //! ProvideImpl
+      static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,
+          const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
+          const std::string& disname);
 
-public:
-  //! ctor
-  ScaTraBoundaryFactory(){return;};
-
-  //! dtor
-  virtual ~ScaTraBoundaryFactory(){return;};
-
-  //! ProvideImpl
-  static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,
-                                              const enum INPAR::SCATRA::ImplType impltype,
-                                              const int numdofpernode,
-                                              const int numscal,
-                                              const std::string& disname);
-
-private:
-
-  //! return instance of element evaluation class depending on implementation type
-  template<DRT::Element::DiscretizationType distype>
-  static ScaTraBoundaryInterface* DefineProblemType(
-      const enum INPAR::SCATRA::ImplType impltype,
-      const int numdofpernode,
-      const int numscal,
-      const std::string& disname
-      );
-}; // class ScaTraBoundaryFactory
-} // namespace ELEMENTS
-} // namespace DRT
+     private:
+      //! return instance of element evaluation class depending on implementation type
+      template <DRT::Element::DiscretizationType distype>
+      static ScaTraBoundaryInterface* DefineProblemType(const enum INPAR::SCATRA::ImplType impltype,
+          const int numdofpernode, const int numscal, const std::string& disname);
+    };  // class ScaTraBoundaryFactory
+  }     // namespace ELEMENTS
+}  // namespace DRT
 #endif

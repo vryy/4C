@@ -35,9 +35,7 @@
 class Myocard_General
 
 {
-
-public:
-
+ public:
   /// construct empty material object
   Myocard_General(){};
 
@@ -50,33 +48,33 @@ public:
   /// compute reaction coefficient for multiple Gauss points
   virtual double ReaCoeff(const double phi, const double dt, int gp)
   {
-    if(gp>0)
+    if (gp > 0)
     {
       dserror("Multiple Gauss points only implemented for MV and FHN model");
       return 0.;
     }
 
     else
-      return ReaCoeff(phi,dt);
+      return ReaCoeff(phi, dt);
   };
 
   /// compute reaction coefficient
   virtual double ReaCoeff(const double phi, const double dt) = 0;
 
   /// compute reaction coefficient at timestep n
-  virtual double ReaCoeffN(const double phi, const double dt) {return 0;};
+  virtual double ReaCoeffN(const double phi, const double dt) { return 0; };
 
   /// compute reaction coefficient for multiple Gauss points at timestep n
   virtual double ReaCoeffN(const double phi, const double dt, int gp)
   {
-    if(gp>0)
-  {
-    dserror("Multiple Gauss points only implemented for MV and FHN model");
-    return 0.;
-  }
+    if (gp > 0)
+    {
+      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      return 0.;
+    }
 
-  else
-    return ReaCoeffN(phi,dt);
+    else
+      return ReaCoeffN(phi, dt);
   };
 
   ///  returns number of internal state variables of the material
@@ -88,7 +86,7 @@ public:
   ///  returns current internal state of the material
   virtual double GetInternalState(const int k, int gp) const
   {
-    if(gp > 0)
+    if (gp > 0)
     {
       dserror("Multiple Gauss points only implemented for MV and FHN model");
       return 0.;
@@ -103,10 +101,10 @@ public:
   ///  set internal state of the material for multiple Gauss points
   virtual void SetInternalState(const int k, const double val, int gp)
   {
-    if(gp > 0)
+    if (gp > 0)
       dserror("Multiple Gauss points only implemented for MV and FHN model");
     else
-      SetInternalState(k,val);
+      SetInternalState(k, val);
 
     return;
   };
@@ -128,19 +126,16 @@ public:
   virtual void ResizeInternalStateVariables(int gp)
   {
     dserror("Multiple Gauss Points only implemented for MV and FHN model");
-    return ;
+    return;
   };
 
   /// get number of Gauss points
-  virtual int GetNumberOfGP() const
-  {
-    return 1;
-  };
+  virtual int GetNumberOfGP() const { return 1; };
 
   /// time update for this material
   virtual void Update(const double phi, const double dt) = 0;
 
-}; // Myocard_general
+};  // Myocard_general
 
 
 #endif

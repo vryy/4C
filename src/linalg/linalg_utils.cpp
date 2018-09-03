@@ -29,18 +29,15 @@
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix  (public)                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap,
-    const int npr)
+Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
 {
-  if (!rowmap.UniqueGIDs())
-    dserror("Row map is not unique");
+  if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
 }
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap,
-    const bool init)
+Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap, init));
 }
@@ -48,10 +45,7 @@ Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> LINALG::CreateMultiVector(
-    const Epetra_BlockMap& rowmap,
-    const int numrows,
-    const bool init
-)
+    const Epetra_BlockMap& rowmap, const int numrows, const bool init)
 {
   return Teuchos::rcp(new Epetra_MultiVector(rowmap, numrows, init));
 }
@@ -59,8 +53,7 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::CreateMultiVector(
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void LINALG::Export(const Epetra_MultiVector& source,
-    Epetra_MultiVector& target)
+void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
   try
   {
@@ -68,8 +61,8 @@ void LINALG::Export(const Epetra_MultiVector& source,
     const bool targetunique = target.Map().UniqueGIDs();
 
     // both are unique, does not matter whether ex- or import
-    if (sourceunique && targetunique && source.Comm().NumProc() == 1
-        && target.Comm().NumProc() == 1)
+    if (sourceunique && targetunique && source.Comm().NumProc() == 1 &&
+        target.Comm().NumProc() == 1)
     {
       if (source.NumVectors() != target.NumVectors())
         dserror("number of vectors in source and target not the same!");
@@ -77,12 +70,10 @@ void LINALG::Export(const Epetra_MultiVector& source,
         for (int i = 0; i < target.Map().NumMyElements(); ++i)
         {
           const int gid = target.Map().GID(i);
-          if (gid < 0)
-            dserror("No gid for i");
+          if (gid < 0) dserror("No gid for i");
           const int lid = source.Map().LID(gid);
-          if (lid < 0)
-            continue;
-          //dserror("No source for target");
+          if (lid < 0) continue;
+          // dserror("No source for target");
           (*target(k))[i] = (*source(k))[lid];
         }
       return;
@@ -91,16 +82,14 @@ void LINALG::Export(const Epetra_MultiVector& source,
     {
       Epetra_Export exporter(source.Map(), target.Map());
       int err = target.Export(source, exporter, Insert);
-      if (err)
-        dserror("Export using exporter returned err=%d", err);
+      if (err) dserror("Export using exporter returned err=%d", err);
       return;
     }
     else if (sourceunique && !targetunique)
     {
       Epetra_Import importer(target.Map(), source.Map());
       int err = target.Import(source, importer, Insert);
-      if (err)
-        dserror("Export using importer returned err=%d", err);
+      if (err) dserror("Export using importer returned err=%d", err);
       return;
     }
     else if (!sourceunique && targetunique)
@@ -110,10 +99,10 @@ void LINALG::Export(const Epetra_MultiVector& source,
       // as this may give a non-unique answer depending on the proc which is asked
       const Epetra_BlockMap& sourcemap = source.Map();
       const Epetra_BlockMap& targetmap = target.Map();
-      for(int targetlid = 0; targetlid < targetmap.NumMyElements(); ++targetlid)
+      for (int targetlid = 0; targetlid < targetmap.NumMyElements(); ++targetlid)
       {
         const int sourcelid = sourcemap.LID(targetmap.GID(targetlid));
-        if(sourcelid < 0)
+        if (sourcelid < 0)
           dserror("Export of non-unique source failed. Source data not available on target proc");
 
         for (int k = 0; k < source.NumVectors(); ++k)
@@ -131,7 +120,8 @@ void LINALG::Export(const Epetra_MultiVector& source,
     }
     else
       dserror("VERY strange");
-  } catch (int error)
+  }
+  catch (int error)
   {
     dserror("Caught an Epetra exception %d", error);
   }
@@ -150,17 +140,15 @@ void LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
     const bool targetunique = target.Map().UniqueGIDs();
 
     // both are unique, does not matter whether ex- or import
-    if (sourceunique && targetunique && source.Comm().NumProc() == 1
-        && target.Comm().NumProc() == 1)
+    if (sourceunique && targetunique && source.Comm().NumProc() == 1 &&
+        target.Comm().NumProc() == 1)
     {
       for (int i = 0; i < target.Map().NumMyElements(); ++i)
       {
         const int gid = target.Map().GID(i);
-        if (gid < 0)
-          dserror("No gid for i");
+        if (gid < 0) dserror("No gid for i");
         const int lid = source.Map().LID(gid);
-        if (lid < 0)
-          continue;
+        if (lid < 0) continue;
         target[i] = source[lid];
       }
       return;
@@ -169,24 +157,21 @@ void LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
     {
       Epetra_Export exporter(source.Map(), target.Map());
       int err = target.Export(source, exporter, Insert);
-      if (err)
-        dserror("Export using exporter returned err=%d", err);
+      if (err) dserror("Export using exporter returned err=%d", err);
       return;
     }
     else if (sourceunique && !targetunique)
     {
       Epetra_Import importer(target.Map(), source.Map());
       int err = target.Import(source, importer, Insert);
-      if (err)
-        dserror("Export using exporter returned err=%d", err);
+      if (err) dserror("Export using exporter returned err=%d", err);
       return;
     }
     else if (!sourceunique && targetunique)
     {
       Epetra_Export exporter(source.Map(), target.Map());
       int err = target.Export(source, exporter, Insert);
-      if (err)
-        dserror("Export using exporter returned err=%d", err);
+      if (err) dserror("Export using exporter returned err=%d", err);
       return;
     }
     else if (!sourceunique && !targetunique)
@@ -199,7 +184,8 @@ void LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
     }
     else
       dserror("VERY strange");
-  } catch (int error)
+  }
+  catch (int error)
   {
     dserror("Caught an Epetra exception %d", error);
   }
@@ -214,12 +200,11 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
-  const int lrowdim = (int) lmrow.size();
-  const int lcoldim = (int) lmcol.size();
+  const int lrowdim = (int)lmrow.size();
+  const int lcoldim = (int)lmcol.size();
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
-  if (lrowdim != (int) lmrowowner.size() || lrowdim > Aele.M()
-      || lcoldim > Aele.N())
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
     dserror("Mismatch in dimensions");
 
   const int myrank = A.Comm().MyPID();
@@ -235,13 +220,11 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     for (int lrow = 0; lrow < lrowdim; ++lrow)
     {
       // check ownership of row
-      if (lmrowowner[lrow] != myrank)
-        continue;
+      if (lmrowowner[lrow] != myrank) continue;
 
       // check whether I have that global row
       int rgid = lmrow[lrow];
-      if (!(rowmap.MyGID(rgid)))
-        dserror("Sparse matrix A does not have global row %d", rgid);
+      if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d", rgid);
 
       for (int lcol = 0; lcol < lcoldim; ++lcol)
       {
@@ -255,16 +238,12 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
         {
           int errtwo = A.InsertGlobalValues(rgid, 1, &val, &cgid);
           if (errtwo < 0)
-            dserror(
-                "Epetra_CrsMatrix::InsertGlobalValues returned error code %d",
-                errtwo);
+            dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d", errtwo);
         }
         else if (errone)
-          dserror(
-              "Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",
-              errone);
-      } // for (int lcol=0; lcol<lcoldim; ++lcol)
-    } // for (int lrow=0; lrow<lrowdim; ++lrow)
+          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
+      }  // for (int lcol=0; lcol<lcoldim; ++lcol)
+    }    // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
   return;
 }
@@ -275,118 +254,114 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  const int ldim = (int) lm.size();
+  const int ldim = (int)lm.size();
   // allow Vele to provide entries past the end of lm that are not used here,
   // therefore check only for ">" rather than "!="
-  if (ldim != (int) lmowner.size() || ldim > Vele.Length())
-    dserror("Mismatch in dimensions");
+  if (ldim != (int)lmowner.size() || ldim > Vele.Length()) dserror("Mismatch in dimensions");
 
   const int myrank = V.Comm().MyPID();
 
   for (int lrow = 0; lrow < ldim; ++lrow)
   {
-    if (lmowner[lrow] != myrank)
-      continue;
+    if (lmowner[lrow] != myrank) continue;
     int rgid = lm[lrow];
-    if (!V.Map().MyGID(rgid))
-      dserror("Sparse vector V does not have global row %d", rgid);
+    if (!V.Map().MyGID(rgid)) dserror("Sparse vector V does not have global row %d", rgid);
     int rlid = V.Map().LID(rgid);
     V[rlid] += Vele[lrow];
-  } // for (int lrow=0; lrow<ldim; ++lrow)
+  }  // for (int lrow=0; lrow<ldim; ++lrow)
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LINALG::AssembleMyVector(double scalar_target, Epetra_Vector& target,
-    double scalar_source, const Epetra_Vector& source)
+void LINALG::AssembleMyVector(
+    double scalar_target, Epetra_Vector& target, double scalar_source, const Epetra_Vector& source)
 {
-  for (int slid=0; slid<source.Map().NumMyElements();++slid)
+  for (int slid = 0; slid < source.Map().NumMyElements(); ++slid)
   {
     const int sgid = source.Map().GID(slid);
     const int tlid = target.Map().LID(sgid);
-    if (tlid==-1)
-      dserror("The target vector has no global row %i"
-          " on processor %i!",sgid,target.Comm().MyPID());
+    if (tlid == -1)
+      dserror(
+          "The target vector has no global row %i"
+          " on processor %i!",
+          sgid, target.Comm().MyPID());
 
     // update the vector row
-    target[tlid] = scalar_target*target[tlid] + scalar_source*source[slid];
+    target[tlid] = scalar_target * target[tlid] + scalar_source * source[slid];
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> LINALG::ExtractMyVector(
-    const Epetra_Vector& source,
-    const Epetra_Map& target_map )
+    const Epetra_Vector& source, const Epetra_Map& target_map)
 {
-  Teuchos::RCP<Epetra_Vector> target = Teuchos::rcp( new Epetra_Vector( target_map ) );
+  Teuchos::RCP<Epetra_Vector> target = Teuchos::rcp(new Epetra_Vector(target_map));
 
-  ExtractMyVector( source, *target );
+  ExtractMyVector(source, *target);
 
   return target;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LINALG::ExtractMyVector( const Epetra_Vector& source,
-    Epetra_Vector& target )
+void LINALG::ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& target)
 {
   const int my_num_target_gids = target.Map().NumMyElements();
-  const int * my_target_gids = target.Map().MyGlobalElements();
+  const int* my_target_gids = target.Map().MyGlobalElements();
 
   double* target_values = target.Values();
 
   const double* src_values = source.Values();
 
-  for ( int tar_lid=0; tar_lid<my_num_target_gids; ++tar_lid )
+  for (int tar_lid = 0; tar_lid < my_num_target_gids; ++tar_lid)
   {
-    const int target_gid = my_target_gids[ tar_lid ];
+    const int target_gid = my_target_gids[tar_lid];
 
-    const int src_lid = source.Map().LID( target_gid );
+    const int src_lid = source.Map().LID(target_gid);
     // check if the target_map is a local sub-set of the source map on each proc
-    if ( src_lid == -1 )
-      dserror("Couldn't find the target GID %d in the source map on proc %d.",
-          target_gid, source.Comm().MyPID() );
+    if (src_lid == -1)
+      dserror("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
+          source.Comm().MyPID());
 
-    target_values[ tar_lid ] = src_values[ src_lid ];
+    target_values[tar_lid] = src_values[src_lid];
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LINALG::ExtractMyVector(
-    double scalar_source, const Epetra_Vector& source,
-    double scalar_target, Epetra_Vector& target )
+    double scalar_source, const Epetra_Vector& source, double scalar_target, Epetra_Vector& target)
 {
   const int my_num_target_gids = target.Map().NumMyElements();
-  const int * my_target_gids = target.Map().MyGlobalElements();
+  const int* my_target_gids = target.Map().MyGlobalElements();
 
-  double * target_values = target.Values();
+  double* target_values = target.Values();
 
   const double* src_values = source.Values();
 
-  for ( int tar_lid=0; tar_lid<my_num_target_gids; ++tar_lid )
+  for (int tar_lid = 0; tar_lid < my_num_target_gids; ++tar_lid)
   {
-    const int target_gid = my_target_gids[ tar_lid ];
+    const int target_gid = my_target_gids[tar_lid];
 
-    const int src_lid = source.Map().LID( target_gid );
+    const int src_lid = source.Map().LID(target_gid);
     // check if the target_map is a local sub-set of the source map on each proc
-    if ( src_lid == -1 )
-      dserror("Couldn't find the target GID %d in the source map on proc %d.",
-          target_gid, source.Comm().MyPID() );
+    if (src_lid == -1)
+      dserror("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
+          source.Comm().MyPID());
 
-    target_values[ tar_lid ] *= scalar_target;
-    target_values[ tar_lid ] += scalar_source * src_values[ src_lid ];
+    target_values[tar_lid] *= scalar_target;
+    target_values[tar_lid] += scalar_source * src_values[src_lid];
   }
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper for LINALG::Matrix<3,1>)     katta 10/16|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
-    const std::vector<int>& lm, const std::vector<int>& lmowner)
+void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
+    const std::vector<int>& lmowner)
 {
   const Epetra_SerialDenseVector VeleNew(::View, &(Vele(0)), 3);
   LINALG::Assemble(V, VeleNew, lm, lmowner);
@@ -396,10 +371,10 @@ void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper for 1 owner)                 katta 10/16|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
-    const std::vector<int>& lm, const int& lmowner)
+void LINALG::Assemble(
+    Epetra_Vector& V, LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm, const int& lmowner)
 {
-  const std::vector<int> lmownerNew(3,lmowner);
+  const std::vector<int> lmownerNew(3, lmowner);
   LINALG::Assemble(V, Vele, lm, lmownerNew);
   return;
 }
@@ -407,12 +382,11 @@ void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3,1>& Vele,
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper, node-based)                 katta 10/16|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_Vector& V, double& Vele,
-    const int& lm, const int& lmowner)
+void LINALG::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
 {
   const Epetra_SerialDenseVector VeleNew(::View, &Vele, 1);
-  const std::vector<int> lmNew(1,lm);
-  const std::vector<int> lmownerNew(1,lmowner);
+  const std::vector<int> lmNew(1, lm);
+  const std::vector<int> lmownerNew(1, lmowner);
   LINALG::Assemble(V, VeleNew, lmNew, lmownerNew);
   return;
 }
@@ -420,9 +394,8 @@ void LINALG::Assemble(Epetra_Vector& V, double& Vele,
 /*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_MultiVector& V, const int n,
-    const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
-    const std::vector<int>& lmowner)
+void LINALG::Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
+    const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   LINALG::Assemble(*(V(n)), Vele, lm, lmowner);
   return;
@@ -433,25 +406,20 @@ void LINALG::Assemble(Epetra_MultiVector& V, const int n,
  *----------------------------------------------------------------------*/
 void LINALG::Complete(Epetra_CrsMatrix& A)
 {
-  if (A.Filled())
-    return;
+  if (A.Filled()) return;
   int err = A.FillComplete(A.OperatorDomainMap(), A.OperatorRangeMap(), true);
-  if (err)
-    dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
+  if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  FillComplete a matrix  (public)                          mwgee 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap,
-    const Epetra_Map& rangemap)
+void LINALG::Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
 {
-  if (A.Filled())
-    return;
+  if (A.Filled()) return;
   int err = A.FillComplete(domainmap, rangemap, true);
-  if (err)
-    dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
+  if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
   return;
 }
 
@@ -467,12 +435,10 @@ namespace LINALG
      |  Return value: number of local rows in A added successfully          |
      |             (in case B must be uncompleted, this must be remembered) |
      *----------------------------------------------------------------------*/
-    int DoAdd (const Epetra_CrsMatrix& A, const double scalarA,
-               Epetra_CrsMatrix& B, const double scalarB,
-               const int startRow = 0)
+    int DoAdd(const Epetra_CrsMatrix& A, const double scalarA, Epetra_CrsMatrix& B,
+        const double scalarB, const int startRow = 0)
     {
-      if (!A.Filled())
-        dserror("Internal error, matrix A must have called FillComplete()");
+      if (!A.Filled()) dserror("Internal error, matrix A must have called FillComplete()");
 
       const int NumMyRows = A.NumMyRows();
 
@@ -480,22 +446,24 @@ namespace LINALG
       // much faster than the global indices... :-)
       if (B.Filled())
       {
-        if (startRow != 0)
-          dserror("Internal error. Not implemented.");
+        if (startRow != 0) dserror("Internal error. Not implemented.");
 
         // step 1: get the indexing from A to B in a random-access array
         std::vector<int> AcolToBcol(A.ColMap().NumMyElements());
-        for (int i=0; i<A.ColMap().NumMyElements(); ++i)
+        for (int i = 0; i < A.ColMap().NumMyElements(); ++i)
           AcolToBcol[i] = B.ColMap().LID(A.ColMap().GID(i));
 
         std::vector<int> indicesInB(A.MaxNumEntries());
 
-        // step 2: loop over all local rows in matrix A and attempt the addition in local index space
-        for (int i=0 ; i<NumMyRows; ++i )
+        // step 2: loop over all local rows in matrix A and attempt the addition in local index
+        // space
+        for (int i = 0; i < NumMyRows; ++i)
         {
           const int myRowB = B.RowMap().LID(A.RowMap().GID(i));
           if (myRowB == -1)
-            dserror("LINALG::Add: The row map of matrix B must be a superset of the row map of Matrix A.");
+            dserror(
+                "LINALG::Add: The row map of matrix B must be a superset of the row map of Matrix "
+                "A.");
 
           // extract views of both the row in A and in B
           double *valuesA = 0, *valuesB = 0;
@@ -508,7 +476,7 @@ namespace LINALG
           // indirect addressing in here, but these are all local operations and thus pretty fast
           bool failed = false;
           indicesInB.clear();
-          for (int jA=0, jB=0; jA<NumEntriesA; ++jA)
+          for (int jA = 0, jB = 0; jA < NumEntriesA; ++jA)
           {
             const int col = AcolToBcol[indicesA[jA]];
             if (col == -1)
@@ -516,13 +484,12 @@ namespace LINALG
               failed = true;
               break;
             }
-            while (jB < NumEntriesB && indicesB[jB] < col)
-              ++jB;
+            while (jB < NumEntriesB && indicesB[jB] < col) ++jB;
 
             // did not find index in linear search (re-indexing from A.ColMap() to B.ColMap()
             // might pass through the indices differently), try binary search
             if (indicesB[jB] != col)
-              jB = std::lower_bound(&indicesB[0], &indicesB[0]+NumEntriesB, col) - &indicesB[0];
+              jB = std::lower_bound(&indicesB[0], &indicesB[0] + NumEntriesB, col) - &indicesB[0];
 
             // not found, sparsity pattern of B does not contain the index from A -> terminate
             if (indicesB[jB] != col)
@@ -538,8 +505,7 @@ namespace LINALG
             return i;
           else
           {
-            for (int j=0; j<NumEntriesA; ++j)
-              valuesB[indicesInB[j]] += scalarA * valuesA[j];
+            for (int j = 0; j < NumEntriesA; ++j) valuesB[indicesInB[j]] += scalarA * valuesA[j];
           }
         }
 
@@ -548,36 +514,31 @@ namespace LINALG
 
       // case 2 where B is not filled -> good old slow addition in global indices
 
-      //Loop over Aprime's rows and sum into
+      // Loop over Aprime's rows and sum into
       std::vector<int> Indices(A.MaxNumEntries());
       std::vector<double> Values(A.MaxNumEntries());
 
       // Continue with i from the previous attempt
-      for (int i=startRow ; i < NumMyRows; ++i)
+      for (int i = startRow; i < NumMyRows; ++i)
       {
         const int Row = A.GRID(i);
         int NumEntries = 0;
-        int ierr = A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries,
-                                          &Values[0], &Indices[0]);
-        if (ierr)
-          dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
+        int ierr = A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries, &Values[0], &Indices[0]);
+        if (ierr) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
         if (scalarA != 1.0)
-          for (int j = 0; j < NumEntries; ++j)
-            Values[j] *= scalarA;
+          for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
         for (int j = 0; j < NumEntries; ++j)
         {
           int err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0 || err == 2)
-            err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0)
-            dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+          if (err < 0 || err == 2) err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
         }
       }
 
       return NumMyRows;
     }
-  }
-}
+  }  // namespace
+}  // namespace LINALG
 
 
 
@@ -585,20 +546,18 @@ namespace LINALG
  |  Add a sparse matrix to another  (public)           kronbichler 11/15|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
-void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
-                 const double scalarA, LINALG::SparseMatrixBase& B, const double scalarB)
+void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+    LINALG::SparseMatrixBase& B, const double scalarB)
 {
-  if (!A.Filled())
-    dserror("FillComplete was not called on A");
+  if (!A.Filled()) dserror("FillComplete was not called on A");
 
   Epetra_CrsMatrix* Aprime = NULL;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    //Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
-    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(
-        const_cast<Epetra_CrsMatrix&>(A)))));
+    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
   {
@@ -616,8 +575,7 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
   B.Comm().MinAll(&localSuccess, &globalSuccess, 1);
   if (!globalSuccess)
   {
-    if (!B.Filled())
-      dserror("Unexpected state of B (expected: B not filled, got: B filled)");
+    if (!B.Filled()) dserror("Unexpected state of B (expected: B not filled, got: B filled)");
 
     // not successful -> matrix structure must be un-completed to be able to add new
     // indices.
@@ -633,20 +591,18 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
  |  Add a sparse matrix to another  (public)                 mwgee 12/06|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
-void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
-                 const double scalarA, Epetra_CrsMatrix& B, const double scalarB)
+void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+    Epetra_CrsMatrix& B, const double scalarB)
 {
-  if (!A.Filled())
-    dserror("FillComplete was not called on A");
+  if (!A.Filled()) dserror("FillComplete was not called on A");
 
   Epetra_CrsMatrix* Aprime = NULL;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    //Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
-    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(
-        const_cast<Epetra_CrsMatrix&>(A)))));
+    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
   {
@@ -661,7 +617,7 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
   int rowsAdded = DoAdd(*Aprime, scalarA, B, scalarB);
   if (rowsAdded != Aprime->RowMap().NumMyElements())
     dserror("LINALG::Add: Could not add all entries from A into B in row %d",
-            Aprime->RowMap().GID(rowsAdded));
+        Aprime->RowMap().GID(rowsAdded));
 }
 
 /*----------------------------------------------------------------------*
@@ -669,13 +625,12 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
 {
-  if (!A.Filled())
-    dserror("FillComplete was not called on A");
+  if (!A.Filled()) dserror("FillComplete was not called on A");
 
-  Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::rcp(
-      new EpetraExt::RowMatrix_Transpose(/*false,NULL,false*/));
-  Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(
-      const_cast<Epetra_CrsMatrix&>(A)))));
+  Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans =
+      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,NULL,false*/));
+  Epetra_CrsMatrix* Aprime =
+      &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
 
   return Teuchos::rcp(new Epetra_CrsMatrix(*Aprime));
 }
@@ -683,8 +638,8 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 01/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A,
-    bool transA, const Epetra_CrsMatrix& B, bool transB, bool complete)
+Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(
+    const Epetra_CrsMatrix& A, bool transA, const Epetra_CrsMatrix& B, bool transB, bool complete)
 {
   /* ATTENTION (Q1/2013 and later)
    *
@@ -701,20 +656,19 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A,
    * "There are basically 3 different matrix-matrix-multiplies in the new EpetraExt MMM:
    *
    * 1) Re-use existing C.  I think this works, but it isn't well tested.
-   * 2) Start with a clean C and FillComplete.  This is the one we're using in MueLu that works fine.
-   * 3) Any other case.  This is the one you found a bug in.
+   * 2) Start with a clean C and FillComplete.  This is the one we're using in MueLu that works
+   * fine. 3) Any other case.  This is the one you found a bug in.
    *
-   * I'll try to track the bug in #3 down, but you really should be calling #2 (or #1) if at all possible.
+   * I'll try to track the bug in #3 down, but you really should be calling #2 (or #1) if at all
+   * possible.
    *
    * -Chris"
    *
    */
 
   // make sure FillComplete was called on the matrices
-  if (!A.Filled())
-    dserror("A has to be FillComplete");
-  if (!B.Filled())
-    dserror("B has to be FillComplete");
+  if (!A.Filled()) dserror("A has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
 
   // do a very coarse guess of nonzeros per row (horrible memory consumption!)
   // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
@@ -728,10 +682,8 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A,
   else
     C = new Epetra_CrsMatrix(::Copy, A.OperatorDomainMap(), guessnpr, false);
 
-  int err = EpetraExt::MatrixMatrix::Multiply(A, transA, B, transB, *C,
-      complete);
-  if (err)
-    dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d", err);
+  int err = EpetraExt::MatrixMatrix::Multiply(A, transA, B, transB, *C, complete);
+  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d", err);
 
   return Teuchos::rcp(C);
 }
@@ -739,12 +691,10 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A,
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B*C                                   mwgee 02/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A,
-    bool transA, const Epetra_CrsMatrix& B, bool transB,
-    const Epetra_CrsMatrix& C, bool transC, bool complete)
+Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
+    const Epetra_CrsMatrix& B, bool transB, const Epetra_CrsMatrix& C, bool transC, bool complete)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> tmp = LINALG::Multiply(B, transB, C, transC,
-      true);
+  Teuchos::RCP<Epetra_CrsMatrix> tmp = LINALG::Multiply(B, transB, C, transC, true);
   return LINALG::Multiply(A, transA, *tmp, false, complete);
 }
 
@@ -755,7 +705,7 @@ double LINALG::NonsymInverse3x3(Epetra_SerialDenseMatrix& A)
 {
 #ifdef DEBUG
   if (A.M() != A.N()) dserror("Matrix is not square");
-  if (A.M() != 3) dserror("Dimension supplied is not 3: dim=%d",A.M());
+  if (A.M() != 3) dserror("Dimension supplied is not 3: dim=%d", A.M());
 #endif
 
   const double b00 = A(0, 0);
@@ -777,8 +727,7 @@ double LINALG::NonsymInverse3x3(Epetra_SerialDenseMatrix& A)
   A(1, 2) = -b00 * b12 + b10 * b02;
   A(2, 2) = b00 * b11 - b10 * b01;
   const double det = b00 * A(0, 0) + b01 * A(1, 0) + b02 * A(2, 0);
-  if (det == 0.0)
-    dserror("Determinant of 3x3 matrix is exactly zero");
+  if (det == 0.0) dserror("Determinant of 3x3 matrix is exactly zero");
   A.Scale(1. / det);
   return det;
 }
@@ -799,13 +748,11 @@ double LINALG::DeterminantSVD(const Epetra_SerialDenseMatrix& A)
   int info;
   int lwork = std::max(3 * std::min(m, n) + std::max(m, n), 5 * std::min(m, n));
   std::vector<double> work(lwork);
-  lapack.GESVD('N', 'N', m, n, tmp.A(), tmp.LDA(), &s[0], NULL, tmp.LDA(), NULL,
-      tmp.LDA(), &work[0], &lwork, &info);
-  if (info)
-    dserror("Lapack's dgesvd returned %d", info);
+  lapack.GESVD('N', 'N', m, n, tmp.A(), tmp.LDA(), &s[0], NULL, tmp.LDA(), NULL, tmp.LDA(),
+      &work[0], &lwork, &info);
+  if (info) dserror("Lapack's dgesvd returned %d", info);
   double d = s[0];
-  for (int i = 1; i < n; ++i)
-    d *= s[i];
+  for (int i = 1; i < n; ++i) d *= s[i];
   return d;
 }
 
@@ -829,14 +776,12 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
   else if (info > 0)
     return 0.0;
   double d = tmp(0, 0);
-  for (int i = 1; i < n; ++i)
-    d *= tmp(i, i);
+  for (int i = 1; i < n; ++i) d *= tmp(i, i);
   // swapping rows of A changes the sign of the determinant, so we have to
   // undo lapack's permutation w.r.t. the determinant
   // note the fortran indexing convention in ipiv
   for (int i = 0; i < n; ++i)
-    if (ipiv[i] != i + 1)
-      d *= -1.0;
+    if (ipiv[i] != i + 1) d *= -1.0;
   return d;
 }
 
@@ -845,10 +790,8 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {
-  if (A.M() != A.N())
-    dserror("Matrix is not square");
-  if (A.M() != dim)
-    dserror("Dimension supplied does not match matrix");
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
 
   double* a = A.A();
   char uplo[5];
@@ -861,16 +804,13 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
   int m = dim;
 
   dsytrf(uplo, &m, a, &n, &(ipiv[0]), &(work[0]), &lwork, &info);
-  if (info)
-    dserror("dsytrf returned info=%d", info);
+  if (info) dserror("dsytrf returned info=%d", info);
 
   dsytri(uplo, &m, a, &n, &(ipiv[0]), &(work[0]), &info);
-  if (info)
-    dserror("dsytri returned info=%d", info);
+  if (info) dserror("dsytri returned info=%d", info);
 
   for (int i = 0; i < dim; ++i)
-    for (int j = 0; j < i; ++j)
-      A(j, i) = A(i, j);
+    for (int j = 0; j < i; ++j) A(j, i) = A(i, j);
   return;
 }
 
@@ -878,9 +818,7 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
  |  Solve soe with me*ae^T = de^T and return me^-1           farah 07/14|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix LINALG::InvertAndMultiplyByCholesky(
-    LINALG::SerialDenseMatrix& me,
-    LINALG::SerialDenseMatrix& de,
-    LINALG::SerialDenseMatrix& ae)
+    LINALG::SerialDenseMatrix& me, LINALG::SerialDenseMatrix& de, LINALG::SerialDenseMatrix& ae)
 {
   const int n = me.N();
 
@@ -894,8 +832,7 @@ LINALG::SerialDenseMatrix LINALG::InvertAndMultiplyByCholesky(
     for (int u = 0; u < z + 1; ++u)
     {
       double sum = me(z, u);
-      for (int k = 0; k < u; ++k)
-        sum -= me(z, k) * me(u, k);
+      for (int k = 0; k < u; ++k) sum -= me(z, k) * me(u, k);
 
       if (z > u)
         me(z, u) = sum / me(u, u);
@@ -910,8 +847,7 @@ LINALG::SerialDenseMatrix LINALG::InvertAndMultiplyByCholesky(
     for (int col = 0; col < n; ++col)
     {
       y(z, col) = yfac * de(col, z);
-      if (col == z)
-        y_identity(z, col) = yfac;
+      if (col == z) y_identity(z, col) = yfac;
       for (int u = 0; u < z; ++u)
       {
         y(z, col) -= yfac * me(z, u) * y(u, col);
@@ -945,8 +881,7 @@ LINALG::SerialDenseMatrix LINALG::InvertAndMultiplyByCholesky(
 void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
 {
   const int n = A.N();
-  if (n != A.M())
-    dserror("Cannot symmetrize non-square matrix");
+  if (n != A.M()) dserror("Cannot symmetrize non-square matrix");
   // do not make deep copy of A, matrix addition and full scaling just to sym it
   for (int i = 0; i < n; ++i)
     for (int j = i + 1; j < n; ++j)
@@ -962,16 +897,13 @@ void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
  *----------------------------------------------------------------------*/
 void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {
-  if (A.M() != A.N())
-    dserror("Matrix is not square");
-  if (A.M() != dim)
-    dserror("Dimension supplied does not match matrix");
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
 
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(A);
   int err = solver.Invert();
-  if (err != 0)
-    dserror("Inversion of nonsymmetric matrix failed.");
+  if (err != 0) dserror("Inversion of nonsymmetric matrix failed.");
 
   return;
 }
@@ -979,8 +911,8 @@ void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
-    Epetra_SerialDenseVector& L, const bool postproc)
+void LINALG::SymmetricEigenValues(
+    Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc)
 {
   LINALG::SymmetricEigen(A, L, 'N', postproc);
 }
@@ -990,8 +922,8 @@ void LINALG::SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
  |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
-    Epetra_SerialDenseVector& L, const bool postproc)
+void LINALG::SymmetricEigenProblem(
+    Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc)
 {
   LINALG::SymmetricEigen(A, L, 'V', postproc);
 }
@@ -1000,18 +932,15 @@ void LINALG::SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A  (public)        maf 06/07|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
-    Epetra_SerialDenseVector& L, const char jobz, const bool postproc)
+void LINALG::SymmetricEigen(
+    Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const char jobz, const bool postproc)
 {
-  if (A.M() != A.N())
-    dserror("Matrix is not square");
-  if (A.M() != L.Length())
-    dserror("Dimension of eigenvalues does not match");
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != L.Length()) dserror("Dimension of eigenvalues does not match");
 
   double* a = A.A();
   double* w = L.A();
-  const char uplo =
-  { 'U' };
+  const char uplo = {'U'};
   const int lda = A.LDA();
   const int dim = A.M();
 
@@ -1042,15 +971,12 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 
   Epetra_LAPACK lapack;
 
-  lapack.SYEVD(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &(iwork[0]),
-      liwork, &info);
+  lapack.SYEVD(jobz, uplo, dim, a, lda, w, &(work[0]), lwork, &(iwork[0]), liwork, &info);
 
   if (!postproc)
   {
-    if (info > 0)
-      dserror("Lapack algorithm syevd failed");
-    if (info < 0)
-      dserror("Illegal value in Lapack syevd call");
+    if (info > 0) dserror("Lapack algorithm syevd failed");
+    if (info < 0) dserror("Illegal value in Lapack syevd call");
   }
   // if we only calculate eigenvalues/eigenvectors for postprocessing,
   // a warning might be sufficient
@@ -1058,12 +984,10 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   {
     if (info > 0)
       std::cout
-          << "Lapack algorithm syevd failed: "
-          << info
+          << "Lapack algorithm syevd failed: " << info
           << " off-diagonal elements of intermediate tridiagonal form did not converge to zero"
           << std::endl;
-    if (info < 0)
-      std::cout << "Illegal value in Lapack syevd call" << std::endl;
+    if (info < 0) std::cout << "Illegal value in Lapack syevd call" << std::endl;
   }
 
   return;
@@ -1074,8 +998,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
-    Epetra_SerialDenseMatrix& B)
+double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& B)
 {
   Epetra_SerialDenseMatrix tmpA(A);
   Epetra_SerialDenseMatrix tmpB(B);
@@ -1114,8 +1037,8 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   dgeqp3(&N, &N, b, &LDB, jpvt, tau, work1, &lwork1, &info);
 
   if (info < 0)
-    std::cout << "Lapack algorithm dgeqp3: The " << info
-              << "-th argument had an illegal value" << std::endl;
+    std::cout << "Lapack algorithm dgeqp3: The " << info << "-th argument had an illegal value"
+              << std::endl;
 
   // calculate the matrix Q from multiplying householder transformations
   // Q = H(1)*H(2) ... H(k)
@@ -1125,24 +1048,21 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   // Q is initialized as an unit matrix
   Epetra_SerialDenseMatrix Q_new(true);
   Q_new.Shape(N, N);
-  for (int i = 0; i < N; ++i)
-    Q_new(i, i) = 1.0;
+  for (int i = 0; i < N; ++i) Q_new(i, i) = 1.0;
 
   for (int i = 0; i < N; ++i)
   {
     Epetra_SerialDenseVector v;
     v.Shape(N, 1);
     v(i, 0) = 1.;
-    for (int j = i + 1; j < N; ++j)
-      v(j, 0) = tmpB(j, i);
+    for (int j = i + 1; j < N; ++j) v(j, 0) = tmpB(j, i);
 
     Epetra_SerialDenseMatrix H;
     H.Shape(N, N);
 
     H.Multiply('N', 'T', tau[i], v, v, 0.);
     H.Scale(-1.);
-    for (int k = 0; k < N; ++k)
-      H(k, k) = 1. + H(k, k);
+    for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
     Epetra_SerialDenseMatrix Q_help;
     Q_help.Shape(N, N);
@@ -1164,14 +1084,13 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   for (int i = 0; i < N; ++i)
   {
     // loop of rows
-    for (int j = i + 1; j < N; ++j)
-      tmpB(j, i) = 0.;
+    for (int j = i + 1; j < N; ++j) tmpB(j, i) = 0.;
   }
 
   // the new A:= Q**T A P
   Epetra_SerialDenseMatrix A_tmp;
   A_tmp.Shape(N, N);
-  //A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
+  // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
   A_tmp.Multiply('T', 'N', 1., Q_new, tmpA, 0.);
 
   Epetra_SerialDenseMatrix A_new;
@@ -1186,20 +1105,19 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   // an upper diagonal matrix
   //--------------------------------------------------------
 
-  //balance problem to obtain better accuracy
+  // balance problem to obtain better accuracy
   char job = 'P';
   int ILO;
   int IHI;
   double lscale[N];
   double rscale[N];
-  double work0[6*N];
-  dggbal(&job, &N, a,&N,b,&N, &ILO, &IHI, lscale, rscale, work0, &info);
-  if(info!=0)
-    dserror("error dggbal");
+  double work0[6 * N];
+  dggbal(&job, &N, a, &N, b, &N, &ILO, &IHI, lscale, rscale, work0, &info);
+  if (info != 0) dserror("error dggbal");
 
-  job ='E';
-  char COMPQ ='I';
-  char COMPZ ='I';
+  job = 'E';
+  char COMPQ = 'I';
+  char COMPZ = 'I';
 
   int lwork = 0;
   if (N == 1)
@@ -1219,12 +1137,11 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   double* Z = A2.A();
   int LDZ = A2.LDA();
 
-  dgghrd(&COMPQ, &COMPZ, &N, &ILO, &IHI, a, &LDA, b, &LDB, Q, &LDQ, Z, &LDZ,
-      &info);
+  dgghrd(&COMPQ, &COMPZ, &N, &ILO, &IHI, a, &LDA, b, &LDB, Q, &LDQ, Z, &LDZ, &info);
 
   if (info < 0)
-    std::cout << "Lapack algorithm dgghrd: The " << info
-              << "-th argument had an illegal value" << std::endl;
+    std::cout << "Lapack algorithm dgghrd: The " << info << "-th argument had an illegal value"
+              << std::endl;
 
   //--------------------------------------------------------
   // STEP 3
@@ -1246,19 +1163,19 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   int LDH = A_new.LDA();
   int LDT = tmpB.LDA();
 
-  char COMPQ2 ='V';
-  char COMPZ2 ='V';
+  char COMPQ2 = 'V';
+  char COMPZ2 = 'V';
 
-  dhgeqz(&job, &COMPQ2, &COMPZ2, &N, &ILO, &IHI, a, &LDH, b, &LDT, ALPHAR,
-      ALPHAI, BETA, Q, &LDQ, Z, &LDZ, work, &lwork, &info);
+  dhgeqz(&job, &COMPQ2, &COMPZ2, &N, &ILO, &IHI, a, &LDH, b, &LDT, ALPHAR, ALPHAI, BETA, Q, &LDQ, Z,
+      &LDZ, work, &lwork, &info);
 
   if (info < 0)
-    std::cout << "Lapack algorithm dhgeqz: The " << info
-        << "-th argument haa an illegal value!" << std::endl;
+    std::cout << "Lapack algorithm dhgeqz: The " << info << "-th argument haa an illegal value!"
+              << std::endl;
   else if (info > N)
-    std::cout
-        << "Lapack algorithm dhgeqz: The QZ iteration did not converge. (H,T) is not in Schur Form, but the Eigenvalues should be correct!"
-        << std::endl;
+    std::cout << "Lapack algorithm dhgeqz: The QZ iteration did not converge. (H,T) is not in "
+                 "Schur Form, but the Eigenvalues should be correct!"
+              << std::endl;
 
   /*cout << "--------Final----------" << std::endl;
    std::cout << std::setprecision(16) << "A 2" << A_new << std::endl;
@@ -1287,14 +1204,13 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
  |  singular value decomposition (SVD) of a real M-by-N matrix A.       |
  |  Wrapper for Lapack/Epetra_Lapack           (public)        maf 05/08|
  *----------------------------------------------------------------------*/
-void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
-    LINALG::SerialDenseMatrix& Q, LINALG::SerialDenseMatrix& S,
-    LINALG::SerialDenseMatrix& VT)
+void LINALG::SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& Q,
+    LINALG::SerialDenseMatrix& S, LINALG::SerialDenseMatrix& VT)
 {
-  Epetra_SerialDenseMatrix tmp(A); // copy, because content of A is destroyed
+  Epetra_SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
   Epetra_LAPACK lapack;
-  const char jobu = 'A'; // compute and return all M columns of U
-  const char jobvt = 'A'; // compute and return all N rows of V^T
+  const char jobu = 'A';   // compute and return all M columns of U
+  const char jobvt = 'A';  // compute and return all N rows of V^T
   const int n = tmp.N();
   const int m = tmp.M();
   std::vector<double> s(std::min(n, m));
@@ -1302,17 +1218,16 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
   int lwork = std::max(3 * std::min(m, n) + std::max(m, n), 5 * std::min(m, n));
   std::vector<double> work(lwork);
 
-  lapack.GESVD(jobu, jobvt, m, n, tmp.A(), tmp.LDA(), &s[0], Q.A(), Q.LDA(),
-      VT.A(), VT.LDA(), &work[0], &lwork, &info);
+  lapack.GESVD(jobu, jobvt, m, n, tmp.A(), tmp.LDA(), &s[0], Q.A(), Q.LDA(), VT.A(), VT.LDA(),
+      &work[0], &lwork, &info);
 
-  if (info)
-    dserror("Lapack's dgesvd returned %d", info);
+  if (info) dserror("Lapack's dgesvd returned %d", info);
 
   for (int i = 0; i < std::min(n, m); ++i)
   {
     for (int j = 0; j < std::min(n, m); ++j)
     {
-      S(i, j) = (i == j) * s[i]; // 0 for off-diagonal, otherwise s
+      S(i, j) = (i == j) * s[i];  // 0 for off-diagonal, otherwise s
     }
   }
   return;
@@ -1321,8 +1236,7 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
-    Teuchos::RCP<Epetra_Vector>& b,
+void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
     const Teuchos::RCP<const Epetra_Vector> dbcval,
     const Teuchos::RCP<const Epetra_Vector> dbctoggle)
 {
@@ -1346,12 +1260,10 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
-    Teuchos::RCP<Epetra_Vector>& b,
+void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
     const Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap)
 {
-  if (not dbcmap.UniqueGIDs())
-    dserror("unique map required");
+  if (not dbcmap.UniqueGIDs()) dserror("unique map required");
 
   if (x != Teuchos::null and b != Teuchos::null)
   {
@@ -1371,12 +1283,10 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
       int gid = mygids[i];
 
       int dbcvlid = dbcvmap.LID(gid);
-      if (dbcvlid < 0)
-        dserror("illegal Dirichlet map");
+      if (dbcvlid < 0) dserror("illegal Dirichlet map");
 
       int xlid = xmap.LID(gid);
-      if (xlid < 0)
-        dserror("illegal Dirichlet map");
+      if (xlid < 0) dserror("illegal Dirichlet map");
 
       X[xlid] = dbcv[dbcvlid];
       B[xlid] = dbcv[dbcvlid];
@@ -1389,8 +1299,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
 void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& b,
     const Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap)
 {
-  if (not dbcmap.UniqueGIDs())
-    dserror("unique map required");
+  if (not dbcmap.UniqueGIDs()) dserror("unique map required");
 
   if (b != Teuchos::null)
   {
@@ -1450,11 +1359,11 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
  *----------------------------------------------------------------------*/
 void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
     Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    Teuchos::RCP<const LINALG::SparseMatrix> trafo,
-    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
+    Teuchos::RCP<const LINALG::SparseMatrix> trafo, const Teuchos::RCP<const Epetra_Vector>& dbcval,
+    const Epetra_Map& dbcmap)
 {
   if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A,true)->ApplyDirichletWithTrafo(
+    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
         trafo, dbcmap);
   else
     // trafo==Teuchos::null
@@ -1469,7 +1378,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
     const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
 {
   if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A,true)->ApplyDirichletWithTrafo(
+    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
         trafo, dbcmap);
   else
     // trafo==Teuchos::null
@@ -1485,9 +1394,9 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
   // this copy is needed because the constructor of LINALG::MapExtractor
   // accepts only Epetra_Map and not Epetra_BlockMap
-  const Epetra_Map fullmap = Epetra_Map(fullblockmap.NumGlobalElements(),
-      fullblockmap.NumMyElements(), fullblockmap.MyGlobalElements(),
-      fullblockmap.IndexBase(), fullblockmap.Comm());
+  const Epetra_Map fullmap =
+      Epetra_Map(fullblockmap.NumGlobalElements(), fullblockmap.NumMyElements(),
+          fullblockmap.MyGlobalElements(), fullblockmap.IndexBase(), fullblockmap.Comm());
   const int mylength = dbctoggle->MyLength();
   const int* fullgids = fullmap.MyGlobalElements();
   // build sets containing the DBC or free global IDs, respectively
@@ -1496,14 +1405,13 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   for (int i = 0; i < mylength; ++i)
   {
     const int gid = fullgids[i];
-    const int compo = (int) round((*dbctoggle)[i]);
+    const int compo = (int)round((*dbctoggle)[i]);
     if (compo == 0)
       freegids.push_back(gid);
     else if (compo == 1)
       dbcgids.push_back(gid);
     else
-      dserror("Unexpected component %f. It is neither 1.0 nor 0.0.",
-          (*dbctoggle)[i]);
+      dserror("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
   }
   // build map of Dirichlet DOFs
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::null;
@@ -1516,8 +1424,7 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
       myglobalelements = &(dbcgids[0]);
     }
     dbcmap = Teuchos::rcp(
-        new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(),
-            fullmap.Comm()));
+        new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
   // build map of free DOFs
   Teuchos::RCP<Epetra_Map> freemap = Teuchos::null;
@@ -1530,8 +1437,7 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
       myglobalelements = &(freegids[0]);
     }
     freemap = Teuchos::rcp(
-        new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(),
-            fullmap.Comm()));
+        new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
 
   // build and return the map extractor of Dirichlet-conditioned and free DOFs
@@ -1541,23 +1447,21 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
 /*----------------------------------------------------------------------*
  | split matrix into 2x2 block system                              06/06|
  *----------------------------------------------------------------------*/
-bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
-    Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
-    Teuchos::RCP<Epetra_CrsMatrix>& A11, Teuchos::RCP<Epetra_CrsMatrix>& A12,
-    Teuchos::RCP<Epetra_CrsMatrix>& A21, Teuchos::RCP<Epetra_CrsMatrix>& A22)
+bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
+    Teuchos::RCP<Epetra_Map>& A22rowmap, Teuchos::RCP<Epetra_CrsMatrix>& A11,
+    Teuchos::RCP<Epetra_CrsMatrix>& A12, Teuchos::RCP<Epetra_CrsMatrix>& A21,
+    Teuchos::RCP<Epetra_CrsMatrix>& A22)
 {
-  if (A == Teuchos::null)
-    dserror("LINALG::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
     A11rowmap = LINALG::SplitMap(A->RowMap(), *A22rowmap);
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = LINALG::SplitMap(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    dserror(
-        "LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps(2);
+  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
   maps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
   maps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   LINALG::MultiMapExtractor extractor(A->RowMap(), maps);
@@ -1566,8 +1470,8 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
   SparseMatrix a(A, View);
 
   // split matrix into pieces, where main diagonal blocks are square
-  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock = a.Split<
-      DefaultBlockMatrixStrategy>(extractor, extractor);
+  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
+      a.Split<DefaultBlockMatrixStrategy>(extractor, extractor);
   Ablock->Complete();
 
   // get Epetra objects out of the block matrix (prevents them from dying)
@@ -1584,15 +1488,11 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
  *----------------------------------------------------------------------*/
 bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
-    Teuchos::RCP<Epetra_Map>& A11domainmap,
-    Teuchos::RCP<Epetra_Map>& A22domainmap,
-    Teuchos::RCP<LINALG::SparseMatrix>& A11,
-    Teuchos::RCP<LINALG::SparseMatrix>& A12,
-    Teuchos::RCP<LINALG::SparseMatrix>& A21,
-    Teuchos::RCP<LINALG::SparseMatrix>& A22)
+    Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
+    Teuchos::RCP<LINALG::SparseMatrix>& A11, Teuchos::RCP<LINALG::SparseMatrix>& A12,
+    Teuchos::RCP<LINALG::SparseMatrix>& A21, Teuchos::RCP<LINALG::SparseMatrix>& A22)
 {
-  if (A == Teuchos::null)
-    dserror("LINALG::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
   // check and complete input row maps
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
@@ -1600,8 +1500,7 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = LINALG::SplitMap(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    dserror(
-        "LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap == Teuchos::null && A22domainmap != Teuchos::null)
@@ -1609,12 +1508,11 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
   else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
     A22domainmap = LINALG::SplitMap(A->DomainMap(), *A11domainmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    dserror(
-        "LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
+    dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
-  std::vector<Teuchos::RCP<const Epetra_Map> > rangemaps(2);
-  std::vector<Teuchos::RCP<const Epetra_Map> > domainmaps(2);
+  std::vector<Teuchos::RCP<const Epetra_Map>> rangemaps(2);
+  std::vector<Teuchos::RCP<const Epetra_Map>> domainmaps(2);
   rangemaps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
   rangemaps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   domainmaps[0] = Teuchos::rcp(new Epetra_Map(*A11domainmap));
@@ -1622,10 +1520,10 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
   LINALG::MultiMapExtractor range(A->RangeMap(), rangemaps);
   LINALG::MultiMapExtractor domain(A->DomainMap(), domainmaps);
 
-  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock =
+  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
       A->Split<DefaultBlockMatrixStrategy>(domain, range);
 
-#if 0 // debugging
+#if 0  // debugging
   std::cout << "A00\n" << (*Ablock)(0,0);
   std::cout << "A10\n" << (*Ablock)(1,0);
   std::cout << "A01\n" << (*Ablock)(0,1);
@@ -1649,47 +1547,46 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int LINALG::InsertMyRowDiagonalIntoUnfilledMatrix( LINALG::SparseMatrix& mat,
-    const Epetra_Vector& diag )
+int LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
+    LINALG::SparseMatrix& mat, const Epetra_Vector& diag)
 {
-  if ( mat.Filled() )
-    return -1;
+  if (mat.Filled()) return -1;
 
   Teuchos::RCP<Epetra_CrsMatrix> dst_mat_ptr = mat.EpetraMatrix();
   Epetra_CrsMatrix& dst_mat = *dst_mat_ptr;
 
   const int my_num_entries = diag.Map().NumMyElements();
-  const int * my_gids      = diag.Map().MyGlobalElements();
+  const int* my_gids = diag.Map().MyGlobalElements();
 
-  double * diag_values = diag.Values();
+  double* diag_values = diag.Values();
 
-  for ( int lid = 0; lid < my_num_entries; ++lid )
+  for (int lid = 0; lid < my_num_entries; ++lid)
   {
-    const int rgid = my_gids[ lid ];
+    const int rgid = my_gids[lid];
 
     // skip rows which are not part of the matrix
-    if ( not dst_mat.RangeMap().MyGID( rgid ) )
-      dserror( "Could not find the row GID %d in the destination matrix RowMap"
-          " on proc %d.", rgid, dst_mat.Comm().MyPID() );
+    if (not dst_mat.RangeMap().MyGID(rgid))
+      dserror(
+          "Could not find the row GID %d in the destination matrix RowMap"
+          " on proc %d.",
+          rgid, dst_mat.Comm().MyPID());
 
-    if ( dst_mat.NumAllocatedGlobalEntries( rgid ) )
+    if (dst_mat.NumAllocatedGlobalEntries(rgid))
     {
       // add all values, including zeros, as we need a proper matrix graph
-      int err = dst_mat.SumIntoGlobalValues( rgid, 1, ( diag_values + lid ), &rgid );
-      if (err>0)
+      int err = dst_mat.SumIntoGlobalValues(rgid, 1, (diag_values + lid), &rgid);
+      if (err > 0)
       {
-        err = dst_mat.InsertGlobalValues( rgid, 1, ( diag_values + lid ), &rgid );
-        if (err<0)
-          dserror("InsertGlobalValues error: %d", err);
+        err = dst_mat.InsertGlobalValues(rgid, 1, (diag_values + lid), &rgid);
+        if (err < 0) dserror("InsertGlobalValues error: %d", err);
       }
-      else if (err<0)
+      else if (err < 0)
         dserror("SumIntoGlobalValues error: %d", err);
     }
     else
     {
-      const int err = dst_mat.InsertGlobalValues(rgid, 1, ( diag_values + lid ), &rgid);
-      if ( err < 0 )
-        dserror("InsertGlobalValues error: %d", err);
+      const int err = dst_mat.InsertGlobalValues(rgid, 1, (diag_values + lid), &rgid);
+      if (err < 0) dserror("InsertGlobalValues error: %d", err);
     }
   }
 
@@ -1699,8 +1596,7 @@ int LINALG::InsertMyRowDiagonalIntoUnfilledMatrix( LINALG::SparseMatrix& mat,
 /*----------------------------------------------------------------------*
  | split a map into 2 pieces with given Agiven                     06/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
-    const Epetra_Map& Agiven)
+Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap, const Epetra_Map& Agiven)
 {
   const Epetra_Comm& Comm = Amap.Comm();
   const Epetra_Map& Ag = Agiven;
@@ -1710,16 +1606,15 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
   for (int i = 0; i < Amap.NumMyElements(); ++i)
   {
     const int gid = Amap.GID(i);
-    if (Ag.MyGID(gid))
-      continue;
+    if (Ag.MyGID(gid)) continue;
     myaugids[count] = gid;
     ++count;
   }
   myaugids.resize(count);
   int gcount;
   Comm.SumAll(&count, &gcount, 1);
-  Teuchos::RCP<Epetra_Map> Aunknown = Teuchos::rcp(
-      new Epetra_Map(gcount, count, &myaugids[0], 0, Comm));
+  Teuchos::RCP<Epetra_Map> Aunknown =
+      Teuchos::rcp(new Epetra_Map(gcount, count, &myaugids[0], 0, Comm));
 
   return Aunknown;
 }
@@ -1727,8 +1622,8 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
 /*----------------------------------------------------------------------*
  | fill matrix row and check for success                     farah 06/14|
  *----------------------------------------------------------------------*/
-void LINALG::InsertGlobalValues(Teuchos::RCP<Epetra_CrsMatrix> mat,
-    int GlobalRow, int NumEntries, double* Values, int* Indices)
+void LINALG::InsertGlobalValues(
+    Teuchos::RCP<Epetra_CrsMatrix> mat, int GlobalRow, int NumEntries, double* Values, int* Indices)
 {
   int err;
 
@@ -1737,8 +1632,7 @@ void LINALG::InsertGlobalValues(Teuchos::RCP<Epetra_CrsMatrix> mat,
   else
     err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, 0);
 
-  if (err)
-    dserror("InsertGlobalValues err=%d", err);
+  if (err) dserror("InsertGlobalValues err=%d", err);
 
   return;
 }
@@ -1746,11 +1640,11 @@ void LINALG::InsertGlobalValues(Teuchos::RCP<Epetra_CrsMatrix> mat,
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
-    const Epetra_Map& map2, bool overlap)
+Teuchos::RCP<Epetra_Map> LINALG::MergeMap(
+    const Epetra_Map& map1, const Epetra_Map& map2, bool overlap)
 {
   // check for unique GIDs and for identity
-  //if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
+  // if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
   //  dserror("LINALG::MergeMap: One or both input maps are not unique");
   if (map1.SameAs(map2))
   {
@@ -1764,8 +1658,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
   int count = map1.NumMyElements();
 
   // get GIDs of input map1
-  for (int i = 0; i < count; ++i)
-    mygids[i] = map1.GID(i);
+  for (int i = 0; i < count; ++i) mygids[i] = map1.GID(i);
 
   // add GIDs of input map2 (only new ones)
   for (int i = 0; i < map2.NumMyElements(); ++i)
@@ -1773,8 +1666,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
     // check for overlap
     if (map1.MyGID(map2.GID(i)))
     {
-      if (overlap == false)
-        dserror("LINALG::MergeMap: Result map is overlapping");
+      if (overlap == false) dserror("LINALG::MergeMap: Result map is overlapping");
     }
     // add new GIDs to mygids
     else
@@ -1788,15 +1680,13 @@ Teuchos::RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
   // sort merged map
   sort(mygids.begin(), mygids.end());
 
-  return Teuchos::rcp(
-      new Epetra_Map(-1, (int) mygids.size(), &mygids[0], 0, map1.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::MergeMap(
-    const Teuchos::RCP<const Epetra_Map>& map1,
+Teuchos::RCP<Epetra_Map> LINALG::MergeMap(const Teuchos::RCP<const Epetra_Map>& map1,
     const Teuchos::RCP<const Epetra_Map>& map2, bool overlap)
 {
   // check for cases with null Teuchos::RCPs
@@ -1814,8 +1704,7 @@ Teuchos::RCP<Epetra_Map> LINALG::MergeMap(
 /*----------------------------------------------------------------------*
  | Find the intersection of two maps                     hiermeier 10/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1,
-    const Epetra_Map& map2)
+Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1, const Epetra_Map& map2)
 {
   // check if the maps are identical
   if (map1.SameAs(map2))
@@ -1823,7 +1712,7 @@ Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1,
     return Teuchos::rcp(new Epetra_Map(map1));
   }
 
-  std::vector<int> mygids(std::min(map1.NumMyElements(),map2.NumMyElements()),-1);
+  std::vector<int> mygids(std::min(map1.NumMyElements(), map2.NumMyElements()), -1);
   int count = 0;
 
   for (int i = 0; i < map1.NumMyElements(); ++i)
@@ -1840,29 +1729,24 @@ Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1,
   // sort merged map
   sort(mygids.begin(), mygids.end());
 
-  return Teuchos::rcp(
-      new Epetra_Map(-1, (int) mygids.size(), &mygids[0], 0, map1.Comm()));
+  return Teuchos::rcp(new Epetra_Map(-1, (int)mygids.size(), &mygids[0], 0, map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ComputeDofMapsFromNodeMaps(
-    const int dofset_id,
-    const std::vector<Teuchos::RCP<Epetra_Map> >& node_maps,
-    const DRT::DiscretizationInterface& discret,
-    std::vector<Teuchos::RCP<Epetra_Map> >& dof_maps )
+void LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
+    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
+    const DRT::DiscretizationInterface& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
 {
-  dof_maps.reserve( dof_maps.size() + node_maps.size() );
-  for ( const Teuchos::RCP<Epetra_Map>& node_map : node_maps )
-    dof_maps.push_back( ComputeDofMapFromNodeMap( dofset_id, *node_map, discret ) );
+  dof_maps.reserve(dof_maps.size() + node_maps.size());
+  for (const Teuchos::RCP<Epetra_Map>& node_map : node_maps)
+    dof_maps.push_back(ComputeDofMapFromNodeMap(dofset_id, *node_map, discret));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> LINALG::ComputeDofMapFromNodeMap(
-    const int dofset_id,
-    const Epetra_Map& node_map,
-    const DRT::DiscretizationInterface& discret )
+    const int dofset_id, const Epetra_Map& node_map, const DRT::DiscretizationInterface& discret)
 {
   std::set<int> dof_set;
   std::vector<int> dof_vec;
@@ -1870,27 +1754,24 @@ Teuchos::RCP<Epetra_Map> LINALG::ComputeDofMapFromNodeMap(
   const int my_num_nodes = node_map.NumMyElements();
   const int* my_ngids = node_map.MyGlobalElements();
 
-  for ( int nlid = 0; nlid < my_num_nodes; ++nlid )
+  for (int nlid = 0; nlid < my_num_nodes; ++nlid)
   {
-    const DRT::Node* node = discret.gNode( my_ngids[nlid] );
+    const DRT::Node* node = discret.gNode(my_ngids[nlid]);
 
-    const int numdofs = discret.NumDof( dofset_id, node );
-    for ( int d=0; d<numdofs; ++d )
-      dof_set.insert( discret.Dof( dofset_id, node, d ) );
+    const int numdofs = discret.NumDof(dofset_id, node);
+    for (int d = 0; d < numdofs; ++d) dof_set.insert(discret.Dof(dofset_id, node, d));
   }
 
-  dof_vec.resize( dof_set.size() );
-  std::copy( dof_set.begin(), dof_set.end(), dof_vec.begin() );
+  dof_vec.resize(dof_set.size());
+  std::copy(dof_set.begin(), dof_set.end(), dof_vec.begin());
 
-  return Teuchos::rcp( new Epetra_Map( -1, dof_vec.size(), dof_vec.data(), 0,
-      discret.Comm() ) );
+  return Teuchos::rcp(new Epetra_Map(-1, dof_vec.size(), dof_vec.data(), 0, discret.Comm()));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> LINALG::ExtractMyOverlappingSubMap(
-    const Epetra_BlockMap& src_map ,
-    const Epetra_BlockMap& ref_map )
+    const Epetra_BlockMap& src_map, const Epetra_BlockMap& ref_map)
 {
   std::vector<int> my_overlapping_gids;
   my_overlapping_gids.reserve(src_map.NumMyElements());
@@ -1898,27 +1779,25 @@ Teuchos::RCP<Epetra_Map> LINALG::ExtractMyOverlappingSubMap(
   const int num_my_src_entries = src_map.NumMyElements();
   const int* my_src_gids = src_map.MyGlobalElements();
 
-  for ( int i=0; i<num_my_src_entries; ++i )
+  for (int i = 0; i < num_my_src_entries; ++i)
   {
     const int my_src_gid = my_src_gids[i];
-    if ( ref_map.MyGID( my_src_gid ) )
-      my_overlapping_gids.push_back( my_src_gid );
+    if (ref_map.MyGID(my_src_gid)) my_overlapping_gids.push_back(my_src_gid);
   }
 
-  return Teuchos::rcp( new Epetra_Map( -1, my_overlapping_gids.size(),
-      my_overlapping_gids.data(), 0, src_map.Comm() ) );
+  return Teuchos::rcp(new Epetra_Map(
+      -1, my_overlapping_gids.size(), my_overlapping_gids.data(), 0, src_map.Comm()));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids,
-    const Epetra_Comm& comm)
+Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epetra_Comm& comm)
 {
   std::vector<int> mapvec;
   mapvec.reserve(gids.size());
   mapvec.assign(gids.begin(), gids.end());
-  Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
-      new Epetra_Map(-1, mapvec.size(), &mapvec[0], 0, comm));
+  Teuchos::RCP<Epetra_Map> map =
+      Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), &mapvec[0], 0, comm));
   mapvec.clear();
   return map;
 }
@@ -1926,12 +1805,11 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids,
 /*----------------------------------------------------------------------*
  | create epetra_map with out-of-bound check                 farah 06/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int> & gids,
-    const Epetra_Comm& comm)
+Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int>& gids, const Epetra_Comm& comm)
 {
   Teuchos::RCP<Epetra_Map> map;
 
-  if ((int) gids.size() > 0)
+  if ((int)gids.size() > 0)
     map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, comm));
   else
     map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), 0, 0, comm));
@@ -1983,8 +1861,8 @@ void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintMatrixInMatlabFormat(std::string fname,
-    const Epetra_CrsMatrix& A, const bool newfile)
+void LINALG::PrintMatrixInMatlabFormat(
+    std::string fname, const Epetra_CrsMatrix& A, const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
@@ -2006,22 +1884,21 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
 
       int NumMyRows1 = A.NumMyRows();
       int MaxNumIndices = A.MaxNumEntries();
-      int * Indices = new int[MaxNumIndices];
-      double * Values = new double[MaxNumIndices];
+      int* Indices = new int[MaxNumIndices];
+      double* Values = new double[MaxNumIndices];
       int NumIndices;
       int i, j;
 
       for (i = 0; i < NumMyRows1; i++)
       {
-        int Row = A.GRID(i); // Get global row number
+        int Row = A.GRID(i);  // Get global row number
         A.ExtractGlobalRowCopy(Row, MaxNumIndices, NumIndices, Values, Indices);
 
         for (j = 0; j < NumIndices; j++)
         {
-          os << std::setw(10) << Row + 1; // increase index by one for matlab
-          os << std::setw(10) << Indices[j] + 1; // increase index by one for matlab
-          os << std::setw(30) << std::setprecision(16) << std::scientific
-              << Values[j];
+          os << std::setw(10) << Row + 1;         // increase index by one for matlab
+          os << std::setw(10) << Indices[j] + 1;  // increase index by one for matlab
+          os << std::setw(30) << std::setprecision(16) << std::scientific << Values[j];
           os << std::endl;
         }
       }
@@ -2041,8 +1918,7 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
   }
 
   // just to be sure
-  if (os.is_open())
-    os.close();
+  if (os.is_open()) os.close();
 
   // have fun with your Matlab matrix
   return;
@@ -2050,8 +1926,8 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintSerialDenseMatrixInMatlabFormat(std::string fname,
-    const Epetra_SerialDenseMatrix& A, const bool newfile)
+void LINALG::PrintSerialDenseMatrixInMatlabFormat(
+    std::string fname, const Epetra_SerialDenseMatrix& A, const bool newfile)
 {
   // The following source code has been adapted from the PrintMatrixInMatlabFormat
   // method in order to also print a Epetra_SerialDenseMatrix.
@@ -2071,10 +1947,9 @@ void LINALG::PrintSerialDenseMatrixInMatlabFormat(std::string fname,
   {
     for (int j = 0; j < NumMyColumns; j++)
     {
-      os << std::setw(10) << i + 1; // increase index by one for matlab
-      os << std::setw(10) << j + 1; // increase index by one for matlab
-      os << std::setw(30) << std::setprecision(16) << std::scientific
-          << A(i, j);
+      os << std::setw(10) << i + 1;  // increase index by one for matlab
+      os << std::setw(10) << j + 1;  // increase index by one for matlab
+      os << std::setw(30) << std::setprecision(16) << std::scientific << A(i, j);
       os << std::endl;
     }
   }
@@ -2085,8 +1960,7 @@ void LINALG::PrintSerialDenseMatrixInMatlabFormat(std::string fname,
   os.close();
 
   // just to be sure
-  if (os.is_open())
-    os.close();
+  if (os.is_open()) os.close();
 
   // have fun with your Matlab matrix
   return;
@@ -2094,8 +1968,7 @@ void LINALG::PrintSerialDenseMatrixInMatlabFormat(std::string fname,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname,
-    const BlockSparseMatrixBase& A)
+void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname, const BlockSparseMatrixBase& A)
 {
   // For each sub-matrix of A use the existing printing method
   for (int r = 0; r < A.Rows(); r++)
@@ -2103,8 +1976,7 @@ void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname,
     for (int c = 0; c < A.Cols(); c++)
     {
       const LINALG::SparseMatrix& M = A.Matrix(r, c);
-      LINALG::PrintMatrixInMatlabFormat(fname, *(M.EpetraMatrix()),
-          ((r == 0) && (c == 0)));
+      LINALG::PrintMatrixInMatlabFormat(fname, *(M.EpetraMatrix()), ((r == 0) && (c == 0)));
     }
   }
 
@@ -2113,8 +1985,8 @@ void LINALG::PrintBlockMatrixInMatlabFormat(std::string fname,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintVectorInMatlabFormat(std::string fname,
-    const Epetra_Vector& V, const bool newfile)
+void LINALG::PrintVectorInMatlabFormat(
+    std::string fname, const Epetra_Vector& V, const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
@@ -2124,7 +1996,7 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
 
   std::ofstream os;
 
-  for (int iproc = 0; iproc < NumProc; iproc++) // loop over all processors
+  for (int iproc = 0; iproc < NumProc; iproc++)  // loop over all processors
   {
     if (MyPID == iproc)
     {
@@ -2138,9 +2010,8 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
       int MaxElementSize1 = V.Map().MaxElementSize();
       int* MyGlobalElements1 = V.Map().MyGlobalElements();
       int* FirstPointInElementList1(NULL);
-      if (MaxElementSize1 != 1)
-        FirstPointInElementList1 = V.Map().FirstPointInElementList();
-      double ** A_Pointers = V.Pointers();
+      if (MaxElementSize1 != 1) FirstPointInElementList1 = V.Map().FirstPointInElementList();
+      double** A_Pointers = V.Pointers();
 
       for (int i = 0; i < NumMyElements1; i++)
       {
@@ -2149,17 +2020,18 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
           int iii;
           if (MaxElementSize1 == 1)
           {
-            os << std::setw(10) << MyGlobalElements1[i] + 1; // add +1 for Matlab convention
+            os << std::setw(10) << MyGlobalElements1[i] + 1;  // add +1 for Matlab convention
             iii = i;
           }
           else
           {
-            os << std::setw(10) << MyGlobalElements1[i] << "/" << std::setw(10)
-                << ii;
+            os << std::setw(10) << MyGlobalElements1[i] << "/" << std::setw(10) << ii;
             iii = FirstPointInElementList1[i] + ii;
           }
 
-          os << std::setw(30) << std::setprecision(16) << A_Pointers[0][iii]; // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
+          os << std::setw(30) << std::setprecision(16)
+             << A_Pointers[0][iii];  // print out values of 1. vector (only Epetra_Vector supported,
+                                     // no Multi_Vector)
           os << std::endl;
         }
       }
@@ -2175,16 +2047,14 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
   }
 
   // just to be sure
-  if (os.is_open())
-    os.close();
+  if (os.is_open()) os.close();
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map,
-    const bool newfile)
+void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, const bool newfile)
 {
   // The following source code has been adapted from the Print() method
   // of the Epetra_CrsMatrix class (see "Epetra_CrsMatrix.cpp").
@@ -2194,7 +2064,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map,
 
   std::ofstream os;
 
-  for (int iproc = 0; iproc < NumProc; iproc++) // loop over all processors
+  for (int iproc = 0; iproc < NumProc; iproc++)  // loop over all processors
   {
     if (MyPID == iproc)
     {
@@ -2218,8 +2088,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map,
           }
           else
           {
-            os << std::setw(10) << MyGlobalElements1[i] + 1 << "/"
-                << std::setw(10) << ii;
+            os << std::setw(10) << MyGlobalElements1[i] + 1 << "/" << std::setw(10) << ii;
           }
           os << std::endl;
         }
@@ -2236,8 +2105,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map,
   }
 
   // just to be sure
-  if (os.is_open())
-    os.close();
+  if (os.is_open()) os.close();
 
   return;
 }
@@ -2260,8 +2128,8 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::AllreduceVector(const std::vector<int> & src,
-    std::vector<int> & dest, const Epetra_Comm& comm)
+void LINALG::AllreduceVector(
+    const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm)
 {
   // communicate size
   int localsize = static_cast<int>(src.size());
@@ -2301,8 +2169,7 @@ void LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
 void LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
 {
 #ifdef DEBUG
-  if (not emap.UniqueGIDs())
-  dserror("works only for unique Epetra_Maps");
+  if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
 #endif
 
   idxmap.clear();
@@ -2319,12 +2186,10 @@ void LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
  |  create an allreduced map on a distinct processor (public)  gjb 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap,
-    const int pid)
+Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
 #ifdef DEBUG
-  if (not emap.UniqueGIDs())
-  dserror("works only for unique Epetra_Maps");
+  if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -2342,8 +2207,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap,
     rv.clear();
     rmap = Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, emap.Comm()));
     // check the map
-    dsassert(rmap->NumMyElements() == 0,
-        "At least one proc will keep a map element");
+    dsassert(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
   return rmap;
 }
@@ -2354,8 +2218,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap,
 Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
 {
 #ifdef DEBUG
-  if (not emap.UniqueGIDs())
-  dserror("works only for unique Epetra_Maps");
+  if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -2369,8 +2232,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
 |  create an allreduced map on EVERY processor (public)                 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(
-    const Epetra_Map& emap)
+Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
 {
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -2385,8 +2247,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(
 /*----------------------------------------------------------------------*
 | create an allreduced map on a distinct processor (public)  ghamm 10/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap,
-  const int pid)
+Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap, const int pid)
 {
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -2408,8 +2269,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
     rv.clear();
     rmap = Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, emap.Comm()));
     // check the map
-    dsassert(rmap->NumMyElements() == 0,
-        "At least one proc will keep a map element");
+    dsassert(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
   return rmap;
 }
@@ -2418,12 +2278,11 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
  |  Send and receive lists of ints.  (heiner 09/07)                     |
  *----------------------------------------------------------------------*/
 void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
-    const std::vector<std::vector<int> >& send,
-    std::vector<std::vector<int> >& recv)
+    const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
 {
 #ifndef PARALLEL
 
-  dsassert(send.size()==1, "there has to be just one entry for sending");
+  dsassert(send.size() == 1, "there has to be just one entry for sending");
 
   // make a copy
   recv.clear();
@@ -2433,7 +2292,7 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 
   if (comm.NumProc() == 1)
   {
-    dsassert(send.size()==1, "there has to be just one entry for sending");
+    dsassert(send.size() == 1, "there has to be just one entry for sending");
 
     // make a copy
     recv.clear();
@@ -2451,8 +2310,8 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 
     int displacement = 0;
     sdispls.push_back(0);
-    for (std::vector<std::vector<int> >::const_iterator iter = send.begin();
-        iter != send.end(); ++iter)
+    for (std::vector<std::vector<int>>::const_iterator iter = send.begin(); iter != send.end();
+         ++iter)
     {
       sendbuf.insert(sendbuf.end(), iter->begin(), iter->end());
       sendcounts.push_back(iter->size());
@@ -2465,19 +2324,18 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
 
-    int status = MPI_Alltoall(&sendcounts[0], 1, MPI_INT, &recvcounts[0], 1,
-        MPI_INT, mpicomm.GetMpiComm());
+    int status =
+        MPI_Alltoall(&sendcounts[0], 1, MPI_INT, &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm());
 
-    if (status != MPI_SUCCESS)
-      dserror("MPI_Alltoall returned status=%d", status);
+    if (status != MPI_SUCCESS) dserror("MPI_Alltoall returned status=%d", status);
 
     std::vector<int> rdispls;
     rdispls.reserve(comm.NumProc());
 
     displacement = 0;
     rdispls.push_back(0);
-    for (std::vector<int>::const_iterator iter = recvcounts.begin();
-        iter != recvcounts.end(); ++iter)
+    for (std::vector<int>::const_iterator iter = recvcounts.begin(); iter != recvcounts.end();
+         ++iter)
     {
       displacement += *iter;
       rdispls.push_back(displacement);
@@ -2487,20 +2345,16 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 
     // transmit communication: Send and get the data.
 
-    status = MPI_Alltoallv(&sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT,
-        &recvbuf[0], &recvcounts[0], &rdispls[0], MPI_INT,
-        mpicomm.GetMpiComm());
-    if (status != MPI_SUCCESS)
-      dserror("MPI_Alltoallv returned status=%d", status);
+    status = MPI_Alltoallv(&sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT, &recvbuf[0],
+        &recvcounts[0], &rdispls[0], MPI_INT, mpicomm.GetMpiComm());
+    if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
 
     recv.clear();
     for (int proc = 0; proc < comm.NumProc(); ++proc)
     {
-      recv.push_back(
-          std::vector<int>(&recvbuf[rdispls[proc]],
-              &recvbuf[rdispls[proc + 1]]));
+      recv.push_back(std::vector<int>(&recvbuf[rdispls[proc]], &recvbuf[rdispls[proc + 1]]));
     }
   }
 
-#endif // PARALLEL
+#endif  // PARALLEL
 }

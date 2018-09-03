@@ -27,14 +27,10 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntTopOpt::TimIntTopOpt(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      optimizer_(Teuchos::null)
+FLD::TimIntTopOpt::TimIntTopOpt(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid), optimizer_(Teuchos::null)
 {
   return;
 }
@@ -45,7 +41,7 @@ FLD::TimIntTopOpt::TimIntTopOpt(
  *----------------------------------------------------------------------*/
 void FLD::TimIntTopOpt::Init()
 {
-  //set some Topopt-specific parameters
+  // set some Topopt-specific parameters
   SetElementCustomParameter();
   return;
 }
@@ -54,24 +50,20 @@ void FLD::TimIntTopOpt::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntTopOpt::~TimIntTopOpt()
-{
-  return;
-}
+FLD::TimIntTopOpt::~TimIntTopOpt() { return; }
 
 /*----------------------------------------------------------------------*
 | Import fluid data to optimizer at end of Solve()             bk 12/13 |
 *----------------------------------------------------------------------*/
 void FLD::TimIntTopOpt::Solve()
 {
-
   FluidImplicitTimeInt::Solve();
 
-  optimizer_->ImportFluidData(velnp_,step_);
+  optimizer_->ImportFluidData(velnp_, step_);
 
   // initial solution (=u_0) is old solution at time step 1
-  if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
-    optimizer_->ImportFluidData(veln_,0);
+  if (step_ == 1 and timealgo_ != INPAR::FLUID::timeint_stationary)
+    optimizer_->ImportFluidData(veln_, 0);
 
   return;
 }
@@ -81,8 +73,9 @@ void FLD::TimIntTopOpt::Solve()
 *----------------------------------------------------------------------*/
 void FLD::TimIntTopOpt::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set("topopt_density",Teuchos::rcp_const_cast<const Epetra_Vector>(density_scaling_));
-  eleparams.set("dens_type",DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(optimizer_->OptiParams(),"DENS_TYPE"));
+  eleparams.set("topopt_density", Teuchos::rcp_const_cast<const Epetra_Vector>(density_scaling_));
+  eleparams.set("dens_type", DRT::INPUT::IntegralValue<INPAR::TOPOPT::DensityField>(
+                                 optimizer_->OptiParams(), "DENS_TYPE"));
   return;
 }
 
@@ -90,15 +83,13 @@ void FLD::TimIntTopOpt::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterLi
  | sent density field for topology optimization         winklmaier 12/11|
  *----------------------------------------------------------------------*/
 void FLD::TimIntTopOpt::SetTopOptData(
-    Teuchos::RCP<Epetra_Vector> density,
-    Teuchos::RCP<TOPOPT::Optimizer>& optimizer
-)
+    Teuchos::RCP<Epetra_Vector> density, Teuchos::RCP<TOPOPT::Optimizer>& optimizer)
 {
   // currently the maps have to fit and, thus, this works
   // in the future this simple procedure may have to be altered,
   // see setiterlomafields or settimelomafields for examples
   density_scaling_ = density;
-  optimizer_=optimizer;
+  optimizer_ = optimizer;
 }
 
 // -------------------------------------------------------------------
@@ -108,11 +99,11 @@ void FLD::TimIntTopOpt::SetElementCustomParameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",FLD::set_topopt_parameter);
+  eleparams.set<int>("action", FLD::set_topopt_parameter);
 
   // get the material
   const int nummat = DRT::Problem::Instance()->Materials()->Num();
-  for (int id = 1; id-1 < nummat; ++id)
+  for (int id = 1; id - 1 < nummat; ++id)
   {
     Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
 
@@ -122,51 +113,51 @@ void FLD::TimIntTopOpt::SetElementCustomParameter()
     {
       switch (imat->Type())
       {
-      case INPAR::MAT::m_fluid:
-        break;
-      case INPAR::MAT::m_opti_dens:
-      {
-        const MAT::PAR::Parameter* matparam = imat->Parameter();
-        const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
-
-        eleparams.set("MIN_PORO",mat->PoroBdDown());
-        eleparams.set("MAX_PORO",mat->PoroBdUp());
-
-
-        const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(params_->get<int>("opti testcase"));
-        switch (testcase)
+        case INPAR::MAT::m_fluid:
+          break;
+        case INPAR::MAT::m_opti_dens:
         {
-        case INPAR::TOPOPT::optitest_channel:
-        case INPAR::TOPOPT::optitest_channel_with_step:
-        case INPAR::TOPOPT::optitest_cornerflow:
-        case INPAR::TOPOPT::optitest_lin_poro:
-        case INPAR::TOPOPT::optitest_quad_poro:
-        case INPAR::TOPOPT::optitest_cub_poro:
-        {
-          eleparams.set("SMEAR_FAC",(double)(-(int)testcase));
+          const MAT::PAR::Parameter* matparam = imat->Parameter();
+          const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens*>(matparam);
+
+          eleparams.set("MIN_PORO", mat->PoroBdDown());
+          eleparams.set("MAX_PORO", mat->PoroBdUp());
+
+
+          const INPAR::TOPOPT::OptiCase testcase =
+              (INPAR::TOPOPT::OptiCase)(params_->get<int>("opti testcase"));
+          switch (testcase)
+          {
+            case INPAR::TOPOPT::optitest_channel:
+            case INPAR::TOPOPT::optitest_channel_with_step:
+            case INPAR::TOPOPT::optitest_cornerflow:
+            case INPAR::TOPOPT::optitest_lin_poro:
+            case INPAR::TOPOPT::optitest_quad_poro:
+            case INPAR::TOPOPT::optitest_cub_poro:
+            {
+              eleparams.set("SMEAR_FAC", (double)(-(int)testcase));
+              break;
+            }
+            default:
+            {
+              eleparams.set("SMEAR_FAC", mat->SmearFac());
+              break;
+            }
+          }
+
           break;
         }
         default:
         {
-          eleparams.set("SMEAR_FAC",mat->SmearFac());
+          dserror("unknown material %s", imat->Name().c_str());
           break;
         }
-        }
-
-        break;
-      }
-      default:
-      {
-        dserror("unknown material %s",imat->Name().c_str());
-        break;
-      }
       }
     }
   }
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }
-
-

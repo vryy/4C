@@ -21,20 +21,15 @@ Maintainer: Alexander Popp
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for spring
     class Spring : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      Spring(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      Spring(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~Spring() { ; }
@@ -44,7 +39,7 @@ namespace MAT
 
       /// stiffness (translational or rotational)
       const double stiffness_;
-      
+
       /// density
       const double density_;
 
@@ -55,29 +50,26 @@ namespace MAT
 
     };  // class Spring
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class SpringType : public DRT::ParObjectType
-{
-public:
+  class SpringType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "SpringType"; }
 
-  std::string Name() const { return "SpringType"; }
+    static SpringType& Instance() { return instance_; };
 
-  static SpringType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static SpringType instance_;
-};
+   private:
+    static SpringType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for spring material
   class Spring : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Spring();
 
@@ -126,24 +118,22 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_spring; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Spring( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Spring(*this)); }
 
     /// stiffness (translational or rotational)
     double Stiffness() const { return params_->stiffness_; }
-    
+
     /// density
     double Density() const { return params_->density_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Spring* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

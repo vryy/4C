@@ -18,15 +18,13 @@
 #include "../drt_lib/drt_linedefinition.H"
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(const std::string  eletype,
-                                                             const std::string  eledistype,
-                                                             const int     id,
-                                                             const int     owner)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(
+    const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDIMMERSED")
-    return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id,owner));
+    return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id, owner));
   else if (eletype == "FLUIDPOROIMMERSED")
-    return Teuchos::rcp(new DRT::ELEMENTS::FluidPoroImmersed(id,owner));
+    return Teuchos::rcp(new DRT::ELEMENTS::FluidPoroImmersed(id, owner));
 
   return Teuchos::null;
 }
@@ -36,18 +34,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersedBase::Create(const st
  |  ctor (public)                                            rauch 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidImmersedBase::FluidImmersedBase(int id, int owner) :
-Fluid(id,owner)
-{
-}
+DRT::ELEMENTS::FluidImmersedBase::FluidImmersedBase(int id, int owner) : Fluid(id, owner) {}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       rauch 03/15|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidImmersedBase::FluidImmersedBase(const DRT::ELEMENTS::FluidImmersedBase& old) :
-Fluid(old)
+DRT::ELEMENTS::FluidImmersedBase::FluidImmersedBase(const DRT::ELEMENTS::FluidImmersedBase& old)
+    : Fluid(old)
 {
   return;
 }
-
-

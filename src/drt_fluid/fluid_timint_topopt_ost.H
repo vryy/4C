@@ -25,35 +25,30 @@
 
 namespace FLD
 {
+  class TimIntTopOptOst : public TimIntOneStepTheta, public TimIntTopOpt
+  {
+   public:
+    /// Standard Constructor
+    TimIntTopOptOst(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntTopOptOst : public TimIntOneStepTheta, public TimIntTopOpt
-{
-public:
-  /// Standard Constructor
-  TimIntTopOptOst(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntTopOptOst();
 
-  /// Destructor
-  virtual ~TimIntTopOptOst();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
-
-  */
-  virtual void Init();
+    */
+    virtual void Init();
 
 
-protected:
+   protected:
+   private:
+  };  // class TimIntTopOptOst
 
-private:
-
-
-}; // class TimIntTopOptOst
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_TOPOPT_OST_H

@@ -15,21 +15,16 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LubricationLaw::LubricationLaw(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata)
+MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata)
 {
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LubricationLawConstant::LubricationLawConstant(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: LubricationLaw(matdata),
-  viscosity_(matdata->GetDouble("VISCOSITY"))
+MAT::PAR::LubricationLawConstant::LubricationLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : LubricationLaw(matdata), viscosity_(matdata->GetDouble("VISCOSITY"))
 {
   return;
 }
@@ -42,21 +37,17 @@ Teuchos::RCP<MAT::Material> MAT::PAR::LubricationLawConstant::CreateMaterial()
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
-void MAT::PAR::LubricationLawConstant::ComputeViscosity(
-                                       const double& press,
-                                       double& viscosity)
+ *----------------------------------------------------------------------*/
+void MAT::PAR::LubricationLawConstant::ComputeViscosity(const double& press, double& viscosity)
 {
   viscosity = viscosity_;
   return;
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void MAT::PAR::LubricationLawConstant::ConstitutiveDerivatives(
-    double     press,
-    double     viscosity,
-    double&    dviscosity_dp)
+    double press, double viscosity, double& dviscosity_dp)
 {
   dviscosity_dp = 0.0;
   return;

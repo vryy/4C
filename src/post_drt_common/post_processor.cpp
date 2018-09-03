@@ -25,7 +25,7 @@
 #include "../drt_scatra_ele/scatra_ele.H"
 
 
-void runEnsightVtuFilter(PostProblem    &problem)
+void runEnsightVtuFilter(PostProblem& problem)
 {
 #if 0
     for (int i = 0; i<problem.num_discr(); ++i)
@@ -36,40 +36,41 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
 #endif
 
-    // each problem type is different and writes different results
-    switch (problem.Problemtype())
-    {
+  // each problem type is different and writes different results
+  switch (problem.Problemtype())
+  {
     case prb_fsi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     {
+      std::string basename = problem.outname();
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      PostField* alefield = problem.get_discretization(2);
+      AleFilter alewriter(alefield, basename);
+      alewriter.WriteFiles();
+      // 1d artery
+      if (problem.num_discr() == 4)
+      {
+        PostField* field = problem.get_discretization(2);
+        StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
+        writer.WriteFiles();
+      }
+      if (problem.num_discr() > 2 and problem.get_discretization(2)->name() == "xfluid")
+      {
         std::string basename = problem.outname();
-        PostField* structfield = problem.get_discretization(0);
-        StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
-
-        PostField* fluidfield = problem.get_discretization(1);
-        FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
-
-        PostField* alefield = problem.get_discretization(2);
-        AleFilter alewriter(alefield, basename);
-        alewriter.WriteFiles();
-        // 1d artery
-        if (problem.num_discr()== 4)
-        {
-          PostField* field = problem.get_discretization(2);
-          StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
-        }
-        if (problem.num_discr() > 2 and problem.get_discretization(2)->name()=="xfluid")
-        {
-          std::string basename = problem.outname();
-          PostField* fluidfield = problem.get_discretization(2);
-          FluidFilter xfluidwriter(fluidfield, basename);
-          xfluidwriter.WriteFiles();
-        }
-        break;
+        PostField* fluidfield = problem.get_discretization(2);
+        FluidFilter xfluidwriter(fluidfield, basename);
+        xfluidwriter.WriteFiles();
+      }
+      break;
     }
     case prb_gas_fsi:
     case prb_ac_fsi:
@@ -77,7 +78,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -86,9 +88,9 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       int numdisc = problem.num_discr();
 
-      for (int i=0; i<numdisc-3; ++i)
+      for (int i = 0; i < numdisc - 3; ++i)
       {
-        PostField* scatrafield = problem.get_discretization(3+i);
+        PostField* scatrafield = problem.get_discretization(3 + i);
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
       }
@@ -99,7 +101,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -108,9 +111,9 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       int numdisc = problem.num_discr();
 
-      for (int i=0; i<numdisc-4; ++i)
+      for (int i = 0; i < numdisc - 4; ++i)
       {
-        PostField* scatrafield = problem.get_discretization(3+i);
+        PostField* scatrafield = problem.get_discretization(3 + i);
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
       }
@@ -120,7 +123,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
     case prb_struct_ale:
     {
       PostField* structurefield = problem.get_discretization(0);
-      StructureFilter structwriter(structurefield, problem.outname(), problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structurefield, problem.outname(), problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* alefield = problem.get_discretization(1);
@@ -130,42 +134,43 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_structure:
     {
-        PostField* field = problem.get_discretization(0);
-        StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype(), problem.optquantitytype());
-        writer.WriteFiles();
-        break;
+      PostField* field = problem.get_discretization(0);
+      StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype(),
+          problem.optquantitytype());
+      writer.WriteFiles();
+      break;
     }
     case prb_polymernetwork:
     {
       int numdiscr = problem.num_discr();
-      for( int i = 0; i < numdiscr; ++i )
+      for (int i = 0; i < numdiscr; ++i)
       {
         std::string disname = problem.get_discretization(i)->name();
-        if( disname == "structure" )
+        if (disname == "structure")
         {
           PostField* structure = problem.get_discretization(i);
           StructureFilter writer(structure, problem.outname());
           writer.WriteFiles();
         }
-        else if ( disname == "ia_structure" )
+        else if (disname == "ia_structure")
         {
           PostField* ia_structure = problem.get_discretization(i);
-          StructureFilter iawriter( ia_structure, problem.outname() );
+          StructureFilter iawriter(ia_structure, problem.outname());
           iawriter.WriteFiles();
         }
-        else if ( disname == "boundingbox" )
+        else if (disname == "boundingbox")
         {
           PostField* boxdiscret = problem.get_discretization(i);
-          StructureFilter boxwriter( boxdiscret, problem.outname() );
+          StructureFilter boxwriter(boxdiscret, problem.outname());
           boxwriter.WriteFiles();
         }
-        else if ( disname == "particle" )
+        else if (disname == "particle")
         {
           PostField* particlefield = problem.get_discretization(i);
-          ParticleFilter particlewriter( particlefield, problem.outname() );
+          ParticleFilter particlewriter(particlefield, problem.outname());
           particlewriter.WriteFiles();
         }
-        else if ( disname == "bins" )
+        else if (disname == "bins")
         {
           PostField* visualizebins = problem.get_discretization(i);
           StructureFilter binwriter(visualizebins, problem.outname());
@@ -180,33 +185,33 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_xcontact:
     {
-
-//        StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
-//        writer.WriteFiles();
-        for (int i=0; i< problem.num_discr(); ++i)
+      //        StructureFilter writer(field, problem.outname(), problem.stresstype(),
+      //        problem.straintype()); writer.WriteFiles();
+      for (int i = 0; i < problem.num_discr(); ++i)
+      {
+        PostField* field = problem.get_discretization(i);
+        DRT::Element* ele = field->discretization()->lRowElement(0);
+        if (dynamic_cast<DRT::ELEMENTS::So_base*>(ele))
         {
-          PostField* field = problem.get_discretization(i);
-          DRT::Element * ele = field->discretization()->lRowElement(0);
-          if (dynamic_cast<DRT::ELEMENTS::So_base*>(ele))
-          {
-            StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
-            writer.WriteFiles();
-          }
-          // ToDo add the ScaTra output
-//          else
-//          {
-//            ScaTraFilter scatrawriter(field, problem.outname());
-//            scatrawriter.WriteFiles();
-//          }
+          StructureFilter writer(
+              field, problem.outname(), problem.stresstype(), problem.straintype());
+          writer.WriteFiles();
         }
+        // ToDo add the ScaTra output
+        //          else
+        //          {
+        //            ScaTraFilter scatrawriter(field, problem.outname());
+        //            scatrawriter.WriteFiles();
+        //          }
+      }
 
-        break;
+      break;
     }
     case prb_fluid:
     {
-      if (problem.num_discr()== 2)
+      if (problem.num_discr() == 2)
       {
-        if (problem.get_discretization(1)->name()=="xfluid")
+        if (problem.get_discretization(1)->name() == "xfluid")
         {
           std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(1);
@@ -218,14 +223,14 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_fluid_redmodels:
     {
-      if (problem.num_discr()== 2)
+      if (problem.num_discr() == 2)
       {
         // 1d artery
         std::string basename = problem.outname();
         PostField* field = problem.get_discretization(1);
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
-        if (problem.get_discretization(1)->name()=="xfluid")
+        if (problem.get_discretization(1)->name() == "xfluid")
         {
           std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(1);
@@ -241,7 +246,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       PostField* field = problem.get_discretization(0);
       FluidFilter writer(field, problem.outname());
       writer.WriteFiles();
-      if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
+      if (problem.num_discr() > 1 and problem.get_discretization(1)->name() == "xfluid")
       {
         std::string basename = problem.outname();
         PostField* fluidfield = problem.get_discretization(1);
@@ -254,13 +259,14 @@ void runEnsightVtuFilter(PostProblem    &problem)
     case prb_pasi:
     {
       int numdiscr = problem.num_discr();
-      for(int i=0; i<numdiscr; ++i)
+      for (int i = 0; i < numdiscr; ++i)
       {
         std::string disname = problem.get_discretization(i)->name();
-        if(disname == "structure")
+        if (disname == "structure")
         {
           PostField* structure = problem.get_discretization(i);
-          StructureFilter writer(structure, problem.outname(), problem.stresstype(), problem.straintype(), problem.optquantitytype());
+          StructureFilter writer(structure, problem.outname(), problem.stresstype(),
+              problem.straintype(), problem.optquantitytype());
           writer.WriteFiles();
         }
         else if (disname == "particlewalls")
@@ -305,7 +311,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       writer.WriteFiles();
 
       PostField* particlefield = problem.get_discretization(2);
-      ParticleFilter  particlewriter(particlefield, problem.outname());
+      ParticleFilter particlewriter(particlefield, problem.outname());
       particlewriter.WriteFiles();
       break;
     }
@@ -319,10 +325,10 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       // check if we have a particle field
       int numfield = problem.num_discr();
-      if(numfield==2)
+      if (numfield == 2)
       {
         PostField* particlefield = problem.get_discretization(1);
-        ParticleFilter  particlewriter(particlefield, basename);
+        ParticleFilter particlewriter(particlefield, basename);
         particlewriter.WriteFiles();
       }
 
@@ -330,53 +336,56 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_redairways_tissue:
     {
-        PostField* structfield = problem.get_discretization(0);
-        StructureFilter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(
+          structfield, problem.outname(), problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
 
-        PostField* fluidfield = problem.get_discretization(1);
-        StructureFilter fluidwriter(fluidfield, problem.outname(), problem.stresstype(), problem.straintype());
-        fluidwriter.WriteFiles();
-        break;
+      PostField* fluidfield = problem.get_discretization(1);
+      StructureFilter fluidwriter(
+          fluidfield, problem.outname(), problem.stresstype(), problem.straintype());
+      fluidwriter.WriteFiles();
+      break;
     }
     case prb_ale:
     {
-        PostField* field = problem.get_discretization(0);
-        AleFilter writer(field, problem.outname());
-        writer.WriteFiles();
-        break;
+      PostField* field = problem.get_discretization(0);
+      AleFilter writer(field, problem.outname());
+      writer.WriteFiles();
+      break;
     }
     case prb_lubrication:
     {
-        PostField* lubricationfield = problem.get_discretization(0);
-        LubricationFilter lubricationwriter(lubricationfield, problem.outname());
-        lubricationwriter.WriteFiles();
-        break;
+      PostField* lubricationfield = problem.get_discretization(0);
+      LubricationFilter lubricationwriter(lubricationfield, problem.outname());
+      lubricationwriter.WriteFiles();
+      break;
     }
     case prb_porofluidmultiphase:
     {
-        std::string basename = problem.outname();
+      std::string basename = problem.outname();
 
-        PostField* field = problem.get_discretization(0);
-        PoroFluidMultiPhaseFilter writer(field, problem.outname());
+      PostField* field = problem.get_discretization(0);
+      PoroFluidMultiPhaseFilter writer(field, problem.outname());
+      writer.WriteFiles();
+
+      // write output for artery
+      if (problem.num_discr() == 2)
+      {
+        PostField* field = problem.get_discretization(1);
+        // AnyFilter writer(field, problem.outname());
+        StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
-
-        // write output for artery
-        if (problem.num_discr() == 2)
-        {
-          PostField* field = problem.get_discretization(1);
-          //AnyFilter writer(field, problem.outname());
-          StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
-        }
-        break;
+      }
+      break;
     }
     case prb_poromultiphase:
     {
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -386,7 +395,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       {
         // artery
         PostField* field = problem.get_discretization(2);
-        //AnyFilter writer(field, problem.outname());
+        // AnyFilter writer(field, problem.outname());
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
       }
@@ -397,7 +406,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -405,7 +415,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       fluidwriter.WriteFiles();
 
       // no artery discretization
-      if(problem.num_discr() == 3)
+      if (problem.num_discr() == 3)
       {
         PostField* scatrafield = problem.get_discretization(2);
         ScaTraFilter scatrawriter(scatrafield, basename);
@@ -415,7 +425,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       {
         // artery
         PostField* field = problem.get_discretization(2);
-        //AnyFilter writer(field, problem.outname());
+        // AnyFilter writer(field, problem.outname());
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
 
@@ -428,7 +438,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       {
         // artery
         PostField* field = problem.get_discretization(2);
-        //AnyFilter writer(field, problem.outname());
+        // AnyFilter writer(field, problem.outname());
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
 
@@ -451,29 +461,29 @@ void runEnsightVtuFilter(PostProblem    &problem)
     case prb_cardiac_monodomain:
     case prb_scatra:
     {
-        std::string basename = problem.outname();
-        // do we have a fluid discretization?
-        int numfield = problem.num_discr();
-        if(numfield==2)
-        {
-          PostField* fluidfield = problem.get_discretization(0);
-          FluidFilter fluidwriter(fluidfield, basename);
-          fluidwriter.WriteFiles();
+      std::string basename = problem.outname();
+      // do we have a fluid discretization?
+      int numfield = problem.num_discr();
+      if (numfield == 2)
+      {
+        PostField* fluidfield = problem.get_discretization(0);
+        FluidFilter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
 
-          PostField* scatrafield = problem.get_discretization(1);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
-        }
-        else if (numfield==1)
-        {
-          PostField* scatrafield = problem.get_discretization(0);
-          ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
-        }
-        else
-          dserror("number of fields does not match: got %d",numfield);
+        PostField* scatrafield = problem.get_discretization(1);
+        ScaTraFilter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+      else if (numfield == 1)
+      {
+        PostField* scatrafield = problem.get_discretization(0);
+        ScaTraFilter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+      else
+        dserror("number of fields does not match: got %d", numfield);
 
-        break;
+      break;
     }
     case prb_sti:
     {
@@ -481,15 +491,16 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       // safety check
-      if(problem.num_discr() != 2)
+      if (problem.num_discr() != 2)
         dserror("Must have exactly two discretizations for scatra-thermo interaction problems!");
 
-      DRT::ELEMENTS::Transport* transport_element = dynamic_cast<DRT::ELEMENTS::Transport*>(problem.get_discretization(0)->discretization()->lRowElement(0));
-      if(transport_element == NULL)
+      DRT::ELEMENTS::Transport* transport_element = dynamic_cast<DRT::ELEMENTS::Transport*>(
+          problem.get_discretization(0)->discretization()->lRowElement(0));
+      if (transport_element == NULL)
         dserror("Elements of unknown type on scalar transport discretization!");
 
-      if(transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode_thermo or
-         transport_element->ImplType() == INPAR::SCATRA::impltype_elch_diffcond_thermo)
+      if (transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode_thermo or
+          transport_element->ImplType() == INPAR::SCATRA::impltype_elch_diffcond_thermo)
       {
         ElchFilter elchwriter(problem.get_discretization(0), basename);
         elchwriter.WriteFiles();
@@ -511,7 +522,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
     case prb_fluid_xfem_ls:
     case prb_two_phase_flow:
     {
-      std::cout << "|=============================================================================|" << std::endl;
+      std::cout << "|=============================================================================|"
+                << std::endl;
       std::cout << "|==  Output for General Problem" << std::endl;
 
       int numfield = problem.num_discr();
@@ -522,51 +534,56 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       std::cout << "\n|==  Start postprocessing for discretizations:" << std::endl;
 
-      for(int idx_int=0; idx_int<numfield;idx_int++)
+      for (int idx_int = 0; idx_int < numfield; idx_int++)
       {
-        std::cout << "\n|=============================================================================|" << std::endl;
+        std::cout
+            << "\n|=============================================================================|"
+            << std::endl;
         std::string disname = problem.get_discretization(idx_int)->name();
         PostField* field = problem.get_discretization(idx_int);
         if (disname == "structure")
         {
-          std::cout << "|==  Structural Field ( "<< disname << " )" << std::endl;
+          std::cout << "|==  Structural Field ( " << disname << " )" << std::endl;
           StructureFilter structwriter(field, basename, problem.stresstype(), problem.straintype());
           structwriter.WriteFiles();
         }
         else if (disname == "fluid" or disname == "xfluid" or disname == "porofluid")
         {
-          std::cout << "|==    Fluid Field ( "<< disname << " )" << std::endl;
+          std::cout << "|==    Fluid Field ( " << disname << " )" << std::endl;
           FluidFilter fluidwriter(field, basename);
           fluidwriter.WriteFiles();
         }
         else if (disname == "scatra")
         {
-          std::cout << "|==    Scatra Field ( "<< disname << " )" << std::endl;
+          std::cout << "|==    Scatra Field ( " << disname << " )" << std::endl;
           ScaTraFilter scatrawriter(field, basename);
           scatrawriter.WriteFiles();
         }
         else if (disname == "particle")
         {
-          std::cout << "|==    Particle Field ( "<< disname << " )" << std::endl;
+          std::cout << "|==    Particle Field ( " << disname << " )" << std::endl;
           ParticleFilter particlewriter(field, basename);
           particlewriter.WriteFiles();
         }
         else if (disname == "ale")
         {
-          std::cout << "|==    Ale Field ( "<< disname << " )" << std::endl;
-//          AleFilter alewriter(field, basename);
-//          alewriter.WriteFiles();
+          std::cout << "|==    Ale Field ( " << disname << " )" << std::endl;
+          //          AleFilter alewriter(field, basename);
+          //          alewriter.WriteFiles();
         }
-        else if (disname.compare(1,12,"boundary_of_"))
+        else if (disname.compare(1, 12, "boundary_of_"))
         {
-          std::cout << "|==    Interface Field ( "<< disname << " )" << std::endl;
+          std::cout << "|==    Interface Field ( " << disname << " )" << std::endl;
           InterfaceFilter ifacewriter(field, basename);
           ifacewriter.WriteFiles();
         }
         else
-          dserror("You try to postprocess a discretization with name %s, maybe you should add it here?", disname.c_str());
+          dserror(
+              "You try to postprocess a discretization with name %s, maybe you should add it here?",
+              disname.c_str());
       }
-      std::cout << "|=============================================================================|" << std::endl;
+      std::cout << "|=============================================================================|"
+                << std::endl;
       break;
     }
     case prb_fluid_xfem:
@@ -576,13 +593,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
       int numfield = problem.num_discr();
 
       std::cout << "Number of discretizations: " << numfield << std::endl;
-      for(int i=0; i<numfield;i++)
+      for (int i = 0; i < numfield; i++)
       {
-        std::cout << "dis-name i=" << i << ": " << problem.get_discretization(i)->name() << std::endl;
+        std::cout << "dis-name i=" << i << ": " << problem.get_discretization(i)->name()
+                  << std::endl;
       }
 
-      if (numfield == 0)
-        dserror("we expect at least a fluid field, numfield=%i",numfield);
+      if (numfield == 0) dserror("we expect at least a fluid field, numfield=%i", numfield);
       std::string basename = problem.outname();
 
       // XFluid in the standard case, embedded fluid for XFF
@@ -593,7 +610,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       // start index for interface discretizations
       int idx_int = 1;
-      if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
+      if (problem.num_discr() > 1 and problem.get_discretization(1)->name() == "xfluid")
       {
         // XFluid for XFF
         std::cout << "  XFluid Field" << std::endl;
@@ -604,9 +621,10 @@ void runEnsightVtuFilter(PostProblem    &problem)
       }
 
       // all other fields are interface fields
-      for(int i=idx_int; i<numfield;i++)
+      for (int i = idx_int; i < numfield; i++)
       {
-        std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
+        std::cout << "  Interface Field ( " << problem.get_discretization(i)->name() << " )"
+                  << std::endl;
         PostField* ifacefield = problem.get_discretization(i);
         InterfaceFilter ifacewriter(ifacefield, basename);
         ifacewriter.WriteFiles();
@@ -615,22 +633,22 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_loma:
     {
-        std::string basename = problem.outname();
+      std::string basename = problem.outname();
 
-        PostField* fluidfield = problem.get_discretization(0);
-        FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+      PostField* fluidfield = problem.get_discretization(0);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
 
-        PostField* scatrafield = problem.get_discretization(1);
-        ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
-        break;
+      PostField* scatrafield = problem.get_discretization(1);
+      ScaTraFilter scatrawriter(scatrafield, basename);
+      scatrawriter.WriteFiles();
+      break;
     }
     case prb_elch:
     {
       std::string basename = problem.outname();
       int numfield = problem.num_discr();
-      if(numfield==3)
+      if (numfield == 3)
       {
         // Fluid, ScaTra and ALE fields are present
         PostField* fluidfield = problem.get_discretization(0);
@@ -645,7 +663,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         AleFilter alewriter(alefield, basename);
         alewriter.WriteFiles();
       }
-      else if(numfield==2)
+      else if (numfield == 2)
       {
         // Fluid and ScaTra fields are present
         PostField* fluidfield = problem.get_discretization(0);
@@ -657,7 +675,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         elchwriter.WriteFiles();
         break;
       }
-      else if (numfield==1)
+      else if (numfield == 1)
       {
         // only a ScaTra field is present
         PostField* scatrafield = problem.get_discretization(0);
@@ -665,14 +683,14 @@ void runEnsightVtuFilter(PostProblem    &problem)
         elchwriter.WriteFiles();
       }
       else
-        dserror("number of fields does not match: got %d",numfield);
+        dserror("number of fields does not match: got %d", numfield);
       break;
     }
     case prb_art_net:
     {
       std::string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
-      //AnyFilter writer(field, problem.outname());
+      // AnyFilter writer(field, problem.outname());
       StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
       writer.WriteFiles();
 
@@ -700,11 +718,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* thermfield = problem.get_discretization(0);
-      ThermoFilter thermwriter(thermfield, basename, problem.heatfluxtype(), problem.tempgradtype());
+      ThermoFilter thermwriter(
+          thermfield, basename, problem.heatfluxtype(), problem.tempgradtype());
       thermwriter.WriteFiles();
 
       PostField* structfield = problem.get_discretization(1);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
       break;
     }
@@ -712,7 +732,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
-      //AnyFilter writer(field, problem.outname());
+      // AnyFilter writer(field, problem.outname());
       StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
       writer.WriteFiles();
       //      writer.WriteFiles();
@@ -724,7 +744,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -737,7 +758,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -755,7 +777,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* porofluidfield = problem.get_discretization(1);
@@ -775,7 +798,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* fluidfield = problem.get_discretization(1);
@@ -788,26 +812,27 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      for(int field=0; field<problem.num_discr(); field++)
+      for (int field = 0; field < problem.num_discr(); field++)
       {
         PostField* postfield = problem.get_discretization(field);
-        std::cout<<"Write Field "<<field<<": "<<postfield->name()<<std::endl;
-        if(postfield->name() == "cell" or postfield->name() == "structure")
+        std::cout << "Write Field " << field << ": " << postfield->name() << std::endl;
+        if (postfield->name() == "cell" or postfield->name() == "structure")
         {
-          StructureFilter cellwriter(postfield, basename, problem.stresstype(), problem.straintype());
+          StructureFilter cellwriter(
+              postfield, basename, problem.stresstype(), problem.straintype());
           cellwriter.WriteFiles();
         }
-        else if(postfield->name() == "cellscatra" or postfield->name() == "scatra")
+        else if (postfield->name() == "cellscatra" or postfield->name() == "scatra")
         {
           ScaTraFilter scatrawriter(postfield, basename);
           scatrawriter.WriteFiles();
         }
-        else if(postfield->name() == "ale")
+        else if (postfield->name() == "ale")
         {
-          AleFilter alewriter(postfield,basename);
+          AleFilter alewriter(postfield, basename);
           alewriter.WriteFiles();
         }
-        else if(postfield->name() == "porofluid" or postfield->name() == "fluid")
+        else if (postfield->name() == "porofluid" or postfield->name() == "fluid")
         {
           FluidFilter fluidwriter(postfield, basename);
           fluidwriter.WriteFiles();
@@ -825,7 +850,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* porofluidfield = problem.get_discretization(1);
@@ -840,9 +866,9 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       int numdisc = problem.num_discr();
 
-      for (int i=0; i<numdisc-4; ++i)
+      for (int i = 0; i < numdisc - 4; ++i)
       {
-        PostField* scatrafield = problem.get_discretization(4+i);
+        PostField* scatrafield = problem.get_discretization(4 + i);
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
       }
@@ -854,7 +880,8 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       PostField* lubricationfield = problem.get_discretization(1);
@@ -867,12 +894,17 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      PostField* scatrafield = problem.get_discretization(0);   // remark: scalar transport discretization number is one for old structural time integration!
+      PostField* scatrafield =
+          problem.get_discretization(0);  // remark: scalar transport discretization number is one
+                                          // for old structural time integration!
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
 
-      PostField* structfield = problem.get_discretization(1);   // remark: structure discretization number is zero for old structural time integration!
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      PostField* structfield =
+          problem.get_discretization(1);  // remark: structure discretization number is zero for old
+                                          // structural time integration!
+      StructureFilter structwriter(
+          structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
       break;
@@ -881,17 +913,17 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      for (int i=0;i<problem.num_discr();i++)
+      for (int i = 0; i < problem.num_discr(); i++)
       {
         std::string disname = problem.get_discretization(i)->discretization()->Name();
 
-        if (disname.compare("fluid") == 0) // 0=true
+        if (disname.compare("fluid") == 0)  // 0=true
         {
           PostField* fluidfield = problem.get_discretization(i);
           FluidFilter fluidwriter(fluidfield, basename);
           fluidwriter.WriteFiles();
         }
-        else if (disname.compare("opti") == 0) // 0=true
+        else if (disname.compare("opti") == 0)  // 0=true
         {
           PostField* optifield = problem.get_discretization(i);
           ScaTraFilter optiwriter(optifield, basename);
@@ -905,17 +937,16 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_acou:
     {
-
-      for (int i=0;i<problem.num_discr();i++)
+      for (int i = 0; i < problem.num_discr(); i++)
       {
         std::string disname = problem.get_discretization(i)->discretization()->Name();
-        if (disname.compare("acou") == 0) // 0=true
+        if (disname.compare("acou") == 0)  // 0=true
         {
           PostField* field = problem.get_discretization(i);
           AcouFilter writer(field, problem.outname());
           writer.WriteFiles();
         }
-        else if(disname.compare("scatra") == 0)
+        else if (disname.compare("scatra") == 0)
         {
           PostField* field1 = problem.get_discretization(i);
           ScaTraFilter writer1(field1, problem.outname());
@@ -935,16 +966,17 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_uq:
     {
-      for (int i=0;i<problem.num_discr();i++)
+      for (int i = 0; i < problem.num_discr(); i++)
       {
         std::string disname = problem.get_discretization(i)->discretization()->Name();
-        if( (disname.compare("structure") == 0) || (disname.compare("red_airway") == 0 ) ) // 0=true
+        if ((disname.compare("structure") == 0) || (disname.compare("red_airway") == 0))  // 0=true
         {
           PostField* field = problem.get_discretization(i);
-          StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
+          StructureFilter writer(
+              field, problem.outname(), problem.stresstype(), problem.straintype());
           writer.WriteFiles();
         }
-        else if(disname.compare("ale") == 0)
+        else if (disname.compare("ale") == 0)
         {
           PostField* field = problem.get_discretization(i);
           AleFilter writer(field, problem.outname());
@@ -953,9 +985,10 @@ void runEnsightVtuFilter(PostProblem    &problem)
         }
         else
         {
-           dserror("Unknown discretization type for problem type UQ");
+          dserror("Unknown discretization type for problem type UQ");
         }
-      } break;
+      }
+      break;
     }
     case prb_invana:
     {
@@ -974,26 +1007,26 @@ void runEnsightVtuFilter(PostProblem    &problem)
       break;
     }
     default:
-        dserror("problem type %d not yet supported", problem.Problemtype());
-        break;
-    }
+      dserror("problem type %d not yet supported", problem.Problemtype());
+      break;
+  }
 }
 
 
 
 namespace
 {
-  std::string get_filter (int argc, char** argv)
+  std::string get_filter(int argc, char** argv)
   {
     Teuchos::CommandLineProcessor clp(false, false, false);
-    std::string filter ("ensight");
-    clp.setOption("filter",&filter,"filter to run [ensight, vtu, vti]");
+    std::string filter("ensight");
+    clp.setOption("filter", &filter, "filter to run [ensight, vtu, vti]");
     // ignore warnings about unrecognized options.
     std::ostringstream warning;
     clp.parse(argc, argv, &warning);
     return filter;
   }
-}
+}  // namespace
 
 
 /*!
@@ -1004,9 +1037,7 @@ namespace
  \author kronbichler
  \date 03/14
  */
-int main(
-        int argc,
-        char** argv)
+int main(int argc, char** argv)
 {
   try
   {
@@ -1021,16 +1052,11 @@ int main(
     else
       dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());
 
-  } // try
-  catch ( std::runtime_error & err )
+  }  // try
+  catch (std::runtime_error& err)
   {
     char line[] = "=========================================================================\n";
-    std::cout << "\n\n"
-        << line
-        << err.what()
-        << "\n"
-        << line
-        << "\n" << std::endl;
+    std::cout << "\n\n" << line << err.what() << "\n" << line << "\n" << std::endl;
 
     // proper cleanup
     DRT::Problem::Done();
@@ -1039,11 +1065,11 @@ int main(
 #endif
 
 #ifdef PARALLEL
-    MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 #else
     exit(1);
 #endif
-  } // catch
+  }  // catch
 
   // proper cleanup
   DRT::Problem::Done();

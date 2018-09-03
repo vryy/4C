@@ -2,7 +2,8 @@
 /*!
 \file scatra_ele_calc_elch_diffcond_multiscale.H
 
-\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations within a multi-scale framework
+\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations within a
+multi-scale framework
 
 \level 2
 
@@ -27,121 +28,113 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCondMultiScale;
 
     // implementation of class ScaTraEleCalcElchDiffCondMultiScale
-    template<DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype>
     class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype>
     {
-      public:
+     public:
+      //! singleton access method
+      static ScaTraEleCalcElchDiffCondMultiScale<distype>* Instance(const int numdofpernode,
+          const int numscal, const std::string& disname,
+          const ScaTraEleCalcElchDiffCondMultiScale* delete_me = NULL);
 
-        //! singleton access method
-        static ScaTraEleCalcElchDiffCondMultiScale<distype>* Instance(
-            const int                                    numdofpernode,
-            const int                                    numscal,
-            const std::string&                           disname,
-            const ScaTraEleCalcElchDiffCondMultiScale*   delete_me = NULL
-            );
+      //! singleton destruction
+      virtual void Done();
 
-        //! singleton destruction
-        virtual void Done();
+     private:
+      //! abbreviation
+      typedef ScaTraEleCalc<distype> my;
+      typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
 
-      private:
+      //! constructor
+      ScaTraEleCalcElchDiffCondMultiScale(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-        //! abbreviation
-        typedef ScaTraEleCalc<distype> my;
-        typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
+      //! destructor
+      virtual ~ScaTraEleCalcElchDiffCondMultiScale() { return; };
 
-        //! constructor
-        ScaTraEleCalcElchDiffCondMultiScale(const int numdofpernode,const int numscal,const std::string& disname);
+      //! macro-scale matrix and vector contributions arising from macro-micro coupling in
+      //! multi-scale simulations
+      void CalcMatAndRhsMultiScale(const DRT::Element* const ele,  //!< element
+          Epetra_SerialDenseMatrix& emat,                          //!< element matrix
+          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+          const int k,                     //!< species index
+          const int iquad,                 //!< Gauss point index
+          const double timefacfac,  //!< domain integration factor times time integration factor
+          const double rhsfac       //!< domain integration factor times time integration factor for
+                                    //!< right-hand side vector
+      );
 
-        //! destructor
-        virtual ~ScaTraEleCalcElchDiffCondMultiScale(){return;};
+      //! calculate electrode state of charge and C rate
+      void CalculateElectrodeSOCAndCRate(
+          const DRT::Element* const& ele,             //!< the element we are dealing with
+          const DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la,            //!< location array
+          Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+          ) final;
 
-        //! macro-scale matrix and vector contributions arising from macro-micro coupling in multi-scale simulations
-        void CalcMatAndRhsMultiScale(
-            const DRT::Element* const   ele,          //!< element
-            Epetra_SerialDenseMatrix&   emat,         //!< element matrix
-            Epetra_SerialDenseVector&   erhs,         //!< element right-hand side vector
-            const int                   k,            //!< species index
-            const int                   iquad,        //!< Gauss point index
-            const double                timefacfac,   //!< domain integration factor times time integration factor
-            const double                rhsfac        //!< domain integration factor times time integration factor for right-hand side vector
-            );
+      //! get diffusion manager
+      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> DiffManager() const
+      {
+        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(
+            my::diffmanager_);
+      };
 
-        //! calculate electrode state of charge and C rate
-        void CalculateElectrodeSOCAndCRate(
-            const DRT::Element* const&     ele,              //!< the element we are dealing with
-            const DRT::Discretization&     discretization,   //!< discretization
-            DRT::Element::LocationArray&   la,               //!< location array
-            Epetra_SerialDenseVector&      scalars           //!< result vector for scalar integrals to be computed
-            ) final;
+      //! evaluate action
+      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, const SCATRA::Action& action,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
 
-        //! get diffusion manager
-        Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> DiffManager() const {return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(my::diffmanager_);};
-
-        //! evaluate action
-        int EvaluateAction(
-            DRT::Element*                  ele,
-            Teuchos::ParameterList&        params,
-            DRT::Discretization&           discretization,
-            const SCATRA::Action&          action,
-            DRT::Element::LocationArray&   la,
-            Epetra_SerialDenseMatrix&      elemat1_epetra,
-            Epetra_SerialDenseMatrix&      elemat2_epetra,
-            Epetra_SerialDenseVector&      elevec1_epetra,
-            Epetra_SerialDenseVector&      elevec2_epetra,
-            Epetra_SerialDenseVector&      elevec3_epetra
-            );
-
-        //! compute element matrix and element right-hand side vector
-        void Sysmat(
-            DRT::Element*               ele,        //!< element
-            Epetra_SerialDenseMatrix&   emat,       //!< element matrix
-            Epetra_SerialDenseVector&   erhs,       //!< element right-hand side vector
-            Epetra_SerialDenseVector&   subgrdiff   //!< subgrid diffusivity vector
-            );
-    }; // class implementation
+      //! compute element matrix and element right-hand side vector
+      void Sysmat(DRT::Element* ele,           //!< element
+          Epetra_SerialDenseMatrix& emat,      //!< element matrix
+          Epetra_SerialDenseVector& erhs,      //!< element right-hand side vector
+          Epetra_SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
+      );
+    };  // class implementation
 
 
     // implementation of class ScaTraEleDiffManagerElchDiffCondMultiScale
     class ScaTraEleDiffManagerElchDiffCondMultiScale : public ScaTraEleDiffManagerElchDiffCond
     {
-      public:
+     public:
+      //! constructor
+      ScaTraEleDiffManagerElchDiffCondMultiScale(int numscal)
+          : ScaTraEleDiffManagerElchDiffCond(numscal), sigma_(0.)
+      {
+        return;
+      };
 
-        //! constructor
-        ScaTraEleDiffManagerElchDiffCondMultiScale(int numscal) :
-          ScaTraEleDiffManagerElchDiffCond(numscal),
-          sigma_(0.)
-        {return;};
+      //! destructor
+      virtual ~ScaTraEleDiffManagerElchDiffCondMultiScale() { return; };
 
-        //! destructor
-        virtual ~ScaTraEleDiffManagerElchDiffCondMultiScale(){return;};
+      //! set electronic conductivity
+      void SetSigma(const double sigma)
+      {
+        sigma_ = sigma;
+        return;
+      };
 
-        //! set electronic conductivity
-        void SetSigma(const double sigma)
-        {
-          sigma_ = sigma;
-          return;
-        };
+      //! access electronic conductivity
+      double GetSigma() const { return sigma_; };
 
-        //! access electronic conductivity
-        double GetSigma() const {return sigma_;};
+      //! Output of transport parameter (to screen)
+      void OutputTransportParams(const int numscal)
+      {
+        // call base class routine
+        ScaTraEleDiffManagerElchDiffCond::OutputTransportParams(numscal);
 
-        //! Output of transport parameter (to screen)
-        void OutputTransportParams(const int numscal)
-        {
-          // call base class routine
-          ScaTraEleDiffManagerElchDiffCond::OutputTransportParams(numscal);
+        // additional output
+        std::cout << "electronic conductivity:   " << sigma_ << std::endl;
 
-          // additional output
-          std::cout << "electronic conductivity:   " << sigma_ << std::endl;
+        return;
+      };
 
-          return;
-        };
-
-      private:
-
-        //! electrolyte conductivity
-        double sigma_;
+     private:
+      //! electrolyte conductivity
+      double sigma_;
     };
-  } // namespace ELEMENTS
-} // namespace DRT
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif

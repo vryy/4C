@@ -49,15 +49,15 @@
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnProblemBase::NlnProblemBase()
-: isinit_(false),
-  issetup_(false),
-  comm_(Teuchos::null),
-  config_(Teuchos::null),
-  params_(Teuchos::null),
-  dofrowmap_(Teuchos::null),
-  dbgwriter_(Teuchos::null),
-  tolresl2_(0.0),
-  lengthscaling_(true)
+    : isinit_(false),
+      issetup_(false),
+      comm_(Teuchos::null),
+      config_(Teuchos::null),
+      params_(Teuchos::null),
+      dofrowmap_(Teuchos::null),
+      dbgwriter_(Teuchos::null),
+      tolresl2_(0.0),
+      lengthscaling_(true)
 {
   return;
 }
@@ -65,9 +65,8 @@ NLNSOL::NlnProblemBase::NlnProblemBase()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemBase::Init(const Epetra_Comm& comm,
-    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
-    const std::string listname, const Teuchos::ParameterList& params,
-    Teuchos::RCP<const Epetra_Map> dofrowmap,
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, const std::string listname,
+    const Teuchos::ParameterList& params, Teuchos::RCP<const Epetra_Map> dofrowmap,
     Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> dbgwriter)
 {
   // We need to call Setup() after Init()
@@ -86,16 +85,13 @@ void NLNSOL::NlnProblemBase::Init(const Epetra_Comm& comm,
   SetJacobianOperator();
 
   // read some parameters from parameter list and store them separately
-  tolresl2_ = Configuration()->GetParameter<double>(MyListName(),
-      "Nonlinear Problem: Tol Res L2");
-  lengthscaling_ = Configuration()->GetParameter<bool>(MyListName(),
-      "Nonlinear Problem: Length Scaled Norms");
+  tolresl2_ = Configuration()->GetParameter<double>(MyListName(), "Nonlinear Problem: Tol Res L2");
+  lengthscaling_ =
+      Configuration()->GetParameter<bool>(MyListName(), "Nonlinear Problem: Length Scaled Norms");
 
   // set the verbosity level
-  setVerbLevel(
-      NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
-          Configuration()->GetParameter<std::string>(MyListName(),
-              "Nonlinear Problem: Verbosity")));
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
+      Configuration()->GetParameter<std::string>(MyListName(), "Nonlinear Problem: Verbosity")));
 
   // Init() has been called
   SetIsInit();
@@ -107,8 +103,14 @@ void NLNSOL::NlnProblemBase::Init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------------*/
 bool NLNSOL::NlnProblemBase::ConvergenceCheck(const Epetra_MultiVector& f) const
 {
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   double fnorm2 = 0.0;
 
@@ -117,23 +119,29 @@ bool NLNSOL::NlnProblemBase::ConvergenceCheck(const Epetra_MultiVector& f) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool NLNSOL::NlnProblemBase::ConvergenceCheck(const Epetra_MultiVector& f,
-    double& fnorm2) const
+bool NLNSOL::NlnProblemBase::ConvergenceCheck(const Epetra_MultiVector& f, double& fnorm2) const
 {
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
-  if (f.GlobalLength() <= 0)
-    dserror("Cannot compute norm of empty residual vector!");
+  if (f.GlobalLength() <= 0) dserror("Cannot compute norm of empty residual vector!");
 
   // ---------------------------------------------------------------------------
   // compute norm
   // ---------------------------------------------------------------------------
   int err = f.Norm2(&fnorm2);
-  if (err != 0) { dserror("Failed!"); }
+  if (err != 0)
+  {
+    dserror("Failed!");
+  }
 
-  if (lengthscaling_)
-    fnorm2 /= sqrt(f.GlobalLength());
+  if (lengthscaling_) fnorm2 /= sqrt(f.GlobalLength());
   // ---------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------
@@ -169,32 +177,27 @@ bool NLNSOL::NlnProblemBase::ConvergenceCheck(const Epetra_MultiVector& f,
 const Epetra_Comm& NLNSOL::NlnProblemBase::Comm() const
 {
   // check if communicator has already been set
-  if (comm_.is_null())
-    dserror("Communicator 'comm_' has not been set, yet.");
+  if (comm_.is_null()) dserror("Communicator 'comm_' has not been set, yet.");
 
   return *comm_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
-NLNSOL::NlnProblemBase::Configuration() const
+Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> NLNSOL::NlnProblemBase::Configuration() const
 {
   // check if configuration object has already been set
-  if (config_.is_null())
-    dserror("Configuration 'config_' has not been initialized, yet.");
+  if (config_.is_null()) dserror("Configuration 'config_' has not been initialized, yet.");
 
   return config_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList>
-NLNSOL::NlnProblemBase::Params() const
+Teuchos::RCP<const Teuchos::ParameterList> NLNSOL::NlnProblemBase::Params() const
 {
   // check if parameter list has already been set
-  if (params_.is_null())
-    dserror("Teuchos::ParameterList 'params_' has not been initialized, yet.");
+  if (params_.is_null()) dserror("Teuchos::ParameterList 'params_' has not been initialized, yet.");
 
   return params_;
 }
@@ -204,8 +207,7 @@ NLNSOL::NlnProblemBase::Params() const
 Teuchos::RCP<const Epetra_Map> NLNSOL::NlnProblemBase::DofRowMap() const
 {
   // check if Jacobian operator has already been set
-  if (dofrowmap_.is_null())
-    dserror("Epetra_Map 'dofrowmap_' has not been initialized, yet.");
+  if (dofrowmap_.is_null()) dserror("Epetra_Map 'dofrowmap_' has not been initialized, yet.");
 
   return dofrowmap_;
 }
@@ -213,8 +215,7 @@ Teuchos::RCP<const Epetra_Map> NLNSOL::NlnProblemBase::DofRowMap() const
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemBase::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
-    const std::string& description,
-    const IO::VectorType vt) const
+    const std::string& description, const IO::VectorType vt) const
 {
   if (HaveDebugWriter())
   {
@@ -224,11 +225,10 @@ void NLNSOL::NlnProblemBase::WriteVector(Teuchos::RCP<const Epetra_MultiVector> 
   {
     if (getVerbLevel() > Teuchos::VERB_NONE)
     {
-      *getOStream() << Label()
-          << ": WARNING: Cant't write debug output of vector '"
-          << description << "', since debug writer 'dbgwriter_' has not been "
-              "set properly, yet."
-          << std::endl;
+      *getOStream() << Label() << ": WARNING: Cant't write debug output of vector '" << description
+                    << "', since debug writer 'dbgwriter_' has not been "
+                       "set properly, yet."
+                    << std::endl;
     }
   }
 
@@ -237,9 +237,8 @@ void NLNSOL::NlnProblemBase::WriteVector(Teuchos::RCP<const Epetra_MultiVector> 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnProblemBase::WriteVector(const Epetra_MultiVector& vec,
-    const std::string& description,
-    const IO::VectorType vt) const
+void NLNSOL::NlnProblemBase::WriteVector(
+    const Epetra_MultiVector& vec, const std::string& description, const IO::VectorType vt) const
 {
   WriteVector(Teuchos::rcp(&vec, false), description, vt);
 
@@ -255,8 +254,7 @@ bool NLNSOL::NlnProblemBase::HaveDebugWriter() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase>
-NLNSOL::NlnProblemBase::DebugWriter() const
+Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> NLNSOL::NlnProblemBase::DebugWriter() const
 {
   return dbgwriter_;
 }

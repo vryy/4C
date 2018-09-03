@@ -30,58 +30,51 @@
  *----------------------------------------------------------------------*/
 namespace MAT
 {
-
-namespace PAR
-{
-
-  /*----------------------------------------------------------------------*/
-  /// material parameters for FourierIso material
-  ///
-  /// <h3>Input line</h3>
-  /// MAT 1 THERM_FourierIsoIso CAPA 1.0 COND 1.0
-  class FourierIso : public Parameter
+  namespace PAR
   {
-  public:
+    /*----------------------------------------------------------------------*/
+    /// material parameters for FourierIso material
+    ///
+    /// <h3>Input line</h3>
+    /// MAT 1 THERM_FourierIsoIso CAPA 1.0 COND 1.0
+    class FourierIso : public Parameter
+    {
+     public:
+      /// standard constructor
+      FourierIso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-    /// standard constructor
-    FourierIso(
-      Teuchos::RCP<MAT::PAR::Material> matdata
-      );
+      /// destructor
+      virtual ~FourierIso() { ; }
 
-    /// destructor
-    virtual ~FourierIso() { ; }
+      /// @name material parameters
+      //@{
 
-    /// @name material parameters
-    //@{
+      /// volumetric heat capacity
+      const double capa_;
+      /// heat conductivity
+      const double conduct_;
 
-    /// volumetric heat capacity
-    const double capa_;
-    /// heat conductivity
-    const double conduct_;
+      //@}
 
-    //@}
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+    };  // class FourierIso
 
-  };  // class FourierIso
+  }  // namespace PAR
 
-}  // namespace PAR
+  class FourierIsoType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "FourierIsoType"; }
 
-class FourierIsoType : public DRT::ParObjectType
-{
-public:
+    static FourierIsoType& Instance() { return instance_; };
 
-  std::string Name() const { return "FourierIsoType"; }
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  static FourierIsoType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static FourierIsoType instance_;
-};
+   private:
+    static FourierIsoType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// FourierIso material according to [1]
@@ -97,9 +90,7 @@ private:
   /// \date 09/09
   class FourierIso : public Material
   {
-
-  public:
-
+   public:
     /// empty constructor
     FourierIso();
 
@@ -121,9 +112,8 @@ private:
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    virtual void Pack(
-      DRT::PackBuffer& data  ///< (in/out): char vector to store class information
-      ) const;
+    virtual void Pack(DRT::PackBuffer& data  ///< (in/out): char vector to store class information
+        ) const;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -134,8 +124,8 @@ private:
     /// UniqueParObjectId().
     ///
     virtual void Unpack(
-      const std::vector<char>& data  ///< vector storing all data to be unpacked into this
-      );
+        const std::vector<char>& data  ///< vector storing all data to be unpacked into this
+    );
 
     //@}
 
@@ -149,48 +139,41 @@ private:
     double Capacity() const { return params_->capa_; }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
-    {
-      return INPAR::MAT::m_th_fourier_iso;
-    }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_th_fourier_iso; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new FourierIso( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new FourierIso(*this)); }
 
     //@}
 
     /// Main 1D material call to determine heat flux and constitutive tensor
-    void Evaluate(
-      const LINALG::Matrix<1,1>& gradtemp,  ///< temperature gradient (strain tensor)
-      LINALG::Matrix<1,1>& cmat,  ///< constitutive matrix
-      LINALG::Matrix<1,1>& heatflux  ///< 3D heatflux (2nd PK stress)
-      ) const;
+    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+        LINALG::Matrix<1, 1>& cmat,                      ///< constitutive matrix
+        LINALG::Matrix<1, 1>& heatflux                   ///< 3D heatflux (2nd PK stress)
+        ) const;
 
     /// Main 2D material call to determine heat flux and constitutive tensor
-    void Evaluate(
-      const LINALG::Matrix<2,1>& gradtemp,  ///< temperature gradient (strain tensor)
-      LINALG::Matrix<2,2>& cmat,  ///< constitutive matrix
-      LINALG::Matrix<2,1>& heatflux  ///< 3D heatflux (2nd PK stress)
-      ) const;
+    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+        LINALG::Matrix<2, 2>& cmat,                      ///< constitutive matrix
+        LINALG::Matrix<2, 1>& heatflux                   ///< 3D heatflux (2nd PK stress)
+        ) const;
 
     /// Main 3D material call to determine heat flux and constitutive tensor
-    void Evaluate(
-      const LINALG::Matrix<3,1>& gradtemp,  ///< temperature gradient (strain tensor)
-      LINALG::Matrix<3,3>& cmat,  ///< constitutive matrix
-      LINALG::Matrix<3,1>& heatflux  ///< 3D heatflux (2nd PK stress)
-      ) const;
+    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+        LINALG::Matrix<3, 3>& cmat,                      ///< constitutive matrix
+        LINALG::Matrix<3, 1>& heatflux                   ///< 3D heatflux (2nd PK stress)
+        ) const;
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::FourierIso* params_;
 
-  }; // FourierIso
+  };  // FourierIso
 
-} // namespace MAT
+}  // namespace MAT
 
 /*----------------------------------------------------------------------*/
 #endif  // FOURIERISO_H_

@@ -23,34 +23,28 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
-  : DRT::ResultTest("PARTICLE"),
-    kineticenergy_(tintegrator.KineticEnergy()),
-    internalenergy_(tintegrator.InternalEnergy()),
-    externalenergy_(tintegrator.ExternalEnergy()),
-    maxpenetration_(tintegrator.MaximumPenetration())
+    : DRT::ResultTest("PARTICLE"),
+      kineticenergy_(tintegrator.KineticEnergy()),
+      internalenergy_(tintegrator.InternalEnergy()),
+      externalenergy_(tintegrator.ExternalEnergy()),
+      maxpenetration_(tintegrator.MaximumPenetration())
 {
   partdisc_ = tintegrator.Discretization();
 
-    dis_  = tintegrator.Dispnp();
-  if (tintegrator.Velnp() != Teuchos::null)
-    vel_  = tintegrator.Velnp();
-  if (tintegrator.Accnp() != Teuchos::null)
-    acc_  = tintegrator.Accnp();
+  dis_ = tintegrator.Dispnp();
+  if (tintegrator.Velnp() != Teuchos::null) vel_ = tintegrator.Velnp();
+  if (tintegrator.Accnp() != Teuchos::null) acc_ = tintegrator.Accnp();
 
-  if (tintegrator.AngVelnp() != Teuchos::null)
-    angvel_  = tintegrator.AngVelnp();
-  if (tintegrator.AngAccnp() != Teuchos::null)
-    angacc_  = tintegrator.AngAccnp();
+  if (tintegrator.AngVelnp() != Teuchos::null) angvel_ = tintegrator.AngVelnp();
+  if (tintegrator.AngAccnp() != Teuchos::null) angacc_ = tintegrator.AngAccnp();
 
   if (tintegrator.Radiusnp() != Teuchos::null)
     radius_ = tintegrator.Radiusnp();
   else if (tintegrator.Radiusn() != Teuchos::null)
     radius_ = tintegrator.Radiusn();
 
-  if (tintegrator.Densitynp() != Teuchos::null)
-    density_  = tintegrator.Densitynp();
-  if (tintegrator.Pressure() != Teuchos::null)
-    pressure_ = tintegrator.Pressure();
+  if (tintegrator.Densitynp() != Teuchos::null) density_ = tintegrator.Densitynp();
+  if (tintegrator.Pressure() != Teuchos::null) pressure_ = tintegrator.Pressure();
 }
 
 /*----------------------------------------------------------------------*/
@@ -59,21 +53,20 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
-  if (dis != partdisc_->Name())
-    return;
+  res.ExtractString("DIS", dis);
+  if (dis != partdisc_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE",node);
+  res.ExtractInt("NODE", node);
   node -= 1;
 
   int havenode(partdisc_->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  partdisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  partdisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
-  if (isnodeofanybody==0)
+  if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s",node+1,partdisc_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", node + 1, partdisc_->Name().c_str());
   }
   else
   {
@@ -82,13 +75,12 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       const DRT::Node* actnode = partdisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != partdisc_->Comm().MyPID())
-        return;
+      if (actnode->Owner() != partdisc_->Comm().MyPID()) return;
 
       std::string position;
-      res.ExtractString("QUANTITY",position);
+      res.ExtractString("QUANTITY", position);
       bool unknownpos = true;  // make sure the result value std::string can be handled
-      double result = 0.0;  // will hold the actual result of run
+      double result = 0.0;     // will hold the actual result of run
 
       // test displacements or pressure
       if (dis_ != Teuchos::null)
@@ -107,9 +99,10 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = disnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          int lid = disnpmap.LID(partdisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*dis_)[lid];
         }
       }
@@ -129,9 +122,10 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          int lid = velnpmap.LID(partdisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*vel_)[lid];
         }
       }
@@ -151,9 +145,10 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = accnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          int lid = accnpmap.LID(partdisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*acc_)[lid];
         }
       }
@@ -173,9 +168,10 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = angvelnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          int lid = angvelnpmap.LID(partdisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*angvel_)[lid];
         }
       }
@@ -195,9 +191,10 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = angaccnpmap.LID(partdisc_->Dof(0,actnode,idx));
+          int lid = angaccnpmap.LID(partdisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*angacc_)[lid];
         }
       }
@@ -207,8 +204,7 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       {
         const Epetra_BlockMap& radiusmap = radius_->Map();
         int idx = -1;
-        if (position == "radius")
-          idx = 0;
+        if (position == "radius") idx = 0;
 
         if (idx >= 0)
         {
@@ -226,8 +222,7 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       {
         const Epetra_BlockMap& densitynpmap = density_->Map();
         int idx = -1;
-        if (position == "density")
-          idx = 0;
+        if (position == "density") idx = 0;
 
         if (idx >= 0)
         {
@@ -241,8 +236,7 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       }
 
       // catch position std::strings, which are not handled by particle result test
-      if (unknownpos)
-        dserror("Quantity '%s' not supported in particle testing", position.c_str());
+      if (unknownpos) dserror("Quantity '%s' not supported in particle testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -257,60 +251,59 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
  | test special quantity not associated with a particular element or node   fang 02/17 |
  *-------------------------------------------------------------------------------------*/
 void PartResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-    int&                          nerr,        //!< number of failed result tests
-    int&                          test_count   ///< number of result tests
-    )
+    DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+    int& nerr,                        //!< number of failed result tests
+    int& test_count                   ///< number of result tests
+)
 {
   // make sure that quantity is tested only by one processor
-  if(partdisc_->Comm().MyPID() == 0)
+  if (partdisc_->Comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY",quantity);
+    res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
     const double result = ResultSpecial(quantity);
 
     // compare values
-    const int err = CompareValues(result,"SPECIAL",res);
+    const int err = CompareValues(result, "SPECIAL", res);
     nerr += err;
     ++test_count;
   }
 
   return;
-} // PartResultTest::TestSpecial
+}  // PartResultTest::TestSpecial
 
 
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 02/17 |
  *----------------------------------------------------------------------*/
-double PartResultTest::ResultSpecial(
-    const std::string&   quantity   //! name of quantity to be tested
+double PartResultTest::ResultSpecial(const std::string& quantity  //! name of quantity to be tested
     ) const
 {
   // initialize variable for result
   double result(0.);
 
   // kinetic energy
-  if(quantity == "kineticenergy")
-    result = kineticenergy_;
+  if (quantity == "kineticenergy") result = kineticenergy_;
 
   // internal energy
-  else if(quantity == "internalenergy")
+  else if (quantity == "internalenergy")
     result = internalenergy_;
 
   // external energy
-  else if(quantity == "externalenergy")
+  else if (quantity == "externalenergy")
     result = externalenergy_;
 
   // maximum penetration
-  else if(quantity == "maxpenetration")
+  else if (quantity == "maxpenetration")
     result = maxpenetration_;
 
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported by result testing functionality for particle problems!",quantity.c_str());
+    dserror("Quantity '%s' not supported by result testing functionality for particle problems!",
+        quantity.c_str());
 
   return result;
-} // PartResultTest::ResultSpecial
+}  // PartResultTest::ResultSpecial

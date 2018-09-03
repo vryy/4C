@@ -17,7 +17,8 @@ Created on: Jul 4, 2011
 
 // forward declarations
 class Amesos_BaseSolver;
-namespace EpetraExt {
+namespace EpetraExt
+{
   class LinearProblem_Reindex2;
 }
 
@@ -30,34 +31,32 @@ namespace LINALG
     /// direct linear solver (using amesos)
     class DirectSolver : public SolverType
     {
-    public:
-
+     public:
       //! Constructor
-      explicit DirectSolver( std::string solvertype );
+      explicit DirectSolver(std::string solvertype);
 
       //! Desctructor
       virtual ~DirectSolver();
 
       //! Setup
-      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, ///< matrix
-          Teuchos::RCP<Epetra_MultiVector> x, ///< solution vector
-          Teuchos::RCP<Epetra_MultiVector> b, ///< right hand side
-          bool refactor, ///< Enforce refactorization?
-          bool reset, ///< Enforce re-setup of solver?
-          Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null ///< Krylov projector
-          );
+      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix,  ///< matrix
+          Teuchos::RCP<Epetra_MultiVector> x,                   ///< solution vector
+          Teuchos::RCP<Epetra_MultiVector> b,                   ///< right hand side
+          bool refactor,                                        ///< Enforce refactorization?
+          bool reset,                                           ///< Enforce re-setup of solver?
+          Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null  ///< Krylov projector
+      );
 
       //! Actual call to the underlying amesos solver
       virtual int Solve();
 
       virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
-      virtual PreconditionerType * Preconditioner() { return NULL; }
+      virtual PreconditionerType* Preconditioner() { return NULL; }
 
       bool IsFactored() { return factored_; }
 
-    private:
-
+     private:
       //! type/implementation of Amesos solver to be used
       const std::string solvertype_;
 
@@ -84,10 +83,9 @@ namespace LINALG
 
       //! Krylov projector if necessary
       Teuchos::RCP<LINALG::KrylovProjector> projector_;
-
     };
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_DIRECTSOLVER_H_ */

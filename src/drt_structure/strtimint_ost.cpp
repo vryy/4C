@@ -22,8 +22,7 @@
 void STR::TimIntOneStepTheta::VerifyCoeff()
 {
   // check value of theta
-  if ( (theta_ <= 0.0) or (theta_ > 1.0) )
-    dserror("theta out of range (0.0,1.0]");
+  if ((theta_ <= 0.0) or (theta_ > 1.0)) dserror("theta out of range (0.0,1.0]");
 
   // done
   return;
@@ -31,62 +30,42 @@ void STR::TimIntOneStepTheta::VerifyCoeff()
 
 /*======================================================================*/
 /* constructor */
-STR::TimIntOneStepTheta::TimIntOneStepTheta
-(
-  const Teuchos::ParameterList& timeparams,
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& sdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-)
-: TimIntImpl
-  (
-    timeparams,
-    ioparams,
-    sdynparams,
-    xparams,
-    actdis,
-    solver,
-    contactsolver,
-    output
-  ),
-  theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
-  dist_(Teuchos::null),
-  velt_(Teuchos::null),
-  acct_(Teuchos::null),
-  fint_(Teuchos::null),
-  fintn_(Teuchos::null),
-  fext_(Teuchos::null),
-  fextn_(Teuchos::null),
-  finert_(Teuchos::null),
-  finertt_(Teuchos::null),
-  finertn_(Teuchos::null),
-  fvisct_(Teuchos::null)
+STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
+      theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
+      dist_(Teuchos::null),
+      velt_(Teuchos::null),
+      acct_(Teuchos::null),
+      fint_(Teuchos::null),
+      fintn_(Teuchos::null),
+      fext_(Teuchos::null),
+      fextn_(Teuchos::null),
+      finert_(Teuchos::null),
+      finertt_(Teuchos::null),
+      finertn_(Teuchos::null),
+      fvisct_(Teuchos::null)
 {
   // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // First do everything on the more basic objects like the discretizations, like e.g.
+  // redistribution of elements. Only then call the setup to this class. This will call the setup to
+  // all classes in the inheritance hierarchy. This way, this class may also override a method that
+  // is called during Setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::Init
-(
-    const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver
-)
+void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
 {
   // call Init() in base class
-  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
   // general variable verifications:
   // info to user about current time integration scheme and its parametrization
@@ -117,8 +96,9 @@ void STR::TimIntOneStepTheta::Setup()
   }
   else
   {
-    // the case of nonlinear inertia terms works so far only for examples with vanishing initial accelerations, i.e. the initial external
-    // forces and initial velocities have to be chosen consistently!!!
+    // the case of nonlinear inertia terms works so far only for examples with vanishing initial
+    // accelerations, i.e. the initial external forces and initial velocities have to be chosen
+    // consistently!!!
     (*acc_)(0)->PutScalar(0.0);
   }
 
@@ -157,7 +137,8 @@ void STR::TimIntOneStepTheta::Setup()
   // create parameter list
   Teuchos::ParameterList params;
 
-  // add initial forces due to 0D cardiovascular coupling conditions - needed in case of initial ventricular pressure!
+  // add initial forces due to 0D cardiovascular coupling conditions - needed in case of initial
+  // ventricular pressure!
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", 1.0);
   pwindk.set("time_step_size", (*dt_)[0]);
@@ -166,17 +147,19 @@ void STR::TimIntOneStepTheta::Setup()
   if (!HaveNonlinearMass())
   {
     // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_,params);
+    ApplyForceStiffInternal(
+        (*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_, params);
   }
   else
   {
-    double timeintfac_dis=theta_*theta_*(*dt_)[0]*(*dt_)[0];
-    double timeintfac_vel=theta_*(*dt_)[0];
+    double timeintfac_dis = theta_ * theta_ * (*dt_)[0] * (*dt_)[0];
+    double timeintfac_vel = theta_ * (*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel,
+        (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_, params);
 
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0),&sdynparams_);
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
   }
 
   return;
@@ -194,19 +177,14 @@ void STR::TimIntOneStepTheta::PredictConstDisConsistVelAcc()
   disn_->Update(1.0, *(*dis_)(0), 0.0);
 
   // new end-point velocities
-  veln_->Update(1.0/(theta_*dt), *disn_,
-                -1.0/(theta_*dt), *(*dis_)(0),
-                0.0);
-  veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
-                1.0);
+  veln_->Update(1.0 / (theta_ * dt), *disn_, -1.0 / (theta_ * dt), *(*dis_)(0), 0.0);
+  veln_->Update(-(1.0 - theta_) / theta_, *(*vel_)(0), 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
-                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
-                0.0);
-  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0),
-                -(1.0-theta_)/theta_, *(*acc_)(0),
-                1.0);
+  accn_->Update(1.0 / (theta_ * theta_ * dt * dt), *disn_, -1.0 / (theta_ * theta_ * dt * dt),
+      *(*dis_)(0), 0.0);
+  accn_->Update(
+      -1.0 / (theta_ * theta_ * dt), *(*vel_)(0), -(1.0 - theta_) / theta_, *(*acc_)(0), 1.0);
 
   // watch out
   return;
@@ -225,19 +203,14 @@ void STR::TimIntOneStepTheta::PredictConstVelConsistAcc()
   disn_->Update(1.0, (*dis_)[0], dt, (*vel_)[0], 0.0);
 
   // new end-point velocities
-  veln_->Update(1.0/(theta_*dt), *disn_,
-                -1.0/(theta_*dt), *(*dis_)(0),
-                0.0);
-  veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
-                1.0);
+  veln_->Update(1.0 / (theta_ * dt), *disn_, -1.0 / (theta_ * dt), *(*dis_)(0), 0.0);
+  veln_->Update(-(1.0 - theta_) / theta_, *(*vel_)(0), 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
-                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
-                0.0);
-  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0),
-                -(1.0-theta_)/theta_, *(*acc_)(0),
-                1.0);
+  accn_->Update(1.0 / (theta_ * theta_ * dt * dt), *disn_, -1.0 / (theta_ * theta_ * dt * dt),
+      *(*dis_)(0), 0.0);
+  accn_->Update(
+      -1.0 / (theta_ * theta_ * dt), *(*vel_)(0), -(1.0 - theta_) / theta_, *(*acc_)(0), 1.0);
   // That's it!
   return;
 }
@@ -256,19 +229,14 @@ void STR::TimIntOneStepTheta::PredictConstAcc()
   disn_->Update(dt * dt / 2., (*acc_)[0], 1.0);
 
   // new end-point velocities
-  veln_->Update(1.0/(theta_*dt), *disn_,
-                -1.0/(theta_*dt), *(*dis_)(0),
-                0.0);
-  veln_->Update(-(1.0-theta_)/theta_, *(*vel_)(0),
-                1.0);
+  veln_->Update(1.0 / (theta_ * dt), *disn_, -1.0 / (theta_ * dt), *(*dis_)(0), 0.0);
+  veln_->Update(-(1.0 - theta_) / theta_, *(*vel_)(0), 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(theta_*theta_*dt*dt), *disn_,
-                -1.0/(theta_*theta_*dt*dt), *(*dis_)(0),
-                0.0);
-  accn_->Update(-1.0/(theta_*theta_*dt), *(*vel_)(0),
-                -(1.0-theta_)/theta_, *(*acc_)(0),
-                1.0);
+  accn_->Update(1.0 / (theta_ * theta_ * dt * dt), *disn_, -1.0 / (theta_ * theta_ * dt * dt),
+      *(*dis_)(0), 0.0);
+  accn_->Update(
+      -1.0 / (theta_ * theta_ * dt), *(*vel_)(0), -(1.0 - theta_) / theta_, *(*acc_)(0), 1.0);
 
   // That's it!
   return;
@@ -281,13 +249,11 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
 {
   // get info about prediction step from parameter list
   bool predict = false;
-  if(params.isParameter("predict"))
-    predict = params.get<bool>("predict");
+  if (params.isParameter("predict")) predict = params.get<bool>("predict");
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
-  if(damping_ == INPAR::STR::damp_material)
-    damp_->Zero();
+  if (damping_ == INPAR::STR::damp_material) damp_->Zero();
 
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -314,16 +280,18 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   }
   else
   {
-    //Remark: Since our element evaluate routine is only designed for two input matrices
+    // Remark: Since our element evaluate routine is only designed for two input matrices
     //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
-    //inertia forces AND material damping. Therefore this case is already captured in strtimint.cpp.
+    // inertia forces AND material damping. Therefore this case is already captured in
+    // strtimint.cpp.
 
-    //If we have nonlinear inertia forces, the corresponding contributions are computed together with the internal forces
+    // If we have nonlinear inertia forces, the corresponding contributions are computed together
+    // with the internal forces
     finertn_->PutScalar(0.0);
     mass_->Zero();
 
-    // In general the nonlinear inertia force can depend on displacements, velocities and accelerations,
-    // i.e     finertn_=finertn_(disn_, veln_, accn_):
+    // In general the nonlinear inertia force can depend on displacements, velocities and
+    // accelerations, i.e     finertn_=finertn_(disn_, veln_, accn_):
     //
     //    LIN finertn_ = [ d(finertn_)/d(disn_) + 1/(theta_*dt_)*d(finertn_)/d(veln_)
     //                 + 1/(theta_*theta_*dt_*dt_)*d(finertn_)/d(accn_) ]*disi_
@@ -332,24 +300,26 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
     //                 + (theta_*dt_)*d(finertn_)/d(veln_) + d(finertn_)/d(accn_)]*disi_
     //
     // While the factor 1/(theta_*dt_^2) is applied later on in strtimint_ost.cpp the
-    // factors timintfac_dis=(theta_^2*dt_^2) and timeintfac_vel=(theta_*dt_) have directly to be applied
-    // on element level before the three contributions of the linearization are summed up in mass_.
+    // factors timintfac_dis=(theta_^2*dt_^2) and timeintfac_vel=(theta_*dt_) have directly to be
+    // applied on element level before the three contributions of the linearization are summed up in
+    // mass_.
 
-    double timintfac_dis=theta_*theta_*(*dt_)[0]*(*dt_)[0];
-    double timintfac_vel=theta_*(*dt_)[0];
-    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_,params);
+    double timintfac_dis = theta_ * theta_ * (*dt_)[0] * (*dt_)[0];
+    double timintfac_vel = theta_ * (*dt_)[0];
+    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_,
+        disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_, params);
   }
 
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
-  psprdash.set("time_fac", 1./(theta_*(*dt_)[0]));
-  psprdash.set("dt", (*dt_)[0]); // needed only for cursurfnormal option!!
-  ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
+  psprdash.set("time_fac", 1. / (theta_ * (*dt_)[0]));
+  psprdash.set("dt", (*dt_)[0]);  // needed only for cursurfnormal option!!
+  ApplyForceStiffSpringDashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
 
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon;
-  //constraint matrix has to be scaled with the same value fintn_ is scaled with
-  pcon.set("scaleConstrMat",theta_);
+  // constraint matrix has to be scaled with the same value fintn_ is scaled with
+  pcon.set("scaleConstrMat", theta_);
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // add forces and stiffness due to 0D cardiovascular coupling conditions
@@ -385,30 +355,29 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   //                     + C . V_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
-  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
-  fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
+  fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
+  fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fvisct_, 1.0);
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
-  //std::cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << std::endl;
+  // std::cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M
   //                + 1/dt C
   //                + theta K_{T}
-  stiff_->Add(*mass_, false, 1.0/(theta_*(*dt_)[0]*(*dt_)[0]), theta_);
+  stiff_->Add(*mass_, false, 1.0 / (theta_ * (*dt_)[0] * (*dt_)[0]), theta_);
   if (damping_ != INPAR::STR::damp_none)
   {
-    if(damping_ == INPAR::STR::damp_material)
-      damp_->Complete();
-    stiff_->Add(*damp_, false, 1.0/(*dt_)[0], 1.0);
+    if (damping_ == INPAR::STR::damp_material) damp_->Complete();
+    stiff_->Add(*damp_, false, 1.0 / (*dt_)[0], 1.0);
   }
 
   // apply forces and stiffness due to beam contact
-  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+  ApplyForceStiffBeamContact(stiff_, fres_, disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying
   // Note that we ALWAYS use a TR-like approach to compute the interface
@@ -416,7 +385,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   // mid-point n+theta, but use a linear combination of the old end-
   // point n and the new end-point n+1 instead:
   // F_{c;n+theta} := theta * F_{c;n+1} +  (1-theta) * F_{c;n}
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
+  ApplyForceStiffContactMeshtying(stiff_, fres_, disn_, predict);
 
   // close stiffness matrix
   stiff_->Complete();
@@ -495,8 +464,8 @@ void STR::TimIntOneStepTheta::EvaluateForceResidual()
   //                     + C . V_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
-  fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 0.0);
-  fres_->Update(theta_, *fintn_, (1.0-theta_), *fint_, 1.0);
+  fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
+  fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fvisct_, 1.0);
@@ -512,7 +481,7 @@ void STR::TimIntOneStepTheta::EvaluateForceResidual()
 void STR::TimIntOneStepTheta::DetermineMass()
 {
   // F_{inert;1+theta} := theta * F_{inert;n+1} + (1-theta) * F_{inert;n}
-  finertt_->Update(theta_, *finertn_, (1.0-theta_), *finert_, 0.0);
+  finertt_->Update(theta_, *finertn_, (1.0 - theta_), *finert_, 0.0);
   return;
 }
 
@@ -522,15 +491,15 @@ void STR::TimIntOneStepTheta::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+theta} := theta * D_{n+1} + (1-theta) * D_{n}
-  dist_->Update(theta_, *disn_, 1.0-theta_, *(*dis_)(0), 0.0);
+  dist_->Update(theta_, *disn_, 1.0 - theta_, *(*dis_)(0), 0.0);
 
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+theta} := theta * V_{n+1} + (1-theta) * V_{n}
-  velt_->Update(theta_, *veln_, 1.0-theta_, *(*vel_)(0), 0.0);
+  velt_->Update(theta_, *veln_, 1.0 - theta_, *(*vel_)(0), 0.0);
 
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+theta} := theta * A_{n+1} + (1-theta) * A_{n}
-  acct_->Update(theta_, *accn_, 1.0-theta_, *(*acc_)(0), 0.0);
+  acct_->Update(theta_, *accn_, 1.0 - theta_, *(*acc_)(0), 0.0);
 
   // jump
   return;
@@ -571,7 +540,8 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
   freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   // return char norm
-  return std::max(fviscnorm, std::max(finertnorm, std::max(fintnorm, std::max(fextnorm, freactnorm))));
+  return std::max(
+      fviscnorm, std::max(finertnorm, std::max(fintnorm, std::max(fextnorm, freactnorm))));
 }
 
 /*----------------------------------------------------------------------*/
@@ -583,28 +553,23 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*DofRowMapView(), false);
+  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*DofRowMapView(), false);
 
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  aux->Update(1.0/(theta_*(*dt_)[0]), *disn_,
-               -1.0/(theta_*(*dt_)[0]), *(*dis_)(0),
-               0.0);
-  aux->Update(-(1.0-theta_)/theta_, *(*vel_)(0), 1.0);
+  aux->Update(1.0 / (theta_ * (*dt_)[0]), *disn_, -1.0 / (theta_ * (*dt_)[0]), *(*dis_)(0), 0.0);
+  aux->Update(-(1.0 - theta_) / theta_, *(*vel_)(0), 1.0);
   // put only to free/non-DBC DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
   // new end-point accelerations
-  aux->Update(1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *disn_,
-              -1.0/(theta_*theta_*(*dt_)[0]*(*dt_)[0]), *(*dis_)(0),
-              0.0);
-  aux->Update(-1.0/(theta_*theta_*(*dt_)[0]), *(*vel_)(0),
-              -(1.0-theta_)/theta_, *(*acc_)(0),
-              1.0);
+  aux->Update(1.0 / (theta_ * theta_ * (*dt_)[0] * (*dt_)[0]), *disn_,
+      -1.0 / (theta_ * theta_ * (*dt_)[0] * (*dt_)[0]), *(*dis_)(0), 0.0);
+  aux->Update(-1.0 / (theta_ * theta_ * (*dt_)[0]), *(*vel_)(0), -(1.0 - theta_) / theta_,
+      *(*acc_)(0), 1.0);
   // put only to free/non-DBC DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), accn_);
 
@@ -621,10 +586,10 @@ void STR::TimIntOneStepTheta::UpdateIterIteratively()
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  veln_->Update(1.0/(theta_*(*dt_)[0]), *disi_, 1.0);
+  veln_->Update(1.0 / (theta_ * (*dt_)[0]), *disi_, 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/((*dt_)[0]*(*dt_)[0]*theta_*theta_), *disi_, 1.0);
+  accn_->Update(1.0 / ((*dt_)[0] * (*dt_)[0] * theta_ * theta_), *disi_, 1.0);
 
   // bye
   return;
@@ -646,8 +611,7 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   acc_->UpdateSteps(*accn_);
 
   // material displacements (struct ale)
-  if( (dismatn_!=Teuchos::null))
-    dismat_->UpdateSteps(*dismatn_);
+  if ((dismatn_ != Teuchos::null)) dismat_->UpdateSteps(*dismatn_);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -693,20 +657,20 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
-  //p.set("alpha f", theta_);
+  // p.set("alpha f", theta_);
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
   discret_->ClearState();
-  discret_->SetState("displacement",(*dis_)(0));
+  discret_->SetState("displacement", (*dis_)(0));
 
   // Set material displacement state for ale-wear formulation
-  if( (dismat_!=Teuchos::null))
-    discret_->SetState("material_displacement",(*dismat_)(0));
+  if ((dismat_ != Teuchos::null)) discret_->SetState("material_displacement", (*dismat_)(0));
 
   if (!HaveNonlinearMass())
   {
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->Evaluate(
+        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
   else
   {
@@ -714,8 +678,8 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     // and accelerations at the end of time step (currently only necessary for Kirchhoff beams)
     // An corresponding update rule has to be implemented in the element, otherwise
     // displacements, velocities and accelerations remain unchange.
-    discret_->SetState("velocity",(*vel_)(0));
-    discret_->SetState("acceleration",(*acc_)(0));
+    discret_->SetState("velocity", (*vel_)(0));
+    discret_->SetState("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
     update_disp = LINALG::CreateVector(*DofRowMapView(), true);
@@ -729,13 +693,12 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
 
-    disn_->Update(1.0,*update_disp,1.0);
-    (*dis_)(0)->Update(1.0,*update_disp,1.0);
-    veln_->Update(1.0,*update_vel,1.0);
-    (*vel_)(0)->Update(1.0,*update_vel,1.0);
-    accn_->Update(1.0,*update_acc,1.0);
-    (*acc_)(0)->Update(1.0,*update_acc,1.0);
-
+    disn_->Update(1.0, *update_disp, 1.0);
+    (*dis_)(0)->Update(1.0, *update_disp, 1.0);
+    veln_->Update(1.0, *update_vel, 1.0);
+    (*vel_)(0)->Update(1.0, *update_vel, 1.0);
+    accn_->Update(1.0, *update_acc, 1.0);
+    (*acc_)(0)->Update(1.0, *update_acc, 1.0);
   }
 
   discret_->ClearState();
@@ -759,8 +722,8 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
 /* write internal and external forces for restart */
 void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
-  output->WriteVector("fexternal",fext_);
-  output->WriteVector("fint",fint_);
-  output->WriteVector("finert",finert_);
+  output->WriteVector("fexternal", fext_);
+  output->WriteVector("fint", fint_);
+  output->WriteVector("finert", finert_);
   return;
 }

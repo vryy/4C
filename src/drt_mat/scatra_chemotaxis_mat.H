@@ -22,61 +22,53 @@ Maintainer: Moritz Thon
 
 namespace MAT
 {
-
   namespace PAR
   {
+    /*----------------------------------------------------------------------*/
+    /// parameters for scalar transport material
+    class ScatraChemotaxisMat : public Parameter
+    {
+     public:
+      /// standard constructor
+      ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-  /*----------------------------------------------------------------------*/
-  /// parameters for scalar transport material
-  class ScatraChemotaxisMat : public Parameter
+      /// destructor
+      virtual ~ScatraChemotaxisMat() { ; }
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// number of scalars in this pair
+      const int numscal_;
+
+      /// the list of material IDs
+      const std::vector<int>* pair_;
+
+      /// reaction coefficient
+      const double chemocoeff_;
+
+    };  // class Scatra
+
+  }  // namespace PAR
+
+  class ScatraChemotaxisMatType : public DRT::ParObjectType
   {
-  public:
+   public:
+    std::string Name() const { return "ScatraChemotaxisMatType"; }
 
-    /// standard constructor
-    ScatraChemotaxisMat(
-      Teuchos::RCP<MAT::PAR::Material> matdata
-      );
+    static ScatraChemotaxisMatType& Instance() { return instance_; };
 
-    /// destructor
-    virtual ~ScatraChemotaxisMat() { ; }
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
-
-    /// number of scalars in this pair
-    const int numscal_;
-
-    /// the list of material IDs
-    const std::vector<int>* pair_;
-
-    /// reaction coefficient
-    const double chemocoeff_;
-
-  };  // class Scatra
-
-} // namespace PAR
-
-class ScatraChemotaxisMatType : public DRT::ParObjectType
-{
-public:
-
-  std::string Name() const { return "ScatraChemotaxisMatType"; }
-
-  static ScatraChemotaxisMatType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ScatraChemotaxisMatType instance_;
-};
+   private:
+    static ScatraChemotaxisMatType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
   class ScatraChemotaxisMat : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ScatraChemotaxisMat();
 
@@ -91,7 +83,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ScatraChemotaxisMatType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return ScatraChemotaxisMatType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -122,10 +117,16 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra_chemotaxis; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_scatra_chemotaxis;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ScatraChemotaxisMat( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new ScatraChemotaxisMat(*this));
+    }
 
     /// return number of scalars for this reaction
     int NumScal() const { return params_->numscal_; }
@@ -139,13 +140,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::ScatraChemotaxisMat* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif /* SCATRA_CHEMOTAXIS_MAT_H_ */

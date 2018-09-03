@@ -29,10 +29,11 @@
 /*----------------------------------------------------------------------*
  | Constructor (public)                                      Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper( const Teuchos::RCP<DRT::Discretization> actdis )
+FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
+    const Teuchos::RCP<DRT::Discretization> actdis)
 {
   std::vector<DRT::Condition*> impedancecond;
-  actdis->GetCondition("ImpedanceCond",impedancecond);
+  actdis->GetCondition("ImpedanceCond", impedancecond);
 
   // the number of lines of impedance boundary conditions found in the input
   // note that some of these lines could belong to the same physical condition
@@ -54,7 +55,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper( const Teuchos::RCP<DRT
   // now care for the fact that there could be more than one input line
   // belonging to the same impedance boundary condition
   // -------------------------------------------------------------------
-  for (int i=0; i<numcondlines; i++)
+  for (int i = 0; i < numcondlines; i++)
   {
     int condid = (impedancecond[i])->GetInt("ConditionID");
 
@@ -65,33 +66,36 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper( const Teuchos::RCP<DRT
     // -------------------------------------------------------------------
     // allocate the impedance bc class members for every case
     // -------------------------------------------------------------------
-    Teuchos::RCP<FluidImpedanceBc> impedancebc = Teuchos::rcp(new FluidImpedanceBc(actdis, condid, impedancecond[i]) );
+    Teuchos::RCP<FluidImpedanceBc> impedancebc =
+        Teuchos::rcp(new FluidImpedanceBc(actdis, condid, impedancecond[i]));
 
     // -----------------------------------------------------------------
     // sort impedance bc's in map and test, if one condition ID appears
     // more than once. Currently this case is forbidden.
     // -----------------------------------------------------------------
-    bool inserted = impmap_.insert( std::make_pair( condid, impedancebc ) ).second;
-    if ( !inserted )
-      dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
-  } // end loop over condition lines from input
+    bool inserted = impmap_.insert(std::make_pair(condid, impedancebc)).second;
+    if (!inserted)
+      dserror(
+          "There are more than one impedance condition lines with the same ID. This can not yet be "
+          "handled.");
+  }  // end loop over condition lines from input
   return;
-} // end FluidImpedanceWrapper
+}  // end FluidImpedanceWrapper
 
 /*----------------------------------------------------------------------*
  |  Split linearization matrix to a BlockSparseMatrixBase    Thon 07/16 |
  *----------------------------------------------------------------------*/
 
-void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
-                                                       const LINALG::MultiMapExtractor& domainmaps,
-                                                       const LINALG::MultiMapExtractor& rangemaps,
-                                                       bool                             splitmatrix)
+void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
+    const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps,
+    bool splitmatrix)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    mapiter->second->FluidImpedanceBc::UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
+    mapiter->second->FluidImpedanceBc::UseBlockMatrix(
+        condelements, domainmaps, rangemaps, splitmatrix);
   }
   return;
 }
@@ -99,20 +103,19 @@ void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int
 /*----------------------------------------------------------------------*
  |  Wrap update of residual                                  Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(
-    const double dta,
-    const double time,
-    Teuchos::RCP<Epetra_Vector>& residual,
-    Teuchos::RCP<LINALG::SparseOperator>& sysmat )
+void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(const double dta,
+    const double time, Teuchos::RCP<Epetra_Vector>& residual,
+    Teuchos::RCP<LINALG::SparseOperator>& sysmat)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    //calc flux
+    // calc flux
     mapiter->second->FluidImpedanceBc::FlowRateCalculation(mapiter->first);
-    //calc pressure and traction vector and appliy to fluid residual and sysmat
-    mapiter->second->FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(residual, sysmat, dta, time, mapiter->first);
+    // calc pressure and traction vector and appliy to fluid residual and sysmat
+    mapiter->second->FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(
+        residual, sysmat, dta, time, mapiter->first);
   }
   return;
 }
@@ -122,12 +125,12 @@ void FLD::UTILS::FluidImpedanceWrapper::AddImpedanceBCToResidualAndSysmat(
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceWrapper::TimeUpdateImpedances(const double time)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    //update time step
-    mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time,mapiter->first);
+    // update time step
+    mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time, mapiter->first);
   }
   return;
 }
@@ -135,13 +138,13 @@ void FLD::UTILS::FluidImpedanceWrapper::TimeUpdateImpedances(const double time)
 /*----------------------------------------------------------------------*
  |  Wrap restart writing                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter& output )
+void FLD::UTILS::FluidImpedanceWrapper::WriteRestart(IO::DiscretizationWriter& output)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    mapiter->second->FluidImpedanceBc::WriteRestart(output,mapiter->first);
+    mapiter->second->FluidImpedanceBc::WriteRestart(output, mapiter->first);
   }
   return;
 }
@@ -149,12 +152,12 @@ void FLD::UTILS::FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter& 
 /*----------------------------------------------------------------------*
  |  Wrap restart reading                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidImpedanceWrapper::ReadRestart(IO::DiscretizationReader& reader)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
-    mapiter->second->FluidImpedanceBc::ReadRestart(reader,mapiter->first);
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
+    mapiter->second->FluidImpedanceBc::ReadRestart(reader, mapiter->first);
 
   return;
 }
@@ -162,42 +165,41 @@ void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& r
 /*----------------------------------------------------------------------*
  |  Return relative vector of relative pressure errors      Thon 07/16 |
  *----------------------------------------------------------------------*/
-std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors( )
+std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors()
 {
   std::vector<double> wk_rel_error;
 
   // get an iterator to my map
-    std::map<const int, Teuchos::RCP<class FLD::UTILS::FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FLD::UTILS::FluidImpedanceBc>>::iterator mapiter;
 
-  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    wk_rel_error.push_back( mapiter->second->FLD::UTILS::FluidImpedanceBc::getWKrelerror() );
+    wk_rel_error.push_back(mapiter->second->FLD::UTILS::FluidImpedanceBc::getWKrelerror());
   }
 
- return wk_rel_error;
+  return wk_rel_error;
 }
 
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretization> actdis,
-                                               const int condid,
-                                               DRT::Condition* impedancecond
-):  discret_(actdis),
-    myrank_(discret_->Comm().MyPID()),
-    theta_(0.5),
-    treetype_(*(impedancecond->Get<std::string>("TYPE"))),
-    period_(impedancecond->GetDouble("TIMEPERIOD")),
-    R1_(impedancecond->GetDouble("R1")),
-    R2_(impedancecond->GetDouble("R2")),
-    C_(impedancecond->GetDouble("C")),
-    functnum_(impedancecond->GetInt("FUNCT"))
+FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
+    const Teuchos::RCP<DRT::Discretization> actdis, const int condid, DRT::Condition* impedancecond)
+    : discret_(actdis),
+      myrank_(discret_->Comm().MyPID()),
+      theta_(0.5),
+      treetype_(*(impedancecond->Get<std::string>("TYPE"))),
+      period_(impedancecond->GetDouble("TIMEPERIOD")),
+      R1_(impedancecond->GetDouble("R1")),
+      R2_(impedancecond->GetDouble("R2")),
+      C_(impedancecond->GetDouble("C")),
+      functnum_(impedancecond->GetInt("FUNCT"))
 {
-  if(myrank_ == 0)
+  if (myrank_ == 0)
   {
-    std::cout<<"------------------------------------------------------"<<std::endl;
-    std::cout<<"Initializing impedance condition "<<condid <<std::endl;
+    std::cout << "------------------------------------------------------" << std::endl;
+    std::cout << "Initializing impedance condition " << condid << std::endl;
   }
 
   // ---------------------------------------------------------------------
@@ -218,8 +220,9 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   // ---------------------------------------------------------------------
   // get theta of global time integration scheme to use it here
   // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5
-  std::string dyntype = DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("TIMEINTEGR");
-  if(dyntype == "One_Step_Theta")
+  std::string dyntype =
+      DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("TIMEINTEGR");
+  if (dyntype == "One_Step_Theta")
     theta_ = DRT::Problem::Instance()->FluidDynamicParams().get<double>("THETA");
 
   // ---------------------------------------------------------------------
@@ -228,19 +231,20 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
-  impedancetbcsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
-  //NOTE: do not call impedancetbcsysmat_->Complete() before it is filled, since
+  impedancetbc_ = LINALG::CreateVector(*dofrowmap, true);
+  impedancetbcsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+  // NOTE: do not call impedancetbcsysmat_->Complete() before it is filled, since
   // this is our check if it has already been initialized
 
   // some safety check
-  if ( not(treetype_ == "windkessel" or treetype_ == "resistive" or treetype_ == "pressure_by_funct") )
-    dserror("TYPE %s not supported!",treetype_.c_str());
+  if (not(treetype_ == "windkessel" or treetype_ == "resistive" or
+          treetype_ == "pressure_by_funct"))
+    dserror("TYPE %s not supported!", treetype_.c_str());
 
-  if(myrank_ == 0)
+  if (myrank_ == 0)
   {
-    std::cout<<"Impedance type: "<<treetype_.c_str()<<std::endl;
-    std::cout<<"------------------------------------------------------"<<std::endl;
+    std::cout << "Impedance type: " << treetype_.c_str() << std::endl;
+    std::cout << "------------------------------------------------------" << std::endl;
   }
 
   return;
@@ -249,17 +253,17 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
 /*----------------------------------------------------------------------*
  |  Split linearization matrix to a BlockSparseMatrixBase   Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
-                                                  const LINALG::MultiMapExtractor& domainmaps,
-                                                  const LINALG::MultiMapExtractor& rangemaps,
-                                                  bool                             splitmatrix)
+void FLD::UTILS::FluidImpedanceBc::UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
+    const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps,
+    bool splitmatrix)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
 
   if (splitmatrix)
   {
     // (re)allocate system matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+        domainmaps, rangemaps, 108, false, true));
     mat->SetCondElements(condelements);
     impedancetbcsysmat_ = mat;
   }
@@ -290,33 +294,33 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",FLD::calc_flowrate);
+  eleparams.set<int>("action", FLD::calc_flowrate);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap, true);
 
-  discret_->EvaluateCondition(eleparams,flowrates,"ImpedanceCond",condid);
+  discret_->EvaluateCondition(eleparams, flowrates, "ImpedanceCond", condid);
 
   double local_flowrate = 0.0;
-  for (int i=0; i < dofrowmap->NumMyElements(); i++)
+  for (int i = 0; i < dofrowmap->NumMyElements(); i++)
   {
-    local_flowrate +=((*flowrates)[i]);
+    local_flowrate += ((*flowrates)[i]);
   }
 
   double flowrate = 0.0;
-  dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+  dofrowmap->Comm().SumAll(&local_flowrate, &flowrate, 1);
 
   Q_np_ = flowrate;
 
-//  if (myrank_ == 0)
-//    std::cout<<"Impedance condition Id: "<<condid<<", Current flux: "<<flowrate<<std::endl;
+  //  if (myrank_ == 0)
+  //    std::cout<<"Impedance condition Id: "<<condid<<", Current flux: "<<flowrate<<std::endl;
 
   return;
-}//FluidImplicitTimeInt::FlowRateCalculation
+}  // FluidImplicitTimeInt::FlowRateCalculation
 
 
 
@@ -324,11 +328,8 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const int condid)
  |  Apply Impedance to outflow boundary                      Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualAndSysmat(
-    Teuchos::RCP<Epetra_Vector>& residual,
-    Teuchos::RCP<LINALG::SparseOperator>& sysmat,
-    const double dta,
-    const double time,
-    const int condid )
+    Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat,
+    const double dta, const double time, const int condid)
 {
   // ---------------------------------------------------------------------//
   // ---------------------------------------------------------------------//
@@ -339,50 +340,51 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
   double pressure;
   double Q_np_fac;
 
-  if(treetype_ == "resistive")
+  if (treetype_ == "resistive")
   {
-    Q_np_fac = R1_+R2_;
-    pressure = Q_np_fac*Q_np_;
+    Q_np_fac = R1_ + R2_;
+    pressure = Q_np_fac * Q_np_;
   }
-  else if(treetype_ == "windkessel")
+  else if (treetype_ == "windkessel")
   {
-    const double fac = 1.0/(C_*R2_+theta_*dta);
-    const double p_n_fac = fac * ( C_*R2_-dta*(1-theta_) );
-    const double Q_n_fac = fac * ( dta*(1-theta_)*(R1_+R2_)-C_*R1_*R2_ );
-    Q_np_fac = fac * ( C_*R1_*R2_ + dta*theta_*(R1_+R2_) );
+    const double fac = 1.0 / (C_ * R2_ + theta_ * dta);
+    const double p_n_fac = fac * (C_ * R2_ - dta * (1 - theta_));
+    const double Q_n_fac = fac * (dta * (1 - theta_) * (R1_ + R2_) - C_ * R1_ * R2_);
+    Q_np_fac = fac * (C_ * R1_ * R2_ + dta * theta_ * (R1_ + R2_));
 
     pressure = p_n_fac * P_n_ + Q_np_fac * Q_np_ + Q_n_fac * Q_n_;
   }
-  else if(treetype_ == "pressure_by_funct")
+  else if (treetype_ == "pressure_by_funct")
   {
-    pressure= DRT::Problem::Instance()->Funct(functnum_-1).EvaluateTime(time);
-    Q_np_fac=0.0;
+    pressure = DRT::Problem::Instance()->Funct(functnum_ - 1).EvaluateTime(time);
+    Q_np_fac = 0.0;
   }
   else
   {
-    pressure=0.0;
-    Q_np_fac=0.0;
+    pressure = 0.0;
+    Q_np_fac = 0.0;
 
-    dserror("Treetype %s not supported!",treetype_.c_str());
+    dserror("Treetype %s not supported!", treetype_.c_str());
   }
 
-  //save pressure value
-  P_np_=pressure;
+  // save pressure value
+  P_np_ = pressure;
 
   // call the element to apply the pressure
   Teuchos::ParameterList eleparams;
   // action for elements
-  eleparams.set<int>("action",FLD::Outletimpedance);
+  eleparams.set<int>("action", FLD::Outletimpedance);
 
-  eleparams.set("WindkesselPressure",pressure);
+  eleparams.set("WindkesselPressure", pressure);
 
-//  if (myrank_ == 0)
-//    std::cout<<"Impedance condition Id: "<<condid<<", Windkessel pressure: "<<pressure<<std::endl;
+  //  if (myrank_ == 0)
+  //    std::cout<<"Impedance condition Id: "<<condid<<", Windkessel pressure:
+  //    "<<pressure<<std::endl;
 
 
   impedancetbc_->PutScalar(0.0);
 
-  discret_->EvaluateCondition(eleparams,impedancetbc_,"ImpedanceCond",condid);
+  discret_->EvaluateCondition(eleparams, impedancetbc_, "ImpedanceCond", condid);
 
 
   // ---------------------------------------------------------------------//
@@ -393,44 +395,44 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
 
   // NOTE: this can not be done in the constructure since maybe UseBlockMatrix
   // is called afterwards and hence its contenten is reseted :(
-  if ( not impedancetbcsysmat_->Filled() )
+  if (not impedancetbcsysmat_->Filled())
   {
-    //calculate dQ/du = ( \phi o n )_Gamma
+    // calculate dQ/du = ( \phi o n )_Gamma
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> dQdu = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> dQdu = LINALG::CreateVector(*dofrowmap, true);
 
     Teuchos::ParameterList eleparams2;
     // action for elements
-    eleparams2.set<int>("action",FLD::dQdu);
+    eleparams2.set<int>("action", FLD::dQdu);
 
-    discret_->EvaluateCondition(eleparams2,dQdu,"ImpedanceCond",condid);
+    discret_->EvaluateCondition(eleparams2, dQdu, "ImpedanceCond", condid);
 
-    //now move dQdu to one proc
-    Teuchos::RCP<Epetra_Map> dofrowmapred =  LINALG::AllreduceEMap(*dofrowmap);
-    Teuchos::RCP<Epetra_Vector> dQdu_full = Teuchos::rcp(new Epetra_Vector(*dofrowmapred,true));
+    // now move dQdu to one proc
+    Teuchos::RCP<Epetra_Map> dofrowmapred = LINALG::AllreduceEMap(*dofrowmap);
+    Teuchos::RCP<Epetra_Vector> dQdu_full = Teuchos::rcp(new Epetra_Vector(*dofrowmapred, true));
 
-    LINALG::Export(*dQdu, *dQdu_full); //!!! add off proc components
+    LINALG::Export(*dQdu, *dQdu_full);  //!!! add off proc components
 
 
-    //calculate d wk/du = d/du ( (v,n)_gamma n,phi)_Gamma were (d wk/du)_i,j= timefacs* (phi_i,n)_Gamma * (phi_j,n)_Gamma
+    // calculate d wk/du = d/du ( (v,n)_gamma n,phi)_Gamma were (d wk/du)_i,j= timefacs*
+    // (phi_i,n)_Gamma * (phi_j,n)_Gamma
     // Note: this derivative cannot be build on element level, hence we have to do it here!
     impedancetbcsysmat_->Zero();
 
-    const double tfaclhs = eleparams2.get<double>("tfaclhs",0.0);
+    const double tfaclhs = eleparams2.get<double>("tfaclhs", 0.0);
 
-    for (int lid = 0; lid <dQdu->MyLength();lid++)
+    for (int lid = 0; lid < dQdu->MyLength(); lid++)
     {
-      const int gid    =  dofrowmap->GID(lid);
+      const int gid = dofrowmap->GID(lid);
       const double val = (*dQdu)[lid];
-      if (abs(val)>1e-15)
+      if (abs(val) > 1e-15)
       {
-        for (int lid2 = 0; lid2 <dQdu_full->MyLength();lid2++)
+        for (int lid2 = 0; lid2 < dQdu_full->MyLength(); lid2++)
         {
-          const int gid2    =  dofrowmapred->GID(lid2);
+          const int gid2 = dofrowmapred->GID(lid2);
           const double val2 = (*dQdu_full)[lid2];
-          const double actmatentry = tfaclhs*val*val2;
-          if (abs(actmatentry)>1e-15)
-            impedancetbcsysmat_->Assemble(actmatentry,gid,gid2);
+          const double actmatentry = tfaclhs * val * val2;
+          if (abs(actmatentry) > 1e-15) impedancetbcsysmat_->Assemble(actmatentry, gid, gid2);
         }
       }
     }
@@ -452,13 +454,13 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
   // ---------------------------------------------------------------------//
 
   // Apply traction vector to fluid residual
-  residual->Update(1.0,*impedancetbc_,1.0);
+  residual->Update(1.0, *impedancetbc_, 1.0);
 
-  //Add linerisation to fluid sysmat
-  sysmat->Add(*impedancetbcsysmat_,false,Q_np_fac,1.0);
+  // Add linerisation to fluid sysmat
+  sysmat->Add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
 
   return;
-} //FluidImplicitTimeInt::OutflowBoundary
+}  // FluidImplicitTimeInt::OutflowBoundary
 
 /*----------------------------------------------------------------------*
  |  Update flowrate and pressure vector                       Thon 07/16 |
@@ -470,29 +472,32 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
   // NOTE:: time may be a huge number (e.g. in case of multiscale in time AC-FS3I).
   // Hence, the naive approach fmod(time+1e.8,period_)-1e-8 < 1e-8) is not suited.
   // This one is unintuitive but gives same results and is save!
-  if ( fabs((fmod(time+period_/2,period_)-period_/2))/time < 1e-12 ) //iff we are at the beginning of a new period
+  if (fabs((fmod(time + period_ / 2, period_) - period_ / 2)) / time <
+      1e-12)  // iff we are at the beginning of a new period
   {
-    WKrelerror_ = fabs((actpressure - P_0_)/actpressure);
+    WKrelerror_ = fabs((actpressure - P_0_) / actpressure);
     P_0_ = actpressure;
 
     if (myrank_ == 0)
     {
-      std::cout<<"Impedance condition Id: "<<condid<<", Windkessel pressure: "<<actpressure<<std::endl;
-//      std::cout<<"Impedance condition Id: "<<condid<<", Relative windkessel error: "<<WKrelerror_<<std::endl;
+      std::cout << "Impedance condition Id: " << condid << ", Windkessel pressure: " << actpressure
+                << std::endl;
+      //      std::cout<<"Impedance condition Id: "<<condid<<", Relative windkessel error:
+      //      "<<WKrelerror_<<std::endl;
     }
   }
 
-  //shift time step
+  // shift time step
   P_n_ = P_np_;
-  Q_n_  = Q_np_;
+  Q_n_ = Q_np_;
 
   return;
-} //FluidImplicitTimeInt::OutflowBoundary
+}  // FluidImplicitTimeInt::OutflowBoundary
 
 /*----------------------------------------------------------------------*
  |  Restart writing                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output, const int condnum )
+void FLD::UTILS::FluidImpedanceBc::WriteRestart(IO::DiscretizationWriter& output, const int condnum)
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -507,10 +512,10 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   // write the flux at time step n+1
   output.WriteDouble(stream6.str(), Q_np_);
 
-  stream2<<"WKrelerror"<<condnum;
+  stream2 << "WKrelerror" << condnum;
   output.WriteDouble(stream2.str(), WKrelerror_);
 
-  stream3 <<"P_0"<<condnum;
+  stream3 << "P_0" << condnum;
   output.WriteDouble(stream3.str(), P_0_);
 
   stream4 << "P_n" << condnum;
@@ -527,7 +532,7 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
 /*----------------------------------------------------------------------*
  |  Restart reading                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader, const int condnum  )
+void FLD::UTILS::FluidImpedanceBc::ReadRestart(IO::DiscretizationReader& reader, const int condnum)
 {
   std::stringstream stream1, stream2, stream3, stream4, stream5, stream6;
 
@@ -540,7 +545,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   Q_np_ = reader.ReadDouble(stream6.str());
 
   // read in pressure difference
-  stream3 <<"P_0"<<condnum;
+  stream3 << "P_0" << condnum;
   P_0_ = reader.ReadDouble(stream3.str());
 
   stream4 << "P_n" << condnum;
@@ -551,11 +556,12 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // read the flux pressure at time step n
   Q_n_ = reader.ReadDouble(stream5.str());
 
-  //get pressure difference and pressure of last period
-  if ( abs(WKrelerror_ - 1.0) < 1e-14) //if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
+  // get pressure difference and pressure of last period
+  if (abs(WKrelerror_ - 1.0) <
+      1e-14)  // if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
   {
     // read in pressure difference
-    stream2 <<"WKrelerror"<<condnum;
+    stream2 << "WKrelerror" << condnum;
     WKrelerror_ = reader.ReadDouble(stream2.str());
   }
   else
@@ -569,27 +575,27 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  | Area calculation                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-double FLD::UTILS::FluidImpedanceBc::Area( const int condid )
+double FLD::UTILS::FluidImpedanceBc::Area(const int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",FLD::calc_area);
-  eleparams.set<double>("area",0.0);
-  //we have to set some dummy values here:
-  eleparams.set<double>("viscosity",0.0);
-  eleparams.set<double>("density",0.0);
+  eleparams.set<int>("action", FLD::calc_area);
+  eleparams.set<double>("area", 0.0);
+  // we have to set some dummy values here:
+  eleparams.set<double>("viscosity", 0.0);
+  eleparams.set<double>("density", 0.0);
 
-  discret_->EvaluateCondition(eleparams,"ImpedanceCond",condid);
+  discret_->EvaluateCondition(eleparams, "ImpedanceCond", condid);
 
   double actarea = eleparams.get<double>("area");
 
   // get total area in parallel case
   double pararea = 0.0;
-  discret_->Comm().SumAll(&actarea,&pararea,1);
+  discret_->Comm().SumAll(&actarea, &pararea, 1);
 
-//  if (myrank_ == 0)
-//    std::cout << "Impedance condition Id: " << condid << ", Area: " << pararea << std::endl;
+  //  if (myrank_ == 0)
+  //    std::cout << "Impedance condition Id: " << condid << ", Area: " << pararea << std::endl;
 
   return pararea;
-}//FluidImplicitTimeInt::Area
+}  // FluidImplicitTimeInt::Area

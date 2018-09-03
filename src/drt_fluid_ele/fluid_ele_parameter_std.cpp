@@ -17,20 +17,19 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instance( bool create )
+DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instance(bool create)
 {
   static FluidEleParameterStd* instance;
-  if ( create )
+  if (create)
   {
-    if ( instance==NULL )
+    if (instance == NULL)
     {
       instance = new FluidEleParameterStd();
     }
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
+    if (instance != NULL) delete instance;
     instance = NULL;
   }
   return instance;
@@ -43,15 +42,13 @@ void DRT::ELEMENTS::FluidEleParameterStd::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+  Instance(false);
 }
 
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd()
-  : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
+    : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
 {
 }
-
-

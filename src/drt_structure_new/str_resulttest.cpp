@@ -41,17 +41,17 @@ void STR::ResultTest::Init(const STR::TIMINT::BaseDataGlobalState& gstate)
 {
   issetup_ = false;
 
-  disn_  = gstate.GetDisN();
-  veln_  = gstate.GetVelN();
-  accn_  = gstate.GetAccN();
+  disn_ = gstate.GetDisN();
+  veln_ = gstate.GetVelN();
+  accn_ = gstate.GetAccN();
   gstate_ = Teuchos::rcpFromRef(gstate);
   strudisc_ = gstate.GetDiscret();
 
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
+      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
     dserror("Material displ. are not yet considered!");
   else
-    dismatn_=Teuchos::null;
+    dismatn_ = Teuchos::null;
 
   isinit_ = true;
 }
@@ -67,30 +67,27 @@ void STR::ResultTest::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::TestNode(
-    DRT::INPUT::LineDefinition& res,
-    int& nerr, int& test_count)
+void STR::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   CheckInitSetup();
   // this implementation does not allow testing of stresses !
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
-  if (dis != strudisc_->Name())
-    return;
+  res.ExtractString("DIS", dis);
+  if (dis != strudisc_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE",node);
+  res.ExtractInt("NODE", node);
   node -= 1;
 
   int havenode(strudisc_->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  strudisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  strudisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
-  if (isnodeofanybody==0)
+  if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s",node+1,strudisc_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
   }
   else
   {
@@ -99,13 +96,12 @@ void STR::ResultTest::TestNode(
       const DRT::Node* actnode = strudisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != strudisc_->Comm().MyPID())
-        return;
+      if (actnode->Owner() != strudisc_->Comm().MyPID()) return;
 
       std::string position;
-      res.ExtractString("QUANTITY",position);
+      res.ExtractString("QUANTITY", position);
       bool unknownpos = true;  // make sure the result value std::string can be handled
-      double result = 0.0;  // will hold the actual result of run
+      double result = 0.0;     // will hold the actual result of run
 
       // test displacements or pressure
       if (disn_ != Teuchos::null)
@@ -124,9 +120,10 @@ void STR::ResultTest::TestNode(
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = disnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*disn_)[lid];
         }
       }
@@ -146,9 +143,10 @@ void STR::ResultTest::TestNode(
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = dismpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*dismatn_)[lid];
         }
       }
@@ -168,9 +166,10 @@ void STR::ResultTest::TestNode(
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*veln_)[lid];
         }
       }
@@ -190,16 +189,16 @@ void STR::ResultTest::TestNode(
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = accnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*accn_)[lid];
         }
       }
 
       // catch position std::strings, which are not handled by structure result test
-      if (unknownpos)
-        dserror("Quantity '%s' not supported in structure testing", position.c_str());
+      if (unknownpos) dserror("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -212,26 +211,22 @@ void STR::ResultTest::TestNode(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ResultTest::TestSpecial(
-      DRT::INPUT::LineDefinition&   res,
-      int&                          nerr,
-      int&                          test_count,
-      int&                          uneval_test_count )
+    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
 {
   CheckInitSetup();
 
-  if ( strudisc_->Comm().MyPID() != 0 )
-    return;
+  if (strudisc_->Comm().MyPID() != 0) return;
 
   std::string quantity;
-  res.ExtractString( "QUANTITY", quantity );
+  res.ExtractString("QUANTITY", quantity);
 
   Status special_status = Status::unevaluated;
-  const double result = GetSpecialResult( quantity, special_status );
-  switch ( special_status )
+  const double result = GetSpecialResult(quantity, special_status);
+  switch (special_status)
   {
     case Status::evaluated:
     {
-      nerr += CompareValues( result, "SPECIAL", res );
+      nerr += CompareValues(result, "SPECIAL", res);
       ++test_count;
       break;
     }
@@ -242,69 +237,64 @@ void STR::ResultTest::TestSpecial(
     }
     default:
     {
-      dserror("What shall be done for this Status type? (enum=%d)",
-          special_status );
-      exit( EXIT_FAILURE );
+      dserror("What shall be done for this Status type? (enum=%d)", special_status);
+      exit(EXIT_FAILURE);
     }
   }
-
-
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::ResultTest::GetSpecialResult(
-    const std::string& quantity,
-    Status& special_status ) const
+double STR::ResultTest::GetSpecialResult(const std::string& quantity, Status& special_status) const
 {
-  if ( quantity.find( "num_iter_step_" ) != quantity.npos )
+  if (quantity.find("num_iter_step_") != quantity.npos)
   {
-    return GetNlnIterationNumber(quantity, special_status );
+    return GetNlnIterationNumber(quantity, special_status);
   }
   else
-    dserror("Quantity '%s' not supported by special result testing functionality "
-        "for structure field!",quantity.c_str());
+    dserror(
+        "Quantity '%s' not supported by special result testing functionality "
+        "for structure field!",
+        quantity.c_str());
 
-  exit( EXIT_FAILURE );
+  exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::ResultTest::GetNlnIterationNumber(
-    const std::string& quantity,
-    Status& special_status ) const
+    const std::string& quantity, Status& special_status) const
 {
-  const int stepn = GetIntegerNumberAtLastPositionOfName( quantity );
+  const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
   const int restart = DRT::Problem::Instance()->Restart();
-  if ( stepn <= restart )
-    return -1.0;
+  if (stepn <= restart) return -1.0;
 
   special_status = Status::evaluated;
-  return static_cast<double>( gstate_->GetNlnIterationNumber( stepn ) );
+  return static_cast<double>(gstate_->GetNlnIterationNumber(stepn));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::GetIntegerNumberAtLastPositionOfName( const std::string& quantity )
+int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
 {
   std::stringstream ss(quantity);
   std::string s;
 
   std::vector<std::string> split_strings;
-  while ( std::getline( ss, s, '_' ) )
-    split_strings.push_back( s );
+  while (std::getline(ss, s, '_')) split_strings.push_back(s);
 
   try
   {
-    return std::stoi( split_strings.back() );
+    return std::stoi(split_strings.back());
   }
-  catch ( const std::invalid_argument& e )
+  catch (const std::invalid_argument& e)
   {
-    dserror( "You provided the wrong format. The integer number must be "
+    dserror(
+        "You provided the wrong format. The integer number must be "
         "at the very last position of the name, separated by an underscore. "
         "The correct format is:\n"
-        "\"<prefix_name>_<number>\"" );
+        "\"<prefix_name>_<number>\"");
   }
-  exit( EXIT_FAILURE );
+  exit(EXIT_FAILURE);
 }

@@ -23,39 +23,38 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Potential::Potential( const CONTACT::AUG::Strategy& strategy,
-    const CONTACT::AUG::DataContainer& data )
+CONTACT::AUG::Potential::Potential(
+    const CONTACT::AUG::Strategy& strategy, const CONTACT::AUG::DataContainer& data)
     : isvalid_(),
-      issetup_( false ),
-      strategy_( strategy ),
-      data_( data ),
-      zn_active_( Teuchos::null ),
-      zn_inactive_( Teuchos::null ),
-      zt_active_( Teuchos::null ),
-      zt_inactive_( Teuchos::null ),
+      issetup_(false),
+      strategy_(strategy),
+      data_(data),
+      zn_active_(Teuchos::null),
+      zn_inactive_(Teuchos::null),
+      zt_active_(Teuchos::null),
+      zt_inactive_(Teuchos::null),
       potdata_(),
       lindata_()
 {
-
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Potential::ResetIsValid()
 {
-  isvalid_.potential_     = false;
+  isvalid_.potential_ = false;
   isvalid_.linearization_ = false;
-  isvalid_.state_         = false;
+  isvalid_.state_ = false;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::Potential::IsValid::isSameDirection( const Epetra_Vector& dir )
+bool CONTACT::AUG::Potential::IsValid::isSameDirection(const Epetra_Vector& dir)
 {
   double dir_nrm2 = 0.0;
-  dir.Norm2( &dir_nrm2 );
+  dir.Norm2(&dir_nrm2);
 
-  if ( dir_nrm2 == dir_nrm2_ )
+  if (dir_nrm2 == dir_nrm2_)
     return linearization_;
   else
   {
@@ -68,11 +67,11 @@ bool CONTACT::AUG::Potential::IsValid::isSameDirection( const Epetra_Vector& dir
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Potential::Setup()
 {
-  zn_active_ = Teuchos::rcp( new Epetra_Vector( *data_.GActiveNDofRowMapPtr() ) );
+  zn_active_ = Teuchos::rcp(new Epetra_Vector(*data_.GActiveNDofRowMapPtr()));
 
-  Teuchos::RCP<Epetra_Map> ginactivendofs = LINALG::SplitMap(
-      *data_.GSlNormalDofRowMapPtr(), *data_.GActiveNDofRowMapPtr() );
-  zn_inactive_ = Teuchos::rcp( new Epetra_Vector( *ginactivendofs ) );
+  Teuchos::RCP<Epetra_Map> ginactivendofs =
+      LINALG::SplitMap(*data_.GSlNormalDofRowMapPtr(), *data_.GActiveNDofRowMapPtr());
+  zn_inactive_ = Teuchos::rcp(new Epetra_Vector(*ginactivendofs));
 
   isvalid_.state_ = false;
   issetup_ = true;
@@ -84,52 +83,45 @@ void CONTACT::AUG::Potential::SetActiveInactiveState()
 {
   ResetIsValid();
 
-  LINALG::ExtractMyVector( *data_.LmPtr(), *zn_active_ );
-  LINALG::ExtractMyVector( *data_.LmPtr(), *zn_inactive_ );
+  LINALG::ExtractMyVector(*data_.LmPtr(), *zn_active_);
+  LINALG::ExtractMyVector(*data_.LmPtr(), *zn_inactive_);
 
   isvalid_.state_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::SetDirection(
-    const Epetra_Vector& direction,
-    Epetra_Vector& dincrSlMa,
-    Epetra_Vector& znincr_active,
-    Epetra_Vector& znincr_inactive )
+void CONTACT::AUG::Potential::SetDirection(const Epetra_Vector& direction, Epetra_Vector& dincrSlMa,
+    Epetra_Vector& znincr_active, Epetra_Vector& znincr_inactive)
 {
-  strategy_.SplitStateVector( direction, dincrSlMa, znincr_active,
-      znincr_inactive );
+  strategy_.SplitStateVector(direction, dincrSlMa, znincr_active, znincr_inactive);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Potential::Compute()
 {
-  if ( isvalid_.potential_ )
-    return;
+  if (isvalid_.potential_) return;
 
-  if ( not issetup_ )
-    dserror( "Call Setup() first!" );
+  if (not issetup_) dserror("Call Setup() first!");
 
   const Epetra_Vector& cn = data_.Cn();
 
-  double lterms[4] = { 0.0, 0.0, 0.0, 0.0 };
+  double lterms[4] = {0.0, 0.0, 0.0, 0.0};
 
-  const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& co_interfaces =
+  const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& co_interfaces =
       strategy_.ContactInterfaces();
 
-  for ( const Teuchos::RCP<CONTACT::CoInterface>& cit : co_interfaces )
+  for (const Teuchos::RCP<CONTACT::CoInterface>& cit : co_interfaces)
   {
-    const CONTACT::AUG::Interface& interface =
-        static_cast<const CONTACT::AUG::Interface&>( *cit );
+    const CONTACT::AUG::Interface& interface = static_cast<const CONTACT::AUG::Interface&>(*cit);
 
-    interface.AssembleContactPotentialTerms( cn, lterms[0], lterms[1], lterms[2], lterms[3] );
+    interface.AssembleContactPotentialTerms(cn, lterms[0], lterms[1], lterms[2], lterms[3]);
   }
 
-  double gterms[4] = { 0.0, 0.0, 0.0, 0.0 };
+  double gterms[4] = {0.0, 0.0, 0.0, 0.0};
 
-  strategy_.Comm().SumAll( &lterms[0], &gterms[0], 4 );
+  strategy_.Comm().SumAll(&lterms[0], &gterms[0], 4);
 
   // copy results into the container
   potdata_.zn_gn_ = gterms[0];
@@ -138,85 +130,78 @@ void CONTACT::AUG::Potential::Compute()
   potdata_.zt_zt_ = gterms[3];
 
   // infeasibility values
-  data_.WGapPtr()->Dot( *data_.WGapPtr(), &potdata_.inf_gn_gn_ );
-  data_.InactiveRhsPtr()->Dot( *data_.InactiveRhsPtr(), &potdata_.inf_zn_zn_ );
+  data_.WGapPtr()->Dot(*data_.WGapPtr(), &potdata_.inf_gn_gn_);
+  data_.InactiveRhsPtr()->Dot(*data_.InactiveRhsPtr(), &potdata_.inf_zn_zn_);
 
   isvalid_.potential_ = true;
 
   IO::cout(IO::debug) << "\n*****************************************************\n";
   IO::cout(IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << IO::endl;
-  potdata_.print( IO::cout.os(IO::debug) );
+  potdata_.print(IO::cout.os(IO::debug));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::ComputeLin( const Epetra_Vector& dir )
+void CONTACT::AUG::Potential::ComputeLin(const Epetra_Vector& dir)
 {
-  if ( isvalid_.isSameDirection( dir ) )
-    return;
+  if (isvalid_.isSameDirection(dir)) return;
 
-  if ( not isvalid_.potential_ )
-    Compute();
+  if (not isvalid_.potential_) Compute();
 
-  if ( not isvalid_.state_ )
-    dserror( "Call SetState() first!" );
+  if (not isvalid_.state_) dserror("Call SetState() first!");
 
   Teuchos::RCP<Epetra_Vector> dincrSlMa =
-      Teuchos::rcp( new Epetra_Vector( *data_.GSlMaDofRowMapPtr(), true ) );
+      Teuchos::rcp(new Epetra_Vector(*data_.GSlMaDofRowMapPtr(), true));
   Teuchos::RCP<Epetra_Vector> znincr_active =
-      Teuchos::rcp( new Epetra_Vector( zn_active_->Map(), true ) );
+      Teuchos::rcp(new Epetra_Vector(zn_active_->Map(), true));
   Teuchos::RCP<Epetra_Vector> znincr_inactive =
-        Teuchos::rcp( new Epetra_Vector( zn_inactive_->Map(), true ) );
+      Teuchos::rcp(new Epetra_Vector(zn_inactive_->Map(), true));
 
-  SetDirection( dir, *dincrSlMa, *znincr_active, *znincr_inactive );
+  SetDirection(dir, *dincrSlMa, *znincr_active, *znincr_inactive);
 
   lindata_.reset();
-  ComputeLinActive( *dincrSlMa, *znincr_active );
-  ComputeLinInactive( *znincr_inactive );
+  ComputeLinActive(*dincrSlMa, *znincr_active);
+  ComputeLinInactive(*znincr_inactive);
 
   isvalid_.linearization_ = true;
 
   IO::cout(IO::debug) << "\n*****************************************************\n";
   IO::cout(IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << IO::endl;
-  lindata_.print( IO::cout.os(IO::debug) );
+  lindata_.print(IO::cout.os(IO::debug));
   IO::cout(IO::debug) << "\n\n";
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Potential::ComputeLinActive(
-    const Epetra_Vector& dincrSlMa,
-    const Epetra_Vector& znincr_active )
+    const Epetra_Vector& dincrSlMa, const Epetra_Vector& znincr_active)
 {
   // if there are no global active nodes, we do a direct return
-  if ( data_.GActiveNodeRowMapPtr()->NumGlobalElements() == 0 )
-    return;
+  if (data_.GActiveNodeRowMapPtr()->NumGlobalElements() == 0) return;
 
-  Epetra_Vector gradWGapD( *data_.GActiveNDofRowMapPtr() );
+  Epetra_Vector gradWGapD(*data_.GActiveNDofRowMapPtr());
 
-  int err = data_.DLmNWGapLinMatrixPtr()->Multiply( false, dincrSlMa, gradWGapD );
-  if ( err )
-    dserror( "Vector-matrix multiplication failed! (err=%d)", err );
+  int err = data_.DLmNWGapLinMatrixPtr()->Multiply(false, dincrSlMa, gradWGapD);
+  if (err) dserror("Vector-matrix multiplication failed! (err=%d)", err);
 
   // --------------------------------------------------------------------------
   // Potential: Active contributions
   // --------------------------------------------------------------------------
   {
     // zn_k^T * gradWG(x_k)^T * dincr
-    zn_active_->Dot( gradWGapD, &lindata_.zn_dgn_ );
+    zn_active_->Dot(gradWGapD, &lindata_.zn_dgn_);
 
     // wgn(x_k)^T * zincr
-    data_.WGapPtr()->Dot( znincr_active, &lindata_.gn_dzn_ );
+    data_.WGapPtr()->Dot(znincr_active, &lindata_.gn_dzn_);
 
     // znincr^T * gradWG(x_k)^T * dincr
-    znincr_active.Dot( gradWGapD, &lindata_.dzn_dgn_ );
+    znincr_active.Dot(gradWGapD, &lindata_.dzn_dgn_);
 
     // cn * awgn(x_k)^T * gradWG(x_k)^T * dincr
-    Epetra_Vector scAWGap = Epetra_Vector( *data_.AWGapPtr() );
+    Epetra_Vector scAWGap = Epetra_Vector(*data_.AWGapPtr());
     const Epetra_Vector& cn = *data_.CnPtr();
-    MultiplyElementwise( cn, *data_.GActiveNodeRowMapPtr(),
-        scAWGap, false );
-    scAWGap.Dot( gradWGapD, &lindata_.gn_dgn_ );
+    MultiplyElementwise(cn, *data_.GActiveNodeRowMapPtr(), scAWGap, false);
+    scAWGap.Dot(gradWGapD, &lindata_.gn_dgn_);
   }
 
   // --------------------------------------------------------------------------
@@ -224,116 +209,105 @@ void CONTACT::AUG::Potential::ComputeLinActive(
   // --------------------------------------------------------------------------
   {
     // wGap^T * grad(wGap)^T * dincr [Active]
-    data_.WGapPtr()->Dot( gradWGapD, &lindata_.inf_gn_dgn_ );
+    data_.WGapPtr()->Dot(gradWGapD, &lindata_.inf_gn_dgn_);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::ComputeLinInactive(
-    const Epetra_Vector& znincr_inactive )
+void CONTACT::AUG::Potential::ComputeLinInactive(const Epetra_Vector& znincr_inactive)
 {
   // --------------------------------------------------------------------------
   // Potential: Inactive contributions
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Map> ginactiveslnodes =
-      LINALG::SplitMap( *data_.GSlNodeRowMapPtr(), *data_.GActiveNodeRowMapPtr() );
-  Epetra_Vector scZnincr_inactive( znincr_inactive );
+      LINALG::SplitMap(*data_.GSlNodeRowMapPtr(), *data_.GActiveNodeRowMapPtr());
+  Epetra_Vector scZnincr_inactive(znincr_inactive);
 
   {
     // 1.0/cn * zn_k * A(x_k) * znincr
-    MultiplyElementwise( *(data_.AVecPtr()), *ginactiveslnodes,
-        scZnincr_inactive, false );
-    MultiplyElementwise( *(data_.CnPtr()), *ginactiveslnodes,
-        scZnincr_inactive, true );
+    MultiplyElementwise(*(data_.AVecPtr()), *ginactiveslnodes, scZnincr_inactive, false);
+    MultiplyElementwise(*(data_.CnPtr()), *ginactiveslnodes, scZnincr_inactive, true);
 
-    zn_inactive_->Dot( scZnincr_inactive, &lindata_.zn_dzn_ );
+    zn_inactive_->Dot(scZnincr_inactive, &lindata_.zn_dzn_);
 
-    znincr_inactive.Dot( scZnincr_inactive, &lindata_.dzn_dzn_ );
+    znincr_inactive.Dot(scZnincr_inactive, &lindata_.dzn_dzn_);
   }
   // --------------------------------------------------------------------------
   // Infeasibility measure
   // --------------------------------------------------------------------------
   {
     // cn_k^(-2) * zn_k^T * A(x_k) * A(x_k) * znincr
-    MultiplyElementwise( *(data_.AVecPtr()), *ginactiveslnodes,
-        scZnincr_inactive, false );
-    MultiplyElementwise( *(data_.CnPtr()), *ginactiveslnodes,
-        scZnincr_inactive, true );
+    MultiplyElementwise(*(data_.AVecPtr()), *ginactiveslnodes, scZnincr_inactive, false);
+    MultiplyElementwise(*(data_.CnPtr()), *ginactiveslnodes, scZnincr_inactive, true);
 
-    zn_inactive_->Dot( scZnincr_inactive, &lindata_.inf_zn_dzn_ );
+    zn_inactive_->Dot(scZnincr_inactive, &lindata_.inf_zn_dzn_);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::Get(
-    enum POTENTIAL::Type pot_type,
-    enum POTENTIAL::SetType pot_set ) const
+    enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const
 {
-  if ( not isvalid_.potential_ )
-    dserror( "Call Compute() first!" );
+  if (not isvalid_.potential_) dserror("Call Compute() first!");
 
-  switch( pot_type )
+  switch (pot_type)
   {
     case POTENTIAL::Type::lagrangian:
-      return GetLagrangian( pot_set );
+      return GetLagrangian(pot_set);
     case POTENTIAL::Type::augmented_lagrangian:
-      return GetAugmentedLagrangian( pot_set );
+      return GetAugmentedLagrangian(pot_set);
     case POTENTIAL::Type::infeasibility_measure:
-      return GetInfeasibilityMeasure( pot_set );
+      return GetInfeasibilityMeasure(pot_set);
     default:
-      dserror( "Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type);
+      exit(EXIT_FAILURE);
   }
 
-  exit( EXIT_FAILURE );
+  exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetLin(
-    enum POTENTIAL::Type pot_type,
-    enum POTENTIAL::SetType pot_set,
-    enum POTENTIAL::LinTerm lin_term ) const
+double CONTACT::AUG::Potential::GetLin(enum POTENTIAL::Type pot_type,
+    enum POTENTIAL::SetType pot_set, enum POTENTIAL::LinTerm lin_term) const
 {
-  if ( not isvalid_.linearization_ )
-    dserror( "Call ComputeLin() first!" );
+  if (not isvalid_.linearization_) dserror("Call ComputeLin() first!");
 
-  switch( pot_type )
+  switch (pot_type)
   {
     case POTENTIAL::Type::lagrangian:
-      return GetLagrangianLin( lin_term, pot_set );
+      return GetLagrangianLin(lin_term, pot_set);
     case POTENTIAL::Type::augmented_lagrangian:
-      return GetAugmentedLagrangianLin( lin_term, pot_set );
+      return GetAugmentedLagrangianLin(lin_term, pot_set);
     case POTENTIAL::Type::infeasibility_measure:
-      return GetInfeasibilityMeasureLin( lin_term, pot_set );
+      return GetInfeasibilityMeasureLin(lin_term, pot_set);
     default:
-      dserror( "Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type);
+      exit(EXIT_FAILURE);
   }
 
-  exit( EXIT_FAILURE );
+  exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetLagrangian(
-    enum POTENTIAL::SetType pot_set ) const
+double CONTACT::AUG::Potential::GetLagrangian(enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
-  switch( pot_set )
+  switch (pot_set)
   {
     case POTENTIAL::SetType::active:
     {
-      val = - potdata_.zn_gn_;
+      val = -potdata_.zn_gn_;
 
       break;
     }
     case POTENTIAL::SetType::inactive:
     {
-      val = - potdata_.zn_zn_;
+      val = -potdata_.zn_zn_;
 
       break;
     }
@@ -344,8 +318,8 @@ double CONTACT::AUG::Potential::GetLagrangian(
       break;
     }
     default:
-      dserror( "Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      exit(EXIT_FAILURE);
   }
 
   return val;
@@ -354,26 +328,25 @@ double CONTACT::AUG::Potential::GetLagrangian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetLagrangianLin(
-    enum POTENTIAL::LinTerm lin_term,
-    enum POTENTIAL::SetType pot_set ) const
+    enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
-  switch ( pot_set )
+  switch (pot_set)
   {
     case POTENTIAL::SetType::active:
-      val += GetActiveLagrangianLin( lin_term );
+      val += GetActiveLagrangianLin(lin_term);
       break;
     case POTENTIAL::SetType::inactive:
-      val += GetInactiveLagrangianLin( lin_term );
+      val += GetInactiveLagrangianLin(lin_term);
       break;
     case POTENTIAL::SetType::all:
-      val += GetActiveLagrangianLin( lin_term );
-      val += GetInactiveLagrangianLin( lin_term );
+      val += GetActiveLagrangianLin(lin_term);
+      val += GetInactiveLagrangianLin(lin_term);
       break;
     default:
-      dserror( "Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      exit(EXIT_FAILURE);
   }
 
   return val;
@@ -381,75 +354,73 @@ double CONTACT::AUG::Potential::GetLagrangianLin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetActiveLagrangianLin(
-    const enum POTENTIAL::LinTerm lin_term ) const
+double CONTACT::AUG::Potential::GetActiveLagrangianLin(const enum POTENTIAL::LinTerm lin_term) const
 {
-  switch( lin_term )
+  switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_d:
-      return - lindata_.zn_dgn_;
+      return -lindata_.zn_dgn_;
     case POTENTIAL::LinTerm::wrt_z:
-      return - lindata_.gn_dzn_;
+      return -lindata_.gn_dzn_;
     case POTENTIAL::LinTerm::wrt_d_and_z:
-      return - lindata_.dzn_dgn_;
+      return -lindata_.dzn_dgn_;
     case POTENTIAL::LinTerm::wrt_z_and_z:
       return 0.0;
     default:
-      dserror( "Unknown LinTerm enumerator ( enum = %d )", lin_term );
-      exit( EXIT_FAILURE );
+      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetInactiveLagrangianLin(
-    const enum POTENTIAL::LinTerm lin_term ) const
+    const enum POTENTIAL::LinTerm lin_term) const
 {
-  switch( lin_term )
+  switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_z:
       return -2.0 * lindata_.zn_dzn_;
     case POTENTIAL::LinTerm::wrt_z_and_z:
-      return - 2.0 * lindata_.dzn_dzn_;
+      return -2.0 * lindata_.dzn_dzn_;
     case POTENTIAL::LinTerm::wrt_d:
     case POTENTIAL::LinTerm::wrt_d_and_z:
       return 0.0;
     default:
-      dserror( "Unknown LinTerm enumerator ( enum = %d )", lin_term );
-      exit( EXIT_FAILURE );
+      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetAugmentedLagrangian(
-    enum POTENTIAL::SetType pot_set ) const
+double CONTACT::AUG::Potential::GetAugmentedLagrangian(enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
-  switch( pot_set )
+  switch (pot_set)
   {
     case POTENTIAL::SetType::active:
     {
-      val = - potdata_.zn_gn_ + 0.5 * potdata_.gn_gn_;
+      val = -potdata_.zn_gn_ + 0.5 * potdata_.gn_gn_;
 
       break;
     }
     case POTENTIAL::SetType::inactive:
     {
-      val = - 0.5 * potdata_.zn_zn_;
+      val = -0.5 * potdata_.zn_zn_;
 
       break;
     }
     case POTENTIAL::SetType::all:
     {
-      val = - potdata_.zn_gn_ + 0.5 * potdata_.gn_gn_ - 0.5 * potdata_.zn_zn_;
+      val = -potdata_.zn_gn_ + 0.5 * potdata_.gn_gn_ - 0.5 * potdata_.zn_zn_;
 
       break;
     }
     default:
-      dserror( "Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      exit(EXIT_FAILURE);
   }
 
   return val;
@@ -458,26 +429,25 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetAugmentedLagrangianLin(
-    enum POTENTIAL::LinTerm lin_term,
-    enum POTENTIAL::SetType pot_set ) const
+    enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
-  switch ( pot_set )
+  switch (pot_set)
   {
     case POTENTIAL::SetType::active:
-      val += GetActiveAugmentedLagrangianLin( lin_term );
+      val += GetActiveAugmentedLagrangianLin(lin_term);
       break;
     case POTENTIAL::SetType::inactive:
-      val += GetInactiveAugmentedLagrangianLin( lin_term );
+      val += GetInactiveAugmentedLagrangianLin(lin_term);
       break;
     case POTENTIAL::SetType::all:
-      val += GetActiveLagrangianLin( lin_term );
-      val += GetInactiveAugmentedLagrangianLin( lin_term );
+      val += GetActiveLagrangianLin(lin_term);
+      val += GetInactiveAugmentedLagrangianLin(lin_term);
       break;
     default:
-      dserror( "Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      exit(EXIT_FAILURE);
   }
 
   return val;
@@ -486,52 +456,51 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangianLin(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetActiveAugmentedLagrangianLin(
-    const enum POTENTIAL::LinTerm lin_term ) const
+    const enum POTENTIAL::LinTerm lin_term) const
 {
-  switch( lin_term )
+  switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_d:
-      return - lindata_.zn_dgn_ + lindata_.gn_dgn_;
+      return -lindata_.zn_dgn_ + lindata_.gn_dgn_;
     case POTENTIAL::LinTerm::wrt_z:
-      return - lindata_.gn_dzn_;
+      return -lindata_.gn_dzn_;
     case POTENTIAL::LinTerm::wrt_d_and_z:
-      return - lindata_.dzn_dgn_;
+      return -lindata_.dzn_dgn_;
     case POTENTIAL::LinTerm::wrt_z_and_z:
       return 0.0;
     default:
-      dserror( "Unknown LinTerm enumerator ( enum = %d )", lin_term );
-      exit( EXIT_FAILURE );
+      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetInactiveAugmentedLagrangianLin(
-    const enum POTENTIAL::LinTerm lin_term ) const
+    const enum POTENTIAL::LinTerm lin_term) const
 {
-  switch( lin_term )
+  switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_z:
-      return - lindata_.zn_dzn_;
+      return -lindata_.zn_dzn_;
     case POTENTIAL::LinTerm::wrt_z_and_z:
-      return - lindata_.dzn_dzn_;
+      return -lindata_.dzn_dzn_;
     case POTENTIAL::LinTerm::wrt_d:
     case POTENTIAL::LinTerm::wrt_d_and_z:
       return 0.0;
     default:
-      dserror( "Unknown LinTerm enumerator ( enum = %d )", lin_term );
-      exit( EXIT_FAILURE );
+      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetInfeasibilityMeasure(
-    enum POTENTIAL::SetType pot_set ) const
+double CONTACT::AUG::Potential::GetInfeasibilityMeasure(enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
-  switch( pot_set )
+  switch (pot_set)
   {
     case POTENTIAL::SetType::active:
     {
@@ -552,8 +521,8 @@ double CONTACT::AUG::Potential::GetInfeasibilityMeasure(
       break;
     }
     default:
-      dserror( "Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      exit(EXIT_FAILURE);
   }
 
   return val;
@@ -562,26 +531,25 @@ double CONTACT::AUG::Potential::GetInfeasibilityMeasure(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetInfeasibilityMeasureLin(
-    enum POTENTIAL::LinTerm lin_term,
-    enum POTENTIAL::SetType pot_set ) const
+    enum POTENTIAL::LinTerm lin_term, enum POTENTIAL::SetType pot_set) const
 {
   double val = 0.0;
 
-  switch ( pot_set )
+  switch (pot_set)
   {
     case POTENTIAL::SetType::active:
-      val += GetActiveInfeasibilityMeasureLin( lin_term );
+      val += GetActiveInfeasibilityMeasureLin(lin_term);
       break;
     case POTENTIAL::SetType::inactive:
-      val += GetInactiveInfeasibilityMeasureLin( lin_term );
+      val += GetInactiveInfeasibilityMeasureLin(lin_term);
       break;
     case POTENTIAL::SetType::all:
-      val += GetActiveInfeasibilityMeasureLin( lin_term );
-      val += GetInactiveInfeasibilityMeasureLin( lin_term );
+      val += GetActiveInfeasibilityMeasureLin(lin_term);
+      val += GetInactiveInfeasibilityMeasureLin(lin_term);
       break;
     default:
-      dserror( "Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set );
-      exit( EXIT_FAILURE );
+      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      exit(EXIT_FAILURE);
   }
 
   return val;
@@ -590,9 +558,9 @@ double CONTACT::AUG::Potential::GetInfeasibilityMeasureLin(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetActiveInfeasibilityMeasureLin(
-    const enum POTENTIAL::LinTerm lin_term ) const
+    const enum POTENTIAL::LinTerm lin_term) const
 {
-  switch( lin_term )
+  switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_d:
       return lindata_.inf_gn_dgn_;
@@ -601,33 +569,33 @@ double CONTACT::AUG::Potential::GetActiveInfeasibilityMeasureLin(
     case POTENTIAL::LinTerm::wrt_z_and_z:
       return 0.0;
     default:
-      dserror( "Unknown LinTerm enumerator ( enum = %d )", lin_term );
-      exit( EXIT_FAILURE );
+      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetInactiveInfeasibilityMeasureLin(
-    const enum POTENTIAL::LinTerm lin_term ) const
+    const enum POTENTIAL::LinTerm lin_term) const
 {
-  switch( lin_term )
+  switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_z:
-      return  lindata_.inf_zn_dzn_;
+      return lindata_.inf_zn_dzn_;
     case POTENTIAL::LinTerm::wrt_d:
     case POTENTIAL::LinTerm::wrt_d_and_z:
     case POTENTIAL::LinTerm::wrt_z_and_z:
       return 0.0;
     default:
-      dserror( "Unknown LinTerm enumerator ( enum = %d )", lin_term );
-      exit( EXIT_FAILURE );
+      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::PotData::print( std::ostream& os ) const
+void CONTACT::AUG::Potential::PotData::print(std::ostream& os) const
 {
   os << "--- Contact potential\n";
   os << "[ACTIVE]   < z_N, wgap_N >            = " << zn_gn_ << "\n";
@@ -640,7 +608,7 @@ void CONTACT::AUG::Potential::PotData::print( std::ostream& os ) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::LinData::print( std::ostream& os ) const
+void CONTACT::AUG::Potential::LinData::print(std::ostream& os) const
 {
   os << "--- Linearization of contact potential\n";
   os << "[ACTIVE]   D_{z_N}( < z_N, wgap_N > )            = " << gn_dzn_ << "\n";

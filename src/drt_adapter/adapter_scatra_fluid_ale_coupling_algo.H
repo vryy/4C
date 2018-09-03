@@ -42,19 +42,15 @@ namespace ADAPTER
     \author gjb
     \date 05/09
    */
-  class ScaTraFluidAleCouplingAlgorithm :
-        public ADAPTER::ScaTraFluidCouplingAlgorithm,
-        public ADAPTER::AleBaseAlgorithm
+  class ScaTraFluidAleCouplingAlgorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm,
+                                          public ADAPTER::AleBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor using a Epetra_Comm
-    ScaTraFluidAleCouplingAlgorithm(
-        const Epetra_Comm& comm,              ///< communicator
-        const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
-        const std::string condname, ///< name of condition that defines fluid-ale coupling
-        const Teuchos::ParameterList& solverparams
-        );
+    ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,  ///< communicator
+        const Teuchos::ParameterList& prbdyn,                 ///< problem-specific parameters
+        const std::string condname,  ///< name of condition that defines fluid-ale coupling
+        const Teuchos::ParameterList& solverparams);
 
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraFluidAleCouplingAlgorithm();
@@ -63,31 +59,26 @@ namespace ADAPTER
     virtual void Setup();
 
     /// init
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
     );
 
     /// read restart data (pure virtual)
-    virtual void ReadRestart(
-        int step ///< step number where the calculation is continued
+    virtual void ReadRestart(int step  ///< step number where the calculation is continued
         ) = 0;
 
     /// solve fluid-ale
-    virtual void FluidAleNonlinearSolve(
-        Teuchos::RCP<Epetra_Vector> idisp,
-        Teuchos::RCP<Epetra_Vector> ivel,
-        const bool pseudotransient
-        );
+    virtual void FluidAleNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+        Teuchos::RCP<Epetra_Vector> ivel, const bool pseudotransient);
 
     /// access to ale field
     const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() { return ale_; }
 
-  protected:
-
+   protected:
     //! @name Transfer helpers
 
     /// field transform
@@ -102,25 +93,23 @@ namespace ADAPTER
     /// interface transform
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-  private:
-
+   private:
     /// ALE-fluid wrapper
     Teuchos::RCP<AleFluidWrapper> ale_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling>               coupfa_;
+    Teuchos::RCP<Coupling> coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Coupling>               icoupfa_;
+    Teuchos::RCP<Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Coupling>               fscoupfa_;
+    Teuchos::RCP<Coupling> fscoupfa_;
 
     /// condition name
     const std::string condname_;
-
   };
 
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
-#endif // ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
+#endif  // ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H

@@ -18,7 +18,6 @@
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Static analysis
@@ -35,23 +34,19 @@ namespace STR
    */
   class TimIntStatics : public TimIntImpl
   {
-
-  public:
-
+   public:
     //! @name Construction
     //@{
 
     //! Constructor
-    TimIntStatics
-    (
-      const Teuchos::ParameterList& timeparams,  //!< ioflags
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntStatics(const Teuchos::ParameterList& timeparams,  //!< ioflags
+        const Teuchos::ParameterList& ioparams,              //!< ioflags
+        const Teuchos::ParameterList& sdynparams,            //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                 //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,          //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output        //!< the output
     );
 
     //! Destructor
@@ -78,12 +73,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -107,7 +99,7 @@ namespace STR
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here exept when doing optimization
-    void ResizeMStep(){ ; }
+    void ResizeMStep() { ; }
 
     //@}
 
@@ -115,10 +107,7 @@ namespace STR
     //@{
 
     //! Return name
-    enum INPAR::STR::DynamicType MethodName() const
-    {
-      return INPAR::STR::dyna_statics;
-    }
+    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_statics; }
 
     //! Provide number of steps, a single-step method returns 1
     virtual int MethodSteps() const { return 1; }
@@ -163,14 +152,14 @@ namespace STR
     //! For quasi-static problems this is equivalent to
     //! a linear extrapolation of the displacement field.
     //! In the first step we do TangDis
-    void PredictConstVelConsistAcc() ;
+    void PredictConstVelConsistAcc();
 
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
     //! For quasi-static problems this is equivalent to
     //! a quadratic extrapolation of the displacement field.
     //! In the first step we do TangDis, in the second ConstVel
-    void PredictConstAcc() ;
+    void PredictConstAcc();
 
     //! Create force residual #fres_ and its stiffness #stiff_
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
@@ -217,20 +206,18 @@ namespace STR
     void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
     //@}
 
-    virtual void ApplyDirichletBC
-    (
-      const double time,  //!< at time
-      Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
-                                        //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
-                                        //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
-                                       //!< (may be Teuchos::null)
-      bool recreatemap  //!< recreate mapextractor/toggle-vector
-                        //!< which stores the DOF IDs subjected
-                        //!< to Dirichlet BCs
-                        //!< This needs to be true if the bounded DOFs
-                        //!< have been changed.
+    virtual void ApplyDirichletBC(const double time,  //!< at time
+        Teuchos::RCP<Epetra_Vector> dis,              //!< displacements
+                                                      //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> vel,              //!< velocities
+                                                      //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> acc,              //!< accelerations
+                                                      //!< (may be Teuchos::null)
+        bool recreatemap                              //!< recreate mapextractor/toggle-vector
+                                                      //!< which stores the DOF IDs subjected
+                                                      //!< to Dirichlet BCs
+                                                      //!< This needs to be true if the bounded DOFs
+                                                      //!< have been changed.
     );
 
     //! @name Access methods
@@ -244,15 +231,11 @@ namespace STR
     }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
 
     //@}
 
-  protected:
-
+   protected:
     //! equal operator is hidden
     TimIntStatics operator=(const TimIntStatics& old);
 

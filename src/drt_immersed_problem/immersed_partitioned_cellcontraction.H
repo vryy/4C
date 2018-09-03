@@ -1,12 +1,12 @@
-  /*!----------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file immersed_partitioned_cellcontraction.H
 
 \brief partitioned immersed contraction algorithm
 
 \maintainer  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+           rauch@lnm.mw.tum.de
+           http://www.lnm.mw.tum.de
+           089 - 289 -15240
 
 \level 3
 
@@ -22,137 +22,140 @@
  *----------------------------------------------------------------------*/
 namespace POROELAST
 {
-  //class Monolithic;
+  // class Monolithic;
   class PoroScatraBase;
-}
+}  // namespace POROELAST
 
 namespace ADAPTER
 {
   class FPSIStructureWrapper;
   class FSIStructureWrapperImmersed;
-}
+}  // namespace ADAPTER
 
 namespace SSI
 {
-class SSI_Part2WC_BIOCHEMOMECHANO;
+  class SSI_Part2WC_BIOCHEMOMECHANO;
 }
 
 /*----------------------------------------------------------------------*/
-namespace IMMERSED {
-class ImmersedPartitionedCellContraction : public ImmersedPartitioned
+namespace IMMERSED
 {
+  class ImmersedPartitionedCellContraction : public ImmersedPartitioned
+  {
+   public:
+    /// setup partitioned immersed cell migration algorithm
+    explicit ImmersedPartitionedCellContraction(
+        const Teuchos::ParameterList& params, const Epetra_Comm& comm);
 
-public:
+    /*! \brief Initialize this object
 
-  /// setup partitioned immersed cell migration algorithm
-  explicit ImmersedPartitionedCellContraction(const Teuchos::ParameterList& params, const Epetra_Comm& comm);
+    \warning none
+    \return int
+    \date 08/16
+    \author rauch  */
+    virtual int Init(const Teuchos::ParameterList& params);
 
-  /*! \brief Initialize this object
+    /*! \brief Setup all class internal objects and members
 
-  \warning none
-  \return int
-  \date 08/16
-  \author rauch  */
-  virtual int Init(const Teuchos::ParameterList& params);
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch  */
+    virtual void Setup();
 
-  /*! \brief Setup all class internal objects and members
+    /// read restart
+    virtual void ReadRestart(int step);
 
-  \warning none
-  \return void
-  \date 08/16
-  \author rauch  */
-  virtual void Setup();
+   protected:
+    /// composed Field-Field-Interaction operator
+    void CouplingOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
 
-  /// read restart
-  virtual void ReadRestart(int step);
+    /// background operator
+    void BackgroundOp(
+        Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values, const FillType fillFlag);
 
-protected:
+    /// immersed operator
+    Teuchos::RCP<Epetra_Vector> ImmersedOp(
+        Teuchos::RCP<Epetra_Vector> bdry_traction, const FillType fillFlag);
 
-  /// composed Field-Field-Interaction operator
-  void CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+    /// preparation of background field solve
+    void PrepareBackgroundOp();
 
-  /// background operator
-  void BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
-      const FillType fillFlag);
+    /// preparation of immersed field solve
+    void PrepareImmersedOp();
 
-  /// immersed operator
-  Teuchos::RCP<Epetra_Vector> ImmersedOp(
-      Teuchos::RCP<Epetra_Vector> bdry_traction,
-      const FillType fillFlag);
+    /// prepare output of data to HD
+    virtual void PrepareOutput();
 
-  /// preparation of background field solve
-  void PrepareBackgroundOp();
+    /// output of data to HD
+    virtual void Output();
 
-  /// preparation of immersed field solve
-  void PrepareImmersedOp();
+    /// update fields
+    virtual void Update();
 
-  /// prepare output of data to HD
-  virtual void PrepareOutput();
+    /// prepare time step of single fields and print header
+    virtual void PrepareTimeStep();
 
-  /// output of data to HD
-  virtual void Output();
+    /// initial guess
+    virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
-  /// update fields
-  virtual void Update();
+   private:
+    //! @name Data Management
+    //@{
+    DRT::ImmersedFieldExchangeManager*
+        exchange_manager_;  //!< manager for data exchange between fields
+    //@}
 
-  /// prepare time step of single fields and print header
-  virtual void PrepareTimeStep();
+    //! @name Search Trees
+    //@{
+    Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
+    Teuchos::RCP<GEO::SearchTree> cell_SearchTree_;   //!< search tree for cell domain
+    //@}
 
-  /// initial guess
-  virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+    //! @name current nodal positions of the discretizations
+    //@{
+    std::map<int, LINALG::Matrix<3, 1>>*
+        currpositions_cell_;  //!< pointer to map of vectors for search tree containing current
+                              //!< structural positions
+    std::map<int, LINALG::Matrix<3, 1>>*
+        currpositions_ECM_;  //!< pointer to map of vectors for search tree containing current fluid
+                             //!< positions
+    //@}
 
-private:
+    /// cell structure of the immersed problem
+    Teuchos::RCP<::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
 
-  //! @name Data Management
-  //@{
-  DRT::ImmersedFieldExchangeManager* exchange_manager_ ; //!< manager for data exchange between fields
-  //@}
+    /// poro structure of the immersed problem
+    Teuchos::RCP<::ADAPTER::FPSIStructureWrapper> porostructure_;
 
-  //! @name Search Trees
-  //@{
-  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
-  Teuchos::RCP<GEO::SearchTree> cell_SearchTree_;   //!< search tree for cell domain
-  //@}
+    /// pointer to poroelast subproblem (poro-scatra interaction)
+    Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
 
-  //! @name current nodal positions of the discretizations
-  //@{
-  std::map<int,LINALG::Matrix<3,1> >* currpositions_cell_; //!< pointer to map of vectors for search tree containing current structural positions
-  std::map<int,LINALG::Matrix<3,1> >* currpositions_ECM_;  //!< pointer to map of vectors for search tree containing current fluid positions
-  //@}
+    /// pointer to cellscatra subproblem (structure-scatra interaction)
+    Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> cellscatra_subproblem_;
 
-  /// cell structure of the immersed problem
-  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
+    //! @name basic information for parallelism
+    //@{
+    int myrank_;   //!< processor id
+    int numproc_;  //!< total number of processors
+    //@}
 
-  /// poro structure of the immersed problem
-  Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>        porostructure_;
+    /// pointer to global problem
+    DRT::Problem* globalproblem_;
 
-  /// pointer to poroelast subproblem (poro-scatra interaction)
-  Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
+    /// coupling scheme
+    bool displacementcoupling_;
 
-  /// pointer to cellscatra subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> cellscatra_subproblem_;
+    //! @name Pointers to Discretizations
+    //@{
+    Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;  //!< background ecm discretisation
+    Teuchos::RCP<DRT::Discretization>
+        backgroundfluiddis_;  //!< background interstitial flow discretisation
+    Teuchos::RCP<DRT::Discretization> immerseddis_;  //!< immersed cell discretisation
+    Teuchos::RCP<DRT::Discretization> scatradis_;    //!< cell scatra discretisation
+    //@}
 
-  //! @name basic information for parallelism
-  //@{
-  int myrank_;  //!< processor id
-  int numproc_; //!< total number of processors
-  //@}
-
-  /// pointer to global problem
-  DRT::Problem* globalproblem_;
-
-  /// coupling scheme
-  bool displacementcoupling_;
-
-  //! @name Pointers to Discretizations
-  //@{
-  Teuchos::RCP<DRT::Discretization> backgroundstructuredis_; //!< background ecm discretisation
-  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;     //!< background interstitial flow discretisation
-  Teuchos::RCP<DRT::Discretization> immerseddis_;            //!< immersed cell discretisation
-  Teuchos::RCP<DRT::Discretization> scatradis_;              //!< cell scatra discretisation
-  //@}
-
-}; // class ImmersedPartitionedProtrusionFormation
-} // namespace IMMERSED
+  };  // class ImmersedPartitionedProtrusionFormation
+}  // namespace IMMERSED
 
 #endif /* IMMERSED_PARTITIONED_CELLCONTRACTION_H */

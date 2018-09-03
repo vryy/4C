@@ -27,8 +27,7 @@ namespace FS3I
 {
   class PartFS3I_1WC : public PartFS3I
   {
-  public:
-
+   public:
     PartFS3I_1WC(const Epetra_Comm& comm);
 
     virtual ~PartFS3I_1WC(){};
@@ -48,6 +47,6 @@ namespace FS3I
     virtual bool ScatraConvergenceCheck(int itnum);
   };
 
-}
+}  // namespace FS3I
 
 #endif

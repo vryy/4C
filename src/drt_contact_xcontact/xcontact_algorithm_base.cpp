@@ -45,7 +45,7 @@
  *----------------------------------------------------------------------------*/
 XCONTACT::ALGORITHM::Base::Base()
     : ADAPTER::AlgorithmBase(DRT::Problem::Instance()->GetDis("structure")->Comm(),
-        DRT::Problem::Instance()->XContactDynamicParams()),
+          DRT::Problem::Instance()->XContactDynamicParams()),
       isinit_(false),
       issetup_(false),
       p_xcontact_dyn_ptr_(Teuchos::null),
@@ -65,39 +65,35 @@ XCONTACT::ALGORITHM::Base::Base()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XCONTACT::ALGORITHM::Base::Init(
-    const Teuchos::ParameterList& p_xcontact_dyn,
-    const Teuchos::ParameterList& p_structure_dyn,
-    const Teuchos::ParameterList& p_scatra_dyn,
+void XCONTACT::ALGORITHM::Base::Init(const Teuchos::ParameterList& p_xcontact_dyn,
+    const Teuchos::ParameterList& p_structure_dyn, const Teuchos::ParameterList& p_scatra_dyn,
     const Teuchos::ParameterList& p_xfem_general,
     const Teuchos::RCP<DRT::Discretization>& structdis_ptr)
 {
   issetup_ = false;
 
   // copy and store the XCONTACT DYNAMIC parameter list
-  p_xcontact_dyn_ptr_ = Teuchos::rcp( new Teuchos::ParameterList( p_xcontact_dyn ) );
-  p_struct_dyn_ptr_   = Teuchos::rcp( new Teuchos::ParameterList( p_structure_dyn ) );
-  p_scatra_dyn_ptr_   = Teuchos::rcp( new Teuchos::ParameterList( p_scatra_dyn ) );
-  p_xfem_general_ptr_ = Teuchos::rcp( new Teuchos::ParameterList( p_xfem_general ) );
+  p_xcontact_dyn_ptr_ = Teuchos::rcp(new Teuchos::ParameterList(p_xcontact_dyn));
+  p_struct_dyn_ptr_ = Teuchos::rcp(new Teuchos::ParameterList(p_structure_dyn));
+  p_scatra_dyn_ptr_ = Teuchos::rcp(new Teuchos::ParameterList(p_scatra_dyn));
+  p_xfem_general_ptr_ = Teuchos::rcp(new Teuchos::ParameterList(p_xfem_general));
 
   max_num_dof_sets_ = XFEMGeneralParams().get<int>("MAX_NUM_DOFSETS");
 
   // get the number of DoF's per node
   int gid_node = structdis_ptr->NodeRowMap()->MinMyGID();
-  DRT::Node* node_ptr = structdis_ptr->gNode( gid_node );
-  num_dof_per_node_ = structdis_ptr->NumDof( node_ptr );
+  DRT::Node* node_ptr = structdis_ptr->gNode(gid_node);
+  num_dof_per_node_ = structdis_ptr->NumDof(node_ptr);
 
   // check the fill complete status of the structure discretization
-  if (not structdis_ptr->Filled())
-    structdis_ptr->FillComplete();
+  if (not structdis_ptr->Filled()) structdis_ptr->FillComplete();
   // store the structure discret pointer in the multi discretization wrapper
   multi_discret_ptr_ = Teuchos::rcp(new XCONTACT::MultiDiscretizationWrapper());
-  multi_discret_ptr_->Init( "XContact_Wrapper", structdis_ptr,
-        NumDofPerNode() * MaxNumDofSets() );
+  multi_discret_ptr_->Init("XContact_Wrapper", structdis_ptr, NumDofPerNode() * MaxNumDofSets());
 
   /* specify remaining control parameters (which are not already set in the
    * ADAPTER::AlgorithmBase class.) */
-  numstep_ = p_xcontact_dyn.get<int>( "NUMSTEP" );
+  numstep_ = p_xcontact_dyn.get<int>("NUMSTEP");
 
   isinit_ = true;
 }
@@ -124,10 +120,11 @@ void XCONTACT::ALGORITHM::Base::SetupStructure()
   CheckInit();
 
   // get the contact condition groups
-  std::vector<std::vector<DRT::Condition*> > ccond_grps(0);
-  CONTACT::UTILS::GetContactConditionGroups(ccond_grps,StructDiscret());
-  if (ccond_grps.size()>1)
-    dserror("Currently we support only ONE contact interface. This "
+  std::vector<std::vector<DRT::Condition*>> ccond_grps(0);
+  CONTACT::UTILS::GetContactConditionGroups(ccond_grps, StructDiscret());
+  if (ccond_grps.size() > 1)
+    dserror(
+        "Currently we support only ONE contact interface. This "
         "can be easily extended. But keep in mind, that each slave "
         "side needs a own ScaTra discretization!");
 
@@ -174,13 +171,12 @@ void XCONTACT::ALGORITHM::Base::SetupStructure()
    * The two discretizations share the same node ID's at the coupling interface,
    * but differ in the global degrees of freedom ID's!
    *------------------------------------------------------------------------*/
-  Teuchos::RCP<DRT::DiscretizationInterface> xstruct_dis_ptr =
-      Teuchos::rcp(new DRT::DiscretizationXFEM("xstructure",
-          Teuchos::rcp(StructDiscret().Comm().Clone())));
-  xstruct_dis_ptr->FillComplete(false,false,false);
+  Teuchos::RCP<DRT::DiscretizationInterface> xstruct_dis_ptr = Teuchos::rcp(
+      new DRT::DiscretizationXFEM("xstructure", Teuchos::rcp(StructDiscret().Comm().Clone())));
+  xstruct_dis_ptr->FillComplete(false, false, false);
   const XFEM::UTILS::XFEMDiscretizationBuilder xdis_builder;
-  xdis_builder.SetupXFEMDiscretization(XFEMGeneralParams(),
-      StructDiscretPtr(),xstruct_dis_ptr,ccond_grps[0]);
+  xdis_builder.SetupXFEMDiscretization(
+      XFEMGeneralParams(), StructDiscretPtr(), xstruct_dis_ptr, ccond_grps[0]);
 
   // --------------------------------------------------------------------------
   // add the xfem discretization to the multi discretization wrapper
@@ -200,14 +196,13 @@ void XCONTACT::ALGORITHM::Base::SetupStructure()
       Teuchos::rcp(new ADAPTER::XStructureAlgorithm());
 
   // call init and setup
-  structure_alg_base->Init(XContactDynParams(),StructDynParams(),
-      multi_discret_ptr_);
+  structure_alg_base->Init(XContactDynParams(), StructDynParams(), multi_discret_ptr_);
   structure_alg_base->Setup();
 
   // get the actual field pointer
   structure_ptr_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureXContact>(
-      structure_alg_base->StructureField(),true);
-  structure_ptr_->Init(XFEMGeneralParams(),NumDofPerNode());
+      structure_alg_base->StructureField(), true);
+  structure_ptr_->Init(XFEMGeneralParams(), NumDofPerNode());
   structure_ptr_->Setup();
 }
 
@@ -221,35 +216,33 @@ void XCONTACT::ALGORITHM::Base::SetupScaTra()
   // create new ScaTra discretizations
   // ------------------------------------------------------------------------
   XCONTACT::MultiDiscretizationWrapper::XDisPairedPtrVector::const_iterator cit;
-  for (cit  = multi_discret_ptr_->GetContactIDiscret().begin();
+  for (cit = multi_discret_ptr_->GetContactIDiscret().begin();
        cit != multi_discret_ptr_->GetContactIDiscret().end(); ++cit)
   {
-    Teuchos::RCP<DRT::Discretization> scatra_dis_ptr =
-        Teuchos::rcp(new DRT::Discretization("scatra",
-            Teuchos::rcp<Epetra_Comm>(StructDiscret().Comm().Clone())));
-    scatra_dis_ptr->FillComplete(false,false,false);
+    Teuchos::RCP<DRT::Discretization> scatra_dis_ptr = Teuchos::rcp(new DRT::Discretization(
+        "scatra", Teuchos::rcp<Epetra_Comm>(StructDiscret().Comm().Clone())));
+    scatra_dis_ptr->FillComplete(false, false, false);
 
-    DRT::DiscretizationInterface & discret =
-        multi_discret_ptr_->Discret(cit->first);
-    std::vector<DRT::Condition*> conds(1,ExtractSlaveCondition(discret));
+    DRT::DiscretizationInterface& discret = multi_discret_ptr_->Discret(cit->first);
+    std::vector<DRT::Condition*> conds(1, ExtractSlaveCondition(discret));
 
     // clone the wrapped contact discretization
     DRT::UTILS::CloneDiscretizationFromCondition<SCATRA::ScatraFluidCloneStrategy>(
-        discret,*scatra_dis_ptr,conds);
+        discret, *scatra_dis_ptr, conds);
 
     // give scatra new dof-sets (starts after structure)
     Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
-    scatra_dis_ptr->ReplaceDofSet(newdofset,true);
-    scatra_dis_ptr->FillComplete(true,true,true);
+    scatra_dis_ptr->ReplaceDofSet(newdofset, true);
+    scatra_dis_ptr->FillComplete(true, true, true);
 
     // set the level-set implementation type
-    for(int i=0; i<scatra_dis_ptr->NumMyColElements(); ++i)
+    for (int i = 0; i < scatra_dis_ptr->NumMyColElements(); ++i)
     {
-      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(
-          scatra_dis_ptr->lColElement(i));
+      DRT::ELEMENTS::Transport* element =
+          dynamic_cast<DRT::ELEMENTS::Transport*>(scatra_dis_ptr->lColElement(i));
 
       // set the implementation type of the level-set elements
-      if(element == NULL)
+      if (element == NULL)
         dserror("Invalid element type!");
       else
         element->SetImplType(INPAR::SCATRA::impltype_lsreinit);
@@ -260,7 +253,7 @@ void XCONTACT::ALGORITHM::Base::SetupScaTra()
 
     scatra_dis_ptr->Print(std::cout);
 
-    DRT::Problem::Instance()->AddDis("scatra",scatra_dis_ptr);
+    DRT::Problem::Instance()->AddDis("scatra", scatra_dis_ptr);
     multi_discret_ptr_->AddScaTraIDiscret(cit->first, scatra_dis_ptr);
   }
 
@@ -277,47 +270,47 @@ void XCONTACT::ALGORITHM::Base::SetupScaTra()
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = ScaTraDynParams().get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-   dserror("No linear solver defined for the eXtended contact problem. "
-       "Please set LINEAR_SOLVER in the SCALAR TRANSPORT DYNAMIC section to a "
-       "valid number!");
+    dserror(
+        "No linear solver defined for the eXtended contact problem. "
+        "Please set LINEAR_SOLVER in the SCALAR TRANSPORT DYNAMIC section to a "
+        "valid number!");
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_alg_base =
       Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
   // call init and setup
-  scatra_alg_base->Init(XContactDynParams(),
-          ScaTraDynParams(),DRT::Problem::Instance()->SolverParams(linsolvernumber),
-          "scatra",false);
+  scatra_alg_base->Init(XContactDynParams(), ScaTraDynParams(),
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), "scatra", false);
   scatra_alg_base->Setup();
 
   // get the actual field pointer
   scatra_ptr_ = Teuchos::rcp_dynamic_cast<XCONTACT::LEVELSET::Algorithm>(
-      scatra_alg_base->ScaTraField(),true);
+      scatra_alg_base->ScaTraField(), true);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Condition * XCONTACT::ALGORITHM::Base::ExtractSlaveCondition(
-    const DRT::DiscretizationInterface & discret) const
+DRT::Condition* XCONTACT::ALGORITHM::Base::ExtractSlaveCondition(
+    const DRT::DiscretizationInterface& discret) const
 {
-  std::vector<std::vector<DRT::Condition*> > ccond_grps(0);
-  CONTACT::UTILS::GetContactConditionGroups(ccond_grps,discret);
+  std::vector<std::vector<DRT::Condition*>> ccond_grps(0);
+  CONTACT::UTILS::GetContactConditionGroups(ccond_grps, discret);
 
   if (ccond_grps.size() > 1)
-    dserror("Something went wrong. The wrapped discretization %s is supposed "
+    dserror(
+        "Something went wrong. The wrapped discretization %s is supposed "
         "to hold only one contact condition group!",
         discret.Name().c_str());
 
   // --- Extract the slave condition from the structural discretization -------
   std::vector<bool> isslave(0);
   std::vector<bool> isself(0);
-  CONTACT::UTILS::GetMasterSlaveSideInfo(isslave,isself,ccond_grps[0]);
+  CONTACT::UTILS::GetMasterSlaveSideInfo(isslave, isself, ccond_grps[0]);
 
-  if (isself[0])
-    dserror("Self contact is currently unsupported!");
+  if (isself[0]) dserror("Self contact is currently unsupported!");
 
   // get the condition from the slave side
   DRT::Condition* slave_cond = NULL;
-  for (std::size_t i=0;i<isslave.size();++i)
+  for (std::size_t i = 0; i < isslave.size(); ++i)
   {
     if (isslave[i])
     {
@@ -326,8 +319,7 @@ DRT::Condition * XCONTACT::ALGORITHM::Base::ExtractSlaveCondition(
     }
   }
 
-  if (slave_cond==NULL)
-    dserror("The slave side condition could not be extracted!");
+  if (slave_cond == NULL) dserror("The slave side condition could not be extracted!");
 
   return slave_cond;
 }
@@ -347,8 +339,7 @@ void XCONTACT::ALGORITHM::Base::Timeloop()
     // do outer iteration loop for particular type of algorithm
     OuterLoop();
 
-    IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
-        ": Not yet implemented!" << IO::endl;
+    IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << ": Not yet implemented!" << IO::endl;
     break;
 
     // prepare output
@@ -359,7 +350,7 @@ void XCONTACT::ALGORITHM::Base::Timeloop()
 
     // write output to screen and files
     Output();
-  } // time loop
+  }  // time loop
 
   return;
 }
@@ -393,14 +384,17 @@ void XCONTACT::ALGORITHM::Base::PrepareTimeStep()
 
   // Synchronism check between structure and level-set algorithm
   if (StructureField().Time() != Time())
-    dserror("Time in Structure time integration differs from time in "
+    dserror(
+        "Time in Structure time integration differs from time in "
         "eXtended contact algorithm \n(t_structure = %d, t_xcontact_algo = %d",
-        StructureField().Time(),Time());
+        StructureField().Time(), Time());
 
   if (ScaTraField().Time() != Time())
-    dserror("Time in ScaTra time integration differs from time in "
+    dserror(
+        "Time in ScaTra time integration differs from time in "
         "eXtended contact algorithm \n(t_scatra = %d, t_xcontact_algo = %d",
-        ScaTraField().Time(),Time());;
+        ScaTraField().Time(), Time());
+  ;
 
   return;
 }
@@ -420,10 +414,7 @@ void XCONTACT::ALGORITHM::Base::Update()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XCONTACT::ALGORITHM::Base::PrepareOutput()
-{
-  StructureField().PrepareOutput();
-}
+void XCONTACT::ALGORITHM::Base::PrepareOutput() { StructureField().PrepareOutput(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -441,7 +432,7 @@ void XCONTACT::ALGORITHM::Base::Output()
  *----------------------------------------------------------------------------*/
 void XCONTACT::ALGORITHM::Base::SetScaTraValuesInStructure()
 {
-  StructureField().SetScaTraValuesInStructure_Np( *ScaTraField().Phinp() );
+  StructureField().SetScaTraValuesInStructure_Np(*ScaTraField().Phinp());
 }
 
 /*----------------------------------------------------------------------------*
@@ -454,10 +445,9 @@ bool XCONTACT::ALGORITHM::Base::SetStructureValuesInScaTra()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<DRT::DiscretizationInterface>& XCONTACT::ALGORITHM::Base::
-    StructDiscretPtr()
+const Teuchos::RCP<DRT::DiscretizationInterface>& XCONTACT::ALGORITHM::Base::StructDiscretPtr()
 {
-  return multi_discret_ptr_->DiscretPtr( XFEM::structure );
+  return multi_discret_ptr_->DiscretPtr(XFEM::structure);
 }
 
 /*----------------------------------------------------------------------------*
@@ -465,15 +455,14 @@ const Teuchos::RCP<DRT::DiscretizationInterface>& XCONTACT::ALGORITHM::Base::
 DRT::DiscretizationInterface& XCONTACT::ALGORITHM::Base::StructDiscret()
 {
   CheckInit();
-  return multi_discret_ptr_->Discret( XFEM::structure );
+  return multi_discret_ptr_->Discret(XFEM::structure);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<DRT::DiscretizationInterface>& XCONTACT::ALGORITHM::Base::
-    XStructDiscretPtr()
+const Teuchos::RCP<DRT::DiscretizationInterface>& XCONTACT::ALGORITHM::Base::XStructDiscretPtr()
 {
-  return multi_discret_ptr_->DiscretPtr( XFEM::xstructure );
+  return multi_discret_ptr_->DiscretPtr(XFEM::xstructure);
 }
 
 /*----------------------------------------------------------------------------*
@@ -481,7 +470,7 @@ const Teuchos::RCP<DRT::DiscretizationInterface>& XCONTACT::ALGORITHM::Base::
 DRT::DiscretizationInterface& XCONTACT::ALGORITHM::Base::XStructDiscret()
 {
   CheckInit();
-  return multi_discret_ptr_->Discret( XFEM::xstructure );
+  return multi_discret_ptr_->Discret(XFEM::xstructure);
 }
 
 /*----------------------------------------------------------------------------*
@@ -489,7 +478,7 @@ DRT::DiscretizationInterface& XCONTACT::ALGORITHM::Base::XStructDiscret()
 const Teuchos::RCP<DRT::Discretization>& XCONTACT::ALGORITHM::Base::ScaTraDiscretPtr()
 {
   CheckInit();
-  return multi_discret_ptr_->ScaTraDiscretPtr( XFEM::xstructure );
+  return multi_discret_ptr_->ScaTraDiscretPtr(XFEM::xstructure);
 }
 
 /*----------------------------------------------------------------------------*
@@ -497,13 +486,12 @@ const Teuchos::RCP<DRT::Discretization>& XCONTACT::ALGORITHM::Base::ScaTraDiscre
 DRT::Discretization& XCONTACT::ALGORITHM::Base::ScaTraDiscret()
 {
   CheckInit();
-  return multi_discret_ptr_->ScaTraDiscret( XFEM::xstructure );
+  return multi_discret_ptr_->ScaTraDiscret(XFEM::xstructure);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XCONTACT::ALGORITHM::Base::SetInitialScaTraParams(
-    Teuchos::ParameterList& p_scatra_dyn) const
+void XCONTACT::ALGORITHM::Base::SetInitialScaTraParams(Teuchos::ParameterList& p_scatra_dyn) const
 {
   // skip the initial time derivative
   p_scatra_dyn.set<std::string>("SKIPINITDER", "Yes");

@@ -39,7 +39,8 @@ The new filters can be used in parallel.
 #include <Epetra_SerialComm.h>
 #endif
 
-extern "C" {
+extern "C"
+{
 #include "../pss_full/pss_types.h"
 }
 
@@ -53,7 +54,7 @@ class PostField;
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 /*!
@@ -68,7 +69,7 @@ class Discretization;
 */
 class PostProblem
 {
-public:
+ public:
   // @{ \name Constructors and destructors
 
   //! setup filter and read command line
@@ -171,8 +172,7 @@ public:
   //! read in new mesh for given step and field
   void re_read_mesh(int fieldpos, std::string fieldname, int step);
 
-private:
-
+ private:
   //! initializes all the data a filter needs.
   //
   // This function is called by the Constructor.
@@ -256,7 +256,6 @@ private:
 
   std::string input_dir_;
   Teuchos::RCP<Epetra_Comm> comm_;
-
 };
 
 
@@ -274,15 +273,11 @@ private:
 */
 class PostField
 {
-public:
+ public:
   // @{ \name Constructors and destructors
 
-  PostField(
-      Teuchos::RCP<DRT::Discretization> dis,
-      PostProblem* problem,
-      std::string field_name,
-      const int numnd,
-      const int numele);
+  PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem, std::string field_name,
+      const int numnd, const int numele);
 
   ~PostField();
 
@@ -310,7 +305,7 @@ public:
   std::string name() const { return field_name_; }
 
   //! returns the type of this field
-  //FIELDTYP type() const { return type_; }
+  // FIELDTYP type() const { return type_; }
 
   //! returns the number of nodes
   int num_nodes() const { return numnd_; }
@@ -325,7 +320,7 @@ public:
 
   //@}
 
-private:
+ private:
   Teuchos::RCP<DRT::Discretization> dis_;
   PostProblem* problem_;
   int num_output_procs_;
@@ -345,7 +340,7 @@ private:
 */
 class PostResult
 {
-public:
+ public:
   // @{ \name Constructors and destructors
   PostResult(PostField* field);
   ~PostResult();
@@ -367,7 +362,8 @@ public:
   //! get result times and steps for a given fieldname
   //
   // fills vector with times and steps when the solution was written
-  void get_result_timesandsteps(const std::string& fieldname, std::vector<double>& times, std::vector<int>& steps);
+  void get_result_timesandsteps(
+      const std::string& fieldname, std::vector<double>& times, std::vector<int>& steps);
 
   //! goes to the next result block in the slice
   //
@@ -396,7 +392,8 @@ public:
   // \param elemap (out): element map
   //
   // \returns vector with results read
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > read_result_serialdensematrix(const std::string name);
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> read_result_serialdensematrix(
+      const std::string name);
 
   //! reads the data of the result vector 'name' from the current result block
   //
@@ -422,8 +419,7 @@ public:
   int step() const;
 
   //@}
-private:
-
+ private:
   //! closes all the currently open result files
   void close_result_files();
 

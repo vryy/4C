@@ -30,19 +30,15 @@ Maintainer: Moritz Thon
 
 namespace MAT
 {
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
     class MatListChemoReac : public MatListReactions, public MatListChemotaxis
     {
-    public:
-
+     public:
       /// standard constructor
-      MatListChemoReac(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      MatListChemoReac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~MatListChemoReac() { ; }
@@ -56,27 +52,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class MatListChemoReacType : public DRT::ParObjectType
-{
-public:
+  class MatListChemoReacType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MatListChemoReacType"; }
 
-  std::string Name() const { return "MatListChemoReacType"; }
+    static MatListChemoReacType& Instance() { return instance_; };
 
-  static MatListChemoReacType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static MatListChemoReacType instance_;
-};
+   private:
+    static MatListChemoReacType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
   class MatListChemoReac : public MatListChemotaxis, public MatListReactions
   {
-  public:
-
+   public:
     /// construct empty material object
     MatListChemoReac();
 
@@ -91,7 +84,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MatListChemoReacType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return MatListChemoReacType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -122,16 +118,21 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_chemoreac; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_matlist_chemoreac;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListChemoReac( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new MatListChemoReac(*this));
+    }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::MatListChemoReac* Parameter() const {return paramsreachemo_;}
+    virtual MAT::PAR::MatListChemoReac* Parameter() const { return paramsreachemo_; }
 
-  private:
-
+   private:
     /// setup of material map
     virtual void SetupMatMap();
 
@@ -142,7 +143,7 @@ private:
     MAT::PAR::MatListChemoReac* paramsreachemo_;
   };
 
-}
+}  // namespace MAT
 
 
 #endif /* MATLIST_CHEMOREAC_H_ */

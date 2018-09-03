@@ -24,17 +24,16 @@ namespace DRT
 {
   class Discretization;
   class ResultTest;
-}
+}  // namespace DRT
 
 
 // Algorithm adapter classes for use in multi-field problems
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /// basic artery network adapter
   class ArtNet
   {
-  public:
-
+   public:
     /// constructor
     ArtNet(){};
 
@@ -42,24 +41,18 @@ namespace ADAPTER {
     virtual ~ArtNet(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& arteryparams,
-        const std::string& scatra_disname
-        ) = 0;
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) = 0;
 
     /// initialization
     virtual void InitSaveState() = 0;
 
     // restart
-    virtual void ReadRestart(
-        int  step,
-        bool CoupledTo3D=false) = 0;
+    virtual void ReadRestart(int step, bool CoupledTo3D = false) = 0;
 
     // time integration
     virtual void Integrate(
-        bool CoupledTo3D,
-        Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
+        bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
 
     // test results
     virtual void TestResults() = 0;
@@ -68,27 +61,25 @@ namespace ADAPTER {
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
     //! get discretization
-    virtual Teuchos::RCP<DRT::Discretization > Discretization() = 0;
+    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
     // get time step size
-    virtual double  Dt() const = 0;
+    virtual double Dt() const = 0;
 
     // output
-    virtual void Output(
-        bool                                 CoupledTo3D,
-        Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
+    virtual void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
 
     // update of variables from n --> n+1
     virtual void TimeUpdate() = 0;
 
     // save state
-    virtual void SaveState () = 0;
+    virtual void SaveState() = 0;
 
     // load state
     virtual void LoadState() = 0;
 
     // prepare the loop
-    virtual void PrepareTimeLoop () = 0;
+    virtual void PrepareTimeLoop() = 0;
 
     // prepare step
     virtual void PrepareTimeStep() = 0;
@@ -110,7 +101,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() const = 0;
 
     //! iterative update of primary variable
-    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)=0;
+    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     // solve scalar transport in arteries
     virtual void SolveScatra() = 0;
@@ -121,9 +112,9 @@ namespace ADAPTER {
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
 
-  }; // class ArtNet
+  };  // class ArtNet
 
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 
 #endif /* SRC_DRT_ADAPTER_AD_ART_NET_H_ */

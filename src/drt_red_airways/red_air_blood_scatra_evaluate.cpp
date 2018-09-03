@@ -30,20 +30,16 @@ using namespace DRT::UTILS;
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAirBloodScatra::Evaluate(Teuchos::ParameterList& params,
-                                               DRT::Discretization&      discretization,
-                                               std::vector<int>&         lm,
-                                               Epetra_SerialDenseMatrix& elemat1,
-                                               Epetra_SerialDenseMatrix& elemat2,
-                                               Epetra_SerialDenseVector& elevec1,
-                                               Epetra_SerialDenseVector& elevec2,
-                                               Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
-
   DRT::ELEMENTS::RedAirBloodScatra::ActionType act = RedAirBloodScatra::none;
 
   // get the action required
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
+  std::string action = params.get<std::string>("action", "none");
+  if (action == "none")
+    dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedAirBloodScatra::calc_sys_matrix_rhs;
   else if (action == "calc_sys_matrix_rhs_iad")
@@ -78,119 +74,106 @@ int DRT::ELEMENTS::RedAirBloodScatra::Evaluate(Teuchos::ParameterList& params,
     act = RedAirBloodScatra::eval_PO2_from_concentration;
   else
   {
-
     char errorout[200];
-    sprintf(errorout,"Unknown type of action (%s) for reduced dimensional acinus",action.c_str());
+    sprintf(errorout, "Unknown type of action (%s) for reduced dimensional acinus", action.c_str());
 
     dserror(errorout);
   }
 
-/*
-Here must add the steps for evaluating an element
-*/
+  /*
+  Here must add the steps for evaluating an element
+  */
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  switch(act)
+  switch (act)
   {
-  case calc_sys_matrix_rhs:
-  {
-  }
-  break;
-  case calc_sys_matrix_rhs_iad:
-  {
-  }
-  break;
-  case get_initial_state:
-  {
-    DRT::ELEMENTS::RedAirBloodScatraImplInterface::Impl(this)->Initial(this,
-                                                                       params,
-                                                                       discretization,
-                                                                       lm,
-                                                                       mat);
-  }
-  break;
-  case set_bc:
-  {
-  }
+    case calc_sys_matrix_rhs:
+    {
+    }
     break;
-  case calc_flow_rates:
-  {
-  }
-  break;
-  case calc_elem_volumes:
-  {
-  }
-  break;
-  case get_coupled_values:
-  {
-  }
-  break;
-  case get_junction_volume_mix:
-  {
-    // do nothing
-  }
-  break;
-  case solve_scatra:
-  {
-    //do nothing
-  }
-  break;
-  case calc_cfl:
-  {
-    //do nothing
-  }
-  break;
-  case solve_junction_scatra:
-  {
-    // do nothing
-  }
-  break;
-  case update_scatra:
-  {
-    // do nothing
-  }
-  break;
-  case update_elem12_scatra:
-  {
-    // do nothing
-  }
-  break;
-  case eval_nodal_ess_vals:
-  {
-    // do nothing
-  }
-  break;
-  case eval_PO2_from_concentration:
-  {
-    // do nothing
-  }
-  break;
-  case solve_blood_air_transport:
-  {
-    DRT::ELEMENTS::RedAirBloodScatraImplInterface::Impl(this)->SolveBloodAirTransport(this,
-                                                                                      elevec1,
-                                                                                      elevec2,
-                                                                                      elevec3,
-                                                                                      params,
-                                                                                      discretization,
-                                                                                      lm,
-                                                                                      mat);
-  }
-  break;
-  default:
-    dserror("Unkown type of action for reduced dimensional acinuss");
-  }// end of switch(act)
+    case calc_sys_matrix_rhs_iad:
+    {
+    }
+    break;
+    case get_initial_state:
+    {
+      DRT::ELEMENTS::RedAirBloodScatraImplInterface::Impl(this)->Initial(
+          this, params, discretization, lm, mat);
+    }
+    break;
+    case set_bc:
+    {
+    }
+    break;
+    case calc_flow_rates:
+    {
+    }
+    break;
+    case calc_elem_volumes:
+    {
+    }
+    break;
+    case get_coupled_values:
+    {
+    }
+    break;
+    case get_junction_volume_mix:
+    {
+      // do nothing
+    }
+    break;
+    case solve_scatra:
+    {
+      // do nothing
+    }
+    break;
+    case calc_cfl:
+    {
+      // do nothing
+    }
+    break;
+    case solve_junction_scatra:
+    {
+      // do nothing
+    }
+    break;
+    case update_scatra:
+    {
+      // do nothing
+    }
+    break;
+    case update_elem12_scatra:
+    {
+      // do nothing
+    }
+    break;
+    case eval_nodal_ess_vals:
+    {
+      // do nothing
+    }
+    break;
+    case eval_PO2_from_concentration:
+    {
+      // do nothing
+    }
+    break;
+    case solve_blood_air_transport:
+    {
+      DRT::ELEMENTS::RedAirBloodScatraImplInterface::Impl(this)->SolveBloodAirTransport(
+          this, elevec1, elevec2, elevec3, params, discretization, lm, mat);
+    }
+    break;
+    default:
+      dserror("Unkown type of action for reduced dimensional acinuss");
+  }  // end of switch(act)
 
   return 0;
-} // end of DRT::ELEMENTS::RedAirBloodScatra::Evaluate
+}  // end of DRT::ELEMENTS::RedAirBloodScatra::Evaluate
 
 
 int DRT::ELEMENTS::RedAirBloodScatra::EvaluateNeumann(Teuchos::ParameterList& params,
-                                              DRT::Discretization& discretization,
-                                              DRT::Condition& condition,
-                                              std::vector<int>& lm,
-                                              Epetra_SerialDenseVector& elevec1,
-                                              Epetra_SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -201,10 +184,8 @@ int DRT::ELEMENTS::RedAirBloodScatra::EvaluateNeumann(Teuchos::ParameterList& pa
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAirBloodScatra::EvaluateDirichlet(Teuchos::ParameterList& params,
-                                                DRT::Discretization&      discretization,
-                                                DRT::Condition&           condition,
-                                                std::vector<int>&         lm,
-                                                Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }
@@ -213,10 +194,9 @@ int DRT::ELEMENTS::RedAirBloodScatra::EvaluateDirichlet(Teuchos::ParameterList& 
 // get optimal gaussrule for discretization type
 GaussRule1D DRT::ELEMENTS::RedAirBloodScatra::getOptimalGaussrule(const DiscretizationType& distype)
 {
-
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
-    {
+  {
     case line2:
       rule = DRT::UTILS::intrule_line_2point;
       break;
@@ -224,15 +204,15 @@ GaussRule1D DRT::ELEMENTS::RedAirBloodScatra::getOptimalGaussrule(const Discreti
       rule = DRT::UTILS::intrule_line_3point;
       break;
     default:
-    dserror("unknown number of nodes for gaussrule initialization");
-    }
+      dserror("unknown number of nodes for gaussrule initialization");
+  }
   return rule;
 }
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
 bool DRT::ELEMENTS::RedAirBloodScatra::isHigherOrderElement(
-  const DRT::Element::DiscretizationType  distype) const
+    const DRT::Element::DiscretizationType distype) const
 {
   bool hoel = true;
   switch (distype)
@@ -241,11 +221,10 @@ bool DRT::ELEMENTS::RedAirBloodScatra::isHigherOrderElement(
       hoel = true;
       break;
     case line2:
-       hoel = false;
-       break;
+      hoel = false;
+      break;
     default:
       dserror("distype unknown!");
   }
   return hoel;
 }
-

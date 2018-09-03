@@ -40,7 +40,7 @@ void DRT::DEBUGGING::NaNChecker(const Epetra_SerialDenseMatrix& mat)
   {
     for (int n = 0; n < mat.N(); n++)
     {
-      if (std::isnan(mat(m,n)))
+      if (std::isnan(mat(m, n)))
       {
         dserror("NaNs detected! Quitting...");
       }

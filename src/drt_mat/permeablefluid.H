@@ -21,22 +21,17 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for Permeable fluid
     ///
     /// This object exists only once for each read Newton fluid.
     class PermeableFluid : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      PermeableFluid(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      PermeableFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~PermeableFluid() { ; }
@@ -62,20 +57,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class PermeableFluidType : public DRT::ParObjectType
-{
-public:
+  class PermeableFluidType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "PermeableFluidType"; }
 
-  std::string Name() const { return "PermeableFluidType"; }
+    static PermeableFluidType& Instance() { return instance_; };
 
-  static PermeableFluidType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static PermeableFluidType instance_;
-};
+   private:
+    static PermeableFluidType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Permeable fluid material
@@ -83,8 +76,7 @@ private:
   /// This object exists (several times) at every element
   class PermeableFluid : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     PermeableFluid();
 
@@ -99,7 +91,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return PermeableFluidType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return PermeableFluidType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -133,7 +128,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_permeable_fluid; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PermeableFluid( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new PermeableFluid(*this)); }
 
     /// compute reaction coefficient
     double ComputeReactionCoeff() const;
@@ -156,13 +151,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::PermeableFluid* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

@@ -21,17 +21,13 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedModelsOst::TimIntRedModelsOst(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntOneStepTheta(actdis,solver,params,output,alefluid),
-      TimIntRedModels(actdis,solver,params,output,alefluid)
+FLD::TimIntRedModelsOst::TimIntRedModelsOst(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntOneStepTheta(actdis, solver, params, output, alefluid),
+      TimIntRedModels(actdis, solver, params, output, alefluid)
 {
-
   return;
 }
 
@@ -66,8 +62,4 @@ void FLD::TimIntRedModelsOst::ReadRestart(int step)
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntRedModelsOst::~TimIntRedModelsOst()
-{
-  return;
-}
-
+FLD::TimIntRedModelsOst::~TimIntRedModelsOst() { return; }

@@ -29,20 +29,15 @@ namespace DRT
   class Condition;
 }
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   class FluidPoro : public FluidFPSI
   {
-  public:
-
+   public:
     //! Constructor
-    FluidPoro(Teuchos::RCP<Fluid> fluid,
-        Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale,
-        bool dirichletcond);
+    FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     //! Evaluate no penetration constraint
     /*!
@@ -54,11 +49,10 @@ namespace ADAPTER {
                                          (0== fluid-fluid, 1== fluid -structure)
      */
     void EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
-                           Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
-                           Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
-                           Teuchos::RCP<Epetra_Vector> condVector,
-                           Teuchos::RCP<std::set<int> > condIDs,
-                           POROELAST::coupltype coupltype = POROELAST::fluidfluid);
+        Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
+        Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
+        Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
+        POROELAST::coupltype coupltype = POROELAST::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator
     virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter();
@@ -73,19 +67,17 @@ namespace ADAPTER {
 
       \note This is a pure DEBUG functionality. Originally used in immersed method development.
 
-      \warning This method partly re-implements redundantly few lines of the common fluid Output() routine.
-      \return void
+      \warning This method partly re-implements redundantly few lines of the common fluid Output()
+      routine. \return void
     */
-    virtual void Output(const int step=-1, const double time=-1);
+    virtual void Output(const int step = -1, const double time = -1);
 
-  private:
-
+   private:
     /// fluid field
     const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
-    std::vector<DRT::Condition*> nopencond_; ///< vector containing no penetration conditions
-
+    std::vector<DRT::Condition*> nopencond_;  ///< vector containing no penetration conditions
   };
-}
+}  // namespace ADAPTER
 
 #endif

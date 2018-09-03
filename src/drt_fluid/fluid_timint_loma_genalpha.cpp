@@ -21,15 +21,12 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntLomaGenAlpha::TimIntLomaGenAlpha(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntGenAlpha(actdis,solver,params,output,alefluid),
-      TimIntLoma(actdis,solver,params,output,alefluid)
+FLD::TimIntLomaGenAlpha::TimIntLomaGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntGenAlpha(actdis, solver, params, output, alefluid),
+      TimIntLoma(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -52,8 +49,4 @@ void FLD::TimIntLomaGenAlpha::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntLomaGenAlpha::~TimIntLomaGenAlpha()
-{
-  return;
-}
-
+FLD::TimIntLomaGenAlpha::~TimIntLomaGenAlpha() { return; }

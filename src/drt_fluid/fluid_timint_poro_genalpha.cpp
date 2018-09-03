@@ -21,15 +21,12 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntGenAlpha(actdis,solver,params,output,alefluid),
-      TimIntPoro(actdis,solver,params,output,alefluid)
+FLD::TimIntPoroGenAlpha::TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntGenAlpha(actdis, solver, params, output, alefluid),
+      TimIntPoro(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -52,10 +49,7 @@ void FLD::TimIntPoroGenAlpha::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntPoroGenAlpha::~TimIntPoroGenAlpha()
-{
-  return;
-}
+FLD::TimIntPoroGenAlpha::~TimIntPoroGenAlpha() { return; }
 
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
@@ -70,7 +64,7 @@ void FLD::TimIntPoroGenAlpha::GenAlphaIntermediateValues()
   //       (i)                     (i)
 
   // consider both velocity and pressure degrees of freedom
-  accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
+  accam_->Update((alphaM_), *accnp_, (1.0 - alphaM_), *accn_, 0.0);
 
   // set intermediate values for velocity
   //
@@ -86,9 +80,9 @@ void FLD::TimIntPoroGenAlpha::GenAlphaIntermediateValues()
   //
   // note that its af-genalpha with mid-point treatment of the pressure,
   // not implicit treatment as for the genalpha according to Whiting
-  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+  velaf_->Update((alphaF_), *velnp_, (1.0 - alphaF_), *veln_, 0.0);
 
-} // TimIntGenAlpha::GenAlphaIntermediateValues
+}  // TimIntGenAlpha::GenAlphaIntermediateValues
 
 /*----------------------------------------------------------------------*
  |  read restart data                                   rasthofer 12/14 |
@@ -101,4 +95,3 @@ void FLD::TimIntPoroGenAlpha::ReadRestart(int step)
 
   return;
 }
-

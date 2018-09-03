@@ -27,15 +27,12 @@ namespace MAT
     /// material parameters for convection-diffusion
     class Newman : public ElchSingleMat
     {
-    public:
-
+     public:
       /// standard constructor
-      Newman(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      Newman(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Newman(){return;}
+      virtual ~Newman() { return; }
 
       /// @name material parameters
       //@{
@@ -69,20 +66,18 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
     };  // class Newman
 
-  } // namespace PAR
+  }  // namespace PAR
 
   class NewmanType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "NewmanType"; }
 
-    static NewmanType & Instance() { return instance_; };
+    static NewmanType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static NewmanType instance_;
   };
 
@@ -90,8 +85,7 @@ namespace MAT
   /// Wrapper for the material properties of an ion species in an electrolyte solution
   class Newman : public ElchSingleMat
   {
-  public:
-
+   public:
     /// construct empty material object
     Newman();
 
@@ -140,7 +134,7 @@ namespace MAT
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_newman; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Newman( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Newman(*this)); }
 
     /// valence (= charge number)
     double Valence() const { return params_->valence_; }
@@ -148,31 +142,24 @@ namespace MAT
     /// computation of the transference number based on the defined curve
     double ComputeTransferenceNumber(const double cint) const;
     /// computation of the first derivative of the transference number based on the defined curve
-    double ComputeFirstDerivTrans (const double cint) const;
+    double ComputeFirstDerivTrans(const double cint) const;
 
     /// computation of the thermodynamic factor based on the defined curve
-    double ComputeThermFac (const double cint) const ;
+    double ComputeThermFac(const double cint) const;
     /// computation of the first derivative of the transference number based on the defined curve
     double ComputeFirstDerivThermFac(const double cint) const;
 
-  private:
-
+   private:
     /// return curve defining the transference number
     int TransNrCurve() const { return params_->transnrcurve_; }
     /// return curve defining the thermodynamic factor
     int ThermFacCurve() const { return params_->thermfaccurve_; }
 
     /// parameter needed for implemented concentration dependence
-    const std::vector<double>& TransNrParams() const
-    {
-      return params_->transnrpara_;
-    }
+    const std::vector<double>& TransNrParams() const { return params_->transnrpara_; }
 
     /// parameter needed for implemented concentration dependence
-    const std::vector<double>& ThermFacParams() const
-    {
-      return params_->thermfacpara_;
-    }
+    const std::vector<double>& ThermFacParams() const { return params_->thermfacpara_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -180,6 +167,6 @@ namespace MAT
     /// my material parameters
     MAT::PAR::Newman* params_;
   };
-}
+}  // namespace MAT
 
 #endif

@@ -40,25 +40,25 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSpherePotentialPair():
-    BeamPotentialPair(),
-    beam_element_(NULL),
-    sphere_element_(NULL),
-    time_(0.0),
-    k_(0.0),
-    m_(0.0),
-    beamele_reflength_(0.0),
-    radius1_(0.0),
-    radius2_(0.0),
-    interaction_potential_(0.0)
+template <unsigned int numnodes, unsigned int numnodalvalues>
+BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSpherePotentialPair()
+    : BeamPotentialPair(),
+      beam_element_(NULL),
+      sphere_element_(NULL),
+      time_(0.0),
+      k_(0.0),
+      m_(0.0),
+      beamele_reflength_(0.0),
+      radius1_(0.0),
+      radius2_(0.0),
+      interaction_potential_(0.0)
 {
   // empty constructor
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
+template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup()
 {
   CheckInit();
@@ -80,7 +80,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
 
   if (beam_element_ == NULL)
-    dserror("cast to Beam3Base failed! first element in BeamToSpherePotentialPair pair"
+    dserror(
+        "cast to Beam3Base failed! first element in BeamToSpherePotentialPair pair"
         " must be a beam element!");
 
   // get radius and stress-free reference length of beam element
@@ -91,7 +92,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
 
   if (sphere_element_ == NULL)
-    dserror("cast to Rigidsphere failed! second element in BeamToSpherePotentialPair pair"
+    dserror(
+        "cast to Rigidsphere failed! second element in BeamToSpherePotentialPair pair"
         " must be a Rigidsphere element!");
 
   // get radius of sphere element
@@ -105,20 +107,15 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
+template <unsigned int numnodes, unsigned int numnodalvalues>
 bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evaluate(
-    LINALG::SerialDenseVector* forcevec1,
-    LINALG::SerialDenseVector* forcevec2,
-    LINALG::SerialDenseMatrix* stiffmat11,
-    LINALG::SerialDenseMatrix* stiffmat12,
-    LINALG::SerialDenseMatrix* stiffmat21,
-    LINALG::SerialDenseMatrix* stiffmat22,
-    const std::vector<DRT::Condition*> chargeconds,
-    const double k,
-    const double m)
+    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
+    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
+    const std::vector<DRT::Condition*> chargeconds, const double k, const double m)
 {
   // nothing to do in case of k==0.0
-  if (k==0.0) return false;
+  if (k == 0.0) return false;
 
   // reset fpot and stiffpot class variables
   fpot1_.Clear();
@@ -126,11 +123,11 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   stiffpot1_.Clear();
   stiffpot2_.Clear();
 
-  unsigned int dim1 = 3*numnodes*numnodalvalues;
+  unsigned int dim1 = 3 * numnodes * numnodalvalues;
   unsigned int dim2 = 3;
 
   // set class variables
-  if(chargeconds.size() == 2)
+  if (chargeconds.size() == 2)
   {
     if (chargeconds[0]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
       chargeconds_[0] = chargeconds[0];
@@ -143,25 +140,28 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
       dserror("Provided condition is not of correct type RigidspherePotential_PointCharge!");
   }
   else
-    dserror("Expected TWO charge conditions for a (beam,rigidsphere) potential-based interaction pair!");
+    dserror(
+        "Expected TWO charge conditions for a (beam,rigidsphere) potential-based interaction "
+        "pair!");
 
-  k_=k;
-  m_=m;
+  k_ = k;
+  m_ = m;
 
   // prepare FAD
 #ifdef AUTOMATICDIFF
-  // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions / tangents.
-  for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
-    ele1pos_(i).diff(i,3*numnodes*numnodalvalues+3);
+  // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions /
+  // tangents.
+  for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; i++)
+    ele1pos_(i).diff(i, 3 * numnodes * numnodalvalues + 3);
 
-  for (unsigned int i=0;i<3;i++)
-    ele2pos_(i).diff(3*numnodes*numnodalvalues+i,3*numnodes*numnodalvalues+3);
+  for (unsigned int i = 0; i < 3; i++)
+    ele2pos_(i).diff(3 * numnodes * numnodalvalues + i, 3 * numnodes * numnodalvalues + 3);
 #endif
 
 
   // compute the values for element residual vectors ('force') and linearizations ('stiff')
   // Todo allow for independent choice of strategy for beam-to-sphere potentials
-  switch ( Params()->Strategy() )
+  switch (Params()->Strategy())
   {
     case INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
     {
@@ -177,43 +177,41 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   if (forcevec1 != NULL)
   {
     forcevec1->Size(dim1);
-    for (unsigned int i=0; i<dim1; ++i)
-      (*forcevec1)(i) = FADUTILS::CastToDouble(fpot1_(i));
+    for (unsigned int i = 0; i < dim1; ++i) (*forcevec1)(i) = FADUTILS::CastToDouble(fpot1_(i));
   }
   if (forcevec2 != NULL)
   {
     forcevec2->Size(dim2);
-    for (unsigned int i=0; i<dim2; ++i)
-      (*forcevec2)(i) = FADUTILS::CastToDouble(fpot2_(i));
+    for (unsigned int i = 0; i < dim2; ++i) (*forcevec2)(i) = FADUTILS::CastToDouble(fpot2_(i));
   }
 
   if (stiffmat11 != NULL)
   {
-    stiffmat11->Shape(dim1,dim1);
-    for (unsigned int irow=0; irow<dim1; ++irow)
-      for (unsigned int icol=0; icol<dim1; ++icol)
-        (*stiffmat11)(irow,icol) =  FADUTILS::CastToDouble(stiffpot1_(irow,icol));
+    stiffmat11->Shape(dim1, dim1);
+    for (unsigned int irow = 0; irow < dim1; ++irow)
+      for (unsigned int icol = 0; icol < dim1; ++icol)
+        (*stiffmat11)(irow, icol) = FADUTILS::CastToDouble(stiffpot1_(irow, icol));
   }
   if (stiffmat12 != NULL)
   {
-    stiffmat12->Shape(dim1,dim2);
-    for (unsigned int irow=0; irow<dim1; ++irow)
-      for (unsigned int icol=0; icol<dim2; ++icol)
-        (*stiffmat12)(irow,icol) =  FADUTILS::CastToDouble(stiffpot1_(irow,dim1+icol));
+    stiffmat12->Shape(dim1, dim2);
+    for (unsigned int irow = 0; irow < dim1; ++irow)
+      for (unsigned int icol = 0; icol < dim2; ++icol)
+        (*stiffmat12)(irow, icol) = FADUTILS::CastToDouble(stiffpot1_(irow, dim1 + icol));
   }
   if (stiffmat21 != NULL)
   {
-    stiffmat21->Shape(dim2,dim1);
-    for (unsigned int irow=0; irow<dim2; ++irow)
-      for (unsigned int icol=0; icol<dim1; ++icol)
-        (*stiffmat21)(irow,icol) =  FADUTILS::CastToDouble(stiffpot2_(irow,icol));
+    stiffmat21->Shape(dim2, dim1);
+    for (unsigned int irow = 0; irow < dim2; ++irow)
+      for (unsigned int icol = 0; icol < dim1; ++icol)
+        (*stiffmat21)(irow, icol) = FADUTILS::CastToDouble(stiffpot2_(irow, icol));
   }
   if (stiffmat22 != NULL)
   {
-    stiffmat22->Shape(dim2,dim2);
-    for (unsigned int irow=0; irow<dim2; ++irow)
-      for (unsigned int icol=0; icol<dim2; ++icol)
-        (*stiffmat22)(irow,icol) =  FADUTILS::CastToDouble(stiffpot2_(irow,dim1+icol));
+    stiffmat22->Shape(dim2, dim2);
+    for (unsigned int irow = 0; irow < dim2; ++irow)
+      for (unsigned int icol = 0; icol < dim2; ++icol)
+        (*stiffmat22)(irow, icol) = FADUTILS::CastToDouble(stiffpot2_(irow, dim1 + icol));
   }
 
   return (true);
@@ -221,8 +219,9 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
+template <unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
+    numnodalvalues>::EvaluateFpotandStiffpot_LargeSepApprox()
 {
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
@@ -233,40 +232,41 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // Get gauss points (gp) for integration
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
   // number of gps
-  const int numgp=gausspoints.nquad;
+  const int numgp = gausspoints.nquad;
 
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
   // values at all gauss points are stored in advance
-  std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> > N1_i(numgp);        // = N1_i
-  std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> > N1_i_xi(numgp);     // = N1_i,xi
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
+  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
 
   // coords and derivatives of the two gauss points
-  LINALG::TMatrix<TYPE, 3, 1> r1(true);                               // = r1
-  LINALG::TMatrix<TYPE, 3, 1> r2(true);                               // = r2
-  LINALG::TMatrix<TYPE, 3, 1> dist(true);                             // = r1-r2
-  TYPE norm_dist= 0.0;                                                // = |r1-r2|
+  LINALG::TMatrix<TYPE, 3, 1> r1(true);    // = r1
+  LINALG::TMatrix<TYPE, 3, 1> r2(true);    // = r2
+  LINALG::TMatrix<TYPE, 3, 1> dist(true);  // = r1-r2
+  TYPE norm_dist = 0.0;                    // = |r1-r2|
 
   // Evaluate shape functions at gauss points and store values
-  GetShapeFunctions(N1_i,N1_i_xi,gausspoints);
+  GetShapeFunctions(N1_i, N1_i_xi, gausspoints);
 
   // evaluate charge density from DLINE charge condition specified in input file
   double q1 = chargeconds_[0]->GetDouble("val");
 
-  // read charge of rigid sphere; note: this is NOT a charge density but the total charge of the sphere!!!
-  double q2 =  chargeconds_[1]->GetDouble("val");
+  // read charge of rigid sphere; note: this is NOT a charge density but the total charge of the
+  // sphere!!!
+  double q2 = chargeconds_[1]->GetDouble("val");
 
   // evaluate function in time if specified in line charge conditions
   // TODO allow for functions in space, i.e. varying charge along beam centerline
   int function_number = chargeconds_[0]->GetInt("funct");
 
-  if ( function_number != -1 )
-    q1 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+  if (function_number != -1)
+    q1 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
 
   function_number = chargeconds_[1]->GetInt("funct");
 
-  if ( function_number != -1 )
-    q2 *= DRT::Problem::Instance()->Funct(function_number-1).EvaluateTime(time_);
+  if (function_number != -1)
+    q2 *= DRT::Problem::Instance()->Funct(function_number - 1).EvaluateTime(time_);
 
 
   // auxiliary variable
@@ -275,79 +275,79 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
 
-  switch ( Params()->PotentialType() )  // Todo do we need a own Beam-to-sphere potential type here?
+  switch (Params()->PotentialType())  // Todo do we need a own Beam-to-sphere potential type here?
   {
-  case INPAR::BEAMPOTENTIAL::beampot_surf:
-    prefactor *= 2 * radius1_ * M_PI;
-    break;
-  case INPAR::BEAMPOTENTIAL::beampot_vol:
-    prefactor *= std::pow(radius1_,2) * M_PI;
-    break;
-  default:
-    dserror("No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
+    case INPAR::BEAMPOTENTIAL::beampot_surf:
+      prefactor *= 2 * radius1_ * M_PI;
+      break;
+    case INPAR::BEAMPOTENTIAL::beampot_vol:
+      prefactor *= std::pow(radius1_, 2) * M_PI;
+      break;
+    default:
+      dserror(
+          "No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
   // get sphere midpoint position
-  for (int i=0; i<3; ++i)
-    r2(i) = ele2pos_(i);
+  for (int i = 0; i < 3; ++i) r2(i) = ele2pos_(i);
 
   // reset interaction potential of this pair
   interaction_potential_ = 0.0;
 
   // loop over gauss points on ele1
-  for (int gp1=0; gp1 < numgp; ++gp1)
+  for (int gp1 = 0; gp1 < numgp; ++gp1)
   {
-    ComputeCoords(r1,N1_i[gp1],ele1pos_);
+    ComputeCoords(r1, N1_i[gp1], ele1pos_);
 
-    dist = FADUTILS::DiffVector(r1,r2);
+    dist = FADUTILS::DiffVector(r1, r2);
 
     norm_dist = FADUTILS::VectorNorm<3>(dist);
 
     // check cutoff criterion: if specified, contributions are neglected at larger separation
-    if ( cutoff_radius != -1.0 and FADUTILS::CastToDouble( norm_dist ) > cutoff_radius )
-      continue;
+    if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
 
 
     // temporary hacks for cell-ecm interaction
-//    // get radius of rigid sphere element
-//    double radius = 4.0;//sphere_element_->Radius();
-//    double deltaradius = radius/10.0;
-//    if(
-//        norm_dist < (radius-2.0*deltaradius)
-//        or
-//        norm_dist > (radius +2.0* deltaradius)
-//        )
-//    {
-//      fpot1_.PutScalar(0.0);
-//      fpot2_.PutScalar(0.0);
-//      stiffpot1_.PutScalar(0.0);
-//      stiffpot2_.PutScalar(0.0);;
-//      return;
-//    }
-//    else if (
-//        norm_dist > ( radius - 2.0 * deltaradius)
-//        and
-//        norm_dist < ( radius + 2.0 * deltaradius)
-//        )
-//    if( norm_dist < sphere_element_->Radius() )
-//    {
-//      dist.Scale( sphere_element_->Radius() / norm_dist );
-//      norm_dist = FADUTILS::VectorNorm<3>(dist);
-//    }
-//
-//    if(norm_dist > 0.5)
-//      dist.Scale(10.0/norm_dist);
-//    norm_dist = FADUTILS::VectorNorm<3>(dist);
+    //    // get radius of rigid sphere element
+    //    double radius = 4.0;//sphere_element_->Radius();
+    //    double deltaradius = radius/10.0;
+    //    if(
+    //        norm_dist < (radius-2.0*deltaradius)
+    //        or
+    //        norm_dist > (radius +2.0* deltaradius)
+    //        )
+    //    {
+    //      fpot1_.PutScalar(0.0);
+    //      fpot2_.PutScalar(0.0);
+    //      stiffpot1_.PutScalar(0.0);
+    //      stiffpot2_.PutScalar(0.0);;
+    //      return;
+    //    }
+    //    else if (
+    //        norm_dist > ( radius - 2.0 * deltaradius)
+    //        and
+    //        norm_dist < ( radius + 2.0 * deltaradius)
+    //        )
+    //    if( norm_dist < sphere_element_->Radius() )
+    //    {
+    //      dist.Scale( sphere_element_->Radius() / norm_dist );
+    //      norm_dist = FADUTILS::VectorNorm<3>(dist);
+    //    }
+    //
+    //    if(norm_dist > 0.5)
+    //      dist.Scale(10.0/norm_dist);
+    //    norm_dist = FADUTILS::VectorNorm<3>(dist);
 
     // auxiliary variables to store pre-calculated common terms
     TYPE norm_dist_exp1 = 0.0;
-    if(norm_dist !=0.0)
+    if (norm_dist != 0.0)
     {
-      norm_dist_exp1 = std::pow(norm_dist,-m_-2);
+      norm_dist_exp1 = std::pow(norm_dist, -m_ - 2);
     }
     else
     {
-      dserror("\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this case!"
+      dserror(
+          "\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this case!"
           " Think about shifting nodes in unconverged state?!");
     }
 
@@ -355,19 +355,19 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
         q1 * q2 * BeamElement()->GetJacobiFacAtXi(gausspoints.qxg[gp1][0]) * gausspoints.qwgt[gp1];
 
     // compute fpot_tmp here, same for both element forces
-    for (unsigned int i=0; i<3; ++i)
+    for (unsigned int i = 0; i < 3; ++i)
       fpot_tmp(i) = q1q2_JacFac_GaussWeights * norm_dist_exp1 * dist(i);
 
     //********************************************************************
     // calculate fpot1: force on element 1
     //********************************************************************
     // sum up the contributions of all nodes (in all dimensions)
-    for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+    for (unsigned int i = 0; i < (numnodes * numnodalvalues); ++i)
     {
       // loop over dimensions
-      for (unsigned int j=0; j<3; ++j)
+      for (unsigned int j = 0; j < 3; ++j)
       {
-        fpot1_(3*i+j) -= N1_i[gp1](i)*fpot_tmp(j);
+        fpot1_(3 * i + j) -= N1_i[gp1](i) * fpot_tmp(j);
       }
     }
 
@@ -375,7 +375,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     // calculate fpot2: force on element 2
     //********************************************************************
     // loop over dimensions
-    for (unsigned int j=0; j<3; ++j)
+    for (unsigned int j = 0; j < 3; ++j)
     {
       fpot2_(j) += fpot_tmp(j);
     }
@@ -385,98 +385,93 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     // calculate stiffpot1
     //********************************************************************
     // auxiliary variables (same for both elements)
-    TYPE norm_dist_exp2 = (m_+2) * std::pow(norm_dist,-m_-4);
+    TYPE norm_dist_exp2 = (m_ + 2) * std::pow(norm_dist, -m_ - 4);
 
     LINALG::TMatrix<TYPE, 3, 3> dist_dist_T(true);
 
-    for (unsigned int i=0; i<3; ++i)
+    for (unsigned int i = 0; i < 3; ++i)
     {
-      for (unsigned int j=0; j<=i; ++j)
+      for (unsigned int j = 0; j <= i; ++j)
       {
-        dist_dist_T(i,j) = dist(i) * dist(j);
-        if(i!=j) dist_dist_T(j,i) = dist_dist_T(i,j);
+        dist_dist_T(i, j) = dist(i) * dist(j);
+        if (i != j) dist_dist_T(j, i) = dist_dist_T(i, j);
       }
     }
 
-    for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
+    for (unsigned int i = 0; i < (numnodes * numnodalvalues); ++i)
     {
-
       // d (Res_1) / d (d_1)
-      for (unsigned int j=0; j<(numnodes*numnodalvalues); ++j)
+      for (unsigned int j = 0; j < (numnodes * numnodalvalues); ++j)
       {
-
-        for (unsigned int idim=0; idim<3; ++idim)
+        for (unsigned int idim = 0; idim < 3; ++idim)
         {
-          stiffpot1_(3*i+idim,3*j+idim) -=
-              norm_dist_exp1 * N1_i[gp1](i)*N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+          stiffpot1_(3 * i + idim, 3 * j + idim) -=
+              norm_dist_exp1 * N1_i[gp1](i) * N1_i[gp1](j) * q1q2_JacFac_GaussWeights;
 
-          for (unsigned int jdim=0; jdim<3; ++jdim)
+          for (unsigned int jdim = 0; jdim < 3; ++jdim)
           {
-            stiffpot1_(3*i+idim,3*j+jdim) +=
-                norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim,jdim) * N1_i[gp1](j) * q1q2_JacFac_GaussWeights;
+            stiffpot1_(3 * i + idim, 3 * j + jdim) += norm_dist_exp2 * N1_i[gp1](i) *
+                                                      dist_dist_T(idim, jdim) * N1_i[gp1](j) *
+                                                      q1q2_JacFac_GaussWeights;
           }
         }
       }
 
 
       // d (Res_1) / d (d_2)
-      for (unsigned int idim=0; idim<3; ++idim)
+      for (unsigned int idim = 0; idim < 3; ++idim)
       {
-        stiffpot1_(3*i+idim,3*(numnodes*numnodalvalues)+idim) +=
+        stiffpot1_(3 * i + idim, 3 * (numnodes * numnodalvalues) + idim) +=
             norm_dist_exp1 * N1_i[gp1](i) * q1q2_JacFac_GaussWeights;
 
-        for (unsigned int jdim=0; jdim<3; ++jdim)
+        for (unsigned int jdim = 0; jdim < 3; ++jdim)
         {
-          stiffpot1_(3*i+idim,3*(numnodes*numnodalvalues)+jdim) -=
-              norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim,jdim) *  q1q2_JacFac_GaussWeights;
+          stiffpot1_(3 * i + idim, 3 * (numnodes * numnodalvalues) + jdim) -=
+              norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim, jdim) * q1q2_JacFac_GaussWeights;
         }
       }
-
     }
 
     //********************************************************************
     // calculate stiffpot2
     //********************************************************************
     // d (Res_2) / d (d_1)
-    for (unsigned int j=0; j<(numnodes*numnodalvalues); ++j)
+    for (unsigned int j = 0; j < (numnodes * numnodalvalues); ++j)
     {
-
-      for (unsigned int idim=0; idim<3; ++idim)
+      for (unsigned int idim = 0; idim < 3; ++idim)
       {
-        stiffpot2_(idim,3*j+idim) +=
-            norm_dist_exp1 *N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+        stiffpot2_(idim, 3 * j + idim) += norm_dist_exp1 * N1_i[gp1](j) * q1q2_JacFac_GaussWeights;
 
-        for (unsigned int jdim=0; jdim<3; ++jdim)
+        for (unsigned int jdim = 0; jdim < 3; ++jdim)
         {
-          stiffpot2_(idim,3*j+jdim) -=
-              norm_dist_exp2 * dist_dist_T(idim,jdim) * N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+          stiffpot2_(idim, 3 * j + jdim) -=
+              norm_dist_exp2 * dist_dist_T(idim, jdim) * N1_i[gp1](j) * q1q2_JacFac_GaussWeights;
         }
       }
     }
 
     // d (Res_2) / d (d_2)
-    for (unsigned int idim=0; idim<3; ++idim)
+    for (unsigned int idim = 0; idim < 3; ++idim)
     {
-      stiffpot2_(idim,3*(numnodes*numnodalvalues)+idim) -=
-         norm_dist_exp1 * q1q2_JacFac_GaussWeights;
+      stiffpot2_(idim, 3 * (numnodes * numnodalvalues) + idim) -=
+          norm_dist_exp1 * q1q2_JacFac_GaussWeights;
 
-      for (unsigned int jdim=0; jdim<3; ++jdim)
+      for (unsigned int jdim = 0; jdim < 3; ++jdim)
       {
-        stiffpot2_(idim,3*(numnodes*numnodalvalues)+jdim) +=
-            norm_dist_exp2 * dist_dist_T(idim,jdim) * q1q2_JacFac_GaussWeights;
+        stiffpot2_(idim, 3 * (numnodes * numnodalvalues) + jdim) +=
+            norm_dist_exp2 * dist_dist_T(idim, jdim) * q1q2_JacFac_GaussWeights;
       }
     }
 
     // store for energy output
     interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights *
-        std::pow( FADUTILS::CastToDouble(norm_dist), -m_ );
-
+                              std::pow(FADUTILS::CastToDouble(norm_dist), -m_);
   }
 
 
   // apply constant prefactor
-  for (unsigned int i=0; i<3*numnodes*numnodalvalues; ++i) fpot1_(i)*=prefactor;
-  for (unsigned int i=0; i<3; ++i) fpot2_(i)*=prefactor;
+  for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i) fpot1_(i) *= prefactor;
+  for (unsigned int i = 0; i < 3; ++i) fpot2_(i) *= prefactor;
 
   stiffpot1_.Scale(prefactor);
   stiffpot2_.Scale(prefactor);
@@ -484,13 +479,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Print(std::ostream& out) const
+template <unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Print(
+    std::ostream& out) const
 {
   CheckInitSetup();
 
-  out << "\nInstance of BeamToSpherePotentialPair (EleGIDs " << Element1()->Id()
-      << " & " << Element2()->Id() << "):";
+  out << "\nInstance of BeamToSpherePotentialPair (EleGIDs " << Element1()->Id() << " & "
+      << Element2()->Id() << "):";
   out << "\nbeamele dofvec: " << ele1pos_;
   out << "\nspherele dofvec: " << ele2pos_;
 
@@ -500,53 +496,55 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Print
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::
-PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
+template <unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
+    numnodalvalues>::PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const
 {
   CheckInitSetup();
 
   // Todo difficulty here is that the same element pair is evaluated more than once
   //      to be more precise, once for every common potlaw;
   //      contribution of previous evaluations is overwritten if multiple potlaws are applied
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
+template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetShapeFunctions(
-    std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i,
-    std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
+    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
     DRT::UTILS::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
   const DRT::Element::DiscretizationType distype1 = Element1()->Shape();
 
-  if (numnodalvalues==1)
+  if (numnodalvalues == 1)
   {
-    for (int gp=0; gp<gausspoints.nquad; ++gp)
+    for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
       DRT::UTILS::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
       DRT::UTILS::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
     }
   }
-  else if (numnodalvalues==2)
+  else if (numnodalvalues == 2)
   {
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
     const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
 
-    for (int gp=0; gp<gausspoints.nquad; ++gp)
+    for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      DRT::UTILS::shape_function_hermite_1D(N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
+      DRT::UTILS::shape_function_hermite_1D(
+          N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
+      DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
     }
   }
   else
-    dserror("Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents)"
+    dserror(
+        "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents)"
         " values are valid!");
 
   return;
@@ -554,20 +552,19 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
+template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ComputeCoords(
-    LINALG::TMatrix<TYPE,3,1>& r,
-    const LINALG::Matrix<1,numnodes*numnodalvalues>& N_i,
-    const LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> elepos)
+    LINALG::TMatrix<TYPE, 3, 1>& r, const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+    const LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> elepos)
 {
   r.Clear();
 
   // compute output variable
-  for (unsigned int i=0;i<3;i++)
+  for (unsigned int i = 0; i < 3; i++)
   {
-    for (unsigned int j=0;j<numnodes*numnodalvalues;j++)
+    for (unsigned int j = 0; j < numnodes * numnodalvalues; j++)
     {
-      r(i)+=N_i(j)*elepos(3*j+i);
+      r(i) += N_i(j) * elepos(3 * j + i);
     }
   }
 
@@ -576,37 +573,32 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Compu
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ResetState(
-    double time,
+template <unsigned int numnodes, unsigned int numnodalvalues>
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ResetState(double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
   time_ = time;
 
-  if (centerline_dofvec_ele1.size() != 3*numnodes*numnodalvalues)
+  if (centerline_dofvec_ele1.size() != 3 * numnodes * numnodalvalues)
     dserror("size mismatch! expected %d values for centerline_dofvec_ele1, but got %d",
-        3*numnodes*numnodalvalues,
-        centerline_dofvec_ele1.size() );
+        3 * numnodes * numnodalvalues, centerline_dofvec_ele1.size());
 
   if (centerline_dofvec_ele2.size() != 3)
-    dserror("size mismatch! expected %d values for centerline_dofvec_ele2, but got %d",
-        3,
-        centerline_dofvec_ele1.size() );
+    dserror("size mismatch! expected %d values for centerline_dofvec_ele2, but got %d", 3,
+        centerline_dofvec_ele1.size());
 
 
-  for (unsigned int i=0; i<3*numnodes*numnodalvalues; ++i)
+  for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i)
     ele1pos_(i) = centerline_dofvec_ele1[i];
 
-  for (unsigned int i=0; i<3; ++i)
-    ele2pos_(i) = centerline_dofvec_ele2[i];
-
+  for (unsigned int i = 0; i < 3; ++i) ele2pos_(i) = centerline_dofvec_ele2[i];
 }
 
 
-//Possible template cases: this is necessary for the compiler
-template class BEAMINTERACTION::BeamToSpherePotentialPair<2,1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<3,1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<4,1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<5,1>;
-template class BEAMINTERACTION::BeamToSpherePotentialPair<2,2>;
+// Possible template cases: this is necessary for the compiler
+template class BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>;
+template class BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>;
+template class BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>;
+template class BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>;
+template class BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>;

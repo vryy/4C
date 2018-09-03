@@ -36,33 +36,34 @@ NOX::NLN::Solver::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Solver::Generic>
-NOX::NLN::Solver::Factory::BuildSolver(
+Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
     const Teuchos::RCP<NOX::Abstract::Group>& grp,
     const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
 {
   Teuchos::RCP<NOX::Solver::Generic> solver;
-  Teuchos::RCP<Teuchos::ParameterList> params =
-      nlnGlobalData->GetNlnParameterListPtr();
+  Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData->GetNlnParameterListPtr();
 
   std::string method = params->get<std::string>("Nonlinear Solver", "Line Search Based");
 
   if ((method == "Newton") or (method == "Line Search Based"))
-    solver = Teuchos::rcp(new NOX::NLN::Solver::LineSearchBased(grp,outerTests,innerTests,params));
+    solver =
+        Teuchos::rcp(new NOX::NLN::Solver::LineSearchBased(grp, outerTests, innerTests, params));
   else if (method == "Pseudo Transient")
-    solver = Teuchos::rcp(new NOX::NLN::Solver::PseudoTransient(grp,outerTests,innerTests,params));
+    solver =
+        Teuchos::rcp(new NOX::NLN::Solver::PseudoTransient(grp, outerTests, innerTests, params));
   else if (not nlnGlobalData->GetIsConstrained())
   {
     // unconstrained problems are able to call the standard nox factory
-    solver = NOX::Solver::buildSolver(grp,outerTests,params);
+    solver = NOX::Solver::buildSolver(grp, outerTests, params);
   }
   else
   {
     std::ostringstream msg;
     msg << "Error - NOX::NLN::Solver::Factory::buildSolver() - The \"Nonlinear Solver\" parameter\n"
-        << "\"" << method << "\" is not a valid solver option for CONSTRAINED optimization problems.\n"
+        << "\"" << method
+        << "\" is not a valid solver option for CONSTRAINED optimization problems.\n"
         << "Please fix your parameter list!\n";
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg.str());
   }
@@ -72,13 +73,12 @@ NOX::NLN::Solver::Factory::BuildSolver(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Solver::Generic>
-NOX::NLN::Solver::BuildSolver(
+Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::BuildSolver(
     const Teuchos::RCP<NOX::Abstract::Group>& grp,
     const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
 {
   Factory factory;
-  return factory.BuildSolver(grp,outerTests,innerTests,nlnGlobalData);
+  return factory.BuildSolver(grp, outerTests, innerTests, nlnGlobalData);
 }

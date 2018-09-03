@@ -16,7 +16,6 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::SSIStructureWrapper::SSIStructureWrapper(Teuchos::RCP<Structure> structure)
-: StructureWrapper(structure)
+    : StructureWrapper(structure)
 {
-
 }

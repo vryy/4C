@@ -29,22 +29,20 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis =
-      DRT::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
-  Teuchos::RCP< ::ADAPTER::AleBaseAlgorithm> ale =
-      Teuchos::rcp(new ::ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
-  Teuchos::RCP< ::ADAPTER::Ale> aletimint = ale->AleField();
+  Teuchos::RCP<::ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new ::ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
+  Teuchos::RCP<::ADAPTER::Ale> aletimint = ale->AleField();
 
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary
   // -------------------------------------------------------------------
   const int restart = DRT::Problem::Instance()->Restart();
-  if (restart)
-    aletimint->ReadRestart(restart);
+  if (restart) aletimint->ReadRestart(restart);
 
   // -------------------------------------------------------------------
   // call time loop
@@ -61,5 +59,3 @@ void dyn_ale_drt()
 
   return;
 }
-
-

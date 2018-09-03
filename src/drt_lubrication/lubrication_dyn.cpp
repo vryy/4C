@@ -33,12 +33,9 @@ void lubrication_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
-    std::cout << "###################################################"
-        << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: "
-        << DRT::Problem::Instance()->ProblemName() << std::endl;
-    std::cout << "###################################################"
-        << std::endl;
+    std::cout << "###################################################" << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "###################################################" << std::endl;
   }
 
   // access the problem-specific parameter list
@@ -62,19 +59,19 @@ void lubrication_dyn(int restart)
   const int linsolvernumber = lubricationdyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
     dserror(
-        "no linear solver defined for LUBRICATION problem. Please set LINEAR_SOLVER in LUBRICATION DYNAMIC to a valid number!");
+        "no linear solver defined for LUBRICATION problem. Please set LINEAR_SOLVER in LUBRICATION "
+        "DYNAMIC to a valid number!");
 
   // create instance of Lubrication basis algorithm
-  Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubricationonly = Teuchos::rcp(
-      new ADAPTER::LubricationBaseAlgorithm());
+  Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubricationonly =
+      Teuchos::rcp(new ADAPTER::LubricationBaseAlgorithm());
 
   // setup Lubrication basis algorithm
-  lubricationonly->Setup(lubricationdyn, lubricationdyn,
-          DRT::Problem::Instance()->SolverParams(linsolvernumber));
+  lubricationonly->Setup(
+      lubricationdyn, lubricationdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
   // read the restart information, set vectors and variables
-  if (restart)
-    lubricationonly->LubricationField()->ReadRestart(restart);
+  if (restart) lubricationonly->LubricationField()->ReadRestart(restart);
 
   // enter time loop to solve problem
   (lubricationonly->LubricationField())->TimeLoop();
@@ -83,6 +80,6 @@ void lubrication_dyn(int restart)
   DRT::Problem::Instance()->AddFieldTest(lubricationonly->CreateLubricationFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 
-return;
+  return;
 
-} // end of lubrication_dyn()
+}  // end of lubrication_dyn()

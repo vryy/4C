@@ -20,19 +20,18 @@
 
 #include "ad_str_structure_new.H"
 
-namespace ADAPTER {
-
-
+namespace ADAPTER
+{
   class XStructureAlgorithm : public StructureBaseAlgorithmNew
   {
-  public:
+   public:
     /// constructor
-    XStructureAlgorithm() {};
+    XStructureAlgorithm(){};
 
     /// destructor
-    virtual ~XStructureAlgorithm() {};
+    virtual ~XStructureAlgorithm(){};
 
-  protected:
+   protected:
     /** \brief Create and initiate the global state data container
      *
      *  Please note, that we do NOT setup the global state data container.
@@ -41,23 +40,20 @@ namespace ADAPTER {
      *  this point. First we need the merged FEM/xFEM discretization to do
      *  it. These things are done in the Setup() routine of the
      *  ADAPTER::StructureXContact class. */
-    virtual void SetGlobalState(
-        Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+    virtual void SetGlobalState(Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
         const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn);
 
     /** \brief Create and initiate the time integration strategy object
      *
      *  Please note, that we do not Setup() the time integration object,
      *  because of the uncompleted global state object. */
-    virtual void SetTimeIntegrationStrategy(
-        Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
+    virtual void SetTimeIntegrationStrategy(Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
         const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
-        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
-        const int& restart);
+        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate, const int& restart);
   };
 
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 
 #endif /* SRC_DRT_ADAPTER_AD_STR_XSTRUCTURE_ALGORITHM_H_ */

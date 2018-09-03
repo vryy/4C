@@ -35,136 +35,128 @@ namespace LINALG
 
 namespace DRT
 {
+  namespace INPUT
+  {
+    class LineDefinition;
+  }
 
-namespace INPUT
-{
-  class LineDefinition;
-}
-
-class ParObject;
-class Element;
-class ElementType;
-class Discretization;
-
-
-/// abstract ParObject type information
-/*!
-  There needs to be one ParObjectType subclass for every ParObject. The
-  ParObjectType subclass must be a singleton, that is there must be just one
-  instance and it must be created at startup.
-
-  ParObjectType is responsible to register with ParObjectFactory and provide
-  means to create its ParObject.
-
-  \author u.kue
-  \date 06/10
- */
-class ParObjectType
-{
-  friend class ParObjectFactory;
-public:
-
-  ParObjectType();
-
-  virtual ~ParObjectType() {}
-
-  /// Unique ParObject id. Automatically determined.
-  int UniqueParObjectId();
-
-  /// Create ParObject from packed data
-  virtual DRT::ParObject* Create( const std::vector<char> & data ) { return NULL; }
-
-  /// internal name of this ParObjectType.
-  virtual std::string Name() const = 0;
-
-  /// test equality by comparing pointers as there are just singletons allowed
-  bool operator==( const ParObjectType & other ) const
-  { return this == &other; }
-
-  /// test inequality by comparing pointers as there are just singletons allowed
-  bool operator!=( const ParObjectType & other ) const
-  { return this != &other; }
-
-private:
-
-  int objectid_;
-};
+  class ParObject;
+  class Element;
+  class ElementType;
+  class Discretization;
 
 
-/// Singleton ParObject factory class
-/*!
-  Central ParObject factory. A singleton class. Each ParObjectType registers
-  itself here. The factory is able to loop all ParObjectType objects and call
-  the appropriate creation methods.
+  /// abstract ParObject type information
+  /*!
+    There needs to be one ParObjectType subclass for every ParObject. The
+    ParObjectType subclass must be a singleton, that is there must be just one
+    instance and it must be created at startup.
 
-  \author u.kue
-  \date 06/10
- */
-class ParObjectFactory : public SingletonDestruction
-{
-  friend class ParObjectType;
-public:
+    ParObjectType is responsible to register with ParObjectFactory and provide
+    means to create its ParObject.
 
-  static ParObjectFactory& Instance();
+    \author u.kue
+    \date 06/10
+   */
+  class ParObjectType
+  {
+    friend class ParObjectFactory;
 
-  /// create a parobject from its data stream
-  ParObject* Create( const std::vector<char> & data );
+   public:
+    ParObjectType();
 
-  /// create an element from its name (and dis type if needed)
-  Teuchos::RCP<Element> Create( const std::string eletype,
-                                const std::string eledistype,
-                                const int id,
-                                const int owner );
+    virtual ~ParObjectType() {}
 
-  /// initialize all element types
-  void InitializeElements( DRT::Discretization & dis );
+    /// Unique ParObject id. Automatically determined.
+    int UniqueParObjectId();
 
-  /// preevaluate elements (via element types)
-  void PreEvaluate(DRT::Discretization& dis,
-                   Teuchos::ParameterList& p,
-                   Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-                   Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-                   Teuchos::RCP<Epetra_Vector>          systemvector1,
-                   Teuchos::RCP<Epetra_Vector>          systemvector2,
-                   Teuchos::RCP<Epetra_Vector>          systemvector3);
+    /// Create ParObject from packed data
+    virtual DRT::ParObject* Create(const std::vector<char>& data) { return NULL; }
 
-  /// setup definition of element input file lines
-  void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+    /// internal name of this ParObjectType.
+    virtual std::string Name() const = 0;
 
-  //! called upon destruction (free memory of parobject factory instance)
-  virtual void Done();
+    /// test equality by comparing pointers as there are just singletons allowed
+    bool operator==(const ParObjectType& other) const { return this == &other; }
 
-private:
+    /// test inequality by comparing pointers as there are just singletons allowed
+    bool operator!=(const ParObjectType& other) const { return this != &other; }
 
-  void Register( ParObjectType* object_type );
+   private:
+    int objectid_;
+  };
 
-  void FinalizeRegistration();
 
-  /// singleton.
-  static ParObjectFactory * instance_;
+  /// Singleton ParObject factory class
+  /*!
+    Central ParObject factory. A singleton class. Each ParObjectType registers
+    itself here. The factory is able to loop all ParObjectType objects and call
+    the appropriate creation methods.
 
-  ParObjectFactory();
+    \author u.kue
+    \date 06/10
+   */
+  class ParObjectFactory : public SingletonDestruction
+  {
+    friend class ParObjectType;
 
-  /// list of parobject types
+   public:
+    static ParObjectFactory& Instance();
 
-  /// Id to type object map. The central beast.
-  std::map<int, ParObjectType*> type_map_;
+    /// create a parobject from its data stream
+    ParObject* Create(const std::vector<char>& data);
 
-  /// element name cache
-  std::map<std::string, ElementType*> element_cache_;
+    /// create an element from its name (and dis type if needed)
+    Teuchos::RCP<Element> Create(
+        const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  /// preregistered types
-  std::vector<ParObjectType*> types_;
+    /// initialize all element types
+    void InitializeElements(DRT::Discretization& dis);
 
-  /// element types that are actually used
-  std::map<DRT::Discretization*, std::set<ElementType*> > active_elements_;
+    /// preevaluate elements (via element types)
+    void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3);
 
-  // no copying
+    /// setup definition of element input file lines
+    void SetupElementDefinition(
+        std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  ParObjectFactory( const ParObjectFactory& );
-  ParObjectFactory & operator=( const ParObjectFactory& );
-};
+    //! called upon destruction (free memory of parobject factory instance)
+    virtual void Done();
 
-}
+   private:
+    void Register(ParObjectType* object_type);
+
+    void FinalizeRegistration();
+
+    /// singleton.
+    static ParObjectFactory* instance_;
+
+    ParObjectFactory();
+
+    /// list of parobject types
+
+    /// Id to type object map. The central beast.
+    std::map<int, ParObjectType*> type_map_;
+
+    /// element name cache
+    std::map<std::string, ElementType*> element_cache_;
+
+    /// preregistered types
+    std::vector<ParObjectType*> types_;
+
+    /// element types that are actually used
+    std::map<DRT::Discretization*, std::set<ElementType*>> active_elements_;
+
+    // no copying
+
+    ParObjectFactory(const ParObjectFactory&);
+    ParObjectFactory& operator=(const ParObjectFactory&);
+  };
+
+}  // namespace DRT
 
 #endif

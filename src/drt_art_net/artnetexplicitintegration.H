@@ -74,263 +74,256 @@
 /// artery algorithms
 namespace ART
 {
-
-/*!
-\brief time integration for arterial network problems
-
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class ArtNetExplicitTimeInt : public TimInt
-{
-  //friend class ArtNetResultTest;
-
-public:
-
-
   /*!
-  \brief Standard Constructor
+  \brief time integration for arterial network problems
 
+  \author ismail (ismail@lnm.mw.tum.de)
   */
-  ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization>  dis,
-                       const int linsolvernumber,
-                       const Teuchos::ParameterList& probparams,
-                       const Teuchos::ParameterList& artparams,
-                       FILE* errfile,
-                       IO::DiscretizationWriter&  output);
+  class ArtNetExplicitTimeInt : public TimInt
+  {
+    // friend class ArtNetResultTest;
+
+   public:
+    /*!
+    \brief Standard Constructor
+
+    */
+    ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+        const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
+        FILE* errfile, IO::DiscretizationWriter& output);
 
 
-  /*!
-  \brief Destructor
+    /*!
+    \brief Destructor
 
-  */
-  virtual ~ArtNetExplicitTimeInt();
+    */
+    virtual ~ArtNetExplicitTimeInt();
 
-  /*!
-  \brief Initialization
+    /*!
+    \brief Initialization
 
-  */
-  void Init(
-      const Teuchos::ParameterList& globaltimeparams,
-      const Teuchos::ParameterList& arteryparams,
-      const std::string&            scatra_disname
-      );
+    */
+    void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname);
 
-  // create field test
-  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    // create field test
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
 
-  /*!
-  \brief solve linearised artery and bifurcation
+    /*!
+    \brief solve linearised artery and bifurcation
 
-  */
-  void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    */
+    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
-  void SolveScatra();
+    void SolveScatra();
 
-  /*!
-    \brief build linear system matrix and rhs
-
-
-    \param vel new guess at velocity, cross-sectional area, and pressure
-  */
-  void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
-
-  /*!
-  \brief Update the solution after convergence of the linear
-         iteration. Current solution becomes old solution of next
-         timestep.
-  */
-  void TimeUpdate();
-
-  /*!
-  \brief Initialize the saving state vectors
-  */
-  void InitSaveState ();
-
-  /*!
-  \brief Save the current vectors into the saving state vectors
-  */
-  void SaveState ();
-
-  /*!
-  \brief Load the currently saved state vectors into the currently used vectors
-  */
-  void LoadState();
-
-  /*!
-  \brief update configuration and output to file/screen
-
-  */
-  void Output(bool               CoupledTo3D,
-              Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
-
-  /*!
-  \brief Test results
-
-  */
-  void TestResults();
-
-  /*!
-  \brief calculate values that could be used for postprocessing
-         such as pressure and flowrate.
-  */
-  void CalcPostprocessingValues();
+    /*!
+      \brief build linear system matrix and rhs
 
 
-  void CalcScatraFromScatraFW(    Teuchos::RCP<Epetra_Vector>   scatra,
-                                  Teuchos::RCP<Epetra_Vector>   scatran_fb);
+      \param vel new guess at velocity, cross-sectional area, and pressure
+    */
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
 
-  /*!
-  \brief read restart data
+    /*!
+    \brief Update the solution after convergence of the linear
+           iteration. Current solution becomes old solution of next
+           timestep.
+    */
+    void TimeUpdate();
 
-  */
-  void ReadRestart(int  step,
-                   bool CoupledTo3D=false);
+    /*!
+    \brief Initialize the saving state vectors
+    */
+    void InitSaveState();
 
-  //! @name access methods for composite algorithms
+    /*!
+    \brief Save the current vectors into the saving state vectors
+    */
+    void SaveState();
 
-  //  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; } //This variable might be needed in future!
-  Teuchos::RCP<Epetra_Vector> Qnp()    { return qnp_; }
-  Teuchos::RCP<Epetra_Vector> QAnp()   { return qanp_; }
-  Teuchos::RCP<Epetra_Vector> Areanp() { return areanp_; }
-  //Teuchos::RCP<Epetra_Vector> Presnp() { return presnp_; }
-  Teuchos::RCP<Epetra_Vector> Qn()     { return qn_; }
-  Teuchos::RCP<Epetra_Vector> QAn()    { return qan_; }
-  Teuchos::RCP<Epetra_Vector> Arean()  { return arean_; }
-  //Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
+    /*!
+    \brief Load the currently saved state vectors into the currently used vectors
+    */
+    void LoadState();
 
-  /// provide access to the Dirichlet map
-  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    /*!
+    \brief update configuration and output to file/screen
 
-  /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
-  ///
-  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
-  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
-  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-  const Teuchos::RCP<const Epetra_Vector> Dirichlet();
+    */
+    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
-  /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
-  ///
-  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
-  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
-  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-  const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+    /*!
+    \brief Test results
 
-  Teuchos::RCP<LINALG::SparseMatrix> MassMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(massmat_); }
+    */
+    void TestResults();
 
-  //@}
+    /*!
+    \brief calculate values that could be used for postprocessing
+           such as pressure and flowrate.
+    */
+    void CalcPostprocessingValues();
 
 
-protected:
+    void CalcScatraFromScatraFW(
+        Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatran_fb);
 
-  /// (standard) mass matrix
-  Teuchos::RCP<LINALG::SparseOperator> massmat_;
+    /*!
+    \brief read restart data
 
-  /// maps for scatra Dirichlet and free DOF sets
-  Teuchos::RCP<Epetra_Vector>    nodeIds_;
-  Teuchos::RCP<Epetra_Vector>    scatra_bcval_;
-  Teuchos::RCP<Epetra_Vector>    scatra_dbctog_;
+    */
+    void ReadRestart(int step, bool CoupledTo3D = false);
 
-  //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
-  Teuchos::RCP<Epetra_Vector>    qanp_;
-  Teuchos::RCP<Epetra_Vector>    qan_;
-  Teuchos::RCP<Epetra_Vector>    qanm_;
-  //@}
+    //! @name access methods for composite algorithms
 
-  //! @name Volumetric Flow rate and Cross-Sectional area at time n before solving Fluid 3D
-  Teuchos::RCP<Epetra_Vector>    qan_3D_;
-  //@}
+    //  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; } //This variable might be needed
+    //  in future!
+    Teuchos::RCP<Epetra_Vector> Qnp() { return qnp_; }
+    Teuchos::RCP<Epetra_Vector> QAnp() { return qanp_; }
+    Teuchos::RCP<Epetra_Vector> Areanp() { return areanp_; }
+    // Teuchos::RCP<Epetra_Vector> Presnp() { return presnp_; }
+    Teuchos::RCP<Epetra_Vector> Qn() { return qn_; }
+    Teuchos::RCP<Epetra_Vector> QAn() { return qan_; }
+    Teuchos::RCP<Epetra_Vector> Arean() { return arean_; }
+    // Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
 
-  //! @name Volumetric Flow rate at time n+1, n and n-1
-  Teuchos::RCP<Epetra_Vector>    qnp_;
-  Teuchos::RCP<Epetra_Vector>    qn_;
-  Teuchos::RCP<Epetra_Vector>    qnm_;
-  //@}
+    /// provide access to the Dirichlet map
+    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
-  //! @name Pressure at time n
-  Teuchos::RCP<Epetra_Vector>    pn_;
-  //@}
+    /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
+    ///
+    /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+    /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+    /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+    const Teuchos::RCP<const Epetra_Vector> Dirichlet();
 
-  //! @name Area at time n
-  Teuchos::RCP<Epetra_Vector>    an_;
-  //@}
+    /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
+    ///
+    /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+    /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+    /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+    const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
-  //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
-  Teuchos::RCP<Epetra_Vector>    Wfo_;
-  Teuchos::RCP<Epetra_Vector>    Wbo_;
-  Teuchos::RCP<Epetra_Vector>    Wfnp_;
-  Teuchos::RCP<Epetra_Vector>    Wfn_;
-  Teuchos::RCP<Epetra_Vector>    Wfnm_;
-  Teuchos::RCP<Epetra_Vector>    Wbnp_;
-  Teuchos::RCP<Epetra_Vector>    Wbn_;
-  Teuchos::RCP<Epetra_Vector>    Wbnm_;
-  //@}
+    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix()
+    {
+      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(massmat_);
+    }
 
-  //! @name scalar transport vectors at time n+1, n and n-1
-  Teuchos::RCP<Epetra_Vector>    scatraO2nm_;
-  Teuchos::RCP<Epetra_Vector>    scatraO2n_;
-  Teuchos::RCP<Epetra_Vector>    scatraO2np_;
-  Teuchos::RCP<Epetra_Vector>    scatraO2wfn_;
-  Teuchos::RCP<Epetra_Vector>    scatraO2wfnp_;
-  Teuchos::RCP<Epetra_Vector>    scatraO2wbn_;
-  Teuchos::RCP<Epetra_Vector>    scatraO2wbnp_;
+    //@}
 
-  Teuchos::RCP<Epetra_Vector>    scatraCO2n_;
-  Teuchos::RCP<Epetra_Vector>    scatraCO2np_;
-  Teuchos::RCP<Epetra_Vector>    scatraCO2wfn_;
-  Teuchos::RCP<Epetra_Vector>    scatraCO2wfnp_;
-  Teuchos::RCP<Epetra_Vector>    scatraCO2wbn_;
-  Teuchos::RCP<Epetra_Vector>    scatraCO2wbnp_;
 
-  Teuchos::RCP<Epetra_Vector>    export_scatra_;
-  //@}
+   protected:
+    /// (standard) mass matrix
+    Teuchos::RCP<LINALG::SparseOperator> massmat_;
 
-  //! @name saving state vectors
-  Teuchos::RCP<Epetra_Vector>    saved_qanp_;
-  Teuchos::RCP<Epetra_Vector>    saved_qan_;
-  Teuchos::RCP<Epetra_Vector>    saved_qanm_;
+    /// maps for scatra Dirichlet and free DOF sets
+    Teuchos::RCP<Epetra_Vector> nodeIds_;
+    Teuchos::RCP<Epetra_Vector> scatra_bcval_;
+    Teuchos::RCP<Epetra_Vector> scatra_dbctog_;
 
-  Teuchos::RCP<Epetra_Vector>    saved_Wfnp_;
-  Teuchos::RCP<Epetra_Vector>    saved_Wfn_;
-  Teuchos::RCP<Epetra_Vector>    saved_Wfnm_;
+    //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector> qanp_;
+    Teuchos::RCP<Epetra_Vector> qan_;
+    Teuchos::RCP<Epetra_Vector> qanm_;
+    //@}
 
-  Teuchos::RCP<Epetra_Vector>    saved_Wbnp_;
-  Teuchos::RCP<Epetra_Vector>    saved_Wbn_;
-  Teuchos::RCP<Epetra_Vector>    saved_Wbnm_;
+    //! @name Volumetric Flow rate and Cross-Sectional area at time n before solving Fluid 3D
+    Teuchos::RCP<Epetra_Vector> qan_3D_;
+    //@}
 
-  Teuchos::RCP<Epetra_Vector>    saved_scatraO2np_;
-  Teuchos::RCP<Epetra_Vector>    saved_scatraO2n_;
-  Teuchos::RCP<Epetra_Vector>    saved_scatraO2nm_;
-  //@}
+    //! @name Volumetric Flow rate at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector> qnp_;
+    Teuchos::RCP<Epetra_Vector> qn_;
+    Teuchos::RCP<Epetra_Vector> qnm_;
+    //@}
 
-  //! @name cross-sectional area at time n+1, n and n-1
-  Teuchos::RCP<Epetra_Vector>    arean_;
-  Teuchos::RCP<Epetra_Vector>    areanp_;
-  Teuchos::RCP<Epetra_Vector>    areanm_;
-  //@}
+    //! @name Pressure at time n
+    Teuchos::RCP<Epetra_Vector> pn_;
+    //@}
 
-  //! @name Dirichlet boundary condition vectors
-  Teuchos::RCP<Epetra_Vector>    bcval_;
-  Teuchos::RCP<Epetra_Vector>    dbctog_;
-  //@}
+    //! @name Area at time n
+    Teuchos::RCP<Epetra_Vector> an_;
+    //@}
 
-  //! @name Junction boundary condition
-  Teuchos::RCP<UTILS::ArtJunctionWrapper> artjun_;
-  //@}
+    //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector> Wfo_;
+    Teuchos::RCP<Epetra_Vector> Wbo_;
+    Teuchos::RCP<Epetra_Vector> Wfnp_;
+    Teuchos::RCP<Epetra_Vector> Wfn_;
+    Teuchos::RCP<Epetra_Vector> Wfnm_;
+    Teuchos::RCP<Epetra_Vector> Wbnp_;
+    Teuchos::RCP<Epetra_Vector> Wbn_;
+    Teuchos::RCP<Epetra_Vector> Wbnm_;
+    //@}
 
-  //! @name 1D artery values at the junctions
-  Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals_;
-  //@}
+    //! @name scalar transport vectors at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector> scatraO2nm_;
+    Teuchos::RCP<Epetra_Vector> scatraO2n_;
+    Teuchos::RCP<Epetra_Vector> scatraO2np_;
+    Teuchos::RCP<Epetra_Vector> scatraO2wfn_;
+    Teuchos::RCP<Epetra_Vector> scatraO2wfnp_;
+    Teuchos::RCP<Epetra_Vector> scatraO2wbn_;
+    Teuchos::RCP<Epetra_Vector> scatraO2wbnp_;
 
-  //! @name A condition to export 1D arteries as a gnuplot format
-  Teuchos::RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
-  //@}
+    Teuchos::RCP<Epetra_Vector> scatraCO2n_;
+    Teuchos::RCP<Epetra_Vector> scatraCO2np_;
+    Teuchos::RCP<Epetra_Vector> scatraCO2wfn_;
+    Teuchos::RCP<Epetra_Vector> scatraCO2wfnp_;
+    Teuchos::RCP<Epetra_Vector> scatraCO2wbn_;
+    Teuchos::RCP<Epetra_Vector> scatraCO2wbnp_;
 
-  //@}
+    Teuchos::RCP<Epetra_Vector> export_scatra_;
+    //@}
 
-}; // class ArtNetExplicitTimeInt
+    //! @name saving state vectors
+    Teuchos::RCP<Epetra_Vector> saved_qanp_;
+    Teuchos::RCP<Epetra_Vector> saved_qan_;
+    Teuchos::RCP<Epetra_Vector> saved_qanm_;
 
-}
+    Teuchos::RCP<Epetra_Vector> saved_Wfnp_;
+    Teuchos::RCP<Epetra_Vector> saved_Wfn_;
+    Teuchos::RCP<Epetra_Vector> saved_Wfnm_;
+
+    Teuchos::RCP<Epetra_Vector> saved_Wbnp_;
+    Teuchos::RCP<Epetra_Vector> saved_Wbn_;
+    Teuchos::RCP<Epetra_Vector> saved_Wbnm_;
+
+    Teuchos::RCP<Epetra_Vector> saved_scatraO2np_;
+    Teuchos::RCP<Epetra_Vector> saved_scatraO2n_;
+    Teuchos::RCP<Epetra_Vector> saved_scatraO2nm_;
+    //@}
+
+    //! @name cross-sectional area at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector> arean_;
+    Teuchos::RCP<Epetra_Vector> areanp_;
+    Teuchos::RCP<Epetra_Vector> areanm_;
+    //@}
+
+    //! @name Dirichlet boundary condition vectors
+    Teuchos::RCP<Epetra_Vector> bcval_;
+    Teuchos::RCP<Epetra_Vector> dbctog_;
+    //@}
+
+    //! @name Junction boundary condition
+    Teuchos::RCP<UTILS::ArtJunctionWrapper> artjun_;
+    //@}
+
+    //! @name 1D artery values at the junctions
+    Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams>>>
+        junc_nodal_vals_;
+    //@}
+
+    //! @name A condition to export 1D arteries as a gnuplot format
+    Teuchos::RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
+    //@}
+
+    //@}
+
+  };  // class ArtNetExplicitTimeInt
+
+}  // namespace ART
 
 
 #endif  // #ifndef ARTNETEXPLICITINTEGRATION_H

@@ -28,7 +28,6 @@
 /// MAT: materials
 namespace MAT
 {
-
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
    *
@@ -50,11 +49,9 @@ namespace MAT
    * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
    * \param ScalarThis (in): Scalar to multiply with C before adding A x B
    */
-  void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
-                                   const double ScalarAB,
-                                   const Epetra_SerialDenseMatrix& A,
-                                   const Epetra_SerialDenseMatrix& B,
-                                   const double ScalarThis);
+  void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C, const double ScalarAB,
+      const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
+      const double ScalarThis);
 
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a
    *         4th order symmetric material tensor in matrix notation
@@ -77,11 +74,8 @@ namespace MAT
    * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
    * \param ScalarThis (in): Scalar to multiply with C before adding A x B
    */
-  void ElastSymTensorMultiply(LINALG::Matrix<6,6>& C,
-                              const double ScalarAB,
-                              const LINALG::Matrix<3,3>& A,
-                              const LINALG::Matrix<3,3>& B,
-                              const double ScalarThis);
+  void ElastSymTensorMultiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
+      const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
 
   /*! \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
    *         4th order symmetric material tensor in matrix notation
@@ -102,12 +96,10 @@ namespace MAT
    * \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
    * \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
    * \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
-  */
-  void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
-                                    const double ScalarAB,
-                                    const Epetra_SerialDenseMatrix& A,
-                                    const Epetra_SerialDenseMatrix& B,
-                                    const double ScalarThis);
+   */
+  void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C, const double ScalarAB,
+      const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
+      const double ScalarThis);
 
   /*! \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
    *         4th order symmetric material tensor in matrix notation
@@ -129,12 +121,9 @@ namespace MAT
    * \param A (in)         : Dense matrix (3 by 3) as 2nd order tensor A
    * \param B (in)         : Dense matrix (3 by 3) as 2nd order tensor B
    * \param ScalarThis (in): Scalar to multiply with C before adding (A x B + B x A)
-  */
-  void ElastSymTensorMultiplyAddSym(LINALG::Matrix<6,6>& C,
-                                    const double ScalarAB,
-                                    const LINALG::Matrix<3,3>& A,
-                                    const LINALG::Matrix<3,3>& B,
-                                    const double ScalarThis);
+   */
+  void ElastSymTensorMultiplyAddSym(LINALG::Matrix<6, 6>& C, const double ScalarAB,
+      const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
 
   /*! \brief Multiply two 2nd order tensors A o B and add the result to a
    *         4th order symmetric material tensor in matrix notation
@@ -151,11 +140,9 @@ namespace MAT
    * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
    * \param ScalarThis (in): Scalar to multiply with C before adding A o B
    */
-  void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
-                                 const double ScalarAB,
-                                 const Epetra_SerialDenseMatrix& A,
-                                 const Epetra_SerialDenseMatrix& B,
-                                 const double ScalarThis);
+  void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C, const double ScalarAB,
+      const Epetra_SerialDenseMatrix& A, const Epetra_SerialDenseMatrix& B,
+      const double ScalarThis);
 
   /*! \brief Multiply two 2nd order tensors A o B and add the result to a
    *         4th order symmetric material tensor in matrix notation
@@ -173,11 +160,8 @@ namespace MAT
    * \param B (in)        : Dense matrix (3 by 3) as 2nd order tensor B
    * \param ScalarThis (in): Scalar to multiply with C before adding A o B
    */
-  void ElastSymTensor_o_Multiply(LINALG::Matrix<6,6>& C,
-                                 const double ScalarAB,
-                                 const LINALG::Matrix<3,3>& A,
-                                 const LINALG::Matrix<3,3>& B,
-                                 const double ScalarThis);
+  void ElastSymTensor_o_Multiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
+      const LINALG::Matrix<3, 3>& A, const LINALG::Matrix<3, 3>& B, const double ScalarThis);
 
 
   /*! \brief Add 'Holzapfel product' contribution to constitutive tensor
@@ -211,9 +195,8 @@ namespace MAT
    * \param invc   (in)  : Inverse right Cauchy-Green vector(6)
    * \param scalar (in)  : scalar corresponding to delta7
    */
-  void AddtoCmatHolzapfelProduct(Epetra_SerialDenseMatrix& cmat,
-                                 const Epetra_SerialDenseVector& invc,
-                                 const double scalar);
+  void AddtoCmatHolzapfelProduct(
+      Epetra_SerialDenseMatrix& cmat, const Epetra_SerialDenseVector& invc, const double scalar);
 
   /*! \brief Add 'Holzapfel product' contribution to constitutive tensor
    *         using Voigt notation
@@ -259,10 +242,9 @@ namespace MAT
    *                       \; C^{-1}_{12} \; C^{-1}_{23} \; C^{-1}_{31}]\f$
    * \param scalar (in)  : scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261
    */
-  template < typename T >
-  void AddtoCmatHolzapfelProduct(LINALG::TMatrix<T,6,6>& cmat,
-                                 const LINALG::TMatrix<T,6,1>& invc,
-                                 const T scalar);
+  template <typename T>
+  void AddtoCmatHolzapfelProduct(
+      LINALG::TMatrix<T, 6, 6>& cmat, const LINALG::TMatrix<T, 6, 1>& invc, const T scalar);
 
 
   /*! \brief Put apart the volumetric and isochoric part
@@ -304,22 +286,24 @@ namespace MAT
    * \date 05/09
    */
   void VolumetrifyAndIsochorify(
-    LINALG::Matrix<6,1>* pk2vol,  ///< volumetric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
-                                  ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]_\text{vol}\f$,
-                                  ///< if != NULL
-    LINALG::Matrix<6,6>* cvol,  ///< volumetric contribution to constitutive tensor,
-                                ///< if != NULL
-    LINALG::Matrix<6,1>* pk2iso,  ///< isochoric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
-                                  ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]_\text{iso}\f$,
-                                  ///< if != NULL
-    LINALG::Matrix<6,6>* ciso,  ///< isochoric contribution to constitutive tensor,
-                                ///< if != NULL
-    const LINALG::Matrix<6,1>& gl,  ///< Green--Lagrange 6-Voigt strain, i.e.
-                                    ///< \f$[ E_{11}\; E_{22}\; E_{33}\; 2E_{12}\; 2E_{23}\; 2E_{31} ]\f$
-    const LINALG::Matrix<6,1>& pk2,  ///< 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
-                                     ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]\f$
-    const LINALG::Matrix<6,6>& cmat  ///< constitutive tensor
-    );
+      LINALG::Matrix<6, 1>* pk2vol,  ///< volumetric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
+                                     ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31}
+                                     ///< ]_\text{vol}\f$, if != NULL
+      LINALG::Matrix<6, 6>* cvol,    ///< volumetric contribution to constitutive tensor,
+                                     ///< if != NULL
+      LINALG::Matrix<6, 1>* pk2iso,  ///< isochoric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
+                                     ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31}
+                                     ///< ]_\text{iso}\f$, if != NULL
+      LINALG::Matrix<6, 6>* ciso,  ///< isochoric contribution to constitutive tensor,
+                                   ///< if != NULL
+      const LINALG::Matrix<6, 1>&
+          gl,  ///< Green--Lagrange 6-Voigt strain, i.e.
+               ///< \f$[ E_{11}\; E_{22}\; E_{33}\; 2E_{12}\; 2E_{23}\; 2E_{31} ]\f$
+      const LINALG::Matrix<6, 1>&
+          pk2,  ///< 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
+                ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]\f$
+      const LINALG::Matrix<6, 6>& cmat  ///< constitutive tensor
+  );
 
   /*! \brief Add the derivative of the square of a tensor to a
    *         4th order symmetric material tensor in matrix notation
@@ -340,17 +324,15 @@ namespace MAT
    * \param X (in)        : Dense matrix (3 by 3)
    * \param ScalarThis (in): Scalar to multiply with C before adding dX^2/dX
    */
-  void AddToCmatDerivTensorSquare(LINALG::Matrix<6,6>& C, double ScalarDX2, LINALG::Matrix<3,3> X, double ScalarThis);
+  void AddToCmatDerivTensorSquare(
+      LINALG::Matrix<6, 6>& C, double ScalarDX2, LINALG::Matrix<3, 3> X, double ScalarThis);
 
   /// in index notation this does:
   /// X_abcd += fac*( A_ca*B_db + A_da*B_cb + A_db*B_ca + A_cb*B_da )
   /// result has minor symmetries but no major symmetry
   /// Symmetric w.r.t. A,B
-  void AddSymmetricHolzapfelProduct(
-      LINALG::Matrix<6,6>& X,
-      const LINALG::Matrix<3,3>& A,
-      const LINALG::Matrix<3,3>& B,
-      double fac);
+  void AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Matrix<3, 3>& A,
+      const LINALG::Matrix<3, 3>& B, double fac);
 
   /// in index notation this does:
   /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} )
@@ -358,11 +340,9 @@ namespace MAT
   /// Thus the first two indices are stored in stress-like Voigt notation.
   /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
   /// Be aware that this is NOT symmetric w.r.t. A and B !!!
-  template< typename T >
-  void AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T,6,9> & out,
-                                            LINALG::TMatrix<T,3,3> const& A,
-                                            LINALG::TMatrix<T,3,3> const& B,
-                                            T const fac);
+  template <typename T>
+  void AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T, 6, 9>& out,
+      LINALG::TMatrix<T, 3, 3> const& A, LINALG::TMatrix<T, 3, 3> const& B, T const fac);
 
   /// in index notation this does:
   /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{IL} * B_{JK} )
@@ -370,60 +350,60 @@ namespace MAT
   /// Thus the second two indices are stored in stress-like Voigt notation.
   /// The 1st index pair has no symmetries and is therefore stored as 9-vector
   /// Be aware that this is NOT symmetric w.r.t. A and B !!!
-  void AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9,6> & out,
-                                           LINALG::Matrix<3,3> const& A,
-                                           LINALG::Matrix<3,3> const& B,
-                                           double const fac);
+  void AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9, 6>& out, LINALG::Matrix<3, 3> const& A,
+      LINALG::Matrix<3, 3> const& B, double const fac);
 
   /// This function adds the following contribution to the matrix X_ABCD (9x9)
   /// in index notation this method does:
   /// X_ABCD = fac*( A_AC * B_DB )
   /// There are no symmetries and the matrix is therefore stored in a 9x9 matrix
   /// A and B are not required to be symmetric!!!
-  void AddNonSymmetricProduct(double const& fac,                    ///< Scalar factor
-                              LINALG::Matrix<3,3> const& A,         ///< Matrix in the above mentioned equation
-                              LINALG::Matrix<3,3> const& B,         ///< Matrix in the above mentioned equation
-                              LINALG::Matrix<9,9> & out);           ///< Output
+  void AddNonSymmetricProduct(double const& fac,  ///< Scalar factor
+      LINALG::Matrix<3, 3> const& A,              ///< Matrix in the above mentioned equation
+      LINALG::Matrix<3, 3> const& B,              ///< Matrix in the above mentioned equation
+      LINALG::Matrix<9, 9>& out);                 ///< Output
 
   /// Convert matrix to "stress-like" Voigt notation
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12   is converted to the (stress-like) vector below:
   ///          A_20 A_21 A_22
   ///
-  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = 0.5*(A_01 + A_10); V_4 = 0.5*(A_12 + A_21); V_5 = 0.5*(A_02 + A_20)
-  template< typename T >
-  void MatrixtoStressLikeVoigtNotation(LINALG::TMatrix<T,3,3> const& in,
-                                       LINALG::TMatrix<T,6,1> & out);
+  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = 0.5*(A_01 + A_10); V_4 = 0.5*(A_12 + A_21);
+  /// V_5 = 0.5*(A_02 + A_20)
+  template <typename T>
+  void MatrixtoStressLikeVoigtNotation(
+      LINALG::TMatrix<T, 3, 3> const& in, LINALG::TMatrix<T, 6, 1>& out);
 
   /// Convert matrix to "strain-like" Voigt notation
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12   is converted to the (strain-like) vector below:
   ///          A_20 A_21 A_22
   ///
-  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = (A_01 + A_10); V_4 = (A_12 + A_21); V_5 = (A_02 + A_20)
-  void MatrixtoStrainLikeVoigtNotation(LINALG::Matrix<3,3> const& in,
-                                       LINALG::Matrix<6,1> & out);
+  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = (A_01 + A_10); V_4 = (A_12 + A_21); V_5 =
+  /// (A_02 + A_20)
+  void MatrixtoStrainLikeVoigtNotation(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<6, 1>& out);
 
   /// Convert "stress-like" Voigt notation to matrix
   ///
   /// Vector   V_0 V_1 V_2 V_3 V_4 V_5   (stress-like) is converted to the matrix below:
   ///
-  /// Matrix   A_00 = V_0; A_11 = V_1; A_22 = V_2; A_01 = A_10 = V_3; A_21 = A_12 = V_4; A_20 = A_02 = V_5
-  void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> const& in,
-                                       LINALG::Matrix<3,3> & out);
+  /// Matrix   A_00 = V_0; A_11 = V_1; A_22 = V_2; A_01 = A_10 = V_3; A_21 = A_12 = V_4; A_20 = A_02
+  /// = V_5
+  void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6, 1> const& in, LINALG::Matrix<3, 3>& out);
 
   /// convert non-symmetric 2-tensor to 9x1 vector
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12  is converted to the vector below:
   ///          A_20 A_21 A_22
   ///
-  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10; V_7 = A_21; V_8 = A_20
-  void Matrix3x3to9x1(LINALG::Matrix<3,3> const& in,
-                      LINALG::Matrix<9,1> & out);
+  /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10;
+  /// V_7 = A_21; V_8 = A_20
+  void Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& out);
 
   /*--------------------------------------------------------------------------*/
   /// Voigt notation types
-  enum class Notation {
+  enum class Notation
+  {
     stress,
     strain
   };
@@ -446,10 +426,10 @@ namespace MAT
   /** \brief Utility routines for the perturbed Voigt tensor notation
    *
    *  \author hiermeier \date 09/17 */
-  template < Notation type >
+  template <Notation type>
   class VoigtUtils
   {
-  public:
+   public:
     /// constructor
     VoigtUtils() = default;
 
@@ -468,9 +448,7 @@ namespace MAT
      *
      *  \author hiermeier \date 09/17 */
     static void PowerOfSymmetricTensor(
-        const unsigned pow,
-        const LINALG::Matrix<6,1>& vtensor,
-        LINALG::Matrix<6,1>& vtensor_pow );
+        const unsigned pow, const LINALG::Matrix<6, 1>& vtensor, LINALG::Matrix<6, 1>& vtensor_pow);
 
     /** \brief Compute the inverse tensor in perturbed Voigt notation
      *
@@ -479,8 +457,7 @@ namespace MAT
      *
      *  \author hiermeier \date 09/17 */
     static void InverseTensor(
-        const LINALG::Matrix<6,1>& vtensor,
-        LINALG::Matrix<6,1>& vtensor_inv );
+        const LINALG::Matrix<6, 1>& vtensor, LINALG::Matrix<6, 1>& vtensor_inv);
 
     /** \brief Compute the product of a tensor in perturbed Voigt notation
      *  and a vector
@@ -491,10 +468,8 @@ namespace MAT
      *  \param[out] vtensor_inv  inverser tensor in Voigt <type> notation
      *
      *  \author hiermeier \date 09/17 */
-    static void MultiplyTensorVector(
-        const LINALG::Matrix<6,1>& vtensor,
-        const LINALG::Matrix<3,1>& vec,
-        LINALG::Matrix<3,1>& vec_res );
+    static void MultiplyTensorVector(const LINALG::Matrix<6, 1>& vtensor,
+        const LINALG::Matrix<3, 1>& vec, LINALG::Matrix<3, 1>& vec_res);
 
     /** \brief Compute the symmetric outer product of two vectors
      *
@@ -506,10 +481,8 @@ namespace MAT
      *                     in the Voigt <type> notation
      *
      *  \author hiermeier \date 09/17 */
-    static void SymmetricOuterProduct(
-        const LINALG::Matrix<3,1>& vec_a,
-        const LINALG::Matrix<3,1>& vec_b,
-        LINALG::Matrix<6,1>& ab_ba );
+    static void SymmetricOuterProduct(const LINALG::Matrix<3, 1>& vec_a,
+        const LINALG::Matrix<3, 1>& vec_b, LINALG::Matrix<6, 1>& ab_ba);
 
     /** \brief scale off diagonal values
      *
@@ -518,7 +491,7 @@ namespace MAT
      *  \param[out] tensor  scale the off-diagonal values of this tensor
      *
      *  \author hiermeier \date 09/17 */
-    static void ScaleOffDiagonalVals( LINALG::Matrix<6,1>& tensor );
+    static void ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& tensor);
 
     /** \brief unscale off diagonal values
      *
@@ -527,7 +500,7 @@ namespace MAT
      *  \param[out] tensor  unscale the off-diagonal values of this tensor
      *
      *  \author hiermeier \date 09/17 */
-    static void UnscaleOffDiagonalVals( LINALG::Matrix<6,1>& strain );
+    static void UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain);
 
     /** \brief unscale factors for the perturbed Voigt strain notation
      *
@@ -552,23 +525,29 @@ namespace MAT
   /// @}
 
   /// access scaling factors
-  template< Notation type > inline double ScaleFactor( unsigned i );
-  template <> inline double ScaleFactor<Notation::stress>( unsigned i )
+  template <Notation type>
+  inline double ScaleFactor(unsigned i);
+  template <>
+  inline double ScaleFactor<Notation::stress>(unsigned i)
   {
     return 1.0;
   };
-  template <> inline double ScaleFactor<Notation::strain>( unsigned i )
+  template <>
+  inline double ScaleFactor<Notation::strain>(unsigned i)
   {
     return VStrainUtils::scale_fac_[i];
   };
 
   /// access unscaling factors
-  template< Notation type > inline double UnscaleFactor( unsigned i );
-  template <> inline double UnscaleFactor<Notation::stress>( unsigned i )
+  template <Notation type>
+  inline double UnscaleFactor(unsigned i);
+  template <>
+  inline double UnscaleFactor<Notation::stress>(unsigned i)
   {
     return 1.0;
   };
-  template <> inline double UnscaleFactor<Notation::strain>( unsigned i )
+  template <>
+  inline double UnscaleFactor<Notation::strain>(unsigned i)
   {
     return VStrainUtils::unscale_fac_[i];
   };
@@ -577,19 +556,19 @@ namespace MAT
    *  perturbed Voigt stress notation
    *
    * \author hiermeier \date 09/17 */
-  inline void ConvertStrainToStressNotation( LINALG::Matrix<6,1>& strain )
+  inline void ConvertStrainToStressNotation(LINALG::Matrix<6, 1>& strain)
   {
-    VStrainUtils::UnscaleOffDiagonalVals( strain );
+    VStrainUtils::UnscaleOffDiagonalVals(strain);
   }
 
   /** \brief convert tensor from perturbed Voigt stress notation to
    *  perturbed Voigt strain notation
    *
    * \author hiermeier \date 09/17 */
-  inline void ConvertStressToStrainNotation( LINALG::Matrix<6,1>& strain )
+  inline void ConvertStressToStrainNotation(LINALG::Matrix<6, 1>& strain)
   {
-    VStrainUtils::ScaleOffDiagonalVals( strain );
+    VStrainUtils::ScaleOffDiagonalVals(strain);
   }
-}
+}  // namespace MAT
 
 #endif

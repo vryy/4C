@@ -21,15 +21,12 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntTwoPhaseStat::TimIntTwoPhaseStat(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntStationary(actdis,solver,params,output,alefluid),
-      TimIntTwoPhase(actdis,solver,params,output,alefluid)
+FLD::TimIntTwoPhaseStat::TimIntTwoPhaseStat(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntStationary(actdis, solver, params, output, alefluid),
+      TimIntTwoPhase(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -52,8 +49,4 @@ void FLD::TimIntTwoPhaseStat::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntTwoPhaseStat::~TimIntTwoPhaseStat()
-{
-  return;
-}
-
+FLD::TimIntTwoPhaseStat::~TimIntTwoPhaseStat() { return; }

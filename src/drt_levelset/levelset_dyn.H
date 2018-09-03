@@ -15,8 +15,7 @@
 #define LEVELSET_DYN_H
 
 /*! entry point for the solution of level-set problems */
-void levelset_dyn(
-    int restart        /* do we have to perform a restart?  */
-    );
+void levelset_dyn(int restart /* do we have to perform a restart?  */
+);
 
-#endif  /* #ifndef LEVELSET_DYN_H */
+#endif /* #ifndef LEVELSET_DYN_H */

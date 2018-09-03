@@ -19,10 +19,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseMonolithic::PoroMultiPhaseMonolithic(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    PoroMultiPhaseBase(comm, globaltimeparams)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : PoroMultiPhaseBase(comm, globaltimeparams)
 {
-
 }
-

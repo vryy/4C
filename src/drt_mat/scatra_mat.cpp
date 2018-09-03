@@ -25,18 +25,17 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMat::ScatraMat(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata)
+MAT::PAR::ScatraMat::ScatraMat(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata)
 {
   // extract relevant communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->Materials()->GetReadFromProblem() == 0 ? *DRT::Problem::Instance()->GetNPGroup()->LocalComm() : *DRT::Problem::Instance()->GetNPGroup()->SubComm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->Materials()->GetReadFromProblem() == 0
+                                ? *DRT::Problem::Instance()->GetNPGroup()->LocalComm()
+                                : *DRT::Problem::Instance()->GetNPGroup()->SubComm();
 
-  Epetra_Map dummy_map(1,1,0,comm);
-  for(int i=first ; i<=last; i++)
+  Epetra_Map dummy_map(1, 1, 0, comm);
+  for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
+    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
   matparams_.at(diff)->PutScalar(matdata->GetDouble("DIFFUSIVITY"));
   matparams_.at(reac)->PutScalar(matdata->GetDouble("REACOEFF"));
@@ -55,14 +54,14 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 
 
-void MAT::PAR::ScatraMat::OptParams(std::map<std::string,int>* pnames)
+void MAT::PAR::ScatraMat::OptParams(std::map<std::string, int>* pnames)
 {
-  pnames->insert(std::pair<std::string,int>("DIFF", diff));
-  pnames->insert(std::pair<std::string,int>("REAC", reac));
+  pnames->insert(std::pair<std::string, int>("DIFF", diff));
+  pnames->insert(std::pair<std::string, int>("REAC", reac));
 }
 
 
-DRT::ParObject* MAT::ScatraMatType::Create( const std::vector<char> & data )
+DRT::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
   scatra_mat->Unpack(data);
@@ -72,35 +71,29 @@ DRT::ParObject* MAT::ScatraMatType::Create( const std::vector<char> & data )
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMat::ScatraMat()
-  : params_(NULL)
-{
-}
+MAT::ScatraMat::ScatraMat() : params_(NULL) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params)
-  : params_(params)
-{
-}
+MAT::ScatraMat::ScatraMat(MAT::PAR::ScatraMat* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ScatraMat::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
+  AddtoPack(data, matid);
 }
 
 
@@ -111,24 +104,27 @@ void MAT::ScatraMat::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data. type = %d, UniqueParObjectId()=%d",type,UniqueParObjectId());
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId())
+    dserror(
+        "wrong instance type data. type = %d, UniqueParObjectId()=%d", type, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, matid);
   params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMat*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+            MaterialType());
     }
 
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }

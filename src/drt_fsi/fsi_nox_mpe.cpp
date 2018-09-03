@@ -34,9 +34,9 @@
 #include "../linalg/linalg_serialdensematrix.H"
 
 
-NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& utils,
-                                               Teuchos::ParameterList& params)
-  : utils_(utils)
+NOX::FSI::MinimalPolynomial::MinimalPolynomial(
+    const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)
+    : utils_(utils)
 {
   Teuchos::ParameterList& mpeparams = params.sublist("Extrapolation");
   kmax_ = mpeparams.get("kmax", 10);
@@ -46,22 +46,19 @@ NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& u
 }
 
 
-NOX::FSI::MinimalPolynomial::~MinimalPolynomial()
-{
-}
+NOX::FSI::MinimalPolynomial::~MinimalPolynomial() {}
 
 
-bool NOX::FSI::MinimalPolynomial::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
-                                        Teuchos::ParameterList& params)
+bool NOX::FSI::MinimalPolynomial::reset(
+    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
   return true;
 }
 
 
-bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
-                                          NOX::Abstract::Group& soln,
-                                          const NOX::Solver::Generic& solver)
+bool NOX::FSI::MinimalPolynomial::compute(
+    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
 {
   // We work in a local copy of the group so that we do not spoil the
   // current state.
@@ -70,21 +67,20 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   const NOX::Abstract::Vector& x = soln.getX();
   const NOX::Epetra::Vector& ex = dynamic_cast<const NOX::Epetra::Vector&>(x);
 
-  std::vector<Teuchos::RCP<NOX::Epetra::Vector> > q;
-  LINALG::SerialDenseMatrix r(kmax_+1,kmax_+1,true);
-  LINALG::SerialDenseVector c(kmax_+1, true);
-  LINALG::SerialDenseVector gamma(kmax_+1, true);
+  std::vector<Teuchos::RCP<NOX::Epetra::Vector>> q;
+  LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
+  LINALG::SerialDenseVector c(kmax_ + 1, true);
+  LINALG::SerialDenseVector gamma(kmax_ + 1, true);
 
   int k;
-  for (k=0; k<kmax_; ++k)
+  for (k = 0; k < kmax_; ++k)
   {
     Epetra_Time t(ex.getEpetraVector().Comm());
     NOX::Abstract::Group::ReturnType status;
 
     // Compute F at current solution
     status = grp.computeF();
-    if (status != NOX::Abstract::Group::Ok)
-      throwError("compute", "Unable to compute F");
+    if (status != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
 
     // get f = d(k+1) - d(k)
     const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
@@ -94,20 +90,20 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
     y->scale(omega_);
 
     // modified Gram-Schmidt
-    for (int j=0; j<k; ++j)
+    for (int j = 0; j < k; ++j)
     {
-      r(j,k) = y->innerProduct(*q[j]);
-      y->update(-r(j,k), *q[j], 1.);
+      r(j, k) = y->innerProduct(*q[j]);
+      y->update(-r(j, k), *q[j], 1.);
     }
-    r(k,k) = sqrt(y->innerProduct(*y));
+    r(k, k) = sqrt(y->innerProduct(*y));
 
     // store new direction
-    if (r(k,k) > 1e-32*r(0,0) and k<kmax_)
+    if (r(k, k) > 1e-32 * r(0, 0) and k < kmax_)
     {
-      y->scale(1./r(k,k));
+      y->scale(1. / r(k, k));
       q.push_back(y);
     }
-    else if (r(k,k) <= 1e-32*r(0,0))
+    else if (r(k, k) <= 1e-32 * r(0, 0))
     {
       if (utils_->isPrintType(NOX::Utils::Error))
         utils_->err() << "r(" << k << "," << k << ") <= " << 1e-32 << "*r(0,0)\n";
@@ -119,82 +115,75 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
     if (mpe_)
     {
       // MPE gamma calculation
-      for (int i=k-1; i>=0; --i)
+      for (int i = k - 1; i >= 0; --i)
       {
-        double ci = -r(i,k);
-        for (int j=i+1; j<k; ++j)
+        double ci = -r(i, k);
+        for (int j = i + 1; j < k; ++j)
         {
-          ci -= r(i,j)*c(j);
+          ci -= r(i, j) * c(j);
         }
-        c(i) = ci/r(i,i);
+        c(i) = ci / r(i, i);
       }
       c(k) = 1.;
 
       // sum over all entries of c
       double sc = 0.0;
-      for(int l=0; l < c.Length(); l++)
-        sc += c(l);
+      for (int l = 0; l < c.Length(); l++) sc += c(l);
 
       if (fabs(sc) < 1e-16)
       {
         throwError("compute", "sum(c) equals zero");
       }
 
-      gamma.Update(1/sc, c, 0.0);
-      res = r(k,k)*fabs(gamma(k));
+      gamma.Update(1 / sc, c, 0.0);
+      res = r(k, k) * fabs(gamma(k));
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))
       {
-        utils_->out() << "MPE:  k=" << k
-                      << "  res=" << res
-                      << "  eps*r(0,0)=" << eps_*r(0,0)
-                      << "  r(k,k)=" << r(k,k)
-                      << std::endl;
+        utils_->out() << "MPE:  k=" << k << "  res=" << res << "  eps*r(0,0)=" << eps_ * r(0, 0)
+                      << "  r(k,k)=" << r(k, k) << std::endl;
       }
     }
     else
     {
       // RRE gamma calculation
-      for (int i=0; i<=k; ++i)
+      for (int i = 0; i <= k; ++i)
       {
         double ci = 1.;
-        for (int j=0; j<i; ++j)
+        for (int j = 0; j < i; ++j)
         {
-          ci -= r(j,i)*c(j);
+          ci -= r(j, i) * c(j);
         }
-        c(i) = ci/r(i,i);
+        c(i) = ci / r(i, i);
       }
-      for (int i=k; i>=0; --i)
+      for (int i = k; i >= 0; --i)
       {
         double ci = c(i);
-        for (int j=i+1; j<=k; ++j)
+        for (int j = i + 1; j <= k; ++j)
         {
-          ci -= r(i,j)*gamma(j);
+          ci -= r(i, j) * gamma(j);
         }
-        gamma(i) = ci/r(i,i);
+        gamma(i) = ci / r(i, i);
       }
 
       // sum over all entries of gamma
       double sc = 0.0;
-      for(int l=0; l < gamma.Length(); l++)
-        sc += gamma(l);
+      for (int l = 0; l < gamma.Length(); l++) sc += gamma(l);
 
-      gamma.Scale(1/sc);
-      res = 1./sqrt(fabs(sc));
+      gamma.Scale(1 / sc);
+      res = 1. / sqrt(fabs(sc));
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))
       {
-        utils_->out() << "RRE:  k=" << std::setw(2) << k
-                      << "  res=" << std::scientific << res
-                      << "  eps*r(0,0)=" << std::scientific << eps_*r(0,0)
-                      << "  r(k,k)=" << std::scientific << r(k,k)
-                      << "  time=" << std::scientific << t.ElapsedTime()
-                      << std::endl;
+        utils_->out() << "RRE:  k=" << std::setw(2) << k << "  res=" << std::scientific << res
+                      << "  eps*r(0,0)=" << std::scientific << eps_ * r(0, 0)
+                      << "  r(k,k)=" << std::scientific << r(k, k) << "  time=" << std::scientific
+                      << t.ElapsedTime() << std::endl;
       }
     }
 
     // leave if we are close enough to the solution
-    if (res<=eps_*r(0,0) or r(k,k)<=1e-32*r(0,0))
+    if (res <= eps_ * r(0, 0) or r(k, k) <= 1e-32 * r(0, 0))
     {
       k += 1;
       break;
@@ -210,18 +199,18 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   // calc extrapolated vector
   LINALG::SerialDenseVector xi(kmax_, true);
   xi(0) = 1. - gamma(0);
-  for (int j=1; j<k; ++j)
+  for (int j = 1; j < k; ++j)
   {
-    xi(j) = xi(j-1) - gamma(j);
+    xi(j) = xi(j - 1) - gamma(j);
   }
 
   NOX::Epetra::Vector s(dynamic_cast<const NOX::Epetra::Vector&>(x));
-  for (int j=0; j<k; ++j)
+  for (int j = 0; j < k; ++j)
   {
     double hp = 0.;
-    for (int i=j; i<k; ++i)
+    for (int i = j; i < k; ++i)
     {
-      hp += r(j,i)*xi(i);
+      hp += r(j, i) * xi(i);
     }
     s.update(hp, *q[j], 1.);
   }
@@ -233,20 +222,17 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
 }
 
 
-bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
-                                          NOX::Abstract::Group& soln,
-                                          const NOX::Solver::LineSearchBased& solver)
+bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln,
+    const NOX::Solver::LineSearchBased& solver)
 {
-  return NOX::Direction::Generic::compute( dir, soln, solver );
+  return NOX::Direction::Generic::compute(dir, soln, solver);
 }
 
 
-void NOX::FSI::MinimalPolynomial::throwError(const std::string& functionName,
-                                             const std::string& errorMsg)
+void NOX::FSI::MinimalPolynomial::throwError(
+    const std::string& functionName, const std::string& errorMsg)
 {
-    if (utils_->isPrintType(NOX::Utils::Error))
-      utils_->err() << "MinimalPolynomial::" << functionName
-                    << " - " << errorMsg << std::endl;
-    throw "NOX Error";
+  if (utils_->isPrintType(NOX::Utils::Error))
+    utils_->err() << "MinimalPolynomial::" << functionName << " - " << errorMsg << std::endl;
+  throw "NOX Error";
 }
-

@@ -18,27 +18,21 @@
 
 #include "ad_fld_fluid_fsi.H"
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   class FluidACFSI : public FluidFSI
   {
-  public:
-
+   public:
     /// Constructor
-    FluidACFSI(Teuchos::RCP<Fluid> fluid,
-        Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale,
-        bool dirichletcond);
+    FluidACFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
-    ///Get vector of current relative pressures errors from the Windkessels
-    std::vector<double> GetWindkesselErrors( );
+    /// Get vector of current relative pressures errors from the Windkessels
+    std::vector<double> GetWindkesselErrors();
 
     //@}
-
   };
-}
+}  // namespace ADAPTER
 
 #endif

@@ -35,22 +35,19 @@ Can only be used in conjunction with XFluid!
 #include <set>
 /*======================================================================*/
 /* constructor */
-ADAPTER::XFluidFSI::XFluidFSI(
-    Teuchos::RCP< Fluid> fluid,   // the XFluid object
-    const std::string                 coupling_name, // name of the FSI coupling condition
-    Teuchos::RCP<LINALG::Solver>      solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<IO::DiscretizationWriter> output )
-: FluidWrapper(fluid),                                      // the XFluid object is set as fluid_ in the FluidWrapper
-  fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
-  coupling_name_(coupling_name),
-  solver_(solver),
-  params_(params)
+ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
+    const std::string coupling_name,                      // name of the FSI coupling condition
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : FluidWrapper(fluid),  // the XFluid object is set as fluid_ in the FluidWrapper
+      fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
+      coupling_name_(coupling_name),
+      solver_(solver),
+      params_(params)
 {
   // make sure
-  if (fluid_ == Teuchos::null)
-    dserror("Failed to create the underlying fluid adapter");
-   return;
+  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -62,14 +59,14 @@ void ADAPTER::XFluidFSI::Init()
 
   // cast fluid to fluidimplicit
   xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);
-  if (xfluid_ == Teuchos::null)
-    dserror("Failed to cast ADAPTER::Fluid to FLD::XFluid.");
+  if (xfluid_ == Teuchos::null) dserror("Failed to cast ADAPTER::Fluid to FLD::XFluid.");
 
-  // NOTE: currently we are using the XFluidFSI adapter also for pure ALE-fluid problems with level-set boundary
-  // in this case no mesh coupling object is available and no interface objects can be created
+  // NOTE: currently we are using the XFluidFSI adapter also for pure ALE-fluid problems with
+  // level-set boundary in this case no mesh coupling object is available and no interface objects
+  // can be created
   Teuchos::RCP<XFEM::MeshCoupling> mc = xfluid_->GetMeshCoupling(coupling_name_);
 
-  if(mc!= Teuchos::null) // classical mesh coupling case for FSI
+  if (mc != Teuchos::null)  // classical mesh coupling case for FSI
   {
     // get the mesh coupling object
     mesh_coupling_fsi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc, true);
@@ -83,11 +80,13 @@ void ADAPTER::XFluidFSI::Init()
 
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
 
-  interface_->Setup(*xfluid_->Discretization(),false, true); //Always Create overlapping FSI/FPSI Interface
+  interface_->Setup(
+      *xfluid_->Discretization(), false, true);  // Always Create overlapping FSI/FPSI Interface
 
-  fpsiinterface_->Setup(*xfluid_->Discretization(),true, true); //Always Create overlapping FSI/FPSI Interface
+  fpsiinterface_->Setup(
+      *xfluid_->Discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
 
-  meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
+  meshmap_ = Teuchos::rcp(new LINALG::MapExtractor());
 }
 
 
@@ -97,9 +96,9 @@ double ADAPTER::XFluidFSI::TimeScaling() const
 {
   // second order (OST(0.5) except for the first starting step, otherwise 1st order BackwardEuler
   if (params_->get<bool>("interface second order"))
-    return 2./xfluid_->Dt();
+    return 2. / xfluid_->Dt();
   else
-    return 1./xfluid_->Dt();
+    return 1. / xfluid_->Dt();
 }
 
 /*----------------------------------------------------------------------*/
@@ -138,7 +137,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  structinterface_->InsertFSICondVector(ivel,mesh_coupling_fsi_->IVelnp());
+  structinterface_->InsertFSICondVector(ivel, mesh_coupling_fsi_->IVelnp());
 }
 
 
@@ -151,14 +150,15 @@ void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_V
   mesh_coupling_fsi_->UpdateDisplacementIterationVectors();
 
   // set new idispnp
-  structinterface_->InsertFSICondVector(idisp,mesh_coupling_fsi_->IDispnp());
+  structinterface_->InsertFSICondVector(idisp, mesh_coupling_fsi_->IDispnp());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 {
-  meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(),mm,LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(),*mm));
+  meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), mm,
+      LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), *mm));
 }
 
 /*----------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
-  meshmap_->InsertCondVector(fluiddisp,xfluid_->WriteAccessDispnp());
+  meshmap_->InsertCondVector(fluiddisp, xfluid_->WriteAccessDispnp());
 
   // new grid velocity
   xfluid_->UpdateGridv();
@@ -180,16 +180,19 @@ void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector>
  * via first order or second order OST-discretization of d/dt d(t) = u(t)
  *----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::DisplacementToVelocity(
-    Teuchos::RCP<Epetra_Vector> fcx         /// Delta d = d^(n+1,i+1)-d^n
+    Teuchos::RCP<Epetra_Vector> fcx  /// Delta d = d^(n+1,i+1)-d^n
 )
 {
-
   // get interface velocity at t(n)
-  const Teuchos::RCP<const Epetra_Vector> veln = structinterface_->ExtractFSICondVector(mesh_coupling_fsi_->IVeln());
+  const Teuchos::RCP<const Epetra_Vector> veln =
+      structinterface_->ExtractFSICondVector(mesh_coupling_fsi_->IVeln());
 
 #ifdef DEBUG
   // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(veln->Map()))  { dserror("Maps do not match, but they have to."); }
+  if (!fcx->Map().PointSameAs(veln->Map()))
+  {
+    dserror("Maps do not match, but they have to.");
+  }
 #endif
 
   /*
@@ -200,7 +203,7 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(
    *             \ = 1 / dt   if interface time integration is first order
    */
   const double timescale = TimeScaling();
-  fcx->Update(-timescale*xfluid_->Dt(),*veln,timescale);
+  fcx->Update(-timescale * xfluid_->Dt(), *veln, timescale);
 }
 
 
@@ -229,16 +232,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
 }
 
 /// GmshOutput for background mesh and cut mesh
-void ADAPTER::XFluidFSI::GmshOutput(
-    const std::string & name,            ///< name for output file
-    const int step,                      ///< step number
-    const int count,                     ///< counter for iterations within a global time step
-    Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<Epetra_Vector> acc      ///< vector holding accelerations
+void ADAPTER::XFluidFSI::GmshOutput(const std::string& name,  ///< name for output file
+    const int step,                                           ///< step number
+    const int count,                  ///< counter for iterations within a global time step
+    Teuchos::RCP<Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<Epetra_Vector> acc   ///< vector holding accelerations
 )
 {
   // TODO (kruse): find a substitute!
-  //xfluid_->GmshOutput(name, step, count, vel, acc);
+  // xfluid_->GmshOutput(name, step, count, vel, acc);
   dserror("Gmsh output for XFSI during Newton currently not available.");
-
 }

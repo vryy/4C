@@ -19,20 +19,19 @@
 
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
-  Teuchos::RCP<DRT::Discretization> sourcedis,
-  bool parallel)
-  : TransparentDofSet(sourcedis, parallel)
+    Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
+    : TransparentDofSet(sourcedis, parallel)
 {
   return;
 }
 
-int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
+int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(
+    const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
-
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::IndependentDofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  int count = DRT::IndependentDofSet::AssignDegreesOfFreedom(dis, dspos, start);
 
-  if(!parallel_)
+  if (!parallel_)
   {
     TransferDegreesOfFreedom(*sourcedis_, dis, start);
   }
@@ -47,7 +46,7 @@ int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(const DRT::Discret
   return count;
 }
 
-int DRT::TransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node ) const
+int DRT::TransparentIndependentDofSet::NumDofPerNode(const DRT::Node& node) const
 {
-  return DRT::DofSet::NumDofPerNode( node );
+  return DRT::DofSet::NumDofPerNode(node);
 }

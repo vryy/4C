@@ -22,54 +22,52 @@
 
 namespace FLD
 {
+  class FluidDiscretExtractor;
 
-class FluidDiscretExtractor;
+  class TurbulentFlowAlgorithm
+  {
+   public:
+    /// constructor
+    explicit TurbulentFlowAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& fdyn);
 
-class TurbulentFlowAlgorithm
-{
-public:
+    /// virtual destructor
+    virtual ~TurbulentFlowAlgorithm();
 
-  /// constructor
-  explicit TurbulentFlowAlgorithm(const Epetra_Comm& comm,
-                                  const Teuchos::ParameterList& fdyn);
+    /// do time loop
+    void TimeLoop();
 
-  /// virtual destructor
-  virtual ~TurbulentFlowAlgorithm();
+    /// read restart
+    /// only during inflow generation
+    void ReadRestart(const int restart);
 
-  /// do time loop
-  void TimeLoop();
+    /// do result check
+    Teuchos::RCP<DRT::ResultTest> DoResultCheck()
+    {
+      return fluidalgo_->FluidField()->CreateFieldTest();
+    };
 
-  /// read restart
-  /// only during inflow generation
-  void ReadRestart(const int restart);
+   private:
+    /// method to transfer inflow velocity from inflow discret to compete discret
+    void TransferInflowVelocity();
 
-  /// do result check
-  Teuchos::RCP<DRT::ResultTest> DoResultCheck(){return fluidalgo_->FluidField()->CreateFieldTest();};
+    /// discretization of the compete domain
+    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    /// discretization of the separate part
+    Teuchos::RCP<DRT::Discretization> inflowdis_;
+    /// object for a redistributed evaluation of of the separated part
+    Teuchos::RCP<FluidDiscretExtractor> inflowgenerator_;
+    /// instance of fluid algorithm
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo_;
+    /// instance of fluid inflow algorithm
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> inflowfluidalgo_;
+    /// number of time steps
+    int step_;
+    /// number of development steps
+    int numtimesteps_;
+    /// velocity/pressure at time n+1 to be transferred to the complete fluid field
+    Teuchos::RCP<Epetra_Vector> velnp_;
+  };
 
-private:
+}  // namespace FLD
 
-  /// method to transfer inflow velocity from inflow discret to compete discret
-  void TransferInflowVelocity();
-
-  /// discretization of the compete domain
-  Teuchos::RCP<DRT::Discretization> fluiddis_;
-  /// discretization of the separate part
-  Teuchos::RCP<DRT::Discretization> inflowdis_;
-  /// object for a redistributed evaluation of of the separated part
-  Teuchos::RCP<FluidDiscretExtractor> inflowgenerator_;
-  /// instance of fluid algorithm
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo_;
-  /// instance of fluid inflow algorithm
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> inflowfluidalgo_;
-  /// number of time steps
-  int step_;
-  /// number of development steps
-  int numtimesteps_;
-  /// velocity/pressure at time n+1 to be transferred to the complete fluid field
-  Teuchos::RCP<Epetra_Vector> velnp_;
-
-};
-
-} // namespace FLD
-
-#endif // #ifndef TURBULENT_FLOW_ALGORITHM_H
+#endif  // #ifndef TURBULENT_FLOW_ALGORITHM_H

@@ -24,25 +24,24 @@
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 namespace FLD
 {
-// forward declarations
-class FluidImplicitTimeInt;
-class FluidGenAlphaIntegration;
+  // forward declarations
+  class FluidImplicitTimeInt;
+  class FluidGenAlphaIntegration;
 
 
-/*!
-\brief Fluid specific result test class
+  /*!
+  \brief Fluid specific result test class
 
-\author u.kue
-*/
-class FluidResultTest : public DRT::ResultTest
-{
-public:
-
+  \author u.kue
+  */
+  class FluidResultTest : public DRT::ResultTest
+  {
+   public:
     /*!
     \brief not documented yet
     */
@@ -62,26 +61,24 @@ public:
     */
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-private:
-
+   private:
     /// pointer to fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis_;
     /// pointer to unknown vector with nodal values
-    Teuchos::RCP<Epetra_Vector>       mysol_;
+    Teuchos::RCP<Epetra_Vector> mysol_;
     /// pointer to traction vector with values
-    Teuchos::RCP<Epetra_Vector>       mytraction_;
+    Teuchos::RCP<Epetra_Vector> mytraction_;
     /// pointer to traction vector with values
-    Teuchos::RCP<Epetra_Vector>       mywss_;
+    Teuchos::RCP<Epetra_Vector> mywss_;
     /// pointer to error evaluation
-    Teuchos::RCP<std::vector <double> > myerror_;
+    Teuchos::RCP<std::vector<double>> myerror_;
     /// pointer to div u evaluation
     Teuchos::RCP<double> mydivu_;
     /// pointer to density scaling values
-    Teuchos::RCP<Epetra_Vector>       mydensity_scaling_;
+    Teuchos::RCP<Epetra_Vector> mydensity_scaling_;
+  };
 
-};
-
-}
+}  // namespace FLD
 
 
 #endif

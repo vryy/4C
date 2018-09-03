@@ -48,15 +48,15 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
       nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::PseudoTransient());
       break;
     case INPAR::STR::soltech_nlnsol:
-//      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nonlin());
-//      break;
+      //      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nonlin());
+      //      break;
     case INPAR::STR::soltech_newtonuzawanonlin:
     case INPAR::STR::soltech_newtonuzawalin:
-//      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());
-//      break;
+      //      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());
+      //      break;
     default:
       dserror("Solution technique \"%s\" is not implemented.",
-              INPAR::STR::NonlinSolTechString(nlnSolType).c_str());
+          INPAR::STR::NonlinSolTechString(nlnSolType).c_str());
       break;
   }
 

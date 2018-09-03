@@ -74,18 +74,27 @@
  * c_[38] is g_sus_Periphery_Published in component four_AP_sensitive_currents (microS).
  * c_[39] is g_sus_Periphery_0DCapable in component four_AP_sensitive_currents (microS).
  * c_[40] is g_sus_Periphery_1DCapable in component four_AP_sensitive_currents (microS).
- * c_[41] is g_K_r_Centre_Published in component rapid_delayed_rectifying_potassium_current (microS).
- * c_[42] is g_K_r_Centre_0DCapable in component rapid_delayed_rectifying_potassium_current (microS).
- * c_[43] is g_K_r_Centre_1DCapable in component rapid_delayed_rectifying_potassium_current (microS).
- * c_[44] is g_K_r_Periphery_Published in component rapid_delayed_rectifying_potassium_current (microS).
- * c_[45] is g_K_r_Periphery_0DCapable in component rapid_delayed_rectifying_potassium_current (microS).
- * c_[46] is g_K_r_Periphery_1DCapable in component rapid_delayed_rectifying_potassium_current (microS).
+ * c_[41] is g_K_r_Centre_Published in component rapid_delayed_rectifying_potassium_current
+ (microS).
+ * c_[42] is g_K_r_Centre_0DCapable in component rapid_delayed_rectifying_potassium_current
+ (microS).
+ * c_[43] is g_K_r_Centre_1DCapable in component rapid_delayed_rectifying_potassium_current
+ (microS).
+ * c_[44] is g_K_r_Periphery_Published in component rapid_delayed_rectifying_potassium_current
+ (microS).
+ * c_[45] is g_K_r_Periphery_0DCapable in component rapid_delayed_rectifying_potassium_current
+ (microS).
+ * c_[46] is g_K_r_Periphery_1DCapable in component rapid_delayed_rectifying_potassium_current
+ (microS).
  * c_[47] is g_K_s_Centre_Published in component slow_delayed_rectifying_potassium_current (microS).
  * c_[48] is g_K_s_Centre_0DCapable in component slow_delayed_rectifying_potassium_current (microS).
  * c_[49] is g_K_s_Centre_1DCapable in component slow_delayed_rectifying_potassium_current (microS).
- * c_[50] is g_K_s_Periphery_Published in component slow_delayed_rectifying_potassium_current (microS).
- * c_[51] is g_K_s_Periphery_0DCapable in component slow_delayed_rectifying_potassium_current (microS).
- * c_[52] is g_K_s_Periphery_1DCapable in component slow_delayed_rectifying_potassium_current (microS).
+ * c_[50] is g_K_s_Periphery_Published in component slow_delayed_rectifying_potassium_current
+ (microS).
+ * c_[51] is g_K_s_Periphery_0DCapable in component slow_delayed_rectifying_potassium_current
+ (microS).
+ * c_[52] is g_K_s_Periphery_1DCapable in component slow_delayed_rectifying_potassium_current
+ (microS).
  * c_[53] is g_f_Na_Centre_Published in component hyperpolarisation_activated_current (microS).
  * c_[54] is g_f_Na_Centre_0DCapable in component hyperpolarisation_activated_current (microS).
  * c_[55] is g_f_Na_Centre_1DCapable in component hyperpolarisation_activated_current (microS).
@@ -177,8 +186,10 @@
  * a_[6] is alpha_f_T in component T_type_Ca_channel_f_gate (per_second).
  * a_[7] is q_infinity in component four_AP_sensitive_currents_q_gate (dimensionless).
  * a_[8] is r_infinity in component four_AP_sensitive_currents_r_gate (dimensionless).
- * a_[9] is P_af_infinity in component rapid_delayed_rectifying_potassium_current_P_af_gate (dimensionless).
- * a_[10] is P_i_infinity in component rapid_delayed_rectifying_potassium_current_P_i_gate (dimensionless).
+ * a_[9] is P_af_infinity in component rapid_delayed_rectifying_potassium_current_P_af_gate
+ (dimensionless).
+ * a_[10] is P_i_infinity in component rapid_delayed_rectifying_potassium_current_P_i_gate
+ (dimensionless).
  * a_[11] is alpha_xs in component slow_delayed_rectifying_potassium_current_xs_gate (per_second).
  * a_[12] is alpha_y in component hyperpolarisation_activated_current_y_gate (per_second).
  * a_[13] is h in component sodium_current_h_gate (dimensionless).
@@ -192,7 +203,8 @@
  * a_[21] is tau_q in component four_AP_sensitive_currents_q_gate (second).
  * a_[22] is tau_r in component four_AP_sensitive_currents_r_gate (second).
  * a_[23] is tau_P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate (second).
- * a_[24] is P_as_infinity in component rapid_delayed_rectifying_potassium_current_P_as_gate (dimensionless).
+ * a_[24] is P_as_infinity in component rapid_delayed_rectifying_potassium_current_P_as_gate
+ (dimensionless).
  * a_[25] is beta_xs in component slow_delayed_rectifying_potassium_current_xs_gate (per_second).
  * a_[26] is beta_y in component hyperpolarisation_activated_current_y_gate (per_second).
  * a_[27] is i_Na in component sodium_current (nanoA).
@@ -233,8 +245,10 @@
  * s0_[7] is f_T in component T_type_Ca_channel_f_gate (dimensionless).
  * s0_[8] is q in component four_AP_sensitive_currents_q_gate (dimensionless).
  * s0_[9] is r in component four_AP_sensitive_currents_r_gate (dimensionless).
- * s0_[10] is P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate (dimensionless).
- * s0_[11] is P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate (dimensionless).
+ * s0_[10] is P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate
+ (dimensionless).
+ * s0_[11] is P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate
+ (dimensionless).
  * s0_[12] is P_i in component rapid_delayed_rectifying_potassium_current_P_i_gate (dimensionless).
  * s0_[13] is xs in component slow_delayed_rectifying_potassium_current_xs_gate (dimensionless).
  * s0_[14] is y in component hyperpolarisation_activated_current_y_gate (dimensionless).
@@ -249,9 +263,12 @@
  * r_[7] is d/dt f_T in component T_type_Ca_channel_f_gate (dimensionless).
  * r_[8] is d/dt q in component four_AP_sensitive_currents_q_gate (dimensionless).
  * r_[9] is d/dt r in component four_AP_sensitive_currents_r_gate (dimensionless).
- * r_[10] is d/dt P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate (dimensionless).
- * r_[11] is d/dt P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate (dimensionless).
- * r_[12] is d/dt P_i in component rapid_delayed_rectifying_potassium_current_P_i_gate (dimensionless).
+ * r_[10] is d/dt P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate
+ (dimensionless).
+ * r_[11] is d/dt P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate
+ (dimensionless).
+ * r_[12] is d/dt P_i in component rapid_delayed_rectifying_potassium_current_P_i_gate
+ (dimensionless).
  * r_[13] is d/dt xs in component slow_delayed_rectifying_potassium_current_xs_gate (dimensionless).
  * r_[14] is d/dt y in component hyperpolarisation_activated_current_y_gate (dimensionless).
  */
@@ -259,26 +276,16 @@
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_SAN_Garny::Myocard_SAN_Garny()
-{
-
-}
+Myocard_SAN_Garny::Myocard_SAN_Garny() {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_SAN_Garny::Myocard_SAN_Garny(const double eps_deriv_myocard,const std::string tissue)
-:
-  tools_(),
-  s0_(15, 0.0),
-  s_(15, 0.0),
-  r_(15, 0.0),
-  a_(52, 0.0),
-  c_(133, 0.0)
+Myocard_SAN_Garny::Myocard_SAN_Garny(const double eps_deriv_myocard, const std::string tissue)
+    : tools_(), s0_(15, 0.0), s_(15, 0.0), r_(15, 0.0), a_(52, 0.0), c_(133, 0.0)
 
 {
-
   eps_deriv_ = eps_deriv_myocard;
 
   // initial conditions
@@ -312,7 +319,7 @@ Myocard_SAN_Garny::Myocard_SAN_Garny(const double eps_deriv_myocard,const std::s
   c_[8] = 0;
   c_[9] = 0;
   c_[10] = 0;
-  c_[11] = 1.2e-6;// switched from ul to um^3
+  c_[11] = 1.2e-6;  // switched from ul to um^3
   c_[12] = 1.204e-6;
   c_[13] = 3.7e-7;
   c_[14] = 140;
@@ -411,29 +418,72 @@ Myocard_SAN_Garny::Myocard_SAN_Garny(const double eps_deriv_myocard,const std::s
   c_[107] = 0;
   c_[108] = 0.03339;
   c_[109] = 140;
-  c_[110] = (c_[0]==0.0 ? ( 1.07*( 3.0*c_[1] - 0.1))/( 3.0*(1.0+ 0.7745*(exp((- ( 3.0*c_[1] - 2.05)/0.295))))) : c_[0]==1.0 ? ( c_[2]*c_[1])/(1.0+ 0.7745*(exp((- ( 3.0*c_[1] - 2.05000)/0.295000)))) : ( 1.07000*29.0000*c_[1])/( 30.0000*(1.0+ 0.774500*(exp((- ( 29.0000*c_[1] - 24.5000)/1.95000))))));
-  c_[111] =  (( c_[3]*c_[4])/c_[5])*(log((c_[14]/c_[91])));
-  c_[112] =  (( c_[3]*c_[4])/c_[5])*(log((c_[102]/c_[109])));
-  c_[113] = (c_[0]==0.0 ? 0.002 : c_[0]==1.0 ? 0.002 : 0.006);
-  c_[114] = (c_[0]==0.0 ?  (( c_[3]*c_[4])/c_[5])*(log(((c_[102]+ 0.120000*c_[14])/(c_[109]+ 0.120000*c_[91])))) :  (( c_[3]*c_[4])/c_[5])*(log(((c_[102]+ 0.0300000*c_[14])/(c_[109]+ 0.0300000*c_[91])))));
-  c_[115] =  (( c_[3]*c_[4])/( 2.0*c_[5]))*(log((c_[93]/c_[92])));
-  c_[116] = c_[6]+ c_[110]*(c_[7] - c_[6]);
-  c_[117] = (c_[0]==0.0 ? c_[8]+ c_[110]*(c_[11] - c_[8]) : c_[0]==1.0 ? c_[9]+ c_[110]*(c_[12] - c_[9]) : c_[10]+ c_[110]*(c_[13] - c_[10]));
-  c_[118] = (c_[0]==0.0 ? c_[15]+ c_[110]*(c_[18] - c_[15]) : c_[0]==1.0 ? c_[16]+ c_[110]*(c_[19] - c_[16]) : c_[17]+ c_[110]*(c_[20] - c_[17]));
-  c_[119] = (c_[0]==0.0 ? c_[22]+ c_[110]*(c_[25] - c_[22]) : c_[0]==1.0 ? c_[23]+ c_[110]*(c_[26] - c_[23]) : c_[24]+ c_[110]*(c_[27] - c_[24]));
-  c_[120] = (c_[0]==0.0 ? c_[29]+ c_[110]*(c_[32] - c_[29]) : c_[0]==1.0 ? c_[30]+ c_[110]*(c_[33] - c_[30]) : c_[31]+ c_[110]*(c_[34] - c_[31]));
-  c_[121] = (c_[0]==0.0 ? c_[35]+ c_[110]*(c_[38] - c_[35]) : c_[0]==1.0 ? c_[36]+ c_[110]*(c_[39] - c_[36]) : c_[37]+ c_[110]*(c_[40] - c_[37]));
-  c_[122] = (c_[0]==0.0 ? c_[41]+ c_[110]*(c_[44] - c_[41]) : c_[0]==1.0 ? c_[42]+ c_[110]*(c_[45] - c_[42]) : c_[43]+ c_[110]*(c_[46] - c_[43]));
-  c_[123] = (c_[0]==0.0 ? c_[47]+ c_[110]*(c_[50] - c_[47]) : c_[0]==1.0 ? c_[48]+ c_[110]*(c_[51] - c_[48]) : c_[49]+ c_[110]*(c_[52] - c_[49]));
-  c_[124] = (c_[0]==0.0 ? c_[53]+ c_[110]*(c_[56] - c_[53]) : c_[0]==1.0 ? c_[54]+ c_[110]*(c_[57] - c_[54]) : c_[55]+ c_[110]*(c_[58] - c_[55]));
-  c_[125] = (c_[0]==0.0 ? c_[59]+ c_[110]*(c_[62] - c_[59]) : c_[0]==1.0 ? c_[60]+ c_[110]*(c_[63] - c_[60]) : c_[61]+ c_[110]*(c_[64] - c_[61]));
-  c_[126] = (c_[0]==0.0 ? c_[65]+ c_[110]*(c_[68] - c_[65]) : c_[0]==1.0 ? c_[66]+ c_[110]*(c_[69] - c_[66]) : c_[67]+ c_[110]*(c_[70] - c_[67]));
-  c_[127] = (c_[0]==0.0 ? c_[71]+ c_[110]*(c_[74] - c_[71]) : c_[0]==1.0 ? c_[72]+ c_[110]*(c_[75] - c_[72]) : c_[73]+ c_[110]*(c_[76] - c_[73]));
-  c_[128] = (c_[0]==0.0 ? c_[77]+ c_[110]*(c_[80] - c_[77]) : c_[0]==1.0 ? c_[78]+ c_[110]*(c_[81] - c_[78]) : c_[79]+ c_[110]*(c_[82] - c_[79]));
-  c_[129] = (c_[0]==0.0 ? c_[83]+ c_[110]*(c_[86] - c_[83]) : c_[0]==1.0 ? c_[84]+ c_[110]*(c_[87] - c_[84]) : c_[85]+ c_[110]*(c_[88] - c_[85]));
-  c_[130] = (c_[0]==0.0 ? c_[96]+ c_[110]*(c_[99] - c_[96]) : c_[0]==1.0 ? c_[97]+ c_[110]*(c_[100] - c_[97]) : c_[98]+ c_[110]*(c_[101] - c_[98]));
-  c_[131] = (c_[0]==0.0 ? c_[103]+ c_[110]*(c_[106] - c_[103]) : c_[0]==1.0 ? c_[104]+ c_[110]*(c_[107] - c_[104]) : c_[105]+ c_[110]*(c_[108] - c_[105]));
-  c_[132] = ( c_[131]*c_[92])/(c_[92]+0.000400000);
+  c_[110] =
+      (c_[0] == 0.0
+              ? (1.07 * (3.0 * c_[1] - 0.1)) /
+                    (3.0 * (1.0 + 0.7745 * (exp((-(3.0 * c_[1] - 2.05) / 0.295)))))
+              : c_[0] == 1.0
+                    ? (c_[2] * c_[1]) /
+                          (1.0 + 0.7745 * (exp((-(3.0 * c_[1] - 2.05000) / 0.295000))))
+                    : (1.07000 * 29.0000 * c_[1]) /
+                          (30.0000 *
+                              (1.0 + 0.774500 * (exp((-(29.0000 * c_[1] - 24.5000) / 1.95000))))));
+  c_[111] = ((c_[3] * c_[4]) / c_[5]) * (log((c_[14] / c_[91])));
+  c_[112] = ((c_[3] * c_[4]) / c_[5]) * (log((c_[102] / c_[109])));
+  c_[113] = (c_[0] == 0.0 ? 0.002 : c_[0] == 1.0 ? 0.002 : 0.006);
+  c_[114] =
+      (c_[0] == 0.0 ? ((c_[3] * c_[4]) / c_[5]) *
+                          (log(((c_[102] + 0.120000 * c_[14]) / (c_[109] + 0.120000 * c_[91]))))
+                    : ((c_[3] * c_[4]) / c_[5]) *
+                          (log(((c_[102] + 0.0300000 * c_[14]) / (c_[109] + 0.0300000 * c_[91])))));
+  c_[115] = ((c_[3] * c_[4]) / (2.0 * c_[5])) * (log((c_[93] / c_[92])));
+  c_[116] = c_[6] + c_[110] * (c_[7] - c_[6]);
+  c_[117] = (c_[0] == 0.0 ? c_[8] + c_[110] * (c_[11] - c_[8])
+                          : c_[0] == 1.0 ? c_[9] + c_[110] * (c_[12] - c_[9])
+                                         : c_[10] + c_[110] * (c_[13] - c_[10]));
+  c_[118] = (c_[0] == 0.0 ? c_[15] + c_[110] * (c_[18] - c_[15])
+                          : c_[0] == 1.0 ? c_[16] + c_[110] * (c_[19] - c_[16])
+                                         : c_[17] + c_[110] * (c_[20] - c_[17]));
+  c_[119] = (c_[0] == 0.0 ? c_[22] + c_[110] * (c_[25] - c_[22])
+                          : c_[0] == 1.0 ? c_[23] + c_[110] * (c_[26] - c_[23])
+                                         : c_[24] + c_[110] * (c_[27] - c_[24]));
+  c_[120] = (c_[0] == 0.0 ? c_[29] + c_[110] * (c_[32] - c_[29])
+                          : c_[0] == 1.0 ? c_[30] + c_[110] * (c_[33] - c_[30])
+                                         : c_[31] + c_[110] * (c_[34] - c_[31]));
+  c_[121] = (c_[0] == 0.0 ? c_[35] + c_[110] * (c_[38] - c_[35])
+                          : c_[0] == 1.0 ? c_[36] + c_[110] * (c_[39] - c_[36])
+                                         : c_[37] + c_[110] * (c_[40] - c_[37]));
+  c_[122] = (c_[0] == 0.0 ? c_[41] + c_[110] * (c_[44] - c_[41])
+                          : c_[0] == 1.0 ? c_[42] + c_[110] * (c_[45] - c_[42])
+                                         : c_[43] + c_[110] * (c_[46] - c_[43]));
+  c_[123] = (c_[0] == 0.0 ? c_[47] + c_[110] * (c_[50] - c_[47])
+                          : c_[0] == 1.0 ? c_[48] + c_[110] * (c_[51] - c_[48])
+                                         : c_[49] + c_[110] * (c_[52] - c_[49]));
+  c_[124] = (c_[0] == 0.0 ? c_[53] + c_[110] * (c_[56] - c_[53])
+                          : c_[0] == 1.0 ? c_[54] + c_[110] * (c_[57] - c_[54])
+                                         : c_[55] + c_[110] * (c_[58] - c_[55]));
+  c_[125] = (c_[0] == 0.0 ? c_[59] + c_[110] * (c_[62] - c_[59])
+                          : c_[0] == 1.0 ? c_[60] + c_[110] * (c_[63] - c_[60])
+                                         : c_[61] + c_[110] * (c_[64] - c_[61]));
+  c_[126] = (c_[0] == 0.0 ? c_[65] + c_[110] * (c_[68] - c_[65])
+                          : c_[0] == 1.0 ? c_[66] + c_[110] * (c_[69] - c_[66])
+                                         : c_[67] + c_[110] * (c_[70] - c_[67]));
+  c_[127] = (c_[0] == 0.0 ? c_[71] + c_[110] * (c_[74] - c_[71])
+                          : c_[0] == 1.0 ? c_[72] + c_[110] * (c_[75] - c_[72])
+                                         : c_[73] + c_[110] * (c_[76] - c_[73]));
+  c_[128] = (c_[0] == 0.0 ? c_[77] + c_[110] * (c_[80] - c_[77])
+                          : c_[0] == 1.0 ? c_[78] + c_[110] * (c_[81] - c_[78])
+                                         : c_[79] + c_[110] * (c_[82] - c_[79]));
+  c_[129] = (c_[0] == 0.0 ? c_[83] + c_[110] * (c_[86] - c_[83])
+                          : c_[0] == 1.0 ? c_[84] + c_[110] * (c_[87] - c_[84])
+                                         : c_[85] + c_[110] * (c_[88] - c_[85]));
+  c_[130] = (c_[0] == 0.0 ? c_[96] + c_[110] * (c_[99] - c_[96])
+                          : c_[0] == 1.0 ? c_[97] + c_[110] * (c_[100] - c_[97])
+                                         : c_[98] + c_[110] * (c_[101] - c_[98]));
+  c_[131] = (c_[0] == 0.0 ? c_[103] + c_[110] * (c_[106] - c_[103])
+                          : c_[0] == 1.0 ? c_[104] + c_[110] * (c_[107] - c_[104])
+                                         : c_[105] + c_[110] * (c_[108] - c_[105]));
+  c_[132] = (c_[131] * c_[92]) / (c_[92] + 0.000400000);
 }
 
 
@@ -445,122 +495,205 @@ double Myocard_SAN_Garny::ReaCoeff(const double phi, const double dt)
   // Compute new gating variables
   // ----------------------------
 
-  // s0_[12] is P_i in component rapid_delayed_rectifying_potassium_current_P_i_gate (dimensionless).
-  a_[10] = 1.0/(1.0+(exp(((s0_[0]+18.6)/10.1))));
-  r_[12] = (a_[10] - s0_[12])/c_[113];
+  // s0_[12] is P_i in component rapid_delayed_rectifying_potassium_current_P_i_gate
+  // (dimensionless).
+  a_[10] = 1.0 / (1.0 + (exp(((s0_[0] + 18.6) / 10.1))));
+  r_[12] = (a_[10] - s0_[12]) / c_[113];
   s_[12] = tools_.GatingVarCalc(dt, s0_[12], a_[10], c_[113]);
 
   // s0_[1] is m in component sodium_current_m_gate (dimensionless).
-  a_[1] = (c_[0]==0.0 ? (pow((1.0/(1.0+(exp((- s0_[0]/5.46))))), (1.0/3.0))) : (pow((1.0/(1.0+(exp((- (s0_[0]+30.32)/5.46))))), (1.0/3.0))));
-  a_[14] = (c_[0]==0.0 ? 0.0006247/( 0.832*(exp(( - 0.335*(s0_[0]+56.7))))+ 0.627*(exp(( 0.082*(s0_[0]+65.0100)))))+4.0e-05 : 0.0006247/( 0.832217*(exp(( - 0.33566*(s0_[0]+56.7062))))+ 0.627400*(exp(( 0.0823000*(s0_[0]+65.0131)))))+4.56900e-05);
-  r_[1] = (a_[1] - s0_[1])/a_[14];
+  a_[1] = (c_[0] == 0.0 ? (pow((1.0 / (1.0 + (exp((-s0_[0] / 5.46))))), (1.0 / 3.0)))
+                        : (pow((1.0 / (1.0 + (exp((-(s0_[0] + 30.32) / 5.46))))), (1.0 / 3.0))));
+  a_[14] = (c_[0] == 0.0 ? 0.0006247 / (0.832 * (exp((-0.335 * (s0_[0] + 56.7)))) +
+                                           0.627 * (exp((0.082 * (s0_[0] + 65.0100))))) +
+                               4.0e-05
+                         : 0.0006247 / (0.832217 * (exp((-0.33566 * (s0_[0] + 56.7062)))) +
+                                           0.627400 * (exp((0.0823000 * (s0_[0] + 65.0131))))) +
+                               4.56900e-05);
+  r_[1] = (a_[1] - s0_[1]) / a_[14];
   s_[1] = tools_.GatingVarCalc(dt, s0_[1], a_[1], a_[14]);
 
   // s0_[2] is h1 in component sodium_current_h_gate (dimensionless).
-  a_[2] = 1.0/(1.0+(exp(((s0_[0]+66.1)/6.4))));
-  a_[16] = ( 3.717e-06*(exp(( - 0.2815*(s0_[0]+17.11)))))/(1.0+ 0.003732*(exp(( - 0.342600*(s0_[0]+37.7600)))))+0.0005977;
-  r_[2] = (a_[2] - s0_[2])/a_[16];
+  a_[2] = 1.0 / (1.0 + (exp(((s0_[0] + 66.1) / 6.4))));
+  a_[16] = (3.717e-06 * (exp((-0.2815 * (s0_[0] + 17.11))))) /
+               (1.0 + 0.003732 * (exp((-0.342600 * (s0_[0] + 37.7600))))) +
+           0.0005977;
+  r_[2] = (a_[2] - s0_[2]) / a_[16];
   s_[2] = tools_.GatingVarCalc(dt, s0_[2], a_[2], a_[16]);
 
   // s0_[8] is q in component four_AP_sensitive_currents_q_gate (dimensionless).
-  a_[7] = 1.0/(1.0+(exp(((s0_[0]+59.37)/13.1))));
-  a_[21] = (c_[0]==0.0 ? 0.0101+0.06517/( 0.57*(exp(( - 0.08*(s0_[0]+49.0)))))+ 2.4e-05*(exp(( 0.1*(s0_[0]+50.93)))) : c_[0]==1.0 ?  (0.001/3.0)*(30.3100+195.500/( 0.5686*(exp(( - 0.0816100*(s0_[0]+39.0+ 10.0000*c_[110]))))+ 0.717400*(exp(( (0.2719 -  0.1719*c_[110])*1.0*(s0_[0]+40.93+ 10.0*c_[110])))))) : 0.0101+0.06517/( 0.5686*(exp(( - 0.08161*(s0_[0]+39.0))))+ 0.7174*(exp(( 0.2719*(s0_[0]+40.93))))));
-  r_[8] = (a_[7] - s0_[8])/a_[21];
+  a_[7] = 1.0 / (1.0 + (exp(((s0_[0] + 59.37) / 13.1))));
+  a_[21] =
+      (c_[0] == 0.0
+              ? 0.0101 + 0.06517 / (0.57 * (exp((-0.08 * (s0_[0] + 49.0))))) +
+                    2.4e-05 * (exp((0.1 * (s0_[0] + 50.93))))
+              : c_[0] == 1.0
+                    ? (0.001 / 3.0) *
+                          (30.3100 +
+                              195.500 / (0.5686 * (exp((-0.0816100 *
+                                                        (s0_[0] + 39.0 + 10.0000 * c_[110])))) +
+                                            0.717400 * (exp(((0.2719 - 0.1719 * c_[110]) * 1.0 *
+                                                             (s0_[0] + 40.93 + 10.0 * c_[110]))))))
+                    : 0.0101 + 0.06517 / (0.5686 * (exp((-0.08161 * (s0_[0] + 39.0)))) +
+                                             0.7174 * (exp((0.2719 * (s0_[0] + 40.93))))));
+  r_[8] = (a_[7] - s0_[8]) / a_[21];
   s_[8] = tools_.GatingVarCalc(dt, s0_[8], a_[7], a_[21]);
 
   // s0_[9] is r in component four_AP_sensitive_currents_r_gate (dimensionless).
-  a_[8] = 1.0/(1.0+(exp((- (s0_[0] - 10.93)/19.7))));
-  a_[22] = (c_[0]==0.0 ?  0.001*(2.98+15.59/( 1.037*(exp(( 0.09*(s0_[0]+30.61))))+ 0.369*(exp(( - 0.12*(s0_[0]+23.84)))))) : c_[0]==1.0 ?  0.0025*(1.191+7.838/( 1.037*(exp(( 0.09012*(s0_[0]+30.61))))+ 0.369000*(exp(( - 0.119000*(s0_[0]+23.84)))))) :  0.001*(2.98+19.59/( 1.037*(exp(( 0.09012*(s0_[0]+30.61))))+ 0.369*(exp(( - 0.119*(s0_[0]+23.84)))))));
-  r_[9] = (a_[8] - s0_[9])/a_[22];
+  a_[8] = 1.0 / (1.0 + (exp((-(s0_[0] - 10.93) / 19.7))));
+  a_[22] = (c_[0] == 0.0
+                ? 0.001 * (2.98 + 15.59 / (1.037 * (exp((0.09 * (s0_[0] + 30.61)))) +
+                                              0.369 * (exp((-0.12 * (s0_[0] + 23.84))))))
+                : c_[0] == 1.0
+                      ? 0.0025 *
+                            (1.191 + 7.838 / (1.037 * (exp((0.09012 * (s0_[0] + 30.61)))) +
+                                                 0.369000 * (exp((-0.119000 * (s0_[0] + 23.84))))))
+                      : 0.001 * (2.98 + 19.59 / (1.037 * (exp((0.09012 * (s0_[0] + 30.61)))) +
+                                                    0.369 * (exp((-0.119 * (s0_[0] + 23.84)))))));
+  r_[9] = (a_[8] - s0_[9]) / a_[22];
   s_[9] = tools_.GatingVarCalc(dt, s0_[9], a_[8], a_[22]);
 
-  // s0_[10] is P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate (dimensionless).
-  a_[9] = (c_[0] != 2.0 ? 1.0/(1.0+(exp((- (s0_[0]+14.2)/10.6)))) : 1.0/(1.0+(exp((- (s0_[0]+13.2)/10.6)))));
-  a_[23] = (c_[0] != 2.0 ? 1.0/( 37.2*(exp(((s0_[0] - 9.0)/15.9)))+ 0.96*(exp((- (s0_[0] - 9.0)/22.5)))) : 1.0/( 37.2*(exp(((s0_[0] - 10.0)/15.9)))+ 0.96*(exp((- (s0_[0] - 10.0)/22.5)))));
-  r_[10] = (a_[9] - s0_[10])/a_[23];
+  // s0_[10] is P_af in component rapid_delayed_rectifying_potassium_current_P_af_gate
+  // (dimensionless).
+  a_[9] = (c_[0] != 2.0 ? 1.0 / (1.0 + (exp((-(s0_[0] + 14.2) / 10.6))))
+                        : 1.0 / (1.0 + (exp((-(s0_[0] + 13.2) / 10.6)))));
+  a_[23] = (c_[0] != 2.0 ? 1.0 / (37.2 * (exp(((s0_[0] - 9.0) / 15.9))) +
+                                     0.96 * (exp((-(s0_[0] - 9.0) / 22.5))))
+                         : 1.0 / (37.2 * (exp(((s0_[0] - 10.0) / 15.9))) +
+                                     0.96 * (exp((-(s0_[0] - 10.0) / 22.5)))));
+  r_[10] = (a_[9] - s0_[10]) / a_[23];
   s_[10] = tools_.GatingVarCalc(dt, s0_[10], a_[9], a_[23]);
 
   // s0_[13] is xs in component slow_delayed_rectifying_potassium_current_xs_gate (dimensionless).
-  a_[11] = 14.0000/(1.0+(exp((- (s0_[0] - 40.0)/9.0))));
-  a_[25] =  1.0*(exp((- s0_[0]/45.0)));
-  r_[13] =  a_[11]*(1.0 - s0_[13]) -  a_[25]*s0_[13];
-  s_[13] = tools_.GatingVarCalc(dt, s0_[13], a_[11]/(a_[11] + a_[25]), 1/(a_[11] + a_[25]));
+  a_[11] = 14.0000 / (1.0 + (exp((-(s0_[0] - 40.0) / 9.0))));
+  a_[25] = 1.0 * (exp((-s0_[0] / 45.0)));
+  r_[13] = a_[11] * (1.0 - s0_[13]) - a_[25] * s0_[13];
+  s_[13] = tools_.GatingVarCalc(dt, s0_[13], a_[11] / (a_[11] + a_[25]), 1 / (a_[11] + a_[25]));
 
   // s0_[14] is y in component hyperpolarisation_activated_current_y_gate (dimensionless).
-  a_[12] = (c_[0]==0.0 ?  1.0*(exp((- (s0_[0]+78.9100)/26.6200))) :  1.0*(exp((- (s0_[0]+78.9100)/26.63))));
-  a_[26] =  1.0*(exp(((s0_[0]+75.1300)/21.2500)));
-  r_[14] =  a_[12]*(1.0 - s0_[14]) -  a_[26]*s0_[14];
-  s_[14] = tools_.GatingVarCalc(dt, s0_[14], a_[12]/(a_[12] + a_[26]), 1/(a_[12] + a_[26]));
+  a_[12] = (c_[0] == 0.0 ? 1.0 * (exp((-(s0_[0] + 78.9100) / 26.6200)))
+                         : 1.0 * (exp((-(s0_[0] + 78.9100) / 26.63))));
+  a_[26] = 1.0 * (exp(((s0_[0] + 75.1300) / 21.2500)));
+  r_[14] = a_[12] * (1.0 - s0_[14]) - a_[26] * s0_[14];
+  s_[14] = tools_.GatingVarCalc(dt, s0_[14], a_[12] / (a_[12] + a_[26]), 1 / (a_[12] + a_[26]));
 
   // s0_[3] is h2 in component sodium_current_h_gate (dimensionless).
   a_[15] = a_[2];
-  a_[28] = ( 3.18600e-08*(exp(( - 0.621900*(s0_[0]+18.8000)))))/(1.0+ 7.18900e-05*(exp(( - 0.668300*(s0_[0]+34.0700)))))+0.00355600;
-  r_[3] = (a_[15] - s0_[3])/a_[28];
+  a_[28] = (3.18600e-08 * (exp((-0.621900 * (s0_[0] + 18.8000))))) /
+               (1.0 + 7.18900e-05 * (exp((-0.668300 * (s0_[0] + 34.0700))))) +
+           0.00355600;
+  r_[3] = (a_[15] - s0_[3]) / a_[28];
   s_[3] = tools_.GatingVarCalc(dt, s0_[3], a_[15], a_[28]);
 
-  // s0_[11] is P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate (dimensionless).
+  // s0_[11] is P_as in component rapid_delayed_rectifying_potassium_current_P_as_gate
+  // (dimensionless).
   a_[24] = a_[9];
-  a_[33] = (c_[0] != 2.0 ? 1.0/( 4.20000*(exp(((s0_[0] - 9.0)/17.0)))+ 0.150000*(exp((- (s0_[0] - 9.0)/21.6000)))) : 1.0/( 4.20000*(exp(((s0_[0] - 10.0)/17.0)))+ 0.150000*(exp((- (s0_[0] - 10.0)/21.6000)))));
-  r_[11] = (a_[24] - s0_[11])/a_[33];
+  a_[33] = (c_[0] != 2.0 ? 1.0 / (4.20000 * (exp(((s0_[0] - 9.0) / 17.0))) +
+                                     0.150000 * (exp((-(s0_[0] - 9.0) / 21.6000))))
+                         : 1.0 / (4.20000 * (exp(((s0_[0] - 10.0) / 17.0))) +
+                                     0.150000 * (exp((-(s0_[0] - 10.0) / 21.6000)))));
+  r_[11] = (a_[24] - s0_[11]) / a_[33];
   s_[11] = tools_.GatingVarCalc(dt, s0_[11], a_[24], a_[33]);
 
   // s0_[4] is d_L in component L_type_Ca_channel_d_gate (dimensionless).
-  a_[35] = (c_[0]==0.0 ? 1.0/(1.0+(exp((- (s0_[0]+23.1000)/6.0)))) : c_[0]==1.0 ? 1.0/(1.0+(exp((- (s0_[0]+22.3000+ 0.800000*c_[110])/6.0)))) : 1.0/(1.0+(exp((- (s0_[0]+22.2000)/6.0)))));
-  a_[3] = (c_[0]==0.0 ? ( - 28.3800*(s0_[0]+35.0))/((exp((- (s0_[0]+35.0)/2.50000))) - 1.0) - ( 84.9000*s0_[0])/((exp(( - 0.208000*s0_[0]))) - 1.0) : c_[0]==1.0 ? ( - 28.3900*(s0_[0]+35.0))/((exp((- (s0_[0]+35.0)/2.50000))) - 1.0) - ( 84.9000*s0_[0])/((exp(( - 0.208000*s0_[0]))) - 1.0) : ( - 28.4000*(s0_[0]+35.0))/((exp((- (s0_[0]+35.0)/2.50000))) - 1.0) - ( 84.9000*s0_[0])/((exp(( - 0.208000*s0_[0]))) - 1.0));
-  a_[17] = (c_[0]==1.0 ? ( 11.4300*(s0_[0] - 5.0))/((exp(( 0.400000*(s0_[0] - 5.0)))) - 1.0) : ( 11.4200*(s0_[0] - 5.0))/((exp(( 0.400000*(s0_[0] - 5.0)))) - 1.0));
-  a_[29] = 2.0/(a_[3]+a_[17]);
-  r_[4] = (a_[35] - s0_[4])/a_[29];
+  a_[35] =
+      (c_[0] == 0.0
+              ? 1.0 / (1.0 + (exp((-(s0_[0] + 23.1000) / 6.0))))
+              : c_[0] == 1.0 ? 1.0 / (1.0 + (exp((-(s0_[0] + 22.3000 + 0.800000 * c_[110]) / 6.0))))
+                             : 1.0 / (1.0 + (exp((-(s0_[0] + 22.2000) / 6.0)))));
+  a_[3] = (c_[0] == 0.0
+               ? (-28.3800 * (s0_[0] + 35.0)) / ((exp((-(s0_[0] + 35.0) / 2.50000))) - 1.0) -
+                     (84.9000 * s0_[0]) / ((exp((-0.208000 * s0_[0]))) - 1.0)
+               : c_[0] == 1.0
+                     ? (-28.3900 * (s0_[0] + 35.0)) / ((exp((-(s0_[0] + 35.0) / 2.50000))) - 1.0) -
+                           (84.9000 * s0_[0]) / ((exp((-0.208000 * s0_[0]))) - 1.0)
+                     : (-28.4000 * (s0_[0] + 35.0)) / ((exp((-(s0_[0] + 35.0) / 2.50000))) - 1.0) -
+                           (84.9000 * s0_[0]) / ((exp((-0.208000 * s0_[0]))) - 1.0));
+  a_[17] = (c_[0] == 1.0 ? (11.4300 * (s0_[0] - 5.0)) / ((exp((0.400000 * (s0_[0] - 5.0)))) - 1.0)
+                         : (11.4200 * (s0_[0] - 5.0)) / ((exp((0.400000 * (s0_[0] - 5.0)))) - 1.0));
+  a_[29] = 2.0 / (a_[3] + a_[17]);
+  r_[4] = (a_[35] - s0_[4]) / a_[29];
   s_[4] = tools_.GatingVarCalc(dt, s0_[4], a_[35], a_[29]);
 
   // s0_[5] is f_L in component L_type_Ca_channel_f_gate (dimensionless).
-  a_[36] = 1.0/(1.0+(exp(((s0_[0]+45.0)/5.0))));
-  a_[4] = (c_[0]==1.0 ? ( 3.75000*(s0_[0]+28.0))/((exp(((s0_[0]+28.0)/4.0))) - 1.0) : ( 3.12000*(s0_[0]+28.0))/((exp(((s0_[0]+28.0)/4.0))) - 1.0));
-  a_[18] = (c_[0]==1.0 ? 30.0000/(1.0+(exp((- (s0_[0]+28.0)/4.0)))) : 25.0000/(1.0+(exp((- (s0_[0]+28.0)/4.0)))));
-  a_[30] = (c_[0]==1.0 ? (1.20000 -  0.200000*c_[110])/(a_[4]+a_[18]) : 1.0/(a_[4]+a_[18]));
-  r_[5] = (a_[36] - s0_[5])/a_[30];
+  a_[36] = 1.0 / (1.0 + (exp(((s0_[0] + 45.0) / 5.0))));
+  a_[4] = (c_[0] == 1.0 ? (3.75000 * (s0_[0] + 28.0)) / ((exp(((s0_[0] + 28.0) / 4.0))) - 1.0)
+                        : (3.12000 * (s0_[0] + 28.0)) / ((exp(((s0_[0] + 28.0) / 4.0))) - 1.0));
+  a_[18] = (c_[0] == 1.0 ? 30.0000 / (1.0 + (exp((-(s0_[0] + 28.0) / 4.0))))
+                         : 25.0000 / (1.0 + (exp((-(s0_[0] + 28.0) / 4.0)))));
+  a_[30] =
+      (c_[0] == 1.0 ? (1.20000 - 0.200000 * c_[110]) / (a_[4] + a_[18]) : 1.0 / (a_[4] + a_[18]));
+  r_[5] = (a_[36] - s0_[5]) / a_[30];
   s_[5] = tools_.GatingVarCalc(dt, s0_[5], a_[36], a_[30]);
 
   // s0_[6] is d_T in component T_type_Ca_channel_d_gate (dimensionless).
-  a_[37] = 1.0/(1.0+(exp((- (s0_[0]+37.0)/6.80000))));
-  a_[5] =  1068.00*(exp(((s0_[0]+26.3000)/30.0)));
-  a_[19] =  1068.00*(exp((- (s0_[0]+26.3000)/30.0)));
-  a_[31] = 1.0/(a_[5]+a_[19]);
-  r_[6] = (a_[37] - s0_[6])/a_[31];
+  a_[37] = 1.0 / (1.0 + (exp((-(s0_[0] + 37.0) / 6.80000))));
+  a_[5] = 1068.00 * (exp(((s0_[0] + 26.3000) / 30.0)));
+  a_[19] = 1068.00 * (exp((-(s0_[0] + 26.3000) / 30.0)));
+  a_[31] = 1.0 / (a_[5] + a_[19]);
+  r_[6] = (a_[37] - s0_[6]) / a_[31];
   s_[6] = tools_.GatingVarCalc(dt, s0_[6], a_[37], a_[31]);
 
   // s0_[7] is f_T in component T_type_Ca_channel_f_gate (dimensionless).
-  a_[38] = 1.0/(1.0+(exp(((s0_[0]+71.0)/9.0))));
-  a_[6] = (c_[0]==1.0 ?  15.3*(exp((- (s0_[0]+71.0+ 0.7*c_[110])/83.3))) :  15.3*(exp((- (s0_[0]+71.7)/83.3))));
-  a_[20] = (c_[0]==1.0 ?  15.0*(exp(((s0_[0]+71.0)/15.38))) :  15.0*(exp(((s0_[0]+71.7)/15.38))));
-  a_[32] = 1.0/(a_[6]+a_[20]);
-  r_[7] = (a_[38] - s0_[7])/a_[32];
+  a_[38] = 1.0 / (1.0 + (exp(((s0_[0] + 71.0) / 9.0))));
+  a_[6] = (c_[0] == 1.0 ? 15.3 * (exp((-(s0_[0] + 71.0 + 0.7 * c_[110]) / 83.3)))
+                        : 15.3 * (exp((-(s0_[0] + 71.7) / 83.3))));
+  a_[20] = (c_[0] == 1.0 ? 15.0 * (exp(((s0_[0] + 71.0) / 15.38)))
+                         : 15.0 * (exp(((s0_[0] + 71.7) / 15.38))));
+  a_[32] = 1.0 / (a_[6] + a_[20]);
+  r_[7] = (a_[38] - s0_[7]) / a_[32];
   s_[7] = tools_.GatingVarCalc(dt, s0_[7], a_[38], a_[32]);
 
 
   // Compute membrane currents
   // -------------------------
-  a_[0] = (c_[0]==0.0 ? ( 0.0952*(exp(( - 0.063*(s0_[0]+34.4)))))/(1.0+ 1.66*(exp(( - 0.225*(s0_[0]+63.7)))))+0.0869 : ( 0.09518*(exp(( - 0.06306*(s0_[0]+34.4)))))/(1.0+ 1.66200*(exp(( - 0.225100*(s0_[0]+63.7000)))))+0.0869300);
-  a_[13] =  (1.0 - a_[0])*s0_[2]+ a_[0]*s0_[3];
-  a_[27] =  (( (( c_[117]*(pow(s0_[1], 3.0))*a_[13]*c_[14]*(pow(c_[5], 2.0)))/( c_[3]*c_[4]))*((exp((( (s0_[0] - c_[111])*c_[5])/( c_[3]*c_[4])))) - 1.0))/((exp((( s0_[0]*c_[5])/( c_[3]*c_[4])))) - 1.0))*s0_[0];
-  a_[34] =  c_[118]*( s0_[5]*s0_[4]+0.006/(1.0+(exp((- (s0_[0]+14.1)/6.0)))))*(s0_[0] - c_[21]);
-  a_[39] =  c_[119]*s0_[6]*s0_[7]*(s0_[0] - c_[28]);
-  a_[40] =  c_[120]*s0_[8]*s0_[9]*(s0_[0] - c_[112]);
-  a_[41] =  c_[121]*s0_[9]*(s0_[0] - c_[112]);
-  a_[42] =  0.6*s0_[10]+ 0.4*s0_[11];
-  a_[43] =  c_[122]*a_[42]*s0_[12]*(s0_[0] - c_[112]);
-  a_[44] =  c_[123]*(pow(s0_[13], 2.0))*(s0_[0] - c_[114]);
-  a_[45] = (c_[0] != 2.0 ?  c_[124]*s0_[14]*(s0_[0] - c_[111]) :  c_[124]*s0_[14]*(s0_[0] - 77.6));
-  a_[46] = (c_[0] != 2.0 ?  c_[125]*s0_[14]*(s0_[0] - c_[112]) :  c_[125]*s0_[14]*(s0_[0]+102.0));
-  a_[47] =  c_[126]*(s0_[0] - c_[111]);
-  a_[49] =  c_[128]*(s0_[0] - c_[115]);
-  a_[48] =  c_[127]*(s0_[0] - c_[112]);
-  a_[50] = (c_[0]==0.0 ? ( c_[129]*( (pow(c_[91], 3.0))*c_[93]*(exp(( 0.03743*s0_[0]*c_[90]))) -  (pow(c_[14], 3.0))*c_[92]*(exp(( 0.0374*s0_[0]*(c_[90] - 1.0))))))/(1.0+ c_[89]*( c_[92]*(pow(c_[14], 3.0))+ c_[93]*(pow(c_[91], 3.0)))) : ( c_[129]*( (pow(c_[91], 3.0))*c_[93]*(exp(( 0.0374300*s0_[0]*c_[90]))) -  (pow(c_[14], 3.0))*c_[92]*(exp(( 0.0374300*s0_[0]*(c_[90] - 1.0))))))/(1.0+ c_[89]*( c_[92]*(pow(c_[14], 3.0))+ c_[93]*(pow(c_[91], 3.0)))));
-  a_[51] = ( c_[130]*(pow((c_[91]/(c_[94]+c_[91])), 3.0))*(pow((c_[102]/(c_[95]+c_[102])), 2.0))*1.6)/(1.5+(exp((- (s0_[0]+60.0)/40.0))));
+  a_[0] = (c_[0] == 0.0 ? (0.0952 * (exp((-0.063 * (s0_[0] + 34.4))))) /
+                                  (1.0 + 1.66 * (exp((-0.225 * (s0_[0] + 63.7))))) +
+                              0.0869
+                        : (0.09518 * (exp((-0.06306 * (s0_[0] + 34.4))))) /
+                                  (1.0 + 1.66200 * (exp((-0.225100 * (s0_[0] + 63.7000))))) +
+                              0.0869300);
+  a_[13] = (1.0 - a_[0]) * s0_[2] + a_[0] * s0_[3];
+  a_[27] =
+      ((((c_[117] * (pow(s0_[1], 3.0)) * a_[13] * c_[14] * (pow(c_[5], 2.0))) / (c_[3] * c_[4])) *
+           ((exp((((s0_[0] - c_[111]) * c_[5]) / (c_[3] * c_[4])))) - 1.0)) /
+          ((exp(((s0_[0] * c_[5]) / (c_[3] * c_[4])))) - 1.0)) *
+      s0_[0];
+  a_[34] = c_[118] * (s0_[5] * s0_[4] + 0.006 / (1.0 + (exp((-(s0_[0] + 14.1) / 6.0))))) *
+           (s0_[0] - c_[21]);
+  a_[39] = c_[119] * s0_[6] * s0_[7] * (s0_[0] - c_[28]);
+  a_[40] = c_[120] * s0_[8] * s0_[9] * (s0_[0] - c_[112]);
+  a_[41] = c_[121] * s0_[9] * (s0_[0] - c_[112]);
+  a_[42] = 0.6 * s0_[10] + 0.4 * s0_[11];
+  a_[43] = c_[122] * a_[42] * s0_[12] * (s0_[0] - c_[112]);
+  a_[44] = c_[123] * (pow(s0_[13], 2.0)) * (s0_[0] - c_[114]);
+  a_[45] =
+      (c_[0] != 2.0 ? c_[124] * s0_[14] * (s0_[0] - c_[111]) : c_[124] * s0_[14] * (s0_[0] - 77.6));
+  a_[46] = (c_[0] != 2.0 ? c_[125] * s0_[14] * (s0_[0] - c_[112])
+                         : c_[125] * s0_[14] * (s0_[0] + 102.0));
+  a_[47] = c_[126] * (s0_[0] - c_[111]);
+  a_[49] = c_[128] * (s0_[0] - c_[115]);
+  a_[48] = c_[127] * (s0_[0] - c_[112]);
+  a_[50] = (c_[0] == 0.0
+                ? (c_[129] * ((pow(c_[91], 3.0)) * c_[93] * (exp((0.03743 * s0_[0] * c_[90]))) -
+                                 (pow(c_[14], 3.0)) * c_[92] *
+                                     (exp((0.0374 * s0_[0] * (c_[90] - 1.0)))))) /
+                      (1.0 + c_[89] * (c_[92] * (pow(c_[14], 3.0)) + c_[93] * (pow(c_[91], 3.0))))
+                : (c_[129] * ((pow(c_[91], 3.0)) * c_[93] * (exp((0.0374300 * s0_[0] * c_[90]))) -
+                                 (pow(c_[14], 3.0)) * c_[92] *
+                                     (exp((0.0374300 * s0_[0] * (c_[90] - 1.0)))))) /
+                      (1.0 + c_[89] * (c_[92] * (pow(c_[14], 3.0)) + c_[93] * (pow(c_[91], 3.0)))));
+  a_[51] = (c_[130] * (pow((c_[91] / (c_[94] + c_[91])), 3.0)) *
+               (pow((c_[102] / (c_[95] + c_[102])), 2.0)) * 1.6) /
+           (1.5 + (exp((-(s0_[0] + 60.0) / 40.0))));
 
 
-  // Compute reaction coefficient (I_Na + I_CaL + I_CaT + I_to + I_sus + I_Kr + I_Ks + I_f_Na + I_f_K + I_b_Na + I_b_Ca + I_b_K + I_NaCa + I_p + I_Ca_p)
+  // Compute reaction coefficient (I_Na + I_CaL + I_CaT + I_to + I_sus + I_Kr + I_Ks + I_f_Na +
+  // I_f_K + I_b_Na + I_b_Ca + I_b_K + I_NaCa + I_p + I_Ca_p)
   // ---------------------------------------------------------------------------------------------------------------------------------------------------
-  r_[0] =  (a_[27]+a_[34]+a_[39]+a_[40]+a_[41]+a_[43]+a_[44]+a_[45]+a_[46]+a_[47]+a_[49]+a_[48]+a_[50]+a_[51]+c_[132])/c_[116];
+  r_[0] = (a_[27] + a_[34] + a_[39] + a_[40] + a_[41] + a_[43] + a_[44] + a_[45] + a_[46] + a_[47] +
+              a_[49] + a_[48] + a_[50] + a_[51] + c_[132]) /
+          c_[116];
 
 
   double reacoeff = r_[0];
@@ -571,18 +704,16 @@ double Myocard_SAN_Garny::ReaCoeff(const double phi, const double dt)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_SAN_Garny::GetNumberOfInternalStateVariables() const
-{
-  return 15;
-}
+int Myocard_SAN_Garny::GetNumberOfInternalStateVariables() const { return 15; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
 double Myocard_SAN_Garny::GetInternalState(const int k) const
 {
-  double val=0.0;
-  if ( k==-1 && s0_[0]>-20 ) {
+  double val = 0.0;
+  if (k == -1 && s0_[0] > -20)
+  {
     val = 1;
   }
   val = s0_[k];
@@ -602,31 +733,55 @@ void Myocard_SAN_Garny::SetInternalState(const int k, const double val)
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
-int Myocard_SAN_Garny::GetNumberOfIonicCurrents() const
-{
-  return 13;
-}
+int Myocard_SAN_Garny::GetNumberOfIonicCurrents() const { return 13; }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
 double Myocard_SAN_Garny::GetIonicCurrents(const int k) const
 {
-  double val=0.0;
-  switch (k) {
-    case 0: val = a_[27]; break;
-    case 1: val = a_[34]; break;
-    case 2: val = a_[39]; break;
-    case 3: val = a_[40]; break;
-    case 4: val = a_[41]; break;
-    case 5: val = a_[44]; break;
-    case 6: val = a_[45]; break;
-    case 7: val = a_[46]; break;
-    case 8: val = a_[47]; break;
-    case 9: val = a_[48]; break;
-    case 10: val = a_[49]; break;
-    case 11: val = a_[50]; break;
-    case 12: val = a_[51]; break;
+  double val = 0.0;
+  switch (k)
+  {
+    case 0:
+      val = a_[27];
+      break;
+    case 1:
+      val = a_[34];
+      break;
+    case 2:
+      val = a_[39];
+      break;
+    case 3:
+      val = a_[40];
+      break;
+    case 4:
+      val = a_[41];
+      break;
+    case 5:
+      val = a_[44];
+      break;
+    case 6:
+      val = a_[45];
+      break;
+    case 7:
+      val = a_[46];
+      break;
+    case 8:
+      val = a_[47];
+      break;
+    case 9:
+      val = a_[48];
+      break;
+    case 10:
+      val = a_[49];
+      break;
+    case 11:
+      val = a_[50];
+      break;
+    case 12:
+      val = a_[51];
+      break;
   }
 
   return val;
@@ -637,8 +792,6 @@ double Myocard_SAN_Garny::GetIonicCurrents(const int k) const
  *----------------------------------------------------------------------*/
 void Myocard_SAN_Garny::Update(const double phi, const double dt)
 {
-
   // update initial values for next time step
-  for (int i=0; i<16; i++)
-    s0_[i] = s_[i];
+  for (int i = 0; i < 16; i++) s0_[i] = s_[i];
 }

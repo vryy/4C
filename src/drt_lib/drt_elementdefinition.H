@@ -30,42 +30,39 @@
 
 namespace DRT
 {
-namespace INPUT
-{
-
-  class Lines;
-
-  /// Collection of valid element dat file line definitions
-  /*!
-    The actual definition is done by each element's type class.
-   */
-  class ElementDefinition
+  namespace INPUT
   {
-  public:
+    class Lines;
 
-    /// Setup of
-    void SetupValidElementLines();
+    /// Collection of valid element dat file line definitions
+    /*!
+      The actual definition is done by each element's type class.
+     */
+    class ElementDefinition
+    {
+     public:
+      /// Setup of
+      void SetupValidElementLines();
 
-    /// print all valid element definitions to stream
-    void PrintElementDatHeaderToStream(std::ostream& stream);
+      /// print all valid element definitions to stream
+      void PrintElementDatHeaderToStream(std::ostream& stream);
 
-    /// Print section header to stream
-    void PrintSectionHeader(std::ostream& stream, std::string name, bool color=false);
+      /// Print section header to stream
+      void PrintSectionHeader(std::ostream& stream, std::string name, bool color = false);
 
-    /// Print valid input lines for given element type
-    void PrintElementLines(std::ostream& stream, std::string name);
+      /// Print valid input lines for given element type
+      void PrintElementLines(std::ostream& stream, std::string name);
 
-    /// return line definitions for given element type
-    DRT::INPUT::LineDefinition* ElementLines(std::string name, std::string distype);
+      /// return line definitions for given element type
+      DRT::INPUT::LineDefinition* ElementLines(std::string name, std::string distype);
 
-  private:
+     private:
+      /// input line definitions per element type
+      std::map<std::string, std::map<std::string, LineDefinition>> definitions_;
+    };
 
-    /// input line definitions per element type
-    std::map<std::string,std::map<std::string,LineDefinition> > definitions_;
-  };
-
-}
-}
+  }  // namespace INPUT
+}  // namespace DRT
 
 
 void PrintElementDatHeader();

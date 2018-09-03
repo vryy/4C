@@ -36,15 +36,13 @@
  *----------------------------------------------------------------------*/
 namespace THR
 {
-
   //!
   //! \brief Thermo specific result test class
   //!
   //! \author cd
   class ResultTest : public DRT::ResultTest
   {
-  public:
-
+   public:
     //! Constructor for time integrators of general kind
     //! \author bborn \date 06/08
     ResultTest(TimInt& tintegrator);
@@ -53,14 +51,9 @@ namespace THR
     //!
     //! Possible position flags are "temp",
     //!                             "rate",
-    virtual void TestNode(
-      DRT::INPUT::LineDefinition& res,
-      int& nerr,
-      int& test_count
-      );
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  private:
-
+   private:
     //! our discretisation
     Teuchos::RCP<DRT::Discretization> thrdisc_;
     // our solution
@@ -71,7 +64,7 @@ namespace THR
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 
-  }; // DRT::ResultTest
+  };  // DRT::ResultTest
 
 }  // namespace THR
 

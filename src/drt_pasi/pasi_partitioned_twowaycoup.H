@@ -28,281 +28,265 @@
  *----------------------------------------------------------------------*/
 namespace PASI
 {
+  //! two way coupled partitioned algorithm for particle structure interaction
+  class PASI_PartTwoWayCoup : public PartitionedAlgo
+  {
+   public:
+    //! constructor
+    explicit PASI_PartTwoWayCoup(const Epetra_Comm& comm,  //! communicator
+        const Teuchos::ParameterList&
+            pasi_params  //! input parameters for particle structure interaction
+    );
+
+    //! virtual destructor
+    virtual ~PASI_PartTwoWayCoup(){};
 
-//! two way coupled partitioned algorithm for particle structure interaction
-class PASI_PartTwoWayCoup: public PartitionedAlgo
-{
+    /*! \brief Initialize this object
 
-public:
+    Hand in all objects/parameters/etc. from outside.
+    Construct and manipulate internal objects.
 
-  //! constructor
-  explicit PASI_PartTwoWayCoup(
-      const Epetra_Comm&              comm,         //! communicator
-      const Teuchos::ParameterList&   pasi_params   //! input parameters for particle structure interaction
-      );
+    \note Try to only perform actions in Init(), which are still valid
+          after parallel redistribution of discretizations.
+          If you have to perform an action depending on the parallel
+          distribution, make sure you adapt the affected objects after
+          parallel redistribution.
+          Example: cloning a discretization from another discretization is
+          OK in Init(...). However, after redistribution of the source
+          discretization do not forget to also redistribute the cloned
+          discretization.
+          All objects relying on the parallel distribution are supposed to
+          the constructed in \ref Setup().
+
+    \warning none
+    \return int
+    \date 01/17
+    \author rauch  */
+    virtual void Init(const Epetra_Comm& comm  //! communicator
+    );
 
-  //! virtual destructor
-  virtual ~PASI_PartTwoWayCoup(){};
+    /*! \brief Setup all class internal objects and members
+
+     Setup() is not supposed to have any input arguments !
+
+     Must only be called after Init().
+
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
+
+     Call all Setup() routines on previously initialized internal objects and members.
+
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
+
+    \warning none
+    \return void
+    \date 01/17
+    \author rauch  */
+    virtual void Setup();
+
+    //! read restart data
+    virtual void ReadRestart(int step  //! time step for restart
+    );
+
+    //! timeloop of coupled problem
+    virtual void Timeloop();
 
-  /*! \brief Initialize this object
+   protected:
+    //! iteration loop between coupled fields
+    virtual void Outerloop();
 
-  Hand in all objects/parameters/etc. from outside.
-  Construct and manipulate internal objects.
+    //! update and output
+    virtual void UpdateOutput();
+
+    //! reset particle states in outerloop iteration
+    virtual void ResetParticleStates();
+
+    //! get particle forces
+    virtual void GetParticleForces();
 
-  \note Try to only perform actions in Init(), which are still valid
-        after parallel redistribution of discretizations.
-        If you have to perform an action depending on the parallel
-        distribution, make sure you adapt the affected objects after
-        parallel redistribution.
-        Example: cloning a discretization from another discretization is
-        OK in Init(...). However, after redistribution of the source
-        discretization do not forget to also redistribute the cloned
-        discretization.
-        All objects relying on the parallel distribution are supposed to
-        the constructed in \ref Setup().
+    //! set particle forces
+    virtual void SetParticleForces(
+        Teuchos::RCP<const Epetra_Vector> forcenp  //! particle wall forces at \f$t_{n+1}\f$
+    );
+
+    //! update the current states in every iteration
+    virtual void IterUpdateStates(
+        Teuchos::RCP<const Epetra_Vector> dispnp,  //! structural displacements at \f$t_{n+1}\f$
+        Teuchos::RCP<const Epetra_Vector> forcenp  //! particle wall forces at \f$t_{n+1}\f$
+    );
+
+    //! convergence check for structure and particles fields
+    virtual bool ConvergenceCheck(int itnum  //! number of iterations
+    );
 
-  \warning none
-  \return int
-  \date 01/17
-  \author rauch  */
-  virtual void Init(
-      const Epetra_Comm& comm  //! communicator
-      );
+    //! particle force acting on structural boundary
+    Teuchos::RCP<Epetra_Vector> forcenp_;
 
-  /*! \brief Setup all class internal objects and members
+    //! structural displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> dispincnp_;
+
+    //! particle force increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> forceincnp_;
+
+    //! maximum iteration steps
+    int itmax_;
 
-   Setup() is not supposed to have any input arguments !
+    //! convergence tolerance
+    double ittol_;
 
-   Must only be called after Init().
+    //! ignore convergence check and proceed simulation
+    bool ignoreconvcheck_;
 
-   Construct all objects depending on the parallel distribution and
-   relying on valid maps like, e.g. the state vectors, system matrices, etc.
+    //! write restart every n steps
+    int writerestartevery_;
 
-   Call all Setup() routines on previously initialized internal objects and members.
+  };  // class PASI_PartTwoWayCoup: public PartitionedAlgo
 
-  \note Must only be called after parallel (re-)distribution of discretizations is finished !
-        Otherwise, e.g. vectors may have wrong maps.
+  //! two way coupled partitioned algorithm for particle structure interaction with force relaxation
+  class PASI_PartTwoWayCoup_ForceRelax : public PASI_PartTwoWayCoup
+  {
+   public:
+    //! constructor
+    explicit PASI_PartTwoWayCoup_ForceRelax(const Epetra_Comm& comm,  //! communicator
+        const Teuchos::ParameterList&
+            pasi_params  //! input parameters for particle structure interaction
+    );
 
-  \warning none
-  \return void
-  \date 01/17
-  \author rauch  */
-  virtual void Setup();
+    //! virtual destructor
+    virtual ~PASI_PartTwoWayCoup_ForceRelax(){};
 
-  //! read restart data
-  virtual void ReadRestart(
-      int step  //! time step for restart
-      );
+    /*! \brief Initialize this object
 
-  //! timeloop of coupled problem
-  virtual void Timeloop();
+    Hand in all objects/parameters/etc. from outside.
+    Construct and manipulate internal objects.
 
-protected:
+    \note Try to only perform actions in Init(), which are still valid
+          after parallel redistribution of discretizations.
+          If you have to perform an action depending on the parallel
+          distribution, make sure you adapt the affected objects after
+          parallel redistribution.
+          Example: cloning a discretization from another discretization is
+          OK in Init(...). However, after redistribution of the source
+          discretization do not forget to also redistribute the cloned
+          discretization.
+          All objects relying on the parallel distribution are supposed to
+          the constructed in \ref Setup().
 
-  //! iteration loop between coupled fields
-  virtual void Outerloop();
+    \warning none
+    \return int
+    \date 01/17
+    \author rauch  */
+    virtual void Init(const Epetra_Comm& comm  //! communicator
+    );
 
-  //! update and output
-  virtual void UpdateOutput();
+    /*! \brief Setup all class internal objects and members
 
-  //! reset particle states in outerloop iteration
-  virtual void ResetParticleStates();
+     Setup() is not supposed to have any input arguments !
 
-  //! get particle forces
-  virtual void GetParticleForces();
+     Must only be called after Init().
 
-  //! set particle forces
-  virtual void SetParticleForces(
-      Teuchos::RCP<const Epetra_Vector> forcenp    //! particle wall forces at \f$t_{n+1}\f$
-      );
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-  //! update the current states in every iteration
-  virtual void IterUpdateStates(
-      Teuchos::RCP<const Epetra_Vector> dispnp,    //! structural displacements at \f$t_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> forcenp    //! particle wall forces at \f$t_{n+1}\f$
-      );
+     Call all Setup() routines on previously initialized internal objects and members.
 
-  //! convergence check for structure and particles fields
-  virtual bool ConvergenceCheck(
-      int itnum  //! number of iterations
-      );
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
 
-  //! particle force acting on structural boundary
-  Teuchos::RCP<Epetra_Vector> forcenp_;
+    \warning none
+    \return void
+    \date 01/17
+    \author rauch  */
+    virtual void Setup();
 
-  //! structural displacement increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> dispincnp_;
+    //! read restart data
+    virtual void ReadRestart(int step  //! time step for restart
+    );
 
-  //! particle force increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> forceincnp_;
+   protected:
+    //! iteration loop between coupled fields with relaxed forces
+    virtual void Outerloop();
 
-  //! maximum iteration steps
-  int itmax_;
+    //! update and output
+    virtual void UpdateOutput();
 
-  //! convergence tolerance
-  double ittol_;
+    //! calculate relaxation parameter
+    virtual void CalcOmega(double& omega,  //! relaxation parameter
+        const int itnum                    //! number of partitioned coupling iterations
+    );
 
-  //! ignore convergence check and proceed simulation
-  bool ignoreconvcheck_;
+    //! relaxation parameter
+    double omega_;
 
-  //! write restart every n steps
-  int writerestartevery_;
+  };  // class PASI_PartTwoWayCoup_ForceRelax: public PASI_PartTwoWayCoup
 
-}; // class PASI_PartTwoWayCoup: public PartitionedAlgo
+  //! two way coupled partitioned algorithm for particle structure interaction with force relaxation
+  //! via aitken
+  class PASI_PartTwoWayCoup_ForceRelaxAitken : public PASI_PartTwoWayCoup_ForceRelax
+  {
+   public:
+    //! constructor
+    PASI_PartTwoWayCoup_ForceRelaxAitken(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-//! two way coupled partitioned algorithm for particle structure interaction with force relaxation
-class PASI_PartTwoWayCoup_ForceRelax: public PASI_PartTwoWayCoup
-{
+    //! virtual destructor
+    virtual ~PASI_PartTwoWayCoup_ForceRelaxAitken(){};
 
-public:
+    /*!
+    \brief Setup this object
 
-  //! constructor
-  explicit PASI_PartTwoWayCoup_ForceRelax(
-      const Epetra_Comm&              comm,         //! communicator
-      const Teuchos::ParameterList&   pasi_params   //! input parameters for particle structure interaction
-      );
+     Initializes members and performs problem specific setup.
 
-  //! virtual destructor
-  virtual ~PASI_PartTwoWayCoup_ForceRelax(){};
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, vectors may have wrong maps.
 
-  /*! \brief Initialize this object
+    \warning none
+    \return void
+    \date 08/16
+    \author rauch
+    */
+    virtual void Init(const Epetra_Comm& comm  //! communicator
+    );
 
-  Hand in all objects/parameters/etc. from outside.
-  Construct and manipulate internal objects.
+    /*! \brief Setup all class internal objects and members
 
-  \note Try to only perform actions in Init(), which are still valid
-        after parallel redistribution of discretizations.
-        If you have to perform an action depending on the parallel
-        distribution, make sure you adapt the affected objects after
-        parallel redistribution.
-        Example: cloning a discretization from another discretization is
-        OK in Init(...). However, after redistribution of the source
-        discretization do not forget to also redistribute the cloned
-        discretization.
-        All objects relying on the parallel distribution are supposed to
-        the constructed in \ref Setup().
+     Setup() is not supposed to have any input arguments !
 
-  \warning none
-  \return int
-  \date 01/17
-  \author rauch  */
-  virtual void Init(
-      const Epetra_Comm& comm  //! communicator
-      );
+     Must only be called after Init().
 
-  /*! \brief Setup all class internal objects and members
+     Construct all objects depending on the parallel distribution and
+     relying on valid maps like, e.g. the state vectors, system matrices, etc.
 
-   Setup() is not supposed to have any input arguments !
+     Call all Setup() routines on previously initialized internal objects and members.
 
-   Must only be called after Init().
+    \note Must only be called after parallel (re-)distribution of discretizations is finished !
+          Otherwise, e.g. vectors may have wrong maps.
 
-   Construct all objects depending on the parallel distribution and
-   relying on valid maps like, e.g. the state vectors, system matrices, etc.
+    \warning none
+    \return void
+    \date 01/17
+    \author rauch  */
+    virtual void Setup();
 
-   Call all Setup() routines on previously initialized internal objects and members.
+   protected:
+    //! calculate relaxation parameter
+    virtual void CalcOmega(double& omega,  //! relaxation parameter
+        const int itnum                    //! number of partitioned coupling iterations
+    );
 
-  \note Must only be called after parallel (re-)distribution of discretizations is finished !
-        Otherwise, e.g. vectors may have wrong maps.
+    //! old particle force increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> forceincnpold_;
 
-  \warning none
-  \return void
-  \date 01/17
-  \author rauch  */
-  virtual void Setup();
+    //! maximal relaxation parameter
+    double maxomega_;
 
-  //! read restart data
-  virtual void ReadRestart(
-      int step  //! time step for restart
-      );
+    //! minimal relaxation parameter
+    double minomega_;
 
-protected:
+  };  // class PASI_PartTwoWayCoup_ForceRelaxAitken : public PASI_PartTwoWayCoup_ForceRelax
 
-  //! iteration loop between coupled fields with relaxed forces
-  virtual void Outerloop();
-
-  //! update and output
-  virtual void UpdateOutput();
-
-  //! calculate relaxation parameter
-  virtual void CalcOmega(
-      double& omega,     //! relaxation parameter
-      const int itnum    //! number of partitioned coupling iterations
-      );
-
-  //! relaxation parameter
-  double omega_;
-
-}; // class PASI_PartTwoWayCoup_ForceRelax: public PASI_PartTwoWayCoup
-
-//! two way coupled partitioned algorithm for particle structure interaction with force relaxation via aitken
-class PASI_PartTwoWayCoup_ForceRelaxAitken : public PASI_PartTwoWayCoup_ForceRelax
-{
-public:
-
-  //! constructor
-  PASI_PartTwoWayCoup_ForceRelaxAitken(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& globaltimeparams);
-
-  //! virtual destructor
-  virtual ~PASI_PartTwoWayCoup_ForceRelaxAitken(){};
-
-  /*!
-  \brief Setup this object
-
-   Initializes members and performs problem specific setup.
-
-  \note Must only be called after parallel (re-)distribution of discretizations is finished !
-        Otherwise, vectors may have wrong maps.
-
-  \warning none
-  \return void
-  \date 08/16
-  \author rauch
-  */
-  virtual void Init(
-      const Epetra_Comm& comm  //! communicator
-      );
-
-  /*! \brief Setup all class internal objects and members
-
-   Setup() is not supposed to have any input arguments !
-
-   Must only be called after Init().
-
-   Construct all objects depending on the parallel distribution and
-   relying on valid maps like, e.g. the state vectors, system matrices, etc.
-
-   Call all Setup() routines on previously initialized internal objects and members.
-
-  \note Must only be called after parallel (re-)distribution of discretizations is finished !
-        Otherwise, e.g. vectors may have wrong maps.
-
-  \warning none
-  \return void
-  \date 01/17
-  \author rauch  */
-  virtual void Setup();
-
-protected:
-
-  //! calculate relaxation parameter
-  virtual void CalcOmega(
-      double& omega,     //! relaxation parameter
-      const int itnum    //! number of partitioned coupling iterations
-      );
-
-  //! old particle force increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> forceincnpold_;
-
-  //! maximal relaxation parameter
-  double maxomega_;
-
-  //! minimal relaxation parameter
-  double minomega_;
-
-}; // class PASI_PartTwoWayCoup_ForceRelaxAitken : public PASI_PartTwoWayCoup_ForceRelax
-
-} // namespace PASI
+}  // namespace PASI
 
 /*----------------------------------------------------------------------*/
-#endif // PASI_PARTITIONED_TWOWAYCOUP_H
+#endif  // PASI_PARTITIONED_TWOWAYCOUP_H

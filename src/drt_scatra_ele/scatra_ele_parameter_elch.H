@@ -2,12 +2,14 @@
 /*!
 \file scatra_ele_parameter_elch.H
 
-\brief singleton class holding all static electrochemistry parameters required for element evaluation
+\brief singleton class holding all static electrochemistry parameters required for element
+evaluation
 
-This singleton class holds all static electrochemistry parameters required for element evaluation. All parameters are
-usually set only once at the beginning of a simulation, namely during initialization of the global time integrator,
-and then never touched again throughout the simulation. This parameter class needs to coexist with the general parameter
-class holding all general static parameters required for scalar transport element evaluation.
+This singleton class holds all static electrochemistry parameters required for element evaluation.
+All parameters are usually set only once at the beginning of a simulation, namely during
+initialization of the global time integrator, and then never touched again throughout the
+simulation. This parameter class needs to coexist with the general parameter class holding all
+general static parameters required for scalar transport element evaluation.
 
 \level 2
 
@@ -33,69 +35,67 @@ namespace DRT
     // class implementation
     class ScaTraEleParameterElch : public ScaTraEleParameterBase
     {
-      public:
+     public:
+      //! destructor
+      virtual ~ScaTraEleParameterElch() { return; };
 
-        //! destructor
-        virtual ~ScaTraEleParameterElch(){return;};
+      //! singleton access method
+      static ScaTraEleParameterElch* Instance(
+          const std::string& disname,                     //!< name of discretization
+          const ScaTraEleParameterElch* delete_me = NULL  //!< creation/destruction indication
+      );
 
-        //! singleton access method
-        static ScaTraEleParameterElch* Instance(
-            const std::string&   disname,                   //!< name of discretization
-            const ScaTraEleParameterElch* delete_me = NULL  //!< creation/destruction indication
-            );
+      //! singleton destruction
+      virtual void Done();
 
-        //! singleton destruction
-        virtual void Done();
+      //! return flag for coupling of lithium-ion flux density and electric current density at
+      //! Dirichlet and Neumann boundaries
+      bool BoundaryFluxCoupling() const { return boundaryfluxcoupling_; };
 
-        //! return flag for coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries
-        bool BoundaryFluxCoupling() const {return boundaryfluxcoupling_;};
+      //! set parameters
+      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      );
 
-        //! set parameters
-        void SetParameters(
-            Teuchos::ParameterList& parameters   //!< parameter list
-            );
+      //! return type of closing equation for electric potential
+      INPAR::ELCH::EquPot EquPot() const { return equpot_; };
 
-        //! return type of closing equation for electric potential
-        INPAR::ELCH::EquPot EquPot() const {return equpot_;};
+      //! return Faraday constant
+      double Faraday() const { return faraday_; };
 
-        //! return Faraday constant
-        double Faraday() const {return faraday_;};
+      //! return the (universal) gas constant
+      double GasConstant() const { return gas_constant_; };
 
-        //! return the (universal) gas constant
-        double GasConstant() const {return gas_constant_;};
+      //! return dielectric constant
+      double Epsilon() const { return epsilon_; };
 
-        //! return dielectric constant
-        double Epsilon() const {return epsilon_;};
+      //! return constant F/RT
+      double FRT() const { return frt_; };
 
-        //! return constant F/RT
-        double FRT() const {return frt_;};
+     private:
+      //! private constructor for singletons
+      ScaTraEleParameterElch(const std::string& disname  //!< name of discretization
+      );
 
-      private:
+      //! flag for coupling of lithium-ion flux density and electric current density at Dirichlet
+      //! and Neumann boundaries
+      bool boundaryfluxcoupling_;
 
-        //! private constructor for singletons
-        ScaTraEleParameterElch(
-            const std::string& disname   //!< name of discretization
-            );
+      //! equation used for closing of the elch-system
+      enum INPAR::ELCH::EquPot equpot_;
 
-        //! flag for coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann boundaries
-        bool boundaryfluxcoupling_;
+      //! Faraday constant
+      double faraday_;
 
-        //! equation used for closing of the elch-system
-        enum INPAR::ELCH::EquPot equpot_;
+      //! (universal) gas constant
+      double gas_constant_;
 
-        //! Faraday constant
-        double faraday_;
+      //! dielectric constant
+      const double epsilon_;
 
-        //! (universal) gas constant
-        double gas_constant_;
-
-        //! dielectric constant
-        const double epsilon_;
-
-        //! pre-calculation of regularly used constant F/RT
-        //! (a division is much more expensive than a multiplication)
-        double frt_;
+      //! pre-calculation of regularly used constant F/RT
+      //! (a division is much more expensive than a multiplication)
+      double frt_;
     };
-  } // namespace ELEMENTS
-} // namespace DRT
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif

@@ -28,7 +28,7 @@
 #include <MueLu_VerboseObject.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
 typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
 typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
@@ -40,19 +40,19 @@ typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorF
 typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
 typedef Xpetra::EpetraCrsMatrix EpetraCrsMatrix;
 
-typedef MueLu::FactoryManager<Scalar,LocalOrdinal,GlobalOrdinal,Node> FactoryManager;
+typedef MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> FactoryManager;
 typedef MueLu::FactoryBase FactoryBase;
 
 typedef Scalar SC;
 typedef LocalOrdinal LO;
 typedef GlobalOrdinal GO;
 typedef Node NO;
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
-#include <az_aztec_defs.h> // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
+#include <az_aztec_defs.h>  // for AZ_none (provokes compiler warning due to redeclaration of HAVE_SYS_TIME_H in mpi.h and AztecOO_config.h -> AztecOO problem)
 
 #include "../drt_lib/drt_dserror.H"
 #include "solver_krylovsolver.H"
@@ -72,26 +72,25 @@ typedef Node NO;
 #endif  // HAVE_MueLu
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
-#endif // HAVE_TEKO
+#endif  // HAVE_TEKO
 
 #include <Teuchos_TimeMonitor.hpp>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
-                                            Teuchos::ParameterList & params,
-                                            FILE * outfile )
-  : comm_( comm ),
-    params_( params ),
-    outfile_( outfile ),
-    ncall_( 0 )
+LINALG::SOLVER::KrylovSolver::KrylovSolver(
+    const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
+    : comm_(comm),
+      params_(params),
+      outfile_(outfile),
+      ncall_(0)
 #ifdef HAVE_MueLu
-    ,
-    bAllowPermutation_( false ),
-    bPermuteLinearSystem_( false ),
-    permutationStrategy_( "none" ),
-    diagDominanceRatio_( 1.0 ),
-    PermFact_( Teuchos:: null )
+      ,
+      bAllowPermutation_(false),
+      bPermuteLinearSystem_(false),
+      permutationStrategy_("none"),
+      diagDominanceRatio_(1.0),
+      PermFact_(Teuchos::null)
 #endif
 {
 #ifdef HAVE_MueLu
@@ -104,12 +103,12 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
 LINALG::SOLVER::KrylovSolver::~KrylovSolver()
 {
   preconditioner_ = Teuchos::null;
-  A_              = Teuchos::null;
-  x_              = Teuchos::null;
-  b_              = Teuchos::null;
-  nActiveDofs_    = 0;
+  A_ = Teuchos::null;
+  x_ = Teuchos::null;
+  b_ = Teuchos::null;
+  nActiveDofs_ = 0;
 #ifdef HAVE_MueLu
-  data_           = Teuchos::null;
+  data_ = Teuchos::null;
 #endif
 }
 
@@ -117,55 +116,62 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
 //----------------------------------------------------------------------------------
 int LINALG::SOLVER::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
 {
-  return preconditioner_->ApplyInverse( X, Y );
+  return preconditioner_->ApplyInverse(X, Y);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
-    int reuse, // reuse flag from Aztec/Belos parameter list (AZREUSE)
-    bool reset // reset flag (user given from outside)
-    )
+    int reuse,  // reuse flag from Aztec/Belos parameter list (AZREUSE)
+    bool reset  // reset flag (user given from outside)
+)
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
 
   // first, check some parameters with information that has to be updated
   Teuchos::ParameterList* linSysParams = NULL;
-  if(Params().isSublist("Aztec Parameters")) {
+  if (Params().isSublist("Aztec Parameters"))
+  {
     Teuchos::ParameterList& reflinSysParams = Params().sublist("Aztec Parameters");
     linSysParams = &reflinSysParams;
   }
-  else if (Params().isSublist("Belos Parameters")) {
+  else if (Params().isSublist("Belos Parameters"))
+  {
     Teuchos::ParameterList& reflinSysParams = Params().sublist("Belos Parameters");
     linSysParams = &reflinSysParams;
   }
 
-  if(linSysParams!=NULL) {
+  if (linSysParams != NULL)
+  {
     // check, whether active set has changed in structural contact problems
     // if the active set has changed we have to rebuild the preconditioner
-    if(linSysParams->isSublist("Linear System properties")) {
-      Teuchos::ParameterList & linSystemProps = linSysParams->sublist("Linear System properties");
+    if (linSysParams->isSublist("Linear System properties"))
+    {
+      Teuchos::ParameterList& linSystemProps = linSysParams->sublist("Linear System properties");
 
-      if(linSystemProps.isParameter("contact activeDofMap")) {
+      if (linSystemProps.isParameter("contact activeDofMap"))
+      {
         Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-        epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+        epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
 
-        if(epActiveDofMap->NumMyElements() != nActiveDofs_) {
-          nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
-          bAllowReuse = false; // active set has changed -> force preconditioner to be rebuilt
+        if (epActiveDofMap->NumMyElements() != nActiveDofs_)
+        {
+          nActiveDofs_ = epActiveDofMap->NumMyElements();  // store last number of active DOFs
+          bAllowReuse = false;  // active set has changed -> force preconditioner to be rebuilt
         }
-        else {
+        else
+        {
           // active set has not changed. preconditioner may be reused
           // check other criteria
-          nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+          nActiveDofs_ = epActiveDofMap->NumMyElements();  // store last number of active DOFs
         }
       }
     }
   }
 
   // true, if preconditioner must not reused but is to re-created!
-  bool create = reset or not Ncall() or not reuse or ( Ncall() % reuse )==0;
-  if(create) bAllowReuse = false; // we have to create a new preconditioner
+  bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
+  if (create) bAllowReuse = false;  // we have to create a new preconditioner
 
   // here, each processor has its own local decision made
   // bAllowReuse = true -> preconditioner can be reused
@@ -180,7 +186,7 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
   int gAllowReuse = 0;
   comm_.SumAll(&lAllowReuse, &gAllowReuse, 1);
 
-  if(gAllowReuse == nProc)
+  if (gAllowReuse == nProc)
     bAllowReuse = true;
   else
     bAllowReuse = false;
@@ -190,149 +196,163 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
-  Teuchos::ParameterList & azlist,
-  bool isCrsMatrix,
-  Teuchos::RCP<LINALG::KrylovProjector> projector
-  )
+void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& azlist,
+    bool isCrsMatrix, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
 
   preconditioner_ = Teuchos::null;
 
-  if ( isCrsMatrix )
+  if (isCrsMatrix)
   {
     // get type of preconditioner and build either Ifpack or ML
     // if we have an ifpack parameter list, we do ifpack
     // if we have an ml parameter list we do ml
     // if we have a downwinding flag we downwind the linear problem
-    if ( Params().isSublist("IFPACK Parameters") )
+    if (Params().isSublist("IFPACK Parameters"))
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::IFPACKPreconditioner( outfile_, Params().sublist("IFPACK Parameters"), azlist ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::IFPACKPreconditioner(
+          outfile_, Params().sublist("IFPACK Parameters"), azlist));
     }
-    else if ( Params().isSublist("ML Parameters") )
+    else if (Params().isSublist("ML Parameters"))
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MLPreconditioner( outfile_, Params().sublist("ML Parameters") ) );
+      preconditioner_ = Teuchos::rcp(
+          new LINALG::SOLVER::MLPreconditioner(outfile_, Params().sublist("ML Parameters")));
     }
-    else if ( Params().isSublist("MueLu Parameters") )
+    else if (Params().isSublist("MueLu Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
+      preconditioner_ = Teuchos::rcp(
+          new LINALG::SOLVER::MueLuPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
 #else
       dserror("MueLu only available with most recent version of Trilinos");
 #endif
     }
-    else if ( Params().isSublist("MueLu (Contact) Parameters") )
+    else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner(
+          outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
       dserror("MueLu (Contact) preconditioner only available with most recent version of Trilinos");
 #endif
     }
-    else if ( Params().isSublist("MueLu (Contact2) Parameters") )
+    else if (Params().isSublist("MueLu (Contact2) Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner2( outfile_, Params().sublist("MueLu (Contact2) Parameters") ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner2(
+          outfile_, Params().sublist("MueLu (Contact2) Parameters")));
 #else
       dserror("MueLu (Contact2) preconditioner only available with most recent Trilinos version.");
 #endif
     }
-    else if ( Params().isSublist("MueLu (PenaltyContact) Parameters") )
+    else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPenaltyPreconditioner( outfile_, Params().sublist("MueLu (PenaltyContact) Parameters") ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPenaltyPreconditioner(
+          outfile_, Params().sublist("MueLu (PenaltyContact) Parameters")));
 #else
-      dserror("MueLu (PenaltyContact) preconditioner only available with most recent version of Trilinons.");
+      dserror(
+          "MueLu (PenaltyContact) preconditioner only available with most recent version of "
+          "Trilinons.");
 #endif
     }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::NonePreconditioner( outfile_, Params() ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::NonePreconditioner(outfile_, Params()));
     }
     else
     {
-      dserror( "unknown preconditioner" );
+      dserror("unknown preconditioner");
     }
 
     // decide whether we do what kind of scaling
-    std::string scaling = azlist.get("scaling","none");
-    if (scaling=="none")
+    std::string scaling = azlist.get("scaling", "none");
+    if (scaling == "none")
     {
     }
-    else if (scaling=="infnorm")
+    else if (scaling == "infnorm")
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::InfNormPreconditioner( preconditioner_ ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::InfNormPreconditioner(preconditioner_));
     }
-    else if (scaling=="symmetric")
+    else if (scaling == "symmetric")
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::SymDiagPreconditioner( preconditioner_ ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::SymDiagPreconditioner(preconditioner_));
     }
     else
       dserror("Unknown type of scaling found in parameter list");
 
-    if ( azlist.get<bool>("downwinding",false) )
+    if (azlist.get<bool>("downwinding", false))
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::DWindPreconditioner( outfile_, preconditioner_, azlist ) );
+      preconditioner_ =
+          Teuchos::rcp(new LINALG::SOLVER::DWindPreconditioner(outfile_, preconditioner_, azlist));
     }
 
-    if ( projector!=Teuchos::null)
+    if (projector != Teuchos::null)
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::KrylovProjectionPreconditioner( outfile_, preconditioner_, projector) );
+      preconditioner_ = Teuchos::rcp(
+          new LINALG::SOLVER::KrylovProjectionPreconditioner(outfile_, preconditioner_, projector));
     }
   }
   else
   {
     // assume block matrix
 
-    if ( Params().isSublist("SIMPLER") ) // old BACI::(Cheap)SIMPLER preconditioner TODO: remove/replace me
+    if (Params().isSublist(
+            "SIMPLER"))  // old BACI::(Cheap)SIMPLER preconditioner TODO: remove/replace me
     {
       dserror("SIMPLER sublist not supported any more.");
-      preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params() ) ); // Michael's SIMPLE for Fluid
+      preconditioner_ =
+          Teuchos::rcp(new SimplePreconditioner(outfile_, Params()));  // Michael's SIMPLE for Fluid
     }
-    else if( Params().isSublist("CheapSIMPLE Parameters") )
+    else if (Params().isSublist("CheapSIMPLE Parameters"))
     {
-      preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params() ) );
+      preconditioner_ = Teuchos::rcp(new SimplePreconditioner(outfile_, Params()));
     }
-    else if ( Params().isSublist("BGS Parameters") )
+    else if (Params().isSublist("BGS Parameters"))
     {
-      preconditioner_ = Teuchos::rcp( new BGSPreconditioner( outfile_, Params(), Params().sublist("BGS Parameters") ) );
+      preconditioner_ = Teuchos::rcp(
+          new BGSPreconditioner(outfile_, Params(), Params().sublist("BGS Parameters")));
     }
-    else if ( Params().isSublist("Teko Parameters") )
+    else if (Params().isSublist("Teko Parameters"))
     {
 #ifdef HAVE_TEKO
-      preconditioner_ = Teuchos::rcp( new TekoPreconditioner( outfile_, Params() ));
+      preconditioner_ = Teuchos::rcp(new TekoPreconditioner(outfile_, Params()));
 #else
       dserror("You need the HAVE_TEKO define flag set. Works only for Trilinos Q1/2012 or newer.");
 #endif
     }
-    else if ( Params().isSublist("MueLu Parameters") )
+    else if (Params().isSublist("MueLu Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new MueLuBlockPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
+      preconditioner_ = Teuchos::rcp(
+          new MueLuBlockPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
 #else
-      dserror("MueLu AMG preconditioner for blocked systems only available with most recent Trilinos version.");
+      dserror(
+          "MueLu AMG preconditioner for blocked systems only available with most recent Trilinos "
+          "version.");
 #endif
     }
-    else if ( Params().isSublist("MueLu (Contact) Parameters") )
+    else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactSpPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
+          outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
       dserror("MueLu (Contact) preconditioner only available with most recent Trilinos version");
 #endif
     }
-    else if ( Params().isSublist("AMGnxn Parameters") )
+    else if (Params().isSublist("AMGnxn Parameters"))
     {
 #ifdef HAVE_MueLu
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_,Params()) );
+      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_, Params()));
 #else
       dserror("AMGnxn preconditioner only works with most recent Trilinos version");
 #endif
     }
     else
     {
-      dserror( "unknown preconditioner for block matrix solver" );
+      dserror("unknown preconditioner for block matrix solver");
     }
   }
 
@@ -345,37 +365,49 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #ifdef HAVE_MueLu
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_Map> & epSlaveDofMap)
+void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_Map>& epSlaveDofMap)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
-  Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar,LO,GO,Node> > xCrsOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar,LO,GO,Node>(xCrsA));
-  Teuchos::RCP<Xpetra::Matrix<Scalar,LO,GO,Node> > xOp = Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar,LO,GO,Node> >(xCrsOp);
-  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar, LO, GO, Node>> xCrsOp =
+      Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LO, GO, Node>(xCrsA));
+  Teuchos::RCP<Xpetra::Matrix<Scalar, LO, GO, Node>> xOp =
+      Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LO, GO, Node>>(xCrsOp);
+  xOp->SetFixedBlockSize(
+      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
 
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
   data_->setlib(Xpetra::UseEpetra);
-  data_->Set("A",xOp);
+  data_->Set("A", xOp);
 
 
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   // check, if "SlaveDofMap" information is available in parameter lists
-  if(epSlaveDofMap != Teuchos::null) {
-    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
-    data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
+  if (epSlaveDofMap != Teuchos::null)
+  {
+    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
+        Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
+    data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(
+                                  xSlaveDofMap));  // set map with active dofs
 
     // define permutation factory for permuting the full matrix A
-    PermFact_ = Teuchos::rcp(new MueLu::PermutationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
-    PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    PermFact_ =
+        Teuchos::rcp(new MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>());
+    PermFact_->SetParameter(
+        "PermutationRowMapName", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
     PermFact_->SetFactory("PermutationRowMapFactory", MueLu::NoFactory::getRCP());
     PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(permutationStrategy_));
   }
-  else {
+  else
+  {
     // permute full matrix
-    PermFact_ = Teuchos::rcp(new MueLu::PermutationFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
-    PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact_ =
+        Teuchos::rcp(new MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>());
+    PermFact_->SetParameter("PermutationRowMapName", Teuchos::ParameterEntry(std::string("")));
     PermFact_->SetFactory("PermutationRowMapFactory", Teuchos::null);
     PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(permutationStrategy_));
   }
@@ -386,9 +418,9 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
 
   // setup main factory manager
   Teuchos::RCP<FactoryManager> M = Teuchos::rcp(new FactoryManager());
-  M->SetFactory("permQT",          PermFact_);
-  M->SetFactory("A",               MueLu::NoFactory::getRCP()); // this is the input matrix
-  MueLu::SetFactoryManager SFMFinest(data_, M); // set factory manager for data container
+  M->SetFactory("permQT", PermFact_);
+  M->SetFactory("A", MueLu::NoFactory::getRCP());  // this is the input matrix
+  MueLu::SetFactoryManager SFMFinest(data_, M);    // set factory manager for data container
 
   // prepare building process for permutation operators
   data_->Request("A", PermFact_.get());
@@ -403,22 +435,23 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
 
   // build permutation operators
   PermFact_->Build(*data_);
-
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra_CrsMatrix>& A,const Teuchos::RCP<Epetra_MultiVector>& b) {
-
-  if(!data_->IsAvailable("A", PermFact_.get()) ||
-      !data_->IsAvailable("permP", PermFact_.get()) ||
+void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_MultiVector>& b)
+{
+  if (!data_->IsAvailable("A", PermFact_.get()) || !data_->IsAvailable("permP", PermFact_.get()) ||
       !data_->IsAvailable("permScaling", PermFact_.get()))
     dserror("PermutedAztecSolver: call BuildPermutationOperator before PermuteLinearSystem");
 
   // extract permutation operators from data_
-  Teuchos::RCP<Epetra_CrsMatrix> xEpPermCrsMat = GetOperatorNonConst("A",PermFact_);
-  Teuchos::RCP<const Epetra_CrsMatrix> epPermPMatrix  = GetOperator("permP",  PermFact_);             // row permutation matrix
-  Teuchos::RCP<const Epetra_CrsMatrix> epPermScalingMatrix = GetOperator("permScaling",PermFact_); // leftScaling matrix
+  Teuchos::RCP<Epetra_CrsMatrix> xEpPermCrsMat = GetOperatorNonConst("A", PermFact_);
+  Teuchos::RCP<const Epetra_CrsMatrix> epPermPMatrix =
+      GetOperator("permP", PermFact_);  // row permutation matrix
+  Teuchos::RCP<const Epetra_CrsMatrix> epPermScalingMatrix =
+      GetOperator("permScaling", PermFact_);  // leftScaling matrix
 
   // P_trafo*b
   Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
@@ -429,9 +462,8 @@ void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra
   // set
   // b_ = permP * b;
   // A_ = permQ^T * A * permP
-  b_ = b;   // note b is permuted
-  A_ = xEpPermCrsMat;//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
-
+  b_ = b;              // note b is permuted
+  A_ = xEpPermCrsMat;  // xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
 }
 
 //----------------------------------------------------------------------------------
@@ -441,61 +473,76 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
   // note: we usually do not permute the null space!!!
 
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+  xOp->SetFixedBlockSize(
+      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
 
   // detect MueLu/ML Paramter list
   std::string MultiGridParameterListName = "";
-  if(Params().isSublist("ML Parameters"))
+  if (Params().isSublist("ML Parameters"))
     MultiGridParameterListName = "ML Parameters";
-  else if(Params().isSublist("MueLu Parameters"))
+  else if (Params().isSublist("MueLu Parameters"))
     MultiGridParameterListName = "MueLu Parameters";
-  else if(Params().isSublist("MueLu (Contact) Parameters"))
+  else if (Params().isSublist("MueLu (Contact) Parameters"))
     MultiGridParameterListName = "MueLu (Contact) Parameters";
-  else if(Params().isSublist("MueLu (Contact2) Parameters"))
+  else if (Params().isSublist("MueLu (Contact2) Parameters"))
     MultiGridParameterListName = "MueLu (Contact2) Parameters";
-  else if(Params().isSublist("MueLu (Contact3) Parameters"))
+  else if (Params().isSublist("MueLu (Contact3) Parameters"))
     MultiGridParameterListName = "MueLu (Contact3) Parameters";
-  else if(Params().isSublist("MueLu (PenaltyContact) Parameters"))
+  else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
     MultiGridParameterListName = "MueLu (PenaltyContact) Parameters";
 
   // retransform nullspace vectors
-  if(MultiGridParameterListName == "")
-    return; // no nullspace to permute
+  if (MultiGridParameterListName == "") return;  // no nullspace to permute
 
-  Teuchos::RCP<Matrix> xPermQtMatrix = data_->Get<Teuchos::RCP<Matrix> >("permQT", PermFact_.get());
-  int numdf = Params().sublist(MultiGridParameterListName).get<int>("PDE equations",-1);
-  int dimns = Params().sublist(MultiGridParameterListName).get<int>("null space: dimension",-1);
-  if(dimns == -1 || numdf == -1) dserror("PermutedAztecSolver: Error in MueLu/ML parameters: PDE equations or null space dimension wrong.");
-  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = xOp->getRowMap();
+  Teuchos::RCP<Matrix> xPermQtMatrix = data_->Get<Teuchos::RCP<Matrix>>("permQT", PermFact_.get());
+  int numdf = Params().sublist(MultiGridParameterListName).get<int>("PDE equations", -1);
+  int dimns = Params().sublist(MultiGridParameterListName).get<int>("null space: dimension", -1);
+  if (dimns == -1 || numdf == -1)
+    dserror(
+        "PermutedAztecSolver: Error in MueLu/ML parameters: PDE equations or null space dimension "
+        "wrong.");
+  Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = xOp->getRowMap();
 
-  Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-  Teuchos::RCP<std::vector<double> > nsdata = Params().sublist(MultiGridParameterListName).get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+  Teuchos::RCP<MultiVector> nspVector =
+      Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
+          rowMap, dimns, true);
+  Teuchos::RCP<std::vector<double>> nsdata =
+      Params()
+          .sublist(MultiGridParameterListName)
+          .get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
 
-  for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+  for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
+  {
     Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
     const size_t myLength = nspVector->getLocalLength();
-    for(size_t j=0; j<myLength; j++) {
-      nspVectori[j] = (*nsdata)[i*myLength+j];
+    for (size_t j = 0; j < myLength; j++)
+    {
+      nspVectori[j] = (*nsdata)[i * myLength + j];
     }
   }
 
   // calculate transformed nullspace multivector
-  Teuchos::RCP<MultiVector> permutedNspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(xOp->getDomainMap(),dimns,true);
+  Teuchos::RCP<MultiVector> permutedNspVector =
+      Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
+          xOp->getDomainMap(), dimns, true);
   // calculate Q * b_f
   xPermQtMatrix->apply(*nspVector, *permutedNspVector, Teuchos::TRANS);
 
   // write data back
-  for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+  for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
+  {
     Teuchos::ArrayRCP<Scalar> permutedNspVectori = permutedNspVector->getDataNonConst(i);
     const size_t myLength = permutedNspVector->getLocalLength();
-      for(size_t j=0; j<myLength; j++) {
-        (*nsdata)[i*myLength+j] = permutedNspVectori[j];
-      }
+    for (size_t j = 0; j < myLength; j++)
+    {
+      (*nsdata)[i * myLength + j] = permutedNspVectori[j];
+    }
   }
-  #if 0
+#if 0
     // experiment
     Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
     Teuchos::RCP<std::vector<double> > nsdata2 = Params().sublist(MultiGridParameterListName).get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
@@ -512,25 +559,29 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
     xPermQtMatrix->apply(*nspVector2, *test, Teuchos::NO_TRANS);
     test->update(-1.0, *nspVector, 1.0);
     std::cout << *test << std::endl;
-  #endif
+#endif
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(const Teuchos::RCP<Matrix>& xA, double diagDominanceRatio)
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
+    const Teuchos::RCP<Matrix>& xA, double diagDominanceRatio)
 {
-  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  Teuchos::RCP<Teuchos::FancyOStream> fos =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
 
-  const Teuchos::RCP< const Teuchos::Comm< int > > comm = xA->getRowMap()->getComm();
+  const Teuchos::RCP<const Teuchos::Comm<int>> comm = xA->getRowMap()->getComm();
 
-  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xA->getRowMap(),true);
+  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xA->getRowMap(), true);
   xA->getLocalDiagCopy(*diagAVec);
-  Teuchos::ArrayRCP< const Scalar > diagAVecData = diagAVec->getData(0);
-  std::vector<GlobalOrdinal> NonDiagonalDominantGIDs;  // vector with nondiagonaldominant row GIDs on cur proc
+  Teuchos::ArrayRCP<const Scalar> diagAVecData = diagAVec->getData(0);
+  std::vector<GlobalOrdinal>
+      NonDiagonalDominantGIDs;  // vector with nondiagonaldominant row GIDs on cur proc
 
   // loop over all local rows in matrix A and keep diagonal entries if corresponding
   // matrix rows are not contained in permRowMap
-  for (size_t row = 0; row < xA->getRowMap()->getNodeNumElements(); row++) {
+  for (size_t row = 0; row < xA->getRowMap()->getNodeNumElements(); row++)
+  {
     GlobalOrdinal grow = xA->getRowMap()->getGlobalElement(row);
 
     // extract local row information from matrix
@@ -540,8 +591,10 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(cons
 
     // find column entry with max absolute value
     Scalar maxVal = 0.0;
-    for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++) {
-      if(std::abs(vals[j]) > maxVal) {
+    for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++)
+    {
+      if (std::abs(vals[j]) > maxVal)
+      {
         maxVal = std::abs(vals[j]);
       }
     }
@@ -552,92 +605,100 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(cons
     // if the row is not diagonal dominant, the ratio is < 1.0
     // if the row has a zero on the diagonal the ratio is zero
     // if the row is a zero row (-> singular matrix) we divide zero by zero
-    if(std::abs(diagAVecData[row])/maxVal < diagDominanceRatio) { // optimal would be 1.0 -> row is diagonal dominant
+    if (std::abs(diagAVecData[row]) / maxVal < diagDominanceRatio)
+    {  // optimal would be 1.0 -> row is diagonal dominant
       NonDiagonalDominantGIDs.push_back(grow);
     }
   }
 
-  const Teuchos::ArrayView<const LocalOrdinal> NonDiagonalDominantGIDs_view(&NonDiagonalDominantGIDs[0],NonDiagonalDominantGIDs.size());
+  const Teuchos::ArrayView<const LocalOrdinal> NonDiagonalDominantGIDs_view(
+      &NonDiagonalDominantGIDs[0], NonDiagonalDominantGIDs.size());
 
-  Teuchos::RCP<Map> NonDiagonalDominantGIDsMap = MapFactory::Build(
-      xA->getRowMap()->lib(),
-      Teuchos::OrdinalTraits<int>::invalid(),
-      NonDiagonalDominantGIDs_view,
-      0, comm);
+  Teuchos::RCP<Map> NonDiagonalDominantGIDsMap = MapFactory::Build(xA->getRowMap()->lib(),
+      Teuchos::OrdinalTraits<int>::invalid(), NonDiagonalDominantGIDs_view, 0, comm);
 
   return NonDiagonalDominantGIDsMap;
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio)
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xA->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+  xA->SetFixedBlockSize(
+      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
 
-  return FindNonDiagonalDominantRows(xA,diagDominanceRatio);
+  return FindNonDiagonalDominantRows(xA, diagDominanceRatio);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(const Teuchos::RCP<Matrix>& xA, double tolerance)
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
+    const Teuchos::RCP<Matrix>& xA, double tolerance)
 {
-  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  Teuchos::RCP<Teuchos::FancyOStream> fos =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
 
   // extract permuted but unscaled matrix
-  //Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("permA", PermFact_.get());
+  // Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("permA", PermFact_.get());
 
-  const Teuchos::RCP< const Teuchos::Comm< int > > comm = xA->getRowMap()->getComm();
+  const Teuchos::RCP<const Teuchos::Comm<int>> comm = xA->getRowMap()->getComm();
 
-  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xA->getRowMap(),true);
+  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xA->getRowMap(), true);
   xA->getLocalDiagCopy(*diagAVec);
-  Teuchos::ArrayRCP< const Scalar > diagAVecData = diagAVec->getData(0);
+  Teuchos::ArrayRCP<const Scalar> diagAVecData = diagAVec->getData(0);
   LocalOrdinal lNumZeros = 0;
   std::vector<GlobalOrdinal> zeroGids;
-  for(size_t i = 0; i<diagAVec->getMap()->getNodeNumElements(); ++i) {
-
-    if(std::abs(diagAVecData[i]) < tolerance) { // pick out all rows with very small diagonal entries
+  for (size_t i = 0; i < diagAVec->getMap()->getNodeNumElements(); ++i)
+  {
+    if (std::abs(diagAVecData[i]) < tolerance)
+    {  // pick out all rows with very small diagonal entries
       lNumZeros++;
       zeroGids.push_back(diagAVec->getMap()->getGlobalElement(i));
     }
   }
 
-  const Teuchos::ArrayView<const LocalOrdinal> zeroGids_view(&zeroGids[0],zeroGids.size());
+  const Teuchos::ArrayView<const LocalOrdinal> zeroGids_view(&zeroGids[0], zeroGids.size());
 
   Teuchos::RCP<Map> zeroDiagonalMap = MapFactory::Build(
-      xA->getRowMap()->lib(),
-      Teuchos::OrdinalTraits<int>::invalid(),
-      zeroGids_view,
-      0, comm);
+      xA->getRowMap()->lib(), Teuchos::OrdinalTraits<int>::invalid(), zeroGids_view, 0, comm);
 
   return zeroDiagonalMap;
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance)
+Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xA->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+  xA->SetFixedBlockSize(
+      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
 
-  return FindZeroDiagonalEntries(xA,tolerance);
+  return FindZeroDiagonalEntries(xA, tolerance);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(
+    const Teuchos::RCP<Epetra_CrsMatrix>& A)
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+  xOp->SetFixedBlockSize(
+      Params().sublist("NodalBlockInformation").get<int>("nv"));  // set nBlockSize
 
   return CountZerosOnDiagonal(xOp);
 }
@@ -646,13 +707,15 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(const Teuchos::RCP<
 //----------------------------------------------------------------------------------
 int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const Matrix>& xOp)
 {
-  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xOp->getRowMap(),true);
+  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xOp->getRowMap(), true);
   xOp->getLocalDiagCopy(*diagAVec);
-  Teuchos::ArrayRCP< const Scalar > diagAVecData = diagAVec->getData(0);
+  Teuchos::ArrayRCP<const Scalar> diagAVecData = diagAVec->getData(0);
   LocalOrdinal lNumZeros = 0;
   GlobalOrdinal gNumZeros = 0;
-  for(size_t i = 0; i<diagAVec->getMap()->getNodeNumElements(); ++i) {
-    if(diagAVecData[i] == 0.0) {
+  for (size_t i = 0; i < diagAVec->getMap()->getNodeNumElements(); ++i)
+  {
+    if (diagAVecData[i] == 0.0)
+    {
       lNumZeros++;
     }
   }
@@ -665,88 +728,110 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const 
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::ReTransformSolution() {
-  Teuchos::RCP<const Epetra_CrsMatrix> epPermQTMatrix = GetOperator("permQT",PermFact_);
+void LINALG::SOLVER::KrylovSolver::ReTransformSolution()
+{
+  Teuchos::RCP<const Epetra_CrsMatrix> epPermQTMatrix = GetOperator("permQT", PermFact_);
   Teuchos::RCP<Epetra_MultiVector> xtemp = Teuchos::rcp(new Epetra_MultiVector(*x_));
-  xtemp->Update(1.0,*x_,0.0);
+  xtemp->Update(1.0, *x_, 0.0);
   epPermQTMatrix->Multiply(false, *xtemp, *x_);
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Epetra_Map> LINALG::SOLVER::KrylovSolver::ExtractPermutationMap(const std::string solverSublist, const std::string mapName) {
+Teuchos::RCP<Epetra_Map> LINALG::SOLVER::KrylovSolver::ExtractPermutationMap(
+    const std::string solverSublist, const std::string mapName)
+{
   // extract (user-given) additional information about linear system from
   // "Aztec/Belos Parameters" -> "Linear System properties"
   Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
-  if(Params().isSublist(solverSublist) &&
-      Params().sublist(solverSublist).isSublist("Linear System properties")) {
+  if (Params().isSublist(solverSublist) &&
+      Params().sublist(solverSublist).isSublist("Linear System properties"))
+  {
+    Teuchos::ParameterList& solverParams = Params().sublist(solverSublist);
+    Teuchos::ParameterList& linSystemProps = solverParams.sublist("Linear System properties");
 
-    Teuchos::ParameterList & solverParams = Params().sublist(solverSublist);
-    Teuchos::ParameterList & linSystemProps = solverParams.sublist("Linear System properties");
-
-    if(linSystemProps.isParameter(mapName))
-      epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> >(mapName);
+    if (linSystemProps.isParameter(mapName))
+      epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>(mapName);
   }
   return epSlaveDofMap;
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epetra_CrsMatrix> & A) {
+bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+{
   bool bPermutationRecommended = false;
 
   // extract permuted matrix A (without scaling)
-  Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("permA", PermFact_.get());
+  Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix>>("permA", PermFact_.get());
 
   // find problematic rows/columns in permuted and original matrix
-  Teuchos::RCP<Map> PermutedNonDiagMap    = FindNonDiagonalDominantRows(xPermA,diagDominanceRatio_);
-  Teuchos::RCP<Map> NonPermutedNonDiagMap = FindNonDiagonalDominantRows(A,1.0);
+  Teuchos::RCP<Map> PermutedNonDiagMap = FindNonDiagonalDominantRows(xPermA, diagDominanceRatio_);
+  Teuchos::RCP<Map> NonPermutedNonDiagMap = FindNonDiagonalDominantRows(A, 1.0);
 
   double tolerance = 1e-5;
-  Teuchos::RCP<Map> PermutedNearZeroMap    = FindZeroDiagonalEntries(xPermA, tolerance);
+  Teuchos::RCP<Map> PermutedNearZeroMap = FindZeroDiagonalEntries(xPermA, tolerance);
   Teuchos::RCP<Map> NonPermutedNearZeroMap = FindZeroDiagonalEntries(A, tolerance);
 
-  int PermutedNearZeros    = PermutedNearZeroMap->getGlobalNumElements();
+  int PermutedNearZeros = PermutedNearZeroMap->getGlobalNumElements();
   int NonPermutedNearZeros = NonPermutedNearZeroMap->getGlobalNumElements();
 
   int NonPermutedZeros = CountZerosOnDiagonalEpetra(A);
-  int PermutedZeros    = CountZerosOnDiagonal(xPermA);
+  int PermutedZeros = CountZerosOnDiagonal(xPermA);
 
-  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  fos->setOutputToRootOnly( 0 );
+  Teuchos::RCP<Teuchos::FancyOStream> fos =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  fos->setOutputToRootOnly(0);
   *fos << "---------------------------- MATRIX analysis -----------------------" << std::endl;
-  *fos << "| permutation strategy: " << std::setw(25) << PermFact_->GetParameter("PermutationStrategy") << "                  |" << std::endl;
+  *fos << "| permutation strategy: " << std::setw(25)
+       << PermFact_->GetParameter("PermutationStrategy") << "                  |" << std::endl;
   *fos << "| non-permuted matrix A              | permuted matrix A           |" << std::endl;
   *fos << "| zeros on diagonal: " << std::setw(8) << std::right << NonPermutedZeros << "        ";
-  *fos << "| zeros on diagonal: " << std::setw(8) << std::right << PermutedZeros << " |" << std::endl;
-  *fos << "| #near zeros on diagonal: " << std::setw(8) << std::right << NonPermutedNearZeroMap->getGlobalNumElements() << "  ";
-  *fos << "| #near zeros on diag: " << std::setw(6) << std::right << PermutedNearZeroMap->getGlobalNumElements() << " |" << std::endl;
+  *fos << "| zeros on diagonal: " << std::setw(8) << std::right << PermutedZeros << " |"
+       << std::endl;
+  *fos << "| #near zeros on diagonal: " << std::setw(8) << std::right
+       << NonPermutedNearZeroMap->getGlobalNumElements() << "  ";
+  *fos << "| #near zeros on diag: " << std::setw(6) << std::right
+       << PermutedNearZeroMap->getGlobalNumElements() << " |" << std::endl;
   *fos << "| (tolerance: " << std::setw(8) << std::right << tolerance << ")              ";
   *fos << "| (tolerance: " << std::setw(8) << std::right << tolerance << ")       |" << std::endl;
-  *fos << "| #nonDiagDomEntries  : " << std::setw(8) << std::right << NonPermutedNonDiagMap->getGlobalNumElements() << "     ";
-  *fos << "| #nonDiagDomEntries  : " << std::setw(5) << std::right << PermutedNonDiagMap->getGlobalNumElements() << " |" << std::endl;
-  if(NonPermutedZeros == 0 && PermutedZeros > 0) {
+  *fos << "| #nonDiagDomEntries  : " << std::setw(8) << std::right
+       << NonPermutedNonDiagMap->getGlobalNumElements() << "     ";
+  *fos << "| #nonDiagDomEntries  : " << std::setw(5) << std::right
+       << PermutedNonDiagMap->getGlobalNumElements() << " |" << std::endl;
+  if (NonPermutedZeros == 0 && PermutedZeros > 0)
+  {
     *fos << "| permutation failed. use original matrix instead                  |" << std::endl;
     bPermutationRecommended = false;
-  } else if (NonPermutedZeros > 0 && PermutedZeros > 0) {
+  }
+  else if (NonPermutedZeros > 0 && PermutedZeros > 0)
+  {
     // TODO merge this if clause with the next if clause below...
-    if(NonPermutedNonDiagMap->getGlobalNumElements() < PermutedNonDiagMap->getGlobalNumElements()) {
+    if (NonPermutedNonDiagMap->getGlobalNumElements() < PermutedNonDiagMap->getGlobalNumElements())
+    {
       *fos << "| permutation failed.                                                |" << std::endl;
       *fos << "| original linear system seems to have less problematic rows.        |" << std::endl;
       *fos << "| -> use non-permuted original linear system                         |" << std::endl;
       bPermutationRecommended = false;
-    } else {
+    }
+    else
+    {
       *fos << "| permutation failed.                                                |" << std::endl;
       *fos << "| permuted linear system seems to have less problematic rows.        |" << std::endl;
       *fos << "| -> use permuted original linear system                             |" << std::endl;
       bPermutationRecommended = true;
     }
-  } else {
-    if(NonPermutedNonDiagMap->getGlobalNumElements() < PermutedNonDiagMap->getGlobalNumElements()) {
+  }
+  else
+  {
+    if (NonPermutedNonDiagMap->getGlobalNumElements() < PermutedNonDiagMap->getGlobalNumElements())
+    {
       *fos << "| original linear system seems to have less problematic rows.      |" << std::endl;
       *fos << "| -> use non-permuted original linear system                       |" << std::endl;
       bPermutationRecommended = false;
-    } else {
+    }
+    else
+    {
       *fos << "| permuted linear system seems to have less problematic rows.      |" << std::endl;
       *fos << "| -> use permuted linear system                                    |" << std::endl;
       bPermutationRecommended = true;
@@ -757,36 +842,43 @@ bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epe
   // set data depending on decision whether the permuted or the original matrix
   // shall be used
   // used for output in permutedAztecSolver
-  if(bPermutationRecommended) {
-
-    data_->Set("nonDiagDomRows",Teuchos::as<int>(PermutedNonDiagMap->getGlobalNumElements()));
-  } else {
-    data_->Set("nonDiagDomRows",Teuchos::as<int>(NonPermutedNonDiagMap->getGlobalNumElements()));
+  if (bPermutationRecommended)
+  {
+    data_->Set("nonDiagDomRows", Teuchos::as<int>(PermutedNonDiagMap->getGlobalNumElements()));
+  }
+  else
+  {
+    data_->Set("nonDiagDomRows", Teuchos::as<int>(NonPermutedNonDiagMap->getGlobalNumElements()));
   }
   data_->Set("NonPermutedZerosOnDiagonal", NonPermutedZeros);
-  data_->Set("PermutedZerosOnDiagonal",    PermutedZeros);
+  data_->Set("PermutedZerosOnDiagonal", PermutedZeros);
   data_->Set("PermutedNearZeros", PermutedNearZeros);
   data_->Set("NonPermutedNearZeros", NonPermutedNearZeros);
 
   // feed preconditioner with more information about linear system using
   // the "Linear System properties" sublist in the preconditioner's
   // paramter list
-  if (Preconditioner() != NULL) {
-
+  if (Preconditioner() != NULL)
+  {
     const std::string precondParamListName = Preconditioner()->getParameterListName();
-    if(Params().isSublist(precondParamListName)) {
-      Teuchos::ParameterList & precondParams = Params().sublist(precondParamListName);
-      Teuchos::ParameterList & linSystemProps = precondParams.sublist("Linear System properties");
+    if (Params().isSublist(precondParamListName))
+    {
+      Teuchos::ParameterList& precondParams = Params().sublist(precondParamListName);
+      Teuchos::ParameterList& linSystemProps = precondParams.sublist("Linear System properties");
 
       // set information which rows are not diagonal dominant in matrix
       // e.g. the MueLu_Contact2 preconditioner uses this information to mark
       // these problematic rows and use 1 point aggregates
-      if(bPermutationRecommended) {
-        linSystemProps.set<Teuchos::RCP<Map> >("non diagonal-dominant row map",PermutedNonDiagMap);
-        linSystemProps.set<Teuchos::RCP<Map> >("near-zero diagonal row map",PermutedNearZeroMap);
-      } else {
-        linSystemProps.set<Teuchos::RCP<Map> >("non diagonal-dominant row map",NonPermutedNonDiagMap);
-        linSystemProps.set<Teuchos::RCP<Map> >("near-zero diagonal row map",NonPermutedNearZeroMap);
+      if (bPermutationRecommended)
+      {
+        linSystemProps.set<Teuchos::RCP<Map>>("non diagonal-dominant row map", PermutedNonDiagMap);
+        linSystemProps.set<Teuchos::RCP<Map>>("near-zero diagonal row map", PermutedNearZeroMap);
+      }
+      else
+      {
+        linSystemProps.set<Teuchos::RCP<Map>>(
+            "non diagonal-dominant row map", NonPermutedNonDiagMap);
+        linSystemProps.set<Teuchos::RCP<Map>>("near-zero diagonal row map", NonPermutedNearZeroMap);
       }
     }
   }
@@ -796,27 +888,30 @@ bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epe
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<const Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperator(const std::string name, const Teuchos::RCP<FactoryBase> & fact)
+Teuchos::RCP<const Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperator(
+    const std::string name, const Teuchos::RCP<FactoryBase>& fact)
 {
-  Teuchos::RCP<Matrix> xPermScalOp = data_->Get<Teuchos::RCP<Matrix> >(name, fact.get());
-  Teuchos::RCP<CrsMatrixWrap> xPermScalCrsOp = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(xPermScalOp);
+  Teuchos::RCP<Matrix> xPermScalOp = data_->Get<Teuchos::RCP<Matrix>>(name, fact.get());
+  Teuchos::RCP<CrsMatrixWrap> xPermScalCrsOp =
+      Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(xPermScalOp);
   Teuchos::RCP<CrsMatrix> xPermScalCrsMat = xPermScalCrsOp->getCrsMatrix();
-  Teuchos::RCP<EpetraCrsMatrix> xEpPermScalCrsMat = Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermScalCrsMat);
+  Teuchos::RCP<EpetraCrsMatrix> xEpPermScalCrsMat =
+      Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermScalCrsMat);
   return xEpPermScalCrsMat->getEpetra_CrsMatrix();
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperatorNonConst(const std::string name, const Teuchos::RCP<FactoryBase> & fact)
+Teuchos::RCP<Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperatorNonConst(
+    const std::string name, const Teuchos::RCP<FactoryBase>& fact)
 {
-  Teuchos::RCP<Matrix> xPermScalOp = data_->Get<Teuchos::RCP<Matrix> >(name, fact.get());
-  Teuchos::RCP<CrsMatrixWrap> xPermScalCrsOp = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(xPermScalOp);
+  Teuchos::RCP<Matrix> xPermScalOp = data_->Get<Teuchos::RCP<Matrix>>(name, fact.get());
+  Teuchos::RCP<CrsMatrixWrap> xPermScalCrsOp =
+      Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(xPermScalOp);
   Teuchos::RCP<CrsMatrix> xPermScalCrsMat = xPermScalCrsOp->getCrsMatrix();
-  Teuchos::RCP<EpetraCrsMatrix> xEpPermScalCrsMat = Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermScalCrsMat);
+  Teuchos::RCP<EpetraCrsMatrix> xEpPermScalCrsMat =
+      Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermScalCrsMat);
   return xEpPermScalCrsMat->getEpetra_CrsMatrixNonConst();
 }
 
-#endif // HAVE_MueLu
-
-
-
+#endif  // HAVE_MueLu

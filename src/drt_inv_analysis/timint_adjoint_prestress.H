@@ -24,66 +24,59 @@
 /*----------------------------------------------------------------------*/
 namespace STR
 {
+  class TimIntAdjointPrestress : public TimIntAdjoint
+  {
+   public:
+    //! constructor
+    TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretization> dis);
 
-class TimIntAdjointPrestress : public TimIntAdjoint
-{
+    //! destructor
+    virtual ~TimIntAdjointPrestress() {}
 
-public:
+    //! interface to the calling optimization routine to set up the rhs and the primal variables
+    /*! \param In
+        rhs - rigth hand side for the adjoint equation.
+        \param In
+        mtime - vector with time for each entry in rhs.
+        \param In
+        dis - primal solution to the adjoint problem.
+        \param In
+        mtime - vector with time for each entry in the primal solution.
+        \param In
+    */
+    virtual void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs, std::vector<double> mtime,
+        Teuchos::RCP<Epetra_MultiVector> dis, std::vector<double> time);
 
-  //! constructor
-  TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretization> dis);
+    //! dual variables corresponding to the "prestressed adjoint equation"
+    virtual Teuchos::RCP<Epetra_MultiVector> ExtractPrestressSolution() { return disdualp_; }
 
-  //! destructor
-  virtual ~TimIntAdjointPrestress() {}
+   protected:
+    //! solve the linear system
+    virtual void Solve();
 
-  //! interface to the calling optimization routine to set up the rhs and the primal variables
-  /*! \param In
-      rhs - rigth hand side for the adjoint equation.
-      \param In
-      mtime - vector with time for each entry in rhs.
-      \param In
-      dis - primal solution to the adjoint problem.
-      \param In
-      mtime - vector with time for each entry in the primal solution.
-      \param In
-  */
-  virtual void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
-                            std::vector<double> mtime,
-                            Teuchos::RCP<Epetra_MultiVector> dis,
-                            std::vector<double> time);
+    //! update state
+    virtual void UpdateStepState();
 
-  //! dual variables corresponding to the "prestressed adjoint equation"
-  virtual Teuchos::RCP<Epetra_MultiVector> ExtractPrestressSolution() {return disdualp_;}
+    //! dual variables (lagrange multiplier)
+    Teuchos::RCP<Epetra_MultiVector> disdualp_;
 
-protected:
+    //! disdualn_ at step n
+    Teuchos::RCP<Epetra_Vector> disdualnp_;
 
-  //! solve the linear system
-  virtual void Solve();
+    //! rhs with additional terms for the prestressing
+    Teuchos::RCP<Epetra_Vector> rhsnp_;
 
-  //! update state
-  virtual void UpdateStepState();
+    //! stiffness matrix with neumann terms
+    Teuchos::RCP<LINALG::SparseOperator> stiffp_;
 
-  //! dual variables (lagrange multiplier)
-  Teuchos::RCP<Epetra_MultiVector> disdualp_;
+    //! prestress type
+    INPAR::STR::PreStress pstype_;
 
-  //! disdualn_ at step n
-  Teuchos::RCP<Epetra_Vector> disdualnp_;
+    //! prestress time
+    double pstime_;
+  };
 
-  //! rhs with additional terms for the prestressing
-  Teuchos::RCP<Epetra_Vector> rhsnp_;
-
-  //! stiffness matrix with neumann terms
-  Teuchos::RCP<LINALG::SparseOperator> stiffp_;
-
-  //! prestress type
-  INPAR::STR::PreStress pstype_;
-
-  //! prestress time
-  double pstime_;
-
-};
-
-}
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif

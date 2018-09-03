@@ -18,25 +18,22 @@
 
 namespace POROMULTIPHASE
 {
-
   //! Base class of all solid-scatra algorithms
   class PoroMultiPhaseMonolithic : public PoroMultiPhaseBase
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
-    PoroMultiPhaseMonolithic(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);// Problem builder
+    PoroMultiPhaseMonolithic(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     /// virtual destructor
     virtual ~PoroMultiPhaseMonolithic(){};
 
 
-  }; //PoroMultiPhaseMonolithic
+  };  // PoroMultiPhaseMonolithic
 
 
-}
+}  // namespace POROMULTIPHASE
 
 
 

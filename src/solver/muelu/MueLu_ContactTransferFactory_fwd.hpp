@@ -12,7 +12,8 @@
 
 #ifdef HAVE_MueLu
 
-namespace MueLu {
+namespace MueLu
+{
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class ContactTransferFactory;
 }
@@ -21,6 +22,6 @@ namespace MueLu {
 #define MUELU_CONTACTTRANSFERFACTORY_SHORT
 #endif
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_CONTACTTRANSFERFACTORY_FWD_HPP_ */

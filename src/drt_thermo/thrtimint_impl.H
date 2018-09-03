@@ -25,7 +25,10 @@
 #include <Epetra_Time.h>
 
 // forward declaration
-namespace ADAPTER{class CouplingMortar;}
+namespace ADAPTER
+{
+  class CouplingMortar;
+}
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
@@ -38,32 +41,30 @@ namespace THR
   //!        with \b implicit time integration
   //!
   //! <h3> About </h3>
-  //! The implicit time integrator object is a derivation of the base time integrators with an eye towards implicit time integration.
-  //! #TimIntImpl provides the environment needed to execute implicit integrators. This is chiefly the non-linear solution technique,
-  //! e.g., Newton-Raphson iteration. These iterative solution techniques require a set of control parameters which are stored within
-  //! this object. It is up to derived object to implement the time-space discretised residuum an d its tangent. This object provides
-  //! some utility functions to obtain various force vectors necessary in the calculation of the force residual in the derived time
-  //! integrators.
+  //! The implicit time integrator object is a derivation of the base time integrators with an eye
+  //! towards implicit time integration. #TimIntImpl provides the environment needed to execute
+  //! implicit integrators. This is chiefly the non-linear solution technique, e.g., Newton-Raphson
+  //! iteration. These iterative solution techniques require a set of control parameters which are
+  //! stored within this object. It is up to derived object to implement the time-space discretised
+  //! residuum an d its tangent. This object provides some utility functions to obtain various force
+  //! vectors necessary in the calculation of the force residual in the derived time integrators.
   //!
   //! \author bborn
   //! \date 06/08
   class TimIntImpl : public TimInt
   {
-
-  public:
-
+   public:
     //! @name Construction
     //@{
 
     //! Constructor
-    TimIntImpl(
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& tdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretization
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-      );
+    TimIntImpl(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& tdynparams,       //!< input parameters
+        const Teuchos::ParameterList& xparams,          //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,       //!< current discretization
+        Teuchos::RCP<LINALG::Solver> solver,            //!< the solver
+        Teuchos::RCP<IO::DiscretizationWriter> output   //!< the output
+    );
 
     //! Destructor
     virtual ~TimIntImpl() { ; }
@@ -196,9 +197,8 @@ namespace THR
     //! This handles the iterative update of the current
     //! temperature \f$T_{n+1}\f$ with the residual temperature
     //! The temperature rate follow on par.
-    void UpdateIter(
-      const int iter  //!< iteration counter
-      );
+    void UpdateIter(const int iter  //!< iteration counter
+    );
 
     //! Update iteration incrementally
     //!
@@ -212,8 +212,8 @@ namespace THR
     //! Update iteration incrementally with prescribed residual
     //! temperatures
     void UpdateIterIncrementally(
-      const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
-      );
+        const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
+    );
 
     //! Update iteration iteratively
     //!
@@ -258,15 +258,13 @@ namespace THR
 
     //! Contains text to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText(
-      FILE* ofile  //!< output file handle
-      );
+    void PrintNewtonIterText(FILE* ofile  //!< output file handle
+    );
 
     //! Contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(
-      FILE* ofile  //!< output file handle
-      );
+    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    );
 
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
@@ -275,9 +273,8 @@ namespace THR
     void PrintStep();
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText(
-      FILE* ofile  //!< output file handle
-      );
+    void PrintStepText(FILE* ofile  //!< output file handle
+    );
 
     //@}
 
@@ -336,8 +333,8 @@ namespace THR
 
     //! Set residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     void SetTempResidual(
-      const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
-      )
+        const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
+    )
     {
       if (tempi != Teuchos::null) tempi_->Update(1.0, *tempi, 0.0);
     }
@@ -350,8 +347,7 @@ namespace THR
 
     //@}
 
-  protected:
-
+   protected:
     //! copy constructor is NOT wanted
     TimIntImpl(const TimIntImpl& old);
 
@@ -364,33 +360,34 @@ namespace THR
     //@{
     enum INPAR::THR::NonlinSolTech itertype_;  //!< kind of iteration technique
                                                //!< or non-linear solution technique
-    enum INPAR::THR::ConvNorm normtypetempi_; //!< convergence check for residual temperatures
-    enum INPAR::THR::ConvNorm normtypefres_; //!< convergence check for residual forces
+    enum INPAR::THR::ConvNorm normtypetempi_;  //!< convergence check for residual temperatures
+    enum INPAR::THR::ConvNorm normtypefres_;   //!< convergence check for residual forces
 
-    enum INPAR::THR::BinaryOp combtempifres_; //!< binary operator to combine temperatures and forces
+    enum INPAR::THR::BinaryOp
+        combtempifres_;  //!< binary operator to combine temperatures and forces
 
-    enum INPAR::THR::VectorNorm iternorm_;  //!< vector norm to check with
-    int itermax_;  //!< maximally permitted iterations
-    int itermin_;  //!< minimally requested iterations
-    enum INPAR::THR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
-    double toltempi_;  //!< tolerance residual temperatures
-    double tolfres_;  //!< tolerance force residual
-    int iter_;  //!< iteration step
-    double normcharforce_;  //!< characteristic norm for residual force
-    double normchartemp_;  //!< characteristic norm for residual temperatures
-    double normfres_;  //!< norm of residual forces
-    double normtempi_;  //!< norm of residual temperatures
-    Teuchos::RCP<Epetra_Vector> tempi_;  //!< residual temperatures
-                                        //!< \f$\Delta{T}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
-                                           //!< i.e. the incremental temperature
-    Epetra_Time timer_;  //!< timer for solution technique
-    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;//!< mortar coupling adapter
+    enum INPAR::THR::VectorNorm iternorm_;    //!< vector norm to check with
+    int itermax_;                             //!< maximally permitted iterations
+    int itermin_;                             //!< minimally requested iterations
+    enum INPAR::THR::DivContAct divcontype_;  // what to do when nonlinear solution fails
+    double toltempi_;                         //!< tolerance residual temperatures
+    double tolfres_;                          //!< tolerance force residual
+    int iter_;                                //!< iteration step
+    double normcharforce_;                    //!< characteristic norm for residual force
+    double normchartemp_;                     //!< characteristic norm for residual temperatures
+    double normfres_;                         //!< norm of residual forces
+    double normtempi_;                        //!< norm of residual temperatures
+    Teuchos::RCP<Epetra_Vector> tempi_;       //!< residual temperatures
+                                              //!< \f$\Delta{T}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> tempinc_;     //!< sum of temperature vectors already applied,
+                                              //!< i.e. the incremental temperature
+    Epetra_Time timer_;                       //!< timer for solution technique
+    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
     //@}
 
     //! @name Various global forces
     //@{
-    Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
+    Teuchos::RCP<Epetra_Vector> fres_;    //!< force residual used for solution
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
     //@}
 

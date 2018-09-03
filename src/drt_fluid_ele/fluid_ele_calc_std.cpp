@@ -24,21 +24,21 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance( bool create )
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(
+    bool create)
 {
-  static FluidEleCalcStd<distype> * instance;
-  if ( create )
+  static FluidEleCalcStd<distype>* instance;
+  if (create)
   {
-    if ( instance==NULL )
+    if (instance == NULL)
     {
       instance = new FluidEleCalcStd<distype>();
     }
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
+    if (instance != NULL) delete instance;
     instance = NULL;
   }
   return instance;
@@ -51,7 +51,7 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+  Instance(false);
 }
 
 
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
-  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
+    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
 }
 

@@ -16,20 +16,20 @@
 #include "../drt_inpar/inpar_beampotential.H"
 
 // forward declaration
-namespace BEAMINTERACTION {
-
-class BeamToBeamPotentialRuntimeVtkParams;
+namespace BEAMINTERACTION
+{
+  class BeamToBeamPotentialRuntimeVtkParams;
 
   /*!
    *  */
   class BeamPotentialParams
   {
-  public:
+   public:
     //! constructor
     BeamPotentialParams();
 
     //! destructor
-    virtual ~BeamPotentialParams() {};
+    virtual ~BeamPotentialParams(){};
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -38,16 +38,10 @@ class BeamToBeamPotentialRuntimeVtkParams;
     void Setup();
 
     //! returns the isinit_ flag
-    inline bool IsInit() const
-    {
-      return isinit_;
-    }
+    inline bool IsInit() const { return isinit_; }
 
     //! returns the issetup_ flag
-    inline bool IsSetup() const
-    {
-      return issetup_;
-    }
+    inline bool IsSetup() const { return issetup_; }
 
     //! asserts the init and setup status
     void ThrowErrorIfNotInitAndSetup() const;
@@ -118,18 +112,17 @@ class BeamToBeamPotentialRuntimeVtkParams;
       return params_runtime_vtk_BTB_potential_;
     }
 
-  private:
-
+   private:
     bool isinit_;
 
     bool issetup_;
 
     //! exponents of the summands of a potential law in form of a power law
     // Todo maybe change to integer?
-    Teuchos::RCP<std::vector<double> > pot_law_exponents_;
+    Teuchos::RCP<std::vector<double>> pot_law_exponents_;
 
     //! prefactors of the summands of a potential law in form of a power law
-    Teuchos::RCP<std::vector<double> > pot_law_prefactors_;
+    Teuchos::RCP<std::vector<double>> pot_law_prefactors_;
 
     //! type of applied potential (volume, surface)
     enum INPAR::BEAMPOTENTIAL::BeamPotentialType potential_type_;
@@ -153,10 +146,10 @@ class BeamToBeamPotentialRuntimeVtkParams;
     bool vtk_output_;
 
     //! data container for input parameters related to VTK output of beam contact at runtime
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams> params_runtime_vtk_BTB_potential_;
-
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeVtkParams>
+        params_runtime_vtk_BTB_potential_;
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

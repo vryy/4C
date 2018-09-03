@@ -14,49 +14,50 @@
 #ifndef NOX_NLN_DIRECTION_NEWTON_H_
 #define NOX_NLN_DIRECTION_NEWTON_H_
 
-#include <NOX_Direction_Newton.H>   // base class
+#include <NOX_Direction_Newton.H>  // base class
 
 // forward declarations...
-namespace NOX {
+namespace NOX
+{
   class Utils;
-namespace Abstract {
-  class Vector;
-  class Group;
-} // namespace Abstract
-namespace Solver {
-  class Generic;
-} // namespace Solver
-
-namespace NLN {
-namespace Direction {
-  class Newton : public NOX::Direction::Newton
+  namespace Abstract
   {
-  public:
-    //! Constructor
-    Newton(const Teuchos::RCP<NOX::GlobalData>& gd,
-        Teuchos::ParameterList& params);
+    class Vector;
+    class Group;
+  }  // namespace Abstract
+  namespace Solver
+  {
+    class Generic;
+  }  // namespace Solver
 
-    //! Destructor
-    virtual ~Newton() {};
+  namespace NLN
+  {
+    namespace Direction
+    {
+      class Newton : public NOX::Direction::Newton
+      {
+       public:
+        //! Constructor
+        Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
-    // derived
-    virtual bool compute(
-        NOX::Abstract::Vector& dir,
-        NOX::Abstract::Group& grp,
-        const NOX::Solver::Generic& solver);
+        //! Destructor
+        virtual ~Newton(){};
 
-  private:
-    // throw NOX error
-    void throwError(const std::string& functionName, const std::string& errorMsg);
+        // derived
+        virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+            const NOX::Solver::Generic& solver);
 
-  private:
-    //! NOX_Utils pointer
-    Teuchos::RCP<NOX::Utils> utils_;
+       private:
+        // throw NOX error
+        void throwError(const std::string& functionName, const std::string& errorMsg);
 
-  };
-} // namespace Direction
-} // namespace NLN
-} // namespace NOX
+       private:
+        //! NOX_Utils pointer
+        Teuchos::RCP<NOX::Utils> utils_;
+      };
+    }  // namespace Direction
+  }    // namespace NLN
+}  // namespace NOX
 
 
 #endif /* NOX_NLN_DIRECTION_NEWTON_H_ */

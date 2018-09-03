@@ -13,7 +13,8 @@
 
 #ifdef HAVE_MueLu
 
-namespace MueLu {
+namespace MueLu
+{
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class SelectiveSaPFactory;
 }
@@ -22,6 +23,6 @@ namespace MueLu {
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 #endif
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_SELECTIVESAPFACTORY_FWD_HPP_ */

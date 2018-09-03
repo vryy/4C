@@ -32,18 +32,13 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::LineSearchFactory::LineSearchFactory()
-{
-  return;
-}
+NLNSOL::LineSearchFactory::LineSearchFactory() { return; }
 
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<NLNSOL::LineSearchBase> NLNSOL::LineSearchFactory::Create(
-    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
-    const std::string listname)
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, const std::string listname)
 {
-  const std::string lstype =
-      config->GetParameter<std::string>(listname, "line search: type");
+  const std::string lstype = config->GetParameter<std::string>(listname, "line search: type");
   if (lstype == "brute force")
   {
     return Teuchos::rcp(new NLNSOL::LineSearchBruteForce());

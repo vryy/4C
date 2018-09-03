@@ -20,25 +20,23 @@
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-
-/// Input parameters for poroelasticity with scalar transport
-namespace PORO_SCATRA
-{
-
-  /// Type of coupling strategy for poro scatra problems
-  enum SolutionSchemeOverFields
+  /// Input parameters for poroelasticity with scalar transport
+  namespace PORO_SCATRA
   {
-    Monolithic,
-    Part_ScatraToPoro,
-    Part_PoroToScatra,
-    Part_TwoWay
- //   Monolithic
-  };
+    /// Type of coupling strategy for poro scatra problems
+    enum SolutionSchemeOverFields
+    {
+      Monolithic,
+      Part_ScatraToPoro,
+      Part_PoroToScatra,
+      Part_TwoWay
+      //   Monolithic
+    };
 
-  /// set the poroscatra parameters
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    /// set the poroscatra parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}  // namespace PORO_SCATRA
+  }  // namespace PORO_SCATRA
 
 }  // namespace INPAR
 

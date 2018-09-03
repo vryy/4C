@@ -13,7 +13,13 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*
  | Coupling Methods                                                                  |
@@ -26,46 +32,47 @@ enum _FPSI_COUPLING
 
 namespace INPAR
 {
-
-/// Input parameters for fluid porous structure interaction
-namespace FPSI
-{
-  // type of partitioned coupling for FPSI problems
-  enum PartitionedCouplingMethod
+  /// Input parameters for fluid porous structure interaction
+  namespace FPSI
   {
-   RobinNeumann,
-   monolithic,
-   nocoupling
-  };
+    // type of partitioned coupling for FPSI problems
+    enum PartitionedCouplingMethod
+    {
+      RobinNeumann,
+      monolithic,
+      nocoupling
+    };
 
-  // type of norm to check for convergence
-  enum ConvergenceNorm
-  {
-    absoluteconvergencenorm, //compare absolute value with single tolerance
-    absoluteconvergencenorm_sys_split, //compare absolute value with correction of systemsize  with different tolerances for each field
-    relativconvergencenorm_sys //compare relative value with correction of systemsize with single tolerance
-  };
+    // type of norm to check for convergence
+    enum ConvergenceNorm
+    {
+      absoluteconvergencenorm,            // compare absolute value with single tolerance
+      absoluteconvergencenorm_sys_split,  // compare absolute value with correction of systemsize
+                                          // with different tolerances for each field
+      relativconvergencenorm_sys  // compare relative value with correction of systemsize with
+                                  // single tolerance
+    };
 
-  // type of norm to check for convergence
-  enum BinaryOp
-  {
-    bop_and,
-    bop_or
-  };
+    // type of norm to check for convergence
+    enum BinaryOp
+    {
+      bop_and,
+      bop_or
+    };
 
-  enum FluidFieldHierachy
-  {
-    fluid,
-    porofluid
-  };
+    enum FluidFieldHierachy
+    {
+      fluid,
+      porofluid
+    };
 
-  /// set the fpsi parameters
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    /// set the fpsi parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  /// set specific fpsi conditions
-  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    /// set specific fpsi conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
-}  // namespace FPSI
+  }  // namespace FPSI
 
 }  // namespace INPAR
 

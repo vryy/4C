@@ -28,12 +28,12 @@ Maintainer: Matthias Mayr
 namespace NLNSOL
 {
   class LineSearchBase;
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -55,8 +55,7 @@ namespace NLNSOL
    */
   class LineSearchFactory
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -80,17 +79,15 @@ namespace NLNSOL
      *  \author mayr.mt \date 10/2015
      */
     virtual Teuchos::RCP<NLNSOL::LineSearchBase> Create(
-        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
-        const std::string listname ///< name of sublist with configuration of line search algorithm
-        );
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,  ///< configuration of nonlinear solver
+        const std::string listname  ///< name of sublist with configuration of line search algorithm
+    );
 
     //@}
 
-  protected:
-
-  private:
-
-  }; // class LineSearchFactory
-} // namespace NLNSOL
+   protected:
+   private:
+  };  // class LineSearchFactory
+}  // namespace NLNSOL
 
 #endif /* LINESEARCH_FACTORY_H */

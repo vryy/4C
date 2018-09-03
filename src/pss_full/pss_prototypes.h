@@ -27,8 +27,7 @@
  | redefinition of malloc FAST version                        m.gee 2/02|
  | bhaves exactly like malloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
-void *CCAMALLOC(
-    unsigned   size);
+void *CCAMALLOC(unsigned size);
 
 /*----------------------------------------------------------------------*
  | redefinition of calloc DEBUG version                   m.gee 2/02    |
@@ -38,9 +37,7 @@ void *CCAMALLOC(
  | redefinition of calloc FAST version                    m.gee 2/02    |
  | bhaves exactly like calloc conform to ansi c standard                |
  *----------------------------------------------------------------------*/
-void *CCACALLOC(
-    INT    num,
-    INT    size);
+void *CCACALLOC(INT num, INT size);
 
 /*----------------------------------------------------------------------*
  | redefinition of realloc DEBUG version                  m.gee 2/02    |
@@ -50,9 +47,7 @@ void *CCACALLOC(
  | redefinition of realloc FAST version                  m.gee 2/02     |
  | bhaves exactly like realloc conform to ansi c standard               |
  *----------------------------------------------------------------------*/
-void *CCAREALLOC(
-    void    *oldptr,
-    INT      size);
+void *CCAREALLOC(void *oldptr, INT size);
 
 /*----------------------------------------------------------------------*
  | redefinition of free DEBUG version                     m.gee 2/02    |
@@ -62,8 +57,7 @@ void *CCAREALLOC(
  | redefinition of free FAST version                      m.gee 2/02    |
  | bhaves exactly like free conform to ansi c standard                  |
  *----------------------------------------------------------------------*/
-void *CCAFREE(
-    void     *oldptr);
+void *CCAFREE(void *oldptr);
 
 /*----------------------------------------------------------------------*
  | define array                                           m.gee 8/00    |
@@ -82,12 +76,7 @@ void *CCAFREE(
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* amdef(
-    char     *namstr,
-    ARRAY    *a,
-    INT       fdim,
-    INT       sdim,
-    char      typstr[]);
+void *amdef(char *namstr, ARRAY *a, INT fdim, INT sdim, char typstr[]);
 
 /*----------------------------------------------------------------------*
  | redefine array                                         m.gee 8/00    |
@@ -119,19 +108,14 @@ void* amdef(
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* amredef(
-    ARRAY     *a,
-    INT        newfdim,
-    INT        newsdim,
-    char       newtypstr[]);
+void *amredef(ARRAY *a, INT newfdim, INT newsdim, char newtypstr[]);
 
 /*----------------------------------------------------------------------*
  | delete         array                                   m.gee 8/00    |
  | frees the vector or array located in the ARRAY                       |
  | *array (input) the adress of the structure holding the vector/array  |
  *----------------------------------------------------------------------*/
-void  amdel(
-    ARRAY     *array);
+void amdel(ARRAY *array);
 
 /*----------------------------------------------------------------------*
  | initialize an array by zero                            m.gee 8/00    |
@@ -139,8 +123,7 @@ void  amdel(
  | put 0 to integer fields, 0.0 to DOUBLE fields                        |
  | ARRAY *array (input) adress of the ARRAY array                       |
  *----------------------------------------------------------------------*/
-void  amzero(
-    ARRAY     *array);
+void amzero(ARRAY *array);
 
 /*----------------------------------------------------------------------*
  | multiply an array by a scalar                          m.gee 6/01    |
@@ -151,9 +134,7 @@ void  amzero(
  |                parameter list                                        |
  |                example: amscal(&val,(void*)(&ione));                 |
  *----------------------------------------------------------------------*/
-void  amscal(
-    ARRAY     *array,
-    void      *value);
+void amscal(ARRAY *array, void *value);
 
 /*----------------------------------------------------------------------*
  | initialize an array by value                           m.gee 6/01    |
@@ -164,9 +145,7 @@ void  amscal(
  |                parameter list                                        |
  |                example: aminit(&val,(void*)(&ione));                 |
  *----------------------------------------------------------------------*/
-void  aminit(
-    ARRAY     *array,
-    void      *value);
+void aminit(ARRAY *array, void *value);
 
 /*----------------------------------------------------------------------*
  | allocate and make a copy of ARRAY                      m.gee 8/00    |
@@ -177,9 +156,7 @@ void  aminit(
  |                            field is allocated in                     |
  | return value: adress of the new field                                |
  *----------------------------------------------------------------------*/
-void* am_alloc_copy(
-    ARRAY     *array_from,
-    ARRAY     *array_to);
+void *am_alloc_copy(ARRAY *array_from, ARRAY *array_to);
 
 /*----------------------------------------------------------------------*
  | make a copy of ARRAY,                                  m.gee 6/01    |
@@ -190,9 +167,7 @@ void* am_alloc_copy(
  | user must provide fields of matching type and size!                  |
  | return value: array_to->a.iv                                         |
  *----------------------------------------------------------------------*/
-void* amcopy(
-    ARRAY     *array_from,
-    ARRAY     *array_to);
+void *amcopy(ARRAY *array_from, ARRAY *array_to);
 
 /*----------------------------------------------------------------------*
  |                                                        m.gee 2/02    |
@@ -210,13 +185,9 @@ void* amcopy(
  | ==1 array_to is initialized to zero                                  |
  | else values are assembled to array_to                                |
  *----------------------------------------------------------------------*/
-void  amadd(
-    ARRAY      *array_to,
-    ARRAY      *array_from,
-    DOUBLE      factor,
-    INT         init);
+void amadd(ARRAY *array_to, ARRAY *array_from, DOUBLE factor, INT init);
 
-void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
+void amprint(FILE *err, ARRAY *a, INT fdim, INT sdim);
 
 /*----------------------------------------------------------------------*
  | define 4D array                                       m.gee 12/01    |
@@ -238,14 +209,7 @@ void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
  | return value:                                                        |
  | void pointer to allocated memory                                     |
  *----------------------------------------------------------------------*/
-void* am4def(
-    char     *namstr,
-    ARRAY4D  *a,
-    INT       fdim,
-    INT       sdim,
-    INT       tdim,
-    INT       fodim,
-    char      typstr[]);
+void *am4def(char *namstr, ARRAY4D *a, INT fdim, INT sdim, INT tdim, INT fodim, char typstr[]);
 
 /*----------------------------------------------------------------------*
  | delete 4dimensional array                             m.gee 12/01    |
@@ -253,40 +217,32 @@ void* am4def(
  | ARRAY4D *array    (input)                adress of array-structure   |
  | no return value                                                      |
  *----------------------------------------------------------------------*/
-void  am4del(
-    ARRAY4D    *array);
+void am4del(ARRAY4D *array);
 
 /*----------------------------------------------------------------------*
  | initialize an 4D array by zero                           m.gee 12/01 |
  | see head of amzero                                                   |
  *----------------------------------------------------------------------*/
-void  am4zero(
-    ARRAY4D    *array);
+void am4zero(ARRAY4D *array);
 
 /*----------------------------------------------------------------------*
  | initialize a 4D array by value                         m.gee 6/01    |
  | see head of aminit                                                   |
  *----------------------------------------------------------------------*/
-void  am4init(
-    ARRAY4D     *array,
-    void        *value);
+void am4init(ARRAY4D *array, void *value);
 
 /*----------------------------------------------------------------------*
  | allocate and make a copy of ARRAY4D                     m.gee 12/01  |
  | see head of am_alloc_copy                                            |
  *----------------------------------------------------------------------*/
-void* am4_alloc_copy(
-    ARRAY4D      *array_from,
-    ARRAY4D      *array_to);
+void *am4_alloc_copy(ARRAY4D *array_from, ARRAY4D *array_to);
 
 /*----------------------------------------------------------------------*
  | make a copy of ARRAY4D                                  m.gee 12/01  |
  | the given arrays must be of equal type and size                      |
  | see head of amcopy                                                   |
  *----------------------------------------------------------------------*/
-void* am4copy(
-    ARRAY4D     *array_from,
-    ARRAY4D     *array_to);
+void *am4copy(ARRAY4D *array_from, ARRAY4D *array_to);
 
 /*----------------------------------------------------------------------*
  | redefine of ARRAY4D                                     m.gee 12/01  |
@@ -297,15 +253,10 @@ void* am4copy(
  |          (unlike in am4def which does NOT initialize)                |
  |        usage similar to amredef                                      |
  *----------------------------------------------------------------------*/
-void* am4redef(
-    ARRAY4D     *array,
-    INT          newfdim,
-    INT          newsdim,
-    INT          newtdim,
-    INT          newfodim);
+void *am4redef(ARRAY4D *array, INT newfdim, INT newsdim, INT newtdim, INT newfodim);
 
 
-void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
+void amprint(FILE *err, ARRAY *a, INT fdim, INT sdim);
 
 
 #endif

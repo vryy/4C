@@ -30,11 +30,11 @@ namespace DRT
   class Discretization;
   class Node;
 
-namespace ELEMENTS
-{
-  class Beam3Base;
-}
-}
+  namespace ELEMENTS
+  {
+    class Beam3Base;
+  }
+}  // namespace DRT
 
 
 /*
@@ -45,17 +45,14 @@ namespace ELEMENTS
 */
 class PostVtuWriterNode : public PostVtuWriter
 {
-public:
+ public:
   //! constructor. Initializes the writer to a certain field.
-  PostVtuWriterNode (PostField* field,
-             const std::string &name);
+  PostVtuWriterNode(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostVtuWriterNode()
-  {}
+  virtual ~PostVtuWriterNode() {}
 
-protected:
-
+ protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const;
 
@@ -66,7 +63,7 @@ protected:
   virtual const std::vector<std::string>& WriterPPieceTags() const;
 
   //! Give every writer a chance to do preparations before writing
-  virtual void WriterPrepTimestep() {};
+  virtual void WriterPrepTimestep(){};
 
   //! Return the parallel file suffix including the dot for this file type
   virtual const std::string& WriterPSuffix() const;
@@ -78,73 +75,47 @@ protected:
   virtual const std::string& WriterSuffix() const;
 
   //! Write a single result step
-  virtual void WriteDofResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_Vector>&                            data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf,
-      const int                                                     from,
-      const bool                                                    fillzeros
-      );
+  virtual void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from,
+      const bool fillzeros);
 
   //! Write a single result step
-  virtual void WriteNodalResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_MultiVector>&                       data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf
-      );
+  virtual void WriteNodalResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf);
 
   //! Write a single result step
-  virtual void WriteElementResultStep(
-     std::ofstream&                                                file,
-     const Teuchos::RCP<Epetra_MultiVector>&                       data,
-     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-     const std::string&                                            groupname,
-     const std::string&                                            name,
-     const int                                                     numdf,
-     const int                                                     from
-     );
+  virtual void WriteElementResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from);
 
   //! write the geometry of one time step
   virtual void WriteGeo();
 
   //! write the geometry of Nurbs Element
-  virtual void WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& celltypes,
-      int& outNodeId,std::vector<int32_t>& celloffset,std::vector<double>& coordinates);
+  virtual void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
+      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates);
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
-  virtual void WriteGeoBeamEle(
-      const DRT::ELEMENTS::Beam3Base* beamele,
-      std::vector<uint8_t>&           celltypes,
-      int&                            outNodeId,
-      std::vector<int32_t>&           celloffset,
-      std::vector<double>&            coordinates
-      );
+  virtual void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+      std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
+      std::vector<double>& coordinates);
 
   //! Write a single result step for one Nurbs Element
-  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
-      std::vector<double>& solution,Teuchos::RCP<Epetra_Vector> ghostedData,
-      const int from, const bool fillzeros);
+  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
+      std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+      const bool fillzeros);
 
-  virtual void WriteDofResultStepBeamEle(
-      const DRT::ELEMENTS::Beam3Base* beamele,
-      const int&                      ncomponents,
-      const int&                      numdf,
-      std::vector<double>&            solution,
-      Teuchos::RCP<Epetra_Vector>&    ghostedData,
-      const int&                      from,
-      const bool                      fillzeros
-      );
+  virtual void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+      const int& ncomponents, const int& numdf, std::vector<double>& solution,
+      Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
 
   //! Write a single result step for one Nurbs Element
-  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
-      std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData);
-
+  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
+      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData);
 };
 
 #endif

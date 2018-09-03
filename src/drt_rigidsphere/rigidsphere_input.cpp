@@ -16,13 +16,12 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Rigidsphere::ReadElement(const std::string& eletype,
-                                                  const std::string& distype,
-                                                  DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Rigidsphere::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
- //currently only rotationally symmetric profiles for beam --> Iyy = Izz
- linedef->ExtractDouble("RADIUS",radius_);
- linedef->ExtractDouble("DENSITY",rho_);
+  // currently only rotationally symmetric profiles for beam --> Iyy = Izz
+  linedef->ExtractDouble("RADIUS", radius_);
+  linedef->ExtractDouble("DENSITY", rho_);
 
   return (true);
 }

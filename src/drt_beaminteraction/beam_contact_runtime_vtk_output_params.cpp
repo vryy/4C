@@ -18,13 +18,13 @@
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::BeamContactRuntimeVtkOutputParams()
-: isinit_(false),
-  issetup_(false),
-  output_data_format_( INPAR::BEAMCONTACT::vague ),
-  output_interval_steps_(-1),
-  output_every_iteration_(false),
-  output_forces_(false),
-  output_gaps_(false)
+    : isinit_(false),
+      issetup_(false),
+      output_data_format_(INPAR::BEAMCONTACT::vague),
+      output_interval_steps_(-1),
+      output_every_iteration_(false),
+      output_forces_(false),
+      output_gaps_(false)
 {
   // empty constructor
 }
@@ -52,22 +52,20 @@ void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Setup()
   /****************************************************************************/
   // get and check required parameters
   /****************************************************************************/
-  output_data_format_ =
-      DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OutputDataFormat>(
-          beam_contact_vtk_paramslist, "OUTPUT_DATA_FORMAT" );
+  output_data_format_ = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OutputDataFormat>(
+      beam_contact_vtk_paramslist, "OUTPUT_DATA_FORMAT");
 
   output_interval_steps_ = beam_contact_vtk_paramslist.get<int>("INTERVAL_STEPS");
 
   output_every_iteration_ =
-      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "EVERY_ITERATION");
+      (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "EVERY_ITERATION");
 
   /****************************************************************************/
   output_forces_ =
-      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "CONTACT_FORCES");
+      (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "CONTACT_FORCES");
 
   /****************************************************************************/
-  output_gaps_ =
-      (bool) DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "GAPS");
+  output_gaps_ = (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "GAPS");
 
 
   issetup_ = true;
@@ -77,14 +75,12 @@ void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::ThrowErrorIfNotInitAndSetup() const
 {
-  if (!IsInit() or !IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::ThrowErrorIfNotInit() const
 {
-  if (!IsInit())
-    dserror("Init() has not been called, yet!");
+  if (!IsInit()) dserror("Init() has not been called, yet!");
 }

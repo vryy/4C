@@ -27,7 +27,6 @@
 */
 namespace ELCH
 {
-
   /// ELCH algorithm base
   /*!
 
@@ -38,22 +37,19 @@ namespace ELCH
    */
   class Algorithm : public SCATRA::ScaTraAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    explicit Algorithm(
-        const Epetra_Comm& comm,                     ///< communicator
-        const Teuchos::ParameterList& elchcontrol,   ///< elch parameter list
-        const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
-        const Teuchos::ParameterList& fdyn,          ///< fluid parameter list
-        const Teuchos::ParameterList& solverparams   ///< solver parameter list
-        );
+    explicit Algorithm(const Epetra_Comm& comm,     ///< communicator
+        const Teuchos::ParameterList& elchcontrol,  ///< elch parameter list
+        const Teuchos::ParameterList& scatradyn,    ///< scatra parameter list
+        const Teuchos::ParameterList& fdyn,         ///< fluid parameter list
+        const Teuchos::ParameterList& solverparams  ///< solver parameter list
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-  protected:
-
+   protected:
     /// provide information about initial field
     void PrepareTimeLoop();
 
@@ -63,6 +59,6 @@ namespace ELCH
     /// convergence check for natural convection solver
     bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
   };
-} // namespace ELCH
+}  // namespace ELCH
 
-#endif // ELCH_ALGORITHM_H
+#endif  // ELCH_ALGORITHM_H

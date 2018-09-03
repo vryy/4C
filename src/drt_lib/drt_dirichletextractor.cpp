@@ -26,11 +26,11 @@
 void DRT::DirichletExtractor::Setup(const DRT::Discretization& dis)
 {
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector( Teuchos::rcp( new DRT::UTILS::DirichletSelector( dis ) ) );
-  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::DirichletSelector(dis)));
+  mcs.SetupExtractor(dis, *dis.DofRowMap(), *this);
 }
 
-void DRT::DirichletExtractor::ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual ) const
+void DRT::DirichletExtractor::ZeroDirichlets(Teuchos::RCP<Epetra_Vector> residual) const
 {
-  DirichletPutScalar( *residual, 0.0 );
+  DirichletPutScalar(*residual, 0.0);
 }

@@ -39,20 +39,19 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 /*--------------------------------------------------------------------*
  | initialize multi-scale scalar transport material        fang 02/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Initialize(
-    const int   ele_id,   //!< macro-scale element ID
-    const int   gp_id     //!< macro-scale Gauss point ID
-    )
+void MAT::ScatraMultiScale::Initialize(const int ele_id,  //!< macro-scale element ID
+    const int gp_id                                       //!< macro-scale Gauss point ID
+)
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // initialize multi-scale scalar transport material
-  if(matgp_.find(gp_id) == matgp_.end())
+  if (matgp_.find(gp_id) == matgp_.end())
   {
-    // instantiate and initialize multi-scale scalar transport submaterial at macro-scale Gauss point
-    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id,gp_id,MicroDisNum()));
+    // instantiate and initialize multi-scale scalar transport submaterial at macro-scale Gauss
+    // point
+    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id, gp_id, MicroDisNum()));
     matgp_[gp_id]->Init();
   }
 
@@ -63,14 +62,12 @@ void MAT::ScatraMultiScale::Initialize(
 /*--------------------------------------------------------------------*
  | prepare time step on micro scale                        fang 02/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::PrepareTimeStep(
-    const int                    gp_id,        //!< macro-scale Gauss point ID
-    const std::vector<double>&   phinp_macro   //!< macro-scale state variables
+void MAT::ScatraMultiScale::PrepareTimeStep(const int gp_id,  //!< macro-scale Gauss point ID
+    const std::vector<double>& phinp_macro                    //!< macro-scale state variables
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // prepare time step on micro scale
   matgp_.at(gp_id)->PrepareTimeStep(phinp_macro);
@@ -82,20 +79,19 @@ void MAT::ScatraMultiScale::PrepareTimeStep(
 /*--------------------------------------------------------------------*
  | evaluate multi-scale scalar transport material          fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Evaluate(
-    const int                    gp_id,           //!< macro-scale Gauss point ID
-    const std::vector<double>&   phinp_macro,     //!< macro-scale state variables
-    double&                      q_micro,         //!< micro-scale flux
-    std::vector<double>&         dq_dphi_micro,   //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
-    const bool                   solve            //!< flag indicating whether micro-scale problem should be solved
+void MAT::ScatraMultiScale::Evaluate(const int gp_id,  //!< macro-scale Gauss point ID
+    const std::vector<double>& phinp_macro,            //!< macro-scale state variables
+    double& q_micro,                                   //!< micro-scale flux
+    std::vector<double>&
+        dq_dphi_micro,  //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
+    const bool solve    //!< flag indicating whether micro-scale problem should be solved
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // evaluate multi-scale scalar transport submaterial at macro-scale Gauss point
-  matgp_.at(gp_id)->Evaluate(phinp_macro,q_micro,dq_dphi_micro,solve);
+  matgp_.at(gp_id)->Evaluate(phinp_macro, q_micro, dq_dphi_micro, solve);
 
   return;
 }
@@ -105,12 +101,11 @@ void MAT::ScatraMultiScale::Evaluate(
  | evaluate mean concentration on micro scale              fang 08/17 |
  *--------------------------------------------------------------------*/
 double MAT::ScatraMultiScale::EvaluateMeanConcentration(
-    const int   gp_id   //!< macro-scale Gauss point ID
+    const int gp_id  //!< macro-scale Gauss point ID
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // evaluate mean concentration on micro scale
   return matgp_.at(gp_id)->EvaluateMeanConcentration();
@@ -121,12 +116,11 @@ double MAT::ScatraMultiScale::EvaluateMeanConcentration(
  | evaluate mean concentration time derivative on micro scale   fang 03/18 |
  *-------------------------------------------------------------------------*/
 double MAT::ScatraMultiScale::EvaluateMeanConcentrationTimeDerivative(
-    const int   gp_id   //!< macro-scale Gauss point ID
+    const int gp_id  //!< macro-scale Gauss point ID
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // evaluate mean concentration time derivative on micro scale
   return matgp_.at(gp_id)->EvaluateMeanConcentrationTimeDerivative();
@@ -136,13 +130,11 @@ double MAT::ScatraMultiScale::EvaluateMeanConcentrationTimeDerivative(
 /*--------------------------------------------------------------------*
  | update multi-scale scalar transport material            fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Update(
-    const int   gp_id   //!< macro-scale Gauss point ID
+void MAT::ScatraMultiScale::Update(const int gp_id  //!< macro-scale Gauss point ID
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // update multi-scale scalar transport submaterial at macro-scale Gauss point
   matgp_.at(gp_id)->Update();
@@ -154,13 +146,11 @@ void MAT::ScatraMultiScale::Update(
 /*--------------------------------------------------------------------*
  | create output on micro scale                            fang 02/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Output(
-    const int   gp_id   //!< macro-scale Gauss point ID
+void MAT::ScatraMultiScale::Output(const int gp_id  //!< macro-scale Gauss point ID
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // create output on micro scale
   matgp_.at(gp_id)->Output();
@@ -172,13 +162,11 @@ void MAT::ScatraMultiScale::Output(
 /*--------------------------------------------------------------------*
  | read restart on micro scale                             fang 03/16 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::ReadRestart(
-    const int   gp_id   //!< macro-scale Gauss point ID
+void MAT::ScatraMultiScale::ReadRestart(const int gp_id  //!< macro-scale Gauss point ID
     ) const
 {
   // safety check
-  if(gp_id < 0)
-    dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // read restart on micro scale
   matgp_.at(gp_id)->ReadRestart();

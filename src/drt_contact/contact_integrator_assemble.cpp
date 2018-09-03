@@ -34,16 +34,15 @@
  |  This method assembles the contribution of a 1D/2D slave and master  |
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
-                                      MORTAR::MortarElement& sele,
-                                      Epetra_SerialDenseVector& gseg)
+bool CONTACT::CoIntegrator::AssembleG(
+    const Epetra_Comm& comm, MORTAR::MortarElement& sele, Epetra_SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
   if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
-  for (int slave=0;slave<sele.NumNode();++slave)
+  for (int slave = 0; slave < sele.NumNode(); ++slave)
   {
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
 
@@ -73,16 +72,15 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
  |  Assemble g~ contribution (2D / 3D)                        popp 02/10|
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
-                                      MORTAR::IntElement& sintele,
-                                      Epetra_SerialDenseVector& gseg)
+bool CONTACT::CoIntegrator::AssembleG(
+    const Epetra_Comm& comm, MORTAR::IntElement& sintele, Epetra_SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
   DRT::Node** snodes = sintele.Nodes();
   if (!snodes) dserror("ERROR: AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes
-  for (int slave=0;slave<sintele.NumNode();++slave)
+  for (int slave = 0; slave < sintele.NumNode(); ++slave)
   {
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(snodes[slave]);
 

@@ -30,28 +30,23 @@ namespace GEO
 
 namespace DRT
 {
-
   /// Alias dofset that shares dof numbers with another dofset
   /*!
-  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to nodes
-  belonging to two discretizations. This way two discretizations can assemble into the same position of the
-  system matrix.
-  As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a
-  sub-discretization, its dofs are assigned according to the dofs of the
-  source.
+  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to
+  nodes belonging to two discretizations. This way two discretizations can assemble into the same
+  position of the system matrix. As internal variable it holds a source discretization
+  (Constructor). If such a nodeset is assigned to a sub-discretization, its dofs are assigned
+  according to the dofs of the source.
 
   */
   class TransparentIndependentDofSet : public IndependentDofSet, public TransparentDofSet
   {
-  public:
-
+   public:
     /*!
     \brief Standard Constructor
     */
     explicit TransparentIndependentDofSet(
-        Teuchos::RCP<DRT::Discretization> sourcedis,
-        bool parallel
-    );
+        Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel);
 
     /*!
     \brief Destructor
@@ -63,15 +58,13 @@ namespace DRT
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     virtual int AssignDegreesOfFreedom(
-            const DRT::Discretization& dis,
-            const unsigned dspos,
-            const int start);
+        const DRT::Discretization& dis, const unsigned dspos, const int start);
 
-  protected:
-    virtual int NumDofPerNode( const DRT::Node & node ) const;
+   protected:
+    virtual int NumDofPerNode(const DRT::Node& node) const;
 
 
-  }; // class TransparentDofSet
-} //namespace
+  };  // class TransparentDofSet
+}  // namespace DRT
 
 #endif  // #ifndef  TRANSPARENTINDEPENDENTDOFSET_H

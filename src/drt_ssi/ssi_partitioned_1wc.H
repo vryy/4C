@@ -20,10 +20,9 @@ namespace SSI
 {
   class SSI_Part1WC : public SSI_Part
   {
-  public:
+   public:
     //! constructor
-    SSI_Part1WC(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! virtual destructor
     virtual ~SSI_Part1WC(){};
@@ -41,21 +40,16 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
     //! actual time loop (implemented by derived class)
-    virtual void Timeloop()=0;
+    virtual void Timeloop() = 0;
 
-  protected:
+   protected:
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true)=0;
+    void PrepareTimeStep(bool printheader = true) = 0;
 
     //! perform one time step of structure field
     void DoStructStep();
@@ -64,16 +58,15 @@ namespace SSI
     void DoScatraStep();
 
     // Flag for reading scatra result from restart files
-     bool isscatrafromfile_;
-
+    bool isscatrafromfile_;
   };
 
   class SSI_Part1WC_SolidToScatra : public SSI_Part1WC
   {
-  public:
+   public:
     //! constructor
-    SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part1WC_SolidToScatra(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! virtual destructor
     virtual ~SSI_Part1WC_SolidToScatra(){};
@@ -91,29 +84,23 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
     //! actual time loop
     void Timeloop();
 
     //! prepare time step for single fields
     void PrepareTimeStep(bool printheader = true);
-
   };
 
   class SSI_Part1WC_ScatraToSolid : public SSI_Part1WC
   {
-  public:
+   public:
     //! constructor
-    SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part1WC_ScatraToSolid(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     //! virtual destructor
     virtual ~SSI_Part1WC_ScatraToSolid(){};
@@ -131,14 +118,9 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
     //! actual time loop
     void Timeloop();
@@ -147,6 +129,6 @@ namespace SSI
     void PrepareTimeStep(bool printheader = true);
   };
 
-}
+}  // namespace SSI
 
 #endif /* SSI_PARTITIONED_1WC_H_ */

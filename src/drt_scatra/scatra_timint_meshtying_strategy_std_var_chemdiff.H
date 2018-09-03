@@ -23,18 +23,14 @@
 
 namespace SCATRA
 {
-
-class MeshtyingStrategyStdVar : public MeshtyingStrategyStd
-{
-  public:
-
+  class MeshtyingStrategyStdVar : public MeshtyingStrategyStd
+  {
+   public:
     //! constructor
-    explicit MeshtyingStrategyStdVar(
-        SCATRA::TimIntVariational* vartimint
-        );
+    explicit MeshtyingStrategyStdVar(SCATRA::TimIntVariational* vartimint);
 
     // destructor
-    virtual ~MeshtyingStrategyStdVar(){return;};
+    virtual ~MeshtyingStrategyStdVar() { return; };
 
     //! initialize system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
@@ -43,25 +39,26 @@ class MeshtyingStrategyStdVar : public MeshtyingStrategyStd
     void SetupMeshtying();
 
     //! return map extractor associated with blocks of global system matrix
-    const LINALG::MultiMapExtractor& BlockMaps() const {return *blockmaps_;};
+    const LINALG::MultiMapExtractor& BlockMaps() const { return *blockmaps_; };
 
-  protected:
-
+   protected:
     //! build null spaces associated with blocks of global system matrix
     virtual void BuildBlockNullSpaces() const;
 
     //! map extractors associated with blocks of global system matrix
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
 
-  private:
-
+   private:
     //! copy constructor
     MeshtyingStrategyStdVar(const MeshtyingStrategyStdVar& old);
 
     //! return pointer to variational time integrator after cast
-    SCATRA::TimIntVariational* VarTimInt() const {return dynamic_cast<SCATRA::TimIntVariational*>(scatratimint_);};
+    SCATRA::TimIntVariational* VarTimInt() const
+    {
+      return dynamic_cast<SCATRA::TimIntVariational*>(scatratimint_);
+    };
 
-}; // class MeshtyingStrategyStdVar
-} // namespace SCATRA
+  };  // class MeshtyingStrategyStdVar
+}  // namespace SCATRA
 
-#endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_STD_VAR_CHEMDIFF_H
+#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_STD_VAR_CHEMDIFF_H

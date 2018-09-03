@@ -42,28 +42,25 @@ void poromultiphasescatra_dyn(int restart)
   if (comm.MyPID() == 0)
   {
     POROMULTIPHASESCATRA::PrintLogo();
-    std::cout << "###################################################"
-        << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: "
-        << problem->ProblemName() << std::endl;
-    std::cout << "###################################################"
-        << std::endl;
+    std::cout << "###################################################" << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << problem->ProblemName() << std::endl;
+    std::cout << "###################################################" << std::endl;
   }
 
-  //Parameter reading
+  // Parameter reading
   // access poro multiphase scatra params list
   const Teuchos::ParameterList& poroscatraparams = problem->PoroMultiPhaseScatraDynamicParams();
   // access poro multiphase params list
   const Teuchos::ParameterList& poroparams = problem->PoroMultiPhaseDynamicParams();
   // access scatra params list
-  const Teuchos::ParameterList& structparams =  problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& structparams = problem->StructuralDynamicParams();
   // access poro fluid dynamic params list
-  const Teuchos::ParameterList& fluidparams  = problem->PoroFluidMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& fluidparams = problem->PoroFluidMultiPhaseDynamicParams();
   // access scatra dynamic params list
-  const Teuchos::ParameterList& scatraparams  = problem->ScalarTransportDynamicParams();
+  const Teuchos::ParameterList& scatraparams = problem->ScalarTransportDynamicParams();
 
   // do we perform coupling with 1D artery
-  const bool artery_coupl = DRT::INPUT::IntegralValue<int>(poroscatraparams,"ARTERY_COUPLING");
+  const bool artery_coupl = DRT::INPUT::IntegralValue<int>(poroscatraparams, "ARTERY_COUPLING");
 
   // initialize variables for dof set numbers
   int ndsporo_disp(-1);
@@ -72,56 +69,39 @@ void poromultiphasescatra_dyn(int restart)
   int ndsporofluid_scatra(-1);
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
-  POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
-      comm,
-      struct_disname,
-      fluid_disname,
-      scatra_disname,
-      ndsporo_disp,
-      ndsporo_vel,
-      ndsporo_solidpressure,
-      ndsporofluid_scatra,
-      artery_coupl);
+  POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(comm, struct_disname,
+      fluid_disname, scatra_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure,
+      ndsporofluid_scatra, artery_coupl);
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // coupling scheme
   // -------------------------------------------------------------------
   INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solscheme =
-    DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(poroscatraparams,"COUPALGO");
+      DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(
+          poroscatraparams, "COUPALGO");
 
   Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase> algo =
-      POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(solscheme,poroscatraparams,comm);
+      POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
+          solscheme, poroscatraparams, comm);
 
-  algo->Init(
-      poroscatraparams,
-      poroscatraparams,
-      poroparams,
-      structparams,
-      fluidparams,
-      scatraparams,
-      struct_disname,
-      fluid_disname,
-      scatra_disname,
-      true,
-      ndsporo_disp,
-      ndsporo_vel,
-      ndsporo_solidpressure,
-      ndsporofluid_scatra);
+  algo->Init(poroscatraparams, poroscatraparams, poroparams, structparams, fluidparams,
+      scatraparams, struct_disname, fluid_disname, scatra_disname, true, ndsporo_disp, ndsporo_vel,
+      ndsporo_solidpressure, ndsporofluid_scatra);
 
   // read the restart information, set vectors and variables
-  if (restart)
-    algo->ReadRestart(restart);
+  if (restart) algo->ReadRestart(restart);
 
   // assign materials
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
-  POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(struct_disname,fluid_disname,scatra_disname,artery_coupl);
+  POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
+      struct_disname, fluid_disname, scatra_disname, artery_coupl);
 
   // Setup Solver (necessary if poro-structure coupling solved monolithically)
   algo->SetupSolver();
 
-  //Run of the actual problem.
+  // Run of the actual problem.
 
   // Some setup needed for the subproblems.
   algo->SetupSystem();
@@ -138,4 +118,4 @@ void poromultiphasescatra_dyn(int restart)
 
   return;
 
-} // poromultiphase_dyn
+}  // poromultiphase_dyn

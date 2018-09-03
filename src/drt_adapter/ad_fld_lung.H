@@ -36,55 +36,44 @@ namespace LINALG
 }
 
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   class FluidLung : public FluidFSI
   {
-  public:
-
+   public:
     /// Constructor
-    FluidLung(Teuchos::RCP<Fluid> fluid,
-        Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale,
-        bool dirichletcond);
+    FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     virtual void Init();
 
     /// List of fluid-structure volume constraints
-    void ListLungVolCons(std::set<int>& LungVolConIDs,
-                         int& MinLungVolConID);
+    void ListLungVolCons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
 
     /// Initialize fluid part of lung volume constraint
-    void InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowrate,
-                          const int offsetID);
+    void InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID);
 
     /// Evaluate fluid/ale part of lung volume constraint
     void EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidShapeDerivMatrix,
-                        Teuchos::RCP<LINALG::SparseMatrix> FluidConstrMatrix,
-                        Teuchos::RCP<LINALG::SparseMatrix> ConstrFluidMatrix,
-                        Teuchos::RCP<LINALG::BlockSparseMatrixBase> AleConstrMatrix,
-                        Teuchos::RCP<LINALG::BlockSparseMatrixBase> ConstrAleMatrix,
-                        Teuchos::RCP<Epetra_Vector> FluidRHS,
-                        Teuchos::RCP<Epetra_Vector> CurrFlowRates,
-                        Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
-                        const int offsetID,
-                        const double dttheta);
+        Teuchos::RCP<LINALG::SparseMatrix> FluidConstrMatrix,
+        Teuchos::RCP<LINALG::SparseMatrix> ConstrFluidMatrix,
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> AleConstrMatrix,
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> ConstrAleMatrix,
+        Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
+        Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta);
 
     /// Write additional forces due to volume constraint
     void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
 
     /// Get map extractor for fsi <-> full map
-    Teuchos::RCP<LINALG::MapExtractor> FSIInterface() { return fsiinterface_;  }
+    Teuchos::RCP<LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
 
     /// Get map extractor for asi, other <-> full inner map
     Teuchos::RCP<LINALG::MapExtractor> InnerSplit() { return innersplit_; }
 
-  private:
-
+   private:
     /// conditions, that define the lung volume constraints
     std::vector<DRT::Condition*> constrcond_;
 
@@ -99,8 +88,7 @@ namespace ADAPTER {
 
     /// map extractor for outflow fsi <-> full map
     Teuchos::RCP<LINALG::MapExtractor> outflowfsiinterface_;
-
   };
-}
+}  // namespace ADAPTER
 
 #endif

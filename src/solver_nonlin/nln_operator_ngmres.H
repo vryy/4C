@@ -34,12 +34,12 @@ namespace NLNSOL
 {
   class LineSearchBase;
   class NlnProblem;
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -86,8 +86,7 @@ namespace NLNSOL
    */
   class NlnOperatorNGmres : public NlnOperatorBase
   {
-  public:
-
+   public:
     //! @name Construction
     //@{
 
@@ -95,7 +94,7 @@ namespace NLNSOL
     NlnOperatorNGmres();
 
     //! Destructor
-    virtual ~NlnOperatorNGmres(){}
+    virtual ~NlnOperatorNGmres() {}
 
     //@}
 
@@ -134,9 +133,9 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual
-        Epetra_MultiVector& x ///< solution
-        )  const;
+    virtual int ApplyInverse(const Epetra_MultiVector& f,  ///< residual
+        Epetra_MultiVector& x                              ///< solution
+        ) const;
 
     //@}
 
@@ -151,18 +150,15 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! Compute line search parameter (=step length)
-    virtual void ComputeStepLength(
-        const Epetra_MultiVector& x, ///< current solution
-        const Epetra_MultiVector& f, ///< residual at current solution
-        const Epetra_MultiVector& inc, ///< search direction
-        const double fnorm2, ///< current L2-norm of residual
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeStepLength(const Epetra_MultiVector& x,  ///< current solution
+        const Epetra_MultiVector& f,                             ///< residual at current solution
+        const Epetra_MultiVector& inc,                           ///< search direction
+        const double fnorm2,                                     ///< current L2-norm of residual
+        double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr    ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //! @name Setup
@@ -187,11 +183,9 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual int ComputeTentativeIterate
-    (
-      const Epetra_MultiVector& fbar, ///< current residual
-      Epetra_MultiVector& xbar ///< current solution
-    ) const;
+    virtual int ComputeTentativeIterate(const Epetra_MultiVector& fbar,  ///< current residual
+        Epetra_MultiVector& xbar                                         ///< current solution
+        ) const;
 
     /*! \brief Compute the accelerated iterate
      *
@@ -213,14 +207,16 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual bool ComputeAcceleratedIterate
-    (
-      const Teuchos::RCP<const Epetra_MultiVector> xbar, ///< tentative iterate / current solution
-      const Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual based on tentative iterate / current solution
-      const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& sol, ///< collection of previous solution iterates
-      const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& res, ///< collection of previous residuals
-      Teuchos::RCP<Epetra_MultiVector> xhat ///< accelerated iterate (to be determined)
-    ) const;
+    virtual bool ComputeAcceleratedIterate(const Teuchos::RCP<const Epetra_MultiVector>
+                                               xbar,  ///< tentative iterate / current solution
+        const Teuchos::RCP<const Epetra_MultiVector>
+            fbar,  ///< residual based on tentative iterate / current solution
+        const std::vector<Teuchos::RCP<const Epetra_MultiVector>>&
+            sol,  ///< collection of previous solution iterates
+        const std::vector<Teuchos::RCP<const Epetra_MultiVector>>&
+            res,                               ///< collection of previous residuals
+        Teuchos::RCP<Epetra_MultiVector> xhat  ///< accelerated iterate (to be determined)
+        ) const;
 
     /*! \brief Perform line search
      *
@@ -236,9 +232,9 @@ namespace NLNSOL
      *  \author mayr.mt \date 03/2015
      */
     virtual void PerformLineSearchStep(
-        Teuchos::RCP<Epetra_MultiVector> xbar, ///< previous iterate (input), next iterate (output)
-        Teuchos::RCP<const Epetra_MultiVector> xhat, ///< accelerated solution
-        Teuchos::RCP<Epetra_MultiVector> fbar ///< residual at previous iterate
+        Teuchos::RCP<Epetra_MultiVector> xbar,  ///< previous iterate (input), next iterate (output)
+        Teuchos::RCP<const Epetra_MultiVector> xhat,  ///< accelerated solution
+        Teuchos::RCP<Epetra_MultiVector> fbar         ///< residual at previous iterate
         ) const;
 
     //@}
@@ -251,8 +247,9 @@ namespace NLNSOL
      *  \author mayr.mt \date 03/2015
      */
     virtual void AddToWindow(
-        Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector to add to history
-        std::vector<Teuchos::RCP<const Epetra_MultiVector> >& history ///< collection of history vectors
+        Teuchos::RCP<const Epetra_MultiVector> vec,  ///< vector to add to history
+        std::vector<Teuchos::RCP<const Epetra_MultiVector>>&
+            history  ///< collection of history vectors
         ) const;
 
     //@}
@@ -276,7 +273,7 @@ namespace NLNSOL
 
     //@}
 
-  }; // class NlnOperatorNGmres
-} // namespace NLNSOL
+  };  // class NlnOperatorNGmres
+}  // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_NGMRES_H */

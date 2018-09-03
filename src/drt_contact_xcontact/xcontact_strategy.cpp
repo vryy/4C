@@ -23,42 +23,35 @@
  *---------------------------------------------------------------------------*/
 XCONTACT::DataContainer::DataContainer()
     : CONTACT::AbstractStratDataContainer(),
-    strContactRhsPtr_(Teuchos::null),
-    lmN_ptr_(Teuchos::null),
-    Wc_lm_ptr_(Teuchos::null),
-    Wc_su_u_ptr_(Teuchos::null),
-    Wc_mu_u_ptr_(Teuchos::null),
-    gsndofrowmapPtr_(Teuchos::null),
-    gstdofrowmapPtr_(Teuchos::null)
+      strContactRhsPtr_(Teuchos::null),
+      lmN_ptr_(Teuchos::null),
+      Wc_lm_ptr_(Teuchos::null),
+      Wc_su_u_ptr_(Teuchos::null),
+      Wc_mu_u_ptr_(Teuchos::null),
+      gsndofrowmapPtr_(Teuchos::null),
+      gstdofrowmapPtr_(Teuchos::null)
 {
   // Empty constructor body
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-XCONTACT::Strategy::Strategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    const Teuchos::ParameterList& params,
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
-    const int& dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm,
-    const int& maxdof)
-    : CONTACT::CoAbstractStrategy(
-        data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
-    xDataPtr_(Teuchos::null),
-    idiscrets_(interfaces.size())
+XCONTACT::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, const int& dim,
+    const Teuchos::RCP<const Epetra_Comm>& comm, const int& maxdof)
+    : CONTACT::CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
+      xDataPtr_(Teuchos::null),
+      idiscrets_(interfaces.size())
 {
   // Cast data container to XContact data container
-  xDataPtr_ = Teuchos::rcp_dynamic_cast<XCONTACT::DataContainer>(data_ptr,true);
+  xDataPtr_ = Teuchos::rcp_dynamic_cast<XCONTACT::DataContainer>(data_ptr, true);
 
   // Cast interfaces to XContact interfaces
   for (std::size_t i = 0; i < interfaces.size(); ++i)
   {
     // the cast is just to check the correct type ( one time cost )
-    interface_.push_back(Teuchos::rcp_dynamic_cast<XCONTACT::Interface>(
-        interfaces[i],true));
+    interface_.push_back(Teuchos::rcp_dynamic_cast<XCONTACT::Interface>(interfaces[i], true));
   }
 
   // Re-setup global sndofrowmap_ for XContact strategy
@@ -70,16 +63,14 @@ XCONTACT::Strategy::Strategy(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CONTACT::CoInterface> >&
-XCONTACT::Strategy::Interfaces()
+std::vector<Teuchos::RCP<CONTACT::CoInterface>>& XCONTACT::Strategy::Interfaces()
 {
   return interface_;
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-const std::vector<Teuchos::RCP<CONTACT::CoInterface> >&
-XCONTACT::Strategy::Interfaces() const
+const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& XCONTACT::Strategy::Interfaces() const
 {
   return interface_;
 }
@@ -91,13 +82,12 @@ void XCONTACT::Strategy::AssembleGlobalSlNTDofRowMaps()
   Data().GSlNormalDofRowMapPtr() = Teuchos::null;
   Data().GSlTangentialDofRowMapPtr() = Teuchos::null;
 
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    const XCONTACT::Interface& xinterface =
-        dynamic_cast<XCONTACT::Interface&>( **cit );
+    const XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
-    Data().GSlNormalDofRowMapPtr()     =
+    Data().GSlNormalDofRowMapPtr() =
         LINALG::MergeMap(Data().GSlNormalDofRowMapPtr(), xinterface.SlaveRowNDofs());
     Data().GSlTangentialDofRowMapPtr() =
         LINALG::MergeMap(Data().GSlTangentialDofRowMapPtr(), xinterface.SlaveRowTDofs());
@@ -110,39 +100,36 @@ void XCONTACT::Strategy::AssembleGlobalSlNTDofRowMaps()
  *---------------------------------------------------------------------------*/
 void XCONTACT::Strategy::StoreIDiscrets()
 {
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    const XCONTACT::Interface& xinterface =
-        dynamic_cast<XCONTACT::Interface&>( **cit );
+    const XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
-    idiscrets_[ xinterface.ParentDiscretType() ] = &( xinterface.Discret() );
+    idiscrets_[xinterface.ParentDiscretType()] = &(xinterface.Discret());
   }
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-const GEN::pairedvector<XFEM::FieldName, DRT::Discretization * > &
-XCONTACT::Strategy::GetIDiscrets() const
+const GEN::pairedvector<XFEM::FieldName, DRT::Discretization*>& XCONTACT::Strategy::GetIDiscrets()
+    const
 {
   return idiscrets_;
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::SetContactStatus(const bool & is_in_contact)
+void XCONTACT::Strategy::SetContactStatus(const bool& is_in_contact)
 {
   Data().IsInContact() = is_in_contact;
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::EvalForceStiff(
-    CONTACT::ParamsInterface& cparams)
+void XCONTACT::Strategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 {
   // nothing to do, if the flag is false
-  if (not Data().IsInContact())
-    return;
+  if (not Data().IsInContact()) return;
 
   /* Definition and usage of mortar matrices D and M:
    *
@@ -158,8 +145,7 @@ void XCONTACT::Strategy::EvalForceStiff(
    * (4) lin_lm(var_lm(Wc)) is zero (saddle point problem). */
 
   // Check for self contact
-  if (IsSelfContact())
-    dserror("XContact strategy: Self contact is not considered yet.");
+  if (IsSelfContact()) dserror("XContact strategy: Self contact is not considered yet.");
 
   // Evaluate force (residuum)
   EvalForce(cparams);
@@ -174,25 +160,23 @@ void XCONTACT::Strategy::EvalWeightedGap(CONTACT::ParamsInterface& cparams)
 {
   // Get pointer to parameter interface
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
-      Teuchos::rcpFromRef<CONTACT::ParamsInterface>( cparams );
+      Teuchos::rcpFromRef<CONTACT::ParamsInterface>(cparams);
 
   // Initialize all state vectors and matrices
-  Initialize( MORTAR::eval_weighted_gap );
+  Initialize(MORTAR::eval_weighted_gap);
 
   // Initialize and evaluate all interfaces
-  InitEvalInterface( cparams_ptr );
+  InitEvalInterface(cparams_ptr);
 
   AssembleWeightedGap();
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::EvalForce(
-    CONTACT::ParamsInterface& cparams)
+void XCONTACT::Strategy::EvalForce(CONTACT::ParamsInterface& cparams)
 {
   // nothing to do, if the flag is false
-  if (not Data().IsInContact())
-    return;
+  if (not Data().IsInContact()) return;
 
   // Get pointer to parameter interface
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
@@ -219,22 +203,20 @@ void XCONTACT::Strategy::EvalForce(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::InitEvalInterface(
-    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
+void XCONTACT::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // Time measurement (on each processor)
   const double t_start = Teuchos::Time::wallTime();
 
   // Get type of parallel strategy
   INPAR::MORTAR::ParallelStrategy strat =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(),
-          "PARALLEL_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY");
 
   // Initialize and evaluate all interfaces
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>( **cit );
+    XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
     // Initialize/reset interfaces
     xinterface.Initialize();
@@ -243,7 +225,7 @@ void XCONTACT::Strategy::InitEvalInterface(
     Data().IntTime() += xinterface.Inttime();
 
     // Switch between type of parallel strategy
-    switch ( strat )
+    switch (strat)
     {
       // ----------------------------------------------------------------------
       // Fully redundant ghosting of master side
@@ -251,12 +233,13 @@ void XCONTACT::Strategy::InitEvalInterface(
       case INPAR::MORTAR::ghosting_redundant:
       {
         // Evaluate interface
-        xinterface.Evaluate( 0, cparams_ptr );
+        xinterface.Evaluate(0, cparams_ptr);
         break;
       }
       default:
       {
-        dserror("XContact strategy: Only \"ghosting_redundant\" supported as "
+        dserror(
+            "XContact strategy: Only \"ghosting_redundant\" supported as "
             "\"PARALLEL_STRATEGY\".");
         break;
       }
@@ -272,13 +255,12 @@ void XCONTACT::Strategy::InitEvalInterface(
 void XCONTACT::Strategy::AssembleMortar()
 {
   // Assemble mortar matrices of all interfaces
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    const XCONTACT::Interface& xinterface =
-        dynamic_cast<XCONTACT::Interface&>( **cit );
+    const XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
-    xinterface.AssembleMortar( Data().DMatrix(), Data().MMatrix() );
+    xinterface.AssembleMortar(Data().DMatrix(), Data().MMatrix());
   }
 
   // Complete mortar matrices
@@ -288,14 +270,13 @@ void XCONTACT::Strategy::AssembleMortar()
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
+void XCONTACT::Strategy::Initialize(MORTAR::ActionType actiontype)
 {
   // Check for frictional case
-  if ( Data().IsFriction() )
-    dserror("XContact strategy: Frictional case is not considered yet.");
+  if (Data().IsFriction()) dserror("XContact strategy: Frictional case is not considered yet.");
 
 
-  switch ( actiontype )
+  switch (actiontype)
   {
     // ------------------------------------------------------------------------
     // start here and initialize everything
@@ -309,10 +290,8 @@ void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
           MaDoFRowMap(true), 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
 
       // Initialize mortar matrices
-      Data().DMatrixPtr() = Teuchos::rcp(new LINALG::SparseMatrix(
-          SlNormalDoFRowMap(true), 100));
-      Data().MMatrixPtr() = Teuchos::rcp(new LINALG::SparseMatrix(
-          SlNormalDoFRowMap(true), 100));
+      Data().DMatrixPtr() = Teuchos::rcp(new LINALG::SparseMatrix(SlNormalDoFRowMap(true), 100));
+      Data().MMatrixPtr() = Teuchos::rcp(new LINALG::SparseMatrix(SlNormalDoFRowMap(true), 100));
     }
     // ------------------------------------------------------------------------
     // initialize all state vectors
@@ -320,8 +299,8 @@ void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
     case MORTAR::eval_force:
     {
       // Initialize pointers to global vectors
-      Data().LmNPtr() = Teuchos::rcp( new Epetra_Vector( SlNormalDoFRowMap( true ), true) );
-      Data().WcLmPtr() = Teuchos::rcp(new Epetra_Vector( SlDoFRowMap( true ), true ) );
+      Data().LmNPtr() = Teuchos::rcp(new Epetra_Vector(SlNormalDoFRowMap(true), true));
+      Data().WcLmPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
     }
     // ------------------------------------------------------------------------
     // initialize the weighted gap vector only
@@ -329,7 +308,7 @@ void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
     case MORTAR::eval_weighted_gap:
     {
       // initialize the weighted gap vector
-      Data().WGapPtr() = Teuchos::rcp( new Epetra_Vector( SlNormalDoFRowMap( true ), true ) );
+      Data().WGapPtr() = Teuchos::rcp(new Epetra_Vector(SlNormalDoFRowMap(true), true));
       break;
     }
     default:
@@ -339,7 +318,6 @@ void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
       exit(EXIT_FAILURE);
     }
   }
-
 }
 
 /*---------------------------------------------------------------------------*
@@ -347,15 +325,13 @@ void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
 void XCONTACT::Strategy::AssembleWeightedGap()
 {
   // assemble the weighted gap vector (slave node row map layout)
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    const XCONTACT::Interface& xinterface =
-        dynamic_cast<XCONTACT::Interface&>( **cit );
+    const XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
-    xinterface.AssembleWeightedGap( Data().WGap() );
+    xinterface.AssembleWeightedGap(Data().WGap());
   }
-
 }
 
 /*---------------------------------------------------------------------------*
@@ -364,13 +340,12 @@ void XCONTACT::Strategy::AssembleContactRHS()
 {
   /* Assemble constraint residual vector and Langrange multiplier vector in
    * normal direction */
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    const XCONTACT::Interface& xinterface =
-        dynamic_cast<XCONTACT::Interface&>( **cit );
+    const XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
-    xinterface.AssembleContactRHS( Data().WcLm(), Data().LmN() );
+    xinterface.AssembleContactRHS(Data().WcLm(), Data().LmN());
   }
 }
 
@@ -434,8 +409,8 @@ void XCONTACT::Strategy::EvalConstrRHS()
   // ==========================================================================
 
   // Initialize constraint residuum vector with slave DOF map (still wrong map)
-  Teuchos::RCP<Epetra_Vector> Wc_lm = Teuchos::rcp<Epetra_Vector>(
-      new Epetra_Vector(SlDoFRowMap(true), true));
+  Teuchos::RCP<Epetra_Vector> Wc_lm =
+      Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(SlDoFRowMap(true), true));
 
   // ==========================================================================
   // Evaluate contact constraint residual vector
@@ -450,8 +425,7 @@ void XCONTACT::Strategy::EvalConstrRHS()
   // Export or set contact constraint residual vector
   if (ParRedist())
   {
-    Data().ConstrRhsPtr() = Teuchos::rcp<Epetra_Vector>(
-        new Epetra_Vector(LMDoFRowMap(false)));
+    Data().ConstrRhsPtr() = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(LMDoFRowMap(false)));
     LINALG::Export(*Wc_lm, *Data().ConstrRhsPtr());
   }
   else
@@ -464,13 +438,12 @@ void XCONTACT::Strategy::EvalConstrRHS()
  *---------------------------------------------------------------------------*/
 void XCONTACT::Strategy::AssembleContactStiff()
 {
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interface_.begin(); cit != interface_.end(); ++cit )
+  for (std::vector<Teuchos::RCP<CONTACT::CoInterface>>::const_iterator cit = interface_.begin();
+       cit != interface_.end(); ++cit)
   {
-    const XCONTACT::Interface& xinterface =
-        dynamic_cast<XCONTACT::Interface&>( **cit );
+    const XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>(**cit);
 
-    xinterface.AssembleWcUU( Data().WcSuU(), Data().WcMuU() );
+    xinterface.AssembleWcUU(Data().WcSuU(), Data().WcMuU());
   }
 
   // Complete matrices
@@ -482,8 +455,7 @@ void XCONTACT::Strategy::AssembleContactStiff()
  *---------------------------------------------------------------------------*/
 const Epetra_Vector& XCONTACT::Strategy::GetWeightedGap() const
 {
-  if (Data().WGapPtr().is_null())
-    dserror("The weighted gap vector is not initialized!");
+  if (Data().WGapPtr().is_null()) dserror("The weighted gap vector is not initialized!");
 
   return *Data().WGapPtr();
 }
@@ -494,8 +466,7 @@ Teuchos::RCP<const Epetra_Vector> XCONTACT::Strategy::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bt) const
 {
   // if no contact contributions were evaluated
-  if (not IsInContact())
-    return Teuchos::null;
+  if (not IsInContact()) return Teuchos::null;
 
   // Initialize pointer to desired vector block
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
@@ -554,12 +525,10 @@ Teuchos::RCP<const Epetra_Vector> XCONTACT::Strategy::GetRhsBlockPtr(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt,
-    const CONTACT::ParamsInterface* cparams) const
+    const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if no contact contributions were evaluated
-   if (not IsInContact())
-     return Teuchos::null;
+  if (not IsInContact()) return Teuchos::null;
 
   // Note: Change sign of residual vector due to definition in time integration method
   // Initialize pointer to desired matrix block
@@ -570,8 +539,7 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
   {
     case DRT::UTILS::block_displ_displ:
     {
-      mat_ptr = Teuchos::rcp(new LINALG::SparseMatrix(
-          SlMaDoFRowMap(true), 100, false, true));
+      mat_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
       // Build matrix Wc_u_u
       mat_ptr->Add(*Data().WcSuUPtr(), false, -1.0, 1.0);
@@ -584,8 +552,8 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
       {
-        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr,
-            SlMaDoFRowMapPtr(false), SlMaDoFRowMapPtr(false));
+        mat_ptr = MORTAR::MatrixRowColTransform(
+            mat_ptr, SlMaDoFRowMapPtr(false), SlMaDoFRowMapPtr(false));
       }
       break;
     }
@@ -649,15 +617,15 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
       kzz_ptr->Complete(SlDoFRowMap(true), SlDoFRowMap(true));
 
       // Transform matrix Wc_lm_lm to lmdofmap
-      mat_ptr = MORTAR::MatrixRowColTransformGIDs(kzz_ptr, LMDoFRowMapPtr(true),
-          LMDoFRowMapPtr(true));
+      mat_ptr =
+          MORTAR::MatrixRowColTransformGIDs(kzz_ptr, LMDoFRowMapPtr(true), LMDoFRowMapPtr(true));
 
       // Transform parallel row/column distribution of matrix Wc_lm_lm
       // (only necessary in the parallel redistribution case)
       if (ParRedist())
       {
-        mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr, LMDoFRowMapPtr(false),
-            LMDoFRowMapPtr(false));
+        mat_ptr =
+            MORTAR::MatrixRowColTransform(mat_ptr, LMDoFRowMapPtr(false), LMDoFRowMapPtr(false));
       }
 
       break;
@@ -694,17 +662,13 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Strategy::RunPostComputeX(
-    const CONTACT::ParamsInterface& cparams,
-    const Epetra_Vector& xold,
-    const Epetra_Vector& dir,
-    const Epetra_Vector& xnew)
+void XCONTACT::Strategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   /* Since the augmented Lagrangian strategy does not support any kind
    * of condensation, we use this routine just to store the lagrange
    * multiplier increment. */
-  Teuchos::RCP<Epetra_Vector> zdir_ptr =
-      Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true), true));
+  Teuchos::RCP<Epetra_Vector> zdir_ptr = Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true), true));
   LINALG::Export(dir, *zdir_ptr);
 
   // get the current step length
@@ -721,14 +685,13 @@ void XCONTACT::Strategy::RunPostComputeX(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 void XCONTACT::Strategy::ResetLagrangeMultipliers(
-    const CONTACT::ParamsInterface& cparams,
-    const Epetra_Vector& xnew)
+    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
   /* Since the augmented Lagrangian strategy does not support any kind
    * of condensation, we do not have to check if it is a saddle
    * point system. */
-  Teuchos::RCP<Epetra_Vector> znew_ptr = Teuchos::rcp<Epetra_Vector>(
-      new Epetra_Vector(LMDoFRowMap(true), true));
+  Teuchos::RCP<Epetra_Vector> znew_ptr =
+      Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(LMDoFRowMap(true), true));
   LINALG::Export(xnew, *znew_ptr);
 
   // ---------------------------------------------------------------------
@@ -755,7 +718,4 @@ double XCONTACT::Strategy::ConstraintNorm() const
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-bool XCONTACT::Strategy::IsSaddlePointSystem() const
-{
-  return true;
-}
+bool XCONTACT::Strategy::IsSaddlePointSystem() const { return true; }

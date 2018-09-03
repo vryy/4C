@@ -36,7 +36,7 @@ namespace ADAPTER
   class Coupling;
   class MortarVolCoupl;
   class ScaTraBaseAlgorithm;
-}
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -47,8 +47,8 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace LINALG
 {
@@ -56,16 +56,14 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-}
+}  // namespace LINALG
 
 
 namespace FS3I
 {
   class PartFS3I : public FS3I_Base
   {
-
-  public:
-
+   public:
     //! constructor of base class for partitioned FS3I
     PartFS3I(const Epetra_Comm& comm);
 
@@ -86,18 +84,18 @@ namespace FS3I
     virtual void Timeloop() = 0;
 
     //! flag whether time loop should be finished
-    bool NotFinished() const { return ((step_ < numstep_) and ((time_+1e-14) < timemax_)); };
+    bool NotFinished() const { return ((step_ < numstep_) and ((time_ + 1e-14) < timemax_)); };
 
     //! read and set fields needed for restart
     virtual void ReadRestart();
 
     /// redistribute the  FPSI interface, if running on parallel. Just needed in the case of FPS3I
-    void RedistributeInterface() {return;} ;
+    void RedistributeInterface() { return; };
 
     /// create a volmortar object
-    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
+    Teuchos::RCP<::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
         Teuchos::RCP<DRT::Discretization> structdis,
-        Teuchos::RCP<DRT::Discretization> structscatradis );
+        Teuchos::RCP<DRT::Discretization> structscatradis);
 
     //! set-up of FSI and ScaTra systems
     virtual void SetupSystem();
@@ -112,15 +110,15 @@ namespace FS3I
     void SetStructScatraSolution() const;
 
     //! check convergence of monolithic ScaTra problem (depends on which
-    //coupling is considered)
+    // coupling is considered)
     virtual bool ScatraConvergenceCheck(int itnum) = 0;
 
     //! return communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
     /// extract fluid convective and structure convective velocities
-    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel,
-                    std::vector<Teuchos::RCP<const Epetra_Vector> >& convel) const;
+    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
+        std::vector<Teuchos::RCP<const Epetra_Vector>>& convel) const;
 
     void SetVelocityFields() const;
 
@@ -130,48 +128,52 @@ namespace FS3I
 
     void SetMeshDisp() const;
 
-    ///provide wall shear stresses from FS3I subproblem for scatra subproblem
+    /// provide wall shear stresses from FS3I subproblem for scatra subproblem
     virtual void SetWallShearStresses() const;
 
     /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss) const;
+    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss) const;
 
     Teuchos::ParameterList& ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn) const;
 
     //@}
 
     /// transport quantity from fluid to fluid-scalar
-    const Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
+    const Teuchos::RCP<const Epetra_Vector> FluidToFluidScalar(
+        const Teuchos::RCP<const Epetra_Vector> fluidvector) const;
 
     /// transport quantity from fluid-scalar to fluid
-    const Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const;
+    const Teuchos::RCP<const Epetra_Vector> FluidScalarToFluid(
+        const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar
-    const Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(const Teuchos::RCP<const Epetra_Vector> structurevector) const;
+    const Teuchos::RCP<const Epetra_Vector> StructureToStructureScalar(
+        const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
     /// transport quantity from structure-scalar to structure
-    const Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(const Teuchos::RCP<const Epetra_Vector> structurescalavector) const;
+    const Teuchos::RCP<const Epetra_Vector> StructureScalarToStructure(
+        const Teuchos::RCP<const Epetra_Vector> structurescalavector) const;
 
-  private:
-
+   private:
     /// transport quantity from i-th volmortar master to i-th volmortar slave
-    const Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const;
+    const Teuchos::RCP<const Epetra_Vector> VolMortarMasterToSlavei(
+        const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const;
 
     /// transport quantity from i-th volmortar slave to i-th volmortar master
-    const Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const;
+    const Teuchos::RCP<const Epetra_Vector> VolMortarSlaveToMasteri(
+        const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const;
 
-  protected:
-
+   protected:
     /// fsi algorithm
     Teuchos::RCP<FSI::Monolithic> fsi_;
 
-    /// vector of scatra volume couplings (i.e. fluid to fluid-scalar and structure to structure-scalar)
+    /// vector of scatra volume couplings (i.e. fluid to fluid-scalar and structure to
+    /// structure-scalar)
     std::vector<INPAR::FS3I::VolumeCoupling> volume_fieldcouplings_;
 
-  private:
-
+   private:
     //! volume coupling (using mortar) adapter
-    std::vector<Teuchos::RCP< ::ADAPTER::MortarVolCoupl> > volume_coupling_objects_;
+    std::vector<Teuchos::RCP<::ADAPTER::MortarVolCoupl>> volume_coupling_objects_;
 
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
@@ -179,8 +181,7 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
 
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
-
   };
-}
+}  // namespace FS3I
 
 #endif

@@ -26,21 +26,21 @@ Maintainer: Martin Kronbichler
 #include <Teuchos_RCP.hpp>
 
 
-namespace DRT {
-namespace INPUT {
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
 
-  class ConditionDefinition;
+    /// construct list with all conditions and documentation
+    Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>> ValidConditions();
 
-  /// construct list with all conditions and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > ValidConditions();
+    /// print all known condition sections without contents
+    void PrintEmptyConditionDefinitions(std::ostream& stream,
+        std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist, bool color = true);
 
-  /// print all known condition sections without contents
-  void PrintEmptyConditionDefinitions(std::ostream& stream,
-                                      std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist,
-                                      bool color=true);
-
-}
-}
+  }  // namespace INPUT
+}  // namespace DRT
 
 /// print empty condition sections
 void PrintConditionDatHeader();

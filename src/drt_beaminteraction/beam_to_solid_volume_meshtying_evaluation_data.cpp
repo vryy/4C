@@ -17,11 +17,11 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingEvaluationData::
-    BeamToSolidVolumeMeshtyingEvaluationData():
-isinit_(false),
-issetup_(false),
-BTSVOLMT_GaussPointProjectionTracker_ptr_(new std::map<int, std::vector<bool> >),
-BTSVOLMT_GaussPointEvaluateTracker_ptr_(new std::map<int, std::vector<bool> >)
+    BeamToSolidVolumeMeshtyingEvaluationData()
+    : isinit_(false),
+      issetup_(false),
+      BTSVOLMT_GaussPointProjectionTracker_ptr_(new std::map<int, std::vector<bool>>),
+      BTSVOLMT_GaussPointEvaluateTracker_ptr_(new std::map<int, std::vector<bool>>)
 {
   // Empty Constructor
 }

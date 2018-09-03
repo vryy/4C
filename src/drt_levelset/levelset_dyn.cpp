@@ -42,8 +42,8 @@ void levelset_dyn(int restart)
   const Epetra_Comm& comm = scatradis->Comm();
 
   // print warning to screen
-  if (comm.MyPID()==0)
-   std::cout << "You are now about to enter the module for level-set problems!" <<std::endl;
+  if (comm.MyPID() == 0)
+    std::cout << "You are now about to enter the module for level-set problems!" << std::endl;
 
   // access the level-set-specific parameter list
   const Teuchos::ParameterList& levelsetcontrol = problem->LevelSetControl();
@@ -52,29 +52,31 @@ void levelset_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
   // check velocity field
-  const INPAR::SCATRA::VelocityField veltype
-    = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
+  const INPAR::SCATRA::VelocityField veltype =
+      DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
   if (veltype != INPAR::SCATRA::velocity_function)
-    dserror("Other velocity fields than a field given by a function not yet supported for level-set problems");
+    dserror(
+        "Other velocity fields than a field given by a function not yet supported for level-set "
+        "problems");
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
-  if ( scatradis->AddDofSet(dofsetaux)!= 1 )
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
+      new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+  if (scatradis->AddDofSet(dofsetaux) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
 
   // finalize discretization
   scatradis->FillComplete();
 
   // we directly use the elements from the scalar transport elements section
-  if (scatradis->NumGlobalNodes() == 0)
-    dserror("No elements in the ---TRANSPORT ELEMENTS section");
+  if (scatradis->NumGlobalNodes() == 0) dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for SCALAR_TRANSPORT problem. "
-            "Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+    dserror(
+        "no linear solver defined for SCALAR_TRANSPORT problem. "
+        "Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase =
@@ -82,10 +84,7 @@ void levelset_dyn(int restart)
 
   // first we initialize the base algorithm
   // time integrator is constructed and initialized inside.
-  scatrabase->Init(
-      levelsetcontrol,
-      scatradyn,
-      problem->SolverParams(linsolvernumber));
+  scatrabase->Init(levelsetcontrol, scatradyn, problem->SolverParams(linsolvernumber));
 
   // only now we must call Setup() on the base algo.
   // all objects relying on the parallel distribution are
@@ -101,9 +100,10 @@ void levelset_dyn(int restart)
 
   // set initial velocity field
   // note: The order ReadRestart() before SetVelocityField() is important here!!
-  //       The velocity field is not initialized in the constructor of the basic scalar field. Moreover, it is not
-  //       read from restart data. Therefore, we first have to set the restart time in the function ReadRestart() and
-  //       then in case of time-dependent velocity fields to evaluate the velocity function and curve.
+  //       The velocity field is not initialized in the constructor of the basic scalar field.
+  //       Moreover, it is not read from restart data. Therefore, we first have to set the restart
+  //       time in the function ReadRestart() and then in case of time-dependent velocity fields to
+  //       evaluate the velocity function and curve.
   // bool true allows for setting old convective velocity required for particle coupling
   Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(levelsetalgo)->SetVelocityField(true);
 
@@ -121,5 +121,4 @@ void levelset_dyn(int restart)
 
   return;
 
-} // end of levelset_dyn()
-
+}  // end of levelset_dyn()

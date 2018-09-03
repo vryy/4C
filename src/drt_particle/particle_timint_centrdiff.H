@@ -24,7 +24,6 @@
 /* belongs to particle namespace */
 namespace PARTICLE
 {
-
   /*====================================================================*/
   /*!
    * \brief Central differences: 2nd order accurate,
@@ -35,24 +34,20 @@ namespace PARTICLE
    */
   class TimIntCentrDiff : public TimIntExpl
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntCentrDiff
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& particledynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntCentrDiff(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& particledynparams,     //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<IO::DiscretizationWriter> output        //!< the output
     );
 
     //! Destructor
-    virtual ~TimIntCentrDiff(){ ; }
+    virtual ~TimIntCentrDiff() { ; }
 
     //@}
 

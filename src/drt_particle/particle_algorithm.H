@@ -1,4 +1,4 @@
- /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file particle_algorithm.H
 
@@ -26,35 +26,54 @@
 #include "particle_handler.H"
 #include <boost/unordered_map.hpp>
 
-//*********************************SPH and DEM************************************************************************************************************************************
-//#define PARTICLE_MINMAXOUTPUT_EVRY 25            //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
+//*********************************SPH and
+//DEM************************************************************************************************************************************
+//#define PARTICLE_MINMAXOUTPUT_EVRY 25            //Ouput of minimal/maximal pressures, particle
+//distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
 
 //*********************************SPH********************************************************************************************************************************************
-//Usefull defines (tolerances and constants)
-#define PARTICLE_TENSILESAFETYFAC 0.0000001         //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
-#define PARTICLE_COLORLIMIT 0.9                     //Color field limit value to identify free-surface particle
-#define PARTICLE_COLORGRADLIMIT 0.1                 //Color gradient limit for the evaluation of surface tension forces
-#define PARTICLE_SFEXP 5                            //Additional weighting of surface tension forces (continuum model according to Adami et al. 2010) for free-surface flow
-#define PARTICLE_P0ZHANG 3.0                        //Factor between h and \tilde{h} of smoothing kernel applied in background pressure term for free-surface flow according to Zhang et al. 2017
+// Usefull defines (tolerances and constants)
+#define PARTICLE_TENSILESAFETYFAC \
+  0.0000001  // Factor prescribing the minimal particle distance as compared to the average initial
+             // particle distance (tensile instabilites)
+#define PARTICLE_COLORLIMIT 0.9  // Color field limit value to identify free-surface particle
+#define PARTICLE_COLORGRADLIMIT \
+  0.1  // Color gradient limit for the evaluation of surface tension forces
+#define PARTICLE_SFEXP \
+  5  // Additional weighting of surface tension forces (continuum model according to Adami et al.
+     // 2010) for free-surface flow
+#define PARTICLE_P0ZHANG \
+  3.0  // Factor between h and \tilde{h} of smoothing kernel applied in background pressure term for
+       // free-surface flow according to Zhang et al. 2017
 
-#define PARTICLE_REINITSHIFT 2                      //Define shifting criterion between free-surface and interior particles in case of density reinitialization (default: 2)
-                                                    //1: Apply shifting criterion for free-surface particles according to free-surface particle type (fspType_)
-                                                    //2: Apply shifting criterion for free-surface particles according to colorfield<1 (see Zhang et al. 2017)
-                                                    //3: Apply reinitialization everywhere
+#define PARTICLE_REINITSHIFT \
+  2  // Define shifting criterion between free-surface and interior particles in case of density
+     // reinitialization (default: 2) 1: Apply shifting criterion for free-surface particles
+     // according to free-surface particle type (fspType_) 2: Apply shifting criterion for
+     // free-surface particles according to colorfield<1 (see Zhang et al. 2017) 3: Apply
+     // reinitialization everywhere
 
-#define PARTICLE_ST_TRIPPLEPOINTSMOOTHFAC 2.0          //Smoothing factor for prescription of normal vector via static contact angle
-#define PARTICLE_ST_BOUNDARYSCALEFAC 1.0              //Increase the surface tension forces in the triple zone by scaling factor 1.0+PARTICLE_ST_BOUNDARYSCALEFAC
-#define PARTICLE_ST_CFGEXTRAPLATION                   //Extrapolate direction of CFG vector
-//#define PARTICLE_ONLYPHASE1ACC                      //Apply surface tension forces only to the phase with higher density
+#define PARTICLE_ST_TRIPPLEPOINTSMOOTHFAC \
+  2.0  // Smoothing factor for prescription of normal vector via static contact angle
+#define PARTICLE_ST_BOUNDARYSCALEFAC \
+  1.0  // Increase the surface tension forces in the triple zone by scaling
+       // factor 1.0+PARTICLE_ST_BOUNDARYSCALEFAC
+#define PARTICLE_ST_CFGEXTRAPLATION  // Extrapolate direction of CFG vector
+//#define PARTICLE_ONLYPHASE1ACC                      //Apply surface tension forces only to the
+//phase with higher density
 
-//Usefull defines (additional functionalities and debugging tools)
-//#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
-//#define PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required for colorfield and density reinitialization on the basis of pressure extrapolation (similar to Adami et al. 2012)
-//#define PARTICLE_WRITECOLORFIELD                  //Output of colorField_ and fspType_ (free-surface particle type) for paraview
+// Usefull defines (additional functionalities and debugging tools)
+//#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force
+//calculation according to variant 1 (this is sufficient for incompressible flows) #define
+//PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required
+//for colorfield and density reinitialization on the basis of pressure extrapolation (similar to
+//Adami et al. 2012) #define PARTICLE_WRITECOLORFIELD                  //Output of colorField_ and
+//fspType_ (free-surface particle type) for paraview
 
 //*********************************DEM********************************************************************************************************************************************
-#define PARTICLE_BINNINGCONST 5                     //Constant required for binning strategy
-//#define PARTICLE_NOTIMESTEPDSERROR                  //Only throw warning (no dserror), if yield strength criterion is violated!
+#define PARTICLE_BINNINGCONST 5  // Constant required for binning strategy
+//#define PARTICLE_NOTIMESTEPDSERROR                  //Only throw warning (no dserror), if yield
+//strength criterion is violated!
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |
@@ -64,7 +83,7 @@ namespace DRT
   class Element;
   class Discretization;
   class Node;
-}
+}  // namespace DRT
 namespace ADAPTER
 {
   class Particle;
@@ -84,8 +103,8 @@ namespace MAT
   {
     class ParticleMat;
     class ExtParticleMat;
-  }
-}
+  }  // namespace PAR
+}  // namespace MAT
 namespace BINSTRATEGY
 {
   class BinningStrategy;
@@ -102,11 +121,9 @@ namespace PARTICLE
 
   class Algorithm : public ADAPTER::AlgorithmBase, public PARTICLE::ParticleHandler
   {
-  public:
-
-    Algorithm(
-        const Epetra_Comm& lcomm,              ///< local epetra communicator
-        const Teuchos::ParameterList& params   ///< problem parameters
+   public:
+    Algorithm(const Epetra_Comm& lcomm,       ///< local epetra communicator
+        const Teuchos::ParameterList& params  ///< problem parameters
     );
 
     virtual ~Algorithm(){};
@@ -118,8 +135,7 @@ namespace PARTICLE
     virtual void InitMaterials();
 
     /// read restart
-    virtual void ReadRestart(
-        int restart  ///< time step from which to restart
+    virtual void ReadRestart(int restart  ///< time step from which to restart
     );
 
     /// setup of the system
@@ -129,8 +145,7 @@ namespace PARTICLE
     virtual void Timeloop();
 
     /// test results (if necessary)
-    virtual void TestResults(
-        const Epetra_Comm& comm  ///< local epetra communicator
+    virtual void TestResults(const Epetra_Comm& comm  ///< local epetra communicator
     );
 
     /// get wall discretization
@@ -150,7 +165,7 @@ namespace PARTICLE
     virtual void SetUpWallDiscret();
 
     /// return gravity acceleration
-    virtual LINALG::Matrix<3,1> GetGravityAcc(const double time=-1.0);
+    virtual LINALG::Matrix<3, 1> GetGravityAcc(const double time = -1.0);
 
     /// bins are redistributed according to the current fill level with particles
     virtual void DynamicLoadBalancing();
@@ -167,10 +182,8 @@ namespace PARTICLE
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary, update states and do ghosting if needed
-    virtual Teuchos::RCP<std::list<int> > TransferParticles(
-        const bool updatestates,
-        const bool ghosting = true
-    );
+    virtual Teuchos::RCP<std::list<int>> TransferParticles(
+        const bool updatestates, const bool ghosting = true);
 
     /// return importer for dof based vectors
     virtual const Teuchos::RCP<Epetra_Import> DofImporter() const { return dofimporter_; }
@@ -179,24 +192,21 @@ namespace PARTICLE
     virtual const Teuchos::RCP<Epetra_Import> NodeImporter() const { return nodeimporter_; }
 
     /// get bins in range and call FindNeighbors
-    virtual void GetNeighbouringItems(
-        DRT::Node* particle,
-        std::list<DRT::Node*>& neighboursLinf_p,
-        boost::unordered_map<int, DRT::Element*>& neighboursLinf_w
-    ) const;
+    virtual void GetNeighbouringItems(DRT::Node* particle, std::list<DRT::Node*>& neighboursLinf_p,
+        boost::unordered_map<int, DRT::Element*>& neighboursLinf_w) const;
 
     /// get bins in range and call FindNeighbors (bin version)
-    virtual void GetNeighbouringItems(
-        const int binId,
-        std::list<DRT::Node*>& neighboursLinf_p,
-        boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL
-    ) const;
+    virtual void GetNeighbouringItems(const int binId, std::list<DRT::Node*>& neighboursLinf_p,
+        boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL) const;
 
     /// link to time integration
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() const { return particles_; }
 
     /// get particle interaction type
-    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const {return particleInteractionType_; }
+    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const
+    {
+      return particleInteractionType_;
+    }
 
     /// return vector of pointers to particle material parameters
     std::vector<const MAT::PAR::ParticleMat*> ParticleMat() const { return particleMat_; }
@@ -215,8 +225,7 @@ namespace PARTICLE
     /// output particle time step
     virtual void Output(bool forced_writerestart = false);
 
-  protected:
-
+   protected:
     /// solve the current particle time step
     virtual void Integrate();
 
@@ -236,23 +245,17 @@ namespace PARTICLE
     virtual Teuchos::RCP<Epetra_Map> ExtendedBinColMap();
 
     /// ghosting of an additional second bin layer
-    virtual void AddLayerGhosting(
-        std::set<int>& colbins
-    );
+    virtual void AddLayerGhosting(std::set<int>& colbins);
 
     /// ghosting of bins in proximity of ghosted boundary particles
-    virtual void BdryParticleGhosting(
-        std::set<int>& colbins
-    );
+    virtual void BdryParticleGhosting(std::set<int>& colbins);
 
     /// ghosting of bins in proximity of ghosted wall elements
-    virtual void WallElementGhosting(
-        std::set<int>& colbins
-    );
+    virtual void WallElementGhosting(std::set<int>& colbins);
 
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
-        bool wallpointer   ///< bool whether wall element pointer need rebuild
+        bool wallpointer  ///< bool whether wall element pointer need rebuild
     );
 
     /// assign wall elements and gids to bins
@@ -266,19 +269,14 @@ namespace PARTICLE
 
     /// particle walls are set up and assigned to bins
     virtual void SetupParticleWalls(
-        Teuchos::RCP<DRT::Discretization> basediscret,
-        const std::string elename
-    );
+        Teuchos::RCP<DRT::Discretization> basediscret, const std::string elename);
 
     /// relate wall gids to bin ids
     virtual void RelateWallGidsToBinIds();
 
     /// get particles and wall elements in given bins
-    void GetBinContent(
-        std::list<DRT::Node*>& bin_p,
-        boost::unordered_map<int, DRT::Element*>* bin_w,
-        std::vector<int>& binIds
-    ) const;
+    void GetBinContent(std::list<DRT::Node*>& bin_p,
+        boost::unordered_map<int, DRT::Element*>* bin_w, std::vector<int>& binIds) const;
 
     /// determine particle interaction distance
     virtual double ParticleInteractionDistance();
@@ -296,7 +294,7 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Import> nodeimporter_;
 
     /// acceleration due to gravity
-    LINALG::Matrix<3,1> gravity_acc_;
+    LINALG::Matrix<3, 1> gravity_acc_;
 
     /// output interval
     int writeresultsevery_;
@@ -343,13 +341,13 @@ namespace PARTICLE
     Teuchos::RCP<Rendering> rendering_;
 
     /// map relating wall gids to bin ids
-    std::map<int, std::set<int> > relwallgidtobinids_;
+    std::map<int, std::set<int>> relwallgidtobinids_;
 
     //@}
 
-  }; // Algorithm
+  };  // Algorithm
 
-} // namespace PARTICLE
+}  // namespace PARTICLE
 
 
 /*----------------------------------------------------------------------*/

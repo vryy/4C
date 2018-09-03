@@ -41,7 +41,7 @@ namespace DRT
   {
     class FluidAdjoint3ImplParameter;
   }
-}
+}  // namespace DRT
 
 namespace IO
 {
@@ -87,31 +87,24 @@ namespace TOPOPT
   */
   class Optimizer
   {
-  public:
+   public:
     /// constructor
-    explicit Optimizer(
-        Teuchos::RCP<DRT::Discretization> optidis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
-        const Teuchos::ParameterList& params,
-        Teuchos::RCP<IO::DiscretizationWriter>& output
-    );
+    explicit Optimizer(Teuchos::RCP<DRT::Discretization> optidis,
+        Teuchos::RCP<DRT::Discretization> fluiddis, const Teuchos::ParameterList& params,
+        Teuchos::RCP<IO::DiscretizationWriter>& output);
 
     /// desctructor
     virtual ~Optimizer(){};
 
     /// setting of objective function and constraints
-    void Values() { ComputeValues(obj_,*constr_); };
+    void Values() { ComputeValues(obj_, *constr_); };
 
     /// setting of gradients of objective function and constraints
-    void Gradients() {ComputeGradients(obj_der_,constr_der_); };
+    void Gradients() { ComputeGradients(obj_der_, constr_der_); };
 
     /// compute the gradient of the objective function in one direction
     void ComputeGradientDirectionForFD(
-        const double fac,
-        const int GID,
-        const int index,
-        const int numFDPoints
-    );
+        const double fac, const int GID, const int index, const int numFDPoints);
 
     /// write output
     void Output();
@@ -120,10 +113,10 @@ namespace TOPOPT
     void ImportFlowParams(Teuchos::RCP<Teuchos::ParameterList>& fluidParams);
 
     /// import the fluid solution of one time step
-    void ImportFluidData(Teuchos::RCP<Epetra_Vector> vel,int step);
+    void ImportFluidData(Teuchos::RCP<Epetra_Vector> vel, int step);
 
     /// import the adjoint fluid solution of one time step
-    void ImportAdjointFluidData(Teuchos::RCP<Epetra_Vector> vel,int step);
+    void ImportAdjointFluidData(Teuchos::RCP<Epetra_Vector> vel, int step);
 
     /// clear the field data for a new optimization step
     void ClearFieldData()
@@ -133,33 +126,33 @@ namespace TOPOPT
     };
 
     /// perform one optimization iteration
-    void Iterate(
-        bool& doGradient
-    );
+    void Iterate(bool& doGradient);
 
     /// finish one optimization iteration
-    void FinishIteration(
-        bool& doGradient
-    );
+    void FinishIteration(bool& doGradient);
 
     /// check convergence of the optimization
-    bool Converged(
-        bool& doGradient
-    );
+    bool Converged(bool& doGradient);
 
     /// create result test object for optimization variables
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-    Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
-    const Teuchos::ParameterList& OptiParams(){return params_;}
-    Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity
-    Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
-    Teuchos::RCP<Epetra_Vector> Density() const {return dens_;}
+    Teuchos::RCP<const DRT::Discretization> OptiDis() { return optidis_; }
+    const Teuchos::ParameterList& OptiParams() { return params_; }
+    Teuchos::RCP<const std::map<int, Teuchos::RCP<Epetra_Vector>>> ExportFluidData() const
+    {
+      return fluidvel_;
+    }  /// fluid velocity
+    Teuchos::RCP<const std::map<int, Teuchos::RCP<Epetra_Vector>>> ExportAdjointData() const
+    {
+      return adjointvel_;
+    }  /// fluid velocity
+    Teuchos::RCP<Epetra_Vector> Density() const { return dens_; }
 
-    double ObjectiveValue(){return obj_;};
-    const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(){return obj_der_;};
-    const Teuchos::RCP<const Epetra_SerialDenseVector> ConstraintValues(){return constr_;};
-    const Teuchos::RCP<const Epetra_MultiVector> ConstraintGradients(){return constr_der_;};
+    double ObjectiveValue() { return obj_; };
+    const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient() { return obj_der_; };
+    const Teuchos::RCP<const Epetra_SerialDenseVector> ConstraintValues() { return constr_; };
+    const Teuchos::RCP<const Epetra_MultiVector> ConstraintGradients() { return constr_der_; };
 
     const Epetra_Map* RowMap();
     const Epetra_Map* ColMap();
@@ -172,63 +165,60 @@ namespace TOPOPT
 
     void ReadRestart(const int step);
 
-  protected:
-
+   protected:
     /// computation of objective function and constraints
-    void ComputeValues(
-        double& objective,
-        Epetra_SerialDenseVector& constraints
-    );
+    void ComputeValues(double& objective, Epetra_SerialDenseVector& constraints);
 
     /// computation of gradients of objective function and constraints
     void ComputeGradients(
-        Teuchos::RCP<Epetra_Vector> obj_der,
-        Teuchos::RCP<Epetra_MultiVector> constr_der
-    );
+        Teuchos::RCP<Epetra_Vector> obj_der, Teuchos::RCP<Epetra_MultiVector> constr_der);
 
     /// set the initial density field of the optimization variable
-    void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
+    void SetInitialDensityField(
+        const INPAR::TOPOPT::InitialDensityField init, const int startfuncno);
 
     /// check if all required data for an optimization step is present
     bool CheckData(const bool doAdjoint);
 
-    void TransformFlowFields(const bool doAdjoint,const bool rowToCol);
+    void TransformFlowFields(const bool doAdjoint, const bool rowToCol);
 
     //! @name general stuff
-    Teuchos::RCP<DRT::Discretization> optidis_; /// discretization of optimization field
-    Teuchos::RCP<DRT::Discretization> fluiddis_; /// discretization of optimization field
-    const Teuchos::ParameterList& params_; /// parameters
-    INPAR::TOPOPT::GradientType gradienttype_; /// type of gradient computation
-    Teuchos::RCP<Teuchos::ParameterList> fluidParams_; /// fluid parameters
+    Teuchos::RCP<DRT::Discretization> optidis_;         /// discretization of optimization field
+    Teuchos::RCP<DRT::Discretization> fluiddis_;        /// discretization of optimization field
+    const Teuchos::ParameterList& params_;              /// parameters
+    INPAR::TOPOPT::GradientType gradienttype_;          /// type of gradient computation
+    Teuchos::RCP<Teuchos::ParameterList> fluidParams_;  /// fluid parameters
 
     //@}
 
     //! @name fluid fields
 
     /// velocities of all time steps
-    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvel_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_Vector>>> fluidvel_;
     /// adjoint velocities of all time steps
-    Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvel_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_Vector>>> adjointvel_;
 
     //@}
 
     //! @name fields for optimization
-    Teuchos::RCP<Epetra_Vector> dens_; /// new density in col map
+    Teuchos::RCP<Epetra_Vector> dens_;  /// new density in col map
 
-    double obj_; /// value of the objective (adjoint solution not required)
-    Teuchos::RCP<Epetra_Vector> obj_der_; /// gradient of the objective (with help of the adjoint solution)
+    double obj_;  /// value of the objective (adjoint solution not required)
+    Teuchos::RCP<Epetra_Vector>
+        obj_der_;  /// gradient of the objective (with help of the adjoint solution)
 
-    Teuchos::RCP<Epetra_SerialDenseVector> constr_; /// values of the constraints
-    Teuchos::RCP<Epetra_MultiVector> constr_der_; /// derivatives of the constraints w.r.t. the optimization variables
-    int num_constr_; /// number of constraints
+    Teuchos::RCP<Epetra_SerialDenseVector> constr_;  /// values of the constraints
+    Teuchos::RCP<Epetra_MultiVector>
+        constr_der_;  /// derivatives of the constraints w.r.t. the optimization variables
+    int num_constr_;  /// number of constraints
 
     Teuchos::RCP<Epetra_SerialDenseVector> objective_FD_;
     Teuchos::RCP<Epetra_SerialDenseMatrix> constraints_FD_;
 
-    Teuchos::RCP<OPTI::GCMMA> optimizer_; /// optimizer
+    Teuchos::RCP<OPTI::GCMMA> optimizer_;  /// optimizer
     //@}
 
-  }; // end class Optimizer
-} // end namespace TOPOPT
+  };  // end class Optimizer
+}  // end namespace TOPOPT
 
-#endif // #ifndef TOPOPT_OPTIMIZER_H_
+#endif  // #ifndef TOPOPT_OPTIMIZER_H_

@@ -26,14 +26,13 @@ ADAPTER::STR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::
-    BuildStructureAlgorithm(const Teuchos::ParameterList& sdyn) const
+Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::BuildStructureAlgorithm(
+    const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase =
-      Teuchos::null;
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
 
   const enum INPAR::STR::IntegrationStrategy intstrat =
-        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
@@ -41,7 +40,7 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::
       adapterbase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithmNew());
       break;
     case INPAR::STR::int_loca:
-        adapterbase = Teuchos::rcp(new ADAPTER::StructureLocaAlgorithm());
+      adapterbase = Teuchos::rcp(new ADAPTER::StructureLocaAlgorithm());
       break;
     default:
       dserror("Unknown integration strategy!");
@@ -53,8 +52,8 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::
-    BuildStructureAlgorithm(const Teuchos::ParameterList& sdyn)
+Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::BuildStructureAlgorithm(
+    const Teuchos::ParameterList& sdyn)
 {
   STR::Factory factory;
   return factory.BuildStructureAlgorithm(sdyn);

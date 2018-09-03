@@ -23,66 +23,59 @@
 
 namespace SCATRA
 {
+  class TimIntCardiacMonodomainHDG : public virtual TimIntCardiacMonodomain,
+                                     public virtual TimIntHDG
+  {
+   public:
+    //! Standard Constructor
+    TimIntCardiacMonodomainHDG(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-class TimIntCardiacMonodomainHDG : public virtual TimIntCardiacMonodomain, public virtual TimIntHDG
-{
-  public:
+    //! Destructor
+    virtual ~TimIntCardiacMonodomainHDG();
 
-  //! Standard Constructor
-  TimIntCardiacMonodomainHDG(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! Destructor
-  virtual ~TimIntCardiacMonodomainHDG();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! setup time integration scheme
-  virtual void Setup();
+    //! write current state to BINIO
+    void OutputState();
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+   protected:
+    //! update gating variables
+    virtual void ElementMaterialTimeUpdate();
 
-  //! write current state to BINIO
-  void OutputState();
+    //! write problem specific output
+    virtual void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi);
 
-protected:
+    //! adapt material
+    virtual void PackMaterial();
 
-  //! update gating variables
-  virtual void ElementMaterialTimeUpdate();
+    //! adapt material
+    virtual void UnpackMaterial();
 
-  //! write problem specific output
-  virtual void WriteProblemSpecificOutput(
-      Teuchos::RCP<Epetra_Vector>    interpolatedPhi
-       );
+    //! project material field
+    virtual void ProjectMaterial();
 
-  //! adapt material
-  virtual void PackMaterial();
+    //! read restart
+    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! adapt material
-  virtual void UnpackMaterial();
+   private:
+    //! activation time
+    Teuchos::RCP<Epetra_Vector> activation_time_interpol_;
 
-  //! project material field
-  virtual void ProjectMaterial();
-
-  //! read restart
-  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
-
-private:
-
-  //! activation time
-  Teuchos::RCP<Epetra_Vector> activation_time_interpol_;
-
-  //! element data
-  Teuchos::RCP<std::vector<char> > data_;
+    //! element data
+    Teuchos::RCP<std::vector<char>> data_;
 
 
-}; // class TimIntCardiacMonodomainHDG
+  };  // class TimIntCardiacMonodomainHDG
 
-} // namespace SCATRA
+}  // namespace SCATRA
 
 #endif /* SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_H */

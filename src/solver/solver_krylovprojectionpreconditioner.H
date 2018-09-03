@@ -34,41 +34,34 @@ namespace LINALG
      */
     class KrylovProjectionPreconditioner : public PreconditionerType
     {
-    public:
+     public:
+      KrylovProjectionPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
+          Teuchos::RCP<LINALG::KrylovProjector> projector);
 
-      KrylovProjectionPreconditioner(
-        FILE * outfile,
-        Teuchos::RCP<PreconditionerType>  preconditioner,
-        Teuchos::RCP<LINALG::KrylovProjector> projector
-        );
+      // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
-      //virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
-
-      virtual void Finish( Epetra_Operator * matrix,
-                           Epetra_MultiVector * x,
-                           Epetra_MultiVector * b );
+      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
       /// return the projecting operator
-      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+      virtual Epetra_Operator* PrecOperator() const { return &*P_; }
 
       /// linear operator used for preconditioning
       virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
 
-      virtual void Print( std::ostream & stream )
+      virtual void Print(std::ostream& stream)
       {
         stream << "krylov projection(";
-        preconditioner_->Print( stream );
+        preconditioner_->Print(stream);
         stream << ")";
       }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "unknown"; }
-    private:
+
+     private:
       Teuchos::RCP<PreconditionerType> preconditioner_;
 
       /// Peter's projector object that does the actual work
@@ -81,8 +74,8 @@ namespace LINALG
       Teuchos::RCP<Epetra_Operator> P_;
     };
 
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_KRYLOVPROJECTIONPRECONDITIONER_H_ */

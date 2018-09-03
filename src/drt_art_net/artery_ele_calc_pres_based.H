@@ -24,116 +24,89 @@
 
 namespace DRT
 {
-namespace ELEMENTS
-{
-
-  /// Internal artery implementation
-  /*!
-    This internal class keeps all the working arrays needed to
-    calculate the artery element. Additionally the method Sysmat()
-    provides a clean and fast element implementation.
-
-    <h3>Purpose</h3>
-
-    \author kremheller
-    \date 03/18
-  */
-
-  template <DRT::Element::DiscretizationType distype>
-  class ArteryEleCalcPresBased: public ArteryEleCalc<distype>
+  namespace ELEMENTS
   {
-  private:
-
-    typedef ArteryEleCalc<distype> my;
-
-    /// private constructor, since we are a Singleton.
-    ArteryEleCalcPresBased(const int numdofpernode, const std::string& disname);
-
-  public:
-
-    /// virtual destructor
-    virtual ~ArteryEleCalcPresBased() {};
-
-    //! Singleton access method
-    static ArteryEleCalcPresBased<distype> * Instance(
-        const int numdofpernode,
-        const std::string& disname,
-        const ArteryEleCalcPresBased* delete_me=NULL);
-
-    /// called upon destruction
-    virtual void Done();
-
-    /// Evaluate
+    /// Internal artery implementation
     /*!
-      The evaluate function for the general artery case.
-     */
-    virtual int Evaluate(Artery*                   ele,
-                         Teuchos::ParameterList&   params,
-                         DRT::Discretization&      discretization,
-                         std::vector<int>&         lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         Teuchos::RCP<MAT::Material> mat);
+      This internal class keeps all the working arrays needed to
+      calculate the artery element. Additionally the method Sysmat()
+      provides a clean and fast element implementation.
 
-    /// ScatraEvaluate
-    /*!
-      Evaluate scalar transport in arteries, this is not available for the pressure-based formulation
-      Instead, ScaTra-discretization is cloned and work is done by ScaTraEleCalcArtery
-     */
-    virtual int ScatraEvaluate(Artery*                   ele,
-                         Teuchos::ParameterList&   params,
-                         DRT::Discretization&      discretization,
-                         std::vector<int>&         lm,
-                         Epetra_SerialDenseMatrix& elemat1_epetra,
-                         Epetra_SerialDenseMatrix& elemat2_epetra,
-                         Epetra_SerialDenseVector& elevec1_epetra,
-                         Epetra_SerialDenseVector& elevec2_epetra,
-                         Epetra_SerialDenseVector& elevec3_epetra,
-                         Teuchos::RCP<MAT::Material> mat);
+      <h3>Purpose</h3>
 
-    /// EvaluateService
-    /*!
-      Evaluate other stuff that might be needed
-     */
-    virtual int EvaluateService(Artery*                    ele,
-                                const ARTERY::Action       action,
-                                Teuchos::ParameterList&    params,
-                                DRT::Discretization&       discretization,
-                                std::vector<int>&          lm,
-                                Epetra_SerialDenseMatrix&  elemat1_epetra,
-                                Epetra_SerialDenseMatrix&  elemat2_epetra,
-                                Epetra_SerialDenseVector&  elevec1_epetra,
-                                Epetra_SerialDenseVector&  elevec2_epetra,
-                                Epetra_SerialDenseVector&  elevec3_epetra,
-                                Teuchos::RCP<MAT::Material> mat);
+      \author kremheller
+      \date 03/18
+    */
+
+    template <DRT::Element::DiscretizationType distype>
+    class ArteryEleCalcPresBased : public ArteryEleCalc<distype>
+    {
+     private:
+      typedef ArteryEleCalc<distype> my;
+
+      /// private constructor, since we are a Singleton.
+      ArteryEleCalcPresBased(const int numdofpernode, const std::string& disname);
+
+     public:
+      /// virtual destructor
+      virtual ~ArteryEleCalcPresBased(){};
+
+      //! Singleton access method
+      static ArteryEleCalcPresBased<distype>* Instance(const int numdofpernode,
+          const std::string& disname, const ArteryEleCalcPresBased* delete_me = NULL);
+
+      /// called upon destruction
+      virtual void Done();
+
+      /// Evaluate
+      /*!
+        The evaluate function for the general artery case.
+       */
+      virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, std::vector<int>& lm,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+
+      /// ScatraEvaluate
+      /*!
+        Evaluate scalar transport in arteries, this is not available for the pressure-based
+        formulation Instead, ScaTra-discretization is cloned and work is done by ScaTraEleCalcArtery
+       */
+      virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, std::vector<int>& lm,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+
+      /// EvaluateService
+      /*!
+        Evaluate other stuff that might be needed
+       */
+      virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
 
 
-  protected:
+     protected:
+      /*!
+        \brief calculate element matrix and rhs
 
-    /*!
-      \brief calculate element matrix and rhs
+        \param ele              (i) the element those matrix is calculated
+        \param sysmat           (o) element matrix to calculate
+        \param rhs              (o) element rhs to calculate
+        \param material         (i) artery material/dimesion
+        */
+      void Sysmat(Artery* ele, DRT::Discretization& discretization, std::vector<int>& lm,
+          LINALG::Matrix<my::iel_, my::iel_>& sysmat, LINALG::Matrix<my::iel_, 1>& rhs,
+          Teuchos::RCP<const MAT::Material> material);
+    };
 
-      \param ele              (i) the element those matrix is calculated
-      \param sysmat           (o) element matrix to calculate
-      \param rhs              (o) element rhs to calculate
-      \param material         (i) artery material/dimesion
-      */
-    void Sysmat(Artery*                                  ele,
-                DRT::Discretization&                     discretization,
-                std::vector<int>&                        lm,
-                LINALG::Matrix<my::iel_,my::iel_>&       sysmat,
-                LINALG::Matrix<my::iel_,       1>&       rhs,
-                Teuchos::RCP<const MAT::Material>        material
-                );
+  }  // namespace ELEMENTS
 
-  };
-
-}
-
-}
+}  // namespace DRT
 
 
 

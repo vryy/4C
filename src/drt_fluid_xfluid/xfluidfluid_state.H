@@ -37,112 +37,97 @@ namespace XFEM
  */
 namespace FLD
 {
-
-namespace UTILS
-{
-  class XFluidFluidMapExtractor;
-}
-
-class XFluidFluidState : public XFluidState
-{
-
-public:
-
-  /// ctor
-  explicit XFluidFluidState(
-      const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-      const Teuchos::RCP<GEO::CutWizard>& wizard,
-      const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-      const Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
-      const Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
-      const Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap
-  );
-
-  /// dtor
-  virtual ~XFluidFluidState(){}
-
-  /// setup map extractors for dirichlet maps & velocity/pressure maps
-  void SetupMapExtractors(
-    const Teuchos::RCP<DRT::Discretization> & xfluiddiscret,
-    const Teuchos::RCP<DRT::Discretization> & embfluiddiscret,
-    const double & time
-    );
-
-  /// build merged fluid dirichlet map extractor
-  void CreateMergedDBCMapExtractor(Teuchos::RCP<const LINALG::MapExtractor> embfluiddbcmaps);
-
-  //! @name Accessors
-  //@{
-
-  Teuchos::RCP<LINALG::MapExtractor> DBCMapExtractor()
+  namespace UTILS
   {
-    return xffluiddbcmaps_;
+    class XFluidFluidMapExtractor;
   }
 
-  Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
+  class XFluidFluidState : public XFluidState
   {
-    return xffluidvelpressplitter_;
-  }
+   public:
+    /// ctor
+    explicit XFluidFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+        const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+        const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
+        const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
+        const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap);
 
-  virtual bool Destroy();
+    /// dtor
+    virtual ~XFluidFluidState() {}
 
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
-  Teuchos::RCP<Epetra_Vector>& Residual() { return xffluidresidual_; }
-  Teuchos::RCP<Epetra_Vector>& Zeros()    { return xffluidzeros_; }
-  Teuchos::RCP<Epetra_Vector>& IncVel()   { return xffluidincvel_; }
-  Teuchos::RCP<Epetra_Vector>& Velnp()    { return xffluidvelnp_; }
-  //@}
+    /// setup map extractors for dirichlet maps & velocity/pressure maps
+    void SetupMapExtractors(const Teuchos::RCP<DRT::Discretization>& xfluiddiscret,
+        const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time);
 
-  void CompleteCouplingMatricesAndRhs();
+    /// build merged fluid dirichlet map extractor
+    void CreateMergedDBCMapExtractor(Teuchos::RCP<const LINALG::MapExtractor> embfluiddbcmaps);
 
-  //@name Map of the merged system
-  //@{
-  /// combined background and embedded fluid dof-map
-  Teuchos::RCP<Epetra_Map> xffluiddofrowmap_;
-  //@}
+    //! @name Accessors
+    //@{
 
-  //@name Map extractors of the merged system
-  //@{
-  /// extractor used for splitting fluid and embedded fluid
-  Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
-  /// extractor used for splitting between velocity and pressure dof from the combined background & embedded fluid dof-map
-  Teuchos::RCP<LINALG::MapExtractor>       xffluidvelpressplitter_;
-  /// combined background and embedded fluid map extractor for dirichlet-constrained dof
-  Teuchos::RCP<LINALG::MapExtractor>   xffluiddbcmaps_;
-  //@}
+    Teuchos::RCP<LINALG::MapExtractor> DBCMapExtractor() { return xffluiddbcmaps_; }
 
-  /// full system matrix for coupled background and embedded fluid
-  Teuchos::RCP<LINALG::SparseOperator> xffluidsysmat_;
+    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return xffluidvelpressplitter_; }
 
-  /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  Teuchos::RCP<Epetra_Vector>    xffluidzeros_;
+    virtual bool Destroy();
 
-  /// (standard) residual vector (rhs for the incremental form),
-  Teuchos::RCP<Epetra_Vector>    xffluidresidual_;
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<Epetra_Vector>& Residual() { return xffluidresidual_; }
+    Teuchos::RCP<Epetra_Vector>& Zeros() { return xffluidzeros_; }
+    Teuchos::RCP<Epetra_Vector>& IncVel() { return xffluidincvel_; }
+    Teuchos::RCP<Epetra_Vector>& Velnp() { return xffluidvelnp_; }
+    //@}
 
-  //! @name combined background and embedded fluid velocity and pressure at time n+1, n and increment
-  //@{
-  /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
-  Teuchos::RCP<Epetra_Vector>    xffluidvelnp_;
-  /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
-  Teuchos::RCP<Epetra_Vector>    xffluidveln_;
-  /// \f$ \Delta \mathbf{u}^{b\cup e,n+1}_{i+1} \f$
-  Teuchos::RCP<Epetra_Vector>    xffluidincvel_;
-  //@}
+    void CompleteCouplingMatricesAndRhs();
 
-private:
+    //@name Map of the merged system
+    //@{
+    /// combined background and embedded fluid dof-map
+    Teuchos::RCP<Epetra_Map> xffluiddofrowmap_;
+    //@}
 
-  /// initialize all state members based on the merged fluid dof-rowmap
-  void InitStateVectors();
+    //@name Map extractors of the merged system
+    //@{
+    /// extractor used for splitting fluid and embedded fluid
+    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
+    /// extractor used for splitting between velocity and pressure dof from the combined background
+    /// & embedded fluid dof-map
+    Teuchos::RCP<LINALG::MapExtractor> xffluidvelpressplitter_;
+    /// combined background and embedded fluid map extractor for dirichlet-constrained dof
+    Teuchos::RCP<LINALG::MapExtractor> xffluiddbcmaps_;
+    //@}
 
-  /// initialize the system matrix of the intersected fluid
-  void InitSystemMatrix();
+    /// full system matrix for coupled background and embedded fluid
+    Teuchos::RCP<LINALG::SparseOperator> xffluidsysmat_;
 
-  /// embedded fluid dof-map
-  Teuchos::RCP<const Epetra_Map> embfluiddofrowmap_;
+    /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
+    Teuchos::RCP<Epetra_Vector> xffluidzeros_;
 
-};
+    /// (standard) residual vector (rhs for the incremental form),
+    Teuchos::RCP<Epetra_Vector> xffluidresidual_;
 
-}
+    //! @name combined background and embedded fluid velocity and pressure at time n+1, n and
+    //! increment
+    //@{
+    /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
+    Teuchos::RCP<Epetra_Vector> xffluidvelnp_;
+    /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
+    Teuchos::RCP<Epetra_Vector> xffluidveln_;
+    /// \f$ \Delta \mathbf{u}^{b\cup e,n+1}_{i+1} \f$
+    Teuchos::RCP<Epetra_Vector> xffluidincvel_;
+    //@}
+
+   private:
+    /// initialize all state members based on the merged fluid dof-rowmap
+    void InitStateVectors();
+
+    /// initialize the system matrix of the intersected fluid
+    void InitSystemMatrix();
+
+    /// embedded fluid dof-map
+    Teuchos::RCP<const Epetra_Map> embfluiddofrowmap_;
+  };
+
+}  // namespace FLD
 
 #endif

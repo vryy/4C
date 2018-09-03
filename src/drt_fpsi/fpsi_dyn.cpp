@@ -26,7 +26,7 @@ void fpsi_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  //1.- Get Communicator
+  // 1.- Get Communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // print the chuck
@@ -72,31 +72,31 @@ void fpsi_drt()
     std::cout << "                      _______ ______ _______  ______      " << std::endl;
     std::cout << "                        ||____ ||___|||_____    ||        " << std::endl;
     std::cout << "                        ||     ||     _____|| __||__      " << std::endl;
-    std::cout <<  std::endl << std::endl;
+    std::cout << std::endl << std::endl;
   }
 
-  //2.- Parameter reading
-  const Teuchos::ParameterList& fpsidynparams       = problem->FPSIDynamicParams();
-  const Teuchos::ParameterList& poroelastdynparams  = problem->PoroelastDynamicParams();
+  // 2.- Parameter reading
+  const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
+  const Teuchos::ParameterList& poroelastdynparams = problem->PoroelastDynamicParams();
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
-  //3.- Creation of Poroelastic + Fluid problem. (Discretization called inside)
+  // 3.- Creation of Poroelastic + Fluid problem. (Discretization called inside)
   Teuchos::RCP<FPSI::FPSI_Base> fpsi = Teuchos::null;
-  fpsi = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams,poroelastdynparams);
+  fpsi = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams, poroelastdynparams);
 
-  //3.1- Read restart if needed.
+  // 3.1- Read restart if needed.
   const int restartstep = problem->Restart();
   if (restartstep)
   {
     fpsi->ReadRestart(restartstep);
   }
 
-  //3.2.- redistribute the FPSI interface
+  // 3.2.- redistribute the FPSI interface
   fpsi->RedistributeInterface();
 
   //////////////////////////////////
-  //4.- Run of the actual problem.//
+  // 4.- Run of the actual problem.//
   //////////////////////////////////
 
   // 4.1.- Coupling and creation of combined dofmap
@@ -112,7 +112,7 @@ void fpsi_drt()
 
 
   return;
-}//fpsi_drt()
+}  // fpsi_drt()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

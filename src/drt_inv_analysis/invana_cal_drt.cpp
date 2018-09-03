@@ -30,25 +30,26 @@ void invana_cal()
   const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
 
-  if ((DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")!= INPAR::STR::inv_none)and
-      (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS")!= INPAR::INVANA::stat_inv_none))
+  if ((DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap, "INV_ANALYSIS") !=
+          INPAR::STR::inv_none) and
+      (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp, "STAT_INV_ANALYSIS") !=
+          INPAR::INVANA::stat_inv_none))
     dserror("This should not happen. Decide between INV_ANALYSIS or STAT_INV_ANALYSIS.");
   // do we want to do inverse analysis?
-  else if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
-      != INPAR::STR::inv_none)
+  else if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap, "INV_ANALYSIS") !=
+           INPAR::STR::inv_none)
   {
     STR::invanalysis();
   }
-  else if (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS")
-   != INPAR::INVANA::stat_inv_none)
+  else if (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(
+               invp, "STAT_INV_ANALYSIS") != INPAR::INVANA::stat_inv_none)
   {
-
     // initialize inverse solution process
     INVANA::InvanaControl inversesolution;
     inversesolution.Init(invp);
 
     // solve
-    int restart= DRT::Problem::Instance()->Restart();
+    int restart = DRT::Problem::Instance()->Restart();
     inversesolution.Solve(restart);
 
     // test

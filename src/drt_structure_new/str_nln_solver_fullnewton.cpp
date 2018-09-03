@@ -19,8 +19,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::NLN::SOLVER::FullNewton::FullNewton()
-    : Nox()
+STR::NLN::SOLVER::FullNewton::FullNewton() : Nox()
 {
   // empty
 }
@@ -39,8 +38,7 @@ void STR::NLN::SOLVER::FullNewton::Setup()
   // Note, that the issetup_ flag is also updated during this call.
   Nox::Setup();
 
-  if (not IsSetup())
-    dserror("issetup_ should be \"true\" at this point!");
+  if (not IsSetup()) dserror("issetup_ should be \"true\" at this point!");
 
   return;
 }
@@ -60,28 +58,27 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
   // Set-up the full Newton method
   // ---------------------------------------------------------------------------
   // Non-linear solver
-  p.set("Nonlinear Solver","Line Search Based");
+  p.set("Nonlinear Solver", "Line Search Based");
 
   // Direction
-  Teuchos::ParameterList& pdir = p.sublist("Direction",true);
-  pdir.set("Method","Newton");
+  Teuchos::ParameterList& pdir = p.sublist("Direction", true);
+  pdir.set("Method", "Newton");
 
   // Line Search
-  Teuchos::ParameterList& plinesearch = p.sublist("Line Search",true);
-  plinesearch.set("Method","Full Step");
+  Teuchos::ParameterList& plinesearch = p.sublist("Line Search", true);
+  plinesearch.set("Method", "Full Step");
 
   // Line Search/Full Step
-  Teuchos::ParameterList& pfullstep = plinesearch.sublist("Full Step",true);
+  Teuchos::ParameterList& pfullstep = plinesearch.sublist("Full Step", true);
   // check if the default value is set
   double fullstep = pfullstep.get<double>("Full Step");
-  if (fullstep!=1.0)
+  if (fullstep != 1.0)
   {
     std::string markerline;
-    markerline.assign(40,'!');
+    markerline.assign(40, '!');
     std::cout << markerline << std::endl
-        << "WARNING: The Full Step length is " << fullstep
-        << " (default=1.0)"<< std::endl
-        << markerline << std::endl;
+              << "WARNING: The Full Step length is " << fullstep << " (default=1.0)" << std::endl
+              << markerline << std::endl;
   }
 
   // ---------------------------------------------------------------------------
@@ -93,9 +90,9 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
   if (not IsXMLStatusTestFile(DataSDyn().GetNoxParams().sublist("Status Test")))
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
-    CreateQuantityTypes(qtypes,DataSDyn());
-    SetStatusTestParams(DataSDyn().GetMutableNoxParams().sublist("Status Test"),
-        DataSDyn(),qtypes);
+    CreateQuantityTypes(qtypes, DataSDyn());
+    SetStatusTestParams(
+        DataSDyn().GetMutableNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
 
   return;

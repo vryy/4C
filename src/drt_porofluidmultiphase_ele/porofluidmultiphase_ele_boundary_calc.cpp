@@ -21,33 +21,33 @@
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
-#include "../drt_lib/drt_globalproblem.H" // for curves and functions
-#include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
+#include "../drt_lib/drt_globalproblem.H"  // for curves and functions
+#include "../drt_lib/standardtypes_cpp.H"  // for EPS12 and so on
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype> *
-DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
-    const int numdofpernode,
-    const std::string& disname,
-    const PoroFluidMultiPhaseEleBoundaryCalc* delete_me )
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
+DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(const int numdofpernode,
+    const std::string& disname, const PoroFluidMultiPhaseEleBoundaryCalc* delete_me)
 {
-  static std::map<std::string,PoroFluidMultiPhaseEleBoundaryCalc<distype>* >  instances;
+  static std::map<std::string, PoroFluidMultiPhaseEleBoundaryCalc<distype>*> instances;
 
   // create a new instance
-  if(delete_me == NULL)
+  if (delete_me == NULL)
   {
-    if(instances.find(disname) == instances.end())
-      instances[disname] = new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode,disname);
+    if (instances.find(disname) == instances.end())
+      instances[disname] = new PoroFluidMultiPhaseEleBoundaryCalc<distype>(numdofpernode, disname);
   }
 
   // this is the clean up
   else
   {
-    for( typename std::map<std::string,PoroFluidMultiPhaseEleBoundaryCalc<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-      if ( i->second == delete_me )
+    for (typename std::map<std::string, PoroFluidMultiPhaseEleBoundaryCalc<distype>*>::iterator i =
+             instances.begin();
+         i != instances.end(); ++i)
+      if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
@@ -66,28 +66,27 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( 0, "", this );
+  Instance(0, "", this);
 }
 
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
-    const int numdofpernode,
-    const std::string& disname)
- : params_(DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),
-   numdofpernode_(numdofpernode),
-   xyze_(true),  // initialize to zero
-   edispnp_(true),
-   xsi_(true),
-   funct_(true),
-   deriv_(true),
-   derxy_(true),
-   normal_(true),
-   velint_(true),
-   metrictensor_(true)
+    const int numdofpernode, const std::string& disname)
+    : params_(DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname)),
+      numdofpernode_(numdofpernode),
+      xyze_(true),  // initialize to zero
+      edispnp_(true),
+      xsi_(true),
+      funct_(true),
+      deriv_(true),
+      derxy_(true),
+      normal_(true),
+      velint_(true),
+      metrictensor_(true)
 {
   return;
 }
@@ -98,12 +97,10 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseE
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization)
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
+  GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
 
   return 0;
 }
@@ -112,40 +109,26 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
-    DRT::Element*                           ele,
-    Teuchos::ParameterList&                 params,
-    DRT::Discretization&                    discretization,
-    DRT::Element::LocationArray&            la,
-    std::vector<Epetra_SerialDenseMatrix*>& elemat,
-    std::vector<Epetra_SerialDenseVector*>& elevec
-)
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::Element* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, std::vector<Epetra_SerialDenseMatrix*>& elemat,
+    std::vector<Epetra_SerialDenseVector*>& elevec)
 {
-
   //--------------------------------------------------------------------------------
   // preparations for element
   //--------------------------------------------------------------------------------
-  if(SetupCalc(ele,params,discretization) == -1)
-    return 0;
+  if (SetupCalc(ele, params, discretization) == -1) return 0;
 
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
-  ExtractElementAndNodeValues(ele,params,discretization,la);
+  ExtractElementAndNodeValues(ele, params, discretization, la);
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::BoundaryAction action =
-      DRT::INPUT::get<POROFLUIDMULTIPHASE::BoundaryAction>(params,"action");
+      DRT::INPUT::get<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
-  EvaluateAction(
-      ele,
-      params,
-      discretization,
-      action,
-      la,
-      elemat,
-      elevec
-      );
+  EvaluateAction(ele, params, discretization, action, la, elemat, elevec);
 
   return 0;
 }
@@ -155,68 +138,60 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
-    DRT::Element*                 ele,
-    Teuchos::ParameterList&       params,
-    DRT::Discretization&          discretization,
-    DRT::Element::LocationArray&  la)
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
-  if(params_->IsAle())
+  if (params_->IsAle())
   {
     // get number of dof-set associated with displacement related dofs
     const int ndsdisp = params_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp==Teuchos::null)
-      dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
-    const int numdispdofpernode = la[ndsdisp].lm_.size()/nen_;
+    const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
 
     // construct location vector for displacement related dofs
-    std::vector<int> lmdisp((nsd_+1)*nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
-      for (int idim=0; idim<nsd_+1; ++idim)
-        lmdisp[inode*(nsd_+1)+idim] = la[ndsdisp].lm_[inode*numdispdofpernode+idim];
+    std::vector<int> lmdisp((nsd_ + 1) * nen_, -1);
+    for (int inode = 0; inode < nen_; ++inode)
+      for (int idim = 0; idim < nsd_ + 1; ++idim)
+        lmdisp[inode * (nsd_ + 1) + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,nen_> >(*dispnp,edispnp_,lmdisp);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_ + 1, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
   }
-  else edispnp_.Clear();
+  else
+    edispnp_.Clear();
 }
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(
-    DRT::Element*                           ele,
-    Teuchos::ParameterList&                 params,
-    DRT::Discretization&                    discretization,
-    POROFLUIDMULTIPHASE::BoundaryAction     action,
-    DRT::Element::LocationArray&            la,
-    std::vector<Epetra_SerialDenseMatrix*>& elemat,
-    std::vector<Epetra_SerialDenseVector*>& elevec
-)
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(DRT::Element* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    POROFLUIDMULTIPHASE::BoundaryAction action, DRT::Element::LocationArray& la,
+    std::vector<Epetra_SerialDenseMatrix*>& elemat, std::vector<Epetra_SerialDenseVector*>& elevec)
 {
   // switch over action type
   switch (action)
   {
-  case POROFLUIDMULTIPHASE::bd_calc_Neumann:
-  {
-    // check if the neumann conditions were set
-    DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-    if(condition == NULL)
-      dserror("Cannot access Neumann boundary condition!");
+    case POROFLUIDMULTIPHASE::bd_calc_Neumann:
+    {
+      // check if the neumann conditions were set
+      DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+      if (condition == NULL) dserror("Cannot access Neumann boundary condition!");
 
-    // evaluate neumann loads
-    EvaluateNeumann(ele,params,discretization,*condition,la,*elevec[0]);
+      // evaluate neumann loads
+      EvaluateNeumann(ele, params, discretization, *condition, la, *elevec[0]);
 
-    break;
-  }
+      break;
+    }
   }
 
   return 0;
@@ -226,17 +201,13 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(
  | evaluate Neumann boundary condition                        vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
-    DRT::Element*                   ele,
-    Teuchos::ParameterList&         params,
-    DRT::Discretization&            discretization,
-    DRT::Condition&                 condition,
-    DRT::Element::LocationArray&    la,
-    Epetra_SerialDenseVector&       elevec1
-    )
+int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(DRT::Element* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1)
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
+      POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
   const double time = params_->Time();
@@ -244,58 +215,57 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
   const int numdof = condition.GetInt("numdof");
-  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
-  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
+  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
+  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const std::vector<int>* func = condition.Get<std::vector<int>>("funct");
 
-  if (numdofpernode_!=numdof)
-    dserror("The NUMDOF you have entered in your NEUMANN CONDITION does not equal the number of scalars.");
+  if (numdofpernode_ != numdof)
+    dserror(
+        "The NUMDOF you have entered in your NEUMANN CONDITION does not equal the number of "
+        "scalars.");
 
   // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
-    double fac = EvalShapeFuncAndIntFac(intpoints,iquad);
+    double fac = EvalShapeFuncAndIntFac(intpoints, iquad);
 
     // factor given by spatial function
     double functfac = 1.0;
 
     // determine global coordinates of current Gauss point
-    double coordgp[3];   // we always need three coordinates for function evaluation!
-    for(int i=0; i<3; ++i)
-      coordgp[i] = 0.;
-    for(int i=0; i<nsd_; ++i)
+    double coordgp[3];  // we always need three coordinates for function evaluation!
+    for (int i = 0; i < 3; ++i) coordgp[i] = 0.;
+    for (int i = 0; i < nsd_; ++i)
     {
       coordgp[i] = 0.;
-      for(int j=0; j<nen_; ++j)
-        coordgp[i] += xyze_(i,j)*funct_(j);
+      for (int j = 0; j < nen_; ++j) coordgp[i] += xyze_(i, j) * funct_(j);
     }
 
     int functnum = -1;
-    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+    const double* coordgpref = &coordgp[0];  // needed for function evaluation
 
-    for(int dof=0; dof<numdofpernode_; ++dof)
+    for (int dof = 0; dof < numdofpernode_; ++dof)
     {
-      if ((*onoff)[dof]) // is this dof activated?
+      if ((*onoff)[dof])  // is this dof activated?
       {
         // factor given by spatial function
-        if(func)
-          functnum = (*func)[dof];
+        if (func) functnum = (*func)[dof];
 
-        if(functnum>0)
+        if (functnum > 0)
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time);
+          functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(dof, coordgpref, time);
         }
         else
           functfac = 1.;
 
-        const double val_fac_funct_fac = (*val)[dof]*fac*functfac;
+        const double val_fac_funct_fac = (*val)[dof] * fac * functfac;
 
-        for(int node=0; node<nen_; ++node)
-          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_funct_fac;
-      } // if ((*onoff)[dof])
-    } // loop over dofs
-  } // loop over integration points
+        for (int node = 0; node < nen_; ++node)
+          elevec1[node * numdofpernode_ + dof] += funct_(node) * val_fac_funct_fac;
+      }  // if ((*onoff)[dof])
+    }    // loop over dofs
+  }      // loop over integration points
 
   return 0;
 }
@@ -305,24 +275,27 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>&   intpoints,   ///< integration points
-    const int                                      iquad,       ///< id of current Gauss point
-    LINALG::Matrix<1 + nsd_,1>*                    normalvec    ///< normal vector at Gauss point(optional)
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+    const int iquad,                                         ///< id of current Gauss point
+    LINALG::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
 )
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_;idim++)
-  {xsi_(idim) = gpcoord[idim];}
+  for (int idim = 0; idim < nsd_; idim++)
+  {
+    xsi_(idim) = gpcoord[idim];
+  }
 
   // shape functions and their first derivatives
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  DRT::UTILS::shape_function<distype>(xsi_, funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
   double drs(0.0);
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs,normalvec);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+      xyze_, deriv_, metrictensor_, drs, normalvec);
 
   // return the integration factor
   return intpoints.IP().qwgt[iquad] * drs;

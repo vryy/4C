@@ -24,9 +24,10 @@
 #include <Teuchos_RCP.hpp>
 
 
-namespace NOX {
-  namespace FSI {
-
+namespace NOX
+{
+  namespace FSI
+  {
     //! Use NonlinearCG linesearch
     /*!
 
@@ -104,55 +105,47 @@ namespace NOX {
 
     */
 
-    class SDRelaxation : public NOX::LineSearch::Generic {
-
-    public:
-
+    class SDRelaxation : public NOX::LineSearch::Generic
+    {
+     public:
       //! Constructor
-      SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils,
-                   Teuchos::ParameterList& params);
+      SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
       //! Destructor
       ~SDRelaxation();
 
       // derived
-      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
-           Teuchos::ParameterList& params);
+      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
       // derived
-      bool compute(NOX::Abstract::Group& newgrp, double& step,
-             const NOX::Abstract::Vector& dir,
-             const NOX::Solver::Generic& s);
+      bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
+          const NOX::Solver::Generic& s);
 
-    private:
-
+     private:
       //! Method for computing directional derivatives numerically
       NOX::Abstract::Vector& computeDirectionalDerivative(
-        const NOX::Abstract::Vector& dir,
-        NOX::Epetra::Interface::Required& interface);
+          const NOX::Abstract::Vector& dir, NOX::Epetra::Interface::Required& interface);
 
       //! Printing utilities
       Teuchos::RCP<NOX::Utils> utils_;
 
       //! Temporary Vector pointer used to compute directional derivatives
       Teuchos::RCP<NOX::Abstract::Vector> vecPtr_;
-
     };
 
 
     /// simple factory that creates SD relaxation class
     class SDFactory : public NOX::LineSearch::UserDefinedFactory
     {
-    public:
-      Teuchos::RCP<NOX::LineSearch::Generic>
-      buildLineSearch(const Teuchos::RCP<NOX::GlobalData>& gd,
-          Teuchos::ParameterList& params) const
-          {
-            return Teuchos::rcp(new SDRelaxation(gd->getUtils(),params));
-          }
+     public:
+      Teuchos::RCP<NOX::LineSearch::Generic> buildLineSearch(
+          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+      {
+        return Teuchos::rcp(new SDRelaxation(gd->getUtils(), params));
+      }
     };
 
-  } // namespace FSI
-} // namespace NOX
+  }  // namespace FSI
+}  // namespace NOX
 
 #endif

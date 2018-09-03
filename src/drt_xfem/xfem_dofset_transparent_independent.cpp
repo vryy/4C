@@ -22,25 +22,22 @@
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
-  Teuchos::RCP<DRT::Discretization> sourcedis,
-  bool parallel,
-  Teuchos::RCP<GEO::CutWizard> wizard)
-  : DRT::TransparentIndependentDofSet(sourcedis, parallel),
-    wizard_(wizard)
+    Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel, Teuchos::RCP<GEO::CutWizard> wizard)
+    : DRT::TransparentIndependentDofSet(sourcedis, parallel), wizard_(wizard)
 {
   return;
 }
 
-int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node ) const
+int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node) const
 {
   if (wizard_ != Teuchos::null)
   {
-    GEO::CUT::Node *n = wizard_->GetNode( node.Id() );
-    if ( n!=NULL )
+    GEO::CUT::Node *n = wizard_->GetNode(node.Id());
+    if (n != NULL)
     {
-      int numdofpernode = DRT::DofSet::NumDofPerNode( node );
+      int numdofpernode = DRT::DofSet::NumDofPerNode(node);
       return numdofpernode * n->NumDofSets();
     }
   }
-  return DRT::DofSet::NumDofPerNode( node );
+  return DRT::DofSet::NumDofPerNode(node);
 }

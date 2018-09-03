@@ -48,15 +48,11 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::NlnProblem::NlnProblem()
-{
-  return;
-}
+NLNSOL::NlnProblem::NlnProblem() { return; }
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
-    const std::string& description,
-    const IO::VectorType vt) const
+    const std::string& description, const IO::VectorType vt) const
 {
   if (HaveDebugWriter())
   {
@@ -66,11 +62,10 @@ void NLNSOL::NlnProblem::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
   {
     if (getVerbLevel() > Teuchos::VERB_NONE)
     {
-      *getOStream() << Label()
-          << ": WARNING: Cant't write debug output of vector '"
-          << description << "', since debug writer 'dbgwriter_' has not been "
-              "set properly, yet."
-          << std::endl;
+      *getOStream() << Label() << ": WARNING: Cant't write debug output of vector '" << description
+                    << "', since debug writer 'dbgwriter_' has not been "
+                       "set properly, yet."
+                    << std::endl;
     }
   }
 
@@ -78,9 +73,8 @@ void NLNSOL::NlnProblem::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnProblem::WriteVector(const Epetra_MultiVector& vec,
-    const std::string& description,
-    const IO::VectorType vt) const
+void NLNSOL::NlnProblem::WriteVector(
+    const Epetra_MultiVector& vec, const std::string& description, const IO::VectorType vt) const
 {
   WriteVector(Teuchos::rcp(&vec, false), description, vt);
 

@@ -27,31 +27,27 @@ namespace LINALG
      */
     class MueLuBlockPreconditioner : public PreconditionerType
     {
-    public:
+     public:
+      MueLuBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& params);
 
-      MueLuBlockPreconditioner( FILE * outfile,
-          Teuchos::ParameterList & params );
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+      virtual Epetra_Operator* PrecOperator() const { return &*P_; }
 
       /// linear operator used for preconditioning
       virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "MueLuBlockPreconditioner"; }
+      virtual void Print(std::ostream& stream) { stream << "MueLuBlockPreconditioner"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       /*! This function is not needed since we use the XML interface */
       virtual const std::string getParameterListName() const { return ""; }
 
-    private:
-      Teuchos::ParameterList & params_;
+     private:
+      Teuchos::ParameterList& params_;
 
-      Teuchos::RCP<Epetra_Operator>    P_;
+      Teuchos::RCP<Epetra_Operator> P_;
     };
 
     /// SIMPLE(R) block preconditioner
@@ -61,30 +57,26 @@ namespace LINALG
      */
     class SimplePreconditioner : public PreconditionerType
     {
-    public:
+     public:
+      SimplePreconditioner(FILE* outfile, Teuchos::ParameterList& params);
 
-      SimplePreconditioner( FILE * outfile,
-          Teuchos::ParameterList & params );
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+      virtual Epetra_Operator* PrecOperator() const { return &*P_; }
 
       /// linear operator used for preconditioning
       virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "CheapSimple"; }
+      virtual void Print(std::ostream& stream) { stream << "CheapSimple"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "CheapSIMPLE Parameters"; }
 
-    private:
-      Teuchos::ParameterList & params_;
+     private:
+      Teuchos::ParameterList& params_;
 
-      Teuchos::RCP<Epetra_Operator>    P_;
+      Teuchos::RCP<Epetra_Operator> P_;
     };
 
     /// General purpose block gauss-seidel preconditioner
@@ -93,34 +85,30 @@ namespace LINALG
      */
     class BGSPreconditioner : public PreconditionerType
     {
-    public:
+     public:
+      BGSPreconditioner(
+          FILE* outfile, Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
 
-      BGSPreconditioner( FILE * outfile,
-          Teuchos::ParameterList & params, Teuchos::ParameterList & bgslist );
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+      virtual Epetra_Operator* PrecOperator() const { return &*P_; }
 
       /// linear operator used for preconditioning
       virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "BGS"; }
+      virtual void Print(std::ostream& stream) { stream << "BGS"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "BGS Parameters"; }
 
-    private:
-
-      Teuchos::ParameterList & params_;
-      Teuchos::ParameterList & bgslist_;
-      Teuchos::RCP<Epetra_Operator>    P_;
+     private:
+      Teuchos::ParameterList& params_;
+      Teuchos::ParameterList& bgslist_;
+      Teuchos::RCP<Epetra_Operator> P_;
     };
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_BLOCKPRECONDITIONERS_H_ */

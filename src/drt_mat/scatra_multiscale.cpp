@@ -2,7 +2,8 @@
 /*!
 \file scatra_multiscale.cpp
 
-\brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport problems
+\brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport
+problems
 
 \level 2
 
@@ -21,12 +22,10 @@
 /*--------------------------------------------------------------------*
  | constructor                                             fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::PAR::ScatraMultiScale::ScatraMultiScale(
-    Teuchos::RCP<MAT::PAR::Material> matdata
-    ) :
-microfile_(*(matdata->Get<std::string>("MICROFILE"))),
-microdisnum_(matdata->GetInt("MICRODIS_NUM")),
-A_s_(matdata->GetDouble("A_s"))
+MAT::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : microfile_(*(matdata->Get<std::string>("MICROFILE"))),
+      microdisnum_(matdata->GetInt("MICRODIS_NUM")),
+      A_s_(matdata->GetDouble("A_s"))
 {
   return;
 }
@@ -35,8 +34,4 @@ A_s_(matdata->GetDouble("A_s"))
 /*--------------------------------------------------------------------*
  | construct empty material                                fang 07/17 |
  *--------------------------------------------------------------------*/
-MAT::ScatraMultiScale::ScatraMultiScale() :
-  matgp_()
-{
-  return;
-}
+MAT::ScatraMultiScale::ScatraMultiScale() : matgp_() { return; }

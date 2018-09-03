@@ -21,18 +21,17 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(STR::TimInt& tintegrator)
-  : DRT::ResultTest("STRUCTURE")
+StruResultTest::StruResultTest(STR::TimInt& tintegrator) : DRT::ResultTest("STRUCTURE")
 {
-  dis_  = tintegrator.Dis();
-  vel_  = tintegrator.Vel();
-  acc_  = tintegrator.Acc();
+  dis_ = tintegrator.Dis();
+  vel_ = tintegrator.Vel();
+  acc_ = tintegrator.Acc();
   strudisc_ = tintegrator.Discretization();
 
-  if(tintegrator.DispMat()!=Teuchos::null)
-      dism_ = tintegrator.Dismat();
+  if (tintegrator.DispMat() != Teuchos::null)
+    dism_ = tintegrator.Dismat();
   else
-    dism_=Teuchos::null;
+    dism_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/
@@ -43,21 +42,20 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
-  if (dis != strudisc_->Name())
-    return;
+  res.ExtractString("DIS", dis);
+  if (dis != strudisc_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE",node);
+  res.ExtractInt("NODE", node);
   node -= 1;
 
   int havenode(strudisc_->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  strudisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  strudisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
-  if (isnodeofanybody==0)
+  if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s",node+1,strudisc_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
   }
   else
   {
@@ -66,13 +64,12 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       const DRT::Node* actnode = strudisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != strudisc_->Comm().MyPID())
-        return;
+      if (actnode->Owner() != strudisc_->Comm().MyPID()) return;
 
       std::string position;
-      res.ExtractString("QUANTITY",position);
+      res.ExtractString("QUANTITY", position);
       bool unknownpos = true;  // make sure the result value std::string can be handled
-      double result = 0.0;  // will hold the actual result of run
+      double result = 0.0;     // will hold the actual result of run
 
       // test displacements or pressure
       if (dis_ != Teuchos::null)
@@ -91,9 +88,10 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = disnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*dis_)[lid];
         }
       }
@@ -113,9 +111,10 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = dismpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*dism_)[lid];
         }
       }
@@ -135,9 +134,10 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*vel_)[lid];
         }
       }
@@ -157,16 +157,16 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = accnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*acc_)[lid];
         }
       }
 
       // catch position std::strings, which are not handled by structure result test
-      if (unknownpos)
-        dserror("Quantity '%s' not supported in structure testing", position.c_str());
+      if (unknownpos) dserror("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);

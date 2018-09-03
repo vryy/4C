@@ -30,7 +30,6 @@ namespace DRT
 
 namespace LINALG
 {
-
   class Solver;
 
 
@@ -56,8 +55,7 @@ namespace LINALG
    */
   class Preconditioner : public Epetra_Operator
   {
-  public:
-
+   public:
     /// construction from a solver object
     explicit Preconditioner(Teuchos::RCP<Solver> solver);
 
@@ -73,11 +71,10 @@ namespace LINALG
     /*!
       Destroy any existing one.
      */
-    void Setup(Teuchos::RCP<Epetra_Operator>      matrix,
-               Teuchos::RCP<LINALG::MapExtractor> fsidofmapex    = Teuchos::null,
-               Teuchos::RCP<DRT::Discretization>  fdis           = Teuchos::null,
-               Teuchos::RCP<Epetra_Map>           inodes         = Teuchos::null,
-               bool                               structuresplit = false);
+    void Setup(Teuchos::RCP<Epetra_Operator> matrix,
+        Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null,
+        Teuchos::RCP<DRT::Discretization> fdis = Teuchos::null,
+        Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);
 
     /// Solve system of equations
     /*!
@@ -88,15 +85,12 @@ namespace LINALG
       \param reset  (in)    : flag indicating whether all data from previous solves should
                               be recalculated including preconditioners
      */
-    void Solve(Teuchos::RCP<Epetra_Operator>  matrix,
-               Teuchos::RCP<Epetra_MultiVector>    x,
-               Teuchos::RCP<Epetra_MultiVector>    b,
-               bool refactor,
-               bool reset = false);
+    void Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+        Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset = false);
 
 
     /// get flag from solver whether factorization has been performed
-//     bool IsFactored() const;
+    //     bool IsFactored() const;
 
     /// get underlying preconditioner Epetra_Operator
     Teuchos::RCP<Epetra_Operator> EpetraOperator() { return prec_; }
@@ -112,10 +106,10 @@ namespace LINALG
     /// @name Mathematical functions
 
     /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Returns the infinity norm of the global matrix.
     virtual double NormInf() const;
@@ -142,16 +136,14 @@ namespace LINALG
 
     ///@}
 
-  private:
-
+   private:
     /// Get number of solver calls done on this solver
     inline int Ncall() const { return ncall_; }
 
     /// enrich the fluid nullspace in case of monolithic fsi with structure split
-    virtual void EnrichFluidNullSpace(Teuchos::ParameterList&            mllist,
-                                      Teuchos::RCP<LINALG::MapExtractor> fsidofmapex,
-                                      Teuchos::RCP<Epetra_Map>           inodes,
-                                      Teuchos::RCP<DRT::Discretization>  fdis);
+    virtual void EnrichFluidNullSpace(Teuchos::ParameterList& mllist,
+        Teuchos::RCP<LINALG::MapExtractor> fsidofmapex, Teuchos::RCP<Epetra_Map> inodes,
+        Teuchos::RCP<DRT::Discretization> fdis);
 
     /// my internal preconditioner
     Teuchos::RCP<Epetra_Operator> prec_;
@@ -167,6 +159,6 @@ namespace LINALG
     //! counting how many times matrix was solved between resets
     int ncall_;
   };
-}
+}  // namespace LINALG
 
 #endif

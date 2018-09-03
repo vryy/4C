@@ -58,7 +58,8 @@ table. This table can be queried for those values quite easily.
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-typedef enum _SYMBOL_TYPES {
+typedef enum _SYMBOL_TYPES
+{
   sym_undefined,
   sym_string,
   sym_int,
@@ -87,7 +88,8 @@ typedef enum _SYMBOL_TYPES {
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-typedef struct _SYMBOL {
+typedef struct _SYMBOL
+{
   /* put the union first to have the double value properly aligned */
   union {
     CHAR* string;
@@ -118,7 +120,8 @@ typedef struct _SYMBOL {
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-typedef struct _MAP_NODE {
+typedef struct _MAP_NODE
+{
   CHAR* key;
   SYMBOL* symbol;
   INT count;
@@ -138,7 +141,8 @@ typedef struct _MAP_NODE {
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-typedef struct _MAP {
+typedef struct _MAP
+{
   MAP_NODE root;
   INT count;
 } MAP;

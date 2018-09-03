@@ -19,4 +19,3 @@ Maintainer: Matthias Mayr
 void dyn_ale_drt();
 
 #endif /* ALE_DYN_H */
-

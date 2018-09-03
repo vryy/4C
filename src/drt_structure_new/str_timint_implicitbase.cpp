@@ -39,8 +39,7 @@ STR::TIMINT::ImplicitBase::ImplicitBase()
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
 {
   const NOX::Abstract::Group& solgrp = GetSolutionGroup();
-  const NOX::Epetra::Vector& F =
-      dynamic_cast<const NOX::Epetra::Vector&>(solgrp.getF());
+  const NOX::Epetra::Vector& F = dynamic_cast<const NOX::Epetra::Vector&>(solgrp.getF());
   return GetDataGlobalState().ExtractDisplEntries(F.getEpetraVector());
 }
 
@@ -57,8 +56,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 {
   CheckInitSetup();
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>
-      (DataGlobalState().GetMutableJacobian());
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(DataGlobalState().GetMutableJacobian());
 }
 
 
@@ -67,15 +65,15 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::BlockSystemMatrix()
 {
   CheckInitSetup();
-  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>
-      (DataGlobalState().GetMutableJacobian());
+  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(
+      DataGlobalState().GetMutableJacobian());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::UseBlockMatrix(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
 {
   dserror("Currently disabled!");
 }
@@ -95,7 +93,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
   /* See the scaling object in the NOX::NLN::Epetra::LinearSystem class.
    * The STC matrix has to be implemented as a scaling object or as a
    * preconditioner. Both are part of the linear system. */
-  //group->linearsystem->scalingobject
+  // group->linearsystem->scalingobject
   return Teuchos::null;
 }
 
@@ -127,15 +125,14 @@ void STR::TIMINT::ImplicitBase::PrintStep()
 {
   CheckInitSetup();
 
-  if (DataGlobalState().GetMyRank()!=0 or GroupId() != 0)
-    return;
+  if (DataGlobalState().GetMyRank() != 0 or GroupId() != 0) return;
 
-  const int stepmax    = DataSDyn().GetStepMax();
-  const int stepn      = DataGlobalState().GetStepN();
-  const double& timen  = DataGlobalState().GetTimeN();
-  const double& dt     = (*DataGlobalState().GetDeltaTime())[0];
-  const int newtoniter = DataGlobalState().GetNlnIterationNumber( stepn );
-  double wct           = DataGlobalState().GetTimer()->ElapsedTime();
+  const int stepmax = DataSDyn().GetStepMax();
+  const int stepn = DataGlobalState().GetStepN();
+  const double& timen = DataGlobalState().GetTimeN();
+  const double& dt = (*DataGlobalState().GetDeltaTime())[0];
+  const int newtoniter = DataGlobalState().GetNlnIterationNumber(stepn);
+  double wct = DataGlobalState().GetTimer()->ElapsedTime();
 
   // open outstd::stringstream
   std::ostringstream oss;
@@ -158,5 +155,4 @@ void STR::TIMINT::ImplicitBase::PrintStep()
 
   // print it, now
   fflush(stdout);
-
 }

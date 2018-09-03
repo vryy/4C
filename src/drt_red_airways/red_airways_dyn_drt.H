@@ -25,7 +25,7 @@
 void dyn_red_airways_drt();
 void redairway_tissue_dyn();
 
-Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D);
+Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
 
 
-#endif  /* #ifndef RED_AIRWAYS_DRT_DRT_H */
+#endif /* #ifndef RED_AIRWAYS_DRT_DRT_H */

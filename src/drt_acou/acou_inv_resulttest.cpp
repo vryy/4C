@@ -25,35 +25,35 @@
  |                                                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
 ACOU::AcouInvResultTest::AcouInvResultTest(PatImageReconstruction& invalgo)
-  : DRT::ResultTest("ACOUSTIC_INVANA")
+    : DRT::ResultTest("ACOUSTIC_INVANA")
 {
   dis_ = invalgo.ScatraDiscretization();
-  mysol_ =  invalgo.ElementMatVec();
+  mysol_ = invalgo.ElementMatVec();
 }
 
 /*----------------------------------------------------------------------*
  |                                                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouInvResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ACOU::AcouInvResultTest::TestElement(
+    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
+  res.ExtractString("DIS", dis);
 
-  if (dis != dis_->Name())
-    return;
+  if (dis != dis_->Name()) return;
 
   int element;
-  res.ExtractInt("ELEMENT",element);
+  res.ExtractInt("ELEMENT", element);
   element -= 1;
 
   int haveelement(dis_->HaveGlobalElement(element));
   int iselementofanybody(0);
-  dis_->Comm().SumAll(&haveelement,&iselementofanybody,1);
+  dis_->Comm().SumAll(&haveelement, &iselementofanybody, 1);
 
-  if (iselementofanybody==0)
+  if (iselementofanybody == 0)
   {
-    dserror("Element %d does not belong to discretization %s",element+1,dis_->Name().c_str());
+    dserror("Element %d does not belong to discretization %s", element + 1, dis_->Name().c_str());
   }
   else
   {
@@ -62,21 +62,23 @@ void ACOU::AcouInvResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& 
       const DRT::Element* actelement = dis_->gElement(element);
 
       // Here we are just interested in the elements that we own (i.e. a row element)!
-      if (actelement->Owner() != dis_->Comm().MyPID())
-        return;
+      if (actelement->Owner() != dis_->Comm().MyPID()) return;
 
       double result = 0.;
       std::string position;
-      res.ExtractString("QUANTITY",position);
+      res.ExtractString("QUANTITY", position);
 
       if (position == "absorptioncoeff")
       {
-        std::cout<<"lid "<<dis_->ElementRowMap()->LID(element)<<" ele "<<element<<" myrank "<<dis_->Comm().MyPID()<<std::endl;
-        result = mysol_->operator ()(0)->operator [](dis_->ElementRowMap()->LID(element));
+        std::cout << "lid " << dis_->ElementRowMap()->LID(element) << " ele " << element
+                  << " myrank " << dis_->Comm().MyPID() << std::endl;
+        result = mysol_->operator()(0)->operator[](dis_->ElementRowMap()->LID(element));
       }
       else
       {
-        dserror("Quantity '%s' not supported in result-test of photoacoustic reconstruction problems", position.c_str());
+        dserror(
+            "Quantity '%s' not supported in result-test of photoacoustic reconstruction problems",
+            position.c_str());
       }
 
       nerr += CompareValues(result, "ELEMENT", res);

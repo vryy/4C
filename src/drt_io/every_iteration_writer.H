@@ -20,10 +20,12 @@
 #include "../drt_lib/drt_dserror.H"
 #include <Teuchos_RCP.hpp>
 
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
 }
-namespace IO {
+namespace IO
+{
   class DiscretizationWriter;
   class OutputControl;
 
@@ -39,12 +41,12 @@ namespace IO {
    *  @author hiermeier @date 08/17 */
   class EveryIterationWriterInterface
   {
-  public:
+   public:
     /// empty constructor
-    EveryIterationWriterInterface() {};
+    EveryIterationWriterInterface(){};
 
     /// destructor
-    virtual ~EveryIterationWriterInterface() {};
+    virtual ~EveryIterationWriterInterface(){};
 
     /// Prepare the output before it is accessed via OutputState.
     virtual void PrepareOutput() = 0;
@@ -56,8 +58,7 @@ namespace IO {
      *                          is written.
      *
      *  @author hiermeier @date 08/17 */
-    virtual void OutputState( IO::DiscretizationWriter& iowriter,
-        bool write_owner ) const = 0;
+    virtual void OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const = 0;
 
     /** @brief Get the current time/load step number
      *
@@ -129,12 +130,12 @@ namespace IO {
    *  @author hiermeier @date 08/17 */
   class EveryIterationWriter
   {
-  public:
+   public:
     /// Empty default constructor
     EveryIterationWriter();
 
     /// destructor
-    ~EveryIterationWriter() {};
+    ~EveryIterationWriter(){};
 
     /** @brief Initialize the object
      *
@@ -145,9 +146,8 @@ namespace IO {
      *  @param[in] params         EVERY ITERATION parameter list.
      *
      *  @author hiermeier @date 08/17 */
-    void Init( const IO::DiscretizationWriter* parent_writer,
-        EveryIterationWriterInterface* interface,
-        const Teuchos::ParameterList& params );
+    void Init(const IO::DiscretizationWriter* parent_writer,
+        EveryIterationWriterInterface* interface, const Teuchos::ParameterList& params);
 
     /// Setup the class object
     void Setup();
@@ -167,7 +167,7 @@ namespace IO {
      *  @param[in] newton_iteration  Number of the current Newton iteration.
      *
      *  @author hiermeier @date 08/17 */
-    void AddNewtonIteration( const int newton_iteration );
+    void AddNewtonIteration(const int newton_iteration);
 
     /** @brief Add a line search iteration to the current output
      *
@@ -177,23 +177,19 @@ namespace IO {
      *  @param[in] linesearch_iteration  Number of the current line search iteration.
      *
      *  @author hiermeier @date 11/17 */
-    void AddLineSearchIteration(
-        const int newton_iteration,
-        const int linesearch_iteration );
+    void AddLineSearchIteration(const int newton_iteration, const int linesearch_iteration);
 
-  private:
+   private:
     /// Throw if Init() has not been called.
-    inline void ThrowIfNotInitialized( const int line ) const
+    inline void ThrowIfNotInitialized(const int line) const
     {
-      if ( not isinit_ )
-        dserror( "LINE %d: Call Init() first!", line );
+      if (not isinit_) dserror("LINE %d: Call Init() first!", line);
     }
 
     /// Throw if Setup() has not been called.
-    inline void ThrowIfNotSetup( const int line ) const
+    inline void ThrowIfNotSetup(const int line) const
     {
-      if ( not issetup_ )
-        dserror( "LINE %d: Call Setup() first!", line );
+      if (not issetup_) dserror("LINE %d: Call Setup() first!", line);
     }
 
     /// Returns true if the current load/time step is supposed to be written.
@@ -201,20 +197,18 @@ namespace IO {
 
     /** Create a new run directory if the corresponding input parameter
      *  is specified. */
-    std::string CreateRunDirectory(
-        const std::string& file_dir_path ) const;
+    std::string CreateRunDirectory(const std::string& file_dir_path) const;
 
     /// Create a new directory.
-    void CreateDirectory( const std::string& dir_path ) const;
+    void CreateDirectory(const std::string& dir_path) const;
 
     /// Adjust the specified steps per file.
-    void AdjustStepsPerFile( IO::OutputControl& control ) const;
+    void AdjustStepsPerFile(IO::OutputControl& control) const;
 
     /// Read-only access to the parent discretization writer.
     const IO::DiscretizationWriter& ParentWriter() const
     {
-      if ( not parent_writer_ )
-        dserror( "The parent writer has not been initialized correctly." );
+      if (not parent_writer_) dserror("The parent writer has not been initialized correctly.");
 
       return *parent_writer_;
     }
@@ -222,16 +216,16 @@ namespace IO {
     /// Access to the interface object.
     EveryIterationWriterInterface& Interface()
     {
-      if ( not interface_ )
-        dserror( "The every iteration interface has not been initialized correctly." );
+      if (not interface_)
+        dserror("The every iteration interface has not been initialized correctly.");
 
       return *interface_;
     }
 
     /// print current output path to the os
-    void PrintPath2Screen( const std::string& path ) const;
+    void PrintPath2Screen(const std::string& path) const;
 
-  private:
+   private:
     bool isinit_;
     bool issetup_;
     bool isnewton_initialized_;
@@ -251,19 +245,19 @@ namespace IO {
   };
 
   /// Extract the path of a full filename.
-  std::string ExtractPath( const std::string& full_filename );
+  std::string ExtractPath(const std::string& full_filename);
 
-  std::string ExtractFileName( const std::string& full_filename );
+  std::string ExtractFileName(const std::string& full_filename);
 
   /// remove the restart counter from the file name
-  std::string RemoveRestartCountFromFileName( const std::string& filename );
+  std::string RemoveRestartCountFromFileName(const std::string& filename);
 
   /// Create a new directory.
-  void CreateDirectory( const std::string& dir_path, const int myrank );
+  void CreateDirectory(const std::string& dir_path, const int myrank);
 
   /// Return number of lines in the given file
-  int CountLinesInFile( const std::string& filepath );
-}
+  int CountLinesInFile(const std::string& filepath);
+}  // namespace IO
 
 
 #endif /* SRC_DRT_IO_EVERY_ITERATION_WRITER_H_ */

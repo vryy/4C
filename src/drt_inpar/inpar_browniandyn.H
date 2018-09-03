@@ -18,7 +18,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   /// Input parameters used in statistical mechanics
   namespace BROWNIANDYN
   {
@@ -33,9 +32,9 @@ namespace INPAR
     /// set the brownian dynamic parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }
+  }  // namespace BROWNIANDYN
 
-}
+}  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif

@@ -15,17 +15,13 @@ Created on: Jul 4, 2011
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::PreconditionerType::PreconditionerType( FILE * outfile )
-  : outfile_( outfile )
-{
-}
+LINALG::SOLVER::PreconditionerType::PreconditionerType(FILE* outfile) : outfile_(outfile) {}
 
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::PreconditionerType::SetupLinearProblem( Epetra_Operator * matrix,
-                                                             Epetra_MultiVector * x,
-                                                             Epetra_MultiVector * b )
+void LINALG::SOLVER::PreconditionerType::SetupLinearProblem(
+    Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   lp_.SetOperator(matrix);
   lp_.SetLHS(x);

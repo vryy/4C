@@ -32,29 +32,24 @@ ADAPTER::StructureLocaAlgorithm::StructureLocaAlgorithm()
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureLocaAlgorithm::Setup()
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdyn_,"DYNAMICTYP")
-      != INPAR::STR::dyna_statics)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
+      INPAR::STR::dyna_statics)
     dserror("Currently LOCA supports only the static case!");
 
   // call the setup routine of the base class
   ADAPTER::StructureBaseAlgorithmNew::SetupTimInt();
 
-  if (not IsSetup())
-    dserror("The base class Setup() routine should have set this flag!");
+  if (not IsSetup()) dserror("The base class Setup() routine should have set this flag!");
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureLocaAlgorithm::SetParams(
-    Teuchos::ParameterList& ioflags,
-    Teuchos::ParameterList& xparams,
-    Teuchos::ParameterList& taflags
-    )
+void ADAPTER::StructureLocaAlgorithm::SetParams(Teuchos::ParameterList& ioflags,
+    Teuchos::ParameterList& xparams, Teuchos::ParameterList& taflags)
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -66,19 +61,16 @@ void ADAPTER::StructureLocaAlgorithm::SetParams(
   loca = *sloca;
 
   // Set the base class variables (though most are unused in the LOCA case)
-  ADAPTER::StructureBaseAlgorithmNew::SetParams(ioflags,xparams,taflags);
+  ADAPTER::StructureBaseAlgorithmNew::SetParams(ioflags, xparams, taflags);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureLocaAlgorithm::SetStructureWrapper(
-    const Teuchos::ParameterList& ioflags,
-    const Teuchos::ParameterList& sdyn,
-    const Teuchos::ParameterList& xparams,
-    const Teuchos::ParameterList& taflags,
-    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
+void ADAPTER::StructureLocaAlgorithm::SetStructureWrapper(const Teuchos::ParameterList& ioflags,
+    const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
+    const Teuchos::ParameterList& taflags, Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   str_wrapper_ = Teuchos::rcp(new StructureLocaWrapper(ti_strategy));
 

@@ -11,22 +11,25 @@
 #include <LOCA_Epetra_Interface_Required.H>
 #include "../solver_nonlin_nox/nox_nln_interface_required.H"
 
-namespace LOCA {
-namespace NLN {
-namespace Interface {
-  class Required : public virtual LOCA::Epetra::Interface::Required,
-                   public virtual NOX::NLN::Interface::Required
+namespace LOCA
+{
+  namespace NLN
   {
-  public:
-    //! constructor
-    Required() {};
+    namespace Interface
+    {
+      class Required : public virtual LOCA::Epetra::Interface::Required,
+                       public virtual NOX::NLN::Interface::Required
+      {
+       public:
+        //! constructor
+        Required(){};
 
-    //! destructor
-    virtual ~Required() {};
-  };  // class Required
-} // namespace Interface
-} // namespace NLN
-} // namespace LOCA
+        //! destructor
+        virtual ~Required(){};
+      };  // class Required
+    }     // namespace Interface
+  }       // namespace NLN
+}  // namespace LOCA
 
 
 #endif /* SRC_LOCA_CONTINUATION_LOCA_NLN_INTERFACE_REQUIRED_H_ */

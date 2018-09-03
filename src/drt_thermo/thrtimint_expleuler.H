@@ -38,21 +38,18 @@ namespace THR
    */
   class TimIntExplEuler : public TimIntExpl
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntExplEuler(
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& tdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-      );
+    TimIntExplEuler(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& tdynparams,            //!< input parameters
+        const Teuchos::ParameterList& xparams,               //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                 //!< the solver
+        Teuchos::RCP<IO::DiscretizationWriter> output        //!< the output
+    );
 
     //! Destructor
     // ....
@@ -64,7 +61,7 @@ namespace THR
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep(){dserror("not a multistep method");}
+    void ResizeMStep() { dserror("not a multistep method"); }
 
     //@}
 
@@ -89,10 +86,7 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum INPAR::THR::DynamicType MethodName() const
-    {
-      return INPAR::THR::dyna_expleuler;
-    }
+    enum INPAR::THR::DynamicType MethodName() const { return INPAR::THR::dyna_expleuler; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -114,10 +108,7 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> Fext() { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
     Teuchos::RCP<Epetra_Vector> FextNew()
@@ -134,8 +125,7 @@ namespace THR
 
     //@}
 
-  protected:
-
+   protected:
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force

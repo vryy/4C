@@ -18,11 +18,9 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 schoeder 01/14 |
  *----------------------------------------------------------------------*/
-ACOU::TimIntImplEuler::TimIntImplEuler(
-      const Teuchos::RCP<DRT::DiscretizationHDG>&   actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output
-      )
-:AcouImplicitTimeInt(actdis,solver,params,output)
-{}
+ACOU::TimIntImplEuler::TimIntImplEuler(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output)
+    : AcouImplicitTimeInt(actdis, solver, params, output)
+{
+}

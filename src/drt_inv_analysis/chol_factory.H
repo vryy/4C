@@ -19,34 +19,32 @@
 
 class Epetra_CrsMatrix;
 
-namespace Teuchos{
+namespace Teuchos
+{
   class ParameterList;
 }
 
 namespace INVANA
 {
+  class CholFactorBase;
 
-class CholFactorBase;
+  /*!
+   * \brief Factory for the Cholesky factorization
+   * \author kehl
+   */
+  class CholFactory
+  {
+   public:
+    //! standard constructor
+    CholFactory() {}
 
-/*!
- * \brief Factory for the Cholesky factorization
- * \author kehl
- */
-class CholFactory {
+    //! destructor
+    virtual ~CholFactory() {}
 
-public:
-
-  //! standard constructor
-  CholFactory(){}
-
-  //! destructor
-  virtual ~CholFactory() {}
-
-  //! Return the factorization base pointer
-  Teuchos::RCP<CholFactorBase> Create(Teuchos::RCP<Epetra_CrsMatrix> A,
-      Teuchos::ParameterList& p
-      );
-};
+    //! Return the factorization base pointer
+    Teuchos::RCP<CholFactorBase> Create(
+        Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::ParameterList& p);
+  };
 }  // namespace INVANA
 
 #endif /*CHOL_FACTORY_H_*/

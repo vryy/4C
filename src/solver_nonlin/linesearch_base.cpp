@@ -31,28 +31,24 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 NLNSOL::LineSearchBase::LineSearchBase()
- : nlnproblem_(Teuchos::null),
-   config_(Teuchos::null),
-   listname_(""),
-   xold_(Teuchos::null),
-   fold_(Teuchos::null),
-   inc_(Teuchos::null),
-   resnormold_(0.0),
-   suffdecrtype_(INPAR::NLNSOL::LINESEARCH::suffdecr_none),
-   isinit_(false),
-   issetup_(false)
+    : nlnproblem_(Teuchos::null),
+      config_(Teuchos::null),
+      listname_(""),
+      xold_(Teuchos::null),
+      fold_(Teuchos::null),
+      inc_(Teuchos::null),
+      resnormold_(0.0),
+      suffdecrtype_(INPAR::NLNSOL::LINESEARCH::suffdecr_none),
+      isinit_(false),
+      issetup_(false)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBase::Init(
-    Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem,
-    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
-    const std::string listname,
-    const Epetra_MultiVector& xold,
-    const Epetra_MultiVector& fold,
-    const Epetra_MultiVector& inc,
+void NLNSOL::LineSearchBase::Init(Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem,
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, const std::string listname,
+    const Epetra_MultiVector& xold, const Epetra_MultiVector& fold, const Epetra_MultiVector& inc,
     const double resnormold)
 {
   // We need to enforce calling Setup() after Init()
@@ -68,22 +64,22 @@ void NLNSOL::LineSearchBase::Init(
   resnormold_ = resnormold;
 
   suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_armijo;
-//  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_aredpred;
-//  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_loose;
+  //  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_aredpred;
+  //  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_loose;
 
   // some sanity checks
   if (GetFNormOld() < 0.0)
-    dserror("Old residual norm 'resnormold_' = %f, but has to be greater than "
-        "0.0!", resnormold_);
+    dserror(
+        "Old residual norm 'resnormold_' = %f, but has to be greater than "
+        "0.0!",
+        resnormold_);
 
-  const std::string verblevel = MyGetParameter<std::string>(
-      "line search: verbosity");
+  const std::string verblevel = MyGetParameter<std::string>("line search: verbosity");
   setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(verblevel));
 
   if (getVerbLevel() > Teuchos::VERB_HIGH)
   {
-    *getOStream() << "Parameter list passed to Line Search algorithm:"
-        << std::endl;
+    *getOStream() << "Parameter list passed to Line Search algorithm:" << std::endl;
     Configuration()->GetSubList(MyListName()).print(*getOStream());
   }
 
@@ -94,12 +90,11 @@ void NLNSOL::LineSearchBase::Init(
 }
 
 /*----------------------------------------------------------------------------*/
-bool NLNSOL::LineSearchBase::IsSufficientDecrease(const double fnorm2,
-    const double lsparam) const
+bool NLNSOL::LineSearchBase::IsSufficientDecrease(const double fnorm2, const double lsparam) const
 {
   bool issufficientdecrease = false;
 
-  switch(suffdecrtype_)
+  switch (suffdecrtype_)
   {
     case INPAR::NLNSOL::LINESEARCH::suffdecr_armijo:
     {
@@ -132,30 +127,27 @@ bool NLNSOL::LineSearchBase::IsSufficientDecrease(const double fnorm2,
 }
 
 /*----------------------------------------------------------------------------*/
-bool NLNSOL::LineSearchBase::SufficientDecreaseArmijo(const double fnorm2,
-    const double lsparam) const
+bool NLNSOL::LineSearchBase::SufficientDecreaseArmijo(
+    const double fnorm2, const double lsparam) const
 {
   bool issufficientdecrease = false;
 
-  const double alpha = 1.0e-4; // as recommended in literature
+  const double alpha = 1.0e-4;  // as recommended in literature
 
-  if (fnorm2 < (1.0 - alpha * lsparam) * resnormold_)
-    issufficientdecrease = true;
+  if (fnorm2 < (1.0 - alpha * lsparam) * resnormold_) issufficientdecrease = true;
 
   return issufficientdecrease;
 }
 
 /*----------------------------------------------------------------------------*/
-bool NLNSOL::LineSearchBase::SufficientDecreaseARedPRed(
-    const double fnorm2) const
+bool NLNSOL::LineSearchBase::SufficientDecreaseARedPRed(const double fnorm2) const
 {
   bool issufficientdecrease = false;
 
-  const double alpha = 1.0e-4; // as recommended in [Eisenstat (1996)]
-  const double eta = 0.95; // forcing term parameter
+  const double alpha = 1.0e-4;  // as recommended in [Eisenstat (1996)]
+  const double eta = 0.95;      // forcing term parameter
 
-  if (fnorm2 < (1.0 - alpha * (1.0 - eta)) * resnormold_)
-    issufficientdecrease = true;
+  if (fnorm2 < (1.0 - alpha * (1.0 - eta)) * resnormold_) issufficientdecrease = true;
 
   return issufficientdecrease;
 }
@@ -167,27 +159,22 @@ bool NLNSOL::LineSearchBase::SufficientDecreaseLoose(const double fnorm2) const
 
   const double kappa = 1.0;
 
-  if (fnorm2 <= kappa * resnormold_)
-    issufficientdecrease = true;
+  if (fnorm2 <= kappa * resnormold_) issufficientdecrease = true;
 
   return issufficientdecrease;
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBase::Safeguard(double& lsparam,
-    const double lsparamold
-    ) const
+void NLNSOL::LineSearchBase::Safeguard(double& lsparam, const double lsparamold) const
 {
-  lsparam = std::min(lsparam, 0.5*lsparamold);
-  lsparam = std::max(lsparam, 0.1*lsparamold);
+  lsparam = std::min(lsparam, 0.5 * lsparamold);
+  lsparam = std::max(lsparam, 0.1 * lsparamold);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBase::ComputeF(const Epetra_MultiVector& x,
-    Epetra_MultiVector& f
-    ) const
+void NLNSOL::LineSearchBase::ComputeF(const Epetra_MultiVector& x, Epetra_MultiVector& f) const
 {
   dsassert(x.Map().PointSameAs(f.Map()), "Maps do not match.");
 
@@ -197,21 +184,17 @@ void NLNSOL::LineSearchBase::ComputeF(const Epetra_MultiVector& x,
 }
 
 /*----------------------------------------------------------------------------*/
-bool NLNSOL::LineSearchBase::ConvergenceCheck(const Epetra_MultiVector& f,
-    double& fnorm2
-    ) const
+bool NLNSOL::LineSearchBase::ConvergenceCheck(const Epetra_MultiVector& f, double& fnorm2) const
 {
   return nlnproblem_->ConvergenceCheck(f, fnorm2);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
-NLNSOL::LineSearchBase::Configuration() const
+Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> NLNSOL::LineSearchBase::Configuration() const
 {
   // check if parameter list has already been set
-  if (config_.is_null())
-    dserror("Configuration 'config_' has not been initialized, yet.");
+  if (config_.is_null()) dserror("Configuration 'config_' has not been initialized, yet.");
 
   return config_;
 }

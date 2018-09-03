@@ -27,76 +27,70 @@ namespace LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}
+}  // namespace LINALG
 
 namespace VOLMORTAR
 {
+  class Cell
+  {
+   public:
+    /*!
+    \brief constructor
 
-class Cell
-{
-public:
+    */
+    Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
+        const DRT::Element::DiscretizationType& shape);
 
-  /*!
-  \brief constructor
+    /*!
+    \brief destructor
 
-  */
-  Cell(int id,
-       int nvertices,
-       const Epetra_SerialDenseMatrix& coords,
-       const DRT::Element::DiscretizationType& shape);
+    */
+    virtual ~Cell(){};
 
-  /*!
-  \brief destructor
+    /*!
+    \brief calc jacobian
 
-  */
-  virtual ~Cell() {};
+    */
+    double CalcJac(const double* xi);
 
-  /*!
-  \brief calc jacobian
+    /*!
+    \brief get cell id
 
-  */
-  double CalcJac(const double* xi);
+    */
+    int Id() const { return id_; }
 
-  /*!
-  \brief get cell id
+    /*!
+    \brief mapping between para space and global space
 
-  */
-  int Id() const { return id_; }
+    */
+    void LocalToGlobal(double* local, double* global);
 
-  /*!
-  \brief mapping between para space and global space
+    /*!
+    \brief output for coordinates
 
-  */
-  void LocalToGlobal(double* local, double* global);
+    */
+    void Print();
 
-  /*!
-  \brief output for coordinates
+    /*!
+    \brief get shape
 
-  */
-  void Print();
+    */
+    virtual DRT::Element::DiscretizationType Shape() const { return shape_; }
 
-  /*!
-  \brief get shape
+    /*!
+    \brief get cell volume
 
-  */
-  virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
+    */
+    virtual double Vol() { return vol_; }
 
-  /*!
-  \brief get cell volume
+    //@}
+   protected:
+    int id_;                                  // local ID of this cell
+    Epetra_SerialDenseMatrix coords_;         // coords of cell vertices (dim,vertices)
+    DRT::Element::DiscretizationType shape_;  // shape of this element (always tet4)
+    double vol_;                              // integration cell volume
+  };
 
-  */
-  virtual double Vol() { return vol_; }
-
-  //@}
-protected:
-
-  int                                  id_;        // local ID of this cell
-  Epetra_SerialDenseMatrix             coords_;    // coords of cell vertices (dim,vertices)
-  DRT::Element::DiscretizationType     shape_;     // shape of this element (always tet4)
-  double                               vol_;       // integration cell volume
-
-};
-
-}
+}  // namespace VOLMORTAR
 
 #endif /* VOLMORTAR_CELL_H_ */

@@ -19,8 +19,8 @@
 
 //#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class ContactASlaveDofFilterFactory class.
     @brief special factory
@@ -28,13 +28,15 @@ namespace MueLu {
   */
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  class ContactASlaveDofFilterFactory : public SingleLevelFactoryBase {
+  class ContactASlaveDofFilterFactory : public SingleLevelFactoryBase
+  {
 #undef MUELU_CONTACTASLAVEDOFFILTERFACTORY_SHORT
-    #include "MueLu_UseShortNames.hpp"
+#include "MueLu_UseShortNames.hpp"
 
-    //typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
+    // typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; //
+    // TODO move me to ShortNames...
 
-  public:
+   public:
     //! @name Constructors/Destructors.
     //@{
 
@@ -59,17 +61,16 @@ namespace MueLu {
     //! @name Build methods.
 
     //! Build an object with this factory.
-    void Build(Level & currentLevel) const;
+    void Build(Level &currentLevel) const;
 
     //@}
 
-  private:
+   private:
+  };  // class ContactASlaveDofFilterFactory
 
-  }; // class ContactASlaveDofFilterFactory
-
-} // namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_CONTACTASLAVEDOFFILTERFACTORY_SHORT
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_CONTACTASLAVEDOFFILTERFACTORY_DECL_HPP_ */

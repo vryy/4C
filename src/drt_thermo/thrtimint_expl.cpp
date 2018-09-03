@@ -27,22 +27,14 @@
 /*----------------------------------------------------------------------*
  | constructor                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-THR::TimIntExpl::TimIntExpl(
-  const Teuchos::ParameterList& ioparams,  //!< ioflags
-  const Teuchos::ParameterList& tdynparams,  //!< input parameters
-  const Teuchos::ParameterList& xparams,  //!< extra flags
-  Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-  Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-  Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-  )
-: TimInt(
-    ioparams,
-    tdynparams,
-    xparams,
-    actdis,
-    solver,
-    output
+THR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& ioparams,  //!< ioflags
+    const Teuchos::ParameterList& tdynparams,                        //!< input parameters
+    const Teuchos::ParameterList& xparams,                           //!< extra flags
+    Teuchos::RCP<DRT::Discretization> actdis,                        //!< current discretisation
+    Teuchos::RCP<LINALG::Solver> solver,                             //!< the solver
+    Teuchos::RCP<IO::DiscretizationWriter> output                    //!< the output
     )
+    : TimInt(ioparams, tdynparams, xparams, actdis, solver, output)
 {
   // get away
   return;
@@ -72,7 +64,7 @@ void THR::TimIntExpl::Update()
 void THR::TimIntExpl::PrintStep()
 {
   // print out
-  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_ == 0) )
+  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
   {
     PrintStepText(stdout);
   }
@@ -94,20 +86,20 @@ void THR::TimIntExpl::PrintStep()
 void THR::TimIntExpl::PrintStepText(FILE* ofile)
 {
   fprintf(ofile,
-          "Finalised: step %6d"
-          " | nstep %6d"
-          " | time %-14.8E"
-          " | dt %-14.8E"
-          " | numiter %3d\n",
-     //     " | wct %-14.8E\n",
-          step_, stepmax_, (*time_)[0], (*dt_)[0], 0
-   //       timer_->ElapsedTime()
-   );
+      "Finalised: step %6d"
+      " | nstep %6d"
+      " | time %-14.8E"
+      " | dt %-14.8E"
+      " | numiter %3d\n",
+      //     " | wct %-14.8E\n",
+      step_, stepmax_, (*time_)[0], (*dt_)[0], 0
+      //       timer_->ElapsedTime()
+  );
 
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
-          "--------------------------------------------------------------"
-          "------------------\n");
+      "--------------------------------------------------------------"
+      "------------------\n");
   // do it, print now!
   fflush(ofile);
 

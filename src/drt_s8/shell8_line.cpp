@@ -20,33 +20,26 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::Shell8LineType DRT::ELEMENTS::Shell8LineType::instance_;
 
-DRT::ELEMENTS::Shell8LineType& DRT::ELEMENTS::Shell8LineType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::Shell8LineType& DRT::ELEMENTS::Shell8LineType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Line::Shell8Line(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::Shell8* parent,
-                              const int lline) :
-DRT::FaceElement(id,owner)
+DRT::ELEMENTS::Shell8Line::Shell8Line(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::ELEMENTS::Shell8* parent, const int lline)
+    : DRT::FaceElement(id, owner)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lline);
+  SetParentMasterElement(parent, lline);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Line::Shell8Line(const DRT::ELEMENTS::Shell8Line& old) :
-DRT::FaceElement(old)
+DRT::ELEMENTS::Shell8Line::Shell8Line(const DRT::ELEMENTS::Shell8Line& old) : DRT::FaceElement(old)
 {
   return;
 }
@@ -69,10 +62,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Shell8Line::Shape() const
 {
   switch (NumNode())
   {
-  case 2: return line2;
-  case 3: return line3;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
+    case 2:
+      return line2;
+    case 3:
+      return line3;
+    default:
+      dserror("unexpected number of nodes %d", NumNode());
   }
   return dis_none;
 }
@@ -101,10 +96,7 @@ void DRT::ELEMENTS::Shell8Line::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Shell8Line::~Shell8Line()
-{
-  return;
-}
+DRT::ELEMENTS::Shell8Line::~Shell8Line() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -119,4 +111,4 @@ void DRT::ELEMENTS::Shell8Line::Print(std::ostream& os) const
 
 
 
-#endif // #ifdef D_SHELL8
+#endif  // #ifdef D_SHELL8

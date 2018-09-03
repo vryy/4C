@@ -33,11 +33,13 @@
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
 ///
-/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac muscle tissue
+/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac
+/// muscle tissue
 ///
 /// <h3>References</h3>
 /// <ul>
-/// <li> [1] S Inada et. al., "One-Dinemsional Mathematical Model of the Atrioventricular Node Including Atrio-Nodal, Nodal, and Nodal-His Cells", Biophysical Journal 97 (2009) 2117-2127
+/// <li> [1] S Inada et. al., "One-Dinemsional Mathematical Model of the Atrioventricular Node
+/// Including Atrio-Nodal, Nodal, and Nodal-His Cells", Biophysical Journal 97 (2009) 2117-2127
 /// </ul>
 ///
 /// \author ljag
@@ -48,9 +50,7 @@
 class Myocard_Inada : public Myocard_General
 
 {
-
-public:
-
+ public:
   /// construct empty material object
   Myocard_Inada();
 
@@ -81,8 +81,7 @@ public:
   /// time update for this material
   void Update(const double phi, const double dt);
 
-private:
-
+ private:
   Myocard_Tools tools_;
 
   /// Global time
@@ -98,7 +97,7 @@ private:
   std::vector<double> a_;
   std::vector<double> c_;
 
-}; // Myocard_Inada
+};  // Myocard_Inada
 
 
 #endif

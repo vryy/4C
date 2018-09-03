@@ -28,33 +28,29 @@ namespace FLD
 
 namespace SCATRA
 {
+  /*!
+  \brief Fluid-fluid meshtying strategy for standard scalar transport problems
 
-/*!
-\brief Fluid-fluid meshtying strategy for standard scalar transport problems
+  To keep the scalar transport time integrator class and derived classes as plain as possible,
+  several algorithmic parts have been encapsulated within separate meshtying strategy classes.
+  These algorithmic parts include initializing the system matrix and other relevant objects,
+  computing meshtying residual terms and their linearizations, and solving the resulting
+  linear system of equations. By introducing a hierarchy of strategies for these algorithmic
+  parts, a bunch of unhandy if-else selections within the time integrator classes themselves
+  can be circumvented. This class contains the fluid-fluid meshtying strategy for standard
+  scalar transport problems.
 
-To keep the scalar transport time integrator class and derived classes as plain as possible,
-several algorithmic parts have been encapsulated within separate meshtying strategy classes.
-These algorithmic parts include initializing the system matrix and other relevant objects,
-computing meshtying residual terms and their linearizations, and solving the resulting
-linear system of equations. By introducing a hierarchy of strategies for these algorithmic
-parts, a bunch of unhandy if-else selections within the time integrator classes themselves
-can be circumvented. This class contains the fluid-fluid meshtying strategy for standard
-scalar transport problems.
+  \author fang (fang@lnm.mw.tum.de)
+  */
 
-\author fang (fang@lnm.mw.tum.de)
-*/
-
-class MeshtyingStrategyFluid : public MeshtyingStrategyBase
-{
-  public:
-
+  class MeshtyingStrategyFluid : public MeshtyingStrategyBase
+  {
+   public:
     //! constructor
-    explicit MeshtyingStrategyFluid(
-        SCATRA::ScaTraTimIntImpl* scatratimint
-        );
+    explicit MeshtyingStrategyFluid(SCATRA::ScaTraTimIntImpl* scatratimint);
 
     //! destructor
-    virtual ~MeshtyingStrategyFluid(){return;};
+    virtual ~MeshtyingStrategyFluid() { return; };
 
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const;
@@ -75,21 +71,19 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
     void SetupMeshtying();
 
     //! solve resulting linear system of equations
-    void Solve(
-        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
-        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
+    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+        const int& iteration,  //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
         ) const;
 
     //! return linear solver for global system of linear equations
     const LINALG::Solver& Solver() const;
 
-  protected:
-
+   protected:
     //! instantiate strategy for Newton-Raphson convergence check
     virtual void InitConvCheckStrategy();
 
@@ -99,10 +93,9 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
     //! type of fluid-fluid meshtying
     enum INPAR::FLUID::MeshTying type_;
 
-  private:
-
+   private:
     //! copy constructor
     MeshtyingStrategyFluid(const MeshtyingStrategyFluid& old);
-}; // class MeshtyingStrategyFluid
-} // namespace SCATRA
-#endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
+  };  // class MeshtyingStrategyFluid
+}  // namespace SCATRA
+#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H

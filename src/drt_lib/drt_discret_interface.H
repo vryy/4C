@@ -24,17 +24,21 @@ class Epetra_Map;
 class Epetra_Comm;
 class Epetra_Vector;
 class Epetra_SerialDenseVector;
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace LINALG {
+}  // namespace Teuchos
+namespace LINALG
+{
   class SparseOperator;
   class MapExtractor;
-} // namespace LINALG
-namespace IO {
+}  // namespace LINALG
+namespace IO
+{
   class DiscretizationWriter;
-} // namespace IO
-namespace DRT {
+}  // namespace IO
+namespace DRT
+{
   class Node;
   class Element;
   class Condition;
@@ -61,12 +65,12 @@ namespace DRT {
    *  \date 10/16 */
   class DiscretizationInterface
   {
-  public:
+   public:
     /// constructor
-    DiscretizationInterface() {};
+    DiscretizationInterface(){};
 
     /// destructor
-    virtual ~DiscretizationInterface() {};
+    virtual ~DiscretizationInterface(){};
 
     /// Access the communicator object
     virtual const Epetra_Comm& Comm() const = 0;
@@ -117,9 +121,8 @@ namespace DRT {
      *        be called more than once.
      *
      *  \note Sets Filled()=true */
-    virtual int FillComplete(bool assigndegreesoffreedom=true,
-                             bool initelements = true,
-                             bool doboundaryconditions = true) = 0;
+    virtual int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
+        bool doboundaryconditions = true) = 0;
 
     /** \brief Get map associated with the distribution of the ownership of nodes
      *         (Filled()==true prerequisite)
@@ -196,7 +199,7 @@ namespace DRT {
      *
      *  - Filled()==true prerequisite
      *  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom())) */
-    virtual const Epetra_Map* DofRowMap(unsigned nds=0) const = 0;
+    virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const = 0;
 
     /** \brief True if degrees of freedom where assigned
      *
@@ -217,7 +220,10 @@ namespace DRT {
      *  \param dofset_id  (in): id of the desired dofset
      *  \param node       (in): the node those number of dofs are requested */
     int NumDof(const Node* node) const
-    { dsassert(NumDofSets()==1,"expect just one dof set"); return NumDof(0,node); };
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      return NumDof(0, node);
+    };
     virtual int NumDof(unsigned dofset_id, const Node* node) const = 0;
 
     /** \brief Get number of standard (w/o enrichment) dofs for given node.
@@ -230,7 +236,7 @@ namespace DRT {
      *  \param node      (in): the node those number of dofs are requested
      *
      *  \author hiermeier \date 10/16 */
-    virtual int NumStandardDof(const unsigned & dofset_id, const Node* node) const = 0;
+    virtual int NumStandardDof(const unsigned& dofset_id, const Node* node) const = 0;
 
     /** \brief Get the gid of all dofs of a node.
      *
@@ -243,7 +249,10 @@ namespace DRT {
      *  \param dofset_id (in) : number of dofset
      *  \param node (in)      : the node */
     std::vector<int> Dof(const Node* node) const
-    { dsassert(NumDofSets()==1,"expect just one dof set"); return Dof(0,node); };
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      return Dof(0, node);
+    };
     virtual std::vector<int> Dof(unsigned dofset_id, const Node* node) const = 0;
 
     /** \brief Get the gid of a dof for given node.
@@ -257,7 +266,10 @@ namespace DRT {
      *  \param node      (in): the node
      *  \param dof       (in): the node local dof number */
     int Dof(const Node* node, const int ldof) const
-    { dsassert(NumDofSets()==1,"expect just one dof set"); return Dof(0,node,ldof); };
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      return Dof(0, node, ldof);
+    };
     virtual int Dof(unsigned dofset_id, const Node* node, const int ldof) const = 0;
 
     /** \brief Get the gid of all dofs of a node.
@@ -272,7 +284,10 @@ namespace DRT {
      *  \param node      (in): the node
      *  \param lm    (in/out): lm vector the dofs are appended to */
     void Dof(const Node* node, std::vector<int>& lm) const
-    { dsassert(NumDofSets()==1,"expect just one dof set"); Dof((unsigned)0,node,lm); };
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      Dof((unsigned)0, node, lm);
+    };
     virtual void Dof(unsigned dofset_id, const Node* node, std::vector<int>& lm) const = 0;
 
     /*! \brief Get the gid of all dofs of a node.
@@ -292,8 +307,8 @@ namespace DRT {
      *  \param nodaldofset_id (in): id of nodal dofset (currently only for XFEM)
      *  \param element        (in): the element (optional)
      */
-    virtual void Dof(std::vector<int>& dof, const Node* node ,
-        unsigned dofset_id, unsigned nodaldofset_id, const Element* element = NULL) const = 0;
+    virtual void Dof(std::vector<int>& dof, const Node* node, unsigned dofset_id,
+        unsigned nodaldofset_id, const Element* element = NULL) const = 0;
 
     /** \brief Get all conditions with a certain name
      *
@@ -310,10 +325,9 @@ namespace DRT {
      *  \param out  (out): vector of pointers to all conditions with that name
      *
      *  \return Returns out.size()=0 if condition with that name does not exist */
-    virtual void GetCondition(const std::string& name,
-        std::vector<DRT::Condition*>& out) const = 0;
-    virtual void GetCondition(const std::string& name,
-        std::vector<Teuchos::RCP<Condition> >& out) const = 0;
+    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const = 0;
+    virtual void GetCondition(
+        const std::string& name, std::vector<Teuchos::RCP<Condition>>& out) const = 0;
 
     /** \brief Get a condition with a certain name
      *
@@ -349,10 +363,12 @@ namespace DRT {
      *  \param state (in): vector of some data
      *
      *  \note This class will not take ownership or in any way modify the solution vector. */
-    void SetState(const std::string& name,Teuchos::RCP<const Epetra_Vector> state)
-    { SetState(0,name,state); }
-    virtual void SetState(unsigned nds,const std::string& name,
-        Teuchos::RCP<const Epetra_Vector> state) = 0;
+    void SetState(const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    {
+      SetState(0, name, state);
+    }
+    virtual void SetState(
+        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) = 0;
 
     /** \brief Get a reference to a data vector
      *
@@ -365,10 +381,11 @@ namespace DRT {
      *
      *  \return Reference to solution state */
     Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const
-    { return GetState(0,name); };
+    {
+      return GetState(0, name);
+    };
     virtual Teuchos::RCP<const Epetra_Vector> GetState(
-        unsigned nds,
-        const std::string& name) const = 0;
+        unsigned nds, const std::string& name) const = 0;
 
     /** \brief Clear solution state references
      *
@@ -376,7 +393,7 @@ namespace DRT {
      *                               own dofset will be deleted.
      *
      *  The method deletes references to any solution data */
-    virtual void ClearState(bool clearalldofsets=false) = 0;
+    virtual void ClearState(bool clearalldofsets = false) = 0;
 
     /** \brief Evaluate Neumann boundary conditions
      *
@@ -398,20 +415,16 @@ namespace DRT {
      *                             this method.
      *  \param systemvector (out): Optional matrix to assemble linearization
      *                             of Neumann BCs to. */
-    void EvaluateNeumann(
-        Teuchos::ParameterList&              params,
-        Teuchos::RCP<Epetra_Vector>          systemvector,
+    void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null)
     {
       if (systemmatrix.is_null())
-        EvaluateNeumann(params,*systemvector);
+        EvaluateNeumann(params, *systemvector);
       else
-        EvaluateNeumann(params,*systemvector,systemmatrix.get());
+        EvaluateNeumann(params, *systemvector, systemmatrix.get());
       return;
     }
-    virtual void EvaluateNeumann(
-        Teuchos::ParameterList& params,
-        Epetra_Vector&          systemvector,
+    virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
         LINALG::SparseOperator* systemmatrix = NULL) = 0;
 
     /** \brief Call elements to evaluate
@@ -421,10 +434,8 @@ namespace DRT {
      *  controlled by the params parameter.<br>
      *  Parameters that control element behavior are:<br>
      *  \code
-     *  params.set("action","<element_action>"); // <element_action> somthing that elements understand
-     *  \endcode
-     *  Other parameters eventually recognized by the elements:<br>
-     *  \code
+     *  params.set("action","<element_action>"); // <element_action> somthing that elements
+     * understand \endcode Other parameters eventually recognized by the elements:<br> \code
      *  params.set("total time",1.23);     // current total time of simulation
      *  params.set("delta time",0.01);     // time increment
      *  \endcode
@@ -459,13 +470,11 @@ namespace DRT {
      *                              Vector will NOT be initialized to zero by
      *                              the underlying assembly methods that add element
      *                              contributions. */
-    virtual void Evaluate(
-        Teuchos::ParameterList&        params,
+    virtual void Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector>    systemvector1,
-        Teuchos::RCP<Epetra_Vector>    systemvector2,
-        Teuchos::RCP<Epetra_Vector>    systemvector3) = 0;
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3) = 0;
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
@@ -501,13 +510,10 @@ namespace DRT {
      *  \param dbcmapextractor (out): Map extractor containing maps for the DOFs
      *                                subjected to Dirichlet boundary conditions and
      *                                the remaining/free DOFs */
-    virtual void EvaluateDirichlet(
-        Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector> systemvector,
-        Teuchos::RCP<Epetra_Vector> systemvectord,
-        Teuchos::RCP<Epetra_Vector> systemvectordd,
-        Teuchos::RCP<Epetra_Vector> toggle,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null) = 0;
+    virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
+        Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
+        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_Vector> toggle,
+        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null) = 0;
 
     /** \brief Evaluate a specified condition
      *
@@ -521,14 +527,11 @@ namespace DRT {
      *                             by this method)
      *  \param condstring    (in): Name of condition to be evaluated
      *  \param condid        (in): condition ID */
-    void EvaluateCondition(
-        Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector> systemvector,
-        const std::string& condstring,
-        const int condid=-1)
+    void EvaluateCondition(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
+        const std::string& condstring, const int condid = -1)
     {
-      EvaluateCondition(params,Teuchos::null,Teuchos::null,systemvector,
-        Teuchos::null,Teuchos::null,condstring,condid);
+      EvaluateCondition(params, Teuchos::null, Teuchos::null, systemvector, Teuchos::null,
+          Teuchos::null, condstring, condid);
     };
 
     /** \brief Evaluate a specified condition
@@ -542,12 +545,10 @@ namespace DRT {
      *  \param condstring (in): Name of condition to be evaluated
      *  \param condid     (in): condition ID */
     void EvaluateCondition(
-        Teuchos::ParameterList& params,
-        const std::string& condstring,
-        const int condid=-1)
+        Teuchos::ParameterList& params, const std::string& condstring, const int condid = -1)
     {
-      EvaluateCondition(params,Teuchos::null,Teuchos::null,Teuchos::null,
-          Teuchos::null,Teuchos::null,condstring,condid);
+      EvaluateCondition(params, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
+          Teuchos::null, condstring, condid);
     }
 
     /** \brief Evaluate a specific condition
@@ -577,15 +578,12 @@ namespace DRT {
      *                              The vector is NOT initialized to zero by this method.
      *  \param condstring     (in): Name of condition to be evaluated
      *  \param condid         (in): Condition ID */
-     virtual void EvaluateCondition(
-         Teuchos::ParameterList& params,
-         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-         Teuchos::RCP<Epetra_Vector> systemvector1,
-         Teuchos::RCP<Epetra_Vector>    systemvector2,
-         Teuchos::RCP<Epetra_Vector>    systemvector3,
-         const std::string& condstring,
-         const int condid=-1) = 0;
+    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
+        const int condid = -1) = 0;
 
     /** \brief Assemble scalar quantities across elements
      *
@@ -598,10 +596,8 @@ namespace DRT {
      *
      *  \param params   (in): parameters
      *  \param scalars (out): scalars */
-     virtual void EvaluateScalars(
-         Teuchos::ParameterList& params,
-         Teuchos::RCP<Epetra_SerialDenseVector> scalars
-       ) = 0;
+    virtual void EvaluateScalars(
+        Teuchos::ParameterList& params, Teuchos::RCP<Epetra_SerialDenseVector> scalars) = 0;
 
     /** \brief Compute the nullspace of the discretization
      *
@@ -611,11 +607,11 @@ namespace DRT {
      *
      *  \param solveparams (in): List of parameters
      *  \param recompute   (in): force method to recompute the nullspace */
-     virtual void ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solveparams,
-                                              bool recompute = false) = 0;
+    virtual void ComputeNullSpaceIfNecessary(
+        Teuchos::ParameterList& solveparams, bool recompute = false) = 0;
 
   };  // class DiscretizationInterface
-} // namespace DRT
+}  // namespace DRT
 
 
 #endif /* SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_ */

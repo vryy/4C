@@ -34,39 +34,36 @@
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
-        Teuchos::RCP<DRT::Discretization>        dis,
-        Teuchos::RCP<LINALG::Solver>             solver,
-        Teuchos::RCP<Teuchos::ParameterList>     params,
-        Teuchos::RCP<Teuchos::ParameterList>     sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList>     extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter>   output)
-  : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
-  levelsetparams_(params),
-  particle_(Teuchos::null),
-  reinitaction_(INPAR::SCATRA::reinitaction_none),
-  conveln_(Teuchos::null),
-  switchreinit_(false),
-  pseudostepmax_(0),
-  pseudostep_(0),
-  dtau_(0.0),
-  thetareinit_(0.0),
-  initvolminus_(0.0),
-  initialphireinit_(Teuchos::null),
-  nb_grad_val_(Teuchos::null),
-  reinitinterval_(-1),
-  reinitband_(false),
-  reinitbandwidth_(-1.0),
-  reinitcorrector_(true),
-  useprojectedreinitvel_(INPAR::SCATRA::vel_reinit_integration_point_based),
-  lsdim_(INPAR::SCATRA::ls_3D),
-  projection_(true),
-  reinit_tol_(-1.0),
-  reinitvolcorrection_(false),
-  interface_eleq_(Teuchos::null),
-  extract_interface_vel_(false),
-  convel_layers_(-1),
-  cpbc_(false)
+SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
+      levelsetparams_(params),
+      particle_(Teuchos::null),
+      reinitaction_(INPAR::SCATRA::reinitaction_none),
+      conveln_(Teuchos::null),
+      switchreinit_(false),
+      pseudostepmax_(0),
+      pseudostep_(0),
+      dtau_(0.0),
+      thetareinit_(0.0),
+      initvolminus_(0.0),
+      initialphireinit_(Teuchos::null),
+      nb_grad_val_(Teuchos::null),
+      reinitinterval_(-1),
+      reinitband_(false),
+      reinitbandwidth_(-1.0),
+      reinitcorrector_(true),
+      useprojectedreinitvel_(INPAR::SCATRA::vel_reinit_integration_point_based),
+      lsdim_(INPAR::SCATRA::ls_3D),
+      projection_(true),
+      reinit_tol_(-1.0),
+      reinitvolcorrection_(false),
+      interface_eleq_(Teuchos::null),
+      extract_interface_vel_(false),
+      convel_layers_(-1),
+      cpbc_(false)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -78,9 +75,7 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
 /*----------------------------------------------------------------------*
  | deconstructor                                        rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-SCATRA::LevelSetAlgorithm::~LevelSetAlgorithm()
-{
-}
+SCATRA::LevelSetAlgorithm::~LevelSetAlgorithm() {}
 
 
 /*----------------------------------------------------------------------*
@@ -98,10 +93,11 @@ void SCATRA::LevelSetAlgorithm::Init()
   // -------------------------------------------------------------------
 
   // check whether hybrid method including particles is selected
-  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"),"INCLUDE_PARTICLE"))
+  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"), "INCLUDE_PARTICLE"))
   {
     // get particle object
-    particle_ = Teuchos::rcp(new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this,false),levelsetparams_));
+    particle_ = Teuchos::rcp(
+        new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this, false), levelsetparams_));
   }
   // note: here, an extended ghosting is set
 
@@ -122,7 +118,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   // -------------------------------------------------------------------
   //                         setup domains
   // -------------------------------------------------------------------
-  GetInitialVolumeOfMinusDomain( phinp_, discret_, initvolminus_ );
+  GetInitialVolumeOfMinusDomain(phinp_, discret_, initvolminus_);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -134,28 +130,31 @@ void SCATRA::LevelSetAlgorithm::Setup()
   //         initialize reinitialization
   // -------------------------------------------------------------------
   // get reinitialization strategy
-  reinitaction_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(levelsetparams_->sublist("REINITIALIZATION"),"REINITIALIZATION");
+  reinitaction_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(
+      levelsetparams_->sublist("REINITIALIZATION"), "REINITIALIZATION");
 
   if (reinitaction_ != INPAR::SCATRA::reinitaction_none)
   {
     // how often to perform reinitialization
     reinitinterval_ = levelsetparams_->sublist("REINITIALIZATION").get<int>("REINITINTERVAL");
 
-    // define band for reinitialization (may either be used for geometric reinitialization or reinitialization equation
+    // define band for reinitialization (may either be used for geometric reinitialization or
+    // reinitialization equation
     reinitbandwidth_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("REINITBANDWIDTH");
 
     // set parameters for geometric reinitialization
     if (reinitaction_ == INPAR::SCATRA::reinitaction_signeddistancefunction)
     {
       // reinitialization within band around interface only
-      reinitband_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"REINITBAND");
+      reinitband_ = DRT::INPUT::IntegralValue<int>(
+          levelsetparams_->sublist("REINITIALIZATION"), "REINITBAND");
     }
 
     // set parameters for reinitialization equation
     if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
     {
       // vector for initial phi (solution of level-set equation) of reinitialization process
-      initialphireinit_  = LINALG::CreateVector(*dofrowmap,true);
+      initialphireinit_ = LINALG::CreateVector(*dofrowmap, true);
 
       // get pseudo-time step size
       dtau_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("TIMESTEPREINIT");
@@ -170,10 +169,12 @@ void SCATRA::LevelSetAlgorithm::Setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // flag to activate corrector step
-      reinitcorrector_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"CORRECTOR_STEP");
+      reinitcorrector_ = DRT::INPUT::IntegralValue<int>(
+          levelsetparams_->sublist("REINITIALIZATION"), "CORRECTOR_STEP");
 
       // flag to activate calculation of node-based velocity
-      useprojectedreinitvel_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelReinit>(levelsetparams_->sublist("REINITIALIZATION"),"VELREINIT");
+      useprojectedreinitvel_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelReinit>(
+          levelsetparams_->sublist("REINITIALIZATION"), "VELREINIT");
 
       if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
       {
@@ -181,11 +182,12 @@ void SCATRA::LevelSetAlgorithm::Setup()
         // velocities (always three velocity components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->NodeRowMap();
-        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
       }
 
       // get dimension
-      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(levelsetparams_->sublist("REINITIALIZATION"),"DIMENSION");
+      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(
+          levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
     }
 
     if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
@@ -197,32 +199,36 @@ void SCATRA::LevelSetAlgorithm::Setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // get dimension
-      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(levelsetparams_->sublist("REINITIALIZATION"),"DIMENSION");
+      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(
+          levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
 
       // use L2-projection of grad phi and related quantities
-      projection_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"PROJECTION");
+      projection_ = DRT::INPUT::IntegralValue<int>(
+          levelsetparams_->sublist("REINITIALIZATION"), "PROJECTION");
       if (projection_ == true)
       {
         // vector for nodal level-set gradient for reinitialization
         // gradients (always three gradient components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->NodeRowMap();
-        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
       }
     }
 
     // flag to correct volume after reinitialization
-    reinitvolcorrection_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"REINITVOLCORRECTION");
+    reinitvolcorrection_ = DRT::INPUT::IntegralValue<int>(
+        levelsetparams_->sublist("REINITIALIZATION"), "REINITVOLCORRECTION");
 
     // initialize level-set to signed distance function if required
-    if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"REINIT_INITIAL"))
+    if (DRT::INPUT::IntegralValue<int>(
+            levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
     {
       Reinitialization();
 
       // reset phin vector
-      //remark: for BDF2, we do not have to set phinm,
+      // remark: for BDF2, we do not have to set phinm,
       //        since it is not used for the first time step as a backward Euler step is performed
-      phin_->Update(1.0,*phinp_,0.0);
+      phin_->Update(1.0, *phinp_, 0.0);
 
       // reinitialization is done, reset flag
       switchreinit_ = false;
@@ -233,31 +239,31 @@ void SCATRA::LevelSetAlgorithm::Setup()
   //       initialize treatment of velocity from Navier-Stokes
   // -------------------------------------------------------------------
   // set potential extraction of interface velocity
-  extract_interface_vel_ = DRT::INPUT::IntegralValue<int>(*levelsetparams_,"EXTRACT_INTERFACE_VEL");
+  extract_interface_vel_ =
+      DRT::INPUT::IntegralValue<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
   if (extract_interface_vel_)
   {
     // set number of element layers around interface where velocity field form Navier-Stokes is kept
     convel_layers_ = levelsetparams_->get<int>("NUM_CONVEL_LAYERS");
     if (convel_layers_ < 1)
-      dserror("Set number of element layers around interface where velocity "
+      dserror(
+          "Set number of element layers around interface where velocity "
           "field form Navier-Stokes should be kept");
   }
 
   // set flag for modification of convective velocity at contact points
   // check whether there are level-set contact point conditions
   std::vector<DRT::Condition*> lscontactpoint;
-  discret_->GetCondition("LsContact",lscontactpoint);
+  discret_->GetCondition("LsContact", lscontactpoint);
 
-  if (not lscontactpoint.empty())
-    cpbc_ = true;
+  if (not lscontactpoint.empty()) cpbc_ = true;
 
   // -------------------------------------------------------------------
   //               initial seeding of particles
   // -------------------------------------------------------------------
   // initialize particle field with particles
   // note: this has to been done after initial reinitialization
-  if (particle_ != Teuchos::null)
-    particle_->InitialSeeding();
+  if (particle_ != Teuchos::null) particle_->InitialSeeding();
 
   return;
 }
@@ -266,17 +272,15 @@ void SCATRA::LevelSetAlgorithm::Setup()
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::GetInitialVolumeOfMinusDomain(
     const Teuchos::RCP<const Epetra_Vector>& phinp,
-    const Teuchos::RCP<const DRT::Discretization> & scatradis,
-    double& volumedomainminus) const
+    const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus) const
 {
   double volplus = 0.0;
   double surf = 0.0;
-  std::map<int,GEO::BoundaryIntCells > interface;
+  std::map<int, GEO::BoundaryIntCells> interface;
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   SCATRA::LEVELSET::Intersection intersect;
-  intersect.CaptureZeroLevelSet(phinp,scatradis,volumedomainminus,
-      volplus,surf,interface);
+  intersect.CaptureZeroLevelSet(phinp, scatradis, volumedomainminus, volplus, surf, interface);
 }
 
 /*----------------------------------------------------------------------*
@@ -289,7 +293,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
   CheckIsSetup();
 
   // provide information about initial field (do not do for restarts!)
-  if (Step()==0)
+  if (Step() == 0)
   {
     // write out initial state
     Output();
@@ -298,7 +302,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     EvaluateErrorComparedToAnalyticalSol();
   }
 
-  while ((step_<stepmax_) and ((time_+ EPS12) < maxtime_))
+  while ((step_ < stepmax_) and ((time_ + EPS12) < maxtime_))
   {
     // -------------------------------------------------------------------
     // prepare time step
@@ -338,7 +342,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     // -------------------------------------------------------------------
     Output();
 
-  } // while
+  }  // while
 
   return;
 }
@@ -353,8 +357,7 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStep()
   ScaTraTimIntImpl::PrepareTimeStep();
 
   // prepare particle field if available
-  if (particle_ != Teuchos::null)
-    particle_->PrepareTimeStep();
+  if (particle_ != Teuchos::null) particle_->PrepareTimeStep();
 
   return;
 }
@@ -368,7 +371,7 @@ void SCATRA::LevelSetAlgorithm::Solve()
   // -----------------------------------------------------------------
   //                    solve level-set equation
   // -----------------------------------------------------------------
-  if (solvtype_==INPAR::SCATRA::solvertype_nonlinear)
+  if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear)
     NonlinearSolve();
   else
     LinearSolve();
@@ -395,7 +398,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
       // get volume distribution before reinitialization
       // initalize structure holding the interface
       // potentially required for reinitialization via signed distance to interface
-      std::map<int,GEO::BoundaryIntCells > zerolevelset;
+      std::map<int, GEO::BoundaryIntCells> zerolevelset;
       zerolevelset.clear();
       CaptureInterface(zerolevelset);
 
@@ -403,7 +406,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
       //                    reinitialize level-set
       // -----------------------------------------------------------------
       // select reinitialization method
-      switch(reinitaction_)
+      switch (reinitaction_)
       {
         case INPAR::SCATRA::reinitaction_signeddistancefunction:
         {
@@ -435,8 +438,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
       // -----------------------------------------------------------------
       // since the reinitialization may shift the interface,
       // this method allows for correcting the volume
-      if (reinitvolcorrection_)
-        CorrectVolume();
+      if (reinitvolcorrection_) CorrectVolume();
     }
   }
 
@@ -467,7 +469,7 @@ void SCATRA::LevelSetAlgorithm::ParticleCorrection()
     //       used anymore and the more expensive calculation from the matrix system
     //       has to be done: possibly introduce flag to avoid the computation, if particles
     //       have not modified phinp
-    phinp_->Update(1.0,*(particle_->CorrectionStep()),0.0);
+    phinp_->Update(1.0, *(particle_->CorrectionStep()), 0.0);
   }
 
 
@@ -491,10 +493,10 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
   if (DoOutput())
   {
     // step number and time (only after that data output is possible)
-    output_->NewStep(step_,time_);
+    output_->NewStep(step_, time_);
 
     // write domain decomposition for visualization (only once at step "upres"!)
-    if (step_==upres_) output_->WriteElementData(true);
+    if (step_ == upres_) output_->WriteElementData(true);
 
     // write state vectors
     OutputState();
@@ -503,16 +505,14 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
     if (outputgmsh_) OutputToGmsh(step_, time_);
 
     // add restart data
-    if (step_%uprestart_==0) OutputRestart();
-
+    if (step_ % uprestart_ == 0) OutputRestart();
   }
 
   // -----------------------------------------------------------------
   //      standard paraview output for particle field
   // -----------------------------------------------------------------
 
-  if (particle_ != Teuchos::null)
-    particle_->Output();
+  if (particle_ != Teuchos::null) particle_->Output();
 
   // -----------------------------------------------------------------
   //             further level-set specific values
@@ -527,25 +527,25 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
 void SCATRA::LevelSetAlgorithm::OutputOfLevelSetSpecificValues()
 {
   // capture interface, evalute mass conservation, write to file
-  std::map<int,GEO::BoundaryIntCells > zerolevelset;
+  std::map<int, GEO::BoundaryIntCells> zerolevelset;
   zerolevelset.clear();
-  CaptureInterface(zerolevelset,true);
+  CaptureInterface(zerolevelset, true);
 }
 
 /*----------------------------------------------------------------------*
  | return velocity at intermediate time n+theta         rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP< Epetra_Vector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
+const Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
 {
-  if (conveln_==Teuchos::null)
-   dserror("Set convective velocity of previous time step!");
+  if (conveln_ == Teuchos::null) dserror("Set convective velocity of previous time step!");
 
-  Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
-  if(convel == Teuchos::null)
-    dserror("Cannot get state vector convective velocity");
-  Teuchos::RCP<Epetra_Vector> tmpvel = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(nds_vel_),true));
+  Teuchos::RCP<const Epetra_Vector> convel =
+      discret_->GetState(nds_vel_, "convective velocity field");
+  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  Teuchos::RCP<Epetra_Vector> tmpvel =
+      Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(nds_vel_), true));
 
-  tmpvel->Update((1.0-theta),*conveln_,theta,*convel,0.0);
+  tmpvel->Update((1.0 - theta), *conveln_, theta, *convel, 0.0);
 
   return tmpvel;
 }
@@ -556,7 +556,7 @@ const Teuchos::RCP< Epetra_Vector> SCATRA::LevelSetAlgorithm::ConVelTheta(double
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::TestResults()
 {
-  problem_->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this,false))));
+  problem_->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this, false))));
   if (particle_ != Teuchos::null)
     particle_->TestResults(discret_->Comm());
   else
@@ -569,17 +569,15 @@ void SCATRA::LevelSetAlgorithm::TestResults()
 /*----------------------------------------------------------------------*
  | set time and step value                              rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetTimeStep(
-  const double time,
-  const int step
-  )
+void SCATRA::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
 {
   // call base class function
-  SCATRA::ScaTraTimIntImpl::SetTimeStep(time,step);
+  SCATRA::ScaTraTimIntImpl::SetTimeStep(time, step);
 
   // set information also in scalar field
   if (particle_ != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_)->SetTimeStepAdditionalParticles(time,step);
+    Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_)
+        ->SetTimeStepAdditionalParticles(time, step);
 
   return;
 }

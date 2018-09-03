@@ -19,19 +19,19 @@
 /************************************************************************/
 
 // MORTAR INTEGRATION
-#define MORTARINTTOL 0.0       /* tolerance for assembling gp-values*/
+#define MORTARINTTOL 0.0 /* tolerance for assembling gp-values*/
 
 // MORTAR PROJECTION (2D/3D)
-#define MORTARMAXITER 10       /* max. no. iterations for local Newton */
-#define MORTARCONVTOL 1.0e-12  /* convergence tolerance for local Newton */
+#define MORTARMAXITER 10      /* max. no. iterations for local Newton */
+#define MORTARCONVTOL 1.0e-12 /* convergence tolerance for local Newton */
 
 // MORTAR PROJECTION AND INTEGRATION (2D)
-#define MORTARPROJTOL 0.05     /* projection tolerance for overlap */
-#define MORTARPROJLIM 1.0e-8   /* exact projection limit (no tolerance!) */
+#define MORTARPROJTOL 0.05   /* projection tolerance for overlap */
+#define MORTARPROJLIM 1.0e-8 /* exact projection limit (no tolerance!) */
 
 // MORTAR PROJECTION AND INTEGRATION (3D)
-#define MORTARCLIPTOL 1.0e-8   /* tolerance for polygon clipping */
-#define MORTARINTLIM 1.0e-12   /* min(area-%) cell/slave for integration */
+#define MORTARCLIPTOL 1.0e-8 /* tolerance for polygon clipping */
+#define MORTARINTLIM 1.0e-12 /* min(area-%) cell/slave for integration */
 
 /************************************************************************/
 /* Mortar debugging options                                             */

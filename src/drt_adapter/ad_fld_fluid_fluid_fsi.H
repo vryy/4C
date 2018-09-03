@@ -35,7 +35,7 @@ namespace LINALG
 {
   class Solver;
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace IO
 {
@@ -49,24 +49,18 @@ namespace FLD
   {
     class MapExtractor;
     class XFluidFluidMapExtractor;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FLD
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   class FluidFluidFSI : public FluidFSI
   {
-
-  public:
-
+   public:
     /// constructor
-    FluidFluidFSI(
-        Teuchos::RCP<Fluid> xfluidfluid,
-        Teuchos::RCP<Fluid> embfluid,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
-        bool isale,
-        bool dirichletcond);
+    FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        bool isale, bool dirichletcond);
 
     /// initialize and prepare maps
     void Init();
@@ -82,10 +76,16 @@ namespace ADAPTER {
     void Solve();
 
     Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
-    { dserror("Do not call RexationSolve for XFFSI."); return Teuchos::null; }
+    {
+      dserror("Do not call RexationSolve for XFFSI.");
+      return Teuchos::null;
+    }
 
     Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
-    { dserror("Do not call ExtractInterfaceForces for XFFSI."); return Teuchos::null; }
+    {
+      dserror("Do not call ExtractInterfaceForces for XFFSI.");
+      return Teuchos::null;
+    }
 
     /// @name Accessors
     //@{
@@ -94,13 +94,16 @@ namespace ADAPTER {
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return mergedfluidinterface_; }
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const
+    {
+      return mergedfluidinterface_;
+    }
 
     Teuchos::RCP<const Epetra_Vector> GridVel();
-    Teuchos::RCP<      Epetra_Vector> WriteAccessGridVel();
+    Teuchos::RCP<Epetra_Vector> WriteAccessGridVel();
 
     Teuchos::RCP<const Epetra_Vector> Dispnp();
-    Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp();
+    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp();
     Teuchos::RCP<const Epetra_Vector> Dispn();
 
     /// get the velocity row map of the embedded fluid
@@ -113,19 +116,20 @@ namespace ADAPTER {
     const Teuchos::RCP<DRT::Discretization>& Discretization();
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter(){ return output_; }
+    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
 
     /// get map extractor for background/embedded fluid
-    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor();
+    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& XFluidFluidMapExtractor();
 
     //@}
 
     // apply ALE-mesh displacements to embedded fluid
     void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
-    /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in the DOF-maps
-    void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
+    /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
+    /// the DOF-maps
+    void Evaluate(Teuchos::RCP<const Epetra_Vector>
+            stepinc  ///< solution increment between time step n and n+1
     );
 
     /// request fluid system matrix & shapederivatives as blockmatrices when called with true
@@ -143,8 +147,7 @@ namespace ADAPTER {
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
 
-  private:
-
+   private:
     /// setup of map extractor to distinguish between FSI DOF-map and
     /// merged inner embedded fluid and background fluid DOF-map
     void SetupInterface();
@@ -171,6 +174,6 @@ namespace ADAPTER {
     /// no. of timesteps, after which ALE-mesh should be relaxed
     int relaxing_ale_every_;
   };
-}
+}  // namespace ADAPTER
 
 #endif

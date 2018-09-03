@@ -28,28 +28,19 @@ namespace LINALG
     /// krylov subspace linear solvers (belos) with right-side preconditioning
     class BelosSolver : public KrylovSolver
     {
-      public:
-        BelosSolver(
-          const Epetra_Comm& comm,
-          Teuchos::ParameterList & params,
-          FILE* outfile
-          );
+     public:
+      BelosSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
-        virtual ~BelosSolver();
+      virtual ~BelosSolver();
 
-        virtual void Setup(
-          Teuchos::RCP<Epetra_Operator>     matrix             ,
-          Teuchos::RCP<Epetra_MultiVector>       x             ,
-          Teuchos::RCP<Epetra_MultiVector>       b             ,
-          bool                             refactor            ,
-          bool                             reset               ,
-          Teuchos::RCP<LINALG::KrylovProjector> projector
-          );
-;
-        virtual int Solve();
-      };
-  }
-}
+      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+          Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
+          Teuchos::RCP<LINALG::KrylovProjector> projector);
+      ;
+      virtual int Solve();
+    };
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_BELOSSOLVER_H_ */

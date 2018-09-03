@@ -27,19 +27,14 @@ Trilinos/packages/ifpack/src/Ifpack_Condest.h and Ifpack_Condest.cpp
 
 
 double LINALG::Condest(
-    SparseMatrix&           Matrix,
-    const Ifpack_CondestType  CT,
-    const int                 MaxIters,
-    const double              Tol
-    )
+    SparseMatrix& Matrix, const Ifpack_CondestType CT, const int MaxIters, const double Tol)
 {
-
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Condest");
 
   double ConditionNumberEstimate = -1.0;
 
-  if (CT == Ifpack_Cheap) {
-
+  if (CT == Ifpack_Cheap)
+  {
     // Create a vector with all values equal to one
     Epetra_Vector Ones(Matrix.OperatorDomainMap());
     Ones.PutScalar(1.0);
@@ -51,10 +46,9 @@ double LINALG::Condest(
     IFPACK_CHK_ERR(OnesResult.Abs(OnesResult));
     // Get the maximum value across all processors
     IFPACK_CHK_ERR(OnesResult.MaxValue(&ConditionNumberEstimate));
-
   }
-  else if (CT == Ifpack_CG) {
-
+  else if (CT == Ifpack_CG)
+  {
     Epetra_Vector LHS(Matrix.OperatorDomainMap());
     LHS.PutScalar(0.0);
     Epetra_Vector RHS(Matrix.OperatorRangeMap());
@@ -65,16 +59,16 @@ double LINALG::Condest(
     Problem.SetRHS(&RHS);
 
     AztecOO Solver(Problem);
-    Solver.SetAztecOption(AZ_solver,AZ_cg_condnum);
-    Solver.SetAztecOption(AZ_output,AZ_none);
-    //Solver.SetAztecOption(AZ_output,10);
-    Solver.Iterate(MaxIters,Tol);
+    Solver.SetAztecOption(AZ_solver, AZ_cg_condnum);
+    Solver.SetAztecOption(AZ_output, AZ_none);
+    // Solver.SetAztecOption(AZ_output,10);
+    Solver.Iterate(MaxIters, Tol);
 
     const double* status = Solver.GetAztecStatus();
     ConditionNumberEstimate = status[AZ_condnum];
-
-  } else if (CT == Ifpack_GMRES) {
-
+  }
+  else if (CT == Ifpack_GMRES)
+  {
     Epetra_Vector LHS(Matrix.OperatorDomainMap());
     LHS.PutScalar(0.0);
     Epetra_Vector RHS(Matrix.OperatorRangeMap());
@@ -85,9 +79,9 @@ double LINALG::Condest(
     Problem.SetRHS(&RHS);
 
     AztecOO Solver(Problem);
-    Solver.SetAztecOption(AZ_solver,AZ_gmres_condnum);
-    Solver.SetAztecOption(AZ_output,AZ_none);
-    //Solver.SetAztecOption(AZ_output,10);
+    Solver.SetAztecOption(AZ_solver, AZ_gmres_condnum);
+    Solver.SetAztecOption(AZ_output, AZ_none);
+    // Solver.SetAztecOption(AZ_output,10);
 
     // the following can be problematic for large problems,
     // but any restart would destroy useful information about
@@ -96,21 +90,21 @@ double LINALG::Condest(
     int MaxIters_mod = MaxIters;
     if (MaxIters > iterlimit and Matrix.Comm().MyPID() == 0)
     {
-//      MaxIters_mod = iterlimit;
+      //      MaxIters_mod = iterlimit;
       std::cout << std::endl << "Krylov space size: " << MaxIters_mod << std::endl;
-      std::cout << "Warning! Large MaxIters means a large Krylov subspace for GMRES -> you might run out of memory." << std::endl;
+      std::cout << "Warning! Large MaxIters means a large Krylov subspace for GMRES -> you might "
+                   "run out of memory."
+                << std::endl;
       std::cout << "Continuing with MaxIters = " << MaxIters_mod << std::endl;
     }
-    Solver.SetAztecOption(AZ_kspace,MaxIters_mod); // Krylov space is set to iteration number !!!
-    Solver.SetAztecOption(AZ_precond,AZ_dom_decomp);
-    Solver.SetAztecOption(AZ_subdomain_solve,AZ_ilu);
-    Solver.Iterate(MaxIters_mod,Tol);
+    Solver.SetAztecOption(AZ_kspace, MaxIters_mod);  // Krylov space is set to iteration number !!!
+    Solver.SetAztecOption(AZ_precond, AZ_dom_decomp);
+    Solver.SetAztecOption(AZ_subdomain_solve, AZ_ilu);
+    Solver.Iterate(MaxIters_mod, Tol);
 
     const double* status = Solver.GetAztecStatus();
     ConditionNumberEstimate = status[AZ_condnum];
-
   }
 
-  return(ConditionNumberEstimate);
-
+  return (ConditionNumberEstimate);
 }

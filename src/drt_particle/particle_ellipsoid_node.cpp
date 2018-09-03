@@ -24,8 +24,8 @@ PARTICLE::ParticleEllipsoidNodeType PARTICLE::ParticleEllipsoidNodeType::instanc
  *----------------------------------------------------------------------*/
 DRT::ParObject* PARTICLE::ParticleEllipsoidNodeType::Create(const std::vector<char>& data)
 {
-  const double dummy[3] = {0.,0.,0.};
-  DRT::Node* const particle = new PARTICLE::ParticleEllipsoidNode(-1,dummy,dummy,dummy,-1);
+  const double dummy[3] = {0., 0., 0.};
+  DRT::Node* const particle = new PARTICLE::ParticleEllipsoidNode(-1, dummy, dummy, dummy, -1);
   particle->Unpack(data);
   return particle;
 }
@@ -34,10 +34,9 @@ DRT::ParObject* PARTICLE::ParticleEllipsoidNodeType::Create(const std::vector<ch
 /*----------------------------------------------------------------------*
  | standard constructor                                      fang 10/17 |
  *----------------------------------------------------------------------*/
-PARTICLE::ParticleEllipsoidNode::ParticleEllipsoidNode(int id, const double* const coords, const double* const semiaxes, const double* const orient, const int owner)
-: ParticleNode(id,coords,owner),
-  orientation_(orient),
-  semiaxes_(semiaxes)
+PARTICLE::ParticleEllipsoidNode::ParticleEllipsoidNode(int id, const double* const coords,
+    const double* const semiaxes, const double* const orient, const int owner)
+    : ParticleNode(id, coords, owner), orientation_(orient), semiaxes_(semiaxes)
 {
   return;
 }
@@ -47,9 +46,7 @@ PARTICLE::ParticleEllipsoidNode::ParticleEllipsoidNode(int id, const double* con
  | copy constructor                                          fang 10/17 |
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleEllipsoidNode::ParticleEllipsoidNode(const ParticleEllipsoidNode& old)
-: ParticleNode(old),
-  orientation_(old.orientation_),
-  semiaxes_(old.semiaxes_)
+    : ParticleNode(old), orientation_(old.orientation_), semiaxes_(old.semiaxes_)
 {
   dserror("Not yet needed!");
   return;
@@ -74,16 +71,16 @@ void PARTICLE::ParticleEllipsoidNode::Pack(DRT::PackBuffer& data) const
   sm.Insert();
 
   // pack type of this instance of ParObject
-  AddtoPack(data,UniqueParObjectId());
+  AddtoPack(data, UniqueParObjectId());
 
   // add base class
   ParticleNode::Pack(data);
 
   // add particle orientation
-  AddtoPack(data,orientation_);
+  AddtoPack(data, orientation_);
 
   // add particle semi-axes
-  AddtoPack(data,semiaxes_);
+  AddtoPack(data, semiaxes_);
 
   return;
 }
@@ -98,26 +95,25 @@ void PARTICLE::ParticleEllipsoidNode::Unpack(const std::vector<char>& data)
 
   // extract type
   int type(0);
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
 
   // safety check
-  if(type != UniqueParObjectId())
-    dserror("Wrong instance type!");
+  if (type != UniqueParObjectId()) dserror("Wrong instance type!");
 
   // extract base class
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   ParticleNode::Unpack(basedata);
 
   // extract particle orientation
-  ExtractfromPack(position,data,orientation_);
+  ExtractfromPack(position, data, orientation_);
 
   // extract particle semi-axes
-  ExtractfromPack(position,data,semiaxes_);
+  ExtractfromPack(position, data, semiaxes_);
 
   // safety check
-  if(position != data.size())
-    dserror("Mismatch in size of data: %d <-> %d!",(int) data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data: %d <-> %d!", (int)data.size(), position);
 
   return;
 }

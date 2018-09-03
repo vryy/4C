@@ -24,4 +24,4 @@
 
 void invana_cal();
 
-#endif  /* #ifndef INVANA_CAL_H */
+#endif /* #ifndef INVANA_CAL_H */

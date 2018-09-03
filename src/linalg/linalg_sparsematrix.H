@@ -31,7 +31,8 @@ namespace LINALG
 {
   // forward declarations:
   class BlockSparseMatrixBase;
-  template <class Strategy> class BlockSparseMatrix;
+  template <class Strategy>
+  class BlockSparseMatrix;
 
   /// A single sparse matrix enhanced with features for FE simulations
   /*!
@@ -76,50 +77,67 @@ namespace LINALG
     \author u.kue
     \date 02/08
    */
-class SparseMatrix : public SparseMatrixBase
-{
-  public:
+  class SparseMatrix : public SparseMatrixBase
+  {
+   public:
     /*!
       flag for the underlying Epetra matrix type; CRS_MATRIX means that the implementation of the
       linalg sparse matrix is based on an Epetra_CrsMatrix.
       If FE_MATRIX is chosen, the implementation is based on an Epetra_FECrsMatrix.
-      This allows the assembly and handling of nonlocal values in addition to Epetra_CrsMatrix-functionality.
+      This allows the assembly and handling of nonlocal values in addition to
+      Epetra_CrsMatrix-functionality.
      */
-    enum MatrixType {CRS_MATRIX, FE_MATRIX};
+    enum MatrixType
+    {
+      CRS_MATRIX,
+      FE_MATRIX
+    };
 
-    /// The following dummy templated constructors will catch all attempts to call any constructor with arguments
-    /// that require implicit casting. Therefore you have to instantiate this class with exactly the types
-    /// matching one of the constructors
+    /// The following dummy templated constructors will catch all attempts to call any constructor
+    /// with arguments that require implicit casting. Therefore you have to instantiate this class
+    /// with exactly the types matching one of the constructors
 #if __cplusplus >= 201103L
-  template <typename... T> SparseMatrix(T...) = delete;
+    template <typename... T>
+    SparseMatrix(T...) = delete;
 #else
-  template <typename T0>                                                     SparseMatrix(T0)                 {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
-  template <typename T0, typename T1>                                        SparseMatrix(T0, T1)             {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
-  template <typename T0, typename T1, typename T2>                           SparseMatrix(T0, T1, T2)         {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
-  template <typename T0, typename T1, typename T2, typename T3>              SparseMatrix(T0, T1, T2, T3)     {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
-  template <typename T0, typename T1, typename T2, typename T3, typename T4> SparseMatrix(T0, T1, T2, T3, T4) {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
+    template <typename T0>
+    SparseMatrix(T0)
+    {
+      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
+    }
+    template <typename T0, typename T1>
+    SparseMatrix(T0, T1)
+    {
+      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
+    }
+    template <typename T0, typename T1, typename T2>
+    SparseMatrix(T0, T1, T2)
+    {
+      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
+    }
+    template <typename T0, typename T1, typename T2, typename T3>
+    SparseMatrix(T0, T1, T2, T3)
+    {
+      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
+    }
+    template <typename T0, typename T1, typename T2, typename T3, typename T4>
+    SparseMatrix(T0, T1, T2, T3, T4)
+    {
+      BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;
+    }
 #endif
 
     /// construction of sparse matrix
     SparseMatrix(
-      Teuchos::RCP<Epetra_CrsGraph> crsgraph,
-      Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps);
+        Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps);
 
     /// construction of sparse matrix
-    SparseMatrix(
-        const Epetra_Map&   rowmap,
-        const int           npr,
-        bool                explicitdirichlet=true,
-        bool                savegraph=false,
-        MatrixType          matrixtype = CRS_MATRIX);
+    SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet = true,
+        bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
 
     /// construction of sparse matrix using an individual estimate for number of non-zeros per row
-    SparseMatrix(
-        const Epetra_Map&   rowmap,
-        std::vector<int> &  numentries,
-        bool                explicitdirichlet=true,
-        bool                savegraph=false,
-        MatrixType          matrixtype = CRS_MATRIX);
+    SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& numentries,
+        bool explicitdirichlet = true, bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
 
     /// construction of sparse matrix
     /*!
@@ -129,12 +147,8 @@ class SparseMatrix : public SparseMatrixBase
        where the Teuchos::RCP is copied internally leading to a new view on the
        Epetra_CrsMatrix or Epetra_FECrsMatrix.
      */
-    SparseMatrix(
-        Teuchos::RCP<Epetra_CrsMatrix>  matrix,
-        DataAccess               access,
-        bool                            explicitdirichlet=true,
-        bool                            savegraph=false,
-        MatrixType                      matrixtype = CRS_MATRIX);
+    SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAccess access,
+        bool explicitdirichlet = true, bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
 
     /// construction of a diagonal matrix from a vector
     /*!
@@ -143,11 +157,8 @@ class SparseMatrix : public SparseMatrixBase
 
       Allocates new memory for the Epetra_CrsMatrix or Epetra_FECrsMatrix
      */
-    SparseMatrix(
-        const Epetra_Vector&  diag,
-        bool                  explicitdirichlet=true,
-        bool                  savegraph=false,
-        MatrixType            matrixtype = CRS_MATRIX);
+    SparseMatrix(const Epetra_Vector& diag, bool explicitdirichlet = true, bool savegraph = false,
+        MatrixType matrixtype = CRS_MATRIX);
 
     /// Copy constructor. Deep copy or view on matrix.
     /*!
@@ -201,41 +212,31 @@ class SparseMatrix : public SparseMatrixBase
     void Reset();
 
     /// destroy the underlying Epetra objects
-    virtual bool Destroy( bool throw_exception = true );
+    virtual bool Destroy(bool throw_exception = true);
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid,
-                          const std::vector<int>& lmstride,
-                          const Epetra_SerialDenseMatrix& Aele,
-                          const std::vector<int>& lm,
-                          const std::vector<int>& lmowner)
+    virtual void Assemble(int eid, const std::vector<int>& lmstride,
+        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lm,
+        const std::vector<int>& lmowner)
     {
-      Assemble(eid,lmstride,Aele,lm,lmowner,lm);
+      Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid,
-                          const Epetra_SerialDenseMatrix& Aele,
-                          const std::vector<int>& lm,
-                          const std::vector<int>& lmowner)
+    virtual void Assemble(int eid, const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lm,
+        const std::vector<int>& lmowner)
     {
-      Assemble(eid,Aele,lm,lmowner,lm);
+      Assemble(eid, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid,
-                  const std::vector<int>& lmstride,
-                  const Epetra_SerialDenseMatrix& Aele,
-                  const std::vector<int>& lmrow,
-                  const std::vector<int>& lmrowowner,
-                  const std::vector<int>& lmcol);
+    void Assemble(int eid, const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
+        const std::vector<int>& lmcol);
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid,
-                  const Epetra_SerialDenseMatrix& Aele,
-                  const std::vector<int>& lmrow,
-                  const std::vector<int>& lmrowowner,
-                  const std::vector<int>& lmcol);
+    void Assemble(int eid, const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /// single value assemble used by BlockSparseMatrix
     void Assemble(double val, int rgid, int cgid);
@@ -252,11 +253,8 @@ class SparseMatrix : public SparseMatrixBase
       values are set. This is needed if the method is called in a loop over
       column elements (which is the standard in baci) to avoid multiple same entries.
      */
-    void FEAssemble(
-            const Epetra_SerialDenseMatrix& Aele,
-            const std::vector<int>& lmrow,
-            const std::vector<int>& lmrowowner,
-            const std::vector<int>& lmcol);
+    void FEAssemble(const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /*!
       Assemble method for an Epetra_FECrsMatrices.
@@ -266,10 +264,8 @@ class SparseMatrix : public SparseMatrixBase
       values to their owning procs, such that FillComplete can be safely
       called on this matrix.
      */
-    void FEAssemble(
-            const Epetra_SerialDenseMatrix& Aele,
-            const std::vector<int>& lmrow,
-            const std::vector<int>& lmcol);
+    void FEAssemble(const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmcol);
 
     /*!
       Assemble method for an Epetra_FECrsMatrices.
@@ -299,7 +295,8 @@ class SparseMatrix : public SparseMatrixBase
 
     void UnComplete();
 
-    void ApplyDirichlet(const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock=true);
+    void ApplyDirichlet(
+        const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock = true);
 
     /// Apply dirichlet boundary condition to a matrix.
     ///
@@ -310,7 +307,7 @@ class SparseMatrix : public SparseMatrixBase
     ///  matrix was symmetric. However, the blanking of columns is computationally
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
-    void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock=true);
+    void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock = true);
 
     /// Apply dirichlet boundary condition to a matrix using a #trafo matrix
     ///
@@ -320,9 +317,7 @@ class SparseMatrix : public SparseMatrixBase
     /// The transformation matrix #trafo basically holds rotation matrices
     /// for the DOFs of the nodes.
     void ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
-                                 const Epetra_Map& dbctoggle,
-                                 bool diagonalblock=true,
-                                 bool complete=true);
+        const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Teuchos::RCP<Epetra_Vector> dbctoggle);
@@ -351,7 +346,7 @@ class SparseMatrix : public SparseMatrixBase
     bool SaveGraph() const { return savegraph_; }
 
     /// Return matrix type
-    MatrixType GetMatrixtype() const {return matrixtype_; }
+    MatrixType GetMatrixtype() const { return matrixtype_; }
 
     //@}
 
@@ -375,7 +370,7 @@ class SparseMatrix : public SparseMatrixBase
     /// derived
     virtual int ReplaceRowMap(const Epetra_BlockMap& newmap);
 
-  using SparseMatrixBase::Add;
+    using SparseMatrixBase::Add;
 
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
     /*!
@@ -392,16 +387,12 @@ class SparseMatrix : public SparseMatrixBase
     \param scalarA    (in)     : scaling factor for A
     \param scalarB    (in)     : scaling factor for B
     */
-    void Add(const SparseMatrixBase& A,
-             const bool transposeA,
-             const double scalarA,
-             const double scalarB);
+    void Add(const SparseMatrixBase& A, const bool transposeA, const double scalarA,
+        const double scalarB);
 
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
-    void Add(const Epetra_CrsMatrix& A,
-             const bool transposeA,
-             const double scalarA,
-             const double scalarB);
+    void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+        const double scalarB);
 
     /// Put a Epetra_CrsMatrix (partially) onto another: (*this) = B*scalarB
     /*!
@@ -415,9 +406,8 @@ class SparseMatrix : public SparseMatrixBase
     \param scalarA    (in)     : scaling factor for #A
     \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
     */
-    void Put(const LINALG::SparseMatrix& A,
-             const double scalarA,
-             Teuchos::RCP<const Epetra_Map> rowmap);
+    void Put(
+        const LINALG::SparseMatrix& A, const double scalarA, Teuchos::RCP<const Epetra_Map> rowmap);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
@@ -432,12 +422,11 @@ class SparseMatrix : public SparseMatrixBase
       \param transA         (in)     : flag indicating whether transposed of A should be used
       \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
       \param transB         (in)     : flag indicating whether transposed of B should be used
-      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
-      \return Matrix product A(^T)*B(^T)
+      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C
+      upon output \return Matrix product A(^T)*B(^T)
     */
     friend Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
-                                               const SparseMatrix& B, bool transB,
-                                               bool completeoutput);
+        const SparseMatrix& B, bool transB, bool completeoutput);
 
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
@@ -459,14 +448,12 @@ class SparseMatrix : public SparseMatrixBase
       \param transB         (in)     : flag indicating whether transposed of B should be used
       \param explicitdirichlet (in)  : flag deciding on explicitdirichlet flag of C
       \param savegraph      (in)     : flag deciding on savegraph flag of C
-      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
-      \return Matrix product A(^T)*B(^T)
+      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C
+      upon output \return Matrix product A(^T)*B(^T)
     */
     friend Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
-                                               const SparseMatrix& B, bool transB,
-                                               bool explicitdirichlet,
-                                               bool savegraph,
-                                               bool completeoutput);
+        const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
+        bool completeoutput);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
@@ -489,14 +476,12 @@ class SparseMatrix : public SparseMatrixBase
       \param transB         (in)     : flag indicating whether transposed of B should be used
       \param explicitdirichlet (in)  : flag deciding on explicitdirichlet flag of C
       \param savegraph      (in)     : flag deciding on savegraph flag of C
-      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
-      \return Matrix product A(^T)*B(^T)
+      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C
+      upon output \return Matrix product A(^T)*B(^T)
     */
     friend Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, bool transA,
-                                                 const SparseMatrix& B, bool transB,
-                                                 bool explicitdirichlet,
-                                                 bool savegraph,
-                                                 bool completeoutput);
+        const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
+        bool completeoutput);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
@@ -515,12 +500,11 @@ class SparseMatrix : public SparseMatrixBase
 
       \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
       \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
-      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
-      \return Matrix product A*B
+      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C
+      upon output \return Matrix product A*B
     */
-    friend Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
-                                                 const SparseMatrix& B,
-                                                 bool complete);
+    friend Teuchos::RCP<SparseMatrix> MLMultiply(
+        const SparseMatrix& A, const SparseMatrix& B, bool complete);
 
 
     /*!
@@ -536,8 +520,9 @@ class SparseMatrix : public SparseMatrixBase
       \note This method will NOT call Complete() on the output
             BlockSparseMatrix.
      */
-    template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
-      Split(const MultiMapExtractor& domainmaps,const MultiMapExtractor& rangemaps) const;
+    template <class Strategy>
+    Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy>> Split(
+        const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
     void Dump(std::string filename);
@@ -547,8 +532,7 @@ class SparseMatrix : public SparseMatrixBase
 
     //@}
 
-  private:
-
+   private:
     /// Split matrix in 2x2 blocks, where main diagonal blocks have to be square
     /*!
        Used by public Split, does not call Complete() on output matrix.
@@ -575,34 +559,27 @@ class SparseMatrix : public SparseMatrixBase
 
     /// matrix type (Epetra_CrsMatrix or Epetra_FECrsMatrix)
     MatrixType matrixtype_;
-
   };
 
   /// output of SparseMatrix
-  std::ostream& operator << (std::ostream& os, const LINALG::SparseMatrix& mat);
+  std::ostream& operator<<(std::ostream& os, const LINALG::SparseMatrix& mat);
 
   /// matrix matrix multiplication
-  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
-                                      const SparseMatrix& B, bool transB,
-                                      bool completeoutput = true);
+  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
+      bool transB, bool completeoutput = true);
 
   /// matrix matrix multiplication with explicitly defined flags
-  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
-                                      const SparseMatrix& B, bool transB,
-                                      bool explicitdirichlet,
-                                      bool savegraph,
-                                      bool completeoutput = true);
+  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
+      bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput = true);
 
   /// merge 2x2 system
-  Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii,
-      const LINALG::SparseMatrix& Aig,
-      const LINALG::SparseMatrix& Agi,
-      const LINALG::SparseMatrix& Agg);
+  Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii, const LINALG::SparseMatrix& Aig,
+      const LINALG::SparseMatrix& Agi, const LINALG::SparseMatrix& Agg);
 
 
   Teuchos::RCP<LINALG::SparseMatrix> Eye(const Epetra_Map& map);
 
-}  // end of LINALG namespace
+}  // namespace LINALG
 
 
 
@@ -621,23 +598,24 @@ class SparseMatrix : public SparseMatrixBase
   \note This method will NOT call Complete() on the output
         BlockSparseMatrix.
  */
-template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
-LINALG::SparseMatrix::Split(
-    const MultiMapExtractor& domainmaps,
-    const MultiMapExtractor& rangemaps) const
+template <class Strategy>
+Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy>> LINALG::SparseMatrix::Split(
+    const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const
 {
   // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
   // all entries will be inserted at once anyway
-  Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,0,explicitdirichlet_,savegraph_));
+  Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(
+          domainmaps, rangemaps, 0, explicitdirichlet_, savegraph_));
 
   // perform matrix splitting
-  if(domainmaps.NumMaps() == 2 && rangemaps.NumMaps() == 2)
+  if (domainmaps.NumMaps() == 2 && rangemaps.NumMaps() == 2)
     this->Split2x2(*blockA);
-  else if(domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
+  else if (domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
     this->SplitMxN(*blockA);
   else
-    dserror("Invalid number %d of row blocks or %d of column blocks for splitting operation!",rangemaps.NumMaps(),domainmaps.NumMaps());
+    dserror("Invalid number %d of row blocks or %d of column blocks for splitting operation!",
+        rangemaps.NumMaps(), domainmaps.NumMaps());
 
   // return resulting BlockSparseMatrix
   return blockA;

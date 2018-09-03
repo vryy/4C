@@ -51,17 +51,15 @@ void porofluidmultiphase_dyn(int restart)
   if (comm.MyPID() == 0)
   {
     POROFLUIDMULTIPHASE::PrintLogo();
-    std::cout << "###################################################"
-        << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: "
-        << DRT::Problem::Instance()->ProblemName() << std::endl;
-    std::cout << "###################################################"
-        << std::endl;
+    std::cout << "###################################################" << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "###################################################" << std::endl;
   }
 
-  //Parameter reading
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  const Teuchos::ParameterList& porodyn  = problem->PoroFluidMultiPhaseDynamicParams();
+  // Parameter reading
+  // access structural dynamic params list which will be possibly modified while creating the time
+  // integrator
+  const Teuchos::ParameterList& porodyn = problem->PoroFluidMultiPhaseDynamicParams();
 
   // get the solver number used for poro fluid solver
   const int linsolvernumber = porodyn.get<int>("LINEAR_SOLVER");
@@ -72,26 +70,27 @@ void porofluidmultiphase_dyn(int restart)
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis(fluid_disname);
 
-  if(DRT::Problem::Instance()->DoesExistDis(artery_disname))
+  if (DRT::Problem::Instance()->DoesExistDis(artery_disname))
   {
     Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
     arterydis = DRT::Problem::Instance()->GetDis(artery_disname);
     // get the coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(porodyn.sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
-    switch(arterycoupl)
+        DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+            porodyn.sublist("ARTERY COUPLING"), "ARTERY_COUPLING_METHOD");
+    switch (arterycoupl)
     {
-    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-    {
-      // call with true -> arterydis will be ghosted on all procs.
-      POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(actdis, arterydis, true);
-      break;
-    }
-    default:
-    {
-      break;
-    }
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      {
+        // call with true -> arterydis will be ghosted on all procs.
+        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(actdis, arterydis, true);
+        break;
+      }
+      default:
+      {
+        break;
+      }
     }
   }
 
@@ -99,7 +98,7 @@ void porofluidmultiphase_dyn(int restart)
   // assign dof set for solid pressures
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1,0,0,false));
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, false));
   const int nds_solidpressure = actdis->AddDofSet(dofsetaux);
 
   // -------------------------------------------------------------------
@@ -111,46 +110,38 @@ void porofluidmultiphase_dyn(int restart)
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-  output->WriteMesh(0,0.0);
+  output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-    DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(porodyn,"TIMEINTEGR");
+      DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+          porodyn, "TIMEINTEGR");
 
   // build poro fluid time integrator
   Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo =
-      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
-        timintscheme,
-        actdis,
-        linsolvernumber,
-        porodyn,
-        porodyn,
-        DRT::Problem::Instance()->ErrorFile()->Handle(),
-        output
-        );
+      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(timintscheme, actdis, linsolvernumber, porodyn,
+          porodyn, DRT::Problem::Instance()->ErrorFile()->Handle(), output);
 
   // initialize
-  algo->Init(
-      false, // eulerian formulation
-      -1,    //  no displacements
-      -1,    // no velocities
-      nds_solidpressure, // dof set for post processing solid pressure
-      -1   // no scalar field
-      );
+  algo->Init(false,       // eulerian formulation
+      -1,                 //  no displacements
+      -1,                 // no velocities
+      nds_solidpressure,  // dof set for post processing solid pressure
+      -1                  // no scalar field
+  );
 
   // read the restart information, set vectors and variables
-  if (restart)
-    algo->ReadRestart(restart);
+  if (restart) algo->ReadRestart(restart);
 
   // assign poro material for evaluation of porosity
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
-  POROFLUIDMULTIPHASE::UTILS::SetupMaterial(comm,stuct_disname,fluid_disname);
+  POROFLUIDMULTIPHASE::UTILS::SetupMaterial(comm, stuct_disname, fluid_disname);
 
-  //4.- Run of the actual problem.
+  // 4.- Run of the actual problem.
   algo->TimeLoop();
 
   // 4.3.- Summarize the performance measurements
@@ -162,4 +153,4 @@ void porofluidmultiphase_dyn(int restart)
 
   return;
 
-} // poromultiphase_dyn
+}  // poromultiphase_dyn

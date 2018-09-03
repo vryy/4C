@@ -2,7 +2,8 @@
 /*!
 \file growth.H
 
-\brief This file contains routines for integration point based isotropic and anisotropic volumetric growth laws.
+\brief This file contains routines for integration point based isotropic and anisotropic volumetric
+growth laws.
 
 \level 2
 
@@ -26,57 +27,52 @@
 
 namespace MAT
 {
-
-class GrowthLaw;
+  class GrowthLaw;
 
   namespace PAR
   {
+    /*----------------------------------------------------------------------*/
+    /*! \class Growth
+     *  \brief Common parameters for volumetric growth
+     *
+     *  \author kehl
+     *  \date 6/2015
+     */
+    class Growth : public Parameter
+    {
+     public:
+      /// standard constructor
+      Growth(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-  /*----------------------------------------------------------------------*/
-  /*! \class Growth
-   *  \brief Common parameters for volumetric growth
-   *
-   *  \author kehl
-   *  \date 6/2015
-   */
-  class Growth : public Parameter
-  {
-  public:
+      /// destructor
+      virtual ~Growth() { ; }
 
-    /// standard constructor
-    Growth(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-    );
+      /// @name material parameters
+      //@{
+      /// elastic material number
+      const int idmatelastic_;
+      /// growthlaw material number
+      const int idgrowthlaw_;
+      /// start growth after starttime
+      const double starttime_;
+      /// stop growth after endtime
+      const double endtime_;
+      /// growth law
+      Teuchos::RCP<MAT::GrowthLaw> growthlaw_;
+      //@}
 
-    /// destructor
-    virtual ~Growth() { ; }
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    /// @name material parameters
-    //@{
-    /// elastic material number
-    const int idmatelastic_;
-    /// growthlaw material number
-    const int idgrowthlaw_;
-    /// start growth after starttime
-    const double starttime_;
-    /// stop growth after endtime
-    const double endtime_;
-    /// growth law
-    Teuchos::RCP<MAT::GrowthLaw> growthlaw_;
-    //@}
-
-    /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
-
-  };  // class Growth
+    };  // class Growth
 
   }  // namespace PAR
 
-  ///type of vector/tensor in voigt notation
+  /// type of vector/tensor in voigt notation
   enum VoigtType
   {
-    voigt_strain, ///< strain vector/tensor in voigt notation
-    voigt_stress ///< stress vector/tensor in voigt notation
+    voigt_strain,  ///< strain vector/tensor in voigt notation
+    voigt_stress   ///< stress vector/tensor in voigt notation
   };
 
   /*----------------------------------------------------------------------*/
@@ -97,8 +93,7 @@ class GrowthLaw;
   */
   class Growth : public So3Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Growth();
 
@@ -139,8 +134,10 @@ class GrowthLaw;
 
     /// check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-      dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const = 0;
@@ -148,7 +145,8 @@ class GrowthLaw;
     /// Setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse
+    /// analysis)
     void ResetAll(int numgp);
 
     /// Update
@@ -185,12 +183,9 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,
-                          Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat,
-                          const int eleGID ) = 0;
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        const int eleGID) = 0;
 
     /*! \brief Evaluate mass change
      *
@@ -210,12 +205,10 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,
-                          Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* linmass_disp,
-                          LINALG::Matrix<6,1>* linmass_vel,
-                          const int eleGID) = 0;
+    void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
+        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel,
+        const int eleGID) = 0;
 
     /*! \brief Evaluate elastic material stresses and cmat
      *
@@ -235,12 +228,9 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateElastic(const LINALG::Matrix<3,3>* defgrd,
-                                 const LINALG::Matrix<6,1>* glstrain,
-                                 LINALG::Matrix<6,1>* stress,
-                                 LINALG::Matrix<6,6>* cmat,
-                                 Teuchos::ParameterList& params,
-                                 const int eleGID );
+    void EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, Teuchos::ParameterList& params,
+        const int eleGID);
     //@}
 
 
@@ -248,7 +238,11 @@ class GrowthLaw;
     //@{
 
     /// Return density
-    double Density() const {dserror("growth material needs gauss point data for density!"); return -1.0;}
+    double Density() const
+    {
+      dserror("growth material needs gauss point data for density!");
+      return -1.0;
+    }
 
     // growth law-specific!
     double Density(int gp) const;
@@ -260,35 +254,33 @@ class GrowthLaw;
     MAT::PAR::Growth* Parameter() const { return params_; }
 
     /// access to the elastic material
-    const Teuchos::RCP<MAT::So3Material> Matelastic() const {return matelastic_;}
+    const Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
 
     // read access to thetaold_
-    Teuchos::RCP<const std::vector<double> > ThetaOld() const {return thetaold_;}
+    Teuchos::RCP<const std::vector<double>> ThetaOld() const { return thetaold_; }
 
     // read access to theta_
-    Teuchos::RCP<const std::vector<double> > Theta() const {return theta_;}
+    Teuchos::RCP<const std::vector<double>> Theta() const { return theta_; }
 
     /// Return theta at Gauss point
-    double Theta_atgp(int gp) const { return (*theta_)[gp];}
+    double Theta_atgp(int gp) const { return (*theta_)[gp]; }
 
     // Return thetaold at Gauss-point
-    double ThetaOld_atgp(int gp) const {return ThetaOld()->at(gp);}
+    double ThetaOld_atgp(int gp) const { return ThetaOld()->at(gp); }
 
     // read access to isinit_
-    bool IsInit() const {return isinit_;}
+    bool IsInit() const { return isinit_; }
 
     //@}
 
-  protected:
-
+   protected:
     /// growth stretch
-    Teuchos::RCP<std::vector<double> > theta_;
+    Teuchos::RCP<std::vector<double>> theta_;
 
     /// indicates if material is initialized
     bool isinit_;
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Growth* params_;
 
@@ -296,12 +288,12 @@ class GrowthLaw;
     Teuchos::RCP<MAT::So3Material> matelastic_;
 
     /// growth stretch at the time step before
-    Teuchos::RCP<std::vector<double> > thetaold_;
+    Teuchos::RCP<std::vector<double>> thetaold_;
 
     /// data container to store and recall history data
     DRT::Container histdata_;
 
-  }; //class Growth
+  };  // class Growth
 
 
   /*! \class GrowthVolumetricType
@@ -314,16 +306,14 @@ class GrowthLaw;
   */
   class GrowthVolumetricType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "GrowthVolumetricType"; }
 
-    static GrowthVolumetricType & Instance() { return instance_; };
+    static GrowthVolumetricType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static GrowthVolumetricType instance_;
   };
 
@@ -343,8 +333,7 @@ class GrowthLaw;
   */
   class GrowthVolumetric : public Growth
   {
-  public:
-
+   public:
     /// construct empty material object
     GrowthVolumetric();
 
@@ -381,7 +370,7 @@ class GrowthLaw;
     //@}
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthVolumetric( *this ) ); }
+    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new GrowthVolumetric(*this)); }
 
     /// Setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -389,11 +378,12 @@ class GrowthLaw;
     /// Update
     void Update();
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse
+    /// analysis)
     void ResetAll(int numgp);
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string,int>& names);
+    void VisNames(std::map<std::string, int>& names);
 
     /// Return visualization data
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
@@ -419,82 +409,58 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,
-                          Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat,
-                          const int eleGID );
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        const int eleGID);
 
-    ///calculate stresses and elastic material tangent (both in Voigt notation)
-    void GetSAndCmatdach
-    (
-        const double theta,
-        const LINALG::Matrix<3,3>* defgrd,
-        LINALG::Matrix<6,1>* stress,
-        LINALG::Matrix<6,6>* cmatdach,
-        Teuchos::ParameterList& params,
-        const int eleGID
-    );
+    /// calculate stresses and elastic material tangent (both in Voigt notation)
+    void GetSAndCmatdach(const double theta, const LINALG::Matrix<3, 3>* defgrd,
+        LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmatdach,
+        Teuchos::ParameterList& params, const int eleGID);
 
-    ///Function which reads in the given fiber value due to the FIBER1 nomenclature
-    void ReadFiber(
-        DRT::INPUT::LineDefinition* linedef,
-        std::string specifier,
-        LINALG::Matrix<3,1> &fiber_vector
-    );
+    /// Function which reads in the given fiber value due to the FIBER1 nomenclature
+    void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
+        LINALG::Matrix<3, 1>& fiber_vector);
 
-//    LINALG::Matrix<3,3> CalcDerivMatrixInverse(const LINALG::Matrix<3,3>& Matrix,
-//                        const LINALG::Matrix<3,3>& );
-//
-//    double CalcDerivMatrixInverseij(const LINALG::Matrix<3,3>& Minv,
-//                        const LINALG::Matrix<3,3>& Mderiv,
-//                        const double i,
-//                        const double j);
+    //    LINALG::Matrix<3,3> CalcDerivMatrixInverse(const LINALG::Matrix<3,3>& Matrix,
+    //                        const LINALG::Matrix<3,3>& );
+    //
+    //    double CalcDerivMatrixInverseij(const LINALG::Matrix<3,3>& Minv,
+    //                        const LINALG::Matrix<3,3>& Mderiv,
+    //                        const double i,
+    //                        const double j);
 
-    ///transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
-    static void VectorToMatrix(
-        LINALG::Matrix<3,3>& Matrix,
-        const LINALG::Matrix<6,1>& Vector,
+    /// transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
+    static void VectorToMatrix(LINALG::Matrix<3, 3>& Matrix, const LINALG::Matrix<6, 1>& Vector,
         const MAT::VoigtType Type);
 
-    ///transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
-    static void MatrixToVector(
-        const LINALG::Matrix<3,3>& Matrix,
-        LINALG::Matrix<6,1>& Vector,
+    /// transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
+    static void MatrixToVector(const LINALG::Matrix<3, 3>& Matrix, LINALG::Matrix<6, 1>& Vector,
         const MAT::VoigtType Type);
 
     /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
     /// via the 2th order deformation gradient (also in matrix notation)
-    static LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
-                            const LINALG::Matrix<6,6>& Cmat);
+    static LINALG::Matrix<6, 6> PullBack4Tensor(
+        const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat);
 
-    /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt notation)
-    /// via the 2th order deformation gradient (also in matrix notation)
-    static double PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
-                          const double (&FourTensor)[3][3][3][3],
-                          const double& i,
-                          const double& j,
-                          const double& k,
-                          const double& l);
+    /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
+    /// notation) via the 2th order deformation gradient (also in matrix notation)
+    static double PullBack4Tensorijkl(const LINALG::Matrix<3, 3>& defgr,
+        const double (&FourTensor)[3][3][3][3], const double& i, const double& j, const double& k,
+        const double& l);
 
-    //Setup 4-Tensor from 6x6 Voigt notation
+    // Setup 4-Tensor from 6x6 Voigt notation
     static void Setup4Tensor(
-        double (&FourTensor)[3][3][3][3],
-        const LINALG::Matrix<6,6>& VoigtMatrix
-    );
+        double (&FourTensor)[3][3][3][3], const LINALG::Matrix<6, 6>& VoigtMatrix);
 
-//    //Setup 6x6 matrix in Voigt notation from 4-Tensor
-//    void Setup6x6VoigtMatrix(
-//        LINALG::Matrix<6,6>& VoigtMatrix,
-//        const double(&FourTensor)[3][3][3][3]
-//    );
+    //    //Setup 6x6 matrix in Voigt notation from 4-Tensor
+    //    void Setup6x6VoigtMatrix(
+    //        LINALG::Matrix<6,6>& VoigtMatrix,
+    //        const double(&FourTensor)[3][3][3][3]
+    //    );
 
-    //Print Four Tensor
-    void PrintFourTensor( double (&FourTensor)[3][3][3][3] );
-
-
-
+    // Print Four Tensor
+    void PrintFourTensor(double (&FourTensor)[3][3][3][3]);
 
 
 
@@ -516,12 +482,9 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,
-                          Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* linmass_disp,
-                          LINALG::Matrix<6,1>* linmass_vel,
-                          const int eleGID);
+    void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
+        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int eleGID);
 
     /*! \brief evaluate the volumetric growth factor
      *
@@ -546,12 +509,9 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateGrowth(double* theta,
-                                LINALG::Matrix<6,1>* dthetadC,
-                                const LINALG::Matrix<3,3>* defgrd,
-                                const LINALG::Matrix<6,1>* glstrain,
-                                Teuchos::ParameterList& params,
-                                const int eleGID );
+    void EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* dthetadC,
+        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, const int eleGID);
 
     //@}
 
@@ -563,33 +523,36 @@ class GrowthLaw;
 
     //@}
 
-  protected:
-
+   protected:
     /// trace of elastic mandel stress - for postprocessing
-    Teuchos::RCP<std::vector<double> > tr_mandel_e_;
+    Teuchos::RCP<std::vector<double>> tr_mandel_e_;
     /// elastic fiber stretch - for postprocessing
-    Teuchos::RCP<std::vector<double> > lambda_fib_e_;
-    /// growth trigger for aniso stress / strain growth laws with constant prescribed trigger (element-wise, in .dat file!)
+    Teuchos::RCP<std::vector<double>> lambda_fib_e_;
+    /// growth trigger for aniso stress / strain growth laws with constant prescribed trigger
+    /// (element-wise, in .dat file!)
     double growthtrig_const_;
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Growth* paramsVolumetric_;
 
-    ///a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic growth laws
-    LINALG::Matrix<3,1> refdir_;
+    /// a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic
+    /// growth laws
+    LINALG::Matrix<3, 1> refdir_;
 
-    ///some current direction, used for anisotropic scalar-dependent growth in current radial direction...
-    std::vector<LINALG::Matrix<3,1> > curdir_;
+    /// some current direction, used for anisotropic scalar-dependent growth in current radial
+    /// direction...
+    std::vector<LINALG::Matrix<3, 1>> curdir_;
 
-    ///normal direction, used for anisotropic scalar-dependent growth in current radial direction...
-    std::vector<LINALG::Matrix<3,1> > curdir_for_update_;
+    /// normal direction, used for anisotropic scalar-dependent growth in current radial
+    /// direction...
+    std::vector<LINALG::Matrix<3, 1>> curdir_for_update_;
 
-    /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial direction...
-    std::vector<LINALG::Matrix<3,3> > F_g_hist_;
+    /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial
+    /// direction...
+    std::vector<LINALG::Matrix<3, 3>> F_g_hist_;
 
-  }; //class GrowthVolumetric
+  };  // class GrowthVolumetric
 
 }  // namespace MAT
 

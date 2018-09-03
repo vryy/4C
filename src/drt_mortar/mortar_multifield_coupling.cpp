@@ -19,11 +19,8 @@
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::PushBackCoupling(
-    const Teuchos::RCP<DRT::Discretization>&   dis,
-    const int nodeset,
-    const std::vector<int> dofs_to_couple
-    )
+void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discretization>& dis,
+    const int nodeset, const std::vector<int> dofs_to_couple)
 {
   if (!dis->GetCondition("MortarMulti"))
     dserror("this discretization does not have a Mortar-Muti condition");
@@ -31,18 +28,8 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(
   Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying =
       Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  adaptermeshtying->Setup(
-      dis,
-      dis,
-      Teuchos::null,
-      dofs_to_couple,
-      "MortarMulti",
-      dis->Comm(),
-      false,
-      false,
-      nodeset,
-      nodeset
-  );
+  adaptermeshtying->Setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
+      false, false, nodeset, nodeset);
 
   adaptermeshtying->Evaluate();
   p_.push_back(adaptermeshtying->GetPMatrix());
@@ -50,24 +37,21 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::CondenseMatrix(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat)
+void MORTAR::MultiFieldCoupling::CondenseMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat)
 {
-  MORTAR::UTILS::MortarMatrixCondensation(mat,p_);
+  MORTAR::UTILS::MortarMatrixCondensation(mat, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::CondenseRhs(
-    Teuchos::RCP<Epetra_Vector>& rhs)
+void MORTAR::MultiFieldCoupling::CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs)
 {
-  MORTAR::UTILS::MortarRhsCondensation(rhs,p_);
+  MORTAR::UTILS::MortarRhsCondensation(rhs, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::RecoverIncr(
-    Teuchos::RCP<Epetra_Vector>& incr)
+void MORTAR::MultiFieldCoupling::RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr)
 {
-  MORTAR::UTILS::MortarRecover(incr,p_);
+  MORTAR::UTILS::MortarRecover(incr, p_);
 }

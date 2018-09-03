@@ -16,48 +16,44 @@
 
 #include "pairedvector.H"
 
-namespace GEN {
-
+namespace GEN
+{
   /// struct containing the base type of the pairedmatrix class
-  template < typename Key, typename T,
-             typename inner_insert_policy,
-             typename outer_insert_policy >
+  template <typename Key, typename T, typename inner_insert_policy, typename outer_insert_policy>
   struct pairedmatrix_base
   {
-    typedef pairedvector<Key, pairedvector<Key, T, inner_insert_policy>, outer_insert_policy > type;
+    typedef pairedvector<Key, pairedvector<Key, T, inner_insert_policy>, outer_insert_policy> type;
   };
 
-  template< typename Key, typename T,
-            typename inner_insert_policy=default_insert_policy<Key,T>,
-            typename outer_insert_policy=default_insert_policy<Key, pairedvector<Key, T, inner_insert_policy> > >
-  class pairedmatrix : public pairedmatrix_base<Key,T,inner_insert_policy,outer_insert_policy>::type
+  template <typename Key, typename T, typename inner_insert_policy = default_insert_policy<Key, T>,
+      typename outer_insert_policy =
+          default_insert_policy<Key, pairedvector<Key, T, inner_insert_policy>>>
+  class pairedmatrix
+      : public pairedmatrix_base<Key, T, inner_insert_policy, outer_insert_policy>::type
   {
     typedef pairedvector<Key, T, inner_insert_policy> inner_pairedvector_type;
     typedef pairedvector<Key, inner_pairedvector_type, outer_insert_policy> base_type;
-    typedef std::pair<Key, inner_pairedvector_type > pair_type;
-    typedef std::vector<pair_type > pairedmatrix_type;
+    typedef std::pair<Key, inner_pairedvector_type> pair_type;
+    typedef std::vector<pair_type> pairedmatrix_type;
     typedef pairedmatrix<Key, T, inner_insert_policy, outer_insert_policy> class_type;
 
-  public:
+   public:
     /**
      *  @brief  constructor creates no elements, but reserves the maximum
      *          number of entries.
      *  @param reserve The number of elements that are preallocated
      */
     pairedmatrix(size_t reserve)
-        : base_type(reserve, Key(), inner_pairedvector_type(reserve) ),
-          _max_row_capacity( reserve )
-    {}
+        : base_type(reserve, Key(), inner_pairedvector_type(reserve)), _max_row_capacity(reserve)
+    {
+    }
 
     /**
      *  @brief  empty constructor creates no elements and does not reserve any
      *          number of entries. Use resize as soon as you know the necessary
      *          number of elements.
      */
-    pairedmatrix()
-        : base_type(),
-          _max_row_capacity(0)
-    {}
+    pairedmatrix() : base_type(), _max_row_capacity(0) {}
 
     /**
      *  @brief  constructor creates no elements, but reserves the maximum
@@ -67,9 +63,9 @@ namespace GEN {
      *  @param default_T   default value for the data within the pair
      */
     pairedmatrix(size_t reserve, Key default_key, inner_pairedvector_type default_T)
-        : base_type( reserve, default_key, default_T ),
-          _max_row_capacity( default_T.capacity() )
-    {}
+        : base_type(reserve, default_key, default_T), _max_row_capacity(default_T.capacity())
+    {
+    }
 
     /**
      *  @brief  copy constructor
@@ -77,25 +73,21 @@ namespace GEN {
      *  @param[in] source %pairedmatrix object we want to copy.
      *  @param[in] type   Apply this copy type.
      */
-    pairedmatrix(
-        const inner_pairedvector_type& source,
-        enum GEN::CopyType type = DeepCopy )
-        : base_type(),
-          _max_row_capacity(0)
+    pairedmatrix(const inner_pairedvector_type& source, enum GEN::CopyType type = DeepCopy)
+        : base_type(), _max_row_capacity(0)
     {
-      const size_t src_max_row_capacity = maxRowCapacity( source );
-      clear( default_pair( src_max_row_capacity ) );
-      resize( source.capacity(), src_max_row_capacity );
+      const size_t src_max_row_capacity = maxRowCapacity(source);
+      clear(default_pair(src_max_row_capacity));
+      resize(source.capacity(), src_max_row_capacity);
 
-      base_type::clone( source );
+      base_type::clone(source);
 
-      switch ( type )
+      switch (type)
       {
         case ShapeCopy:
         {
-          for ( pair_type& row : *this )
-            for ( std::pair<Key,T>& entry : row.second )
-              entry.second = T();
+          for (pair_type& row : *this)
+            for (std::pair<Key, T>& entry : row.second) entry.second = T();
 
           break;
         }
@@ -110,8 +102,7 @@ namespace GEN {
      *  not touched in any way.  Managing the pointer is the user's
      *  responsibility.
      */
-    ~pairedmatrix()
-    {}
+    ~pairedmatrix() {}
 
     /**
      * @brief  clear the %pairedmatrix content
@@ -127,55 +118,42 @@ namespace GEN {
      *
      *  \author hiermeier \date 07/17
      */
-    void clear()
+    void clear() { clear(_max_row_capacity); }
+
+    void clear(const pair_type& x) { base_type::clear(x); }
+
+    void resize(size_t new_size)
     {
-      clear( _max_row_capacity );
+      if (new_size > _max_row_capacity) _max_row_capacity = new_size;
+
+      base_type::resize(new_size, default_pair(_max_row_capacity));
     }
 
-    void clear( const pair_type& x )
-    {
-      base_type::clear( x );
-    }
-
-    void resize( size_t new_size )
-    {
-      if ( new_size > _max_row_capacity )
-        _max_row_capacity = new_size;
-
-      base_type::resize( new_size, default_pair( _max_row_capacity ) );
-    }
-
-    void resize( size_t new_size, const pair_type& x)
-    {
-      base_type::resize( new_size, x );
-    }
+    void resize(size_t new_size, const pair_type& x) { base_type::resize(new_size, x); }
 
     /** @brief assign operator
      *
      *  Perform a deep copy of the input object. */
-    class_type& operator=( const base_type& source )
+    class_type& operator=(const base_type& source)
     {
-      clone( source, DeepCopy );
+      clone(source, DeepCopy);
       return *this;
     }
 
-    void clone(
-        const base_type& source,
-        const enum CopyType type)
+    void clone(const base_type& source, const enum CopyType type)
     {
-      const size_t src_row_capacity = maxRowCapacity( source );
-      clear( src_row_capacity );
-      resize( source.capacity(), src_row_capacity );
+      const size_t src_row_capacity = maxRowCapacity(source);
+      clear(src_row_capacity);
+      resize(source.capacity(), src_row_capacity);
 
-      base_type::clone( source );
+      base_type::clone(source);
 
-      switch ( type )
+      switch (type)
       {
         case ShapeCopy:
         {
-          for ( pair_type& row : *this )
-            for ( std::pair<Key,T>& entry : row.second )
-              entry.second = T();
+          for (pair_type& row : *this)
+            for (std::pair<Key, T>& entry : row.second) entry.second = T();
 
           break;
         }
@@ -187,8 +165,7 @@ namespace GEN {
     void complete()
     {
       base_type::complete();
-      for ( pair_type& vec : *this )
-        vec.second.complete();
+      for (pair_type& vec : *this) vec.second.complete();
     }
 
     /**
@@ -200,21 +177,17 @@ namespace GEN {
      *  Print the %pairedmatrix information in column format. By default the
      *  entries are sorted with respect to their KEY entries.
      */
-    void print( std::ostream& os=std::cout, bool sort=true ) const
+    void print(std::ostream& os = std::cout, bool sort = true) const
     {
+      pairedmatrix_type sorted_m(base_type::begin(), base_type::end());
+      if (sort) std::sort(sorted_m.begin(), sorted_m.end(), pair_comp<pair_type>);
 
-      pairedmatrix_type sorted_m( base_type::begin(), base_type::end() );
-      if ( sort )
-        std::sort( sorted_m.begin(), sorted_m.end(), pair_comp<pair_type> );
-
-      os << "GEN::pairedmatrix [size= "<< base_type::size()
-          << ", capacity=" << base_type::capacity() << ", max. capacity per row="
-          << maxRowCapacity( *this ) << "]\n";
-      if ( sort )
-        os << "sorted ";
+      os << "GEN::pairedmatrix [size= " << base_type::size()
+         << ", capacity=" << base_type::capacity()
+         << ", max. capacity per row=" << maxRowCapacity(*this) << "]\n";
+      if (sort) os << "sorted ";
       os << "entries {KEY, T}:\n";
-      for ( auto& p : sorted_m )
-        os << "{" << p.first << ", " << p.second << "}\n";
+      for (auto& p : sorted_m) os << "{" << p.first << ", " << p.second << "}\n";
     }
 
     /** @brief Activate and deactivate the debug functionality
@@ -224,34 +197,31 @@ namespace GEN {
      *
      *  @param[in] isdebug
      */
-    void setDebugMode( bool isdebug )
+    void setDebugMode(bool isdebug)
     {
-      base_type::setDebugMode( isdebug );
-      for ( pair_type& pair : this->data() )
-        pair.second.setDebugMode( isdebug );
+      base_type::setDebugMode(isdebug);
+      for (pair_type& pair : this->data()) pair.second.setDebugMode(isdebug);
     }
 
     /// return a default pair of correct types with the specified capacity
-    static pair_type default_pair( const size_t row_capacity )
+    static pair_type default_pair(const size_t row_capacity)
     {
       const Key empty_first = Key();
-      const inner_pairedvector_type empty_second( row_capacity );
+      const inner_pairedvector_type empty_second(row_capacity);
 
-      return pair_type( empty_first, empty_second );
+      return pair_type(empty_first, empty_second);
     }
 
-  private:
-
-    inline void clear( const size_t row_capacity )
+   private:
+    inline void clear(const size_t row_capacity)
     {
-      base_type::clear( pair_type( Key(),
-          inner_pairedvector_type( row_capacity ) ) );
+      base_type::clear(pair_type(Key(), inner_pairedvector_type(row_capacity)));
     }
 
-    inline void resize( const size_t new_size, const size_t row_capacity)
+    inline void resize(const size_t new_size, const size_t row_capacity)
     {
       _max_row_capacity = row_capacity;
-      base_type::resize( new_size, default_pair( row_capacity ) );
+      base_type::resize(new_size, default_pair(row_capacity));
     }
 
     /** @brief Detect the maximal row capacity of a given %pairedmatrix
@@ -259,20 +229,19 @@ namespace GEN {
      *  @param mat %pairedmatrix object we want to investigate.
      *
      *  @author hiermeier @date 05/17 */
-    inline size_t maxRowCapacity( const base_type& mat ) const
+    inline size_t maxRowCapacity(const base_type& mat) const
     {
       size_t max_row_capacity = 0;
-      for ( const pair_type& row : mat.data() )
+      for (const pair_type& row : mat.data())
       {
         const size_t row_capacity = row.second.capacity();
-        if ( max_row_capacity < row_capacity )
-          max_row_capacity = row_capacity;
+        if (max_row_capacity < row_capacity) max_row_capacity = row_capacity;
       }
 
       return max_row_capacity;
     }
 
-  private:
+   private:
     size_t _max_row_capacity;
   };  // class pairedmatrix
 
@@ -285,15 +254,11 @@ namespace GEN {
    *
    *  \author hiermeier \date 03/17 */
   template <typename Key, typename... Ts>
-  inline void reset(
-      const unsigned reserve_size,
-      pairedvector<Key,Ts...>& paired_vec )
+  inline void reset(const unsigned reserve_size, pairedvector<Key, Ts...>& paired_vec)
   {
-    if ( not paired_vec.empty() )
-      paired_vec.clear();
+    if (not paired_vec.empty()) paired_vec.clear();
 
-    if ( paired_vec.capacity() < reserve_size )
-      paired_vec.resize( reserve_size );
+    if (paired_vec.capacity() < reserve_size) paired_vec.resize(reserve_size);
   }
 
   /** @brief (Re)set a %pairedmatrix
@@ -304,20 +269,17 @@ namespace GEN {
    *
    *  \author hiermeier \date 03/17 */
   template <typename Key, typename... Ts>
-  inline void reset(
-      const unsigned reserve_size,
-      const unsigned row_reserve_size,
-      pairedmatrix<Key,Ts...>& paired_mat )
+  inline void reset(const unsigned reserve_size, const unsigned row_reserve_size,
+      pairedmatrix<Key, Ts...>& paired_mat)
   {
-    if ( not paired_mat.empty() )
+    if (not paired_mat.empty())
     {
-     paired_mat.clear( pairedmatrix<Key,Ts...>::default_pair( row_reserve_size ) );
+      paired_mat.clear(pairedmatrix<Key, Ts...>::default_pair(row_reserve_size));
     }
 
-    if ( paired_mat.capacity() < reserve_size )
+    if (paired_mat.capacity() < reserve_size)
     {
-      paired_mat.resize( reserve_size,
-          pairedmatrix<Key,Ts...>::default_pair( row_reserve_size ) );
+      paired_mat.resize(reserve_size, pairedmatrix<Key, Ts...>::default_pair(row_reserve_size));
     }
   }
 
@@ -329,11 +291,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 03/17 */
   template <typename Key, typename... Ts>
-  inline void reset(
-      const unsigned reserve_size,
-      pairedmatrix<Key,Ts...>& paired_mat )
+  inline void reset(const unsigned reserve_size, pairedmatrix<Key, Ts...>& paired_mat)
   {
-    reset<Key,Ts...>( reserve_size, reserve_size, paired_mat );
+    reset<Key, Ts...>(reserve_size, reserve_size, paired_mat);
   }
 
   /** @brief (Re)set a std::vector of paired-matrices
@@ -346,19 +306,16 @@ namespace GEN {
    *  @author hiermeier @date 03/17 */
   template <typename paired_type>
   inline void reset(
-      const unsigned num_vec,
-      const unsigned reserve_size,
-      std::vector<paired_type>& vec_paired_obj )
+      const unsigned num_vec, const unsigned reserve_size, std::vector<paired_type>& vec_paired_obj)
   {
-    if ( vec_paired_obj.size() != num_vec )
+    if (vec_paired_obj.size() != num_vec)
     {
       vec_paired_obj.clear();
       const paired_type empty_paired_obj;
-      vec_paired_obj.resize( num_vec, empty_paired_obj );
+      vec_paired_obj.resize(num_vec, empty_paired_obj);
     }
 
-    for ( auto& paired_obj : vec_paired_obj )
-      reset( reserve_size, paired_obj );
+    for (auto& paired_obj : vec_paired_obj) reset(reserve_size, paired_obj);
   }
 
   /** @brief (Re)set a std::vector of paired-objects
@@ -370,11 +327,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 03/17 */
   template <typename paired_type>
-  inline void reset(
-      const unsigned reserve_size,
-      std::vector<paired_type>& vec_paired_obj )
+  inline void reset(const unsigned reserve_size, std::vector<paired_type>& vec_paired_obj)
   {
-    reset( vec_paired_obj.size(), reserve_size, vec_paired_obj );
+    reset(vec_paired_obj.size(), reserve_size, vec_paired_obj);
   }
 
   /** @brief Weak reset a paired-vector
@@ -387,11 +342,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 11/17 */
   template <typename Key, typename T0, typename... Ts>
-  inline void weak_reset(
-      pairedvector<Key,T0,Ts...>& paired_vec )
+  inline void weak_reset(pairedvector<Key, T0, Ts...>& paired_vec)
   {
-    for ( auto& pair : paired_vec )
-      pair.second = T0();
+    for (auto& pair : paired_vec) pair.second = T0();
   }
 
   /** @brief Weak reset a paired-matrix
@@ -404,11 +357,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 11/17 */
   template <typename Key, typename... Ts>
-  inline void weak_reset(
-      pairedmatrix<Key,Ts...>& paired_mat )
+  inline void weak_reset(pairedmatrix<Key, Ts...>& paired_mat)
   {
-    for ( auto& pair : paired_mat )
-      weak_reset( pair.second );
+    for (auto& pair : paired_mat) weak_reset(pair.second);
   }
 
   /** @brief weak reset a std::vector of paired objects
@@ -421,11 +372,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 11/17 */
   template <typename paired_type>
-  inline void weak_reset(
-      std::vector<paired_type>& vec_paired_obj )
+  inline void weak_reset(std::vector<paired_type>& vec_paired_obj)
   {
-    for ( auto& paired_obj : vec_paired_obj )
-      weak_reset( paired_obj );
+    for (auto& paired_obj : vec_paired_obj) weak_reset(paired_obj);
   }
 
   /** @brief Increase the capacity of a paired_type object  if necessary
@@ -437,15 +386,14 @@ namespace GEN {
    *
    *  @author hiermeier @date 03/17 */
   template <typename paired_type>
-  inline size_t increaseCapacity( paired_type& paired_obj )
+  inline size_t increaseCapacity(paired_type& paired_obj)
   {
     size_t new_capacity = paired_obj.capacity();
 
     // if the capacity is still sufficient, do nothing
-    if ( new_capacity > paired_obj.size() )
-      return new_capacity;
+    if (new_capacity > paired_obj.size()) return new_capacity;
 
-    switch ( new_capacity )
+    switch (new_capacity)
     {
       // special case: capacity is zero
       case 0:
@@ -457,7 +405,7 @@ namespace GEN {
         break;
     }
 
-    paired_obj.resize( new_capacity );
+    paired_obj.resize(new_capacity);
 
     return new_capacity;
   }
@@ -470,18 +418,15 @@ namespace GEN {
    *
    *  @author hiermeier @date 05/17 */
   template <typename paired_type>
-  inline void copy(
-      const std::vector<paired_type>& source,
-      std::vector<paired_type>& target,
-      const enum CopyType type = DeepCopy )
+  inline void copy(const std::vector<paired_type>& source, std::vector<paired_type>& target,
+      const enum CopyType type = DeepCopy)
   {
     const unsigned vec_dim = source.size();
 
-    target.resize( vec_dim );
+    target.resize(vec_dim);
 
     auto src_it = source.begin();
-    for ( auto it = target.begin(); it!= target.end(); ++it, ++src_it )
-      it->clone(*src_it,type);
+    for (auto it = target.begin(); it != target.end(); ++it, ++src_it) it->clone(*src_it, type);
   }
 
   /** @brief Copy Source of paired_type into a new object of paired_type
@@ -493,11 +438,9 @@ namespace GEN {
    *  @author hiermeier @date 05/17 */
   template <typename paired_type>
   inline void copy(
-      const paired_type& source,
-      paired_type& target,
-      const enum CopyType type = DeepCopy )
+      const paired_type& source, paired_type& target, const enum CopyType type = DeepCopy)
   {
-    target.clone( source, type );
+    target.clone(source, type);
   }
 
   /** @brief Print a set of paired objects
@@ -507,17 +450,15 @@ namespace GEN {
    *
    *  @author hiermeier @date 07/17 */
   template <typename paired_type>
-  inline void print(
-      const std::vector<paired_type>& vec_paired_obj,
-      std::ostream& os = std::cout )
+  inline void print(const std::vector<paired_type>& vec_paired_obj, std::ostream& os = std::cout)
   {
-    size_t i=0;
+    size_t i = 0;
     const size_t vec_size = vec_paired_obj.size();
 
-    for ( const paired_type& paired_obj : vec_paired_obj )
+    for (const paired_type& paired_obj : vec_paired_obj)
     {
       os << "component #" << ++i << " of " << vec_size << ":\n";
-      paired_obj.print( os );
+      paired_obj.print(os);
     }
   }
 
@@ -528,10 +469,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 07/17 */
   template <typename paired_type>
-  inline void complete( std::vector<paired_type>& vec_paired_obj )
+  inline void complete(std::vector<paired_type>& vec_paired_obj)
   {
-    for ( paired_type& paired_obj : vec_paired_obj )
-      paired_obj.complete();
+    for (paired_type& paired_obj : vec_paired_obj) paired_obj.complete();
   }
 
   /** @brief Set debug mode status in each of the contained paired objects
@@ -543,11 +483,9 @@ namespace GEN {
    *
    *  @author hiermeier @date 07/17 */
   template <typename paired_type>
-  inline void setDebugMode(
-      std::vector<paired_type>& vec_paired_obj,
-      bool isdebug )
+  inline void setDebugMode(std::vector<paired_type>& vec_paired_obj, bool isdebug)
   {
-    for ( paired_type& paired_obj : vec_paired_obj )
+    for (paired_type& paired_obj : vec_paired_obj)
     {
       paired_obj.setDebugMode(isdebug);
     }
@@ -555,14 +493,14 @@ namespace GEN {
 
   /// template alias for the pairedmatrix using the default_insert_policy
   template <typename Key, typename T>
-  using default_pairedmatrix = pairedmatrix<Key,T,default_insert_policy<Key,T>,
-      default_insert_policy<Key,default_pairedvector<Key,T> > >;
+  using default_pairedmatrix = pairedmatrix<Key, T, default_insert_policy<Key, T>,
+      default_insert_policy<Key, default_pairedvector<Key, T>>>;
 
   /// template alias for the pairedmatrix using the quick_insert_policy
   template <typename Key, typename T>
-  using quick_pairedmatrix = pairedmatrix<Key,T,quick_insert_policy<Key,T>,
-      quick_insert_policy<Key,quick_pairedvector<Key,T> > >;
-}
+  using quick_pairedmatrix = pairedmatrix<Key, T, quick_insert_policy<Key, T>,
+      quick_insert_policy<Key, quick_pairedvector<Key, T>>>;
+}  // namespace GEN
 
 
 #endif /* SRC_HEADERS_PAIREDMATRIX_H_ */

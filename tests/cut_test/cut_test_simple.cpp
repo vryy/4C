@@ -18,71 +18,72 @@
 #include "cut_test_utils.H"
 #include "../../src/drt_cut/cut_triangulateFacet.H"
 
-GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh )
+GEO::CUT::Element* create_tet4(GEO::CUT::Mesh& mesh)
 {
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 2;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 2;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 2;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 1;
+  xyze(0, 1) = 2;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 1;
 
-  xyze( 0, 2 ) = 2;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 2;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 0.5;
+  xyze(0, 3) = 0.5;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 0.5;
 
-  return create_tet4( mesh, xyze );
+  return create_tet4(mesh, xyze);
 }
 
-GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, double x, double dx, double dz, bool reverse=false )
+GEO::CUT::Side* create_quad4(
+    GEO::CUT::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) =  x - dx;
-  xyze( 1, 0 ) = -0.5;
-  xyze( 2, 0 ) = -0.5 - dz;
+  xyze(0, 0) = x - dx;
+  xyze(1, 0) = -0.5;
+  xyze(2, 0) = -0.5 - dz;
 
-  xyze( 0, 1 ) =  x + dx;
-  xyze( 1, 1 ) = -0.5;
-  xyze( 2, 1 ) =  1.5 + dz;
+  xyze(0, 1) = x + dx;
+  xyze(1, 1) = -0.5;
+  xyze(2, 1) = 1.5 + dz;
 
-  xyze( 0, 2 ) =  x + dx;
-  xyze( 1, 2 ) =  1.5;
-  xyze( 2, 2 ) =  1.5 + dz;
+  xyze(0, 2) = x + dx;
+  xyze(1, 2) = 1.5;
+  xyze(2, 2) = 1.5 + dz;
 
-  xyze( 0, 3 ) =  x - dx;
-  xyze( 1, 3 ) =  1.5;
-  xyze( 2, 3 ) = -0.5 - dz;
+  xyze(0, 3) = x - dx;
+  xyze(1, 3) = 1.5;
+  xyze(2, 3) = -0.5 - dz;
 
-  if ( reverse )
+  if (reverse)
   {
-    std::swap( xyze( 0, 1 ), xyze( 0, 3 ) );
-    std::swap( xyze( 1, 1 ), xyze( 1, 3 ) );
-    std::swap( xyze( 2, 1 ), xyze( 2, 3 ) );
+    std::swap(xyze(0, 1), xyze(0, 3));
+    std::swap(xyze(1, 1), xyze(1, 3));
+    std::swap(xyze(2, 1), xyze(2, 3));
   }
 
-  return create_quad4( mesh, xyze );
+  return create_quad4(mesh, xyze);
 }
 
 void test_hex8_simple()
 {
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
-  GEO::CUT::Element * e = create_hex8( mesh );
-  GEO::CUT::Side * s = create_quad4( mesh, 0.5, 0.1, 0 );
+  GEO::CUT::Element* e = create_hex8(mesh);
+  GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ), 0 );
+  e->Cut(mesh, *(s), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_tet4_simple()
@@ -90,32 +91,32 @@ void test_tet4_simple()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 0;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 1;
+  xyze(0, 3) = 0.5;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 1;
 
-  GEO::CUT::Element * e = create_tet4( mesh, xyze );
-  GEO::CUT::Side * s = create_quad4( mesh, 0.5, 0.1, 0 );
+  GEO::CUT::Element* e = create_tet4(mesh, xyze);
+  GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ), 0 );
+  e->Cut(mesh, *(s), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_pyramid5_simple()
@@ -123,36 +124,36 @@ void test_pyramid5_simple()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze( 3, 5 );
+  Epetra_SerialDenseMatrix xyze(3, 5);
 
-  xyze( 0, 0 ) = 0;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 0;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = 0;
+  xyze(0, 3) = 0;
+  xyze(1, 3) = 1;
+  xyze(2, 3) = 0;
 
-  xyze( 0, 4 ) = 0.5;
-  xyze( 1, 4 ) = 1;
-  xyze( 2, 4 ) = 1;
+  xyze(0, 4) = 0.5;
+  xyze(1, 4) = 1;
+  xyze(2, 4) = 1;
 
-  GEO::CUT::Element * e = create_pyramid5( mesh, xyze );
-  GEO::CUT::Side * s = create_quad4( mesh, 0.5, 0.1, 0 );
+  GEO::CUT::Element* e = create_pyramid5(mesh, xyze);
+  GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ), 0 );
+  e->Cut(mesh, *(s), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_wedge6_simple()
@@ -160,40 +161,40 @@ void test_wedge6_simple()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze( 3, 6 );
+  Epetra_SerialDenseMatrix xyze(3, 6);
 
-  xyze( 0, 0 ) = 0;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 0;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 1;
+  xyze(0, 3) = 0;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 1;
 
-  xyze( 0, 4 ) = 1;
-  xyze( 1, 4 ) = 0;
-  xyze( 2, 4 ) = 1;
+  xyze(0, 4) = 1;
+  xyze(1, 4) = 0;
+  xyze(2, 4) = 1;
 
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = 1;
-  xyze( 2, 5 ) = 1;
+  xyze(0, 5) = 1;
+  xyze(1, 5) = 1;
+  xyze(2, 5) = 1;
 
-  GEO::CUT::Element * e = create_wedge6( mesh, xyze );
-  GEO::CUT::Side * s = create_quad4( mesh, 0.5, 0.1, 0 );
+  GEO::CUT::Element* e = create_wedge6(mesh, xyze);
+  GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ), 0 );
+  e->Cut(mesh, *(s), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 
@@ -201,28 +202,28 @@ void test_hex8_fullside()
 {
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
-  GEO::CUT::Element * e = create_hex8( mesh );
-  GEO::CUT::Side * s = create_quad4( mesh, 1, 0, 0 );
+  GEO::CUT::Element* e = create_hex8(mesh);
+  GEO::CUT::Side* s = create_quad4(mesh, 1, 0, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ), 0 );
+  e->Cut(mesh, *(s), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_diagonal()
 {
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
-  GEO::CUT::Element * e = create_hex8( mesh );
-  GEO::CUT::Side * s = create_quad4( mesh, 0.5, 1, 0 );
+  GEO::CUT::Element* e = create_hex8(mesh);
+  GEO::CUT::Side* s = create_quad4(mesh, 0.5, 1, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ), 0 );
+  e->Cut(mesh, *(s), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_tet4()
@@ -232,27 +233,27 @@ void test_hex8_tet4()
   w.CreateHex8();
   w.CreateTet4Sides();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) = -0.1;
-  xyze( 1, 0 ) =  0.1;
-  xyze( 2, 0 ) = -0.1;
+  xyze(0, 0) = -0.1;
+  xyze(1, 0) = 0.1;
+  xyze(2, 0) = -0.1;
 
-  xyze( 0, 1 ) =  1.1;
-  xyze( 1, 1 ) =  0.1;
-  xyze( 2, 1 ) = -0.1;
+  xyze(0, 1) = 1.1;
+  xyze(1, 1) = 0.1;
+  xyze(2, 1) = -0.1;
 
-  xyze( 0, 2 ) =  1.1;
-  xyze( 1, 2 ) = -0.1;
-  xyze( 2, 2 ) =  0.1;
+  xyze(0, 2) = 1.1;
+  xyze(1, 2) = -0.1;
+  xyze(2, 2) = 0.1;
 
-  xyze( 0, 3 ) = -0.1;
-  xyze( 1, 3 ) = -0.1;
-  xyze( 2, 3 ) =  0.1;
+  xyze(0, 3) = -0.1;
+  xyze(1, 3) = -0.1;
+  xyze(2, 3) = 0.1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -263,7 +264,7 @@ void test_hex8_hex8()
   SimpleWrapper w;
 
   w.CreateHex8();
-  w.CreateHex8Sides( 0.5, 0.5, 0.5 );
+  w.CreateHex8Sides(0.5, 0.5, 0.5);
   w.Status();
   w.CutTest_Cut();
 }
@@ -273,29 +274,29 @@ void test_hex8_touch()
   SimpleWrapper w;
 
   w.CreateHex8();
-  w.CreateHex8Sides( 1, 0, 0 );
+  w.CreateHex8Sides(1, 0, 0);
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) =  0.1;
-  xyze( 1, 0 ) = -0.1;
-  xyze( 2, 0 ) = -0.1;
+  xyze(0, 0) = 0.1;
+  xyze(1, 0) = -0.1;
+  xyze(2, 0) = -0.1;
 
-  xyze( 0, 1 ) =  0.1;
-  xyze( 1, 1 ) =  1.1;
-  xyze( 2, 1 ) = -0.1;
+  xyze(0, 1) = 0.1;
+  xyze(1, 1) = 1.1;
+  xyze(2, 1) = -0.1;
 
-  xyze( 0, 2 ) = -0.1;
-  xyze( 1, 2 ) =  1.1;
-  xyze( 2, 2 ) =  0.1;
+  xyze(0, 2) = -0.1;
+  xyze(1, 2) = 1.1;
+  xyze(2, 2) = 0.1;
 
-  xyze( 0, 3 ) = -0.1;
-  xyze( 1, 3 ) = -0.1;
-  xyze( 2, 3 ) =  0.1;
+  xyze(0, 3) = -0.1;
+  xyze(1, 3) = -0.1;
+  xyze(2, 3) = 0.1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -306,7 +307,7 @@ void test_hex8_touch2()
   SimpleWrapper w;
 
   w.CreateHex8();
-  w.CreateHex8Sides( 1, 0.5, 0.5 );
+  w.CreateHex8Sides(1, 0.5, 0.5);
   w.Status();
   w.CutTest_Cut();
 }
@@ -317,25 +318,25 @@ void test_hex8_schraeg()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 0.5;
-  xyze( 1, 1 ) = 1;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 0.5;
+  xyze(1, 1) = 1;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 1;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 1;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 1;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -347,29 +348,29 @@ void test_hex8_quad4_woelbung()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = -0.5;
-  xyze( 1, 0 ) = -0.5;
-  xyze( 2, 0 ) = -1.5;
+  xyze(0, 0) = -0.5;
+  xyze(1, 0) = -0.5;
+  xyze(2, 0) = -1.5;
 
-  xyze( 0, 1 ) =  2.5;
-  xyze( 1, 1 ) = -0.5;
-  xyze( 2, 1 ) =  1.5;
+  xyze(0, 1) = 2.5;
+  xyze(1, 1) = -0.5;
+  xyze(2, 1) = 1.5;
 
-  xyze( 0, 2 ) =  2.5;
-  xyze( 1, 2 ) =  1.5;
-  xyze( 2, 2 ) = -1.5;
+  xyze(0, 2) = 2.5;
+  xyze(1, 2) = 1.5;
+  xyze(2, 2) = -1.5;
 
-  xyze( 0, 3 ) = -0.5;
-  xyze( 1, 3 ) =  1.5;
-  xyze( 2, 3 ) =  1.5;
+  xyze(0, 3) = -0.5;
+  xyze(1, 3) = 1.5;
+  xyze(2, 3) = 1.5;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
-  w.AssumeVolumeCells( 2 );
+  w.AssumeVolumeCells(2);
 }
 
 void test_hex8_tet4_touch()
@@ -378,48 +379,48 @@ void test_hex8_tet4_touch()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 2;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 2;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 2;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 1;
+  xyze(0, 1) = 2;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 1;
 
-  xyze( 0, 2 ) = 2;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 2;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 0.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 0.5;
 
-  w.CreateTet4Sides( xyze );
+  w.CreateTet4Sides(xyze);
 
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) = -0.1;
-  xyze( 1, 0 ) =  0.1;
-  xyze( 2, 0 ) = -0.1;
+  xyze(0, 0) = -0.1;
+  xyze(1, 0) = 0.1;
+  xyze(2, 0) = -0.1;
 
-  xyze( 0, 1 ) =  1.1;
-  xyze( 1, 1 ) =  0.1;
-  xyze( 2, 1 ) = -0.1;
+  xyze(0, 1) = 1.1;
+  xyze(1, 1) = 0.1;
+  xyze(2, 1) = -0.1;
 
-  xyze( 0, 2 ) =  1.1;
-  xyze( 1, 2 ) = -0.1;
-  xyze( 2, 2 ) =  0.1;
+  xyze(0, 2) = 1.1;
+  xyze(1, 2) = -0.1;
+  xyze(2, 2) = 0.1;
 
-  xyze( 0, 3 ) = -0.1;
-  xyze( 1, 3 ) = -0.1;
-  xyze( 2, 3 ) =  0.1;
+  xyze(0, 3) = -0.1;
+  xyze(1, 3) = -0.1;
+  xyze(2, 3) = 0.1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
-  w.CutTest_Cut(true,true); //as cut_sides are just touching!!
+  w.CutTest_Cut(true, true);  // as cut_sides are just touching!!
 }
 
 void test_hex8_tet4_touch2()
@@ -428,25 +429,25 @@ void test_hex8_tet4_touch2()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = -0.5;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = -0.5;
 
-  xyze( 0, 1 ) = 1.5;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = -0.5;
+  xyze(0, 1) = 1.5;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = -0.5;
 
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = -0.5;
+  xyze(0, 2) = 1.5;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = -0.5;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 1.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 1.5;
 
-  w.CreateTet4Sides( xyze );
+  w.CreateTet4Sides(xyze);
 
   w.Status();
   w.CutTest_Cut(true, true);
@@ -457,56 +458,56 @@ void test_hex8_mesh()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  create_hex8_mesh( mesh, 10, 10, 10 );
+  create_hex8_mesh(mesh, 10, 10, 10);
 
-  GEO::CUT::Side * s = create_quad4( mesh, 0.5, 0.5, 0 );
+  GEO::CUT::Side* s = create_quad4(mesh, 0.5, 0.5, 0);
 
   mesh.Status();
 
   GEO::CUT::plain_element_set done;
   GEO::CUT::plain_element_set elements_done;
-  mesh.Cut( *( s ), done, elements_done, 0 );
+  mesh.Cut(*(s), done, elements_done, 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_double()
 {
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
-  GEO::CUT::Element * e = create_hex8( mesh );
-  GEO::CUT::Side * s1 = create_quad4( mesh, 0.4, 0.1, 0 );
-  GEO::CUT::Side * s2 = create_quad4( mesh, 0.6, 0.1, 0 );
+  GEO::CUT::Element* e = create_hex8(mesh);
+  GEO::CUT::Side* s1 = create_quad4(mesh, 0.4, 0.1, 0);
+  GEO::CUT::Side* s2 = create_quad4(mesh, 0.6, 0.1, 0);
 
   mesh.Status();
 
-  e->Cut( mesh, *( s1 ), 0 );
-  e->Cut( mesh, *( s2 ), 0 );
+  e->Cut(mesh, *(s1), 0);
+  e->Cut(mesh, *(s2), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_multiple()
 {
-  for ( int step=0; step<2; ++step )
+  for (int step = 0; step < 2; ++step)
   {
-    GEO::CUT::Options options( INPAR::CUT::NDS_Strategy_full, true, step!=0 );
+    GEO::CUT::Options options(INPAR::CUT::NDS_Strategy_full, true, step != 0);
     GEO::CUT::Mesh mesh(options);
-    GEO::CUT::Element * e = create_hex8( mesh );
+    GEO::CUT::Element* e = create_hex8(mesh);
 
-    for ( int i=1; i<10; ++i )
+    for (int i = 1; i < 10; ++i)
     {
-      double x = 0.1*i;
-      GEO::CUT::Side * s = create_quad4( mesh, x, 0.1, 0, i%2==0 );
+      double x = 0.1 * i;
+      GEO::CUT::Side* s = create_quad4(mesh, x, 0.1, 0, i % 2 == 0);
 
-      //mesh.Status();
+      // mesh.Status();
 
-      e->Cut( mesh, *( s ), 0 );
+      e->Cut(mesh, *(s), 0);
 
-      //mesh.Status();
+      // mesh.Status();
     }
 
-    cutmesh( mesh );
+    cutmesh(mesh);
     mesh.PrintCellStats();
   }
 }
@@ -516,65 +517,65 @@ void test_hex8_bad1()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = 0.7291666666666666;
-  xyze( 1, 0 ) = 0.5208333333332368;
-  xyze( 2, 0 ) = 0.02500000000896939;
+  xyze(0, 0) = 0.7291666666666666;
+  xyze(1, 0) = 0.5208333333332368;
+  xyze(2, 0) = 0.02500000000896939;
 
-  xyze( 0, 1 ) = 0.7291666666666667;
-  xyze( 1, 1 ) = 0.5208333333333334;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 0.7291666666666667;
+  xyze(1, 1) = 0.5208333333333334;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 0.75;
-  xyze( 1, 2 ) = 0.5208333333333334;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 0.75;
+  xyze(1, 2) = 0.5208333333333334;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 0.7499999999999999;
-  xyze( 1, 3 ) = 0.5208333333332476;
-  xyze( 2, 3 ) = 0.02500000000797485;
+  xyze(0, 3) = 0.7499999999999999;
+  xyze(1, 3) = 0.5208333333332476;
+  xyze(2, 3) = 0.02500000000797485;
 
-  xyze( 0, 4 ) = 0.7291666666666667;
-  xyze( 1, 4 ) = 0.5;
-  xyze( 2, 4 ) = 0.025;
+  xyze(0, 4) = 0.7291666666666667;
+  xyze(1, 4) = 0.5;
+  xyze(2, 4) = 0.025;
 
-  xyze( 0, 5 ) = 0.7291666666666667;
-  xyze( 1, 5 ) = 0.5;
-  xyze( 2, 5 ) = 0;
+  xyze(0, 5) = 0.7291666666666667;
+  xyze(1, 5) = 0.5;
+  xyze(2, 5) = 0;
 
-  xyze( 0, 6 ) = 0.75;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = 0;
+  xyze(0, 6) = 0.75;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = 0;
 
-  xyze( 0, 7 ) = 0.75;
-  xyze( 1, 7 ) = 0.5;
-  xyze( 2, 7 ) = 0.025;
+  xyze(0, 7) = 0.75;
+  xyze(1, 7) = 0.5;
+  xyze(2, 7) = 0.025;
 
-  GEO::CUT::Element * e = create_hex8( mesh, xyze );
+  GEO::CUT::Element* e = create_hex8(mesh, xyze);
 
-  xyze( 0, 0 ) = 0.75;
-  xyze( 1, 0 ) = 0.5010108360343256;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0.75;
+  xyze(1, 0) = 0.5010108360343256;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 0.7435592801990288;
-  xyze( 1, 1 ) = 0.5208333333333334;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 0.7435592801990288;
+  xyze(1, 1) = 0.5208333333333334;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 0.7435592801990578;
-  xyze( 1, 2 ) = 0.5208333333332442;
-  xyze( 2, 2 ) = 0.02500000000828232;
+  xyze(0, 2) = 0.7435592801990578;
+  xyze(1, 2) = 0.5208333333332442;
+  xyze(2, 2) = 0.02500000000828232;
 
-  xyze( 0, 3 ) = 0.75;
-  xyze( 1, 3 ) = 0.5010108360343257;
-  xyze( 2, 3 ) = 0.02500000000038694;
+  xyze(0, 3) = 0.75;
+  xyze(1, 3) = 0.5010108360343257;
+  xyze(2, 3) = 0.02500000000038694;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ), 0 );
+  e->Cut(mesh, *(quad4), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_bad2()
@@ -582,65 +583,65 @@ void test_hex8_bad2()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = 1.05556;
-  xyze( 1, 0 ) = 0.444444;
-  xyze( 2, 0 ) = -4.82103e-20;
+  xyze(0, 0) = 1.05556;
+  xyze(1, 0) = 0.444444;
+  xyze(2, 0) = -4.82103e-20;
 
-  xyze( 0, 1 ) = 1.05556;
-  xyze( 1, 1 ) = 0.444444;
-  xyze( 2, 1 ) = -0.05;
+  xyze(0, 1) = 1.05556;
+  xyze(1, 1) = 0.444444;
+  xyze(2, 1) = -0.05;
 
-  xyze( 0, 2 ) = 1.05556;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = -0.05;
+  xyze(0, 2) = 1.05556;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = -0.05;
 
-  xyze( 0, 3 ) = 1.05556;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 0;
+  xyze(0, 3) = 1.05556;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 0;
 
-  xyze( 0, 4 ) = 1.11111;
-  xyze( 1, 4 ) = 0.444444;
-  xyze( 2, 4 ) = 1.41172e-22;
+  xyze(0, 4) = 1.11111;
+  xyze(1, 4) = 0.444444;
+  xyze(2, 4) = 1.41172e-22;
 
-  xyze( 0, 5 ) = 1.11111;
-  xyze( 1, 5 ) = 0.444444;
-  xyze( 2, 5 ) = -0.05;
+  xyze(0, 5) = 1.11111;
+  xyze(1, 5) = 0.444444;
+  xyze(2, 5) = -0.05;
 
-  xyze( 0, 6 ) = 1.11111;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = -0.05;
+  xyze(0, 6) = 1.11111;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = -0.05;
 
-  xyze( 0, 7 ) = 1.11111;
-  xyze( 1, 7 ) = 0.5;
-  xyze( 2, 7 ) = 0;
+  xyze(0, 7) = 1.11111;
+  xyze(1, 7) = 0.5;
+  xyze(2, 7) = 0;
 
-  GEO::CUT::Element * e = create_hex8( mesh, xyze );
+  GEO::CUT::Element* e = create_hex8(mesh, xyze);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = -0.0505;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = -0.0505;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0.5;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 0.5;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1.05714;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = -9.3343e-19;
+  xyze(0, 2) = 1.05714;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = -9.3343e-19;
 
-  xyze( 0, 3 ) = 1.05714;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = -0.0505;
+  xyze(0, 3) = 1.05714;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = -0.0505;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ), 0 );
+  e->Cut(mesh, *(quad4), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_bad3()
@@ -648,65 +649,65 @@ void test_hex8_bad3()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = 1.05556;
-  xyze( 1, 0 ) = 0.444444;
-  xyze( 2, 0 ) = 0.05;
+  xyze(0, 0) = 1.05556;
+  xyze(1, 0) = 0.444444;
+  xyze(2, 0) = 0.05;
 
-  xyze( 0, 1 ) = 1.05556;
-  xyze( 1, 1 ) = 0.444444;
-  xyze( 2, 1 ) = -4.82103e-20;
+  xyze(0, 1) = 1.05556;
+  xyze(1, 1) = 0.444444;
+  xyze(2, 1) = -4.82103e-20;
 
-  xyze( 0, 2 ) = 1.05556;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 0;
+  xyze(0, 2) = 1.05556;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = 0;
 
-  xyze( 0, 3 ) = 1.05556;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 0.05;
+  xyze(0, 3) = 1.05556;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 0.05;
 
-  xyze( 0, 4 ) = 1.11111;
-  xyze( 1, 4 ) = 0.444444;
-  xyze( 2, 4 ) = 0.05;
+  xyze(0, 4) = 1.11111;
+  xyze(1, 4) = 0.444444;
+  xyze(2, 4) = 0.05;
 
-  xyze( 0, 5 ) = 1.11111;
-  xyze( 1, 5 ) = 0.444444;
-  xyze( 2, 5 ) = 1.41172e-22;
+  xyze(0, 5) = 1.11111;
+  xyze(1, 5) = 0.444444;
+  xyze(2, 5) = 1.41172e-22;
 
-  xyze( 0, 6 ) = 1.11111;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = 0;
+  xyze(0, 6) = 1.11111;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = 0;
 
-  xyze( 0, 7 ) = 1.11111;
-  xyze( 1, 7 ) = 0.5;
-  xyze( 2, 7 ) = 0.05;
+  xyze(0, 7) = 1.11111;
+  xyze(1, 7) = 0.5;
+  xyze(2, 7) = 0.05;
 
-  GEO::CUT::Element * e = create_hex8( mesh, xyze );
+  GEO::CUT::Element* e = create_hex8(mesh, xyze);
 
-  xyze( 0, 0 ) = 1.05714;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = -9.3343e-19;
+  xyze(0, 0) = 1.05714;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = -9.3343e-19;
 
-  xyze( 0, 1 ) = 1.05714;
-  xyze( 1, 1 ) = 0.5;
-  xyze( 2, 1 ) = 0.0505;
+  xyze(0, 1) = 1.05714;
+  xyze(1, 1) = 0.5;
+  xyze(2, 1) = 0.0505;
 
-  xyze( 0, 2 ) = 1.11429;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 0.0505;
+  xyze(0, 2) = 1.11429;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = 0.0505;
 
-  xyze( 0, 3 ) = 1.11429;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 1.60089e-18;
+  xyze(0, 3) = 1.11429;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 1.60089e-18;
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ), 0 );
+  e->Cut(mesh, *(quad4), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 /*
@@ -722,39 +723,27 @@ void test_hex8_bad4()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  double hex8_xyz[24] = {
-    0.944444,0,0.05,
-    0.944444,0,6.55604e-19,
-    0.944444,0.0555556,1.29045e-18,
-    0.944444,0.0555556,0.05,
-    1,0,0.05,
-    1,0,0,
-    1,0.0555556,3.40507e-19,
-    1,0.0555556,0.05
-  };
+  double hex8_xyz[24] = {0.944444, 0, 0.05, 0.944444, 0, 6.55604e-19, 0.944444, 0.0555556,
+      1.29045e-18, 0.944444, 0.0555556, 0.05, 1, 0, 0.05, 1, 0, 0, 1, 0.0555556, 3.40507e-19, 1,
+      0.0555556, 0.05};
 
-  double quad4_xyz[12] = {
-    1,0,0.0505,
-    1,0.0555556,0.0505,
-    1,0.0555556,3.40507e-19,
-    1,0,0
-  };
+  double quad4_xyz[12] = {1, 0, 0.0505, 1, 0.0555556, 0.0505, 1, 0.0555556, 3.40507e-19, 1, 0, 0};
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  std::copy( hex8_xyz, hex8_xyz+24, &xyze( 0, 0 ) );
+  std::copy(hex8_xyz, hex8_xyz + 24, &xyze(0, 0));
 
-  GEO::CUT::Element * e = create_hex8( mesh, xyze );
+  GEO::CUT::Element* e = create_hex8(mesh, xyze);
 
-  std::copy( quad4_xyz, quad4_xyz+12, &xyze( 0, 0 ) );
+  std::copy(quad4_xyz, quad4_xyz + 12, &xyze(0, 0));
 
-  GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
+  GEO::CUT::Side* quad4 = create_quad4(mesh, xyze);
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ), 0 );
+  e->Cut(mesh, *(quad4), 0);
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_hex8_wedge6()
@@ -763,33 +752,33 @@ void test_hex8_wedge6()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 6 );
+  Epetra_SerialDenseMatrix xyze(3, 6);
 
-  xyze( 0, 0 ) = 0.5;
-  xyze( 1, 0 ) = 2;
-  xyze( 2, 0 ) = -0.5;
+  xyze(0, 0) = 0.5;
+  xyze(1, 0) = 2;
+  xyze(2, 0) = -0.5;
 
-  xyze( 0, 1 ) = 0.5;
-  xyze( 1, 1 ) = 0.5;
-  xyze( 2, 1 ) = -0.5;
+  xyze(0, 1) = 0.5;
+  xyze(1, 1) = 0.5;
+  xyze(2, 1) = -0.5;
 
-  xyze( 0, 2 ) = 3;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = -0.5;
+  xyze(0, 2) = 3;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = -0.5;
 
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 2;
-  xyze( 2, 3 ) = 1.5;
+  xyze(0, 3) = 0.5;
+  xyze(1, 3) = 2;
+  xyze(2, 3) = 1.5;
 
-  xyze( 0, 4 ) = 0.5;
-  xyze( 1, 4 ) = 0.5;
-  xyze( 2, 4 ) = 1.5;
+  xyze(0, 4) = 0.5;
+  xyze(1, 4) = 0.5;
+  xyze(2, 4) = 1.5;
 
-  xyze( 0, 5 ) = 3;
-  xyze( 1, 5 ) = 0.5;
-  xyze( 2, 5 ) = 1.5;
+  xyze(0, 5) = 3;
+  xyze(1, 5) = 0.5;
+  xyze(2, 5) = 1.5;
 
-  w.CreateWedge6Sides( xyze );
+  w.CreateWedge6Sides(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -801,25 +790,25 @@ void test_hex8_quad4_touch()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 1.5;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 1.5;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1.5;
-  xyze( 2, 2 ) = 1.5;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1.5;
+  xyze(2, 2) = 1.5;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 1.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 1.5;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut(true, true);
@@ -831,25 +820,25 @@ void test_hex8_quad4_touch2()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 1.5;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 1.5;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1.5;
-  xyze( 2, 2 ) = 1.5;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1.5;
+  xyze(2, 2) = 1.5;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 1.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 1.5;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut(true, true);
@@ -861,25 +850,25 @@ void test_hex8_quad4_touch3()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = -0.5;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = -0.5;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 1.5;
-  xyze( 2, 1 ) = -0.5;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 1.5;
+  xyze(2, 1) = -0.5;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1.5;
-  xyze( 2, 2 ) = 1.5;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1.5;
+  xyze(2, 2) = 1.5;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 1.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 1.5;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut(true, true);
@@ -891,25 +880,25 @@ void test_hex8_quad4_cut()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 0.5;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0.5;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 0.5;
-  xyze( 1, 1 ) = 1;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 0.5;
+  xyze(1, 1) = 1;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 0.5;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = 1;
+  xyze(0, 2) = 0.5;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = 1;
 
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 1;
+  xyze(0, 3) = 0.5;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -943,7 +932,7 @@ void test_hex8_quad4_gedreht()
   GEO::CUT::Side* quad4 = create_quad4( mesh, xyze );
 #endif
 
-  w.CreateQuad4Mesh( 2, 2 );
+  w.CreateQuad4Mesh(2, 2);
 
   w.Status();
   w.CutTest_Cut();
@@ -955,62 +944,62 @@ void test_hex8_hex8_durchstoss()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = -0.5;
-  xyze( 1, 0 ) =  0.2;
-  xyze( 2, 0 ) =  0.2;
+  xyze(0, 0) = -0.5;
+  xyze(1, 0) = 0.2;
+  xyze(2, 0) = 0.2;
 
-  xyze( 0, 1 ) = -0.5;
-  xyze( 1, 1 ) =  0.8;
-  xyze( 2, 1 ) =  0.2;
+  xyze(0, 1) = -0.5;
+  xyze(1, 1) = 0.8;
+  xyze(2, 1) = 0.2;
 
-  xyze( 0, 2 ) = -0.5;
-  xyze( 1, 2 ) =  0.8;
-  xyze( 2, 2 ) =  0.8;
+  xyze(0, 2) = -0.5;
+  xyze(1, 2) = 0.8;
+  xyze(2, 2) = 0.8;
 
-  xyze( 0, 3 ) = -0.5;
-  xyze( 1, 3 ) =  0.2;
-  xyze( 2, 3 ) =  0.8;
+  xyze(0, 3) = -0.5;
+  xyze(1, 3) = 0.2;
+  xyze(2, 3) = 0.8;
 
-  xyze( 0, 4 ) =  1.5;
-  xyze( 1, 4 ) =  0.2;
-  xyze( 2, 4 ) =  0.2;
+  xyze(0, 4) = 1.5;
+  xyze(1, 4) = 0.2;
+  xyze(2, 4) = 0.2;
 
-  xyze( 0, 5 ) =  1.5;
-  xyze( 1, 5 ) =  0.8;
-  xyze( 2, 5 ) =  0.2;
+  xyze(0, 5) = 1.5;
+  xyze(1, 5) = 0.8;
+  xyze(2, 5) = 0.2;
 
-  xyze( 0, 6 ) =  1.5;
-  xyze( 1, 6 ) =  0.8;
-  xyze( 2, 6 ) =  0.8;
+  xyze(0, 6) = 1.5;
+  xyze(1, 6) = 0.8;
+  xyze(2, 6) = 0.8;
 
-  xyze( 0, 7 ) =  1.5;
-  xyze( 1, 7 ) =  0.2;
-  xyze( 2, 7 ) =  0.8;
+  xyze(0, 7) = 1.5;
+  xyze(1, 7) = 0.2;
+  xyze(2, 7) = 0.8;
 
-  w.CreateHex8Sides( xyze );
+  w.CreateHex8Sides(xyze);
 
 #if 1
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) = -0.1;
-  xyze( 1, 0 ) =  0.1;
-  xyze( 2, 0 ) = -0.1;
+  xyze(0, 0) = -0.1;
+  xyze(1, 0) = 0.1;
+  xyze(2, 0) = -0.1;
 
-  xyze( 0, 1 ) =  1.1;
-  xyze( 1, 1 ) =  0.1;
-  xyze( 2, 1 ) = -0.1;
+  xyze(0, 1) = 1.1;
+  xyze(1, 1) = 0.1;
+  xyze(2, 1) = -0.1;
 
-  xyze( 0, 2 ) =  1.1;
-  xyze( 1, 2 ) = -0.1;
-  xyze( 2, 2 ) =  0.1;
+  xyze(0, 2) = 1.1;
+  xyze(1, 2) = -0.1;
+  xyze(2, 2) = 0.1;
 
-  xyze( 0, 3 ) = -0.1;
-  xyze( 1, 3 ) = -0.1;
-  xyze( 2, 3 ) =  0.1;
+  xyze(0, 3) = -0.1;
+  xyze(1, 3) = -0.1;
+  xyze(2, 3) = 0.1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 #endif
 
   w.Status();
@@ -1023,62 +1012,62 @@ void test_hex8_hex8_onside()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = 0.5;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = 0.2;
+  xyze(0, 0) = 0.5;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = 0.2;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0.1;
-  xyze( 2, 1 ) = 0.2;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 0.1;
+  xyze(2, 1) = 0.2;
 
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 0.2;
+  xyze(0, 2) = 1.5;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = 0.2;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0.9;
-  xyze( 2, 3 ) = 0.2;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0.9;
+  xyze(2, 3) = 0.2;
 
-  xyze( 0, 4 ) = 0.5;
-  xyze( 1, 4 ) = 0.5;
-  xyze( 2, 4 ) = 0.8;
+  xyze(0, 4) = 0.5;
+  xyze(1, 4) = 0.5;
+  xyze(2, 4) = 0.8;
 
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = 0.1;
-  xyze( 2, 5 ) = 0.8;
+  xyze(0, 5) = 1;
+  xyze(1, 5) = 0.1;
+  xyze(2, 5) = 0.8;
 
-  xyze( 0, 6 ) = 1.5;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = 0.8;
+  xyze(0, 6) = 1.5;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = 0.8;
 
-  xyze( 0, 7 ) = 1;
-  xyze( 1, 7 ) = 0.9;
-  xyze( 2, 7 ) = 0.8;
+  xyze(0, 7) = 1;
+  xyze(1, 7) = 0.9;
+  xyze(2, 7) = 0.8;
 
-  w.CreateHex8Sides( xyze );
+  w.CreateHex8Sides(xyze);
 
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) = -0.1;
-  xyze( 1, 0 ) =  0.1;
-  xyze( 2, 0 ) = -0.1;
+  xyze(0, 0) = -0.1;
+  xyze(1, 0) = 0.1;
+  xyze(2, 0) = -0.1;
 
-  xyze( 0, 1 ) =  1.1;
-  xyze( 1, 1 ) =  0.1;
-  xyze( 2, 1 ) = -0.1;
+  xyze(0, 1) = 1.1;
+  xyze(1, 1) = 0.1;
+  xyze(2, 1) = -0.1;
 
-  xyze( 0, 2 ) =  1.1;
-  xyze( 1, 2 ) = -0.1;
-  xyze( 2, 2 ) =  0.1;
+  xyze(0, 2) = 1.1;
+  xyze(1, 2) = -0.1;
+  xyze(2, 2) = 0.1;
 
-  xyze( 0, 3 ) = -0.1;
-  xyze( 1, 3 ) = -0.1;
-  xyze( 2, 3 ) =  0.1;
+  xyze(0, 3) = -0.1;
+  xyze(1, 3) = -0.1;
+  xyze(2, 3) = 0.1;
 
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
   w.Status();
   w.CutTest_Cut();
 }
@@ -1087,75 +1076,75 @@ void test_hex8_hex8_internal()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = -1;
-  xyze( 1, 0 ) = -1;
-  xyze( 2, 0 ) = -1;
+  xyze(0, 0) = -1;
+  xyze(1, 0) = -1;
+  xyze(2, 0) = -1;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = -1;
-  xyze( 2, 1 ) = -1;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = -1;
+  xyze(2, 1) = -1;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = -1;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = -1;
 
-  xyze( 0, 3 ) = -1;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = -1;
+  xyze(0, 3) = -1;
+  xyze(1, 3) = 1;
+  xyze(2, 3) = -1;
 
-  xyze( 0, 4 ) = -1;
-  xyze( 1, 4 ) = -1;
-  xyze( 2, 4 ) = 1;
+  xyze(0, 4) = -1;
+  xyze(1, 4) = -1;
+  xyze(2, 4) = 1;
 
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = -1;
-  xyze( 2, 5 ) = 1;
+  xyze(0, 5) = 1;
+  xyze(1, 5) = -1;
+  xyze(2, 5) = 1;
 
-  xyze( 0, 6 ) = 1;
-  xyze( 1, 6 ) = 1;
-  xyze( 2, 6 ) = 1;
+  xyze(0, 6) = 1;
+  xyze(1, 6) = 1;
+  xyze(2, 6) = 1;
 
-  xyze( 0, 7 ) = -1;
-  xyze( 1, 7 ) = 1;
-  xyze( 2, 7 ) = 1;
+  xyze(0, 7) = -1;
+  xyze(1, 7) = 1;
+  xyze(2, 7) = 1;
 
-  w.CreateHex8( xyze );
+  w.CreateHex8(xyze);
 
-  xyze( 0, 0 ) = -1.5;
-  xyze( 1, 0 ) = -0.5;
-  xyze( 2, 0 ) = 0.707107;
+  xyze(0, 0) = -1.5;
+  xyze(1, 0) = -0.5;
+  xyze(2, 0) = 0.707107;
 
-  xyze( 0, 1 ) = -0.5;
-  xyze( 1, 1 ) = -1.5;
-  xyze( 2, 1 ) = -0.707107;
+  xyze(0, 1) = -0.5;
+  xyze(1, 1) = -1.5;
+  xyze(2, 1) = -0.707107;
 
-  xyze( 0, 2 ) = -0.207107;
-  xyze( 1, 2 ) = 0.207107;
-  xyze( 2, 2 ) = -1.70711;
+  xyze(0, 2) = -0.207107;
+  xyze(1, 2) = 0.207107;
+  xyze(2, 2) = -1.70711;
 
-  xyze( 0, 3 ) = -1.20711;
-  xyze( 1, 3 ) = 1.20711;
-  xyze( 2, 3 ) = -0.292893;
+  xyze(0, 3) = -1.20711;
+  xyze(1, 3) = 1.20711;
+  xyze(2, 3) = -0.292893;
 
-  xyze( 0, 4 ) = 0.207107;
-  xyze( 1, 4 ) = -0.207107;
-  xyze( 2, 4 ) = 1.70711;
+  xyze(0, 4) = 0.207107;
+  xyze(1, 4) = -0.207107;
+  xyze(2, 4) = 1.70711;
 
-  xyze( 0, 5 ) = 1.20711;
-  xyze( 1, 5 ) = -1.20711;
-  xyze( 2, 5 ) = 0.292893;
+  xyze(0, 5) = 1.20711;
+  xyze(1, 5) = -1.20711;
+  xyze(2, 5) = 0.292893;
 
-  xyze( 0, 6 ) = 1.5;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = -0.707107;
+  xyze(0, 6) = 1.5;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = -0.707107;
 
-  xyze( 0, 7 ) = 0.5;
-  xyze( 1, 7 ) = 1.5;
-  xyze( 2, 7 ) = 0.707107;
+  xyze(0, 7) = 0.5;
+  xyze(1, 7) = 1.5;
+  xyze(2, 7) = 0.707107;
 
-  w.CreateHex8Sides( xyze );
+  w.CreateHex8Sides(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1165,95 +1154,95 @@ void test_hex8_hex8_sideintersection()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = -1;
-  xyze( 1, 0 ) = -1;
-  xyze( 2, 0 ) = -1;
+  xyze(0, 0) = -1;
+  xyze(1, 0) = -1;
+  xyze(2, 0) = -1;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = -1;
-  xyze( 2, 1 ) = -1;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = -1;
+  xyze(2, 1) = -1;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = -1;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = -1;
 
-  xyze( 0, 3 ) = -1;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = -1;
+  xyze(0, 3) = -1;
+  xyze(1, 3) = 1;
+  xyze(2, 3) = -1;
 
-  xyze( 0, 4 ) = -1;
-  xyze( 1, 4 ) = -1;
-  xyze( 2, 4 ) = 1;
+  xyze(0, 4) = -1;
+  xyze(1, 4) = -1;
+  xyze(2, 4) = 1;
 
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = -1;
-  xyze( 2, 5 ) = 1;
+  xyze(0, 5) = 1;
+  xyze(1, 5) = -1;
+  xyze(2, 5) = 1;
 
-  xyze( 0, 6 ) = 1;
-  xyze( 1, 6 ) = 1;
-  xyze( 2, 6 ) = 1;
+  xyze(0, 6) = 1;
+  xyze(1, 6) = 1;
+  xyze(2, 6) = 1;
 
-  xyze( 0, 7 ) = -1;
-  xyze( 1, 7 ) = 1;
-  xyze( 2, 7 ) = 1;
+  xyze(0, 7) = -1;
+  xyze(1, 7) = 1;
+  xyze(2, 7) = 1;
 
-  w.CreateHex8( xyze );
+  w.CreateHex8(xyze);
 
-  xyze( 0, 0 ) =  0.5;
-  xyze( 1, 0 ) = -0.5;
-  xyze( 2, 0 ) = -0.5;
+  xyze(0, 0) = 0.5;
+  xyze(1, 0) = -0.5;
+  xyze(2, 0) = -0.5;
 
-  xyze( 0, 1 ) = 1.5;
-  xyze( 1, 1 ) = -0.5;
-  xyze( 2, 1 ) = -0.5;
+  xyze(0, 1) = 1.5;
+  xyze(1, 1) = -0.5;
+  xyze(2, 1) = -0.5;
 
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = -0.5;
+  xyze(0, 2) = 1.5;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = -0.5;
 
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = -0.5;
+  xyze(0, 3) = 0.5;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = -0.5;
 
-  xyze( 0, 4 ) = 0.5;
-  xyze( 1, 4 ) = -0.5;
-  xyze( 2, 4 ) = 0.5;
+  xyze(0, 4) = 0.5;
+  xyze(1, 4) = -0.5;
+  xyze(2, 4) = 0.5;
 
-  xyze( 0, 5 ) = 1.5;
-  xyze( 1, 5 ) = -0.5;
-  xyze( 2, 5 ) = 0.5;
+  xyze(0, 5) = 1.5;
+  xyze(1, 5) = -0.5;
+  xyze(2, 5) = 0.5;
 
-  xyze( 0, 6 ) = 1.5;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = 0.5;
+  xyze(0, 6) = 1.5;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = 0.5;
 
-  xyze( 0, 7 ) = 0.5;
-  xyze( 1, 7 ) = 0.5;
-  xyze( 2, 7 ) = 0.5;
+  xyze(0, 7) = 0.5;
+  xyze(1, 7) = 0.5;
+  xyze(2, 7) = 0.5;
 
-  w.CreateHex8Sides( xyze );
+  w.CreateHex8Sides(xyze);
 
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) = -1.1;
-  xyze( 1, 0 ) = -0.9;
-  xyze( 2, 0 ) = -1.1;
+  xyze(0, 0) = -1.1;
+  xyze(1, 0) = -0.9;
+  xyze(2, 0) = -1.1;
 
-  xyze( 0, 1 ) =  1.1;
-  xyze( 1, 1 ) = -0.9;
-  xyze( 2, 1 ) = -1.1;
+  xyze(0, 1) = 1.1;
+  xyze(1, 1) = -0.9;
+  xyze(2, 1) = -1.1;
 
-  xyze( 0, 2 ) =  1.1;
-  xyze( 1, 2 ) = -1.1;
-  xyze( 2, 2 ) = -0.9;
+  xyze(0, 2) = 1.1;
+  xyze(1, 2) = -1.1;
+  xyze(2, 2) = -0.9;
 
-  xyze( 0, 3 ) = -1.1;
-  xyze( 1, 3 ) = -1.1;
-  xyze( 2, 3 ) = -0.9;
+  xyze(0, 3) = -1.1;
+  xyze(1, 3) = -1.1;
+  xyze(2, 3) = -0.9;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1263,75 +1252,75 @@ void test_hex8_hex8_inside()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
+  Epetra_SerialDenseMatrix xyze(3, 8);
 
-  xyze( 0, 0 ) = -1;
-  xyze( 1, 0 ) = -1;
-  xyze( 2, 0 ) = -1;
+  xyze(0, 0) = -1;
+  xyze(1, 0) = -1;
+  xyze(2, 0) = -1;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = -1;
-  xyze( 2, 1 ) = -1;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = -1;
+  xyze(2, 1) = -1;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 1;
-  xyze( 2, 2 ) = -1;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 1;
+  xyze(2, 2) = -1;
 
-  xyze( 0, 3 ) = -1;
-  xyze( 1, 3 ) = 1;
-  xyze( 2, 3 ) = -1;
+  xyze(0, 3) = -1;
+  xyze(1, 3) = 1;
+  xyze(2, 3) = -1;
 
-  xyze( 0, 4 ) = -1;
-  xyze( 1, 4 ) = -1;
-  xyze( 2, 4 ) = 1;
+  xyze(0, 4) = -1;
+  xyze(1, 4) = -1;
+  xyze(2, 4) = 1;
 
-  xyze( 0, 5 ) = 1;
-  xyze( 1, 5 ) = -1;
-  xyze( 2, 5 ) = 1;
+  xyze(0, 5) = 1;
+  xyze(1, 5) = -1;
+  xyze(2, 5) = 1;
 
-  xyze( 0, 6 ) = 1;
-  xyze( 1, 6 ) = 1;
-  xyze( 2, 6 ) = 1;
+  xyze(0, 6) = 1;
+  xyze(1, 6) = 1;
+  xyze(2, 6) = 1;
 
-  xyze( 0, 7 ) = -1;
-  xyze( 1, 7 ) = 1;
-  xyze( 2, 7 ) = 1;
+  xyze(0, 7) = -1;
+  xyze(1, 7) = 1;
+  xyze(2, 7) = 1;
 
-  w.CreateHex8( xyze );
+  w.CreateHex8(xyze);
 
-  xyze( 0, 0 ) = -0.5;
-  xyze( 1, 0 ) = -0.5;
-  xyze( 2, 0 ) = -0.5;
+  xyze(0, 0) = -0.5;
+  xyze(1, 0) = -0.5;
+  xyze(2, 0) = -0.5;
 
-  xyze( 0, 1 ) = 0.5;
-  xyze( 1, 1 ) = -0.5;
-  xyze( 2, 1 ) = -0.5;
+  xyze(0, 1) = 0.5;
+  xyze(1, 1) = -0.5;
+  xyze(2, 1) = -0.5;
 
-  xyze( 0, 2 ) = 0.5;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = -0.5;
+  xyze(0, 2) = 0.5;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = -0.5;
 
-  xyze( 0, 3 ) = -0.5;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = -0.5;
+  xyze(0, 3) = -0.5;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = -0.5;
 
-  xyze( 0, 4 ) = -0.5;
-  xyze( 1, 4 ) = -0.5;
-  xyze( 2, 4 ) = 0.5;
+  xyze(0, 4) = -0.5;
+  xyze(1, 4) = -0.5;
+  xyze(2, 4) = 0.5;
 
-  xyze( 0, 5 ) = 0.5;
-  xyze( 1, 5 ) = -0.5;
-  xyze( 2, 5 ) = 0.5;
+  xyze(0, 5) = 0.5;
+  xyze(1, 5) = -0.5;
+  xyze(2, 5) = 0.5;
 
-  xyze( 0, 6 ) = 0.5;
-  xyze( 1, 6 ) = 0.5;
-  xyze( 2, 6 ) = 0.5;
+  xyze(0, 6) = 0.5;
+  xyze(1, 6) = 0.5;
+  xyze(2, 6) = 0.5;
 
-  xyze( 0, 7 ) = -0.5;
-  xyze( 1, 7 ) = 0.5;
-  xyze( 2, 7 ) = 0.5;
+  xyze(0, 7) = -0.5;
+  xyze(1, 7) = 0.5;
+  xyze(2, 7) = 0.5;
 
-  w.CreateHex8Sides( xyze );
+  w.CreateHex8Sides(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1343,25 +1332,25 @@ void test_hex8_quad4_schnitt()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 0.5;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = -0.2;
+  xyze(0, 0) = 0.5;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = -0.2;
 
-  xyze( 0, 1 ) = 1.5;
-  xyze( 1, 1 ) = 0.5;
-  xyze( 2, 1 ) = -0.2;
+  xyze(0, 1) = 1.5;
+  xyze(1, 1) = 0.5;
+  xyze(2, 1) = -0.2;
 
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 1.2;
+  xyze(0, 2) = 1.5;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = 1.2;
 
-  xyze( 0, 3 ) = 0.5;
-  xyze( 1, 3 ) = 0.5;
-  xyze( 2, 3 ) = 1.2;
+  xyze(0, 3) = 0.5;
+  xyze(1, 3) = 0.5;
+  xyze(2, 3) = 1.2;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1373,25 +1362,25 @@ void test_hex8_quad4_touch4()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 0.2;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0.2;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1.5;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1.5;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 0;
-  xyze( 2, 2 ) = 1.2;
+  xyze(0, 2) = 1.5;
+  xyze(1, 2) = 0;
+  xyze(2, 2) = 1.2;
 
-  xyze( 0, 3 ) = 0.2;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 1.2;
+  xyze(0, 3) = 0.2;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 1.2;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1403,25 +1392,25 @@ void test_hex8_quad4_touch5()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 0.2;
-  xyze( 1, 0 ) = 0;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 0.2;
+  xyze(1, 0) = 0;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1.5;
-  xyze( 1, 1 ) = 0;
-  xyze( 2, 1 ) = 0;
+  xyze(0, 1) = 1.5;
+  xyze(1, 1) = 0;
+  xyze(2, 1) = 0;
 
-  xyze( 0, 2 ) = 1.5;
-  xyze( 1, 2 ) = 0;
-  xyze( 2, 2 ) = 1.2;
+  xyze(0, 2) = 1.5;
+  xyze(1, 2) = 0;
+  xyze(2, 2) = 1.2;
 
-  xyze( 0, 3 ) = 1.2;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 1.2;
+  xyze(0, 3) = 1.2;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 1.2;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1433,45 +1422,45 @@ void test_hex8_quad4_touch6()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 1;
-  xyze( 2, 1 ) = 0.5;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 1;
+  xyze(2, 1) = 0.5;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 1;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = 1;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0;
-  xyze( 2, 3 ) = 0.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0;
+  xyze(2, 3) = 0.5;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   // add second cut to be able to find nodal positions
 
-  xyze( 0, 0 ) =  0.1;
-  xyze( 1, 0 ) = -0.1;
-  xyze( 2, 0 ) = -0.1;
+  xyze(0, 0) = 0.1;
+  xyze(1, 0) = -0.1;
+  xyze(2, 0) = -0.1;
 
-  xyze( 0, 1 ) =  0.1;
-  xyze( 1, 1 ) =  1.1;
-  xyze( 2, 1 ) = -0.1;
+  xyze(0, 1) = 0.1;
+  xyze(1, 1) = 1.1;
+  xyze(2, 1) = -0.1;
 
-  xyze( 0, 2 ) = -0.1;
-  xyze( 1, 2 ) =  1.1;
-  xyze( 2, 2 ) =  0.1;
+  xyze(0, 2) = -0.1;
+  xyze(1, 2) = 1.1;
+  xyze(2, 2) = 0.1;
 
-  xyze( 0, 3 ) = -0.1;
-  xyze( 1, 3 ) = -0.1;
-  xyze( 2, 3 ) =  0.1;
+  xyze(0, 3) = -0.1;
+  xyze(1, 3) = -0.1;
+  xyze(2, 3) = 0.1;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1483,25 +1472,25 @@ void test_hex8_quad4_touch7()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze( 3, 4 );
+  Epetra_SerialDenseMatrix xyze(3, 4);
 
-  xyze( 0, 0 ) = 1;
-  xyze( 1, 0 ) = 0.5;
-  xyze( 2, 0 ) = 0;
+  xyze(0, 0) = 1;
+  xyze(1, 0) = 0.5;
+  xyze(2, 0) = 0;
 
-  xyze( 0, 1 ) = 1;
-  xyze( 1, 1 ) = 0.8;
-  xyze( 2, 1 ) = 0.5;
+  xyze(0, 1) = 1;
+  xyze(1, 1) = 0.8;
+  xyze(2, 1) = 0.5;
 
-  xyze( 0, 2 ) = 1;
-  xyze( 1, 2 ) = 0.5;
-  xyze( 2, 2 ) = 1;
+  xyze(0, 2) = 1;
+  xyze(1, 2) = 0.5;
+  xyze(2, 2) = 1;
 
-  xyze( 0, 3 ) = 1;
-  xyze( 1, 3 ) = 0.2;
-  xyze( 2, 3 ) = 0.5;
+  xyze(0, 3) = 1;
+  xyze(1, 3) = 0.2;
+  xyze(2, 3) = 0.5;
 
-  w.CreateQuad4( xyze );
+  w.CreateQuad4(xyze);
 
   w.Status();
   w.CutTest_Cut();
@@ -1563,61 +1552,61 @@ void test_hex8_quad4_mesh()
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
-  create_hex8_mesh( mesh, 2, 2, 2 );
+  create_hex8_mesh(mesh, 2, 2, 2);
 
   std::vector<GEO::CUT::Side*> sides;
-  create_quad4_mesh( mesh, 3, 3, sides );
+  create_quad4_mesh(mesh, 3, 3, sides);
 
   mesh.Status();
 
-  for ( std::vector<GEO::CUT::Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+  for (std::vector<GEO::CUT::Side*>::iterator i = sides.begin(); i != sides.end(); ++i)
   {
     GEO::CUT::Side* quad4 = *i;
     GEO::CUT::plain_element_set done;
     GEO::CUT::plain_element_set elements_done;
-    mesh.Cut( *( quad4 ), done, elements_done, 0 );
+    mesh.Cut(*(quad4), done, elements_done, 0);
   }
 
-  cutmesh( mesh );
+  cutmesh(mesh);
 }
 
 void test_position2d()
 {
-  LINALG::Matrix<3,3> side_xyze;
-  LINALG::Matrix<3,1> xyz;
-  LINALG::Matrix<3,1> shift;
+  LINALG::Matrix<3, 3> side_xyze;
+  LINALG::Matrix<3, 1> xyz;
+  LINALG::Matrix<3, 1> shift;
 
-  side_xyze( 0, 0 ) = -0.20710678118654757;
-  side_xyze( 1, 0 ) = 0;
-  side_xyze( 2, 0 ) = 0.62132034355964261;
-  side_xyze( 0, 1 ) = -0.20710678118654757;
-  side_xyze( 1, 1 ) = 0;
-  side_xyze( 2, 1 ) = -0.62132034355964261;
-  side_xyze( 0, 2 ) = 0.41421356237309503;
-  side_xyze( 1, 2 ) = 0;
-  side_xyze( 2, 2 ) = 0;
+  side_xyze(0, 0) = -0.20710678118654757;
+  side_xyze(1, 0) = 0;
+  side_xyze(2, 0) = 0.62132034355964261;
+  side_xyze(0, 1) = -0.20710678118654757;
+  side_xyze(1, 1) = 0;
+  side_xyze(2, 1) = -0.62132034355964261;
+  side_xyze(0, 2) = 0.41421356237309503;
+  side_xyze(1, 2) = 0;
+  side_xyze(2, 2) = 0;
 
-  xyz( 0 ) = -0.20710678118654757;
-  xyz( 1 ) = -0.62132046378538341;
-  xyz( 2 ) = -0.62132034355964261;
+  xyz(0) = -0.20710678118654757;
+  xyz(1) = -0.62132046378538341;
+  xyz(2) = -0.62132034355964261;
 
-  shift( 0 ) = -0.41421356237309503;
-  shift( 1 ) = 1.2022574075492253e-07;
-  shift( 2 ) = 0;
+  shift(0) = -0.41421356237309503;
+  shift(1) = 1.2022574075492253e-07;
+  shift(2) = 0;
 
-  for ( int i=0; i<3; ++i )
+  for (int i = 0; i < 3; ++i)
   {
-    LINALG::Matrix<3,1> x1( &side_xyze( 0, i ),  true );
-    x1.Update( 1, shift, 1 );
+    LINALG::Matrix<3, 1> x1(&side_xyze(0, i), true);
+    x1.Update(1, shift, 1);
   }
-  xyz.Update( 1, shift, 1 );
+  xyz.Update(1, shift, 1);
 
   double scale = 1.6094757082487299;
 
-  side_xyze.Scale( scale );
-  xyz.Scale( scale );
+  side_xyze.Scale(scale);
+  xyz.Scale(scale);
 
   Teuchos::RCP<GEO::CUT::Position> pos =
-      GEO::CUT::Position::Create( side_xyze, xyz, DRT::Element::tri3 );
+      GEO::CUT::Position::Create(side_xyze, xyz, DRT::Element::tri3);
   pos->Compute();
 }

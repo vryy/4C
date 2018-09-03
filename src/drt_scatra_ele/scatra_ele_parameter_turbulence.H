@@ -2,12 +2,14 @@
 /*!
 \file scatra_ele_parameter_turbulence.H
 
-\brief singleton class holding all static turbulence parameters required for scalar transport element evaluation
+\brief singleton class holding all static turbulence parameters required for scalar transport
+element evaluation
 
-This singleton class holds all static turbulence parameters required for scalar transport element evaluation. All
-parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
-time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
-the general parameter class holding all general static parameters required for scalar transport element evaluation.
+This singleton class holds all static turbulence parameters required for scalar transport element
+evaluation. All parameters are usually set only once at the beginning of a simulation, namely during
+initialization of the global time integrator, and then never touched again throughout the
+simulation. This parameter class needs to coexist with the general parameter class holding all
+general static parameters required for scalar transport element evaluation.
 
 <pre>
 Maintainer: Rui Fang
@@ -36,104 +38,112 @@ namespace DRT
     // class implementation
     class ScaTraEleParameterTurbulence : public ScaTraEleParameterBase
     {
-      public:
+     public:
+      //! singleton access method
+      static ScaTraEleParameterTurbulence* Instance(
+          const std::string& disname,                           //!< name of discretization
+          const ScaTraEleParameterTurbulence* delete_me = NULL  //!< creation/destruction indication
+      );
 
-        //! singleton access method
-        static ScaTraEleParameterTurbulence* Instance(
-            const std::string&                  disname,            //!< name of discretization
-            const ScaTraEleParameterTurbulence* delete_me = NULL  //!< creation/destruction indication
-            );
+      //! singleton destruction
+      virtual void Done();
 
-        //! singleton destruction
-        virtual void Done();
+      //! set parameters
+      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      );
 
-        //! set parameters
-        void SetParameters(
-            Teuchos::ParameterList& parameters   //!< parameter list
-            );
+      //! @name return turbulence parameters
+      //! @{
+      INPAR::FLUID::TurbModelAction TurbModel() { return turbmodel_; };
+      INPAR::FLUID::ScalarForcing ScalarForcing() { return scalarforcing_; };
+      INPAR::SCATRA::FSSUGRDIFF WhichFssgd() { return whichfssgd_; };
+      bool FSSGD() { return fssgd_; };
+      double Cs() { return Cs_; };
+      double TPN() { return tpn_; };
+      bool CsAv() { return Cs_av_; };
+      double Csgs_SgVel() { return Csgs_sgvel_; };
+      double Alpha() { return alpha_; }
+      bool Calc_N() { return calc_N_; };
+      double N_Vel() { return N_vel_; };
+      INPAR::FLUID::RefVelocity RefVel() { return refvel_; };
+      INPAR::FLUID::RefLength RefLength() { return reflength_; };
+      double C_Nu() { return c_nu_; };
+      bool Nwl() { return nwl_; };
+      bool Nwl_ScaTra() { return nwl_scatra_; };
+      bool Beta() { return beta_; };
+      bool BD_Gp() { return BD_gp_; };
+      double Csgs_SgPhi()
+      {
+        double tmp = 0.0;
+        if (adapt_Csgs_phi_ and nwl_)
+          tmp = Csgs_sgvel_ * meanCai_;
+        else
+          tmp = Csgs_sgphi_;
+        return tmp;
+      };
+      double C_Diff() { return c_diff_; };
+      bool MfsConservative() { return mfs_conservative_; };
+      void SetCsgsPhi(double meanCai)
+      {
+        meanCai_ = meanCai;
+        return;
+      };
+      bool AdaptCsgsPhi() { return adapt_Csgs_phi_; };
+      bool TurbInflow() { return turbinflow_; };
+      //! @}
 
-        //! @name return turbulence parameters
-        //! @{
-        INPAR::FLUID::TurbModelAction TurbModel(){return turbmodel_;};
-        INPAR::FLUID::ScalarForcing ScalarForcing(){return scalarforcing_;};
-        INPAR::SCATRA::FSSUGRDIFF WhichFssgd(){return whichfssgd_;};
-        bool FSSGD(){return fssgd_;};
-        double Cs(){return Cs_;};
-        double TPN(){return tpn_;};
-        bool CsAv(){return Cs_av_;};
-        double Csgs_SgVel(){return Csgs_sgvel_;};
-        double Alpha(){return alpha_;}
-        bool Calc_N(){return calc_N_;};
-        double N_Vel(){return N_vel_;};
-        INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
-        INPAR::FLUID::RefLength RefLength(){return reflength_;};
-        double C_Nu(){return c_nu_;};
-        bool Nwl(){return nwl_;};
-        bool Nwl_ScaTra(){return nwl_scatra_;};
-        bool Beta(){return beta_;};
-        bool BD_Gp(){return BD_gp_;};
-        double Csgs_SgPhi(){double tmp = 0.0; if(adapt_Csgs_phi_ and nwl_) tmp = Csgs_sgvel_*meanCai_; else tmp = Csgs_sgphi_; return tmp;};
-        double C_Diff(){return c_diff_;};
-        bool MfsConservative(){return mfs_conservative_;};
-        void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
-        bool AdaptCsgsPhi(){return adapt_Csgs_phi_;};
-        bool TurbInflow(){return turbinflow_;};
-        //! @}
+     private:
+      //! private constructor for singletons
+      ScaTraEleParameterTurbulence(const std::string& disname  //!< name of discretization
+      );
 
-      private:
+      //! private destructor for singletons
+      virtual ~ScaTraEleParameterTurbulence() { return; };
 
-        //! private constructor for singletons
-        ScaTraEleParameterTurbulence(
-            const std::string& disname   //!< name of discretization
-            );
+      //! @name turbulence parameters
+      //! @{
+      //! definition of turbulence model
+      INPAR::FLUID::TurbModelAction turbmodel_;
 
-        //! private destructor for singletons
-        virtual ~ScaTraEleParameterTurbulence(){return;};
+      //! define forcing for scalar field
+      INPAR::FLUID::ScalarForcing scalarforcing_;
 
-        //! @name turbulence parameters
-        //! @{
-        //! definition of turbulence model
-        INPAR::FLUID::TurbModelAction turbmodel_;
+      //! flag to activate AVM3
+      bool fssgd_;
 
-        //! define forcing for scalar field
-        INPAR::FLUID::ScalarForcing scalarforcing_;
+      //! type of AVM3
+      INPAR::SCATRA::FSSUGRDIFF whichfssgd_;
 
-        //! flag to activate AVM3
-        bool fssgd_;
+      //! parameters for subgrid-diffusivity models
+      double Cs_;
+      double tpn_;
+      bool Cs_av_;
 
-        //! type of AVM3
-        INPAR::SCATRA::FSSUGRDIFF whichfssgd_;
+      //! parameters for multifractal subgrid-scale modeling
+      double Csgs_sgvel_;
+      double alpha_;
+      bool calc_N_;
+      double N_vel_;
+      INPAR::FLUID::RefVelocity refvel_;
+      INPAR::FLUID::RefLength reflength_;
+      double c_nu_;
+      bool nwl_;
+      bool nwl_scatra_;
+      bool beta_;
+      bool BD_gp_;
+      double Csgs_sgphi_;
+      double c_diff_;
+      bool mfs_conservative_;
+      double meanCai_;
+      bool adapt_Csgs_phi_;
 
-        //! parameters for subgrid-diffusivity models
-        double Cs_;
-        double tpn_;
-        bool Cs_av_;
+      //! further parameter
+      bool turbinflow_;
+      //! @}
 
-        //! parameters for multifractal subgrid-scale modeling
-        double Csgs_sgvel_;
-        double alpha_;
-        bool calc_N_;
-        double N_vel_;
-        INPAR::FLUID::RefVelocity refvel_;
-        INPAR::FLUID::RefLength reflength_;
-        double c_nu_;
-        bool nwl_;
-        bool nwl_scatra_;
-        bool beta_;
-        bool BD_gp_;
-        double Csgs_sgphi_;
-        double c_diff_;
-        bool mfs_conservative_;
-        double meanCai_;
-        bool adapt_Csgs_phi_;
-
-        //! further parameter
-        bool turbinflow_;
-        //! @}
-
-        //! parameter class for time integration
-        DRT::ELEMENTS::ScaTraEleParameterTimInt* timintparams_;
+      //! parameter class for time integration
+      DRT::ELEMENTS::ScaTraEleParameterTimInt* timintparams_;
     };
-  }
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif

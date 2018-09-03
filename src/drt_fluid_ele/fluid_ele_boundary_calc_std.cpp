@@ -20,21 +20,21 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype> * DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance( bool create )
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
+DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(bool create)
 {
-  static FluidEleBoundaryCalcStd<distype> * instance;
-  if ( create )
+  static FluidEleBoundaryCalcStd<distype>* instance;
+  if (create)
   {
-    if ( instance==NULL )
+    if (instance == NULL)
     {
       instance = new FluidEleBoundaryCalcStd<distype>();
     }
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
+    if (instance != NULL) delete instance;
     instance = NULL;
   }
   return instance;
@@ -47,7 +47,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+  Instance(false);
 }
 
 
@@ -55,7 +55,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
-  : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
+    : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
   // pointer to class FluidImplParameter
   my::fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();

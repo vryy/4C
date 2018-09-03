@@ -18,4 +18,4 @@
 void thr_dyn_drt();
 
 /*----------------------------------------------------------------------*/
-#endif  /* #ifndef THR_DYN_H */
+#endif /* #ifndef THR_DYN_H */

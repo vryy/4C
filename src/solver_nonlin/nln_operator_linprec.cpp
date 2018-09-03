@@ -53,39 +53,39 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NLNSOL::NlnOperatorLinPrec::NlnOperatorLinPrec()
-: linprec_(Teuchos::null)
-{
-  return;
-}
+NLNSOL::NlnOperatorLinPrec::NlnOperatorLinPrec() : linprec_(Teuchos::null) { return; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorLinPrec::Setup()
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::NlnOperatorLinPrec::Setup");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::NlnOperatorLinPrec::Setup");
   Teuchos::TimeMonitor monitor(*time);
 
   // Make sure that Init() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
 
   // ---------------------------------------------------------------------------
   // Get parameter list for linear preconditioner from input file
   // ---------------------------------------------------------------------------
   // get the solver number
-  const int linsolvernumber = MyGetParameter<int>(
-      "Linear Preconditioner: Linear Solver");
+  const int linsolvernumber = MyGetParameter<int>("Linear Preconditioner: Linear Solver");
 
   // check if the solver ID is valid
-  if (linsolvernumber == (-1)) { dserror("No valid linear solver defined!"); }
+  if (linsolvernumber == (-1))
+  {
+    dserror("No valid linear solver defined!");
+  }
 
   // linear solver parameter list
   const Teuchos::ParameterList& inputparams =
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  Teuchos::ParameterList solverparams =
-      LINALG::Solver::TranslateSolverParameters(inputparams);
+  Teuchos::ParameterList solverparams = LINALG::Solver::TranslateSolverParameters(inputparams);
 
   // ---------------------------------------------------------------------------
 
@@ -95,14 +95,13 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
   if (solverparams.isSublist("IFPACK Parameters"))
   {
     linprec_ = Teuchos::rcp(
-        new LINALG::SOLVER::IFPACKPreconditioner(
-            DRT::Problem::Instance()->ErrorFile()->Handle(),
-            solverparams.sublist("IFPACK Parameters"),
-            solverparams.sublist("Aztec Parameters")));
+        new LINALG::SOLVER::IFPACKPreconditioner(DRT::Problem::Instance()->ErrorFile()->Handle(),
+            solverparams.sublist("IFPACK Parameters"), solverparams.sublist("Aztec Parameters")));
   }
   else
   {
-    dserror("This type of linear preconditioner is not implemented, yet. "
+    dserror(
+        "This type of linear preconditioner is not implemented, yet. "
         "Or maybe you just chose a wrong configuration in the input file.");
   }
 
@@ -110,8 +109,7 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
       Teuchos::rcp(new Epetra_MultiVector(*NlnProblem()->DofRowMap(), true));
 
   // Setup with dummy vectors
-  linprec_->Setup(true, &*(NlnProblem()->GetJacobianOperator()),
-      &*tmp, &*tmp);
+  linprec_->Setup(true, &*(NlnProblem()->GetJacobianOperator()), &*tmp, &*tmp);
 
   // Setup() has been called
   SetIsSetup();
@@ -121,21 +119,26 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
-    Epetra_MultiVector& x) const
+int NLNSOL::NlnOperatorLinPrec::ApplyInverse(
+    const Epetra_MultiVector& f, Epetra_MultiVector& x) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::NlnOperatorLinPrec::ApplyInverse");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::NlnOperatorLinPrec::ApplyInverse");
   Teuchos::TimeMonitor monitor(*time);
 
   // Make sure that Init() and Setup() have been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // initialize to zero since IFPACK requires a zero initial guess
-  Teuchos::RCP<Epetra_MultiVector> inc =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> inc = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // applying the linear preconditioner
   int err = linprec_->ApplyInverse(f, *inc);
@@ -144,8 +147,7 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
   x.Update(1.0, *inc, 1.0);
 
   // evaluate at the new solution
-  Teuchos::RCP<Epetra_MultiVector> fnew =
-      Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
   NlnProblem()->ComputeF(x, *fnew);
   double fnorm2 = 1.0e+12;
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
@@ -155,8 +157,7 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
   // Finish ApplyInverse()
   // ---------------------------------------------------------------------------
   // determine error code
-  NLNSOL::UTILS::OperatorStatus errorcode =
-      ErrorCode(-1, converged, err);
+  NLNSOL::UTILS::OperatorStatus errorcode = ErrorCode(-1, converged, err);
 
   // write to output parameter list
   SetOutParameterIter(-1);
@@ -171,10 +172,11 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorLinPrec::ComputeStepLength(const Epetra_MultiVector& x,
-    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
-    double& lsparam, bool& suffdecr) const
+    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2, double& lsparam,
+    bool& suffdecr) const
 {
-  dserror("There is no line search algorithm available for a linear "
+  dserror(
+      "There is no line search algorithm available for a linear "
       "preconditioner object.");
 
   return;

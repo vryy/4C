@@ -16,35 +16,32 @@
 
 #include "ad_str_structure_new.H"
 
-namespace ADAPTER {
+namespace ADAPTER
+{
   class StructureLocaAlgorithm : public StructureBaseAlgorithmNew
   {
-  public:
+   public:
     //! constructor
     StructureLocaAlgorithm();
 
     //! destructor
-    virtual ~StructureLocaAlgorithm() {};
+    virtual ~StructureLocaAlgorithm(){};
 
     //! setup (derived)
     virtual void Setup();
 
-  protected:
-    //! // Set different time integrator specific parameters in the different parameter lists (derived)
-    virtual void SetParams(
-        Teuchos::ParameterList& ioflags,
-        Teuchos::ParameterList& xparams,
+   protected:
+    //! // Set different time integrator specific parameters in the different parameter lists
+    //! (derived)
+    virtual void SetParams(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
         Teuchos::ParameterList& taflags);
 
     /// set the final structure time integrator object (derived)
-    virtual void SetStructureWrapper(
-        const Teuchos::ParameterList& ioflags,
-        const Teuchos::ParameterList& sdyn,
-        const Teuchos::ParameterList& xparams,
-        const Teuchos::ParameterList& taflags,
-        Teuchos::RCP< ::STR::TIMINT::Base> ti_strategy);
+    virtual void SetStructureWrapper(const Teuchos::ParameterList& ioflags,
+        const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
+        const Teuchos::ParameterList& taflags, Teuchos::RCP<::STR::TIMINT::Base> ti_strategy);
   };  // class StructureLocaAlgorithm
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 
 

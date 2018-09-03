@@ -21,12 +21,12 @@
 // forward declarations
 namespace Teuchos
 {
-class ParameterList;
+  class ParameterList;
 }
 
 namespace INVANA
 {
-class InvanaBase;
+  class InvanaBase;
 
   /*!
   \brief A factory for the inverse analysis optimzation algorithm
@@ -34,21 +34,18 @@ class InvanaBase;
   \author kehl \date 08/2014
  */
 
-class OptimizerFactory {
+  class OptimizerFactory
+  {
+   public:
+    //! standard constructor
+    OptimizerFactory();
 
-public:
+    //! destructor
+    virtual ~OptimizerFactory(){};
 
-  //! standard constructor
-  OptimizerFactory();
-
-  //! destructor
-  virtual ~OptimizerFactory() {};
-
-  //! Return a reference to the optimization problem
-  Teuchos::RCP<INVANA::OptimizerBase> Create(const Teuchos::ParameterList& invp);
-
-
-};
+    //! Return a reference to the optimization problem
+    Teuchos::RCP<INVANA::OptimizerBase> Create(const Teuchos::ParameterList& invp);
+  };
 }  // namespace INVANA
 
 #endif /*OPTIMIZER_FACTORY_H_*/

@@ -12,7 +12,8 @@
 
 #ifdef HAVE_MueLu
 
-namespace MueLu {
+namespace MueLu
+{
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class MyTrilinosSmoother;
 }
@@ -21,6 +22,6 @@ namespace MueLu {
 #define MUELU_MYTRILINOSSMOOTHER_SHORT
 #endif
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
-#endif // MUELU_MYTRILINOSSMOOTHER_FWD_HPP
+#endif  // MUELU_MYTRILINOSSMOOTHER_FWD_HPP

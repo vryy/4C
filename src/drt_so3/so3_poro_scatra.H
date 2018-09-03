@@ -22,124 +22,121 @@
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 
-namespace ELEMENTS
-{
-/*!
-\brief A C++ version of a 3 dimensional solid element with modifications for porous media including scatra functionality
+  namespace ELEMENTS
+  {
+    /*!
+    \brief A C++ version of a 3 dimensional solid element with modifications for porous media
+    including scatra functionality
 
-A structural 3 dimensional solid displacement element for large deformations
-and (near)-incompressibility.
+    A structural 3 dimensional solid displacement element for large deformations
+    and (near)-incompressibility.
 
-*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-class So3_Poro_Scatra : public So3_Poro<so3_ele,distype>
-{
+    */
+    template <class so3_ele, DRT::Element::DiscretizationType distype>
+    class So3_Poro_Scatra : public So3_Poro<so3_ele, distype>
+    {
+      typedef So3_Poro<so3_ele, distype> my;
 
-  typedef So3_Poro<so3_ele,distype> my;
+     public:
+      //@}
+      //! @name Constructors and destructors and related methods
 
-public:
+      /*!
+      \brief Standard Constructor
 
-  //@}
-  //! @name Constructors and destructors and related methods
+      \param id : A unique global id
+      \param owner : elements owner
+      */
+      So3_Poro_Scatra(int id, int owner);
 
-  /*!
-  \brief Standard Constructor
+      /*!
+      \brief Copy Constructor
 
-  \param id : A unique global id
-  \param owner : elements owner
-  */
-  So3_Poro_Scatra(int id, int owner);
+      Makes a deep copy of a Element
 
-  /*!
-  \brief Copy Constructor
+      */
+      So3_Poro_Scatra(const So3_Poro_Scatra& old);
 
-  Makes a deep copy of a Element
+      /*!
+      \brief Destructor
 
-  */
-  So3_Poro_Scatra(const So3_Poro_Scatra& old);
+      */
+      virtual ~So3_Poro_Scatra(){};
 
-  /*!
-  \brief Destructor
+      //@}
 
-  */
-  virtual ~So3_Poro_Scatra(){};
+      //! @name Acess methods
 
-  //@}
+      /*!
+      \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-  //! @name Acess methods
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
 
-  /*!
-  \brief Deep copy this instance of Solid3 and return pointer to the copy
+      */
+      DRT::Element* Clone() const;
 
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
+      /*!
+      \brief Return unique ParObject id
 
-  */
-  DRT::Element* Clone() const ;
+      every class implementing ParObject needs a unique id defined at the
+      top of this file.
+      */
+      virtual int UniqueParObjectId() const;
 
-  /*!
-  \brief Return unique ParObject id
+      /*!
+      \brief Pack this class so it can be communicated
 
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const;
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  /*!
-  \brief Pack this class so it can be communicated
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const std::vector<char>& data);
-
-
-  //! @name Access methods
-
-  /*!
-  \brief Print this element
-  */
-  void Print(std::ostream& os) const  ;
-
-  virtual DRT::ElementType & ElementType() const;
-
-  //@}
-
-  //! @name Input and Creation
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& eledistype,
-                   DRT::INPUT::LineDefinition* linedef) ;
-
-  /// @name params
-  /// return SCATRA::ImplType
-  const INPAR::SCATRA::ImplType& ImplType() const {return impltype_;};
-
-private:
-  //! scalar transport implementation type (physics)
-  INPAR::SCATRA::ImplType impltype_;
-  //@}
-
-protected:
-
-  //! don't want = operator
-  So3_Poro_Scatra& operator = (const So3_Poro_Scatra& old);
-
-};//class So3_Poro_Scatra
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
 
-}//ELEMENTS
-}//DRT
+      //! @name Access methods
+
+      /*!
+      \brief Print this element
+      */
+      void Print(std::ostream& os) const;
+
+      virtual DRT::ElementType& ElementType() const;
+
+      //@}
+
+      //! @name Input and Creation
+      /*!
+      \brief Read input for this element
+      */
+      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+          DRT::INPUT::LineDefinition* linedef);
+
+      /// @name params
+      /// return SCATRA::ImplType
+      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+
+     private:
+      //! scalar transport implementation type (physics)
+      INPAR::SCATRA::ImplType impltype_;
+      //@}
+
+     protected:
+      //! don't want = operator
+      So3_Poro_Scatra& operator=(const So3_Poro_Scatra& old);
+
+    };  // class So3_Poro_Scatra
+
+
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif /* SO3_PORO_SCATRA_H_ */

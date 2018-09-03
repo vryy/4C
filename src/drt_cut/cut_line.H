@@ -22,120 +22,98 @@
 
 namespace GEO
 {
-namespace CUT
-{
-
-/*!
-\begin Line between two points. These lines result from cuts and there are no cut points on a line.
- */
-class Line
-{
-public:
-
-  Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
-
-  void AddSide( Side * cut_side );
-
-  void AddElement( Element * cut_element );
-
-  bool IsCut( Side* s1, Side* s2 )
+  namespace CUT
   {
-    return cut_sides_.count( s1 )>0 and cut_sides_.count( s2 )>0;
-  }
+    /*!
+    \begin Line between two points. These lines result from cuts and there are no cut points on a
+    line.
+     */
+    class Line
+    {
+     public:
+      Line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element);
 
-  bool IsCut( Element * element )
-  {
-    return cut_elements_.count( element ) > 0;
-  }
+      void AddSide(Side* cut_side);
 
-  bool IsCut( Side * side )
-  {
-    return cut_sides_.count( side ) > 0;
-//     return ( cut_sides_.count( side ) > 0 and
-//              BeginPoint()->IsCut( side ) and
-//              EndPoint()->IsCut( side ) );
-  }
+      void AddElement(Element* cut_element);
 
-  bool IsInternalCut( Side * side );
+      bool IsCut(Side* s1, Side* s2)
+      {
+        return cut_sides_.count(s1) > 0 and cut_sides_.count(s2) > 0;
+      }
 
-  bool OnEdge( Edge * edge )
-  {
-    return p1_->IsCut( edge ) and p2_->IsCut( edge );
-  }
+      bool IsCut(Element* element) { return cut_elements_.count(element) > 0; }
 
-  Point* OtherPoint( Point* point )
-  {
-    if ( p1_==point )
-      return p2_;
-    else if ( p2_==point )
-      return p1_;
-    else
-      throw std::runtime_error( "foreign point provided" );
-  }
+      bool IsCut(Side* side)
+      {
+        return cut_sides_.count(side) > 0;
+        //     return ( cut_sides_.count( side ) > 0 and
+        //              BeginPoint()->IsCut( side ) and
+        //              EndPoint()->IsCut( side ) );
+      }
 
-  Point* BeginPoint()
-  {
-    return p1_;
-  }
-  const Point * BeginPoint() const
-  {
-    return p1_;
-  }
+      bool IsInternalCut(Side* side);
 
-  Point* EndPoint()
-  {
-    return p2_;
-  }
-  const Point * EndPoint() const
-  {
-    return p2_;
-  }
+      bool OnEdge(Edge* edge) { return p1_->IsCut(edge) and p2_->IsCut(edge); }
 
-  bool Between( Point * p1, Point * p2 )
-  {
-    return ( ( p1==p1_ and p2==p2_ ) or
-             ( p1==p2_ and p2==p1_ ) );
-  }
+      Point* OtherPoint(Point* point)
+      {
+        if (p1_ == point)
+          return p2_;
+        else if (p2_ == point)
+          return p1_;
+        else
+          throw std::runtime_error("foreign point provided");
+      }
 
-  /*! \brief Print the coordinates of the points on screen */
-   void Print()
-   {
-     p1_->Print();
-     std::cout << "--";
-     p2_->Print();
-     std::cout << "\n";
-   }
+      Point* BeginPoint() { return p1_; }
+      const Point* BeginPoint() const { return p1_; }
 
-  void Plot( std::ofstream & f ) const
-  {
-    f << "# line\n";
-    p1_->Plot( f );
-    p2_->Plot( f );
-    f << "\n\n";
-  }
+      Point* EndPoint() { return p2_; }
+      const Point* EndPoint() const { return p2_; }
 
-  void Intersection( plain_side_set & sides )
-  {
-    plain_side_set intersection;
-    std::set_intersection( cut_sides_.begin(), cut_sides_.end(),
-                           sides.begin(), sides.end(),
-                           std::inserter( intersection, intersection.begin() ) );
-    std::swap( sides, intersection );
-  }
+      bool Between(Point* p1, Point* p2)
+      {
+        return ((p1 == p1_ and p2 == p2_) or (p1 == p2_ and p2 == p1_));
+      }
 
-  const plain_side_set & CutSides() const { return cut_sides_; }
+      /*! \brief Print the coordinates of the points on screen */
+      void Print()
+      {
+        p1_->Print();
+        std::cout << "--";
+        p2_->Print();
+        std::cout << "\n";
+      }
 
-private:
+      void Plot(std::ofstream& f) const
+      {
+        f << "# line\n";
+        p1_->Plot(f);
+        p2_->Plot(f);
+        f << "\n\n";
+      }
 
-  Point* p1_;
-  Point* p2_;
+      void Intersection(plain_side_set& sides)
+      {
+        plain_side_set intersection;
+        std::set_intersection(cut_sides_.begin(), cut_sides_.end(), sides.begin(), sides.end(),
+            std::inserter(intersection, intersection.begin()));
+        std::swap(sides, intersection);
+      }
 
-  plain_side_set cut_sides_;
+      const plain_side_set& CutSides() const { return cut_sides_; }
 
-  plain_element_set cut_elements_;
-};
+     private:
+      Point* p1_;
+      Point* p2_;
 
-}
-}
+      plain_side_set cut_sides_;
+
+      plain_element_set cut_elements_;
+    };
+
+  }  // namespace CUT
+}  // namespace GEO
 
 #endif

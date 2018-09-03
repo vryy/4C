@@ -28,31 +28,20 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::Iso2Pow::Iso2Pow(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  c_(matdata->GetDouble("C")),
-  d_(matdata->GetInt("D"))
+MAT::ELASTIC::PAR::Iso2Pow::Iso2Pow(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::Iso2Pow::Iso2Pow(MAT::ELASTIC::PAR::Iso2Pow* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::Iso2Pow::Iso2Pow(MAT::ELASTIC::PAR::Iso2Pow* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Iso2Pow::AddStrainEnergy(
-    double& psi,
-    const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv,
-    const LINALG::Matrix<6,1>& glstrain,
-    const int eleGID)
+void MAT::ELASTIC::Iso2Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
 {
   // material Constants c and d
   const double c = params_->c_;
@@ -60,36 +49,33 @@ void MAT::ELASTIC::Iso2Pow::AddStrainEnergy(
 
   // strain energy: Psi = C (\overline{II}_{\boldsymbol{C}}-3)^D
   // add to overall strain energy
-  psi += c * pow((modinv(1)-3.),d);
+  psi += c * pow((modinv(1) - 3.), d);
 }
 
 /*----------------------------------------------------------------------
  *                                                      birzle 11/2014  */
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Iso2Pow::AddDerivativesModified(
-    LINALG::Matrix<3,1>& dPmodI,
-    LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv,
-    const int eleGID
-)
+void MAT::ELASTIC::Iso2Pow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
+    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int eleGID)
 {
-  const double c = params_ -> c_;
-  const    int d = params_ -> d_;
+  const double c = params_->c_;
+  const int d = params_->d_;
 
-  if (d<1)
-    dserror("The Elast_Iso2Pow - material only works for positive integer exponents larger than one.");
+  if (d < 1)
+    dserror(
+        "The Elast_Iso2Pow - material only works for positive integer exponents larger than one.");
 
-  if (d==1)
-    dPmodI(1) += c*d;
+  if (d == 1)
+    dPmodI(1) += c * d;
   else
-    dPmodI(1) += c*d*pow(modinv(1)-3.,d-1.);
+    dPmodI(1) += c * d * pow(modinv(1) - 3., d - 1.);
 
-  if (d==1)
+  if (d == 1)
     ddPmodII(1) += 0.;
-  else if (d==2)
-    ddPmodII(1) += c*d*(d-1.);
+  else if (d == 2)
+    ddPmodII(1) += c * d * (d - 1.);
   else
-    ddPmodII(1) += c*d*(d-1.)*pow(modinv(1)-3.,d-2.);
+    ddPmodII(1) += c * d * (d - 1.) * pow(modinv(1) - 3., d - 2.);
 
 
   return;

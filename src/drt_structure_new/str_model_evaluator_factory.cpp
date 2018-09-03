@@ -44,19 +44,17 @@ STR::MODELEVALUATOR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
-    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes,
-        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr
-        ) const
+Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelEvaluators(
+    const std::set<enum INPAR::STR::ModelType>& modeltypes,
+    const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const
 {
   // create a new standard map
-  Teuchos::RCP<STR::ModelEvaluator::Map> model_map =
-      Teuchos::rcp(new STR::ModelEvaluator::Map());
+  Teuchos::RCP<STR::ModelEvaluator::Map> model_map = Teuchos::rcp(new STR::ModelEvaluator::Map());
 
   std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
-  for (mt_iter=modeltypes.begin();mt_iter!=modeltypes.end();++mt_iter)
+  for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
-    switch(*mt_iter)
+    switch (*mt_iter)
     {
       case INPAR::STR::model_structure:
         (*model_map)[*mt_iter] = BuildStructureModelEvaluator();
@@ -110,8 +108,8 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::Generic> STR::MODELEVALUATOR::Factory::
-    BuildContactModelEvaluator() const
+Teuchos::RCP<STR::MODELEVALUATOR::Generic>
+STR::MODELEVALUATOR::Factory::BuildContactModelEvaluator() const
 {
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> contact_model_ptr = Teuchos::null;
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
@@ -133,11 +131,10 @@ Teuchos::RCP<STR::MODELEVALUATOR::Generic> STR::MODELEVALUATOR::Factory::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::Generic> STR::MODELEVALUATOR::Factory::
-    BuildStructureModelEvaluator() const
+Teuchos::RCP<STR::MODELEVALUATOR::Generic>
+STR::MODELEVALUATOR::Factory::BuildStructureModelEvaluator() const
 {
-  Teuchos::RCP<STR::MODELEVALUATOR::Generic> structure_model_ptr =
-      Teuchos::null;
+  Teuchos::RCP<STR::MODELEVALUATOR::Generic> structure_model_ptr = Teuchos::null;
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
   switch (probtype)
   {
@@ -159,10 +156,10 @@ Teuchos::RCP<STR::MODELEVALUATOR::Generic> STR::MODELEVALUATOR::Factory::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::
-    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes,
-        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr)
+Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::BuildModelEvaluators(
+    const std::set<enum INPAR::STR::ModelType>& modeltypes,
+    const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr)
 {
   Factory factory;
-  return factory.BuildModelEvaluators(modeltypes,coupling_model_ptr);
+  return factory.BuildModelEvaluators(modeltypes, coupling_model_ptr);
 }

@@ -21,7 +21,7 @@ namespace DRT
 {
   class ResultTest;
   class Discretization;
-}
+}  // namespace DRT
 
 namespace SCATRA
 {
@@ -39,8 +39,8 @@ namespace LINALG
 }
 
 /// Algorithm adapter classes for use in multi-field problems
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /// general scalar transport field interface for multiphysics problems
   /*!
   \date 07/08
@@ -49,8 +49,7 @@ namespace ADAPTER {
   /// basic scalar transport solver
   class ScaTraBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor
     ScaTraBaseAlgorithm();
 
@@ -58,13 +57,13 @@ namespace ADAPTER {
     virtual ~ScaTraBaseAlgorithm(){};
 
     /// initialize this class
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
-        );
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
+    );
 
     /// setup this class
     virtual void Setup();
@@ -75,28 +74,23 @@ namespace ADAPTER {
     /// create result test for scalar transport field
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
 
-  private:
-
+   private:
     /// scalar transport field solver
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
-  private:
-
+   private:
     //! flag indicating if class is setup
     bool issetup_;
 
     //! flag indicating if class is initialized
     bool isinit_;
 
-  protected:
-
+   protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup() const
-    {return issetup_;};
+    bool IsSetup() const { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit() const
-    {return isinit_;};
+    bool IsInit() const { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup() const;
@@ -104,17 +98,15 @@ namespace ADAPTER {
     //! check if \ref Init() was called
     void CheckIsInit() const;
 
-  private:
-
+   private:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
+    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
 
-  }; // class ScaTraBaseAlgorithm
+  };  // class ScaTraBaseAlgorithm
 
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 #endif
-

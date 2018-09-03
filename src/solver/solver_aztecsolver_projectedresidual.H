@@ -35,11 +35,9 @@ namespace LINALG
  *  non-singular.
  */
 
-class AztecOO_StatusTestProjResNorm: public AztecOO_StatusTestResNorm
+class AztecOO_StatusTestProjResNorm : public AztecOO_StatusTestResNorm
 {
-
-public:
-
+ public:
   //@{ \name Constructors/destructors.
   //! Constructor
   /*!
@@ -65,13 +63,10 @@ public:
    * \param projector (In) Krylov space projector of the calling solver
    * \param Tolerance (In) A double value that is used to test the convergence
    *                       criterion.  Can be reset using ResetTolerance().
-  */
-  AztecOO_StatusTestProjResNorm(
-    const Epetra_Operator & Operator,
-    const Epetra_Vector & LHS,
-    const Epetra_Vector & RHS,
-    const Teuchos::RCP<LINALG::KrylovProjector> & projector,
-    double Tolerance);
+   */
+  AztecOO_StatusTestProjResNorm(const Epetra_Operator& Operator, const Epetra_Vector& LHS,
+      const Epetra_Vector& RHS, const Teuchos::RCP<LINALG::KrylovProjector>& projector,
+      double Tolerance);
 
   //! Check convergence status: Unconverged, Converged, Failed.
   /*! This method checks to see if the convergence criteria are met. This is
@@ -92,17 +87,12 @@ public:
 
     \return AztecOO_StatusType: Unconverged, Converged or Failed.
   */
-  AztecOO_StatusType CheckStatus(
-    int CurrentIter,
-    Epetra_MultiVector * CurrentResVector,
-    double CurrentResNormEst,
-    bool SolutionUpdated);
+  AztecOO_StatusType CheckStatus(int CurrentIter, Epetra_MultiVector* CurrentResVector,
+      double CurrentResNormEst, bool SolutionUpdated);
 
-private:
-
+ private:
   //! Krylov space projector to project the residual
   Teuchos::RCP<LINALG::KrylovProjector> projector_;
-
 };
 
-#endif // SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_h_
+#endif  // SOLVER_AZTECSOLVER_PROJECTEDRESIDUAL_h_

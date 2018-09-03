@@ -28,18 +28,13 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 01/15|
  *----------------------------------------------------------------------*/
-CONTACT::SmoothingStrategy::SmoothingStrategy(
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
-    int dim,
-    Teuchos::RCP<Epetra_Comm> comm,
-    double alphaf,
-    int maxdof)
-    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-        DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
+CONTACT::SmoothingStrategy::SmoothingStrategy(const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> cinterface,
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> mtinterface, int dim,
+    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
+          NodeRowMap, params, dim, comm, alphaf, maxdof),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1),
@@ -62,18 +57,12 @@ CONTACT::SmoothingStrategy::SmoothingStrategy(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::SmoothingStrategy::SmoothingStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
-    int dim,
-    Teuchos::RCP<Epetra_Comm> comm,
-    double alphaf,
-    int maxdof)
-    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params,
-        dim, comm, alphaf, maxdof),
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> cinterface,
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> mtinterface, int dim,
+    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1),
@@ -113,45 +102,39 @@ void CONTACT::SmoothingStrategy::SetupMT(bool redistributed)
   gdisprowmap_ = Teuchos::null;
 
   // reset global neutral map
-  if (!redistributed)
-    gndofrowmap_ = Teuchos::null;
+  if (!redistributed) gndofrowmap_ = Teuchos::null;
 
   // merge interface maps to global maps
-  for (int i = 0; i < (int) minterface_.size(); ++i) {
+  for (int i = 0; i < (int)minterface_.size(); ++i)
+  {
     // build Lagrange multiplier dof map
     minterface_[i]->UpdateLagMultSets(globaloffset_);
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
-    MT_glmdofrowmap_ = LINALG::MergeMap(MT_glmdofrowmap_,
-        minterface_[i]->LagMultDofs());
+    MT_glmdofrowmap_ = LINALG::MergeMap(MT_glmdofrowmap_, minterface_[i]->LagMultDofs());
     globaloffset_ += MT_glmdofrowmap_->NumGlobalElements();
-    if (globaloffset_ < 0)
-      globaloffset_ = 0;
+    if (globaloffset_ < 0) globaloffset_ = 0;
 
     // merge interface master, slave maps to global master, slave map
-    MT_gsdofrowmap_ = LINALG::MergeMap(MT_gsdofrowmap_,
-        minterface_[i]->SlaveRowDofs());
-    MT_gmdofrowmap_ = LINALG::MergeMap(MT_gmdofrowmap_,
-        minterface_[i]->MasterRowDofs());
-    MT_gsnoderowmap_ = LINALG::MergeMap(MT_gsnoderowmap_,
-        minterface_[i]->SlaveRowNodes());
-    MT_gmnoderowmap_ = LINALG::MergeMap(MT_gmnoderowmap_,
-        minterface_[i]->MasterRowNodes());
+    MT_gsdofrowmap_ = LINALG::MergeMap(MT_gsdofrowmap_, minterface_[i]->SlaveRowDofs());
+    MT_gmdofrowmap_ = LINALG::MergeMap(MT_gmdofrowmap_, minterface_[i]->MasterRowDofs());
+    MT_gsnoderowmap_ = LINALG::MergeMap(MT_gsnoderowmap_, minterface_[i]->SlaveRowNodes());
+    MT_gmnoderowmap_ = LINALG::MergeMap(MT_gmnoderowmap_, minterface_[i]->MasterRowNodes());
   }
 
   // setup global non-slave-or-master dof map
   // (this is done by splitting from the dicretization dof map)
   // (no need to rebuild this map after redistribution)
 
-  if (!redistributed) {
+  if (!redistributed)
+  {
     gndofrowmap_ = LINALG::SplitMap(*ProblemDofs(), *MT_gsdofrowmap_);
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *MT_gmdofrowmap_);
   }
 
   // setup combined global slave and master dof map
   // setup global displacement dof map
-  MT_gsmdofrowmap_ = LINALG::MergeMap(*MT_gsdofrowmap_, *MT_gmdofrowmap_,
-      false);
+  MT_gsmdofrowmap_ = LINALG::MergeMap(*MT_gsdofrowmap_, *MT_gmdofrowmap_, false);
   gdisprowmap_ = LINALG::MergeMap(*gndofrowmap_, *MT_gsmdofrowmap_, false);
 
   // ------------------------------------------------------------------------
@@ -175,19 +158,16 @@ void CONTACT::SmoothingStrategy::SetupMT(bool redistributed)
  *----------------------------------------------------------------------*/
 void CONTACT::SmoothingStrategy::Initialize()
 {
-  if (friction_)
-    dserror("ERROR: Frictional contact not implemented for interface smoothing!");
+  if (friction_) dserror("ERROR: Frictional contact not implemented for interface smoothing!");
   if (constr_direction_ == INPAR::CONTACT::constr_xyz)
     dserror("ERROR: constraint xyz orientation not implemented for interface smoothing!");
 
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
   lindmatrix_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, false,
-          LINALG::SparseMatrix::FE_MATRIX));
+      new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
   linmmatrix_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*gmdofrowmap_, 100, true, false,
-          LINALG::SparseMatrix::FE_MATRIX));
+      new LINALG::SparseMatrix(*gmdofrowmap_, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
 
   if (stype_ == INPAR::CONTACT::solution_lagmult)
   {
@@ -198,8 +178,7 @@ void CONTACT::SmoothingStrategy::Initialize()
     smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_, 3));
 
     // inactive rhs for the saddle point problem
-    Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,
-        *gactivedofs_);
+    Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
     inactiverhs_ = LINALG::CreateVector(*gidofs, true);
 
     // tangential rhs
@@ -213,7 +192,7 @@ void CONTACT::SmoothingStrategy::Initialize()
     z_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
     // (re)setup global matrix containing lagrange multiplier derivatives
-    linzmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+    linzmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
   }
 
   return;
@@ -224,8 +203,7 @@ void CONTACT::SmoothingStrategy::Initialize()
  | evaluate frictional contact (public)                      farah 01/15|
  *----------------------------------------------------------------------*/
 void CONTACT::SmoothingStrategy::EvaluateFriction(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff,
-    Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   dserror("ERROR: Frictional contact not implemented for interface smoothing!");
   return;
@@ -236,26 +214,25 @@ void CONTACT::SmoothingStrategy::EvaluateFriction(
  |  evaluate contact (public)                                farah 01/15|
  *----------------------------------------------------------------------*/
 void CONTACT::SmoothingStrategy::EvaluateContact(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff,
-    Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
 
   // system type
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+  INPAR::CONTACT::SystemType systype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   // shape function
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+  INPAR::MORTAR::ShapeFcn shapefcn =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
 
   if (stype_ == INPAR::CONTACT::solution_penalty)
   {
     bool isincontact = false;
     bool activesetchange = false;
 
-    for (int i=0; i<(int)interface_.size(); ++i)
+    for (int i = 0; i < (int)interface_.size(); ++i)
     {
       bool localisincontact = false;
       bool localactivesetchange = false;
@@ -276,15 +253,15 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
     Comm().SumAll(&localcontact, &globalcontact, 1);
     Comm().SumAll(&localchange, &globalchange, 1);
 
-    if (globalcontact>=1)
+    if (globalcontact >= 1)
     {
-      isincontact_=true;
-      wasincontact_=true;
+      isincontact_ = true;
+      wasincontact_ = true;
     }
     else
-      isincontact_=false;
+      isincontact_ = false;
 
-    if( (Comm().MyPID()==0) && (globalchange>=1) )
+    if ((Comm().MyPID() == 0) && (globalchange >= 1))
       std::cout << "ACTIVE CONTACT SET HAS CHANGED..." << std::endl;
 
     // (re)setup active global Epetra_Maps
@@ -293,16 +270,16 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
     // of the active nodes
     gactivenodes_ = Teuchos::null;
     gslipnodes_ = Teuchos::null;
-    gactivedofs_=Teuchos::null;
+    gactivedofs_ = Teuchos::null;
 
     // update active sets of all interfaces
     // (these maps are NOT allowed to be overlapping !!!)
-    for (int i=0;i<(int)interface_.size();++i)
+    for (int i = 0; i < (int)interface_.size(); ++i)
     {
       interface_[i]->BuildActiveSet();
-      gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
-      gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
-      gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+      gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+      gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
     }
 
     // check if contact contributions are present,
@@ -314,7 +291,7 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
     kteff->UnComplete();
 
     // assemble contact quantities on all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
+    for (int i = 0; i < (int)interface_.size(); ++i)
     {
       // assemble global lagrangian multiplier vector
       interface_[i]->AssembleLM(*z_);
@@ -346,13 +323,13 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
     // transform if necessary
     if (ParRedist())
     {
-      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+      lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
+      linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
     }
 
     // add to kteff
-    kteff->Add(*lindmatrix_, false, 1.0-alphaf_, 1.0);
-    kteff->Add(*linmmatrix_, false, 1.0-alphaf_, 1.0);
+    kteff->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
+    kteff->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
 
     // **********************************************************************
     // Build Contact Stiffness #2
@@ -361,19 +338,21 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
     //  Kc,2= [ 0 -M(transpose) D] * deltaLM
 
     // multiply Mortar matrices D and M with LinZ
-    Teuchos::RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_,true,*linzmatrix_,false,false,false,true);
-    Teuchos::RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> dtilde =
+        LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+    Teuchos::RCP<LINALG::SparseMatrix> mtilde =
+        LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
     // transform if necessary
     if (ParRedist())
     {
-      dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-      mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+      dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
+      mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
     }
 
     // add to kteff
-    kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
-    kteff->Add(*mtilde, false, -(1.0-alphaf_), 1.0);
+    kteff->Add(*dtilde, false, 1.0 - alphaf_, 1.0);
+    kteff->Add(*mtilde, false, -(1.0 - alphaf_), 1.0);
 
     // **********************************************************************
     // Build RHS
@@ -407,7 +386,7 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
       dmatrix_->Multiply(true, *z_, *fcmd);
       Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fcmd, *fcmdtemp);
-      feff->Update(-(1-alphaf_), *fcmdtemp, 1.0);
+      feff->Update(-(1 - alphaf_), *fcmdtemp, 1.0);
     }
 
     {
@@ -415,50 +394,41 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
       mmatrix_->Multiply(true, *z_, *fcmm);
       Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fcmm, *fcmmtemp);
-      feff->Update(1-alphaf_, *fcmmtemp, 1.0);
+      feff->Update(1 - alphaf_, *fcmmtemp, 1.0);
     }
 
     //==================== contributions due to meshtying (LM-method)==============
 
     // add current meshtying forces MT
-    Teuchos::RCP<Epetra_Vector> MT_fs = Teuchos::rcp(
-        new Epetra_Vector(*MT_gsdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> MT_fs = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
     MT_dmatrix_->Multiply(true, *MT_z_, *MT_fs);
-    Teuchos::RCP<Epetra_Vector> MT_fsexp = Teuchos::rcp(
-        new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> MT_fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*MT_fs, *MT_fsexp);
     feff->Update(-(1.0 - alphaf_), *MT_fsexp, 1.0);
 
-    Teuchos::RCP<Epetra_Vector> MT_fm = Teuchos::rcp(
-        new Epetra_Vector(*MT_gmdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> MT_fm = Teuchos::rcp(new Epetra_Vector(*MT_gmdofrowmap_));
     MT_mmatrix_->Multiply(true, *MT_z_, *MT_fm);
-    Teuchos::RCP<Epetra_Vector> MT_fmexp = Teuchos::rcp(
-        new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> MT_fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*MT_fm, *MT_fmexp);
     feff->Update(1.0 - alphaf_, *MT_fmexp, 1.0);
 
     // add old meshtying forces (t_n) for mt1 and mt2
-    Teuchos::RCP<Epetra_Vector> MT_fsold = Teuchos::rcp(
-        new Epetra_Vector(*MT_gsdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> MT_fsold = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
     MT_dmatrix_->Multiply(true, *MT_zold_, *MT_fsold);
-    Teuchos::RCP<Epetra_Vector> MT_fsoldexp = Teuchos::rcp(
-        new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> MT_fsoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*MT_fsold, *MT_fsoldexp);
     feff->Update(-alphaf_, *MT_fsoldexp, 1.0);
 
-    Teuchos::RCP<Epetra_Vector> MT_fmold = Teuchos::rcp(
-        new Epetra_Vector(*MT_gmdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> MT_fmold = Teuchos::rcp(new Epetra_Vector(*MT_gmdofrowmap_));
     MT_mmatrix_->Multiply(true, *MT_zold_, *MT_fmold);
-    Teuchos::RCP<Epetra_Vector> MT_fmoldexp = Teuchos::rcp(
-        new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> MT_fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*MT_fmold, *MT_fmoldexp);
     feff->Update(alphaf_, *MT_fmoldexp, 1.0);
   }
 
   if (stype_ == INPAR::CONTACT::solution_lagmult)
   {
-    if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
-      return;
+    if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
     // complete stiffness matrix
     // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -485,7 +455,7 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
     /* and tangential right-hand side (incr)                              */
     /**********************************************************************/
 
-    for (int i = 0; i < (int) interface_.size(); ++i)
+    for (int i = 0; i < (int)interface_.size(); ++i)
     {
       interface_[i]->AssembleTN(tmatrix_);
       interface_[i]->AssembleS(*smatrix_);
@@ -524,8 +494,7 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
       dserror("ERROR: Condensed system not implemented!");
 
       // double-check if this is a dual LM system
-      if (shapefcn != INPAR::MORTAR::shape_dual
-          && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+      if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
         dserror("Condensation only for dual LM");
     }
 
@@ -541,73 +510,56 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
       kteff->Complete();
 
       // add contact force terms
-      Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(
-          new Epetra_Vector(*gsdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dmatrix_->Multiply(true, *z_, *fs);
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fs, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
-      Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(
-          new Epetra_Vector(*gmdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       mmatrix_->Multiply(true, *z_, *fm);
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
-      Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(
-          new Epetra_Vector(*gsdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       dold_->Multiply(true, *zold_, *fsold);
-      Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fsold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
-      Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(
-          new Epetra_Vector(*gmdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
       mold_->Multiply(true, *zold_, *fmold);
-      Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
 
       // add current meshtying forces MT
-      Teuchos::RCP<Epetra_Vector> MT_fs = Teuchos::rcp(
-          new Epetra_Vector(*MT_gsdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> MT_fs = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
       MT_dmatrix_->Multiply(true, *MT_z_, *MT_fs);
-      Teuchos::RCP<Epetra_Vector> MT_fsexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> MT_fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*MT_fs, *MT_fsexp);
       feff->Update(-(1.0 - alphaf_), *MT_fsexp, 1.0);
 
-      Teuchos::RCP<Epetra_Vector> MT_fm = Teuchos::rcp(
-          new Epetra_Vector(*MT_gmdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> MT_fm = Teuchos::rcp(new Epetra_Vector(*MT_gmdofrowmap_));
       MT_mmatrix_->Multiply(true, *MT_z_, *MT_fm);
-      Teuchos::RCP<Epetra_Vector> MT_fmexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> MT_fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*MT_fm, *MT_fmexp);
       feff->Update(1.0 - alphaf_, *MT_fmexp, 1.0);
 
       // add old meshtying forces (t_n) for mt1 and mt2
-      Teuchos::RCP<Epetra_Vector> MT_fsold = Teuchos::rcp(
-          new Epetra_Vector(*MT_gsdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> MT_fsold = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
       MT_dmatrix_->Multiply(true, *MT_zold_, *MT_fsold);
-      Teuchos::RCP<Epetra_Vector> MT_fsoldexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> MT_fsoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*MT_fsold, *MT_fsoldexp);
       feff->Update(-alphaf_, *MT_fsoldexp, 1.0);
 
-      Teuchos::RCP<Epetra_Vector> MT_fmold = Teuchos::rcp(
-          new Epetra_Vector(*MT_gmdofrowmap_));
+      Teuchos::RCP<Epetra_Vector> MT_fmold = Teuchos::rcp(new Epetra_Vector(*MT_gmdofrowmap_));
       MT_mmatrix_->Multiply(true, *MT_zold_, *MT_fmold);
-      Teuchos::RCP<Epetra_Vector> MT_fmoldexp = Teuchos::rcp(
-          new Epetra_Vector(*ProblemDofs()));
+      Teuchos::RCP<Epetra_Vector> MT_fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*MT_fmold, *MT_fmoldexp);
       feff->Update(alphaf_, *MT_fmoldexp, 1.0);
-
     }
   }
 
@@ -618,43 +570,41 @@ void CONTACT::SmoothingStrategy::EvaluateContact(
 /*----------------------------------------------------------------------*
  | Setup saddle point system for contact problems           farah 01/15 |
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
-    Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd,
-    Teuchos::RCP<Epetra_Vector> sold,
+void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-    Teuchos::RCP<Epetra_Operator>& blockMat,
-    Teuchos::RCP<Epetra_Vector>& blocksol,
+    Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
     Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
   // conditions on different matrix blocks separately.
   Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp( new Epetra_Vector(*(dbcmaps->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
   temp->PutScalar(1.0);
   LINALG::Export(*temp, *dirichtoggle);
 
   // get system type
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+  INPAR::CONTACT::SystemType systype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   if (stype_ == INPAR::CONTACT::solution_penalty)
   {
     //**********************************************************************
     // FRICTIONAL CONTACT
     //**********************************************************************
-    if (friction_)
-      dserror("ERROR: Friction and Smoothing not implemented yet!");
+    if (friction_) dserror("ERROR: Friction and Smoothing not implemented yet!");
 
     //**********************************************************************
     // FRICTIONLESS CONTACT
     //**********************************************************************
 
     // the standard stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
+    Teuchos::RCP<LINALG::SparseMatrix> stiffmt =
+        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
 
     // initialize merged system (matrix, rhs, sol)
-    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),MT_glmdofrowmap_,false);
+    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(), MT_glmdofrowmap_, false);
     Teuchos::RCP<LINALG::SparseMatrix> mergedmt = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> mergedrhs = LINALG::CreateVector(*mergedmap);
     Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap);
@@ -665,11 +615,13 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     //  k  =  [ md  | mm ]  =  [ md | 0  ]  (meshtying)
 
 
-    Teuchos::RCP<LINALG::SparseMatrix> kdm = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
-    Teuchos::RCP<LINALG::SparseMatrix> kmd = Teuchos::rcp(new LINALG::SparseMatrix(*MT_gsdofrowmap_,100,false,true));
+    Teuchos::RCP<LINALG::SparseMatrix> kdm =
+        Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_, 100, false, true));
+    Teuchos::RCP<LINALG::SparseMatrix> kmd =
+        Teuchos::rcp(new LINALG::SparseMatrix(*MT_gsdofrowmap_, 100, false, true));
 
     // initialize transformed constraint matrices
-    Teuchos::RCP<LINALG::SparseMatrix> trkdm,trkmd;
+    Teuchos::RCP<LINALG::SparseMatrix> trkdm, trkmd;
 
     //**********************************************************************
     // build matrix and vector blocks
@@ -688,7 +640,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     //**********************************************************************
     // transform matrix blocks to lm-dof-map
     //**********************************************************************
-    //TODO Parallel Redistribution (siehe contact_lagrange_str)
+    // TODO Parallel Redistribution (siehe contact_lagrange_str)
 
     // transform constraint matrix kmd (MatrixRowTransform)
     trkmd = MORTAR::MatrixRowTransformGIDs(kmd, MT_glmdofrowmap_);
@@ -703,21 +655,19 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle, *dirichtoggleexp);
 
-    int err=0;
+    int err = 0;
 
     Teuchos::RCP<Epetra_Vector> MT_lmDBC = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
     LINALG::Export(*dirichtoggle, *MT_lmDBC);
 
-    err=MT_lmDBC->ReplaceMap(*MT_glmdofrowmap_);
-    if(err!=0)
-      dserror("ReplaceMap failed");
+    err = MT_lmDBC->ReplaceMap(*MT_glmdofrowmap_);
+    if (err != 0) dserror("ReplaceMap failed");
 
     Teuchos::RCP<Epetra_Vector> MT_lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*MT_lmDBC, *MT_lmDBCexp);
 
     err = dirichtoggleexp->Update(1., *MT_lmDBCexp, 1.);
-    if(err!=0)
-      dserror("failed");
+    if (err != 0) dserror("failed");
 
     // apply Dirichlet conditions to (1,0)
     trkmd->ApplyDirichlet(MT_lmDBC, false);
@@ -726,7 +676,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     trkdm->ApplyDirichlet(dirichtoggle, false);
 
     // apply Dirichlet conditions to (0,0) block
-    Teuchos::RCP<Epetra_Vector> zeros   = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
+    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
     Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
     LINALG::ApplyDirichlettoSystem(stiffmt, sold, rhscopy, zeros, dirichtoggle);
 
@@ -735,15 +685,18 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     LINALG::MapExtractor dommapext(*mergedmap, MT_glmdofrowmap_, ProblemDofs());
 
     // build 2x2 block matrix for SIMPLER
-    blockMat = Teuchos::rcp( new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext, rowmapext, 81, false, false));
-    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast< LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >( blockMat);
+    blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        dommapext, rowmapext, 81, false, false));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> mat =
+        Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>>(
+            blockMat);
     mat->Assign(0, 0, LINALG::View, *stiffmt);
     mat->Assign(0, 1, LINALG::View, *trkdm);
     mat->Assign(1, 0, LINALG::View, *trkmd);
     mat->Complete();
 
     // we also need merged rhs here
-    Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(// force_residual_merged_export
+    Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(  // force_residual_merged_export
         new Epetra_Vector(*mergedmap));
     LINALG::Export(*fd, *fresmexp);
 
@@ -751,16 +704,13 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     mergedrhs->Update(1.0, *fresmexp, 1.0);
     Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
 
-    if(constrrhs_ != Teuchos::null)
-      LINALG::Export(*constrrhs_, *constrexp);
+    if (constrrhs_ != Teuchos::null) LINALG::Export(*constrrhs_, *constrexp);
 
-    err=mergedrhs->Update(1.0, *constrexp, 1.0);
-    if(err!=0)
-      dserror("failed");
+    err = mergedrhs->Update(1.0, *constrexp, 1.0);
+    if (err != 0) dserror("failed");
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
-    LINALG::ApplyDirichlettoSystem(mergedsol, mergedrhs, mergedzeros,
-        dirichtoggleexp);
+    LINALG::ApplyDirichlettoSystem(mergedsol, mergedrhs, mergedzeros, dirichtoggleexp);
 
     blocksol = mergedsol;
     blockrhs = mergedrhs;
@@ -774,19 +724,20 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     //**********************************************************************
     // FRICTIONAL CONTACT
     //**********************************************************************
-    if (friction_)
-      dserror("ERROR: Friction and Smoothing not implemented yet!");
+    if (friction_) dserror("ERROR: Friction and Smoothing not implemented yet!");
 
     //**********************************************************************
     // FRICTIONLESS CONTACT
     //**********************************************************************
 
     // the standard stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
+    Teuchos::RCP<LINALG::SparseMatrix> stiffmt =
+        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
 
     // initialize merged system (matrix, rhs, sol)
-    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),LMDoFRowMapPtr(true),false);
-    mergedmap = LINALG::MergeMap(mergedmap,MT_glmdofrowmap_,false);
+    Teuchos::RCP<Epetra_Map> mergedmap =
+        LINALG::MergeMap(ProblemDofs(), LMDoFRowMapPtr(true), false);
+    mergedmap = LINALG::MergeMap(mergedmap, MT_glmdofrowmap_, false);
     Teuchos::RCP<LINALG::SparseMatrix> mergedmt = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> mergedrhs = LINALG::CreateVector(*mergedmap);
     Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap);
@@ -797,17 +748,21 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     //  k = [ zd | zz | zm ]  = [ zd | zz | 0  ]  (contact)
     //      [ md | mz | mm ]    [ md | 0  | 0  ]  (meshtying)
 
-    Teuchos::RCP<LINALG::SparseMatrix> kdz = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
-    Teuchos::RCP<LINALG::SparseMatrix> kdm = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
+    Teuchos::RCP<LINALG::SparseMatrix> kdz =
+        Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_, 100, false, true));
+    Teuchos::RCP<LINALG::SparseMatrix> kdm =
+        Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_, 100, false, true));
 
-    Teuchos::RCP<LINALG::SparseMatrix> kzd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,true));
-    Teuchos::RCP<LINALG::SparseMatrix> kzz = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
+    Teuchos::RCP<LINALG::SparseMatrix> kzd =
+        Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
+    Teuchos::RCP<LINALG::SparseMatrix> kzz =
+        Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, false, true));
 
-    Teuchos::RCP<LINALG::SparseMatrix> kmd = Teuchos::rcp(new LINALG::SparseMatrix(*MT_gsdofrowmap_,100,false,true));
+    Teuchos::RCP<LINALG::SparseMatrix> kmd =
+        Teuchos::rcp(new LINALG::SparseMatrix(*MT_gsdofrowmap_, 100, false, true));
 
     // initialize transformed constraint matrices
-    Teuchos::RCP<LINALG::SparseMatrix> trkdz,
-    trkdm,trkzd,trkzz,trkzm,trkmd,trkmz,trkmm  ;
+    Teuchos::RCP<LINALG::SparseMatrix> trkdz, trkdm, trkzd, trkzz, trkzm, trkmd, trkmz, trkmm;
 
     //**********************************************************************
     // build matrix and vector blocks
@@ -834,28 +789,22 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     }
     else
     {
-      if (gactiven_->NumGlobalElements())
-        kzd->Add(*smatrix_, false, 1.0, 1.0);
-      if (gactivet_->NumGlobalElements())
-        kzd->Add(*tderivmatrix_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_, false, 1.0, 1.0);
+      if (gactivet_->NumGlobalElements()) kzd->Add(*tderivmatrix_, false, 1.0, 1.0);
     }
 
     kzd->Complete(*gdisprowmap_, *gsdofrowmap_);
 
     // build unity matrix for inactive dofs
-    Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,
-        *gactivedofs_);
+    Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
     Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gidofs));
     ones->PutScalar(1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(
-        new LINALG::SparseMatrix(*ones));
+    Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
     onesdiag->Complete();
 
     // build constraint matrix kzz
-    if (gidofs->NumGlobalElements())
-      kzz->Add(*onesdiag, false, 1.0, 1.0);
-    if (gactivet_->NumGlobalElements())
-      kzz->Add(*tmatrix_, false, 1.0, 1.0);
+    if (gidofs->NumGlobalElements()) kzz->Add(*onesdiag, false, 1.0, 1.0);
+    if (gactivet_->NumGlobalElements()) kzz->Add(*tmatrix_, false, 1.0, 1.0);
     kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // build constraint matrix kmd
@@ -866,7 +815,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     //**********************************************************************
     // transform matrix blocks to lm-dof-map
     //**********************************************************************
-    //TODO Parallel Redistribution (siehe contact_lagrange_str)
+    // TODO Parallel Redistribution (siehe contact_lagrange_str)
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzd = MORTAR::MatrixRowTransformGIDs(kzd, LMDoFRowMapPtr(true));
@@ -901,8 +850,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       LINALG::Export(*lmDBC, *lmDBCexp);
 
       int err = dirichtoggleexp->Update(1., *lmDBCexp, 1.);
-      if(err!=0)
-        dserror("failed");
+      if (err != 0) dserror("failed");
 
       // apply Dirichlet conditions to (1,0)
       trkzd->ApplyDirichlet(lmDBC, false);
@@ -911,16 +859,14 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       Teuchos::RCP<Epetra_Vector> MT_lmDBC = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
       LINALG::Export(*dirichtoggle, *MT_lmDBC);
 
-      err=MT_lmDBC->ReplaceMap(*MT_glmdofrowmap_);
-      if(err!=0)
-        dserror("ReplaceMap failed");
+      err = MT_lmDBC->ReplaceMap(*MT_glmdofrowmap_);
+      if (err != 0) dserror("ReplaceMap failed");
 
       Teuchos::RCP<Epetra_Vector> MT_lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
       LINALG::Export(*MT_lmDBC, *MT_lmDBCexp);
 
       err = dirichtoggleexp->Update(1., *MT_lmDBCexp, 1.);
-      if(err!=0)
-        dserror("ERROR: Update procedure failed!");
+      if (err != 0) dserror("ERROR: Update procedure failed!");
 
       // apply Dirichlet conditions to (2,0)
       trkmd->ApplyDirichlet(MT_lmDBC, false);
@@ -936,27 +882,32 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       trkzz->ApplyDirichlet(lmDBC, true);
 
       // apply Dirichlet conditions to (0,0) block
-      Teuchos::RCP<Epetra_Vector> zeros   = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
+      Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
       Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
       LINALG::ApplyDirichlettoSystem(stiffmt, sold, rhscopy, zeros, dirichtoggle);
 
-      //apply Dirichlet conditions to (0,1) block
+      // apply Dirichlet conditions to (0,1) block
       trkdz->ApplyDirichlet(dirichtoggle, false);
 
 
-      // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitely)
-      // do we need this? if we set the Teuchos::nullspace when the solver is constructed?
-      //solver.Params().set<bool>("CONTACT",true); // for simpler precond
+      // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace
+      // has to be set explicitely) do we need this? if we set the Teuchos::nullspace when the
+      // solver is constructed?
+      // solver.Params().set<bool>("CONTACT",true); // for simpler precond
 
       // reduce 3x3 system to 2x2 system
       //      [ trdd | trdg ]  (displacement)
       //  k = [ trgd | trgg ]  (contact and meshtying)
 
-      Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,LMDoFRowMapPtr(true),false);
+      Teuchos::RCP<Epetra_Map> MTco_mergedmap =
+          LINALG::MergeMap(MT_glmdofrowmap_, LMDoFRowMapPtr(true), false);
 
-      Teuchos::RCP<LINALG::SparseMatrix> trkdg = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
-      Teuchos::RCP<LINALG::SparseMatrix> trkgd = Teuchos::rcp(new LINALG::SparseMatrix(*MTco_mergedmap,100,false,true));
-      Teuchos::RCP<LINALG::SparseMatrix> trkgg = Teuchos::rcp(new LINALG::SparseMatrix(*MTco_mergedmap,100,false,true));
+      Teuchos::RCP<LINALG::SparseMatrix> trkdg =
+          Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_, 100, false, true));
+      Teuchos::RCP<LINALG::SparseMatrix> trkgd =
+          Teuchos::rcp(new LINALG::SparseMatrix(*MTco_mergedmap, 100, false, true));
+      Teuchos::RCP<LINALG::SparseMatrix> trkgg =
+          Teuchos::rcp(new LINALG::SparseMatrix(*MTco_mergedmap, 100, false, true));
 
       trkdg->Add(*trkdz, false, 1.0, 1.0);
       trkdg->Add(*trkdm, false, 1.0, 1.0);
@@ -969,8 +920,11 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       LINALG::MapExtractor dommapext(*mergedmap, MTco_mergedmap, ProblemDofs());
 
       // build 2x2 block matrix for SIMPLER
-      blockMat = Teuchos::rcp( new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext, rowmapext, 81, false, false));
-      Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast< LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >( blockMat);
+      blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          dommapext, rowmapext, 81, false, false));
+      Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> mat =
+          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>>(
+              blockMat);
       mat->Assign(0, 0, LINALG::View, *stiffmt);
       mat->Assign(0, 1, LINALG::View, *trkdg);
       mat->Assign(1, 0, LINALG::View, *trkgd);
@@ -978,23 +932,20 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       mat->Complete();
 
       // we also need merged rhs here
-      Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(// force_residual_merged_export
+      Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(  // force_residual_merged_export
           new Epetra_Vector(*mergedmap));
       LINALG::Export(*fd, *fresmexp);
 
       mergedrhs->Update(1.0, *fresmexp, 1.0);
       Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
 
-      if(constrrhs_ != Teuchos::null)
-        LINALG::Export(*constrrhs_, *constrexp);
+      if (constrrhs_ != Teuchos::null) LINALG::Export(*constrrhs_, *constrexp);
 
-      err=mergedrhs->Update(1.0, *constrexp, 1.0);
-      if(err!=0)
-        dserror("ERROR: Update procedure failed!");
+      err = mergedrhs->Update(1.0, *constrexp, 1.0);
+      if (err != 0) dserror("ERROR: Update procedure failed!");
 
       // apply Dirichlet B.C. to mergedrhs and mergedsol
-      LINALG::ApplyDirichlettoSystem(mergedsol, mergedrhs, mergedzeros,
-          dirichtoggleexp);
+      LINALG::ApplyDirichlettoSystem(mergedsol, mergedrhs, mergedzeros, dirichtoggleexp);
 
       blocksol = mergedsol;
       blockrhs = mergedrhs;
@@ -1019,27 +970,24 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
  | set current deformation state                            farah 01/15 |
  *----------------------------------------------------------------------*/
 void CONTACT::SmoothingStrategy::SetState(
-    const enum MORTAR::StateType& statetype,
-    const Epetra_Vector& vec)
+    const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
 {
-  switch(statetype)
+  switch (statetype)
   {
     case MORTAR::state_new_displacement:
     case MORTAR::state_old_displacement:
     {
       // set state on contact interfaces
-      for (std::size_t i = 0; i < interface_.size(); ++i)
-        interface_[i]->SetState(statetype, vec);
+      for (std::size_t i = 0; i < interface_.size(); ++i) interface_[i]->SetState(statetype, vec);
 
       // set state on meshtying interfaces
-      for (std::size_t i = 0; i < minterface_.size(); ++i)
-        minterface_[i]->SetState(statetype, vec);
+      for (std::size_t i = 0; i < minterface_.size(); ++i) minterface_[i]->SetState(statetype, vec);
       break;
     }
     default:
     {
-      dserror("Unsupported state type! (state type = %s)",
-          MORTAR::StateType2String(statetype).c_str());
+      dserror(
+          "Unsupported state type! (state type = %s)", MORTAR::StateType2String(statetype).c_str());
       break;
     }
   }
@@ -1050,14 +998,13 @@ void CONTACT::SmoothingStrategy::SetState(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration            farah 01/15|
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::MortarCoupling(
-    const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::SmoothingStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
   //********************************************************************
   // for all interfaces
-  for (int i = 0; i < (int) minterface_.size(); ++i)
+  for (int i = 0; i < (int)minterface_.size(); ++i)
   {
     // initialize / reset interfaces
     minterface_[i]->Initialize();
@@ -1080,7 +1027,7 @@ void CONTACT::SmoothingStrategy::MortarCoupling(
   MT_g_ = LINALG::CreateVector(*MT_gsdofrowmap_, true);
 
   // assemble D- and M-matrix on all interfaces
-  for (int i = 0; i < (int) minterface_.size(); ++i)
+  for (int i = 0; i < (int)minterface_.size(); ++i)
     minterface_[i]->AssembleDM(*MT_dmatrix_, *MT_mmatrix_);
 
   // FillComplete() global Mortar matrices
@@ -1092,11 +1039,9 @@ void CONTACT::SmoothingStrategy::MortarCoupling(
   Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*MT_gmdofrowmap_, true);
   AssembleCoords("slave", true, xs);
   AssembleCoords("master", true, xm);
-  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(
-      new Epetra_Vector(*MT_gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
   MT_dmatrix_->Multiply(false, *xs, *Dxs);
-  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(
-      new Epetra_Vector(*MT_gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*MT_gsdofrowmap_));
   MT_mmatrix_->Multiply(false, *xm, *Mxm);
   MT_g_->Update(1.0, *Dxs, 1.0);
   MT_g_->Update(-1.0, *Mxm, 1.0);
@@ -1108,8 +1053,8 @@ void CONTACT::SmoothingStrategy::MortarCoupling(
 /*----------------------------------------------------------------------*
  | create vector with coords                                 farah 01/15|
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::AssembleCoords(const std::string& sidename,
-    bool ref, Teuchos::RCP<Epetra_Vector> vec)
+void CONTACT::SmoothingStrategy::AssembleCoords(
+    const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec)
 {
   // NOTE:
   // An alternative way of doing this would be to loop over
@@ -1129,21 +1074,23 @@ void CONTACT::SmoothingStrategy::AssembleCoords(const std::string& sidename,
     dserror("ERROR: Unknown sidename");
 
   // loop over all row nodes of this side (at the global level)
-  for (int j = 0; j < sidemap->NumMyElements(); ++j) {
+  for (int j = 0; j < sidemap->NumMyElements(); ++j)
+  {
     int gid = sidemap->GID(j);
 
     // find this node in interface discretizations
     bool found = false;
     DRT::Node* node = NULL;
-    for (int k = 0; k < (int) minterface_.size(); ++k) {
+    for (int k = 0; k < (int)minterface_.size(); ++k)
+    {
       found = minterface_[k]->Discret().HaveGlobalNode(gid);
-      if (found) {
+      if (found)
+      {
         node = minterface_[k]->Discret().gNode(gid);
         break;
       }
     }
-    if (!node)
-      dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
     // prepare assembly
@@ -1151,7 +1098,8 @@ void CONTACT::SmoothingStrategy::AssembleCoords(const std::string& sidename,
     std::vector<int> lm(Dim());
     std::vector<int> lmowner(Dim());
 
-    for (int k = 0; k < Dim(); ++k) {
+    for (int k = 0; k < Dim(); ++k)
+    {
       // reference (true) or current (false) configuration
       if (ref)
         val[k] = mtnode->X()[k];
@@ -1176,14 +1124,13 @@ void CONTACT::SmoothingStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
-    return;
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
   // shape function and system types
-  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+  INPAR::MORTAR::ShapeFcn shapefcn =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+  INPAR::CONTACT::SystemType systype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
@@ -1195,8 +1142,7 @@ void CONTACT::SmoothingStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     dserror("ERROR: Condensed system not implemented!");
 
     // double-check if this is a dual LM system
-    if (shapefcn != INPAR::MORTAR::shape_dual
-        && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+    if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
       dserror("Condensation only for dual LM");
   }
 
@@ -1224,19 +1170,18 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
 {
   // get out gof here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
-  bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
+  bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
   if (!semismooth)
   {
     // loop over all interfaces
-    for (int i = 0; i < (int) interface_.size(); ++i)
+    for (int i = 0; i < (int)interface_.size(); ++i)
     {
       // loop over all slave nodes on the current interface
-      for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+      for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // The nested active set strategy cannot deal with the case of
@@ -1248,16 +1193,15 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
         // updates the active set after EACH Newton step, see below, and thus
         // would always set the corresponding nodes to INACTIVE.)
         if (cnode->Active() && !cnode->HasSegment())
-          dserror("ERROR: Active node %i without any segment/cell attached",
-              cnode->Id());
+          dserror("ERROR: Active node %i without any segment/cell attached", cnode->Id());
       }
     }
     return;
   }
 
   // get input parameter ftype
-  INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // read weighting factor cn
   // (this is necessary in semi-smooth Newton case, as the search for the
@@ -1277,17 +1221,17 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
   activesetconv_ = true;
 
   // loop over all interfaces
-  for (int i = 0; i < (int) interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    // if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n
+    // interfaces!");
 
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node)
-        dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
 
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
@@ -1297,7 +1241,8 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
       double nzold = 0.0;
-      for (int k = 0; k < 3; ++k) {
+      for (int k = 0; k < 3; ++k)
+      {
         nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
         nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
@@ -1311,66 +1256,63 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
       std::vector<double> tjump(Dim() - 1, 0);
       double euclidean = 0.0;
 
-      if (friction_) {
+      if (friction_)
+      {
         // static cast
         FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute tangential parts and of Lagrange multiplier and incremental jumps
-        for (int i = 0; i < Dim(); ++i) {
+        for (int i = 0; i < Dim(); ++i)
+        {
           tz[0] += frinode->CoData().txi()[i] * frinode->MoData().lm()[i];
-          if (Dim() == 3)
-            tz[1] += frinode->CoData().teta()[i] * frinode->MoData().lm()[i];
+          if (Dim() == 3) tz[1] += frinode->CoData().teta()[i] * frinode->MoData().lm()[i];
 
-          if (DRT::INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR")
-              == false) {
-            tjump[0] += frinode->CoData().txi()[i]
-                                                * frinode->FriData().jump()[i];
-            if (Dim() == 3)
-              tjump[1] += frinode->CoData().teta()[i]
-                                                   * frinode->FriData().jump()[i];
+          if (DRT::INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR") == false)
+          {
+            tjump[0] += frinode->CoData().txi()[i] * frinode->FriData().jump()[i];
+            if (Dim() == 3) tjump[1] += frinode->CoData().teta()[i] * frinode->FriData().jump()[i];
           }
         }
 
-        if (DRT::INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR") == true) {
+        if (DRT::INPUT::IntegralValue<int>(Params(), "GP_SLIP_INCR") == true)
+        {
           tjump[0] = frinode->FriData().jump_var()[0];
-          if (Dim() == 3)
-            tjump[1] = frinode->FriData().jump_var()[1];
+          if (Dim() == 3) tjump[1] = frinode->FriData().jump_var()[1];
         }
 
         // evaluate euclidean norm |tz+ct.tjump|
         std::vector<double> sum(Dim() - 1, 0);
         sum[0] = tz[0] + ct * tjump[0];
-        if (Dim() == 3)
-          sum[1] = tz[1] + ct * tjump[1];
-        if (Dim() == 2)
-          euclidean = abs(sum[0]);
-        if (Dim() == 3)
-          euclidean = sqrt(sum[0] * sum[0] + sum[1] * sum[1]);
+        if (Dim() == 3) sum[1] = tz[1] + ct * tjump[1];
+        if (Dim() == 2) euclidean = abs(sum[0]);
+        if (Dim() == 3) euclidean = sqrt(sum[0] * sum[0] + sum[1] * sum[1]);
       }
 
       // adhesion
       double adhbound = 0.0;
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(Params(),
-          "ADHESION") == INPAR::CONTACT::adhesion_bound)
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(Params(), "ADHESION") ==
+          INPAR::CONTACT::adhesion_bound)
         adhbound = interface_[i]->IParams().get<double>("ADHESION_BOUND");
 
       // check nodes of inactive set *************************************
       if (cnode->Active() == false)
       {
         // check for fulfilment of contact condition
-        //if (abs(nz) > 1e-8)
+        // if (abs(nz) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
         //       <<  "for node ID: " << cnode->Id() << std::endl;
 
         // check for penetration and/or tensile contact forces
-        if (nz - cn * wgap > 0) // no averaging of Lagrange multipliers
-          //if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
+        if (nz - cn * wgap >
+            0)  // no averaging of Lagrange multipliers
+                // if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
         {
           cnode->Active() = true;
           activesetconv_ = false;
 
           // friction
-          if (friction_) {
+          if (friction_)
+          {
             // nodes coming into contact
             dynamic_cast<FriNode*>(cnode)->FriData().Slip() = true;
           }
@@ -1381,30 +1323,31 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
       else
       {
         // check for fulfillment of contact condition
-        //if (abs(wgap) > 1e-8)
+        // if (abs(wgap) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
         //       << "for node ID: " << cnode->Id() << std::endl;
 
-        //adhesion modification
+        // adhesion modification
         nz += adhbound;
 
         // check for tensile contact forces and/or penetration
-        if (nz - cn * wgap <= 0) // no averaging of Lagrange multipliers
-          //if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
+        if (nz - cn * wgap <=
+            0)  // no averaging of Lagrange multipliers
+                // if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
         {
           cnode->Active() = false;
           activesetconv_ = false;
 
           // friction
-          if (friction_)
-            dynamic_cast<FriNode*>(cnode)->FriData().Slip() = false;
+          if (friction_) dynamic_cast<FriNode*>(cnode)->FriData().Slip() = false;
         }
 
         // only do something for friction
         else
         {
           // friction tresca
-          if (ftype == INPAR::CONTACT::friction_tresca) {
+          if (ftype == INPAR::CONTACT::friction_tresca)
+          {
             FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
@@ -1436,7 +1379,7 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
                 activesetconv_ = false;
               }
             }
-          } // if (fytpe=="tresca")
+          }  // if (fytpe=="tresca")
 
           // friction coulomb
           if (ftype == INPAR::CONTACT::friction_coulomb)
@@ -1453,26 +1396,30 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
               {
               }
               // do nothing (stick was correct)
-              else {
+              else
+              {
                 frinode->FriData().Slip() = true;
                 activesetconv_ = false;
               }
-            } else {
+            }
+            else
+            {
               // check (euclidean)-frbound > 0
               if (euclidean - frcoeff * (nz - cn * wgap) > -1e-10)
               {
               }
               // do nothing (slip was correct)
-              else {
+              else
+              {
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
               }
             }
-          } // if (ftype == INPAR::CONTACT::friction_coulomb)
-        } // if (nz - cn*wgap <= 0)
-      } // if (cnode->Active()==false)
-    } // loop over all slave nodes
-  } // loop over all interfaces
+          }  // if (ftype == INPAR::CONTACT::friction_coulomb)
+        }    // if (nz - cn*wgap <= 0)
+      }      // if (cnode->Active()==false)
+    }        // loop over all slave nodes
+  }          // loop over all interfaces
 
   // broadcast convergence status among processors
   int convcheck = 0;
@@ -1481,7 +1428,8 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
 
   // active set is only converged, if converged on all procs
   // if not, increase no. of active set steps too
-  if (convcheck != Comm().NumProc()) {
+  if (convcheck != Comm().NumProc())
+  {
     activesetconv_ = false;
     activesetsteps_ += 1;
   }
@@ -1490,12 +1438,9 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
   activesetssconv_ = activesetconv_;
 
   // update zig-zagging history (shift by one)
-  if (zigzagtwo_ != Teuchos::null)
-    zigzagthree_ = Teuchos::rcp(new Epetra_Map(*zigzagtwo_));
-  if (zigzagone_ != Teuchos::null)
-    zigzagtwo_ = Teuchos::rcp(new Epetra_Map(*zigzagone_));
-  if (gactivenodes_ != Teuchos::null)
-    zigzagone_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
+  if (zigzagtwo_ != Teuchos::null) zigzagthree_ = Teuchos::rcp(new Epetra_Map(*zigzagtwo_));
+  if (zigzagone_ != Teuchos::null) zigzagtwo_ = Teuchos::rcp(new Epetra_Map(*zigzagone_));
+  if (gactivenodes_ != Teuchos::null) zigzagone_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
 
   // (re)setup active global Epetra_Maps
   gactivenodes_ = Teuchos::null;
@@ -1508,24 +1453,18 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
-  for (int i = 0; i < (int) interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
     interface_[i]->BuildActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,
-        interface_[i]->ActiveNodes(), false);
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(),
-        false);
-    gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(),
-        false);
-    gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(),
-        false);
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+    gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
+    gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
 
     if (friction_)
     {
-      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(),
-          false);
-      gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(),
-          false);
+      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+      gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
       gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
     }
   }
@@ -1551,41 +1490,51 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
   // *********************************************************************
   int zigzagging = 0;
   // FIXGIT: For friction zig-zagging is not eliminated
-  if (ftype != INPAR::CONTACT::friction_tresca
-      && ftype != INPAR::CONTACT::friction_coulomb) {
+  if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
+  {
     // frictionless contact
-    if (ActiveSetSteps() > 2) {
-      if (zigzagtwo_ != Teuchos::null) {
-        if (zigzagtwo_->SameAs(*gactivenodes_)) {
+    if (ActiveSetSteps() > 2)
+    {
+      if (zigzagtwo_ != Teuchos::null)
+      {
+        if (zigzagtwo_->SameAs(*gactivenodes_))
+        {
           // detect zig-zagging
           zigzagging = 1;
         }
       }
 
-      if (zigzagthree_ != Teuchos::null) {
-        if (zigzagthree_->SameAs(*gactivenodes_)) {
+      if (zigzagthree_ != Teuchos::null)
+      {
+        if (zigzagthree_->SameAs(*gactivenodes_))
+        {
           // detect zig-zagging
           zigzagging = 2;
         }
       }
     }
-  } // if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
+  }  // if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
 
   // output to screen
-  if (Comm().MyPID() == 0) {
-    if (zigzagging == 1) {
-      std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................."
-          << std::endl;
-    } else if (zigzagging == 2) {
-      std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................"
-          << std::endl;
-    } else {
+  if (Comm().MyPID() == 0)
+  {
+    if (zigzagging == 1)
+    {
+      std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << std::endl;
+    }
+    else if (zigzagging == 2)
+    {
+      std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << std::endl;
+    }
+    else
+    {
       // do nothing, no zig-zagging
     }
   }
 
   // reset zig-zagging history
-  if (activesetconv_ == true) {
+  if (activesetconv_ == true)
+  {
     zigzagone_ = Teuchos::null;
     zigzagtwo_ = Teuchos::null;
     zigzagthree_ = Teuchos::null;
@@ -1593,14 +1542,16 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
 
   // output of active set status to screen
   if (Comm().MyPID() == 0 && activesetconv_ == false)
-    std::cout << "ACTIVE CONTACT SET HAS CHANGED... CHANGE No. "
-    << ActiveSetSteps() - 1 << std::endl;
+    std::cout << "ACTIVE CONTACT SET HAS CHANGED... CHANGE No. " << ActiveSetSteps() - 1
+              << std::endl;
 
   // update flag for global contact status
-  if (gactivenodes_->NumGlobalElements()) {
+  if (gactivenodes_->NumGlobalElements())
+  {
     isincontact_ = true;
     wasincontact_ = true;
-  } else
+  }
+  else
     isincontact_ = false;
 
   return;
@@ -1611,8 +1562,7 @@ void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
  |  UpdateDisplacementsAndLMincrements                       farah 01/15|
  *----------------------------------------------------------------------*/
 void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
-    Teuchos::RCP<Epetra_Vector> sold,
-    Teuchos::RCP<Epetra_Vector> blocksol)
+    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
 {
   if (stype_ == INPAR::CONTACT::solution_penalty)
   {
@@ -1620,20 +1570,21 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
     // extract results only for displacement and LM-meshtying increments
     //**********************************************************************
 
-    //Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,glmdofrowmap_,false);
-    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),MT_glmdofrowmap_,false);
+    // Teuchos::RCP<Epetra_Map> MTco_mergedmap =
+    // LINALG::MergeMap(MT_glmdofrowmap_,glmdofrowmap_,false);
+    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(), MT_glmdofrowmap_, false);
 
     Teuchos::RCP<Epetra_Vector> MT_sollm = Teuchos::rcp(new Epetra_Vector(*MT_glmdofrowmap_));
 
-    LINALG::MapExtractor mapext(*mergedmap,ProblemDofs(),MT_glmdofrowmap_);
-    mapext.ExtractCondVector(blocksol,sold);
-    mapext.ExtractOtherVector(blocksol,MT_sollm);
+    LINALG::MapExtractor mapext(*mergedmap, ProblemDofs(), MT_glmdofrowmap_);
+    mapext.ExtractCondVector(blocksol, sold);
+    mapext.ExtractOtherVector(blocksol, MT_sollm);
 
     MT_sollm->ReplaceMap(*MT_gsdofrowmap_);
 
     if (IsSelfContact())
-      // for self contact, slave and master sets may have changed,
-      // thus we have to reinitialize the LM vector map
+    // for self contact, slave and master sets may have changed,
+    // thus we have to reinitialize the LM vector map
     {
       //      zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
       //      LINALG::Export(*z_, *zincr_);                     // change the map of z_
@@ -1644,10 +1595,8 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
     }
     else
     {
-
       MT_zincr_->Update(1.0, *MT_sollm, 0.0);
       MT_z_->Update(1.0, *MT_zincr_, 1.0);
-
     }
   }
 
@@ -1657,38 +1606,40 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
     // extract results for displacement and LM (from meshtying and contact) increments
     //**********************************************************************
 
-    Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,LMDoFRowMapPtr(true),false);
-    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),LMDoFRowMapPtr(true),false);
-    mergedmap = LINALG::MergeMap(mergedmap,MT_glmdofrowmap_,false);
+    Teuchos::RCP<Epetra_Map> MTco_mergedmap =
+        LINALG::MergeMap(MT_glmdofrowmap_, LMDoFRowMapPtr(true), false);
+    Teuchos::RCP<Epetra_Map> mergedmap =
+        LINALG::MergeMap(ProblemDofs(), LMDoFRowMapPtr(true), false);
+    mergedmap = LINALG::MergeMap(mergedmap, MT_glmdofrowmap_, false);
 
     Teuchos::RCP<Epetra_Vector> MTco_sollm = Teuchos::rcp(new Epetra_Vector(*MTco_mergedmap));
     Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*LMDoFRowMapPtr(true)));
     Teuchos::RCP<Epetra_Vector> MT_sollm = Teuchos::rcp(new Epetra_Vector(*MT_glmdofrowmap_));
 
-    LINALG::MapExtractor mapext(*mergedmap,ProblemDofs(),MTco_mergedmap);
-    mapext.ExtractCondVector(blocksol,sold);
-    mapext.ExtractOtherVector(blocksol,MTco_sollm);
+    LINALG::MapExtractor mapext(*mergedmap, ProblemDofs(), MTco_mergedmap);
+    mapext.ExtractCondVector(blocksol, sold);
+    mapext.ExtractOtherVector(blocksol, MTco_sollm);
 
     //**********************************************************************
     // extract results for Contact_LM and Meshtying_lm increments
     //**********************************************************************
 
-    LINALG::MapExtractor MTco_mapext(*MTco_mergedmap,LMDoFRowMapPtr(true),MT_glmdofrowmap_);
-    MTco_mapext.ExtractCondVector(MTco_sollm,sollm);
-    MTco_mapext.ExtractOtherVector(MTco_sollm,MT_sollm);
+    LINALG::MapExtractor MTco_mapext(*MTco_mergedmap, LMDoFRowMapPtr(true), MT_glmdofrowmap_);
+    MTco_mapext.ExtractCondVector(MTco_sollm, sollm);
+    MTco_mapext.ExtractOtherVector(MTco_sollm, MT_sollm);
 
     sollm->ReplaceMap(*gsdofrowmap_);
     MT_sollm->ReplaceMap(*MT_gsdofrowmap_);
 
     if (IsSelfContact())
-      // for self contact, slave and master sets may have changed,
-      // thus we have to reinitialize the LM vector map
+    // for self contact, slave and master sets may have changed,
+    // thus we have to reinitialize the LM vector map
     {
       zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
-      LINALG::Export(*z_, *zincr_);                     // change the map of z_
+      LINALG::Export(*z_, *zincr_);  // change the map of z_
       z_ = Teuchos::rcp(new Epetra_Vector(*zincr_));
-      zincr_->Update(1.0, *sollm, 0.0);                 // save sollm in zincr_
-      z_->Update(1.0, *zincr_, 1.0);                    // update z_
+      zincr_->Update(1.0, *sollm, 0.0);  // save sollm in zincr_
+      z_->Update(1.0, *zincr_, 1.0);     // update z_
     }
     else
     {
@@ -1697,7 +1648,6 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
 
       MT_zincr_->Update(1.0, *MT_sollm, 0.0);
       MT_z_->Update(1.0, *MT_zincr_, 1.0);
-
     }
   }
   //-------------
@@ -1711,53 +1661,53 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
  *----------------------------------------------------------------------*/
 void CONTACT::SmoothingStrategy::EvalConstrRHS()
 {
-  if (stype_ == INPAR::CONTACT::solution_penalty)
-    return;
+  if (stype_ == INPAR::CONTACT::solution_penalty) return;
 
   // get system type
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-  if (systype == INPAR::CONTACT::system_condensed)
-    return;
+  INPAR::CONTACT::SystemType systype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
+  if (systype == INPAR::CONTACT::system_condensed) return;
 
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
     // (re)setup the vector
-    constrrhs_          = Teuchos::null;
+    constrrhs_ = Teuchos::null;
     return;
   }
 
   // initialize constraint r.h.s. (still with wrong map)
-  Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+  Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
 
   // We solve for the incremental Lagrange multiplier dz_. Hence,
   // we can keep the contact force terms on the right-hand side!
   //
-  // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
+  // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) *
+  // z^(i)_(n+1)
 
   // export weighted gap vector
   Teuchos::RCP<Epetra_Vector> gact;
-  if (constr_direction_==INPAR::CONTACT::constr_xyz)
+  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
   {
-    gact = LINALG::CreateVector(*gactivedofs_,true);
+    gact = LINALG::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      LINALG::Export(*g_,*gact);
+      LINALG::Export(*g_, *gact);
     }
   }
   else
   {
-    gact = LINALG::CreateVector(*gactivenodes_,true);
+    gact = LINALG::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      LINALG::Export(*g_,*gact);
+      LINALG::Export(*g_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
 
   Teuchos::RCP<Epetra_Vector> gact_exp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  LINALG::Export(*gact,*gact_exp);
+  LINALG::Export(*gact, *gact_exp);
 
-  constrrhs->Update(-1.0,*gact_exp,1.0);
+  constrrhs->Update(-1.0, *gact_exp, 1.0);
 
   // export inactive rhs
   Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1775,7 +1725,6 @@ void CONTACT::SmoothingStrategy::EvalConstrRHS()
 
     // build constraint rhs (2)
     constrrhs->Update(1.0, *tangrhs_exp, 1.0);
-
   }
   // *** CASE 2: FRICTIONAL CONTACT *******************************************************
   else
@@ -1785,7 +1734,6 @@ void CONTACT::SmoothingStrategy::EvalConstrRHS()
 
   constrrhs->ReplaceMap(LMDoFRowMap(true));
 
-  constrrhs_ = constrrhs;                                 // set constraint rhs vector
+  constrrhs_ = constrrhs;  // set constraint rhs vector
   return;
 }
-

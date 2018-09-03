@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file drt_discret_xwall.cpp
-\brief a class to manage an enhanced discretization including varying number of dofs per node on a fluid discretization for xwall
+\brief a class to manage an enhanced discretization including varying number of dofs per node on a
+fluid discretization for xwall
 
 <pre>
 \level 2
@@ -22,7 +23,7 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                        bk 10/14|
  *----------------------------------------------------------------------*/
-DRT::DiscretizationXWall::DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
-  :
-  DiscretizationFaces(name, comm) // use base class constructor
-{};
+DRT::DiscretizationXWall::DiscretizationXWall(
+    const std::string name, Teuchos::RCP<Epetra_Comm> comm)
+    : DiscretizationFaces(name, comm)  // use base class constructor
+      {};

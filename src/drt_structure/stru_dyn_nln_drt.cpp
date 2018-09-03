@@ -37,7 +37,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
-//periodic boundary conditions
+// periodic boundary conditions
 #include "../drt_lib/drt_periodicbc.H"
 
 /*----------------------------------------------------------------------*
@@ -47,23 +47,23 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
-  case INPAR::STR::dyna_statics:
-  case INPAR::STR::dyna_genalpha:
-  case INPAR::STR::dyna_genalpha_liegroup:
-  case INPAR::STR::dyna_onesteptheta:
-  case INPAR::STR::dyna_gemm:
-  case INPAR::STR::dyna_expleuler:
-  case INPAR::STR::dyna_centrdiff:
-  case INPAR::STR::dyna_ab2:
-  case INPAR::STR::dyna_euma:
-  case INPAR::STR::dyna_euimsto:
-    dyn_nlnstructural_drt();
-    break;
-  default:
-    dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
-    break;
+    case INPAR::STR::dyna_statics:
+    case INPAR::STR::dyna_genalpha:
+    case INPAR::STR::dyna_genalpha_liegroup:
+    case INPAR::STR::dyna_onesteptheta:
+    case INPAR::STR::dyna_gemm:
+    case INPAR::STR::dyna_expleuler:
+    case INPAR::STR::dyna_centrdiff:
+    case INPAR::STR::dyna_ab2:
+    case INPAR::STR::dyna_euma:
+    case INPAR::STR::dyna_euimsto:
+      dyn_nlnstructural_drt();
+      break;
+    default:
+      dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+      break;
   }
 
   return;
@@ -95,7 +95,7 @@ void dyn_nlnstructural_drt()
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const enum INPAR::STR::IntegrationStrategy intstrat =
-        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+      DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
@@ -104,8 +104,8 @@ void dyn_nlnstructural_drt()
     case INPAR::STR::int_old:
     {
       Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
-          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
-              const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+              sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
       structadapter = adapterbase_old_ptr->StructureField();
       structadapter->Setup();
       break;
@@ -132,18 +132,18 @@ void dyn_nlnstructural_drt()
   // write output at beginnning of calc
   else
   {
-    //Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
-    //Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-    //output->NewStep(0, 0.0);
-    //Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*(actdis->DofRowMap())));
-    //output->WriteVector("displacement",zeros);
-    //output->WriteElementData();
+    // Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
+    // Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+    // output->NewStep(0, 0.0);
+    // Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*(actdis->DofRowMap())));
+    // output->WriteVector("displacement",zeros);
+    // output->WriteElementData();
   }
 
 #if 1
   // run time integration
   structadapter->Integrate();
-#else // this is a bone optimization hack - do not touch
+#else  // this is a bone optimization hack - do not touch
   structadaptor->PrepareTimeStep();
   structadaptor->Solve();
   structadaptor->Update();
@@ -163,11 +163,11 @@ void dyn_nlnstructural_drt()
   DRT::Problem::Instance()->TestAll(structadapter->DofRowMap()->Comm());
 
   // print monitoring of time consumption
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structdis->Comm());
+  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+      COMM_UTILS::toTeuchosComm<int>(structdis->Comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
   // time to go home...
   return;
 
-} // end of dyn_nlnstructural_drt()
-
+}  // end of dyn_nlnstructural_drt()

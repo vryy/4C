@@ -16,40 +16,39 @@
 
 #include "str_expl_generic.H"
 
-namespace STR {
-namespace EXPLICIT {
-  class AdamsBashforth2 : public Generic
+namespace STR
+{
+  namespace EXPLICIT
   {
-  public:
-    //! constructor
-    AdamsBashforth2() {};
+    class AdamsBashforth2 : public Generic
+    {
+     public:
+      //! constructor
+      AdamsBashforth2(){};
 
-    //! destructor
-    virtual ~AdamsBashforth2(){};
+      //! destructor
+      virtual ~AdamsBashforth2(){};
 
-    //! Setup class variables (derived)
-    virtual void Setup() {};
+      //! Setup class variables (derived)
+      virtual void Setup(){};
 
-    //! Set state variables (derived)
-    virtual void SetState(const Epetra_Vector& x) {};
+      //! Set state variables (derived)
+      virtual void SetState(const Epetra_Vector& x){};
 
-    //! Apply the right hand side only (derived)
-    virtual bool ApplyForce(
-        const Epetra_Vector& x,
-        Epetra_Vector& f)
-    { return false; };
+      //! Apply the right hand side only (derived)
+      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) { return false; };
 
-    //! return integration factor (derived)
-    virtual double GetIntParam() const { return -1.0; }
+      //! return integration factor (derived)
+      virtual double GetIntParam() const { return -1.0; }
 
-    //! Update configuration after time step (derived)
-    virtual void UpdateStepState() {};
+      //! Update configuration after time step (derived)
+      virtual void UpdateStepState(){};
 
-    //! Update everything on element level after time step and after output (derived)
-    virtual void UpdateStepElement() {};
-  };
-} // namespace EXPLICIT
-} // namespace STR
+      //! Update everything on element level after time step and after output (derived)
+      virtual void UpdateStepElement(){};
+    };
+  }  // namespace EXPLICIT
+}  // namespace STR
 
 
 

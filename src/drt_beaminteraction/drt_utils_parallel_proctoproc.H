@@ -19,19 +19,18 @@
 
 namespace DRT
 {
-/// forward declarations
-class Discretization;
+  /// forward declarations
+  class Discretization;
 
-/// collection of useful and important but less central stuff
-namespace UTILS
-{
-  //! send data to rank map key and recv data
-void ISendReceiveAny(
-    Teuchos::RCP<DRT::Discretization> const& discret,
-    std::map< int, std::vector<std::pair< int, std::vector<int> > > > const& toranktosenddata,
-    std::vector<std::pair< int, std::vector<int> > >& recvdata);
+  /// collection of useful and important but less central stuff
+  namespace UTILS
+  {
+    //! send data to rank map key and recv data
+    void ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discret,
+        std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
+        std::vector<std::pair<int, std::vector<int>>>& recvdata);
 
-}
-}
+  }  // namespace UTILS
+}  // namespace DRT
 
 #endif

@@ -31,15 +31,14 @@
  *  given displacement field                                             |
  *----------------------------------------------------------------------*/
 void DRT::UTILS::UpdateMaterialConfigWithDispVector(
-    Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<const Epetra_Vector> disp)
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
 {
   const int numnode = (dis->NodeColMap())->NumMyElements();
 
-  //Create Vector which holds all col-displacments of processor
+  // Create Vector which holds all col-displacments of processor
   Teuchos::RCP<Epetra_Vector> coldisp = Teuchos::rcp(new Epetra_Vector(*(dis->DofColMap())));
 
-  //Export row-displacments to col-displacements
+  // Export row-displacments to col-displacements
   LINALG::Export(*disp, *coldisp);
 
   // determine number of space dimensions
@@ -51,18 +50,19 @@ void DRT::UTILS::UpdateMaterialConfigWithDispVector(
     // get current node
     DRT::Node* mynode = dis->lColNode(index);
 
-    std::vector<int> globaldofs = dis->Dof(0,mynode);
+    std::vector<int> globaldofs = dis->Dof(0, mynode);
     // Since ChangePos requires vector of length 3, we use hardcoded length here
     // init with zero just to be sure
-    std::vector<double> nvector(3,0.0);
+    std::vector<double> nvector(3, 0.0);
 
     // numdim can be 2 or 3
-    for (int i=0; i<numdim; ++i)
+    for (int i = 0; i < numdim; ++i)
     {
       const int lid = coldisp->Map().LID(globaldofs[i]);
 
-      if (lid<0)
-        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",coldisp->Comm().MyPID(),globaldofs[i]);
+      if (lid < 0)
+        dserror(
+            "Proc %d: Cannot find gid=%d in Epetra_Vector", coldisp->Comm().MyPID(), globaldofs[i]);
       nvector[i] += (*coldisp)[lid];
     }
     // changepos takes vector with length = 3

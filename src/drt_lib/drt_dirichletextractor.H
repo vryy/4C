@@ -24,13 +24,12 @@ namespace DRT
 
 namespace DRT
 {
-
   /// MapExtractor that covers all Dirichlet dofs
   class DirichletExtractor : public LINALG::MultiMapExtractor
   {
-  public:
-
-    enum {
+   public:
+    enum
+    {
       cond_nondirichlet = 0,
       cond_dirichlet = 1
     };
@@ -41,11 +40,11 @@ namespace DRT
     void Setup(const DRT::Discretization& dis);
 
     /// put zero to all Dirichlet values
-    void ZeroDirichlets( Teuchos::RCP<Epetra_Vector> residual ) const;
+    void ZeroDirichlets(Teuchos::RCP<Epetra_Vector> residual) const;
 
-    MAP_EXTRACTOR_VECTOR_METHODS( NonDirichlet, cond_nondirichlet )
-    MAP_EXTRACTOR_VECTOR_METHODS( Dirichlet   , cond_dirichlet )
+    MAP_EXTRACTOR_VECTOR_METHODS(NonDirichlet, cond_nondirichlet)
+    MAP_EXTRACTOR_VECTOR_METHODS(Dirichlet, cond_dirichlet)
   };
-}
+}  // namespace DRT
 
 #endif

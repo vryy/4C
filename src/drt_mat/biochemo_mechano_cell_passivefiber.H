@@ -19,23 +19,18 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
-  /*! \brief Material parameters for biochemo-mechano cell cytoskeleton model.
-   *
-   * \date 01/2017
-   * \author rauch (rauch@lnm.mw.tum.de)
-  */
+    /*! \brief Material parameters for biochemo-mechano cell cytoskeleton model.
+     *
+     * \date 01/2017
+     * \author rauch (rauch@lnm.mw.tum.de)
+     */
     class BioChemoMechanoCellPassiveFiber : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      BioChemoMechanoCellPassiveFiber(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      BioChemoMechanoCellPassiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~BioChemoMechanoCellPassiveFiber() { ; }
@@ -54,32 +49,30 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
     };  // class BioChemoMechanoCellPassiveFiber
-  }  // namespace PAR
+  }     // namespace PAR
 
 
   /*! \brief Type BioChemoMechanoCellPassiveFiberType.
    *
    * \date 01/2017
    * \author rauch (rauch@lnm.mw.tum.de)
-  */
+   */
   class BioChemoMechanoCellPassiveFiberType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     /// return material name
     std::string Name() const { return "BioChemoMechanoCellPassiveFiberType"; }
 
     /// return the instance
-    static BioChemoMechanoCellPassiveFiberType & Instance() { return instance_; };
+    static BioChemoMechanoCellPassiveFiberType& Instance() { return instance_; };
 
     /// create ParObject
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     /// static instance of passive fiber type
     static BioChemoMechanoCellPassiveFiberType instance_;
-  }; //class PassiveFiberType
+  };  // class PassiveFiberType
 
 
   /*! \brief Implementation of Biochemo-Mechano Coupled Cytoskeleton Formation.
@@ -92,11 +85,10 @@ namespace MAT
    *
    * \date 01/2017
    * \author rauch (rauch@lnm.mw.tum.de)
-  */
+   */
   class BioChemoMechanoCellPassiveFiber : public So3Material
   {
-  public:
-
+   public:
     /// construct empty material object
     BioChemoMechanoCellPassiveFiber();
 
@@ -111,7 +103,10 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return BioChemoMechanoCellPassiveFiberType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return BioChemoMechanoCellPassiveFiberType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -144,26 +139,32 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_biochemomechano_passive; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_biochemomechano_passive;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-    dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new BioChemoMechanoCellPassiveFiber( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new BioChemoMechanoCellPassiveFiber(*this));
+    }
 
     /// check if history variables are already initialized
-    bool Initialized() const
-    {
-      return ( isinit_ );
-    }
+    bool Initialized() const { return (isinit_); }
 
     /// Setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse
+    /// analysis)
     virtual void ResetAll(int numgp);
 
     /// Update
@@ -173,38 +174,37 @@ namespace MAT
     virtual void ResetStep();
 
     /// Evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
-                          const LINALG::Matrix<6,1>* glstrain, ///< green lagrange strain
-                          Teuchos::ParameterList& params,      ///< parameter list
-                          LINALG::Matrix<6,1>* stress,         ///< 2nd PK-stress
-                          LINALG::Matrix<6,6>* cmat,           ///< material stiffness matrix
-                          const int eleGID                     ///< global id of element
-                          );
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,                  ///< green lagrange strain
+        Teuchos::ParameterList& params,                        ///< parameter list
+        LINALG::Matrix<6, 1>* stress,                          ///< 2nd PK-stress
+        LINALG::Matrix<6, 6>* cmat,                            ///< material stiffness matrix
+        const int eleGID                                       ///< global id of element
+    );
 
     /// Return Viscosity
-    virtual double Viscosity() const {return params_->mu_;}
+    virtual double Viscosity() const { return params_->mu_; }
 
     /// Return Density
-    virtual double Density() const {return matelast_->Density();};
+    virtual double Density() const { return matelast_->Density(); };
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
     /// Return parameter of this material
-    MAT::PAR::BioChemoMechanoCellPassiveFiber* GetMaterialParams(){return params_;};
+    MAT::PAR::BioChemoMechanoCellPassiveFiber* GetMaterialParams() { return params_; };
 
-  private:
-
+   private:
     /// (current) deformation gradient
-     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > histdefgrdcurr_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> histdefgrdcurr_;
     /// deformation gradient of old timestep (last converged state)
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > histdefgrdlast_;
+    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> histdefgrdlast_;
 
     /// elastic material
     Teuchos::RCP<MAT::So3Material> matelast_;
@@ -215,79 +215,54 @@ namespace MAT
 
 
     /// Setup defgrd rate, rotation tensor, strain rate and rotation rate
-    void SetupRates(
-        LINALG::Matrix<3,3> defgrd,
-        LINALG::Matrix<3,3>& invdefgrd,
-        Teuchos::ParameterList& params,
-        LINALG::Matrix<3,3>& defgrdrate,
-        LINALG::Matrix<3,3>& R,
-        LINALG::Matrix<6,1>& strainrate,
-        const int& gp,
-        const double& dt
-    );
+    void SetupRates(LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3>& invdefgrd,
+        Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R,
+        LINALG::Matrix<6, 1>& strainrate, const int& gp, const double& dt);
 
     /// Convert spatial stress to material stress
-    void CauchytoPK2(
-        LINALG::Matrix<6,1>& Sactive,      ///< active material stress
-        LINALG::Matrix<3,3>& cauchystress, ///< cauchy stress in matrix notation
-        LINALG::Matrix<3,3> defgrd,        ///< deformation gradient
-        LINALG::Matrix<3,3>& invdefgrd,     ///< inverse deformation gradient
-        LINALG::Matrix<6,1>& sigma          ///< active spatial stress
-     );
+    void CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,  ///< active material stress
+        LINALG::Matrix<3, 3>& cauchystress,          ///< cauchy stress in matrix notation
+        LINALG::Matrix<3, 3> defgrd,                 ///< deformation gradient
+        LINALG::Matrix<3, 3>& invdefgrd,             ///< inverse deformation gradient
+        LINALG::Matrix<6, 1>& sigma                  ///< active spatial stress
+    );
 
     /// Setup 4-Tensor from 6x6 Voigt notation
-    void Setup4Tensor(
-        double FourTensor[3][3][3][3],
-        LINALG::Matrix<6,6>& VoigtMatrix
-    );
+    void Setup4Tensor(double FourTensor[3][3][3][3], LINALG::Matrix<6, 6>& VoigtMatrix);
 
     /// Set every tensor value to zero
     void Clear4Tensor(double FourTensor[3][3][3][3]);
 
     /// Multiply Matrix(3,3) * 4-Tensor
-    void MultMatrixFourTensor(
-        double FourTensorResult[3][3][3][3],
-        const LINALG::Matrix<3,3>& Matrix,
-        const double FourTensor[3][3][3][3],
-        const bool clearresulttensor = false
-    );
+    void MultMatrixFourTensor(double FourTensorResult[3][3][3][3],
+        const LINALG::Matrix<3, 3>& Matrix, const double FourTensor[3][3][3][3],
+        const bool clearresulttensor = false);
 
     /// Multiply Matrix(3,3) * 4-Tensor
-    void MultFourTensorMatrix(
-        double FourTensorResult[3][3][3][3],
-        LINALG::Matrix<3,3>& Matrix,
-        double FourTensor[3][3][3][3],
-        bool clearresulttensor = false
-    );
+    void MultFourTensorMatrix(double FourTensorResult[3][3][3][3], LINALG::Matrix<3, 3>& Matrix,
+        double FourTensor[3][3][3][3], bool clearresulttensor = false);
 
 
     /// Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
-    void Setup6x6VoigtMatrix(
-        LINALG::Matrix<6,6>& VoigtMatrix,
-        double FourTensor[3][3][3][3]
-    );
+    void Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& VoigtMatrix, double FourTensor[3][3][3][3]);
 
     /// Calculate root of a 3x3 matrix (symmetric or non-symmetric)
-    void MatrixRoot3x3(LINALG::Matrix<3,3>& MatrixInOut);
+    void MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut);
 
     /// Calculate derivative of the root of a symmetric 3x3 matrix
     void MatrixRootDerivativeSym3x3(
-        const LINALG::Matrix<3,3>& MatrixIn,
-        LINALG::Matrix<6,6>& MatrixRootDeriv);
+        const LINALG::Matrix<3, 3>& MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv);
 
     /// d sqrt(C)^{-1} / dC = -sqrt(C)^{-1}*(d sqrt(C)/dC)*sqrt(C)^{-1} =
     /// - MatrixRootInverse * MatrixRootDerivative * MatrixRootInverse
-    void MatrixInverseOfRootDerivative(
-        double MatrixRootDerivative[3][3][3][3],
-        const LINALG::Matrix<3,3>& MatrixRootInverse,
-        double Result[3][3][3][3]
-        );
+    void MatrixInverseOfRootDerivative(double MatrixRootDerivative[3][3][3][3],
+        const LINALG::Matrix<3, 3>& MatrixRootInverse, double Result[3][3][3][3]);
 
     /// print four tensor
     void PrintFourTensor(double FourTensor[3][3][3][3]);
 
-  }; // class BioChemoMechanoCellPassiveFiber
-  } // namespace MAT
+  };  // class BioChemoMechanoCellPassiveFiber
+}  // namespace MAT
 
 
 #endif /*BIOCHEMO_MECHANO_CELL_PASSIVEFIBER_H_*/

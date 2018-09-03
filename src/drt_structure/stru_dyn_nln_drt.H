@@ -21,4 +21,4 @@ void dyn_nlnstructural_drt();
 void caldyn_drt();
 
 
-#endif  /* #ifndef STRU_DYN_NLN_DRT_H */
+#endif /* #ifndef STRU_DYN_NLN_DRT_H */

@@ -47,18 +47,15 @@ namespace TIMINT
    * \author bborn
    * \date 07/08
    */
-  template <typename STATE> class TimIntMStepBase
+  template <typename STATE>
+  class TimIntMStepBase
   {
-
-  public:
-
+   public:
     //! @name Access functions
     //@{
 
     //! Access state object by time step index
-    STATE& operator[]
-    (
-      const int step  //!< inquiry step
+    STATE& operator[](const int step  //!< inquiry step
     )
     {
       if (not StepExists(step)) dserror("Step %d is not admissible", step);
@@ -66,23 +63,19 @@ namespace TIMINT
     }
 
     //! Access state object by time step index (read-only)
-    const STATE& operator[]
-    (
-      const int step  //!< inquiry step
-    ) const
+    const STATE& operator[](const int step  //!< inquiry step
+        ) const
     {
       if (not StepExists(step)) dserror("Step %d is not admissible", step);
       return state_[IndexByStep(step)];
     }
 
     //! Access state object by time step index and wrap into Teuchos::RCP
-    Teuchos::RCP<STATE> operator()
-    (
-      const int step  //!< inquiry step
+    Teuchos::RCP<STATE> operator()(const int step  //!< inquiry step
     )
     {
       if (not StepExists(step)) dserror("Step %d is not admissible", step);
-      return Teuchos::rcp<STATE>(&(state_[IndexByStep(step)]),false);
+      return Teuchos::rcp<STATE>(&(state_[IndexByStep(step)]), false);
     }
 
     //@}
@@ -91,43 +84,32 @@ namespace TIMINT
     //@{
 
     //! step index of most past and future steps
-    std::pair<int,int> GetSteps() { return std::make_pair(steppast_,stepfuture_); }
+    std::pair<int, int> GetSteps() { return std::make_pair(steppast_, stepfuture_); }
 
     //! Number of steps
-    int NumSteps() { return steps_;}
+    int NumSteps() { return steps_; }
     //@}
 
-  protected:
-
+   protected:
     //! @name Allocation
     //@{
 
     //! Dummy constructor
-    TimIntMStepBase()
-    : steppast_(0),
-      stepfuture_(0),
-      steps_(0),
-      state_()
-    {
-      return;
-    }
+    TimIntMStepBase() : steppast_(0), stepfuture_(0), steps_(0), state_() { return; }
 
     /*! Another dummy constructor which sets vector limits and its size
      *  but does not allocate anything
      */
-    TimIntMStepBase
-    (
-      const int steppast,  //!< lower index bound
-      const int stepfuture  //!< higher index bound, >= lower bound
-    )
-    : steppast_(steppast),
-      stepfuture_(stepfuture),
-      steps_(stepfuture>=steppast ? stepfuture-steppast+1 : 0),
-      state_()
+    TimIntMStepBase(const int steppast,  //!< lower index bound
+        const int stepfuture             //!< higher index bound, >= lower bound
+        )
+        : steppast_(steppast),
+          stepfuture_(stepfuture),
+          steps_(stepfuture >= steppast ? stepfuture - steppast + 1 : 0),
+          state_()
     {
       // verify a positive #steps_
-      if (steps_ <= 0)
-        dserror("Past step must be lower or equal to future step");
+      if (steps_ <= 0) dserror("Past step must be lower or equal to future step");
 
       return;
     }
@@ -138,61 +120,49 @@ namespace TIMINT
     //@{
 
     //! Check sanity prior resize
-    bool ResizeSane
-    (
-      const int steppast,  //!< lower index bound
-      const int stepfuture  //!< higher index bound, >= lower bound
+    bool ResizeSane(const int steppast,  //!< lower index bound
+        const int stepfuture             //!< higher index bound, >= lower bound
     )
     {
       bool sane = true;
 
       sane = sane and (steppast <= stepfuture);
-      if (not sane)
-        dserror("Past step must be lower than future step");
+      if (not sane) dserror("Past step must be lower than future step");
 
       sane = sane and (stepfuture == stepfuture_);
-      if (not sane)
-        dserror("Future step cannot be changed");
+      if (not sane) dserror("Future step cannot be changed");
 
       return sane;
     }
 
     //! Determine whether step lies in given bounds
-    bool StepExists
-    (
-      const int step  //!< inquired step
-    ) const
+    bool StepExists(const int step  //!< inquired step
+        ) const
     {
-      return ( (step >= steppast_) and (step <= stepfuture_) );
+      return ((step >= steppast_) and (step <= stepfuture_));
     }
 
     //! determine whether index lies in given bounds
-    bool IndexExists
-    (
-      const int index //!< inquired index
-    ) const
+    bool IndexExists(const int index  //!< inquired index
+        ) const
     {
-      return ( (index >= 0) and (index < (int) state_.size()) );
+      return ((index >= 0) and (index < (int)state_.size()));
     }
 
     //! Map step number to vector index
-    int StepByIndex
-    (
-      const int index  //!< vector index
+    int StepByIndex(const int index  //!< vector index
     )
     {
       return index + steppast_;
     }
 
     //! Map vector index to step
-    int IndexByStep
-    (
-      const int step  //!< step number
-    ) const
+    int IndexByStep(const int step  //!< step number
+        ) const
     {
       int index = step - steppast_;
       dsassert(IndexExists(index), "step is not permissible!");
-      return (unsigned) index;
+      return (unsigned)index;
     }
 
     //@}
@@ -208,7 +178,6 @@ namespace TIMINT
 
     //! Multi-step quantity, it's stored vectorially
     std::vector<STATE> state_;
-
   };
 
   /*====================================================================*/
@@ -217,31 +186,26 @@ namespace TIMINT
    *        simple type.
    *        This is going to be used with \c double and \c int
    */
-  template <typename STATE> class TimIntMStep
-  : public TimIntMStepBase<STATE>
+  template <typename STATE>
+  class TimIntMStep : public TimIntMStepBase<STATE>
   {
-
-  protected :
-
+   protected:
     //! template base class
     typedef TimIntMStepBase<STATE> MStepBase;
 
-  public :
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntMStep
-    (
-      const int steppast,  //!< lower index bound
-      const int stepfuture,  //!< higher index bound, >= lower bound
-      const STATE init  //!< initialise to init
-    )
-    : MStepBase(steppast, stepfuture)
+    TimIntMStep(const int steppast,  //!< lower index bound
+        const int stepfuture,        //!< higher index bound, >= lower bound
+        const STATE init             //!< initialise to init
+        )
+        : MStepBase(steppast, stepfuture)
     {
       // allocate the vectors themselves
-      for (int index=0; index<MStepBase::steps_; ++index)
+      for (int index = 0; index < MStepBase::steps_; ++index)
       {
         MStepBase::state_.push_back(STATE(init));
       }
@@ -250,11 +214,9 @@ namespace TIMINT
     }
 
     //! Resize
-    void Resize
-    (
-      const int steppast,  //!< lower index bound
-      const int stepfuture,  //!< higher index bound, >= lower bound
-      const STATE init  //!< initialise to init
+    void Resize(const int steppast,  //!< lower index bound
+        const int stepfuture,        //!< higher index bound, >= lower bound
+        const STATE init             //!< initialise to init
     )
     {
       // check this
@@ -266,7 +228,7 @@ namespace TIMINT
       // add states for steps in past
       if (steppast < MStepBase::steppast_)
       {
-        for (int past=MStepBase::steppast_; past>steppast; --past)
+        for (int past = MStepBase::steppast_; past > steppast; --past)
         {
           MStepBase::state_.insert(MStepBase::state_.begin(), STATE(init));
         }
@@ -283,11 +245,7 @@ namespace TIMINT
     //@{
 
     //! Set entry at #step to #value
-    void SetStep
-    (
-      const int step,
-      const STATE value
-    )
+    void SetStep(const int step, const STATE value)
     {
       MStepBase::state_.at(MStepBase::IndexByStep(step)) = value;
     }
@@ -299,22 +257,19 @@ namespace TIMINT
      *       state_{n} := state_{n+1},
      *       etc.
      */
-    void UpdateSteps
-    (
-      const STATE staten  //!< state_{n+1}
+    void UpdateSteps(const STATE staten  //!< state_{n+1}
     )
     {
-      for (int ind=0; ind<MStepBase::steps_-1; ++ind)
+      for (int ind = 0; ind < MStepBase::steps_ - 1; ++ind)
       {
-        MStepBase::state_[ind] = MStepBase::state_[ind+1];
+        MStepBase::state_[ind] = MStepBase::state_[ind + 1];
       }
-      MStepBase::state_[MStepBase::steps_-1] = staten;
+      MStepBase::state_[MStepBase::steps_ - 1] = staten;
 
       return;
     }
 
     //@}
-
   };
 
   /*====================================================================*/
@@ -322,37 +277,30 @@ namespace TIMINT
    *         for \c Epetra_Vector as needed for state vectors
    *         like displacements, velocities and accelerations
    */
-  template <> class TimIntMStep<Epetra_Vector>
-  : public TimIntMStepBase<Epetra_Vector>
+  template <>
+  class TimIntMStep<Epetra_Vector> : public TimIntMStepBase<Epetra_Vector>
   {
-
-  protected :
-
+   protected:
     //! base template class
     typedef TimIntMStepBase<Epetra_Vector> MStepBase;
 
-  public :
-
+   public:
     //! @name Life
     //@{
 
     //! Dummy constructor
-    TimIntMStep()
-    : MStepBase::TimIntMStepBase()
-    { ; }
+    TimIntMStep() : MStepBase::TimIntMStepBase() { ; }
 
     //! Constructor
-    TimIntMStep
-    (
-      const int steppast,  //!< lower index bound
-      const int stepfuture,  //!< higher index bound, >= lower bound
-      const Epetra_Map* dofrowmap,  //!< vector layout from discretization
-      const bool inittozero  //!< initialise to zero, if true
-    )
-    : MStepBase(steppast, stepfuture)
+    TimIntMStep(const int steppast,   //!< lower index bound
+        const int stepfuture,         //!< higher index bound, >= lower bound
+        const Epetra_Map* dofrowmap,  //!< vector layout from discretization
+        const bool inittozero         //!< initialise to zero, if true
+        )
+        : MStepBase(steppast, stepfuture)
     {
       // allocate the vectors themselves
-      for (int index=0; index<steps_; ++index)
+      for (int index = 0; index < steps_; ++index)
       {
         state_.push_back(Epetra_Vector(*dofrowmap, inittozero));
       }
@@ -365,12 +313,10 @@ namespace TIMINT
      *  State vectors are added and placed according to their
      *  indices #steppast to #stepfuture
      */
-    void Resize
-    (
-      const int steppast,  //!< lower index bound
-      const int stepfuture,  //!< higher index bound, >= lower bound
-      const Epetra_Map* dofrowmap,  //!< vector layout from discretization
-      const bool inittozero  //!< initialise to zero, if true
+    void Resize(const int steppast,   //!< lower index bound
+        const int stepfuture,         //!< higher index bound, >= lower bound
+        const Epetra_Map* dofrowmap,  //!< vector layout from discretization
+        const bool inittozero         //!< initialise to zero, if true
     )
     {
       // check this
@@ -382,10 +328,10 @@ namespace TIMINT
       // add states for steps in past
       if (steppast < steppast_)
       {
-        for (int past=MStepBase::steppast_; past>steppast; --past)
+        for (int past = MStepBase::steppast_; past > steppast; --past)
         {
-          MStepBase::state_.insert(MStepBase::state_.begin(),
-                                   Epetra_Vector(*dofrowmap, inittozero));
+          MStepBase::state_.insert(
+              MStepBase::state_.begin(), Epetra_Vector(*dofrowmap, inittozero));
         }
         MStepBase::steppast_ = steppast;
         MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
@@ -399,14 +345,12 @@ namespace TIMINT
      *  State vectors cleared and rebuild with given map
      *  take care that underlying discret_ contains the same maps
      */
-    void ReplaceMaps
-    (
-      const Epetra_Map* dofrowmap  //!< new vector layout
+    void ReplaceMaps(const Epetra_Map* dofrowmap  //!< new vector layout
     )
     {
       state_.clear();
       // allocate the vectors themselves
-      for (int index=0; index<steps_; ++index)
+      for (int index = 0; index < steps_; ++index)
       {
         state_.push_back(Epetra_Vector(*dofrowmap, true));
       }
@@ -426,16 +370,14 @@ namespace TIMINT
      *       state_{n} := state_{n+1},
      *       etc.
      */
-    void UpdateSteps
-    (
-      const Epetra_Vector& staten  //!< state_{n+1}
+    void UpdateSteps(const Epetra_Vector& staten  //!< state_{n+1}
     )
     {
-      for (int ind=0; ind<MStepBase::steps_-1; ++ind)
+      for (int ind = 0; ind < MStepBase::steps_ - 1; ++ind)
       {
-        (MStepBase::state_[ind]).Update(1.0, (MStepBase::state_[ind+1]), 0.0);
+        (MStepBase::state_[ind]).Update(1.0, (MStepBase::state_[ind + 1]), 0.0);
       }
-      (MStepBase::state_[steps_-1]).Update(1.0, staten, 0.0);
+      (MStepBase::state_[steps_ - 1]).Update(1.0, staten, 0.0);
 
       return;
     }
@@ -443,7 +385,7 @@ namespace TIMINT
     //@}
 
   };  // class TimIntMStep<Epetra_Vector>
-} // namespace TIMINT
+}  // namespace TIMINT
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef TIMINTMSTEP_H

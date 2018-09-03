@@ -44,20 +44,20 @@ namespace NLNSOL
     class NlnConfig;
     class DebugWriterBase;
   }  // namespace UTILS
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 namespace NOX
 {
   namespace Abstract
   {
     class Group;
-  } // namespace Abstract
-} // namespace NOX
+  }  // namespace Abstract
+}  // namespace NOX
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -80,10 +80,9 @@ namespace NLNSOL
    *
    *  \author mayr.mt \date 11/2015
    */
-class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
+  class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -99,13 +98,15 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
     //@{
 
     //! Initialize member variables
-    virtual void Init(const Epetra_Comm& comm, ///< communicator
-        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
-        const std::string listname, ///< name of sublist for this operator
-        const Teuchos::ParameterList& params, ///< parameter list with Teuchos::RCP to BACI evaluator class
-        Teuchos::RCP<const Epetra_Map> dofrowmap, ///< dof row map
-        Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> dbgwriter = Teuchos::null ///< Debug writer for output of intermediate solutions
-        );
+    virtual void Init(const Epetra_Comm& comm,                ///< communicator
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,  ///< configuration
+        const std::string listname,                           ///< name of sublist for this operator
+        const Teuchos::ParameterList&
+            params,  ///< parameter list with Teuchos::RCP to BACI evaluator class
+        Teuchos::RCP<const Epetra_Map> dofrowmap,  ///< dof row map
+        Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> dbgwriter =
+            Teuchos::null  ///< Debug writer for output of intermediate solutions
+    );
 
     //! Setup of nonlinear problem
     virtual void Setup() = 0;
@@ -139,8 +140,8 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *  \sa NLNSOL::NlnProblemCoarseLevel::SetupResidualModification
      */
     virtual void SetupResidualModification(
-        Teuchos::RCP<const Epetra_MultiVector> xbar, ///< \f$\bar{x}\f$
-        Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
+        Teuchos::RCP<const Epetra_MultiVector> xbar,  ///< \f$\bar{x}\f$
+        Teuchos::RCP<const Epetra_MultiVector> fbar   ///< \f$\bar{F}\f$
         ) = 0;
 
     //@}
@@ -174,8 +175,8 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
-        Epetra_MultiVector& f ///< current residual (to be filled)
+    virtual void ComputeF(const Epetra_MultiVector& x,  ///< current solution
+        Epetra_MultiVector& f                           ///< current residual (to be filled)
         ) const = 0;
 
     /*! \brief Compute nonlinear residual \f$F(x)\f$
@@ -183,7 +184,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *  \author mayr.mt \date 10/2015
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
-        const Epetra_MultiVector& x ///< current solution
+        const Epetra_MultiVector& x  ///< current solution
         ) const = 0;
 
     /*! \brief Evaluate Jacobian (linearization of residual)
@@ -196,12 +197,12 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
     virtual void ComputeJacobian() const = 0;
 
     //! Check convergence
-    virtual bool ConvergenceCheck(const Epetra_MultiVector& f ///< current residual
+    virtual bool ConvergenceCheck(const Epetra_MultiVector& f  ///< current residual
         ) const;
 
     //! Check convergence
-    virtual bool ConvergenceCheck(const Epetra_MultiVector& f, ///< current residual
-        double& fnorm2 ///< residual L2 norm (to be filled)
+    virtual bool ConvergenceCheck(const Epetra_MultiVector& f,  ///< current residual
+        double& fnorm2                                          ///< residual L2 norm (to be filled)
         ) const;
 
     //@}
@@ -247,18 +248,20 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::VectorType vt = IO::dofvector ///< vector type
+    virtual void WriteVector(
+        Teuchos::RCP<const Epetra_MultiVector> vec,  ///< vector with result data (to be outputted)
+        const std::string& description,              ///< description of output quantity
+        const IO::VectorType vt = IO::dofvector      ///< vector type
         ) const;
 
     /*! \brief Wrapper to write plain Epetra_MultiVector to output
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::VectorType vt = IO::dofvector ///< vector type
+    virtual void WriteVector(
+        const Epetra_MultiVector& vec,           ///< vector with result data (to be outputted)
+        const std::string& description,          ///< description of output quantity
+        const IO::VectorType vt = IO::dofvector  ///< vector type
         ) const;
 
     //@}
@@ -277,16 +280,23 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
 
     //@}
 
-  protected:
-
+   protected:
     //! @name Attribute set methods
     //@{
 
     //! Init() has been called
-    virtual void SetIsInit() { isinit_ = true; return; }
+    virtual void SetIsInit()
+    {
+      isinit_ = true;
+      return;
+    }
 
     //! Setup() has been called
-    virtual void SetIsSetup() { issetup_ = true; return; }
+    virtual void SetIsSetup()
+    {
+      issetup_ = true;
+      return;
+    }
 
     //@}
 
@@ -311,8 +321,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
 
     //@}
 
-  private:
-
+   private:
     //! @name Status variables
     //@{
 
@@ -358,7 +367,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
 
     //@}
 
-  }; // class NlnProblemBase
-} // namespace NLNSOL
+  };  // class NlnProblemBase
+}  // namespace NLNSOL
 
 #endif /* NLN_PROBLEM_BASE_H */

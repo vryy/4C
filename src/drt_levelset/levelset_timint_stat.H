@@ -24,51 +24,67 @@
 
 namespace SCATRA
 {
+  class LevelSetTimIntStationary : public LevelSetAlgorithm, public TimIntStationary
+  {
+   public:
+    /// Standard Constructor
+    LevelSetTimIntStationary(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-class LevelSetTimIntStationary : public LevelSetAlgorithm, public TimIntStationary
-{
-public:
+    /// Destructor
+    virtual ~LevelSetTimIntStationary();
 
-  /// Standard Constructor
-  LevelSetTimIntStationary(Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    /// initialize time-integration scheme
+    virtual void Init();
 
-  /// Destructor
-  virtual ~LevelSetTimIntStationary();
+    /// setup time-integration scheme
+    virtual void Setup();
 
-  /// initialize time-integration scheme
-  virtual void Init();
+    /// read restart data
+    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null)
+    {
+      dserror("You should not need this function!");
+      return;
+    };
 
-  /// setup time-integration scheme
-  virtual void Setup();
+    /// redistribute the scatra discretization and vectors according to nodegraph
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
+    {
+      dserror("You should not need this function!");
+      return;
+    };
 
-  /// read restart data
-  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null){dserror("You should not need this function!"); return;};
+   protected:
+    /// update state vectors
+    /// current solution becomes old solution of next time step
+    void UpdateState()
+    {
+      dserror("You should not need this function!");
+      return;
+    };
 
-  /// redistribute the scatra discretization and vectors according to nodegraph
-  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph){dserror("You should not need this function!"); return;};
+    /// update the solution after Solve()
+    /// extended version for coupled level-set problems including reinitialization and particle
+    /// correction if required
+    void Update(const int num = 0)
+    {
+      dserror("You should not need this function!");
+      return;
+    };
 
-protected:
+    /// update phi within the reinitialization loop
+    void UpdateReinit()
+    {
+      dserror("You should not need this function!");
+      return;
+    };
 
-  /// update state vectors
-  /// current solution becomes old solution of next time step
-  void UpdateState(){dserror("You should not need this function!"); return;};
+   private:
+  };  // class TimIntStationary
 
-  /// update the solution after Solve()
-  /// extended version for coupled level-set problems including reinitialization and particle correction if required
-  void Update(const int num=0){dserror("You should not need this function!"); return;};
-
-  /// update phi within the reinitialization loop
-  void UpdateReinit(){dserror("You should not need this function!"); return;};
-
-private:
-
-}; // class TimIntStationary
-
-}// namespace SCATRA
+}  // namespace SCATRA
 
 #endif  // #ifndef LEVELSET_TIMINT_STAT_H

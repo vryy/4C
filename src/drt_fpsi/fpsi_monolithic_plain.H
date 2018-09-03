@@ -25,7 +25,7 @@ namespace ADAPTER
 {
   class Structure;
   class Fluid;
-}
+}  // namespace ADAPTER
 
 
 namespace FSI
@@ -36,17 +36,15 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 namespace FPSI
 {
   class Monolithic_Plain : public Monolithic
   {
-
-  public:
-    explicit Monolithic_Plain(const Epetra_Comm& comm,
-                              const Teuchos::ParameterList& fpsidynparams,
-                              const Teuchos::ParameterList& poroelastdynparams);
+   public:
+    explicit Monolithic_Plain(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams,
+        const Teuchos::ParameterList& poroelastdynparams);
 
     /*! do the setup for the monolithic system
 
@@ -70,7 +68,7 @@ namespace FPSI
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall=false);
+    virtual void SetupRHS(bool firstcall = false);
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
@@ -79,31 +77,28 @@ namespace FPSI
     virtual void RecoverLagrangeMultiplier();
 
 
-  protected:
-
+   protected:
     //! set full monolithic dof row map
-           /*!
-           A subclass calls this method (from its constructor) and thereby
-           defines the number of blocks, their maps and the block order. The block
-           maps must be row maps by themselves and must not contain identical GIDs.
-           */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+    /*!
+    A subclass calls this method (from its constructor) and thereby
+    defines the number of blocks, their maps and the block order. The block
+    maps must be row maps by themselves and must not contain identical GIDs.
+    */
+    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extract the three field vectors from a given composed vector
     void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,   ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector>& sx, ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector>& pfx,///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& fx, ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax,  ///< ale displacements
-        bool firstiter_                        ///< firstiteration?
-        );
+        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector>& pfx,  ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector>& fx,   ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector>& ax,   ///< ale displacements
+        bool firstiter_                          ///< firstiteration?
+    );
 
-  private:
-
+   private:
     /// build block vector from field vectors
-    void SetupVector(
-        Epetra_Vector &f,                       ///< composed vector that contains all field vectors
+    void SetupVector(Epetra_Vector& f,          ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural dofs
         Teuchos::RCP<const Epetra_Vector> pfv,  ///< poro fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
@@ -111,36 +106,49 @@ namespace FPSI
         double fluidscale                       ///< residual scaling for fluid
     );
 
-    void SetupRHSLambda(
-        Epetra_Vector& f  ///< composed vector that contains all field vectors
+    void SetupRHSLambda(Epetra_Vector& f  ///< composed vector that contains all field vectors
     );
 
-    void SetupRHSFirstIter(
-        Epetra_Vector& f  ///< composed vector that contains all field vectors
+    void SetupRHSFirstIter(Epetra_Vector& f  ///< composed vector that contains all field vectors
     );
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform_; //g_fsi/g_fsi || F->S/F->S transform (FSI/FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform2_; //g_fis/g_fpsi || F->S/F->S transform (FSI/FPSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fmgitransform_; //g_fsi/i transform || F->S/F->A transform (FSI/FluidVolume)
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>
+        fggtransform_;  // g_fsi/g_fsi || F->S/F->S transform (FSI/FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>
+        fggtransform2_;  // g_fis/g_fpsi || F->S/F->S transform (FSI/FPSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>
+        fmgitransform_;  // g_fsi/i transform || F->S/F->A transform (FSI/FluidVolume)
 
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform1_; //g_fsi || F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform2_; //g_fsi || F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfgtransform_; //full FluidField || F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfptransform_; //full FluidField || F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfptransform2_; //full FluidField || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fgitransform1_;  // g_fsi || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fgitransform2_;  // g_fsi || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+        Cfgtransform_;  // full FluidField || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+        Cfptransform_;  // full FluidField || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>
+        Cfptransform2_;  // full FluidField || F->S transform (FSI)
 
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform1_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform2_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform3_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform4_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform_ ; //for Row/Col-Map for Full - AleField & F->S transform (FSI)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform2_; //for Row/Col-Map for Full - AleField & F->S transform (FPSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        figtransform1_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        figtransform2_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        figtransform3_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        figtransform4_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        aigtransform_;  // for Row/Col-Map for Full - AleField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        aigtransform2_;  // for Row/Col-Map for Full - AleField & F->S transform (FPSI)
 
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     couplingcoltransform_; //for Row/Col-Map for Full - FluidField & F->A transform (FluidVolume)
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     couplingcoltransformfs_; //for Row/Col-Map for Full - FluidField & F->S transform (FPSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        couplingcoltransform_;  // for Row/Col-Map for Full - FluidField & F->A transform
+                                // (FluidVolume)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>
+        couplingcoltransformfs_;  // for Row/Col-Map for Full - FluidField & F->S transform (FPSI)
     ///@}
 
 
@@ -159,20 +167,23 @@ namespace FPSI
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
 
-    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the fluid)
-    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
+    //! fluid) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
-    //! interface force \f$f_{\Gamma,i+1}^{F,n+1}\f$ onto the fluid at current NOX iteration \f$i+1\f$
+    //! interface force \f$f_{\Gamma,i+1}^{F,n+1}\f$ onto the fluid at current NOX iteration
+    //! \f$i+1\f$
     Teuchos::RCP<const Epetra_Vector> fgcur_;
 
     //! interface force \f$f_{\Gamma,i}^{F,n+1}\f$ onto the fluid at previous NOX iteration \f$i\f$
     Teuchos::RCP<const Epetra_Vector> fgprev_;
 
-    //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
+    //! current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;
 
-    //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration
+    //! \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> duiinc_;
 
     //! interface displacement solution of the structure at previous NOX iteration
@@ -187,7 +198,8 @@ namespace FPSI
     //! inner ALE displacement solution at previous NOX iteration
     Teuchos::RCP<const Epetra_Vector> solialeprev_;
 
-    //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
+    //! iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddialeinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
@@ -202,21 +214,25 @@ namespace FPSI
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fggprev_;
 
-    //! block \f$F_{\Gamma I,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration \f$i+1\f$
+    //! block \f$F_{\Gamma I,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration
+    //! \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
 
-    //! block \f$F_{\Gamma I,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration \f$i\f$
+    //! block \f$F_{\Gamma I,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
+    //! \f$i\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmgiprev_;
 
-    //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration \f$i+1\f$
+    //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of fluid shape derivatives matrix at current NOX
+    //! iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmggcur_;
 
-    //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration \f$i\f$
+    //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
+    //! \f$i\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
 
     //@}
 
   };  // class monolithic_plain
-} // namespace FPSI
+}  // namespace FPSI
 
 #endif

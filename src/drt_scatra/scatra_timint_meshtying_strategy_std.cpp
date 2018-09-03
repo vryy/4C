@@ -26,13 +26,11 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
-SCATRA::MeshtyingStrategyStd::MeshtyingStrategyStd(
-    SCATRA::ScaTraTimIntImpl* scatratimint
-    ) :
-MeshtyingStrategyBase(scatratimint)
+SCATRA::MeshtyingStrategyStd::MeshtyingStrategyStd(SCATRA::ScaTraTimIntImpl* scatratimint)
+    : MeshtyingStrategyBase(scatratimint)
 {
   return;
-} // SCATRA::MeshtyingStrategyStd::MeshtyingStrategyStd
+}  // SCATRA::MeshtyingStrategyStd::MeshtyingStrategyStd
 
 
 /*-----------------------------------------------------------------------*
@@ -50,16 +48,13 @@ const Epetra_Map& SCATRA::MeshtyingStrategyStd::DofRowMap() const
 void SCATRA::MeshtyingStrategyStd::EvaluateMeshtying()
 {
   return;
-} // SCATRA::MeshtyingStrategyStd::EvaluateMeshtying
+}  // SCATRA::MeshtyingStrategyStd::EvaluateMeshtying
 
 
 /*----------------------------------------------------------------------*
  | setup meshtying objects                                   fang 02/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStd::SetupMeshtying()
-{
-  return;
-}
+void SCATRA::MeshtyingStrategyStd::SetupMeshtying() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -79,27 +74,28 @@ void SCATRA::MeshtyingStrategyStd::InitMeshtying()
 Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStd::InitSystemMatrix() const
 {
   // initialize standard (stabilized) system matrix (and save its graph)
-  return Teuchos::rcp(new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()),27,false,true));
-} // SCATRA::MeshtyingStrategyStd::InitSystemMatrix
+  return Teuchos::rcp(
+      new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
+}  // SCATRA::MeshtyingStrategyStd::InitSystemMatrix
 
 
 /*-----------------------------------------------------------------------------*
  | solve linear system of equations for standard scalar transport   fang 12/14 |
  *-----------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStd::Solve(
-    const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
-    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
-    const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
-    const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
-    const int&                                     iteration,      //!< number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
+void SCATRA::MeshtyingStrategyStd::Solve(const Teuchos::RCP<LINALG::Solver>& solver,  //!< solver
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+    const int& iteration,  //!< number of current Newton-Raphson iteration
+    const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
     ) const
 {
-  solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);
+  solver->Solve(
+      systemmatrix->EpetraOperator(), increment, residual, true, iteration == 1, projector);
 
   return;
-} // SCATRA::MeshtyingStrategyStd::Solve
+}  // SCATRA::MeshtyingStrategyStd::Solve
 
 
 /*-------------------------------------------------------------------------*
@@ -107,10 +103,9 @@ void SCATRA::MeshtyingStrategyStd::Solve(
  *-------------------------------------------------------------------------*/
 const LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
 {
-  if(scatratimint_->Solver() == Teuchos::null)
-    dserror("Invalid linear solver!");
+  if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
   return *scatratimint_->Solver();
-} // SCATRA::MeshtyingStrategyStd::Solver()
+}  // SCATRA::MeshtyingStrategyStd::Solver()
 
 
 /*------------------------------------------------------------------------*
@@ -118,12 +113,15 @@ const LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
 {
-  if(scatratimint_->MicroScale())
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-  else if(DRT::Problem::Instance()->ProblemType()==prb_poromultiphasescatra)
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyPoroMultiphaseScatra(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  if (scatratimint_->MicroScale())
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(
+        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  else if (DRT::Problem::Instance()->ProblemType() == prb_poromultiphasescatra)
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyPoroMultiphaseScatra(
+        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(
+        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
-} // SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy

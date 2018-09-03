@@ -16,6 +16,6 @@
 typedef Kokkos::Compat::KokkosDeviceWrapperNode<Kokkos::Serial, Kokkos::HostSpace> KokkosSerialNode;
 
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_ITERATIONAFACTORY_DECL_HPP_ */

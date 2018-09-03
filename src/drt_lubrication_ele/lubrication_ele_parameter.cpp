@@ -5,9 +5,10 @@
 \brief singleton class holding all static parameters required for Lubrication element evaluation
 
 This singleton class holds all static parameters required for Lubrication element evaluation. All
-parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
-time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
-the general parameter class holding all general static parameters required for Lubrication element evaluation.
+parameters are usually set only once at the beginning of a simulation, namely during initialization
+of the global time integrator, and then never touched again throughout the simulation. This
+parameter class needs to coexist with the general parameter class holding all general static
+parameters required for Lubrication element evaluation.
 
 <pre>
 Maintainer: Andy Wirtz
@@ -26,25 +27,28 @@ Maintainer: Andy Wirtz
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::LubricationEleParameter* DRT::ELEMENTS::LubricationEleParameter::Instance(
-    const std::string&           disname,   //!< name of discretization
+    const std::string& disname,               //!< name of discretization
     const LubricationEleParameter* delete_me  //!< creation/destruction indication
-    )
+)
 {
-  // each discretization is associated with exactly one instance of this class according to a static map
-  static std::map<std::string,LubricationEleParameter*> instances;
+  // each discretization is associated with exactly one instance of this class according to a static
+  // map
+  static std::map<std::string, LubricationEleParameter*> instances;
 
-  // check whether instance already exists for current discretization, and perform instantiation if not
-  if(delete_me == NULL)
+  // check whether instance already exists for current discretization, and perform instantiation if
+  // not
+  if (delete_me == NULL)
   {
-    if(instances.find(disname) == instances.end())
+    if (instances.find(disname) == instances.end())
       instances[disname] = new LubricationEleParameter(disname);
   }
 
   // destruct instance given to the destructor
   else
   {
-    for(std::map<std::string,LubricationEleParameter*>::iterator i=instances.begin(); i!=instances.end(); ++i)
-      if ( i->second == delete_me )
+    for (std::map<std::string, LubricationEleParameter*>::iterator i = instances.begin();
+         i != instances.end(); ++i)
+      if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
@@ -63,7 +67,7 @@ DRT::ELEMENTS::LubricationEleParameter* DRT::ELEMENTS::LubricationEleParameter::
 void DRT::ELEMENTS::LubricationEleParameter::Done()
 {
   // delete singleton
-  Instance("",this);
+  Instance("", this);
 
   return;
 }
@@ -72,9 +76,9 @@ void DRT::ELEMENTS::LubricationEleParameter::Done()
  | private constructor for singletons                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
-    const std::string& disname   //!< name of discretization
-    ) :
-    time_(-1.0)
+    const std::string& disname  //!< name of discretization
+    )
+    : time_(-1.0)
 {
   return;
 }
@@ -83,8 +87,8 @@ DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
-    Teuchos::ParameterList& parameters   //!< parameter list
-    )
+    Teuchos::ParameterList& parameters  //!< parameter list
+)
 {
   // get current time and time-step length
   time_ = parameters.get<double>("total time");
@@ -94,8 +98,7 @@ void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
-    Teuchos::ParameterList& parameters   //!< parameter list
-    )
+    Teuchos::ParameterList& parameters  //!< parameter list
+)
 {
-
 }

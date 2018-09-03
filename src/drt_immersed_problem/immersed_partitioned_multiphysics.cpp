@@ -42,7 +42,7 @@ IMMERSED::ImmersedPartitionedMultiphysics::ImmersedPartitionedMultiphysics(const
 {
   // empty constructor
   return;
-}// ImmersedPartitionedMultiphysics
+}  // ImmersedPartitionedMultiphysics
 
 
 /*----------------------------------------------------------------------*/
@@ -56,40 +56,39 @@ int IMMERSED::ImmersedPartitionedMultiphysics::Init(const Teuchos::ParameterList
   globalproblem_ = DRT::Problem::Instance();
 
   // set pointer to discretization
-  immerseddis_            = globalproblem_->GetDis("cell");
-  backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
+  immerseddis_ = globalproblem_->GetDis("cell");
+  backgroundfluiddis_ = globalproblem_->GetDis("porofluid");
   backgroundstructuredis_ = globalproblem_->GetDis("structure");
 
 
   // extract ptrs to modules from parameter list
-  cfi_module_ = params.get<Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction> >("ImmersedPartitionedFlowCellInteraction");
-  adh_module_ = params.get<Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction> >("ImmersedPartitionedAdhesionTraction");
+  cfi_module_ = params.get<Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction>>(
+      "ImmersedPartitionedFlowCellInteraction");
+  adh_module_ = params.get<Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction>>(
+      "ImmersedPartitionedAdhesionTraction");
 
-  if(cfi_module_ != Teuchos::null)
-    cfi_module_->Init(params);
-  if(adh_module_ != Teuchos::null)
-    adh_module_->Init(params);
+  if (cfi_module_ != Teuchos::null) cfi_module_->Init(params);
+  if (adh_module_ != Teuchos::null) adh_module_->Init(params);
 
   // get pointer to cell structure
   Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> multiphysicswrapper =
-      params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure");
-  if(multiphysicswrapper == Teuchos::null)
+      params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration>>(
+          "RCPToCellStructure");
+  if (multiphysicswrapper == Teuchos::null)
     dserror("no pointer to MultiphysicsStructureWrapperCellMigration provided");
   cellstructure_ = multiphysicswrapper->GetFSIStructureWrapperPtr();
 
   // get pointer structure-scatra interaction (ssi) subproblem
-  cellscatra_subproblem_ =
-      params.get<Teuchos::RCP<SSI::SSI_Part2WC> >("RCPToCellScatra");
+  cellscatra_subproblem_ = params.get<Teuchos::RCP<SSI::SSI_Part2WC>>("RCPToCellScatra");
 
   // get pointer poroelast-scatra interaction (ssi) subproblem
-  poroscatra_subproblem_ =
-      params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
+  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase>>("RCPToPoroScatra");
 
   // set isinit_ flag true
   SetIsInit(true);
 
   return 0;
-} // Init
+}  // Init
 
 
 /*----------------------------------------------------------------------*/
@@ -99,21 +98,19 @@ void IMMERSED::ImmersedPartitionedMultiphysics::Setup()
   // make sure Init(...) was called first
   CheckIsInit();
 
-  if(cfi_module_ != Teuchos::null)
-    cfi_module_->Setup();
-  if(adh_module_ != Teuchos::null)
-    adh_module_->Setup();
+  if (cfi_module_ != Teuchos::null) cfi_module_->Setup();
+  if (adh_module_ != Teuchos::null) adh_module_->Setup();
 
   // set flag issetup true
   SetIsSetup(true);
-} // Setup
+}  // Setup
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedMultiphysics::Solve()
 {
-  while(NotFinished())
+  while (NotFinished())
   {
     PrepareTimeStep();
 
@@ -127,7 +124,7 @@ void IMMERSED::ImmersedPartitionedMultiphysics::Solve()
   }
 
   return;
-} // Solve
+}  // Solve
 
 
 /*----------------------------------------------------------------------*/
@@ -137,8 +134,8 @@ void IMMERSED::ImmersedPartitionedMultiphysics::TimeStep()
   CFIOperator();
   CEIOperator();
 
-   return;
-} // TimeStep
+  return;
+}  // TimeStep
 
 
 /*----------------------------------------------------------------------*/
@@ -146,42 +143,32 @@ void IMMERSED::ImmersedPartitionedMultiphysics::TimeStep()
 void IMMERSED::ImmersedPartitionedMultiphysics::CFIOperator()
 {
   // declare epetra map
-   Teuchos::RCP<Epetra_Map> dofmap_cell = Teuchos::null;
-   Teuchos::RCP<Epetra_Map> dofmap_ecm  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> dofmap_cell = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> dofmap_ecm = Teuchos::null;
 
-   // apply Dirichlet to adhesion nodes
-   ApplyDirichlet(
-       cellstructure_,
-       immerseddis_,
-       "CellFocalAdhesion",
-       dofmap_cell,
-       3,
-       cellstructure_->Dispnp());
+  // apply Dirichlet to adhesion nodes
+  ApplyDirichlet(
+      cellstructure_, immerseddis_, "CellFocalAdhesion", dofmap_cell, 3, cellstructure_->Dispnp());
 
-   // set state in nox and gobal state object
-   cellstructure_->SetState(cellstructure_->WriteAccessDispnp());
+  // set state in nox and gobal state object
+  cellstructure_->SetState(cellstructure_->WriteAccessDispnp());
 
-   // apply Dirichlet to ECM structure
-   ApplyDirichlet(
-       poroscatra_subproblem_->PoroField()->StructureField(),
-       backgroundstructuredis_,
-       "PoroCoupling",
-       dofmap_ecm,
-       3,
-       poroscatra_subproblem_->PoroField()->StructureField()->Dispnp());
+  // apply Dirichlet to ECM structure
+  ApplyDirichlet(poroscatra_subproblem_->PoroField()->StructureField(), backgroundstructuredis_,
+      "PoroCoupling", dofmap_ecm, 3,
+      poroscatra_subproblem_->PoroField()->StructureField()->Dispnp());
 
-   // rebuild the monolithic poro dbc map
-   poroscatra_subproblem_->PoroField()->BuildCombinedDBCMap();
-   // solve cfi module for reaction forces at adhesion nodes
-   Teuchos::RCP<Epetra_Vector> cell_bdry_traction =
-       cfi_module_->DoStep(cfi_module_, Teuchos::null);
+  // rebuild the monolithic poro dbc map
+  poroscatra_subproblem_->PoroField()->BuildCombinedDBCMap();
+  // solve cfi module for reaction forces at adhesion nodes
+  Teuchos::RCP<Epetra_Vector> cell_bdry_traction = cfi_module_->DoStep(cfi_module_, Teuchos::null);
 
-   // remove Dirichlet condition from adhesion nodes
-   RemoveDirichlet(dofmap_cell,cellstructure_);
-   RemoveDirichlet(dofmap_ecm,poroscatra_subproblem_->PoroField()->StructureField());
+  // remove Dirichlet condition from adhesion nodes
+  RemoveDirichlet(dofmap_cell, cellstructure_);
+  RemoveDirichlet(dofmap_ecm, poroscatra_subproblem_->PoroField()->StructureField());
 
   return;
-} // CFIOperator
+}  // CFIOperator
 
 
 /*----------------------------------------------------------------------*/
@@ -189,43 +176,43 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CFIOperator()
 void IMMERSED::ImmersedPartitionedMultiphysics::CEIOperator()
 {
   // declare epetra map
-   Teuchos::RCP<Epetra_Map> dofmap_ecm  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> dofmap_ecm = Teuchos::null;
 
-//   // apply Dirichlet to interstitial flow
-//   ApplyDirichletToFluid(
-//       poroscatra_subproblem_->FluidField(),
-//       backgroundfluiddis_,
-//       "PoroCoupling",
-//       dofmap_ecm,
-//       4,
-//       poroscatra_subproblem_->FluidField()->Velnp());
+  //   // apply Dirichlet to interstitial flow
+  //   ApplyDirichletToFluid(
+  //       poroscatra_subproblem_->FluidField(),
+  //       backgroundfluiddis_,
+  //       "PoroCoupling",
+  //       dofmap_ecm,
+  //       4,
+  //       poroscatra_subproblem_->FluidField()->Velnp());
 
-//   const double dt = globalproblem_->CellMigrationParams().get<double>("TIMESTEP");
-//
-//   disp_->Scale(0.0);
-//   disp_->Update(1.0,*poroscatra_subproblem_->PoroField()->StructureField()->Dispn(),1.0);
-//   disp_->Update(dt,
-//       *poroscatra_subproblem_->PoroField()->FluidToStructureField(poroscatra_subproblem_->FluidField()->Velnp()),
-//       1.0);
-//
-//   ApplyDirichletToArtificialECM(
-//       poroscatra_subproblem_->PoroField()->StructureField(),
-//       backgroundstructuredis_,
-//       "PoroCoupling",
-//       dofmap_ecm,
-//       3,
-//       disp_);
+  //   const double dt = globalproblem_->CellMigrationParams().get<double>("TIMESTEP");
+  //
+  //   disp_->Scale(0.0);
+  //   disp_->Update(1.0,*poroscatra_subproblem_->PoroField()->StructureField()->Dispn(),1.0);
+  //   disp_->Update(dt,
+  //       *poroscatra_subproblem_->PoroField()->FluidToStructureField(poroscatra_subproblem_->FluidField()->Velnp()),
+  //       1.0);
+  //
+  //   ApplyDirichletToArtificialECM(
+  //       poroscatra_subproblem_->PoroField()->StructureField(),
+  //       backgroundstructuredis_,
+  //       "PoroCoupling",
+  //       dofmap_ecm,
+  //       3,
+  //       disp_);
 
-   // rebuild the monolithic poro dbc map
-   poroscatra_subproblem_->PoroField()->BuildCombinedDBCMap();
-   // solve adhesion module
-   adh_module_->DoStep(adh_module_, Teuchos::null);
+  // rebuild the monolithic poro dbc map
+  poroscatra_subproblem_->PoroField()->BuildCombinedDBCMap();
+  // solve adhesion module
+  adh_module_->DoStep(adh_module_, Teuchos::null);
 
-//   RemoveDirichletFromFluid(dofmap_ecm,poroscatra_subproblem_->FluidField());
-//   RemoveDirichlet(dofmap_ecm,poroscatra_subproblem_->PoroField()->StructureField());
+  //   RemoveDirichletFromFluid(dofmap_ecm,poroscatra_subproblem_->FluidField());
+  //   RemoveDirichlet(dofmap_ecm,poroscatra_subproblem_->PoroField()->StructureField());
 
   return;
-} // CEIOperator
+}  // CEIOperator
 
 
 /*----------------------------------------------------------------------*/
@@ -234,18 +221,18 @@ void IMMERSED::ImmersedPartitionedMultiphysics::PrepareTimeStep()
 {
   IncrementTimeAndStep();
 
-  if(myrank_==0)
+  if (myrank_ == 0)
   {
-    std::cout<<"+------------------------------------+"<<std::endl;
-    std::cout<<"+ Prepare Multiphysics Time Step ... |"<<std::endl;
-    std::cout<<"+------------------------------------+"<<std::endl;
-    std::cout<<"Step="<<Step()<<" Time="<<Time()<<" dt="<<Dt()<<std::endl;
+    std::cout << "+------------------------------------+" << std::endl;
+    std::cout << "+ Prepare Multiphysics Time Step ... |" << std::endl;
+    std::cout << "+------------------------------------+" << std::endl;
+    std::cout << "Step=" << Step() << " Time=" << Time() << " dt=" << Dt() << std::endl;
   }
-  cellscatra_subproblem_ -> PrepareTimeStep(false);
-  poroscatra_subproblem_ -> PrepareTimeStep(false);
+  cellscatra_subproblem_->PrepareTimeStep(false);
+  poroscatra_subproblem_->PrepareTimeStep(false);
 
   return;
-} // PrepareTimeStep
+}  // PrepareTimeStep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -255,7 +242,7 @@ void IMMERSED::ImmersedPartitionedMultiphysics::PrepareOutput()
   poroscatra_subproblem_->PrepareOutput();
 
   return;
-} // PrepareOutput
+}  // PrepareOutput
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -266,7 +253,7 @@ void IMMERSED::ImmersedPartitionedMultiphysics::Update()
   poroscatra_subproblem_->Update();
 
   return;
-} // Update
+}  // Update
 
 
 /*----------------------------------------------------------------------*/
@@ -280,14 +267,10 @@ void IMMERSED::ImmersedPartitionedMultiphysics::Output()
   cfi_module_->WriteDrag();
 
   return;
-} // Output
+}  // Output
 
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedMultiphysics::ReadRestart(int step)
-{
-
-  return;
-} // ReadRestart
+void IMMERSED::ImmersedPartitionedMultiphysics::ReadRestart(int step) { return; }  // ReadRestart

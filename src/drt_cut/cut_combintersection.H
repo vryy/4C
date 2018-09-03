@@ -28,44 +28,36 @@ class Epetra_SerialDenseMatrix;
 
 namespace GEO
 {
-namespace CUT
-{
-  class Node;
-  class Edge;
-  class Side;
-  class Element;
+  namespace CUT
+  {
+    class Node;
+    class Edge;
+    class Side;
+    class Element;
 
-  /*!
-  \brief Interface class for the level set cut.
-  */
-class CombIntersection : public LevelSetIntersection, public MeshIntersection
-{
+    /*!
+    \brief Interface class for the level set cut.
+    */
+    class CombIntersection : public LevelSetIntersection, public MeshIntersection
+    {
+     public:
+      /// constructur for LevelSetIntersecton class
+      CombIntersection(int myrank);
 
-public:
+      void Cut(bool screenoutput);
 
-  /// constructur for LevelSetIntersecton class
-  CombIntersection(int myrank);
+      void FindNodePositions();
 
-  void Cut(bool screenoutput);
+      void AddElement(int eid, const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
+          DRT::Element::DiscretizationType distype, const double* lsv,
+          const bool lsv_only_plus_domain);
 
-  void FindNodePositions();
+      void AddLevelSetSide(int levelset_sid);
 
-  void AddElement(
-      int eid,
-      const std::vector<int> & nids,
-      const Epetra_SerialDenseMatrix & xyz,
-      DRT::Element::DiscretizationType distype,
-      const double * lsv,
-      const bool lsv_only_plus_domain
-  );
+      void AddMeshCuttingSide(int sid, const std::vector<int>& nids,
+          const Epetra_SerialDenseMatrix& xyz, DRT::Element::DiscretizationType distype, int mi);
+    };
 
-  void AddLevelSetSide(int levelset_sid);
-
-  void AddMeshCuttingSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi );
-
-};
-
-}
-}
+  }  // namespace CUT
+}  // namespace GEO
 #endif
-

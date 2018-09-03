@@ -20,72 +20,58 @@ Maintainer: Andreas Rauch
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    template <DRT::Element::DiscretizationType distype>
+    class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype>
+    {
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
 
-namespace ELEMENTS
-{
+     public:
+      /// Singleton access method
+      static ScaTraEleBoundaryCalcPoro<distype>* Instance(const int numdofpernode,
+          const int numscal, const std::string& disname,
+          const ScaTraEleBoundaryCalcPoro* delete_me = NULL);
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype>
-{
-  typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      /// Empty destructor
+      virtual ~ScaTraEleBoundaryCalcPoro(){};
 
-public:
+      /// called upon destruction
+      void Done();
 
-  /// Singleton access method
-  static ScaTraEleBoundaryCalcPoro<distype> * Instance(
-      const int numdofpernode,
-      const int numscal,
-      const std::string& disname,
-      const ScaTraEleBoundaryCalcPoro* delete_me = NULL );
+      //! evaluate action
+      int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, SCATRA::BoundaryAction action,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
 
-  /// Empty destructor
-  virtual ~ScaTraEleBoundaryCalcPoro() {};
+     protected:
+      //! compute integral of convective mass/heat flux over boundary surface
+      virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
+          const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp,
+          const LINALG::Matrix<my::nsd_ + 1, my::nen_>& evelnp, Epetra_SerialDenseVector& erhs);
 
-  /// called upon destruction
-  void Done();
-
-  //! evaluate action
-  int EvaluateAction(
-      DRT::FaceElement*                   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      SCATRA::BoundaryAction              action,
-      DRT::Element::LocationArray&        la,
-      Epetra_SerialDenseMatrix&           elemat1_epetra,
-      Epetra_SerialDenseMatrix&           elemat2_epetra,
-      Epetra_SerialDenseVector&           elevec1_epetra,
-      Epetra_SerialDenseVector&           elevec2_epetra,
-      Epetra_SerialDenseVector&           elevec3_epetra
+      //! compute porosity based on solid, fluid and (potentially) scatra solution
+      virtual double ComputePorosity(
+          const DRT::FaceElement* ele  //!< the element we are dealing with
       );
 
-protected:
-  //! compute integral of convective mass/heat flux over boundary surface
-  virtual std::vector<double> CalcConvectiveFlux(
-      const DRT::FaceElement*                           ele,
-      const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,
-      const LINALG::Matrix<my::nsd_+1,my::nen_>&        evelnp,
-      Epetra_SerialDenseVector&                         erhs
-      );
+     private:
+      /// private constructor since we are singleton
+      ScaTraEleBoundaryCalcPoro(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-  //! compute porosity based on solid, fluid and (potentially) scatra solution
-  virtual double ComputePorosity(
-      const DRT::FaceElement* ele       //!< the element we are dealing with
-    );
+      //! nodal porosity values at t_(n+1)
+      LINALG::Matrix<my::nen_, 1> eporosity_;
 
-private:
-  /// private constructor since we are singleton
-  ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal,const std::string& disname);
+      //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
+      LINALG::Matrix<my::nen_, 1> eprenp_;
 
-  //! nodal porosity values at t_(n+1)
-  LINALG::Matrix<my::nen_,1> eporosity_;
+      //! flag indacting a node based porosity
+      bool isnodalporosity_;
 
-  //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
-  LINALG::Matrix<my::nen_,1> eprenp_;
-
-  //! flag indacting a node based porosity
-  bool isnodalporosity_;
-
-}; // class ScaTraEleBoundaryCalcPoro
-} //namsepace ELEMENTS
-} // namespace DRT
+    };  // class ScaTraEleBoundaryCalcPoro
+  }     // namespace ELEMENTS
+}  // namespace DRT
 #endif

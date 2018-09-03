@@ -40,7 +40,6 @@ namespace ADAPTER
 
 namespace FSI
 {
-
   // forward declaration
   class OverlappingBlockMatrix;
 
@@ -53,9 +52,8 @@ namespace FSI
    */
   class LungMonolithic : public BlockMonolithic
   {
-  public:
-    explicit LungMonolithic(const Epetra_Comm& comm,
-                            const Teuchos::ParameterList& timeparams);
+   public:
+    explicit LungMonolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
     <pre>
@@ -77,8 +75,8 @@ namespace FSI
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
-        );
+        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
+    );
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
@@ -92,7 +90,8 @@ namespace FSI
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    virtual void UnscaleSolution(
+        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //@}
 
@@ -116,7 +115,7 @@ namespace FSI
      */
     virtual double SelectDtErrorBased() const
     {
-      dserror ("SelectDtErrorBased() not implemented, yet!");
+      dserror("SelectDtErrorBased() not implemented, yet!");
       return 0.0;
     }
 
@@ -129,7 +128,7 @@ namespace FSI
      */
     virtual bool SetAccepted() const
     {
-      dserror ("SetAccepted() not implemented, yet!");
+      dserror("SetAccepted() not implemented, yet!");
       return false;
     }
 
@@ -145,20 +144,16 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(
-        std::map<int,int>* nodeOwner,
-        std::map<int,std::list<int> >* inverseNodeOwner,
-        std::map<int, DRT::Node*>* fluidnodesPtr,
+    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+        std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
+        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain)
     {
       dserror("Not implemented, yet.");
     }
 
-  protected:
-
+   protected:
     /// create the composed system matrix
     void CreateSystemMatrix(bool structuresplit);
 
@@ -171,15 +166,12 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> StructToAleOutflow(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// setup solver for global block system
-    Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                       NOX::Epetra::Vector& noxSoln,
-                       Teuchos::RCP<NOX::Utils> utils);
+    Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(Teuchos::ParameterList& nlParams,
+        NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils);
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo>
-    CreateStatusTest(Teuchos::ParameterList& nlParams,
-                     Teuchos::RCP<NOX::Epetra::Group> grp);
+    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp);
 
     /// extract the three field vectors from a given composed vector
     /*!
@@ -192,17 +184,16 @@ namespace FSI
       \param ax (o) ale displacements
     */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                     Teuchos::RCP<const Epetra_Vector>& sx,
-                                     Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
+        Teuchos::RCP<const Epetra_Vector>& ax) = 0;
 
     /// build block vector from field vectors
-    virtual void SetupVector(Epetra_Vector &f,
-                             Teuchos::RCP<const Epetra_Vector> sv,         ///< structure vector
-                             Teuchos::RCP<const Epetra_Vector> fv,         ///< fluid vector
-                             Teuchos::RCP<const Epetra_Vector> av,         ///< ale vector
-                             Teuchos::RCP<const Epetra_Vector> cv,         ///< constraint vector
-                             double fluidscale) = 0;                       ///< scaling
+    virtual void SetupVector(Epetra_Vector& f,
+        Teuchos::RCP<const Epetra_Vector> sv,  ///< structure vector
+        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid vector
+        Teuchos::RCP<const Epetra_Vector> av,  ///< ale vector
+        Teuchos::RCP<const Epetra_Vector> cv,  ///< constraint vector
+        double fluidscale) = 0;                ///< scaling
 
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
@@ -242,39 +233,54 @@ namespace FSI
 
     Teuchos::RCP<Epetra_Vector> LagrMultVec_;     ///< lagrange multipliers
     Teuchos::RCP<Epetra_Vector> LagrMultVecOld_;  ///< lagrange multipliers of last time step
-    Teuchos::RCP<Epetra_Vector> IncLagrMultVec_;  ///< nonlinear iteration increment vector of lagrange multipliers
+    Teuchos::RCP<Epetra_Vector>
+        IncLagrMultVec_;  ///< nonlinear iteration increment vector of lagrange multipliers
 
-    Teuchos::RCP< ::UTILS::ConstraintDofSet> ConstrDofSet_; ///< degrees of freedom of lagrange multipliers
-    int OffsetID_;                            ///< smallest constraint boundary condition ID
-    int NumConstrID_;                         ///< number of volume constraint boundary conditions
-    int NumPresConstrID_;                     ///< number of pressure constraint boundary conditions
-    Teuchos::RCP<Epetra_Map> ConstrMap_;      ///< unique map of constraint values
-    Teuchos::RCP<Epetra_Map> RedConstrMap_;   ///< fully redundant map of constraint values
-    Teuchos::RCP<Epetra_Export> ConstrImport_; ///< importer fully redundant <-> unique map of constraint values
+    Teuchos::RCP<::UTILS::ConstraintDofSet>
+        ConstrDofSet_;                       ///< degrees of freedom of lagrange multipliers
+    int OffsetID_;                           ///< smallest constraint boundary condition ID
+    int NumConstrID_;                        ///< number of volume constraint boundary conditions
+    int NumPresConstrID_;                    ///< number of pressure constraint boundary conditions
+    Teuchos::RCP<Epetra_Map> ConstrMap_;     ///< unique map of constraint values
+    Teuchos::RCP<Epetra_Map> RedConstrMap_;  ///< fully redundant map of constraint values
+    Teuchos::RCP<Epetra_Export>
+        ConstrImport_;  ///< importer fully redundant <-> unique map of constraint values
 
     Teuchos::RCP<Epetra_Vector> SignVolsRed_;  ///< signs of volumes
-    Teuchos::RCP<Epetra_Vector> OldVols_;  ///< volumes of last time step needed for rhs of constraint equations
-    Teuchos::RCP<Epetra_Vector> CurrVols_; ///< current volumes needed for rhs of constraint equations
-    Teuchos::RCP<Epetra_Vector> OldFlowRates_;  ///< flow rates of last time step needed for rhs of constraint equations
-    Teuchos::RCP<Epetra_Vector> CurrFlowRates_; ///< current flow rates needed for rhs of constraint equations
+    Teuchos::RCP<Epetra_Vector>
+        OldVols_;  ///< volumes of last time step needed for rhs of constraint equations
+    Teuchos::RCP<Epetra_Vector>
+        CurrVols_;  ///< current volumes needed for rhs of constraint equations
+    Teuchos::RCP<Epetra_Vector>
+        OldFlowRates_;  ///< flow rates of last time step needed for rhs of constraint equations
+    Teuchos::RCP<Epetra_Vector>
+        CurrFlowRates_;  ///< current flow rates needed for rhs of constraint equations
 
-    Teuchos::RCP<Epetra_Vector> dVfluid_; ///< current change in fluid volumes (for output purposes only)
-    Teuchos::RCP<Epetra_Vector> dVstruct_; ///< current change in structure volumes (for output purposes only)
+    Teuchos::RCP<Epetra_Vector>
+        dVfluid_;  ///< current change in fluid volumes (for output purposes only)
+    Teuchos::RCP<Epetra_Vector>
+        dVstruct_;  ///< current change in structure volumes (for output purposes only)
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> AddStructConstrMatrix_;  ///< matrix containing all structure constraint related stuff
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+        AddStructConstrMatrix_;  ///< matrix containing all structure constraint related stuff
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> AddFluidShapeDerivMatrix_; ///< additional constraint portion on block (1,2)
-    Teuchos::RCP<LINALG::SparseMatrix> FluidConstrMatrix_; ///< rectangular fluid matrix associated with constraints K_fl
-    Teuchos::RCP<LINALG::SparseMatrix> ConstrFluidMatrix_;  ///< rectangular fluid matrix associated with constraints K_lf
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+        AddFluidShapeDerivMatrix_;  ///< additional constraint portion on block (1,2)
+    Teuchos::RCP<LINALG::SparseMatrix>
+        FluidConstrMatrix_;  ///< rectangular fluid matrix associated with constraints K_fl
+    Teuchos::RCP<LINALG::SparseMatrix>
+        ConstrFluidMatrix_;  ///< rectangular fluid matrix associated with constraints K_lf
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> AleConstrMatrix_; ///< rectangular ale matrix associated with constraints K_al
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ConstrAleMatrix_; ///< rectangular ale matrix associated with constraints K_la
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+        AleConstrMatrix_;  ///< rectangular ale matrix associated with constraints K_al
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+        ConstrAleMatrix_;  ///< rectangular ale matrix associated with constraints K_la
 
-    Teuchos::RCP<Epetra_Vector> AddStructRHS_; ///< additional constraint portion on structural rhs
-    Teuchos::RCP<Epetra_Vector> AddFluidRHS_; ///< additional constraint portion on fluid rhs
-    Teuchos::RCP<Epetra_Vector> ConstrRHS_; ///< rhs of constraint equations
+    Teuchos::RCP<Epetra_Vector> AddStructRHS_;  ///< additional constraint portion on structural rhs
+    Teuchos::RCP<Epetra_Vector> AddFluidRHS_;   ///< additional constraint portion on fluid rhs
+    Teuchos::RCP<Epetra_Vector> ConstrRHS_;     ///< rhs of constraint equations
 
-    double theta_; ///< parameter for integrating fluid volumes (one-step theta scheme)
+    double theta_;  ///< parameter for integrating fluid volumes (one-step theta scheme)
 
     //@}
 
@@ -286,8 +292,7 @@ namespace FSI
     std::ofstream outstructdvol_;
     std::ofstream outstructabsvol_;
 
-  private:
-
+   private:
     /*! \brief Create the combined DOF row map for the FSI problem
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
@@ -317,9 +322,6 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
   };
-}
+}  // namespace FSI
 
 #endif
-
-
-

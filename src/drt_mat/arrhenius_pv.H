@@ -21,20 +21,16 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
-    /// parameters for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
+    /// parameters for scalar transport material with Arrhenius-type chemical kinetics (progress
+    /// variable)
     class ArrheniusPV : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ArrheniusPV(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ArrheniusPV(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ArrheniusPV() { ; }
@@ -78,27 +74,25 @@ namespace MAT
 
   }  // namespace PAR
 
-class ArrheniusPVType : public DRT::ParObjectType
-{
-public:
+  class ArrheniusPVType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ArrheniusPVType"; }
 
-  std::string Name() const { return "ArrheniusPVType"; }
+    static ArrheniusPVType& Instance() { return instance_; };
 
-  static ArrheniusPVType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ArrheniusPVType instance_;
-};
+   private:
+    static ArrheniusPVType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress variable)
+  /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress
+  /// variable)
   class ArrheniusPV : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ArrheniusPV();
 
@@ -114,7 +108,10 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ArrheniusPVType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return ArrheniusPVType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -148,7 +145,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_pv; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ArrheniusPV( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ArrheniusPV(*this)); }
 
     /// compute temperature
     double ComputeTemperature(const double provar) const;
@@ -206,13 +203,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::ArrheniusPV* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

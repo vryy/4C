@@ -19,117 +19,111 @@
 
 namespace FLD
 {
+  class TimIntPoro : public virtual FluidImplicitTimeInt
+  {
+   public:
+    /// Standard Constructor
+    TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntPoro : public virtual FluidImplicitTimeInt
-{
-public:
-  /// Standard Constructor
-  TimIntPoro(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntPoro();
 
-  /// Destructor
-  virtual ~TimIntPoro();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
+    */
+    virtual void Init();
 
-  */
-  virtual void Init();
+    /*!
+    \brief call elements to calculate system matrix/rhs and assemble
 
-  /*!
-  \brief call elements to calculate system matrix/rhs and assemble
+    */
+    virtual void AssembleMatAndRHS();
 
-  */
-  virtual void AssembleMatAndRHS();
+    /*!
+    \brief read restart data
+    */
+    virtual void ReadRestart(int step);
 
-  /*!
-  \brief read restart data
-  */
-  virtual void ReadRestart(int step);
+    //! @name Set general parameter in class f3Parameter
+    /*!
 
-  //! @name Set general parameter in class f3Parameter
-  /*!
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element*/
+    virtual void SetElementCustomParameter();
 
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element*/
-  virtual void SetElementCustomParameter();
-
-  /// set the initial porosity field
-  virtual void SetInitialPorosityField(
-    const INPAR::POROELAST::InitialField,   ///< type of initial field
-    const int startfuncno                   ///< number of spatial function
+    /// set the initial porosity field
+    virtual void SetInitialPorosityField(
+        const INPAR::POROELAST::InitialField,  ///< type of initial field
+        const int startfuncno                  ///< number of spatial function
     );
 
-  /*!
-  \brief update iterative increment
+    /*!
+    \brief update iterative increment
 
-  */
-  virtual void UpdateIterIncrementally(
-    Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
+    */
+    virtual void UpdateIterIncrementally(
+        Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
     );
 
-  /*!
-  \brief update configuration and output to file/screen
+    /*!
+    \brief update configuration and output to file/screen
 
-  */
-  virtual void Output();
+    */
+    virtual void Output();
 
-  /*!
-  \brief Do some poro-specific stuff in AssembleMatAndRHS
+    /*!
+    \brief Do some poro-specific stuff in AssembleMatAndRHS
 
-  */
-  virtual void PoroIntUpdate();
+    */
+    virtual void PoroIntUpdate();
 
-  /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
+    /*!
+    \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
-  */
-  virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    */
+    virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
-  /*!
+    /*!
 
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element
 
-  */
-  virtual void TimIntCalculateAcceleration();
+    */
+    virtual void TimIntCalculateAcceleration();
 
-  /*!
+    /*!
 
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element
 
-  */
-  virtual void SetElementGeneralFluidParameter();
+    */
+    virtual void SetElementGeneralFluidParameter();
 
-  /*!
+    /*!
 
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element
 
-  */
-  virtual void SetElementTurbulenceParameters();
-
-
-protected:
+    */
+    virtual void SetElementTurbulenceParameters();
 
 
-  /// initial porosity (poroelasticity)
-Teuchos::RCP<Epetra_Vector>    initporosityfield_;
+   protected:
+    /// initial porosity (poroelasticity)
+    Teuchos::RCP<Epetra_Vector> initporosityfield_;
 
-private:
+   private:
+  };  // class TimIntPoro
 
-
-}; // class TimIntPoro
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_PORO_H

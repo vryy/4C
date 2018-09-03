@@ -23,8 +23,9 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::IndependentPBCDofSet::IndependentPBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes)
-  :DRT::PBCDofSet(couplednodes)
+DRT::IndependentPBCDofSet::IndependentPBCDofSet(
+    Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
+    : DRT::PBCDofSet(couplednodes)
 {
 }
 
@@ -32,51 +33,45 @@ DRT::IndependentPBCDofSet::IndependentPBCDofSet(Teuchos::RCP<std::map<int,std::v
 /*----------------------------------------------------------------------*
  |  dtor (public)                                                       |
  *----------------------------------------------------------------------*/
-DRT::IndependentPBCDofSet::~IndependentPBCDofSet()
-{
-  return;
-}
+DRT::IndependentPBCDofSet::~IndependentPBCDofSet() { return; }
 
 
-int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
+int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(
+    const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
   // assign dofs for the standard dofset, that is without periodic boundary
   // conditions and using the independent dofset's ADOF
-  int count = DRT::IndependentDofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  int count = DRT::IndependentDofSet::AssignDegreesOfFreedom(dis, dspos, start);
 
   myMaxGID_ = DRT::DofSet::MaxAllGID();
 
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
   // remark: the previously assigned dofs of slave nodes are overwritten here
-  for(std::map<int,std::vector<int> >::iterator master = perbndcouples_->begin();
-      master != perbndcouples_->end();
-      ++master )
+  for (std::map<int, std::vector<int>>::iterator master = perbndcouples_->begin();
+       master != perbndcouples_->end(); ++master)
   {
-    int master_lid=dis.NodeColMap()->LID(master->first);
+    int master_lid = dis.NodeColMap()->LID(master->first);
 
-    if (master_lid<0)
+    if (master_lid < 0)
     {
-      dserror("master gid %d not on proc %d, but required by slave %d",
-              master->first,
-              dis.Comm().MyPID(),
-              master->second[0]);
+      dserror("master gid %d not on proc %d, but required by slave %d", master->first,
+          dis.Comm().MyPID(), master->second[0]);
     }
 
-    for (std::vector<int>::iterator slave=master->second.begin();
-         slave!=master->second.end();
+    for (std::vector<int>::iterator slave = master->second.begin(); slave != master->second.end();
          ++slave)
     {
-      int slave_lid=dis.NodeColMap()->LID(*slave);
+      int slave_lid = dis.NodeColMap()->LID(*slave);
 
-      if (slave_lid>-1)
+      if (slave_lid > -1)
       {
         (*numdfcolnodes_)[slave_lid] = (*numdfcolnodes_)[master_lid];
-        (*idxcolnodes_)  [slave_lid] = (*idxcolnodes_)  [master_lid];
+        (*idxcolnodes_)[slave_lid] = (*idxcolnodes_)[master_lid];
       }
       else
       {
 #ifdef DEBUG
-        if(dis.NodeRowMap()->MyGID(master->first))
+        if (dis.NodeRowMap()->MyGID(master->first))
         {
           dserror("slave not on proc but master owned by proc\n");
         }

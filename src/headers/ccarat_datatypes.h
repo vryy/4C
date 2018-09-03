@@ -22,15 +22,15 @@
 #ifdef INT
 #undef INT
 #endif
-typedef int       INT;
+typedef int INT;
 #ifdef DOUBLE
 #undef DOUBLE
 #endif
-typedef double    DOUBLE;
+typedef double DOUBLE;
 #ifdef CHAR
 #undef CHAR
 #endif
-typedef char      CHAR;
+typedef char CHAR;
 
 
 #endif /* CCARAT_DATATYPES_H */

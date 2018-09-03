@@ -22,155 +22,147 @@ Maintainer: Martin Winklmaier
 namespace DRT
 {
   class Discretization;
-namespace ELEMENTS
-{
-  class FluidBoundary;
-  class FluidAdjoint3ImplParameter;
+  namespace ELEMENTS
+  {
+    class FluidBoundary;
+    class FluidAdjoint3ImplParameter;
 
 
 
-class FluidAdjoint3BoundaryImplInterface : public DRT::SingletonDestruction
-{
+    class FluidAdjoint3BoundaryImplInterface : public DRT::SingletonDestruction
+    {
+     public:
+      /// Empty constructor
+      FluidAdjoint3BoundaryImplInterface() {}
 
-public:
-  /// Empty constructor
-  FluidAdjoint3BoundaryImplInterface() {}
+      /// Evaluate a Neumann boundary condition
+      /*!
+        This class does not provide a definition for this function, it
+        must be defined in FluidBoundaryImpl.
+       */
+      virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec) = 0;
 
-  /// Evaluate a Neumann boundary condition
-  /*!
-    This class does not provide a definition for this function, it
-    must be defined in FluidBoundaryImpl.
-   */
-  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*  ele,
-                              Teuchos::ParameterList&         params,
-                              DRT::Discretization&            discretization,
-                              const std::vector<int>&         lm,
-                              Epetra_SerialDenseVector&       elevec
-                              ) = 0;
+      /// Internal implementation class for FluidAdjointBoundary elements
+      static FluidAdjoint3BoundaryImplInterface* Impl(const DRT::Element* ele);
+    };
 
-  /// Internal implementation class for FluidAdjointBoundary elements
-  static FluidAdjoint3BoundaryImplInterface* Impl(const DRT::Element* ele);
-};
+    /// Internal FluidAdjoint3Boundary element implementation
+    /*!
+      This internal class keeps all the working arrays needed to
+      calculate the FluidAdjoint3Boundary element.
 
-  /// Internal FluidAdjoint3Boundary element implementation
-  /*!
-    This internal class keeps all the working arrays needed to
-    calculate the FluidAdjoint3Boundary element.
+      The FluidAdjoint3Boundary element will allocate exactly one object of this class
+      for all FluidAdjoint3Boundary elements with the same number of nodes in the mesh.
+      This allows us to use exactly matching working arrays (and keep them
+      around.)
 
-    The FluidAdjoint3Boundary element will allocate exactly one object of this class
-    for all FluidAdjoint3Boundary elements with the same number of nodes in the mesh.
-    This allows us to use exactly matching working arrays (and keep them
-    around.)
+      \author winklmaier
+      \date 03/12
+    */
+    template <DRT::Element::DiscretizationType distype>
+    class FluidAdjoint3BoundaryImpl : public FluidAdjoint3BoundaryImplInterface
+    {
+      friend class FluidEleParameter;
 
-    \author winklmaier
-    \date 03/12
-  */
-template<DRT::Element::DiscretizationType distype>
-class FluidAdjoint3BoundaryImpl: public FluidAdjoint3BoundaryImplInterface
-{
-  friend class FluidEleParameter;
+     public:
+      /// Singleton access method
+      static FluidAdjoint3BoundaryImpl<distype>* Instance(bool create = true);
 
-public:
+      /// called upon destruction
+      virtual void Done();
 
-  /// Singleton access method
-  static FluidAdjoint3BoundaryImpl<distype> * Instance(bool create = true);
+      /// Constructor
+      FluidAdjoint3BoundaryImpl();
 
-  /// called upon destruction
-  virtual void Done();
+      //! number of element nodes
+      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  /// Constructor
-  FluidAdjoint3BoundaryImpl();
+      //! number of space dimensions of the FluidBoundary element
+      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  //! number of element nodes
-  static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      //! number of space dimensions of the parent element
+      static const int nsd_ = bdrynsd_ + 1;
 
-  //! number of space dimensions of the FluidBoundary element
-  static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      //! number of dof's per node
+      static const int numdofpernode_ = nsd_ + 1;
 
-  //! number of space dimensions of the parent element
-  static const int nsd_ = bdrynsd_+1;
+      //! Evaluate a Neumann boundary condition
+      virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec);
 
-  //! number of dof's per node
-  static const int numdofpernode_ = nsd_ + 1;
+     private:
+      //! evaluate shape functions/derivatives, metric tensor and
+      //! optionally, the infinitesimal area element and the normalized normal vector the at
+      //! integration point
+      void EvalShapeFuncAtBouIntPoint(
+          DRT::UTILS::GaussIntegration::iterator& iquad,  // actual integration point
+          const int eleid                                 // element ID
+      );
 
-  //! Evaluate a Neumann boundary condition
-  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*    ele,
-                              Teuchos::ParameterList&    params,
-                              DRT::Discretization&       discretization,
-                              const std::vector<int>&    lm,
-                              Epetra_SerialDenseVector&  elevec
-                              );
+      //! get material parameters
+      void GetMaterialParams(
+          Teuchos::RCP<const MAT::Material> material  ///< reference pointer to material
+      );
 
-private:
+      /*!
+       * \brief fill elment matrix and vectors with the global values
+       */
+      void ExtractValuesFromGlobalVector(
+          const DRT::Discretization& discretization,  ///< discretization
+          const std::vector<int>& lm,                 ///<
+          LINALG::Matrix<nsd_, nen_>* matrixtofill,   ///< vector field
+          LINALG::Matrix<nen_, 1>* vectortofill,      ///< scalar field
+          const std::string state                     ///< state of the global vector
+          ) const;
 
-  //! evaluate shape functions/derivatives, metric tensor and
-  //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
-  void EvalShapeFuncAtBouIntPoint(
-      DRT::UTILS::GaussIntegration::iterator& iquad,       // actual integration point
-      const int                               eleid        // element ID
-  );
+      //! pointer to parameter list
+      Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldAdPara_;
 
-  //! get material parameters
-  void GetMaterialParams(
-      Teuchos::RCP<const MAT::Material> material  ///< reference pointer to material
-  );
+      // gauss points
+      DRT::UTILS::GaussIntegration intpoints_;
 
-  /*!
-   * \brief fill elment matrix and vectors with the global values
-   */
-  void ExtractValuesFromGlobalVector(
-      const DRT::Discretization&  discretization, ///< discretization
-      const std::vector<int>&     lm,             ///<
-      LINALG::Matrix<nsd_,nen_>*  matrixtofill,   ///< vector field
-      LINALG::Matrix<nen_,1>*     vectortofill,   ///< scalar field
-      const std::string           state           ///< state of the global vector
-  ) const;
+      //! node coordinates for boundary element
+      LINALG::Matrix<nsd_, nen_> xyze_;
+      //! coordinates of current integration point in reference coordinates
+      LINALG::Matrix<bdrynsd_, 1> xsi_;
+      //! array for shape functions for boundary element
+      LINALG::Matrix<nen_, 1> funct_;
+      //! array for shape function derivatives for boundary element
+      LINALG::Matrix<bdrynsd_, nen_> deriv_;
 
-  //! pointer to parameter list
-  Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldAdPara_;
+      //! normal vector pointing out of the domain
+      LINALG::Matrix<nsd_, 1> unitnormal_;
 
-  // gauss points
-  DRT::UTILS::GaussIntegration intpoints_;
+      //! velocity vector at integration point
+      LINALG::Matrix<nsd_, 1> velint_;
+      //! velocity vector at integration point at old time step
+      LINALG::Matrix<nsd_, 1> velint_old_;
 
-  //! node coordinates for boundary element
-  LINALG::Matrix<nsd_,nen_> xyze_;
-  //! coordinates of current integration point in reference coordinates
-  LINALG::Matrix<bdrynsd_,1> xsi_;
-  //! array for shape functions for boundary element
-  LINALG::Matrix<nen_,1> funct_;
-  //! array for shape function derivatives for boundary element
-  LINALG::Matrix<bdrynsd_,nen_> deriv_;
+      //! fluid velocity vector at integration point
+      LINALG::Matrix<nsd_, 1> fluidvelint_;
+      //! fluid velocity vector at integration point
+      LINALG::Matrix<nsd_, 1> fluidvelint_old_;
 
-  //! normal vector pointing out of the domain
-  LINALG::Matrix<nsd_,1> unitnormal_;
+      //! pressure at integration point
+      double pressint_;
+      //! pressure at integration point
+      double pressint_old_;
 
-  //! velocity vector at integration point
-  LINALG::Matrix<nsd_,1> velint_;
-  //! velocity vector at integration point at old time step
-  LINALG::Matrix<nsd_,1> velint_old_;
+      //! infinitesimal area element drs
+      double drs_;
+      //! integration factor
+      double fac_;
+      //! physical viscosity
+      double visc_;
+      //! density at t_(n+alpha_F) or t_(n+1)
+      double dens_;
 
-  //! fluid velocity vector at integration point
-  LINALG::Matrix<nsd_,1> fluidvelint_;
-  //! fluid velocity vector at integration point
-  LINALG::Matrix<nsd_,1> fluidvelint_old_;
+    };  // end class fluid3boundaryImpl
 
-  //! pressure at integration point
-  double pressint_;
-  //! pressure at integration point
-  double pressint_old_;
-
-  //! infinitesimal area element drs
-  double drs_;
-  //! integration factor
-  double fac_;
-  //! physical viscosity
-  double visc_;
-  //! density at t_(n+alpha_F) or t_(n+1)
-  double dens_;
-
-  };  // end class fluid3boundaryImpl
-
-}
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif /* TOPOPT_FLUIDADJOINT3_BOUNDARY_H_ */

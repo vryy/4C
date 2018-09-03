@@ -24,12 +24,12 @@ or the well-known .dat file is created.
 //! \namespace EXODUS namespace of the ExodusII-to-BACI preprocessing tool
 namespace EXODUS
 {
-// forward declaration
-class Mesh;
+  // forward declaration
+  class Mesh;
 
-//! create default bc file
-int CreateDefaultBCFile(EXODUS::Mesh& mesh);
+  //! create default bc file
+  int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 
-} // of namespace EXODUS
+}  // namespace EXODUS
 
 #endif /*PRE_EXODUS_H_*/

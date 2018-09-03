@@ -23,177 +23,150 @@
 class Epetra_Vector;
 class Epetra_Map;
 class Epetra_Comm;
-namespace LINALG {
+namespace LINALG
+{
   class SerialDenseVector;
 }
-namespace DRT {
+namespace DRT
+{
   class DiscretizationInterface;
   class Node;
-}
-namespace STR {
-namespace MODELEVALUATOR {
-  class Contact;
-}
-}
-namespace CONTACT {
+}  // namespace DRT
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class Contact;
+  }
+}  // namespace STR
+namespace CONTACT
+{
   class ParamsInterface;
-namespace AUG {
-  class DataContainer;
-  class Strategy;
-
-  enum class AdaptiveCnType
+  namespace AUG
   {
-    vague,
-    init_nbc
-  };
+    class DataContainer;
+    class Strategy;
 
-  class Body
-  {
-    typedef std::vector<const DRT::DiscretizationInterface*> discret_set;
-
-  public:
-    /// constructor
-    Body() = default;
-
-    /// destructor
-    ~Body() = default;
-
-    inline Epetra_Map* NodeMap() { return node_map_.get(); };
-    inline Epetra_Map* DofMap() {return dof_map_.get(); };
-
-    void addNodeMapPtr( const Teuchos::RCP<Epetra_Map>& node_map )
+    enum class AdaptiveCnType
     {
-      node_map_ = node_map;
-    }
+      vague,
+      init_nbc
+    };
 
-    void addDofMapPtr( const Teuchos::RCP<Epetra_Map>& dof_map )
+    class Body
     {
-      dof_map_ = dof_map;
-    }
+      typedef std::vector<const DRT::DiscretizationInterface*> discret_set;
 
-    void addContactInterfaceMaps(
-        const plain_interface_set& interfaces,
-        const Epetra_Comm& comm );
+     public:
+      /// constructor
+      Body() = default;
 
-    void identifyAndVerifyNumDofsPerNode(
-        const DRT::DiscretizationInterface& str_discret,
-        const plain_interface_set& interfaces );
+      /// destructor
+      ~Body() = default;
 
-    void computeResultants(
-        const DRT::DiscretizationInterface& str_discret,
-        const plain_interface_set& interfaces,
-        const Epetra_Vector& fext,
-        const Epetra_Vector& unit_gap_force );
+      inline Epetra_Map* NodeMap() { return node_map_.get(); };
+      inline Epetra_Map* DofMap() { return dof_map_.get(); };
 
-    double leastSquaresForceBalance( const double scale = 1.0 ) const;
+      void addNodeMapPtr(const Teuchos::RCP<Epetra_Map>& node_map) { node_map_ = node_map; }
 
-  private:
-    void resultantVector(
-        const Epetra_Vector& vec,
-        const Epetra_Map& node_map,
-        const discret_set& discrets,
-        LINALG::SerialDenseVector& resultant ) const;
+      void addDofMapPtr(const Teuchos::RCP<Epetra_Map>& dof_map) { dof_map_ = dof_map; }
 
-    const DRT::Node* findRowNode(
-        int ngid,
-        const discret_set& discrets,
-        int& ilid ) const;
+      void addContactInterfaceMaps(const plain_interface_set& interfaces, const Epetra_Comm& comm);
 
-    Teuchos::RCP<Epetra_Map> extractContactInterfaceMap(
-        const Epetra_Map& body_map,
-        const Epetra_Map& map,
-        const Epetra_Map* pmap ) const;
+      void identifyAndVerifyNumDofsPerNode(
+          const DRT::DiscretizationInterface& str_discret, const plain_interface_set& interfaces);
 
-    int numDofsPerNode(
-        const DRT::DiscretizationInterface& discret,
-        int dofset_id,
-        const int* num_dofs_per_node = NULL) const;
+      void computeResultants(const DRT::DiscretizationInterface& str_discret,
+          const plain_interface_set& interfaces, const Epetra_Vector& fext,
+          const Epetra_Vector& unit_gap_force);
 
-  private:
+      double leastSquaresForceBalance(const double scale = 1.0) const;
 
-    Teuchos::RCP<Epetra_Map> contact_inodes_ = Teuchos::null;
+     private:
+      void resultantVector(const Epetra_Vector& vec, const Epetra_Map& node_map,
+          const discret_set& discrets, LINALG::SerialDenseVector& resultant) const;
 
-    Teuchos::RCP<Epetra_Map> contact_idofs_ = Teuchos::null;
+      const DRT::Node* findRowNode(int ngid, const discret_set& discrets, int& ilid) const;
 
-    std::set<int> interface_lids_;
+      Teuchos::RCP<Epetra_Map> extractContactInterfaceMap(
+          const Epetra_Map& body_map, const Epetra_Map& map, const Epetra_Map* pmap) const;
 
-    /// node map of this body
-    Teuchos::RCP<Epetra_Map> node_map_ = Teuchos::null;
+      int numDofsPerNode(const DRT::DiscretizationInterface& discret, int dofset_id,
+          const int* num_dofs_per_node = NULL) const;
 
-    /// dof map of this body
-    Teuchos::RCP<Epetra_Map> dof_map_  = Teuchos::null;
+     private:
+      Teuchos::RCP<Epetra_Map> contact_inodes_ = Teuchos::null;
 
-    /// resultant of all external forces acting on this body
-    LINALG::SerialDenseVector rfext_;
+      Teuchos::RCP<Epetra_Map> contact_idofs_ = Teuchos::null;
 
-    /// resultant of all contac forces acting on this body
-    LINALG::SerialDenseVector rcontact_;
+      std::set<int> interface_lids_;
 
-    int num_dofs_per_node_ = -1;
-  };
+      /// node map of this body
+      Teuchos::RCP<Epetra_Map> node_map_ = Teuchos::null;
 
-  /*--------------------------------------------------------------------------*/
-  class AdaptiveCn
-  {
-    typedef std::vector<Teuchos::RCP<Body> > nbc_body_set;
+      /// dof map of this body
+      Teuchos::RCP<Epetra_Map> dof_map_ = Teuchos::null;
 
-  public:
-    AdaptiveCn(
-        Strategy& strat,
-        const plain_interface_set& interfaces,
-        DataContainer& data );
+      /// resultant of all external forces acting on this body
+      LINALG::SerialDenseVector rfext_;
 
-    AdaptiveCn( const AdaptiveCn& adcn ) = delete;
+      /// resultant of all contac forces acting on this body
+      LINALG::SerialDenseVector rcontact_;
 
-    ~ AdaptiveCn() = default;
+      int num_dofs_per_node_ = -1;
+    };
 
-    void Execute(
-        const AdaptiveCnType adaptive_cn_type,
-        CONTACT::ParamsInterface& cparams,
-        std::ostream* os );
+    /*--------------------------------------------------------------------------*/
+    class AdaptiveCn
+    {
+      typedef std::vector<Teuchos::RCP<Body>> nbc_body_set;
 
-  private:
-    class InitNbc;
+     public:
+      AdaptiveCn(Strategy& strat, const plain_interface_set& interfaces, DataContainer& data);
 
-  private:
+      AdaptiveCn(const AdaptiveCn& adcn) = delete;
 
-    Strategy& strategy_;
-    const plain_interface_set& interfaces_;
-    DataContainer& data_;
+      ~AdaptiveCn() = default;
 
-    AdaptiveCnType type_ = AdaptiveCnType::vague;
-  };
+      void Execute(const AdaptiveCnType adaptive_cn_type, CONTACT::ParamsInterface& cparams,
+          std::ostream* os);
 
-  /*--------------------------------------------------------------------------*/
-  class AdaptiveCn::InitNbc
-  {
-  public:
-    explicit InitNbc( AdaptiveCn& parent ) : parent_(parent) {};
+     private:
+      class InitNbc;
 
-    void operator()(
-        CONTACT::ParamsInterface& cparams,
-        std::ostream* os = NULL );
-  private:
+     private:
+      Strategy& strategy_;
+      const plain_interface_set& interfaces_;
+      DataContainer& data_;
 
-    Teuchos::RCP<Epetra_Vector> UnitGapForce() const;
+      AdaptiveCnType type_ = AdaptiveCnType::vague;
+    };
 
-    const STR::MODELEVALUATOR::Contact& CModel(
-         CONTACT::ParamsInterface& cparams ) const;
+    /*--------------------------------------------------------------------------*/
+    class AdaptiveCn::InitNbc
+    {
+     public:
+      explicit InitNbc(AdaptiveCn& parent) : parent_(parent){};
 
-    void SplitStructureIntoDistinctNeumannBodies(
-        nbc_body_set& neumann_bodies,
-        const Epetra_Vector& fext,
-        const DRT::DiscretizationInterface& full_discret ) const;
+      void operator()(CONTACT::ParamsInterface& cparams, std::ostream* os = NULL);
 
-    void PrintUpdate( std::ostream* os_ptr ) const;
+     private:
+      Teuchos::RCP<Epetra_Vector> UnitGapForce() const;
 
-  private:
-    AdaptiveCn& parent_;
-    double dt_ = 0.0;
-    double cn_init_ = 0.0;
-  };
-} // namespace AUG
-} // namespace CONTACT
+      const STR::MODELEVALUATOR::Contact& CModel(CONTACT::ParamsInterface& cparams) const;
+
+      void SplitStructureIntoDistinctNeumannBodies(nbc_body_set& neumann_bodies,
+          const Epetra_Vector& fext, const DRT::DiscretizationInterface& full_discret) const;
+
+      void PrintUpdate(std::ostream* os_ptr) const;
+
+     private:
+      AdaptiveCn& parent_;
+      double dt_ = 0.0;
+      double cn_init_ = 0.0;
+    };
+  }  // namespace AUG
+}  // namespace CONTACT
 
 
 #endif /* SRC_DRT_CONTACT_AUG_CONTACT_AUG_ADAPTIVE_CN_H_ */

@@ -19,17 +19,13 @@ Maintainer: Michael Gee
 #include <Teuchos_RCP.hpp>
 
 //> general input routine for baci
-void ntainp_ccadiscret(
-    std::string& inputfile_name,      //!< input file name
-    std::string& outputfile_kenner,   //!< output file kenner
-    std::string& restartfile_kenner   //!< restart file kenner
-  );
+void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
+    std::string& outputfile_kenner,                  //!< output file kenner
+    std::string& restartfile_kenner                  //!< restart file kenner
+);
 
 //> setup of parallel output as early as possible
 void SetupParallelOutput(
-    std::string& outputfile_kenner,
-    Teuchos::RCP<Epetra_Comm> lcomm,
-    int group);
+    std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
 
 #endif  // #ifndef GLOBAL_INP_CONTROL2_H
-

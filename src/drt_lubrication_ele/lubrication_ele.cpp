@@ -23,93 +23,67 @@ Maintainer: Andy Wirtz
 
 DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
-DRT::ELEMENTS::LubricationType& DRT::ELEMENTS::LubricationType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::LubricationType& DRT::ELEMENTS::LubricationType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::LubricationType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::LubricationType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Lubrication* object =
-    new DRT::ELEMENTS::Lubrication(-1,-1);
+  DRT::ELEMENTS::Lubrication* object = new DRT::ELEMENTS::Lubrication(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create( const std::string eletype,
-                                                            const std::string eledistype,
-                                                            const int id,
-                                                            const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create(
+    const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if ( eletype=="LUBRICATION" )
+  if (eletype == "LUBRICATION")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::LubricationType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::LubricationType::NodalBlockInformation(
+    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
   nv = numdf;
-
 }
 
-void DRT::ELEMENTS::LubricationType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::LubricationType::ComputeNullSpace(
+    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeFluidDNullSpace(dis, ns, x0, numdf, dimns);
 }
 
-void DRT::ELEMENTS::LubricationType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::LubricationType::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["LUBRICATION"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["LUBRICATION"];
 
-  defs["QUAD4"]
-    .AddIntVector("QUAD4",4)
-    .AddNamedInt("MAT")
-    ;
+  defs["QUAD4"].AddIntVector("QUAD4", 4).AddNamedInt("MAT");
 
-  defs["QUAD8"]
-    .AddIntVector("QUAD8",8)
-    .AddNamedInt("MAT")
-    ;
+  defs["QUAD8"].AddIntVector("QUAD8", 8).AddNamedInt("MAT");
 
-  defs["QUAD9"]
-    .AddIntVector("QUAD9",9)
-    .AddNamedInt("MAT")
-    ;
+  defs["QUAD9"].AddIntVector("QUAD9", 9).AddNamedInt("MAT");
 
-  defs["TRI3"]
-    .AddIntVector("TRI3",3)
-    .AddNamedInt("MAT")
-    ;
+  defs["TRI3"].AddIntVector("TRI3", 3).AddNamedInt("MAT");
 
-  defs["TRI6"]
-    .AddIntVector("TRI6",6)
-    .AddNamedInt("MAT")
-    ;
+  defs["TRI6"].AddIntVector("TRI6", 6).AddNamedInt("MAT");
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("MAT")
-    ;
+  defs["LINE2"].AddIntVector("LINE2", 2).AddNamedInt("MAT");
 
-  defs["LINE3"]
-    .AddIntVector("LINE3",3)
-    .AddNamedInt("MAT")
-    ;
-
+  defs["LINE3"].AddIntVector("LINE3", 3).AddNamedInt("MAT");
 }
 
 /*----------------------------------------------------------------------*
@@ -123,9 +97,10 @@ DRT::ELEMENTS::LubricationBoundaryType& DRT::ELEMENTS::LubricationBoundaryType::
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create(
+    const int id, const int owner)
 {
-  //return Teuchos::rcp( new LubricationBoundary( id, owner ) );
+  // return Teuchos::rcp( new LubricationBoundary( id, owner ) );
   return Teuchos::null;
 }
 
@@ -133,9 +108,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create( const
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner) :
-DRT::Element(id,owner),
-distype_(dis_none)
+DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner)
+    : DRT::Element(id, owner), distype_(dis_none)
 {
   return;
 }
@@ -143,11 +117,10 @@ distype_(dis_none)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Lubrication::Lubrication(const DRT::ELEMENTS::Lubrication& old) :
-DRT::Element(old),
-distype_(old.distype_)
+DRT::ELEMENTS::Lubrication::Lubrication(const DRT::ELEMENTS::Lubrication& old)
+    : DRT::Element(old), distype_(old.distype_)
 {
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -164,10 +137,7 @@ DRT::Element* DRT::ELEMENTS::Lubrication::Clone() const
  |  Return the shape of a Lubrication element                     (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Lubrication::Shape() const
-{
-  return distype_;
-}
+DRT::Element::DiscretizationType DRT::ELEMENTS::Lubrication::Shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -175,18 +145,18 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Lubrication::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Lubrication::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
 
   // add base class Element
   Element::Pack(data);
 
   // add internal data
-  AddtoPack(data,distype_);
+  AddtoPack(data, distype_);
 
   return;
 }
@@ -201,19 +171,19 @@ void DRT::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
 
   // extract internal data
-  distype_ = static_cast<DiscretizationType>(ExtractInt(position,data));
+  distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -248,10 +218,7 @@ int DRT::ELEMENTS::Lubrication::NumVolume() const
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Lubrication::~Lubrication()
-{
-  return;
-}
+DRT::ELEMENTS::Lubrication::~Lubrication() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -271,7 +238,7 @@ void DRT::ELEMENTS::Lubrication::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -280,23 +247,23 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Lines()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  if (NumLine() > 1) // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary,Lubrication>(DRT::UTILS::buildLines,this);
+  if (NumLine() > 1)  // 3D and 2D
+    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary, Lubrication>(
+        DRT::UTILS::buildLines, this);
   else
   {
     // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element> > lines(1);
-    lines[0]= Teuchos::rcp(this, false);
+    std::vector<Teuchos::RCP<Element>> lines(1);
+    lines[0] = Teuchos::rcp(this, false);
     return lines;
   }
-
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -305,13 +272,14 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new surface elements:
-  if (NumSurface() > 1) // 3D
-    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary,Lubrication>(DRT::UTILS::buildSurfaces,this);
+  if (NumSurface() > 1)  // 3D
+    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary, Lubrication>(
+        DRT::UTILS::buildSurfaces, this);
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
-    std::vector<Teuchos::RCP<Element> > surfaces(1);
-    surfaces[0]= Teuchos::rcp(this, false);
+    std::vector<Teuchos::RCP<Element>> surfaces(1);
+    surfaces[0] = Teuchos::rcp(this, false);
     return surfaces;
   }
   else
@@ -326,7 +294,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)               wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Volumes()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Lubrication::Volumes()
 {
   dserror("Volumes() for 1D-/2D-Lubrication element not implemented");
   return DRT::Element::Volumes();
@@ -337,14 +305,11 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Volumes()
  | read element input                                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Lubrication::ReadElement(
-    const std::string& eletype,
-    const std::string& distype,
-    DRT::INPUT::LineDefinition* linedef
-    )
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
   // set discretization type
@@ -363,24 +328,22 @@ bool DRT::ELEMENTS::Lubrication::ReadElement(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::Lubrication* parent,
-                              const int lbeleid) :
-DRT::FaceElement(id,owner)
+DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, int nnode,
+    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Lubrication* parent, const int lbeleid)
+    : DRT::FaceElement(id, owner)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lbeleid);
+  SetParentMasterElement(parent, lbeleid);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(const DRT::ELEMENTS::LubricationBoundary& old) :
-DRT::FaceElement(old)
+DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(
+    const DRT::ELEMENTS::LubricationBoundary& old)
+    : DRT::FaceElement(old)
 {
   return;
 }
@@ -424,10 +387,7 @@ void DRT::ELEMENTS::LubricationBoundary::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationBoundary::~LubricationBoundary()
-{
-  return;
-}
+DRT::ELEMENTS::LubricationBoundary::~LubricationBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -438,7 +398,7 @@ void DRT::ELEMENTS::LubricationBoundary::Print(std::ostream& os) const
   os << "LubricationBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  "<<Shape()<< std::endl;
+  std::cout << "DiscretizationType:  " << Shape() << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -462,7 +422,7 @@ int DRT::ELEMENTS::LubricationBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::LubricationBoundary::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -472,14 +432,14 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::LubricationBoundary::Lin
 
   // so we have to allocate new line elements:
   dserror("Lines of LubricationBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element> > lines(0);
+  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::LubricationBoundary::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -489,6 +449,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::LubricationBoundary::Sur
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of LubricationBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
+  std::vector<Teuchos::RCP<DRT::Element>> surfaces(0);
   return surfaces;
 }

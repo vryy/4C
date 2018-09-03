@@ -25,15 +25,13 @@
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-PARTICLE::TimIntRK::TimIntRK(
-    const Teuchos::ParameterList& ioparams,
-    const Teuchos::ParameterList& particledynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<IO::DiscretizationWriter> output
-  ) : PARTICLE::TimIntExpl(ioparams,particledynparams,xparams,actdis,output),
-  rk_scheme_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(particledynparams,"DYNAMICTYP")),
-  sign_(Teuchos::null)
+PARTICLE::TimIntRK::TimIntRK(const Teuchos::ParameterList& ioparams,
+    const Teuchos::ParameterList& particledynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : PARTICLE::TimIntExpl(ioparams, particledynparams, xparams, actdis, output),
+      rk_scheme_(
+          DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(particledynparams, "DYNAMICTYP")),
+      sign_(Teuchos::null)
 {
   return;
 }
@@ -47,8 +45,9 @@ void PARTICLE::TimIntRK::Init()
   // call base class routine
   PARTICLE::TimIntExpl::Init();
 
-  if(Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_) != Teuchos::null)
-    sign_  =  Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(),true));
+  if (Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_) !=
+      Teuchos::null)
+    sign_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
 
   return;
 }
@@ -79,17 +78,20 @@ int PARTICLE::TimIntRK::IntegrateStep()
 void PARTICLE::TimIntRK::Integrate_RK_Second()
 {
   const double dt = (*dt_)[0];
-  const double dthalf = dt/2.0;
+  const double dthalf = dt / 2.0;
 
   // perform time integration for scatra-particle coupling
-  if(Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_) !=
+      Teuchos::null)
   {
     // -------------------------------------------------------------------
     //                predictor
     // -------------------------------------------------------------------
 
     // set velocity of particles: using vel
-    Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_)->GetVelocity(0.0);
+    Teuchos::RCP<Epetra_Vector> vel =
+        Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_)
+            ->GetVelocity(0.0);
 
     // displacements at time_{n}
     Teuchos::RCP<Epetra_Vector> dis = Teuchos::rcp(new Epetra_Vector(*disn_));
@@ -107,11 +109,11 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     Teuchos::RCP<Epetra_Vector> old;
 
     old = disn_;
-    disn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    disn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
     LINALG::Export(*old, *disn_);
 
     old = dis;
-    dis = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    dis = LINALG::CreateVector(*discret_->DofRowMap(), true);
     LINALG::Export(*old, *dis);
 
     // -------------------------------------------------------------------
@@ -119,7 +121,8 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     // -------------------------------------------------------------------
 
     // get velocity at intermediate position computed in predictor step:
-    vel = Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_)->GetVelocity(0.5);
+    vel = Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_)
+              ->GetVelocity(0.5);
 
     disn_->Update(1.0, *dis, dt, *vel, 0.0);
 
@@ -130,7 +133,7 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     particle_algorithm_->TransferParticles(true, false);
 
     // testing output for convergence study (one particle assumed)
-    //std::cout << "position " << std::setprecision(12) << (*disn_)[0] << std::endl;
+    // std::cout << "position " << std::setprecision(12) << (*disn_)[0] << std::endl;
   }
 
   // perform time integration for pure particle simulations
@@ -143,11 +146,12 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     const Teuchos::RCP<Epetra_Vector> f_contact = LINALG::CreateVector(*(discret_->DofRowMap()));
     const Teuchos::RCP<Epetra_Vector> m_contact = LINALG::CreateVector(*(discret_->DofRowMap()));
 
-    // initialize variable for total internal energy, i.e., the sum of elastic and potential energies
+    // initialize variable for total internal energy, i.e., the sum of elastic and potential
+    // energies
     intergy_ = 0.;
 
     // evaluate particle-particle and particle-wall collisions at time t_n
-    if(collhandler_ != Teuchos::null)
+    if (collhandler_ != Teuchos::null)
     {
       collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
       intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact);
@@ -170,7 +174,7 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     strategy_->RotateOrientVector(dthalf);
 
     // compute angular velocities at time t_{n+1/2}
-    strategy_->PredictOrCorrectAngularVelocity(dthalf,*m_contact,orient);
+    strategy_->PredictOrCorrectAngularVelocity(dthalf, *m_contact, orient);
 
     //
     // corrector step
@@ -183,16 +187,16 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
     veln_->Update(1., *(*vel_)(0), dt, *accn_, 0.);
 
     // restore orientations at time t_n
-    orient_->Update(1.,orient,0.);
+    orient_->Update(1., orient, 0.);
 
     // compute orientations at time t_{n+1}
     strategy_->RotateOrientVector(dt);
 
     // restore angular velocities at time t_n
-    angVeln_->Update(1.,*(*angVel_)(0),0.);
+    angVeln_->Update(1., *(*angVel_)(0), 0.);
 
     // compute angular velocities at time t_{n+1}
-    strategy_->PredictOrCorrectAngularVelocity(dt,*m_contact,orient);
+    strategy_->PredictOrCorrectAngularVelocity(dt, *m_contact, orient);
   }
 
   return;
@@ -215,7 +219,8 @@ void PARTICLE::TimIntRK::Integrate_RK_Fourth()
  *----------------------------------------------------------------------*/
 void PARTICLE::TimIntRK::UpdateStatesAfterParticleTransfer()
 {
-  if(Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<PARTICLE::ScatraParticleCoupling>(particle_algorithm_) !=
+      Teuchos::null)
   {
     // transfer only available state vectors
     Teuchos::RCP<Epetra_Vector> old;
@@ -223,7 +228,7 @@ void PARTICLE::TimIntRK::UpdateStatesAfterParticleTransfer()
     if (disn_ != Teuchos::null)
     {
       old = disn_;
-      disn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+      disn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
       LINALG::Export(*old, *disn_);
     }
 
@@ -238,7 +243,7 @@ void PARTICLE::TimIntRK::UpdateStatesAfterParticleTransfer()
     if (sign_ != Teuchos::null)
     {
       old = sign_;
-      sign_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+      sign_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
       LINALG::Export(*old, *sign_);
     }
   }
@@ -264,16 +269,12 @@ void PARTICLE::TimIntRK::OutputDisplacement() const
 /*----------------------------------------------------------------------*
  | write restart                                        rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimIntRK::OutputRestart
-(
-  bool& datawritten
-)
+void PARTICLE::TimIntRK::OutputRestart(bool& datawritten)
 {
   // call base class routine
   TimInt::OutputRestart(datawritten);
 
-  if(sign_ != Teuchos::null)
-    output_->WriteVector("sign", sign_, IO::nodevector);
+  if (sign_ != Teuchos::null) output_->WriteVector("sign", sign_, IO::nodevector);
 
   return;
 }
@@ -282,16 +283,13 @@ void PARTICLE::TimIntRK::OutputRestart
 /*----------------------------------------------------------------------*
  | output position, radius and sign                     rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimIntRK::OutputState
-(
-  bool& datawritten
-)
+void PARTICLE::TimIntRK::OutputState(bool& datawritten)
 {
   // call base class routine
   TimInt::OutputState(datawritten);
 
   // output particle sign vector if applicable
-  if(sign_ != Teuchos::null)
+  if (sign_ != Teuchos::null)
   {
     output_->WriteVector("sign", sign_, IO::nodevector);
     output_->ClearMapCache();
@@ -310,7 +308,7 @@ void PARTICLE::TimIntRK::ReadRestartState()
   TimInt::ReadRestartState();
 
   // read particle sign vector if applicable
-  if(sign_ != Teuchos::null)
+  if (sign_ != Teuchos::null)
   {
     IO::DiscretizationReader reader(discret_, step_);
     reader.ReadVector(sign_, "sign");

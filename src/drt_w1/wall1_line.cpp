@@ -18,32 +18,25 @@
 
 DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;
 
-DRT::ELEMENTS::Wall1LineType& DRT::ELEMENTS::Wall1LineType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::Wall1LineType& DRT::ELEMENTS::Wall1LineType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::Wall1* parent,
-                              const int lline) :
-DRT::FaceElement(id,owner)
+DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::ELEMENTS::Wall1* parent, const int lline)
+    : DRT::FaceElement(id, owner)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lline);
+  SetParentMasterElement(parent, lline);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old) :
-DRT::FaceElement(old)
+DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old) : DRT::FaceElement(old)
 {
   return;
 }
@@ -66,16 +59,45 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
 {
   DRT::Element::DiscretizationType distype_line = dis_none;
 
-  switch(ParentMasterElement()->Shape())
+  switch (ParentMasterElement()->Shape())
   {
-  case tri3:{ distype_line = line2; break;}
-  case tri6:{ distype_line = line3; break;}
-  case quad4:{ distype_line = line2; break;}
-  case quad8:{ distype_line = line3; break;}
-  case quad9:{ distype_line = line3; break;}
-  case nurbs4:{ distype_line = nurbs2; break;}
-  case nurbs9:{ distype_line = nurbs3; break;}
-  default: dserror("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
+    case tri3:
+    {
+      distype_line = line2;
+      break;
+    }
+    case tri6:
+    {
+      distype_line = line3;
+      break;
+    }
+    case quad4:
+    {
+      distype_line = line2;
+      break;
+    }
+    case quad8:
+    {
+      distype_line = line3;
+      break;
+    }
+    case quad9:
+    {
+      distype_line = line3;
+      break;
+    }
+    case nurbs4:
+    {
+      distype_line = nurbs2;
+      break;
+    }
+    case nurbs9:
+    {
+      distype_line = nurbs3;
+      break;
+    }
+    default:
+      dserror("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
   }
 
   return distype_line;
@@ -105,10 +127,7 @@ void DRT::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::~Wall1Line()
-{
-  return;
-}
+DRT::ELEMENTS::Wall1Line::~Wall1Line() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -120,6 +139,3 @@ void DRT::ELEMENTS::Wall1Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-
-

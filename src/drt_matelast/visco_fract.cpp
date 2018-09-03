@@ -27,36 +27,27 @@ the input line should read
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::Fract::Fract(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  tau_(matdata->GetDouble("TAU")),
-  alpha_(matdata->GetDouble("ALPHA")),
-  beta_(matdata->GetDouble("BETA"))
+MAT::ELASTIC::PAR::Fract::Fract(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      tau_(matdata->GetDouble("TAU")),
+      alpha_(matdata->GetDouble("ALPHA")),
+      beta_(matdata->GetDouble("BETA"))
 {
 }
 
 /*----------------------------------------------------------------------*
  *            Constructor Material Class                                *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::Fract::Fract(MAT::ELASTIC::PAR::Fract* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::Fract::Fract(MAT::ELASTIC::PAR::Fract* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Fract::ReadMaterialParametersVisco(
-  double& tau,
-  double& beta,
-  double& alpha,
-  std::string& solve
-  )
+    double& tau, double& beta, double& alpha, std::string& solve)
 {
-  tau = params_ -> tau_;
-  alpha = params_ -> alpha_;
-  beta = params_ -> beta_;
+  tau = params_->tau_;
+  alpha = params_->alpha_;
+  beta = params_->beta_;
 
   return;
 }

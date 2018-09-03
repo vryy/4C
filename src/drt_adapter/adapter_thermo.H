@@ -44,7 +44,7 @@ namespace DRT
   {
     class LocsysManager;
   }
-}
+}  // namespace DRT
 
 
 namespace IO
@@ -60,7 +60,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
-}
+}  // namespace LINALG
 
 namespace CONTACT
 {
@@ -72,7 +72,6 @@ namespace CONTACT
  *----------------------------------------------------------------------*/
 namespace ADAPTER
 {
-
   /// general thermal field interface
   /*!
   The point is to keep T(F)SI as far apart from our field solvers as
@@ -111,8 +110,7 @@ namespace ADAPTER
   */
   class Thermo
   {
-  public:
-
+   public:
     /// virtual to get polymorph destruction
     virtual ~Thermo();
 
@@ -174,7 +172,7 @@ namespace ADAPTER
     virtual int StepOld() const = 0;
 
     /// Return current step number $n+1$
-    virtual int Step() const  = 0;
+    virtual int Step() const = 0;
 
     /// Get number of time steps
     virtual int NumStep() const = 0;
@@ -223,8 +221,7 @@ namespace ADAPTER
 
     //! store an RCP to the contact strategy constructed in the structural time integration
     virtual void SetNitscheContactStrategy(
-      Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy
-      ) = 0;
+        Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy) = 0;
 
     /// apply interface loads on the thermal field
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
@@ -272,10 +269,10 @@ namespace ADAPTER
   /// thermo field solver
   class ThermoBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    explicit ThermoBaseAlgorithm(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    explicit ThermoBaseAlgorithm(
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~ThermoBaseAlgorithm();
@@ -287,17 +284,14 @@ namespace ADAPTER
     /// Teuchos::rcp version of thermal field solver
     Teuchos::RCP<Thermo> ThermoFieldrcp() { return thermo_; }
 
-  private:
-
+   private:
     /// setup thermo algorithm
-    void SetupThermo(const Teuchos::ParameterList& prbdyn,Teuchos::RCP<DRT::Discretization> actdis);
+    void SetupThermo(
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup thermo algorithm of THR::TimIntImpl type
-    void SetupTimInt(
-      const Teuchos::ParameterList& prbdyn,
-      INPAR::THR::DynamicType timinttype,
-      Teuchos::RCP<DRT::Discretization> actdis
-      );
+    void SetupTimInt(const Teuchos::ParameterList& prbdyn, INPAR::THR::DynamicType timinttype,
+        Teuchos::RCP<DRT::Discretization> actdis);
 
     /// thermal field solver
     Teuchos::RCP<Thermo> thermo_;
@@ -308,4 +302,4 @@ namespace ADAPTER
 
 
 /*----------------------------------------------------------------------*/
-#endif // ADAPTER_THERMO_H
+#endif  // ADAPTER_THERMO_H

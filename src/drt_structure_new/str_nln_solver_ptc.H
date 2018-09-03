@@ -16,30 +16,33 @@
 #ifndef STR_NLN_SOLVER_PTC_H_
 #define STR_NLN_SOLVER_PTC_H_
 
-#include "str_nln_solver_nox.H"   // base class
+#include "str_nln_solver_nox.H"  // base class
 
-namespace STR {
-namespace NLN {
-namespace SOLVER {
-  class PseudoTransient : public Nox
+namespace STR
+{
+  namespace NLN
   {
-  public:
-    //! constructor
-    PseudoTransient();
+    namespace SOLVER
+    {
+      class PseudoTransient : public Nox
+      {
+       public:
+        //! constructor
+        PseudoTransient();
 
-    //! destructor
-    virtual ~PseudoTransient() {};
+        //! destructor
+        virtual ~PseudoTransient(){};
 
-    // derived from the base class
-    virtual void Setup();
+        // derived from the base class
+        virtual void Setup();
 
-  protected:
-    void SetPseudoTransientParams();
+       protected:
+        void SetPseudoTransientParams();
 
-  };  // class PTC
-} // namespace SOLVER
-} // namespace NLN
-} // namespace STR
+      };  // class PTC
+    }     // namespace SOLVER
+  }       // namespace NLN
+}  // namespace STR
 
 
 #endif /* STR_NLN_SOLVER_PTC_H_ */

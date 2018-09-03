@@ -32,16 +32,21 @@ void set_trace_back_mode(int tracebackmode);
  *  \note Any previously set trace back mode (i.e. before this macro is
  *  executed the very first time) is in the end of this macro
  *  recovered.                                               hiermeier 02/17 */
-#define CATCH_EPETRA_ERROR(a) { \
-  set_trace_back_mode(2); \
-  int epetra_error = a; \
-  if ( epetra_error < 0 ) { \
-    dserror("EPETRA_ERROR %d caught!",epetra_error); } \
-  else if ( epetra_error > 0 ) { \
-    std::cout << __FILE__ ", " << __LINE__ << ": EPETRA_WARNING " \
-        << epetra_error << " caught!" << std::endl; } \
-  set_trace_back_mode(0); \
-}
+#define CATCH_EPETRA_ERROR(a)                                                                     \
+  {                                                                                               \
+    set_trace_back_mode(2);                                                                       \
+    int epetra_error = a;                                                                         \
+    if (epetra_error < 0)                                                                         \
+    {                                                                                             \
+      dserror("EPETRA_ERROR %d caught!", epetra_error);                                           \
+    }                                                                                             \
+    else if (epetra_error > 0)                                                                    \
+    {                                                                                             \
+      std::cout << __FILE__ ", " << __LINE__ << ": EPETRA_WARNING " << epetra_error << " caught!" \
+                << std::endl;                                                                     \
+    }                                                                                             \
+    set_trace_back_mode(0);                                                                       \
+  }
 
 
 #endif /* SRC_DRT_LIB_EPETRA_UTILS_H_ */

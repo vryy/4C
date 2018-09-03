@@ -29,40 +29,34 @@ namespace DRT
   class Discretization;
   class Element;
 
-namespace ELEMENTS
-{
-
-  /// Interface base class for PoroFluidMultiPhaseEleCalc
-  /*!
-    This class exists to provide a common interface for all template
-    versions of PoroFluidMultiPhaseEleCalc.
-   */
-  class PoroFluidMultiPhaseEleInterface : public DRT::SingletonDestruction
+  namespace ELEMENTS
   {
-  public:
-
-    /// Empty constructor
-    PoroFluidMultiPhaseEleInterface(){return;};
-
-    /// Empty destructor
-    virtual ~PoroFluidMultiPhaseEleInterface(){return;};
-
-    /// Evaluate the element
+    /// Interface base class for PoroFluidMultiPhaseEleCalc
     /*!
-      This class does not provide a definition for this function; it
-      must be defined in PoroFluidMultiPhaseEleCalc.
+      This class exists to provide a common interface for all template
+      versions of PoroFluidMultiPhaseEleCalc.
      */
-    virtual int Evaluate(DRT::Element*                 ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization&          discretization,
-                         DRT::Element::LocationArray&  la,
-                         std::vector<Epetra_SerialDenseMatrix*>& elemat,
-                         std::vector<Epetra_SerialDenseVector*>& elevec
-                         ) = 0;
+    class PoroFluidMultiPhaseEleInterface : public DRT::SingletonDestruction
+    {
+     public:
+      /// Empty constructor
+      PoroFluidMultiPhaseEleInterface() { return; };
 
-  };
-} // namespace Elements
-} // namespace DRT
+      /// Empty destructor
+      virtual ~PoroFluidMultiPhaseEleInterface() { return; };
+
+      /// Evaluate the element
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in PoroFluidMultiPhaseEleCalc.
+       */
+      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,
+          std::vector<Epetra_SerialDenseVector*>& elevec) = 0;
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 
 #endif /* SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_INTERFACE_H_ */

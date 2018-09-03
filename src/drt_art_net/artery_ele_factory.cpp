@@ -22,56 +22,51 @@
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
-  DRT::Element::DiscretizationType distype,
-  INPAR::ARTDYN::ImplType problem,
-  const std::string& disname
-  )
+    DRT::Element::DiscretizationType distype, INPAR::ARTDYN::ImplType problem,
+    const std::string& disname)
 {
-  switch(distype)
+  switch (distype)
   {
-  case DRT::Element::line2:
-  {
-    return DefineProblemType<DRT::Element::line2>(problem,disname);
+    case DRT::Element::line2:
+    {
+      return DefineProblemType<DRT::Element::line2>(problem, disname);
 
-    break;
-  }
-  default:
-    dserror("Only line2 elements available so far");
-    break;
+      break;
+    }
+    default:
+      dserror("Only line2 elements available so far");
+      break;
   }
   return NULL;
-
 }
 
 
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemType(
-    INPAR::ARTDYN::ImplType problem,
-    const std::string& disname)
+    INPAR::ARTDYN::ImplType problem, const std::string& disname)
 {
-
-  switch(problem)
+  switch (problem)
   {
-  case INPAR::ARTDYN::ImplType::impltype_lin_exp:
-  {
-    // 2 dofs per node
-    return DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(2,disname);
-    break;
-  }
-  case INPAR::ARTDYN::ImplType::impltype_pressure_based:
-  {
-    // 1 dof per node (only pressure)
-    return DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(1,disname);
-    break;
-  }
-  default:
-  {
-    dserror("Defined problem type %d does not exist!!", problem);
-    break;
-  }
+    case INPAR::ARTDYN::ImplType::impltype_lin_exp:
+    {
+      // 2 dofs per node
+      return DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(2, disname);
+      break;
+    }
+    case INPAR::ARTDYN::ImplType::impltype_pressure_based:
+    {
+      // 1 dof per node (only pressure)
+      return DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(1, disname);
+      break;
+    }
+    default:
+    {
+      dserror("Defined problem type %d does not exist!!", problem);
+      break;
+    }
   }
 
   return NULL;

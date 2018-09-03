@@ -25,20 +25,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for de St. Venant--Kirchhoff
     class CrosslinkerMat : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      CrosslinkerMat(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      CrosslinkerMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~CrosslinkerMat() { ; }
@@ -86,27 +81,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class CrosslinkerMatType : public DRT::ParObjectType
-{
-public:
+  class CrosslinkerMatType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "CrosslinkerMatType"; }
 
-  std::string Name() const { return "CrosslinkerMatType"; }
+    static CrosslinkerMatType& Instance() { return instance_; };
 
-  static CrosslinkerMatType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static CrosslinkerMatType instance_;
-};
+   private:
+    static CrosslinkerMatType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Crosslinker Material
   class CrosslinkerMat : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     CrosslinkerMat();
 
@@ -121,7 +113,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return CrosslinkerMatType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return CrosslinkerMatType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -157,7 +152,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_crosslinkermat; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CrosslinkerMat( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new CrosslinkerMat(*this)); }
 
     /// number of beam elasthyper material
     virtual double BeamElastHyperMatNum() const { return params_->link_element_matnum_; }
@@ -190,22 +185,21 @@ private:
     virtual double NoBondDistSphere() const { return params_->nobonddistsphere; };
 
     /// force depedent off rate according to bells equation
-    virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkerType() const { return params_->linkertype_; };
+    virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkerType() const
+    {
+      return params_->linkertype_;
+    };
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     //@}
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::CrosslinkerMat* params_;
-
   };
-}
-
-
+}  // namespace MAT
 
 
 

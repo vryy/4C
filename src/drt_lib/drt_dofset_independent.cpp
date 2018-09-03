@@ -14,9 +14,8 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid/*=false*/)
-  : DRT::DofSet(),
-    ignoreminnodegid_(ignoreminnodegid)
+DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
+    : DRT::DofSet(), ignoreminnodegid_(ignoreminnodegid)
 {
   return;
 }
@@ -25,8 +24,7 @@ DRT::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid/*=false*/)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
-  : DRT::DofSet(old),
-    ignoreminnodegid_(old.ignoreminnodegid_)
+    : DRT::DofSet(old), ignoreminnodegid_(old.ignoreminnodegid_)
 {
   return;
 }
@@ -34,10 +32,7 @@ DRT::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::IndependentDofSet::~IndependentDofSet()
-{
-  return;
-}
+DRT::IndependentDofSet::~IndependentDofSet() { return; }
 
 
 /*----------------------------------------------------------------------*

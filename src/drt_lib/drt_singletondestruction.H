@@ -17,7 +17,6 @@
 
 namespace DRT
 {
-
   /// base class of singletons that need an explicit destruction
   ///
   /// There is a cleanup phase when DRT::Problem goes down. Some singleton
@@ -32,8 +31,7 @@ namespace DRT
   /// instance.
   class SingletonDestruction
   {
-  public:
-
+   public:
     SingletonDestruction();
 
     virtual ~SingletonDestruction() {}
@@ -41,6 +39,6 @@ namespace DRT
     /// called upon destruction (pure virtual to enforce specific implementation!)
     virtual void Done() = 0;
   };
-}
+}  // namespace DRT
 
 #endif

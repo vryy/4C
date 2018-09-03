@@ -17,78 +17,85 @@
 #include <LOCA_Stepper.H>
 
 // forward declaration
-namespace NOX {
-namespace NLN {
-  class GlobalData;
-namespace INNER {
-namespace StatusTest {
-  class Generic;
-} // namespace StatusTest
-} // namespace INNER
-} // namespace NLN
-} // namespace NOX
-
-namespace LOCA {
-namespace NLN {
-  class Stepper : public LOCA::Stepper
+namespace NOX
+{
+  namespace NLN
   {
-  public:
-    //! Constructor with LOCA::StatusTest
-    Stepper(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
-        const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
-        const Teuchos::RCP<LOCA::StatusTest::Abstract>& loca_test,
-        const Teuchos::RCP<NOX::StatusTest::Generic>& nox_otest,
-        const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
-        const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
-        const Teuchos::RCP<Teuchos::ParameterList>& p);
+    class GlobalData;
+    namespace INNER
+    {
+      namespace StatusTest
+      {
+        class Generic;
+      }  // namespace StatusTest
+    }    // namespace INNER
+  }      // namespace NLN
+}  // namespace NOX
 
-    //! Destructor
-    virtual ~Stepper() {};
+namespace LOCA
+{
+  namespace NLN
+  {
+    class Stepper : public LOCA::Stepper
+    {
+     public:
+      //! Constructor with LOCA::StatusTest
+      Stepper(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
+          const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
+          const Teuchos::RCP<LOCA::StatusTest::Abstract>& loca_test,
+          const Teuchos::RCP<NOX::StatusTest::Generic>& nox_otest,
+          const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
+          const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
+          const Teuchos::RCP<Teuchos::ParameterList>& p);
 
-    //! derived
-    virtual bool reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
-        const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
-        const Teuchos::RCP<LOCA::StatusTest::Abstract>& loca_test,
-        const Teuchos::RCP<NOX::StatusTest::Generic>& nox_otest,
-        const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
-        const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
-        const Teuchos::RCP<Teuchos::ParameterList>& p);
+      //! Destructor
+      virtual ~Stepper(){};
 
-    //! forbid this method, since it is deprecated
-    virtual bool reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
-        const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
-        const Teuchos::RCP<NOX::StatusTest::Generic>& nox_test,
-        const Teuchos::RCP<Teuchos::ParameterList>& p);
+      //! derived
+      virtual bool reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
+          const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
+          const Teuchos::RCP<LOCA::StatusTest::Abstract>& loca_test,
+          const Teuchos::RCP<NOX::StatusTest::Generic>& nox_otest,
+          const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
+          const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
+          const Teuchos::RCP<Teuchos::ParameterList>& p);
 
-  protected:
-    //! reset solver
-    virtual bool resetSolver();
+      //! forbid this method, since it is deprecated
+      virtual bool reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
+          const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
+          const Teuchos::RCP<NOX::StatusTest::Generic>& nox_test,
+          const Teuchos::RCP<Teuchos::ParameterList>& p);
 
-    //! derived
-    virtual LOCA::Abstract::Iterator::IteratorStatus start();
+     protected:
+      //! reset solver
+      virtual bool resetSolver();
 
-    //! derived
-    virtual LOCA::Abstract::Iterator::IteratorStatus
-        finish(LOCA::Abstract::Iterator::IteratorStatus itStatus);
+      //! derived
+      virtual LOCA::Abstract::Iterator::IteratorStatus start();
 
-    //! derived
-    virtual LOCA::Abstract::Iterator::StepStatus preprocess(LOCA::Abstract::Iterator::StepStatus stepStatus);
+      //! derived
+      virtual LOCA::Abstract::Iterator::IteratorStatus finish(
+          LOCA::Abstract::Iterator::IteratorStatus itStatus);
 
-  private:
-    //! Private to prohibit copying
-    Stepper(const Stepper&);
+      //! derived
+      virtual LOCA::Abstract::Iterator::StepStatus preprocess(
+          LOCA::Abstract::Iterator::StepStatus stepStatus);
 
-    //! Private to prohibit copying
-    Stepper& operator = (const Stepper&);
+     private:
+      //! Private to prohibit copying
+      Stepper(const Stepper&);
 
-  protected:
-    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> noxInnerStatusTestPtr_;
+      //! Private to prohibit copying
+      Stepper& operator=(const Stepper&);
 
-    Teuchos::RCP<NOX::NLN::GlobalData> noxNlnGlobalDataPtr_;
+     protected:
+      Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> noxInnerStatusTestPtr_;
+
+      Teuchos::RCP<NOX::NLN::GlobalData> noxNlnGlobalDataPtr_;
 
 
-  };  // class Stepper
-} // namespace NLN
-} // namespace LOCA
+    };  // class Stepper
+  }     // namespace NLN
+}  // namespace LOCA
 
 #endif /* SRC_LOCA_CONTINUATION_LOCA_NLN_STEPPER_H_ */

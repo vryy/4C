@@ -30,436 +30,435 @@
 #include "drt_parser.H"
 #include "drt_functionvariables.H"
 
-namespace MAT {
-class Material;
+namespace MAT
+{
+  class Material;
 }
 
 namespace Sacado
 {
   namespace Fad
   {
-    template <typename> class DFad;
+    template <typename>
+    class DFad;
   }
-}
+}  // namespace Sacado
 
-namespace DRT {
+namespace DRT
+{
   class Condition;
   class Problem;
 
 
-namespace INPUT {
-
-  class Lines;
-  class DatFileReader;
-
-}
-
-namespace UTILS {
-
-
-  /*!
-
-  \brief abstract interface for spatial functions.
-
-  Spatial functions can be defined either scalar-valued or vector-valued.
-
-  There exist function definitions using explicitly defined spatial functions
-  for test problems (beltrami, kim-moin etc).
-
-  Spatial function based on parsed expressions are provided as well.
-
-  */
-
-  class Function
+  namespace INPUT
   {
-  public:
-    virtual ~Function() {};
+    class Lines;
+    class DatFileReader;
 
-    /// Evaluate time and space dependent FUNCT
-    virtual double Evaluate(
-        const int     index, //< component of function
-        const double* x,     //< coordinates
-        double        t     //< time
-        ) = 0;
+  }  // namespace INPUT
 
+  namespace UTILS
+  {
+    /*!
 
-    /// Evaluate time dependent FUNCT
-    double EvaluateTime(
-        double t //< time
-        )
+    \brief abstract interface for spatial functions.
+
+    Spatial functions can be defined either scalar-valued or vector-valued.
+
+    There exist function definitions using explicitly defined spatial functions
+    for test problems (beltrami, kim-moin etc).
+
+    Spatial function based on parsed expressions are provided as well.
+
+    */
+
+    class Function
     {
-      double dummy[3] = {0.0};
+     public:
+      virtual ~Function(){};
 
-      #ifdef DEBUG
+      /// Evaluate time and space dependent FUNCT
+      virtual double Evaluate(const int index,  //< component of function
+          const double* x,                      //< coordinates
+          double t                              //< time
+          ) = 0;
+
+
+      /// Evaluate time dependent FUNCT
+      double EvaluateTime(double t  //< time
+      )
+      {
+        double dummy[3] = {0.0};
+
+#ifdef DEBUG
         double dummy2[3] = {123.456};
-        if ( fabs(Evaluate(0,dummy,t)-Evaluate(0,dummy2,t))>1.0e-14 )
+        if (fabs(Evaluate(0, dummy, t) - Evaluate(0, dummy2, t)) > 1.0e-14)
           dserror("You evaluate a FUNCT solely by time even if it dependents on x,y or z!");
-      #endif
+#endif
 
-      return Evaluate(0,dummy,t);
-    }
-
-
-    /// Evaluate first spatial derivatives of time and space dependent FUNCT
-    virtual std::vector<double> EvaluateSpatialDerivative(
-        const int     index, //< component of function
-        const double* x,     //< coordinates
-        const double  t     //< time
-        )
-    {
-      dserror("The evaluation of the derivative is not implemented for this function");
-      std::vector<double> emptyvector;
-      return emptyvector;
-    };
-
-    /// Evaluate first or second time derivative of time and space dependent FUNCT
-    virtual std::vector<double> EvaluateTimeDerivative(
-        const int      index, //< component of function
-        const double*  x,     //< coordinates
-        const double   t,     //< time
-        const unsigned deg   //< degree of maximal derivative
-        )
-    {
-      dserror("The evaluation of the time derivative is not implemented for this function");
-      std::vector<double> emptyvector;
-      return emptyvector;
-    };
+        return Evaluate(0, dummy, t);
+      }
 
 
-    /// Evaluate first or second time derivative of time dependent FUNCT
-    std::vector<double> EvaluateTimeDerivative(
-        const double   t,  //< time
-        const unsigned deg //< degree of maximal derivative
-        )
-    {
-      double dummy[3] = {0.0};
+      /// Evaluate first spatial derivatives of time and space dependent FUNCT
+      virtual std::vector<double> EvaluateSpatialDerivative(
+          const int index,  //< component of function
+          const double* x,  //< coordinates
+          const double t    //< time
+      )
+      {
+        dserror("The evaluation of the derivative is not implemented for this function");
+        std::vector<double> emptyvector;
+        return emptyvector;
+      };
 
-      #ifdef DEBUG
-        std::vector<double> res1 = EvaluateTimeDerivative(0,dummy,t,deg);
+      /// Evaluate first or second time derivative of time and space dependent FUNCT
+      virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
+          const double* x,                                                 //< coordinates
+          const double t,                                                  //< time
+          const unsigned deg  //< degree of maximal derivative
+      )
+      {
+        dserror("The evaluation of the time derivative is not implemented for this function");
+        std::vector<double> emptyvector;
+        return emptyvector;
+      };
+
+
+      /// Evaluate first or second time derivative of time dependent FUNCT
+      std::vector<double> EvaluateTimeDerivative(const double t,  //< time
+          const unsigned deg                                      //< degree of maximal derivative
+      )
+      {
+        double dummy[3] = {0.0};
+
+#ifdef DEBUG
+        std::vector<double> res1 = EvaluateTimeDerivative(0, dummy, t, deg);
         double dummy2[3] = {123.456};
-        std::vector<double> res2 = EvaluateTimeDerivative(0,dummy2,t,deg);
-        for( unsigned int i=0 ; i<deg; i++)
+        std::vector<double> res2 = EvaluateTimeDerivative(0, dummy2, t, deg);
+        for (unsigned int i = 0; i < deg; i++)
         {
-          if ( fabs(res1[deg]-res2[deg])>1.0e-14 )
-            dserror("You evaluate the time derivative of a FUNCT solely by time even if it dependents on x,y or z!");
+          if (fabs(res1[deg] - res2[deg]) > 1.0e-14)
+            dserror(
+                "You evaluate the time derivative of a FUNCT solely by time even if it dependents "
+                "on x,y or z!");
         }
-      #endif
+#endif
 
-      return EvaluateTimeDerivative(0,dummy,t,deg);
+        return EvaluateTimeDerivative(0, dummy, t, deg);
+      };
+
+
+      /// Return number of components of FUNCT
+      virtual int NumberComponents() { return 0; }
     };
 
 
-    /// Return number of components of FUNCT
-    virtual int NumberComponents() {return 0;}
-  };
 
+    class ExprFunction : public Function
+    {
+     public:
+      ExprFunction();
 
+      virtual ~ExprFunction();
 
-  class ExprFunction : public Function
-  {
-  public:
-    ExprFunction();
+      // add an expression to the function
+      virtual void AddExpr(
+          std::string buf, std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables);
 
-    virtual ~ExprFunction();
+      // evaluate the function at given space and time
+      virtual double Evaluate(const int index, const double* x, double t);
 
-    // add an expression to the function
-    virtual void AddExpr(std::string buf,std::vector<std::vector<Teuchos::RCP<FunctionVariable> > > variables);
+      // evaluate the first derivative of the function at given space and time
+      virtual std::vector<double> EvaluateSpatialDerivative(
+          const int index, const double* x, const double t);
 
-    // evaluate the function at given space and time
-    virtual double Evaluate(const int index, const double* x, double t);
+      // evaluate the 1st or 2nd time derivative of the function at given space and time
+      virtual std::vector<double> EvaluateTimeDerivative(
+          const int index, const double* x, const double t, const unsigned deg);
 
-    // evaluate the first derivative of the function at given space and time
-    virtual std::vector<double> EvaluateSpatialDerivative(const int index, const double* x, const double t);
+      // return the number of components
+      virtual int NumberComponents() { return (expr_.size()); }
 
-    // evaluate the 1st or 2nd time derivative of the function at given space and time
-    virtual std::vector<double> EvaluateTimeDerivative(const int index, const double* x, const double t, const unsigned deg);
+      // check if it is a variable
+      bool IsVariable(const int index, const std::string& varname) const;
 
-    // return the number of components
-    virtual int NumberComponents() { return(expr_.size()); }
+      // add a variable to the function
+      void AddVariable(const int index, const std::string& varname, double varvalue);
 
-    // check if it is a variable
-    bool IsVariable(const int index, const std::string& varname) const;
+      // pars the expressions
+      void ParseExpressions();
 
-    // add a variable to the function
-    void AddVariable(const int index, const std::string& varname, double varvalue);
+     protected:
+      // dimension of the problem
+      int dim_;
 
-    // pars the expressions
-    void ParseExpressions();
+      // vector of parsed expressions
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> expr_;
 
-  protected:
-    // dimension of the problem
-    int dim_;
+      // vector of parsed 1st derivatives
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>> exprd_;
 
-    // vector of parsed expressions
-    std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > expr_;
+      // vector of parsed 2nd derivatives
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
+          exprdd_;
 
-    // vector of parsed 1st derivatives
-    std::vector<Teuchos::RCP<DRT::PARSER::Parser< Sacado::Fad::DFad< double> > > > exprd_;
+      // vector of the function variables and all their definitions
+      std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
 
-    // vector of parsed 2nd derivatives
-    std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad< Sacado::Fad::DFad< double> > > > > exprdd_;
+     private:
+      bool isparsed_;
+    };
 
-    // vector of the function variables and all their definitions
-    std::vector<std::vector<Teuchos::RCP<FunctionVariable> > > variables_;
 
-  private:
-    bool isparsed_;
-  };
 
+    /// class that manages all defined spatial functions
+    class FunctionManager
+    {
+     public:
+      FunctionManager() {}
 
+      Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
 
-  /// class that manages all defined spatial functions
-  class FunctionManager
-  {
-  public:
+      /// read the baci input file and set up all functions
+      void ReadInput(DRT::INPUT::DatFileReader& reader);
 
-    FunctionManager() {}
+      /// return a specified function
+      Function& Funct(int num);
 
-    Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
+     private:
+      /// no copying
+      FunctionManager(const FunctionManager&);
 
-    /// read the baci input file and set up all functions
-    void ReadInput(DRT::INPUT::DatFileReader& reader);
+      /// no copying
+      FunctionManager& operator=(const FunctionManager&);
 
-    /// return a specified function
-    Function& Funct(int num);
+      /// all functions defined. The functions may be vector valued!
+      std::vector<Teuchos::RCP<Function>> functions_;
+    };
 
-  private:
 
-    /// no copying
-    FunctionManager(const FunctionManager&);
+    /// spatial function based on parsed expression
+    class VariableExprFunction : public ExprFunction
+    {
+     public:
+      /*!
 
-    /// no copying
-    FunctionManager& operator=(const FunctionManager&);
+      \brief Default constructor creating empty object. Expressions are
+             added with add function
 
-    /// all functions defined. The functions may be vector valued!
-    std::vector<Teuchos::RCP<Function> > functions_;
-  };
+      */
+      VariableExprFunction();
 
+      /*!
 
-  /// spatial function based on parsed expression
-  class VariableExprFunction : public ExprFunction
-  {
-  public:
-    /*!
+      \brief clean up parse tree
 
-    \brief Default constructor creating empty object. Expressions are
-           added with add function
+      */
+      virtual ~VariableExprFunction();
 
-    */
-    VariableExprFunction();
+      /*!
 
-    /*!
+      \brief add expression to an existing ExprFunction in order to extend
+             it to a vector-valued spatial function.
 
-    \brief clean up parse tree
+             Every call to AddExpr adds one more component to the
+             vector-valued function.
 
-    */
-    virtual ~VariableExprFunction();
+      \param buf (i) (c-string) expression to be parsed during evaluation of this component
+      \param constants   (i) vector containing constants defined by a pair (name and value)
 
-    /*!
+      */
+      virtual void AddExpr(std::string buf, std::vector<std::pair<std::string, double>> constants);
 
-    \brief add expression to an existing ExprFunction in order to extend
-           it to a vector-valued spatial function.
+      /*!
 
-           Every call to AddExpr adds one more component to the
-           vector-valued function.
+      \brief evaluate function at given time and position
 
-    \param buf (i) (c-string) expression to be parsed during evaluation of this component
-    \param constants   (i) vector containing constants defined by a pair (name and value)
+      \param index (i) For vector-valued functions, index defines the
+                       function-component which should be evaluated
+                       For scalar functions, index is always set to 0
+      \param t     (i) The point in time in which the
+                       function will be evaluated
+      \param x     (i) The point in 3-dimensional space in which the
+                       function will be evaluated
 
-    */
-    virtual void AddExpr(
-        std::string buf,
-        std::vector<std::pair<std::string,double> > constants);
+      */
+      virtual double Evaluate(const int index, const double* x, const double t);
 
-    /*!
+      /*!
 
-    \brief evaluate function at given time and position
+      \brief evaluate function for a given set of variables
 
-    \param index (i) For vector-valued functions, index defines the
-                     function-component which should be evaluated
-                     For scalar functions, index is always set to 0
-    \param t     (i) The point in time in which the
-                     function will be evaluated
-    \param x     (i) The point in 3-dimensional space in which the
-                     function will be evaluated
+      \param index    (i)  For vector-valued functions, index defines the
+                           function-component which should be evaluated
+      \param variables (i) A vector containing a pair (variablename, value) for each variable
 
-    */
-    virtual double Evaluate(const int index, const double* x, const double t);
+      */
+      virtual double Evaluate(
+          const int index, const std::vector<std::pair<std::string, double>>& variables);
 
-    /*!
+      /*!
 
-    \brief evaluate function for a given set of variables
+      \brief evaluate function for a given set of variables
 
-    \param index    (i)  For vector-valued functions, index defines the
-                         function-component which should be evaluated
-    \param variables (i) A vector containing a pair (variablename, value) for each variable
+      \param index    (i)  For vector-valued functions, index defines the
+                           function-component which should be evaluated
+      \param variables (i) A vector containing a pair (variablename, value) for each variable
+      \param constants (i) A vector containing a pair (variablename, value) for each constant
 
-    */
-    virtual double Evaluate(const int index, const std::vector<std::pair<std::string,double> >& variables);
+      */
+      virtual double Evaluate(const int index,
+          const std::vector<std::pair<std::string, double>>& variables,
+          const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
+      /*!
 
-    \brief evaluate function for a given set of variables
+      \brief evaluate derivatives function at given position in space
 
-    \param index    (i)  For vector-valued functions, index defines the
-                         function-component which should be evaluated
-    \param variables (i) A vector containing a pair (variablename, value) for each variable
-    \param constants (i) A vector containing a pair (variablename, value) for each constant
+      \param index (i) For vector-valued functions, index defines the
+                       function-component which should be evaluated
+                       For scalar functions, index is always set to 0
+      \param x     (i) The point in 3-dimensional space in which the
+                       function will be evaluated
+      \param t     (i) Absolute time in which the
+                       function will be evaluated
 
-    */
-    virtual double Evaluate(
-        const int                                          index,
-        const std::vector<std::pair<std::string,double> >& variables,
-        const std::vector<std::pair<std::string,double> >& constants);
+      */
+      virtual std::vector<double> EvaluateSpatialDerivative(
+          const int index, const double* x, const double t);
 
-    /*!
+      /*!
 
-    \brief evaluate derivatives function at given position in space
+      \brief  at given position in space for a given set of variables
 
-    \param index (i) For vector-valued functions, index defines the
-                     function-component which should be evaluated
-                     For scalar functions, index is always set to 0
-    \param x     (i) The point in 3-dimensional space in which the
-                     function will be evaluated
-    \param t     (i) Absolute time in which the
-                     function will be evaluated
+      \param index    (i)  For vector-valued functions, index defines the
+                           function-component which should be evaluated
+      \param variables (i) A vector containing a pair (variablename, value) for each variable
 
-    */
-    virtual std::vector<double> EvaluateSpatialDerivative(const int index, const double* x, const double t);
+      */
+      virtual std::vector<double> EvaluateDerivative(
+          const int index, const std::vector<std::pair<std::string, double>>& variables);
 
-    /*!
+      /*!
 
-    \brief  at given position in space for a given set of variables
+      \brief  at given position in space for a given set of variables and constants
 
-    \param index    (i)  For vector-valued functions, index defines the
-                         function-component which should be evaluated
-    \param variables (i) A vector containing a pair (variablename, value) for each variable
+      \param index    (i)  For vector-valued functions, index defines the
+                           function-component which should be evaluated
+      \param variables (i) A vector containing a pair (variablename, value) for each variable
+      \param constants (i) A vector containing a pair (variablename, value) for each constant
 
-    */
-    virtual std::vector<double> EvaluateDerivative(const int index, const std::vector<std::pair<std::string,double> >& variables);
+      */
+      virtual std::vector<double> EvaluateDerivative(int index,
+          const std::vector<std::pair<std::string, double>>& variables,
+          const std::vector<std::pair<std::string, double>>& constants);
 
-    /*!
+      /*!
+      \brief  check if a given name is a variable
 
-    \brief  at given position in space for a given set of variables and constants
+      \param index    (i)  For vector-valued functions, index defines the
+                           function-component which should be evaluated
+      \param varname  (i)  Variable name to be checked
 
-    \param index    (i)  For vector-valued functions, index defines the
-                         function-component which should be evaluated
-    \param variables (i) A vector containing a pair (variablename, value) for each variable
-    \param constants (i) A vector containing a pair (variablename, value) for each constant
+      */
+      virtual bool IsVariable(const int index, const std::string& varname) const;
 
-    */
-    virtual std::vector<double> EvaluateDerivative(
-        int                                                index,
-        const std::vector<std::pair<std::string,double> >& variables,
-        const std::vector<std::pair<std::string,double> >& constants);
+      /*!
+      \brief  add a variable to the parser object
 
-    /*!
-    \brief  check if a given name is a variable
+      \param index    (i)  For vector-valued functions, index defines the
+                           function-component which should be evaluated
+      \param varname  (i)  Variable name
 
-    \param index    (i)  For vector-valued functions, index defines the
-                         function-component which should be evaluated
-    \param varname  (i)  Variable name to be checked
+      \param varvalue (i)  Value of the variable
 
-    */
-    virtual bool IsVariable(const int index, const std::string& varname) const;
+      */
+      virtual void AddVariable(const int index, const std::string& varname, double varvalue);
 
-    /*!
-    \brief  add a variable to the parser object
+      /*!
+      \brief  parse the underlying expression
+      */
+      virtual void ParseExpressions();
 
-    \param index    (i)  For vector-valued functions, index defines the
-                         function-component which should be evaluated
-    \param varname  (i)  Variable name
+     private:
+      bool isparsed_;  //! flag indicating whether expression was parsed
+    };
 
-    \param varvalue (i)  Value of the variable
 
-    */
-    virtual void AddVariable(const int index, const std::string& varname, double varvalue);
+    /// special implementation for controlled rotations
+    class ControlledRotationFunction : public Function
+    {
+     public:
+      /// ctor
+      ControlledRotationFunction(std::string fileName, std::string type, double origin_x,
+          double origin_y, double origin_z);
 
-    /*!
-    \brief  parse the underlying expression
-    */
-    virtual void ParseExpressions();
+      /// evaluate function at given position in space
+      double Evaluate(const int index, const double* x, double t);
 
-  private:
+     private:
+      // Condition type: STRUCTURE=1, FLUID=2
+      int type_;
 
-    bool isparsed_; //! flag indicating whether expression was parsed
-  };
+      // Origin, about which the rotation shall be performed
+      LINALG::Matrix<3, 1> origin_;
 
+      // Time of previous time step (at t-deltaT)
+      double timeOld_;
 
-  /// special implementation for controlled rotations
-  class ControlledRotationFunction : public Function
-  {
-  public:
+      // Number of maneuver cells (variables)
+      const int NUMMANEUVERCELLS_;
 
-    /// ctor
-    ControlledRotationFunction(std::string fileName, std::string type, double origin_x, double origin_y, double origin_z);
+      // Number of maneuvers
+      int numManeuvers_;
 
-    /// evaluate function at given position in space
-    double Evaluate(const int index, const double* x, double t);
+      // Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
+      std::vector<double> maneuvers_;
 
-  private:
-    // Condition type: STRUCTURE=1, FLUID=2
-    int type_;
+      // Previous angular acceleration (at t-deltaT)
+      LINALG::Matrix<3, 1> omegaDotOld_B_;
 
-    // Origin, about which the rotation shall be performed
-    LINALG::Matrix<3,1> origin_;
+      // Current angular rate (at t)
+      LINALG::Matrix<3, 1> omega_B_;
 
-    // Time of previous time step (at t-deltaT)
-    double timeOld_;
+      // Satellite's current attitude trafo matrix from B- to I-system (at t)
+      LINALG::Matrix<3, 3> satAtt_dcm_IB_;
 
-    // Number of maneuver cells (variables)
-    const int NUMMANEUVERCELLS_;
+      // Satellite's current attitude quaternion from B- to I-system (at t)
+      LINALG::Matrix<4, 1> satAtt_q_IB_;
+    };
 
-    // Number of maneuvers
-    int numManeuvers_;
+    /// special implementation for acceleration profiles
+    class AccelerationProfileFunction : public Function
+    {
+     public:
+      /// ctor
+      AccelerationProfileFunction(std::string fileName);
 
-    // Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
-    std::vector<double> maneuvers_;
+      /// evaluate function at given position in space
+      double Evaluate(const int index, const double* x, double t);
 
-    // Previous angular acceleration (at t-deltaT)
-    LINALG::Matrix<3,1> omegaDotOld_B_;
+     private:
+      // Time of previous time step (at t-deltaT)
+      double timeOld_;
 
-    // Current angular rate (at t)
-    LINALG::Matrix<3,1> omega_B_;
+      // Number of cells (variables) (time + 3-dim acc = 4)
+      const int NUMACCELERATIONCELLS_;
 
-    // Satellite's current attitude trafo matrix from B- to I-system (at t)
-    LINALG::Matrix<3,3> satAtt_dcm_IB_;
+      // Number of acceleration rows
+      int numAccelerations_;
 
-    // Satellite's current attitude quaternion from B- to I-system (at t)
-    LINALG::Matrix<4,1> satAtt_q_IB_;
-  };
+      // Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
+      std::vector<double> accelerations_;
 
-  /// special implementation for acceleration profiles
-  class AccelerationProfileFunction : public Function
-  {
-  public:
+      // Current acceleration (at t)
+      LINALG::Matrix<3, 1> acc_B_;
+    };
 
-    /// ctor
-    AccelerationProfileFunction(std::string fileName);
+  }  // namespace UTILS
 
-    /// evaluate function at given position in space
-    double Evaluate(const int index, const double* x, double t);
-
-  private:
-    // Time of previous time step (at t-deltaT)
-    double timeOld_;
-
-    // Number of cells (variables) (time + 3-dim acc = 4)
-    const int NUMACCELERATIONCELLS_;
-
-    // Number of acceleration rows
-    int numAccelerations_;
-
-    // Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
-    std::vector<double> accelerations_;
-
-    // Current acceleration (at t)
-    LINALG::Matrix<3,1> acc_B_;
-  };
-
-} // namespace UTILS
-
-} // namespace DRT
+}  // namespace DRT
 
 
 void PrintFunctionDatHeader();

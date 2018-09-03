@@ -23,10 +23,8 @@
  |  ctor (public)                                            vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_base::So_base(int id, int owner) :
-DRT::Element(id,owner),
-kintype_(INPAR::STR::kinem_vague),
-interface_ptr_(Teuchos::null)
+DRT::ELEMENTS::So_base::So_base(int id, int owner)
+    : DRT::Element(id, owner), kintype_(INPAR::STR::kinem_vague), interface_ptr_(Teuchos::null)
 {
   return;
 }
@@ -35,10 +33,8 @@ interface_ptr_(Teuchos::null)
  |  copy-ctor (public)                                       vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old) :
-DRT::Element(old),
-kintype_(old.kintype_),
-interface_ptr_(old.interface_ptr_)
+DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old)
+    : DRT::Element(old), kintype_(old.kintype_), interface_ptr_(old.interface_ptr_)
 {
   return;
 }
@@ -49,16 +45,16 @@ interface_ptr_(old.interface_ptr_)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
   // add base class Element
   Element::Pack(data);
   // kintype_
-  AddtoPack(data,kintype_);
+  AddtoPack(data, kintype_);
 
   return;
 }
@@ -73,14 +69,14 @@ void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
   return;
 }
@@ -91,7 +87,7 @@ void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::So_base::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat),true);
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -99,8 +95,7 @@ Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::So_base::SolidMaterial(int nummat)
 void DRT::ELEMENTS::So_base::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ =
-        p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface");
+    interface_ptr_ = p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface");
   else
     interface_ptr_ = Teuchos::null;
 }
@@ -116,7 +111,6 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::So_base::ParamsInter
  *----------------------------------------------------------------------*/
 STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::So_base::StrParamsInterface()
 {
-  if (not IsParamsInterface())
-    dserror("The interface ptr is not set!");
-  return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_,true));
+  if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+  return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
 }

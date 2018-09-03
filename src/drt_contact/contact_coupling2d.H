@@ -24,155 +24,155 @@
 */
 namespace CONTACT
 {
-
-/*!
-\brief A class representing the framework for mortar coupling of ONE
-       slave element and ONE master element of a contact interface in
-       2D. This is a derived class from MORTAR::Coupling2d which does
-       the contact-specific stuff for 2d mortar coupling.
-
-\author popp (popp@lnm.mw.tum.de)
-*/
-
-class CoCoupling2d : public MORTAR::Coupling2d
-{
-public:
-
   /*!
-  \brief Constructor with shape function specification
+  \brief A class representing the framework for mortar coupling of ONE
+         slave element and ONE master element of a contact interface in
+         2D. This is a derived class from MORTAR::Coupling2d which does
+         the contact-specific stuff for 2d mortar coupling.
 
-  Constructs an instance of this class and enables custom shape function types.<br>
-  Note that this is \b not a collective call as coupling is
-  performed in parallel by individual processes.
-
+  \author popp (popp@lnm.mw.tum.de)
   */
-  CoCoupling2d(DRT::Discretization& idiscret,
-               int dim, bool quad, Teuchos::ParameterList& params,
-               MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
-  /*!
-  \brief Destructor
+  class CoCoupling2d : public MORTAR::Coupling2d
+  {
+   public:
+    /*!
+    \brief Constructor with shape function specification
 
-  */
-  virtual ~CoCoupling2d() {}
+    Constructs an instance of this class and enables custom shape function types.<br>
+    Note that this is \b not a collective call as coupling is
+    performed in parallel by individual processes.
 
-  //! @name Evlauation methods
+    */
+    CoCoupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
+        MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
-  /*!
-  \brief Integrate overlap of slave / master pair (2D)
+    /*!
+    \brief Destructor
 
-  Derived version! Most importantly, in this derived version
-  a CONTACT::CoIntegrator instance is created, which also
-  does integration of the mortar quantity linearizations
+    */
+    virtual ~CoCoupling2d() {}
 
-  This method integrates the overlap of the current MortarElement
-  pair sele_ / mele_ based on the integration limits (xiproj). The
-  integration includes the Mortar matrices D/M and the gap g.
+    //! @name Evlauation methods
 
-  */
-  bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    /*!
+    \brief Integrate overlap of slave / master pair (2D)
 
-  /*!
-  \brief Return type of wear surface definition
+    Derived version! Most importantly, in this derived version
+    a CONTACT::CoIntegrator instance is created, which also
+    does integration of the mortar quantity linearizations
 
-  */
-  INPAR::WEAR::WearSide WearSide()
-      { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
+    This method integrates the overlap of the current MortarElement
+    pair sele_ / mele_ based on the integration limits (xiproj). The
+    integration includes the Mortar matrices D/M and the gap g.
 
-  /*!
-  \brief Return type of wear surface definition
+    */
+    bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
-  */
-  INPAR::WEAR::WearType WearType()
-      { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_,"WEARTYPE"); }
+    /*!
+    \brief Return type of wear surface definition
 
-  //@}
+    */
+    INPAR::WEAR::WearSide WearSide()
+    {
+      return DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_, "BOTH_SIDED_WEAR");
+    }
+
+    /*!
+    \brief Return type of wear surface definition
+
+    */
+    INPAR::WEAR::WearType WearType()
+    {
+      return DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
+    }
+
+    //@}
 
 
-protected:
-
+   protected:
     // don't want = operator and cctor
-    CoCoupling2d operator = (const CoCoupling2d& old);
+    CoCoupling2d operator=(const CoCoupling2d& old);
     CoCoupling2d(const CoCoupling2d& old);
 
     // new variables as compared to base class
     INPAR::CONTACT::SolvingStrategy stype_;
 
-}; // class CoCoupling2d
-
-/*!
-\brief A class representing the framework for mortar coupling of ONE
-       slave element and SEVERAL master elements of a mortar interface in
-       2D. Concretely, this class simply stores several Coupling2d objects.
-
-\author popp (popp@lnm.mw.tum.de)
-*/
-
-class CoCoupling2dManager  : public MORTAR::Coupling2dManager
-{
-public:
+  };  // class CoCoupling2d
 
   /*!
-  \brief Constructor with shape function specification
+  \brief A class representing the framework for mortar coupling of ONE
+         slave element and SEVERAL master elements of a mortar interface in
+         2D. Concretely, this class simply stores several Coupling2d objects.
 
-  Constructs an instance of this class and enables custom shape function types.<br>
-  Note that this is \b not a collective call as coupling is
-  performed in parallel by individual processes.
-
+  \author popp (popp@lnm.mw.tum.de)
   */
-  CoCoupling2dManager(DRT::Discretization& idiscret,
-                      int dim, bool quad, Teuchos::ParameterList& params,
-                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
-  /*!
-  \brief Destructor
+  class CoCoupling2dManager : public MORTAR::Coupling2dManager
+  {
+   public:
+    /*!
+    \brief Constructor with shape function specification
 
-  */
-  virtual ~CoCoupling2dManager() {}
+    Constructs an instance of this class and enables custom shape function types.<br>
+    Note that this is \b not a collective call as coupling is
+    performed in parallel by individual processes.
 
-  /*!
-  \brief Get communicator
+    */
+    CoCoupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
+        std::vector<MORTAR::MortarElement*> mele);
 
-  */
-  virtual const Epetra_Comm& Comm() const;
+    /*!
+    \brief Destructor
 
-  /*!
-  \brief Get problem dimension
+    */
+    virtual ~CoCoupling2dManager() {}
 
-  */
-  virtual const int& Dim() const {return dim_;}
+    /*!
+    \brief Get communicator
 
-  /*!
-  \brief Return the LM shape fcn type
+    */
+    virtual const Epetra_Comm& Comm() const;
 
-  */
-  INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN"); }
+    /*!
+    \brief Get problem dimension
 
-  /*!
-  \brief Evaluate mortar coupling
+    */
+    virtual const int& Dim() const { return dim_; }
 
-  */
-  virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    /*!
+    \brief Return the LM shape fcn type
 
-  virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
-  //@}
-private:
-  /*!
-  \brief Calculate consistent dual shape functions in boundary elements
+    */
+    INPAR::MORTAR::ShapeFcn ShapeFcn()
+    {
+      return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+    }
 
-  */
-  virtual void ConsistDualShape();
+    /*!
+    \brief Evaluate mortar coupling
 
-protected:
+    */
+    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
+    virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    //@}
+   private:
+    /*!
+    \brief Calculate consistent dual shape functions in boundary elements
+
+    */
+    virtual void ConsistDualShape();
+
+   protected:
     // don't want = operator and cctor
-    CoCoupling2dManager operator = (const CoCoupling2dManager& old);
+    CoCoupling2dManager operator=(const CoCoupling2dManager& old);
     CoCoupling2dManager(const CoCoupling2dManager& old);
 
-    INPAR::CONTACT::SolvingStrategy           stype_;     // solving strategy
+    INPAR::CONTACT::SolvingStrategy stype_;  // solving strategy
 
-}; // class CoCoupling2dManager
+  };  // class CoCoupling2dManager
 
 }  // namespace CONTACT
 

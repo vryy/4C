@@ -27,9 +27,9 @@ int ADAPTER::StructureTimeLoop::Integrate()
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  while ( NotFinished() and (convergencestatus == INPAR::STR::conv_success or convergencestatus == INPAR::STR::conv_fail_repeat) )
+  while (NotFinished() and (convergencestatus == INPAR::STR::conv_success or
+                               convergencestatus == INPAR::STR::conv_fail_repeat))
   {
-
     // call the predictor
     PrePredict();
     PrepareTimeStep();
@@ -42,7 +42,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
     PostSolve();
 
     // if everything is fine
-    if(convergencestatus == INPAR::STR::conv_success)
+    if (convergencestatus == INPAR::STR::conv_success)
     {
       // calculate stresses, strains and energies
       // note: this has to be done before the update since otherwise a potential
@@ -66,9 +66,13 @@ int ADAPTER::StructureTimeLoop::Integrate()
       PrintStep();
     }
     // todo: remove this as soon as old structure time integration is gone
-    else if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY") == INPAR::STR::int_old)
+    else if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+                 DRT::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
+             INPAR::STR::int_old)
     {
-      convergencestatus = PerformErrorAction(convergencestatus); // something went wrong update error code according to chosen divcont action
+      convergencestatus =
+          PerformErrorAction(convergencestatus);  // something went wrong update error code
+                                                  // according to chosen divcont action
     }
   }
 
@@ -77,4 +81,3 @@ int ADAPTER::StructureTimeLoop::Integrate()
   // that's it say what went wrong
   return convergencestatus;
 }
-

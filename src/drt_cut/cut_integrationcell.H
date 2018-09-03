@@ -20,217 +20,206 @@
 
 #include "cut_point.H"  // necessary due to enumerator
 
-namespace GEO {
-namespace CUT {
-  class Mesh;
-  class VolumeCell;
-  class IntegrationCellCreator;
-
-/*! \class Integration Cell
-    \brief Base class for integration cells */
-class IntegrationCell
+namespace GEO
 {
-public:
-
-  IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
-    : position_( position ),
-      xyz_( xyz ),
-      points_( points ),
-      cell_( cell )
-  {}
-
-  virtual ~IntegrationCell() {}
-
-  /// get the dimension of the integration cell
-  virtual unsigned Dim() const = 0;
-
-  /// get the shape of the integration cell
-  virtual DRT::Element::DiscretizationType Shape() const = 0;
-
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
-
-  void DumpGmsh( std::ofstream & file, int * value=NULL );
-
-  /** \brief calculate the element volume
-   *
-   *  \note For 1-D elements the element length is returned,
-   *        and for 2-D elements the element area.
-   *
-   *  \author hiermeier \date 11/16 */
-  double Volume() const;
-
-  const std::vector<Point*> & Points() const { return points_; }
-
-  Point::PointPosition Position() const { return position_; }
-
-  const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
-
-  bool Contains( LINALG::Matrix<3,1>& x);
-
-  template<unsigned probdim, DRT::Element::DiscretizationType celltype>
-  bool Contains( LINALG::Matrix<probdim,1>& x);
-
-
-  /** Print the integration cells
-   *
-   *  \author hiermeier \date 02/17 */
-  void Print( std::ostream & stream ) const;
-  inline void Print() const
+  namespace CUT
   {
-    Print( std::cout );
-  };
+    class Mesh;
+    class VolumeCell;
+    class IntegrationCellCreator;
 
-protected:
+    /*! \class Integration Cell
+        \brief Base class for integration cells */
+    class IntegrationCell
+    {
+     public:
+      IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : position_(position), xyz_(xyz), points_(points), cell_(cell)
+      {
+      }
 
-  Point::PointPosition position_;
-  Epetra_SerialDenseMatrix xyz_;
-  std::vector<Point*> points_;
-  VolumeCell * cell_;
-};  // class IntegrationCell
+      virtual ~IntegrationCell() {}
 
-/*----------------------------------------------------------------------------*/
-/// line2 integration cell
-class Line2IntegrationCell : public IntegrationCell
-{
-public:
-  Line2IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz,
-      const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  { /* empty construction */ };
+      /// get the dimension of the integration cell
+      virtual unsigned Dim() const = 0;
 
-  virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim; };
+      /// get the shape of the integration cell
+      virtual DRT::Element::DiscretizationType Shape() const = 0;
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const = 0;
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+      void DumpGmsh(std::ofstream& file, int* value = NULL);
 
-};  // class Line2IntegrationCell
+      /** \brief calculate the element volume
+       *
+       *  \note For 1-D elements the element length is returned,
+       *        and for 2-D elements the element area.
+       *
+       *  \author hiermeier \date 11/16 */
+      double Volume() const;
 
-/*----------------------------------------------------------------------------*/
-/// tri3 integration cell
-class Tri3IntegrationCell : public IntegrationCell
-{
-public:
-  Tri3IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz,
-      const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  { /* empty construction */ };
+      const std::vector<Point*>& Points() const { return points_; }
 
-  virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim; };
+      Point::PointPosition Position() const { return position_; }
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
+      const Epetra_SerialDenseMatrix& Coordinates() const { return xyz_; }
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+      bool Contains(LINALG::Matrix<3, 1>& x);
 
-};  // class Tri3IntegrationCell
+      template <unsigned probdim, DRT::Element::DiscretizationType celltype>
+      bool Contains(LINALG::Matrix<probdim, 1>& x);
 
-/*----------------------------------------------------------------------------*/
-/// quad4 integration cell
-class Quad4IntegrationCell : public IntegrationCell
-{
-public:
-  Quad4IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz,
-      const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  { /* empty construction */ };
 
-  virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim; };
+      /** Print the integration cells
+       *
+       *  \author hiermeier \date 02/17 */
+      void Print(std::ostream& stream) const;
+      inline void Print() const { Print(std::cout); };
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
+     protected:
+      Point::PointPosition position_;
+      Epetra_SerialDenseMatrix xyz_;
+      std::vector<Point*> points_;
+      VolumeCell* cell_;
+    };  // class IntegrationCell
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+    /*----------------------------------------------------------------------------*/
+    /// line2 integration cell
+    class Line2IntegrationCell : public IntegrationCell
+    {
+     public:
+      Line2IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-};  // class Tri3IntegrationCell
+      virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim; };
 
-/*----------------------------------------------------------------------------*/
-/// hex8 integration cell
-class Hex8IntegrationCell : public IntegrationCell
-{
-public:
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
 
-  Hex8IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  {
-  }
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
 
-  virtual unsigned Dim() const { return 3; };
+    };  // class Line2IntegrationCell
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
+    /*----------------------------------------------------------------------------*/
+    /// tri3 integration cell
+    class Tri3IntegrationCell : public IntegrationCell
+    {
+     public:
+      Tri3IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+      virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::tri3>::dim; };
 
-  //virtual double Volume() const;
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
-private:
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
 
-};  // class Hex8IntegrationCell
+    };  // class Tri3IntegrationCell
 
-/*----------------------------------------------------------------------------*/
-/// tet4 integration cell
-class Tet4IntegrationCell : public IntegrationCell
-{
-public:
+    /*----------------------------------------------------------------------------*/
+    /// quad4 integration cell
+    class Quad4IntegrationCell : public IntegrationCell
+    {
+     public:
+      Quad4IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-  Tet4IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  {
-  }
+      virtual unsigned Dim() const { return DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim; };
 
-  virtual unsigned Dim() const { return 3; };
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+    };  // class Tri3IntegrationCell
 
-  //virtual double Volume() const;
+    /*----------------------------------------------------------------------------*/
+    /// hex8 integration cell
+    class Hex8IntegrationCell : public IntegrationCell
+    {
+     public:
+      Hex8IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell)
+      {
+      }
 
-};
+      virtual unsigned Dim() const { return 3; };
 
-/*----------------------------------------------------------------------------*/
-/// wedge6 integration cell
-class Wedge6IntegrationCell : public IntegrationCell
-{
-public:
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
 
-  Wedge6IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  {
-  }
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
 
-  virtual unsigned Dim() const { return 3; };
+      // virtual double Volume() const;
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
+     private:
+    };  // class Hex8IntegrationCell
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+    /*----------------------------------------------------------------------------*/
+    /// tet4 integration cell
+    class Tet4IntegrationCell : public IntegrationCell
+    {
+     public:
+      Tet4IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell)
+      {
+      }
 
-  //virtual double Volume() const;
-private:
+      virtual unsigned Dim() const { return 3; };
 
-};  // class Wedge6IntegrationCell
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
 
-/*----------------------------------------------------------------------------*/
-/// pyramid5 integration cell
-class Pyramid5IntegrationCell : public IntegrationCell
-{
-public:
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
 
-  Pyramid5IntegrationCell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, const std::vector<Point*> & points, VolumeCell * cell )
-    : IntegrationCell( position, xyz, points, cell )
-  {
-  }
+      // virtual double Volume() const;
+    };
 
-  virtual unsigned Dim() const { return 3; };
+    /*----------------------------------------------------------------------------*/
+    /// wedge6 integration cell
+    class Wedge6IntegrationCell : public IntegrationCell
+    {
+     public:
+      Wedge6IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell)
+      {
+      }
 
-  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
+      virtual unsigned Dim() const { return 3; };
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
 
-  //virtual double Volume() const;
-private:
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
 
-};  // class Pyramid5IntegrationCell
+      // virtual double Volume() const;
+     private:
+    };  // class Wedge6IntegrationCell
 
-} // namespace CUT
-} // namespace GEO
+    /*----------------------------------------------------------------------------*/
+    /// pyramid5 integration cell
+    class Pyramid5IntegrationCell : public IntegrationCell
+    {
+     public:
+      Pyramid5IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+          const std::vector<Point*>& points, VolumeCell* cell)
+          : IntegrationCell(position, xyz, points, cell)
+      {
+      }
+
+      virtual unsigned Dim() const { return 3; };
+
+      virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
+
+      virtual int CubatureDegree(DRT::Element::DiscretizationType elementshape) const;
+
+      // virtual double Volume() const;
+     private:
+    };  // class Pyramid5IntegrationCell
+
+  }  // namespace CUT
+}  // namespace GEO
 
 #endif

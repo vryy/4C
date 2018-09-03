@@ -1,4 +1,4 @@
- /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file thrtimint_genalpha.cpp
 \brief Thermal time integration with generalised-alpha
@@ -23,15 +23,14 @@
 void THR::TimIntGenAlpha::CalcCoeff()
 {
   // rho_inf specified --> calculate optimal parameters
-  if (rho_inf_!=-1.)
+  if (rho_inf_ != -1.)
   {
-    if ( (rho_inf_ < 0.0) or (rho_inf_ > 1.0) )
-      dserror("rho_inf out of range [0.0,1.0]");
-    if ( (gamma_!=0.5) or (alpham_!=0.5) or (alphaf_!=0.5) )
+    if ((rho_inf_ < 0.0) or (rho_inf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
+    if ((gamma_ != 0.5) or (alpham_ != 0.5) or (alphaf_ != 0.5))
       dserror("you may only specify RHO_INF or the other three parameters");
-    alpham_ = 0.5*(3.0-rho_inf_)/(rho_inf_+1.0);
-    alphaf_ = 1.0/(rho_inf_+1.0);
-    gamma_ = 0.5+alpham_-alphaf_;
+    alpham_ = 0.5 * (3.0 - rho_inf_) / (rho_inf_ + 1.0);
+    alphaf_ = 1.0 / (rho_inf_ + 1.0);
+    gamma_ = 0.5 + alpham_ - alphaf_;
   }
 }
 
@@ -41,14 +40,11 @@ void THR::TimIntGenAlpha::CalcCoeff()
 void THR::TimIntGenAlpha::VerifyCoeff()
 {
   // alpha_f
-  if ( (alphaf_ < 0.0) or (alphaf_ > 1.0) )
-    dserror("alpha_f out of range [0.0,1.0]");
+  if ((alphaf_ < 0.0) or (alphaf_ > 1.0)) dserror("alpha_f out of range [0.0,1.0]");
   // alpha_m
-  if ( (alpham_ < 0.0) or (alpham_ > 1.5) )
-    dserror("alpha_m out of range [0.0,1.0]");
+  if ((alpham_ < 0.0) or (alpham_ > 1.5)) dserror("alpha_m out of range [0.0,1.0]");
   // gamma:
-  if ( (gamma_ <= 0.0) or (gamma_ > 1.0) )
-    dserror("gamma out of range (0.0,1.0]");
+  if ((gamma_ <= 0.0) or (gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
 
   // mid-averaging type
   // In principle, there exist two mid-averaging possibilities, namely TR-like and IMR-like,
@@ -71,39 +67,29 @@ void THR::TimIntGenAlpha::VerifyCoeff()
 /*----------------------------------------------------------------------*
  | constructor                                               dano 10/09 |
  *----------------------------------------------------------------------*/
-THR::TimIntGenAlpha::TimIntGenAlpha(
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& tdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-  )
-: TimIntImpl(
-    ioparams,
-    tdynparams,
-    xparams,
-    actdis,
-    solver,
-    output
-    ),
-  midavg_(DRT::INPUT::IntegralValue<INPAR::THR::MidAverageEnum>(tdynparams.sublist("GENALPHA"),"GENAVG")),
-  /* iterupditer_(false), */
-  gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),
-  alphaf_(tdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
-  alpham_(tdynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
-  rho_inf_(tdynparams.sublist("GENALPHA").get<double>("RHO_INF")),
-  tempm_(Teuchos::null),
-  ratem_(Teuchos::null),
-  fint_(Teuchos::null),
-  fintm_(Teuchos::null),
-  fintn_(Teuchos::null),
-  fext_(Teuchos::null),
-  fextm_(Teuchos::null),
-  fextn_(Teuchos::null),
-  fcap_(Teuchos::null),
-  fcapm_(Teuchos::null),
-  fcapn_(Teuchos::null)
+THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
+    const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
+      midavg_(DRT::INPUT::IntegralValue<INPAR::THR::MidAverageEnum>(
+          tdynparams.sublist("GENALPHA"), "GENAVG")),
+      /* iterupditer_(false), */
+      gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),
+      alphaf_(tdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
+      alpham_(tdynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
+      rho_inf_(tdynparams.sublist("GENALPHA").get<double>("RHO_INF")),
+      tempm_(Teuchos::null),
+      ratem_(Teuchos::null),
+      fint_(Teuchos::null),
+      fintm_(Teuchos::null),
+      fintn_(Teuchos::null),
+      fext_(Teuchos::null),
+      fextm_(Teuchos::null),
+      fextn_(Teuchos::null),
+      fcap_(Teuchos::null),
+      fcapm_(Teuchos::null),
+      fcapn_(Teuchos::null)
 {
   // calculate coefficients from given spectral radius
   CalcCoeff();
@@ -119,9 +105,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
               << "   alpha_f = " << alphaf_ << std::endl
               << "   alpha_m = " << alpham_ << std::endl
               << "   gamma = " << gamma_ << std::endl
-              << "   midavg = " << INPAR::THR::MidAverageString(midavg_)
-              << std::endl;
-
+              << "   midavg = " << INPAR::THR::MidAverageString(midavg_) << std::endl;
   }
 
   // determine capacity and initial temperature rates
@@ -149,8 +133,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
   // stored force vector F_{transient;n+1} at new time
   fcapn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_,
-                         fint_, tang_);
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_, fint_, tang_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -185,7 +168,7 @@ void THR::TimIntGenAlpha::PredictConstTempConsistRate()
   // consistent temperature rates
   // R_{n+1}^{i+1} = (gamma - 1)/gamma . R_n + 1/(gamma . dt) . (T_{n+1}^{i+1} - T_n)
   raten_->Update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
-  raten_->Update(-(1-gamma_)/gamma_, *(*rate_)(0), (1/(gamma_*dt)));
+  raten_->Update(-(1 - gamma_) / gamma_, *(*rate_)(0), (1 / (gamma_ * dt)));
 
   // watch out
   return;
@@ -224,7 +207,7 @@ void THR::TimIntGenAlpha::EvaluateRhsTangResidual()
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+alpha_f} := alpha_f * F_{ext;n+1} + (1. - alpha_f) * F_{ext;n}
-  fextm_->Update(alphaf_, *fextn_, (1.-alphaf_), *fext_, 0.0);
+  fextm_->Update(alphaf_, *fextn_, (1. - alphaf_), *fext_, 0.0);
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -233,18 +216,17 @@ void THR::TimIntGenAlpha::EvaluateRhsTangResidual()
   fcapm_->PutScalar(0.0);
 
   // ordinary internal force and tangent
-  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapm_, fintn_,
-                         tang_);
+  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapm_, fintn_, tang_);
 
   // total internal mid-forces F_{int;n+alpha_f} ----> TR-like
   // F_{int;n+alpha_f} := alpha_f . F_{int;n+1} + (1. - alpha_f) . F_{int;n}
-  fintm_->Update(alphaf_, *fintn_, (1.-alphaf_), *fint_, 0.0);
+  fintm_->Update(alphaf_, *fintn_, (1. - alphaf_), *fint_, 0.0);
 
   // total capacitiy forces F_{cap;n+1}
   // F_{cap;n+1} := 1/alpha_m . F_{cap;n+alpha_m} + (1. - alpha_m)/alpha_m . F_{cap;n}
   // using the interpolation to the midpoint
   // F_{cap;n+alpha_m} := alpha_m . F_{cap;n+1} + (1. - alpha_m) . F_{cap;n}
-  fcapn_->Update((1./alpham_), *fcapm_, (1.-alpham_)/alpham_, *fcap_, 0.0);
+  fcapn_->Update((1. / alpham_), *fcapm_, (1. - alpham_) / alpham_, *fcap_, 0.0);
 
   // build residual
   //    Res = F_{cap;n+alpha_m}
@@ -274,12 +256,12 @@ void THR::TimIntGenAlpha::EvaluateMidState()
   // (1-alpha) is used for OLD solution at t_n
   // mid-temperatures T_{n+1-alpha_f} (tempm)
   // T_{n+alpha_f} := alphaf * T_{n+1} + (1.-alphaf) * T_n
-  tempm_->Update(alphaf_, *tempn_, (1.-alphaf_), (*temp_)[0], 0.0);
+  tempm_->Update(alphaf_, *tempn_, (1. - alphaf_), (*temp_)[0], 0.0);
 
   // mid-temperature rates R_{n+1-alpha_f} (ratem)
   // R_{n+alpha_m} := alpham * R_{n+1} + (1.-alpham) * R_{n}
   // pass ratem_ to the element to calculate fcapm_
-  ratem_->Update(alpham_, *raten_, (1.-alpham_), (*rate_)[0], 0.0);
+  ratem_->Update(alpham_, *raten_, (1. - alpham_), (*rate_)[0], 0.0);
 
   // jump
   return;
@@ -365,7 +347,7 @@ void THR::TimIntGenAlpha::UpdateIterIncrementally()
   // new end-point temperature rates
   // R_{n+1}^{i+1} = -(1- gamma)/gamma . R_n + 1/(gamma . dt) . (T_{n+1}^{i+1} - T_n)
   aux->Update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
-  aux->Update(-(1.0-gamma_)/gamma_, *(*rate_)(0), (1/(gamma_*dt)));
+  aux->Update(-(1.0 - gamma_) / gamma_, *(*rate_)(0), (1 / (gamma_ * dt)));
   // put only to free/non-DBC DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), raten_);
 
@@ -386,7 +368,7 @@ void THR::TimIntGenAlpha::UpdateIterIteratively()
 
   // new end-point temperature rates
   // R_{n+1}^{i+1} := R_{n+1}^{i} + 1/(gamma . dt) IncT_{n+1}^{i+1}
-  raten_->Update(1.0/(gamma_*(*dt_)[0]), *tempi_, 1.0);
+  raten_->Update(1.0 / (gamma_ * (*dt_)[0]), *tempi_, 1.0);
 
   // bye
   return;
@@ -440,8 +422,7 @@ void THR::TimIntGenAlpha::UpdateStepElement()
   // action for elements
   p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 }  // UpdateStepElement()
 
@@ -466,16 +447,14 @@ void THR::TimIntGenAlpha::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::WriteRestartForce(
-  Teuchos::RCP<IO::DiscretizationWriter> output
-  )
+void THR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // in contrast to former implementation we save the current vectors.
   // This is required in case of materials with history.
   // Recalculation of restarted state is not possible.
-  output->WriteVector("fexternal",fext_);
-  output->WriteVector("fint",fint_);
-  output->WriteVector("fcap",fcap_);
+  output->WriteVector("fexternal", fext_);
+  output->WriteVector("fint", fint_);
+  output->WriteVector("fcap", fcap_);
   return;
 
 }  // WriteRestartForce()
@@ -484,15 +463,14 @@ void THR::TimIntGenAlpha::WriteRestartForce(
 /*----------------------------------------------------------------------*
  | evaluate the internal force and the tangent               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::ApplyForceTangInternal(
-  const double time,  //!< evaluation time
-  const double dt,  //!< step size
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-  Teuchos::RCP<Epetra_Vector> fcap,  //!< capacity force
-  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-  )
+void THR::TimIntGenAlpha::ApplyForceTangInternal(const double time,  //!< evaluation time
+    const double dt,                                                 //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                          //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                         //!< residual temperatures
+    Teuchos::RCP<Epetra_Vector> fcap,                                //!< capacity force
+    Teuchos::RCP<Epetra_Vector> fint,                                //!< internal force
+    Teuchos::RCP<LINALG::SparseMatrix> tang                          //!< tangent matrix
+)
 {
   //! create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -501,11 +479,11 @@ void THR::TimIntGenAlpha::ApplyForceTangInternal(
   p.set<double>("alpham", alpham_);
   p.set<double>("gamma", gamma_);
   // set the mid-temperature rate R_{n+alpha_m} required for fcapm_
-  p.set<Teuchos::RCP<const Epetra_Vector> >("mid-temprate",ratem_);
-  p.set<double>("timefac",alphaf_);
+  p.set<Teuchos::RCP<const Epetra_Vector>>("mid-temprate", ratem_);
+  p.set<double>("timefac", alphaf_);
 
   //! call the base function
-  TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);
+  TimInt::ApplyForceTangInternal(p, time, dt, temp, tempi, fcap, fint, tang);
   //! finish
   return;
 
@@ -515,13 +493,12 @@ void THR::TimIntGenAlpha::ApplyForceTangInternal(
 /*----------------------------------------------------------------------*
  | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::ApplyForceInternal(
-  const double time,  //!< evaluation time
-  const double dt,  //!< step size
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-  Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-  )
+void THR::TimIntGenAlpha::ApplyForceInternal(const double time,  //!< evaluation time
+    const double dt,                                             //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                      //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                     //!< incremental temperatures
+    Teuchos::RCP<Epetra_Vector> fint                             //!< internal force
+)
 {
   //! create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -530,7 +507,7 @@ void THR::TimIntGenAlpha::ApplyForceInternal(
   p.set<double>("alpham", alpham_);
   p.set<double>("gamma", gamma_);
   //! call the base function
-  TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
+  TimInt::ApplyForceInternal(p, time, dt, temp, tempi, fint);
   //! finish
   return;
 
@@ -540,13 +517,12 @@ void THR::TimIntGenAlpha::ApplyForceInternal(
 /*----------------------------------------------------------------------*
  | evaluate the convective boundary condition                dano 06/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::ApplyForceExternalConv(
-  const double time,  //!< evaluation time
-  const Teuchos::RCP<Epetra_Vector> tempn,  //!< old temperature state T_n
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
-  Teuchos::RCP<Epetra_Vector> fext,  //!< external force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-  )
+void THR::TimIntGenAlpha::ApplyForceExternalConv(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> tempn,                         //!< old temperature state T_n
+    const Teuchos::RCP<Epetra_Vector> temp,                          //!< temperature state T_n+1
+    Teuchos::RCP<Epetra_Vector> fext,                                //!< external force
+    Teuchos::RCP<LINALG::SparseMatrix> tang                          //!< tangent matrix
+)
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -554,7 +530,7 @@ void THR::TimIntGenAlpha::ApplyForceExternalConv(
   p.set<double>("alphaf", alphaf_);
 
   // call the base function
-  TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
+  TimInt::ApplyForceExternalConv(p, time, tempn, temp, fext, tang);
   // finish
   return;
 

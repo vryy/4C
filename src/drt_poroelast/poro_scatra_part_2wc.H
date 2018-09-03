@@ -23,16 +23,14 @@ namespace POROELAST
 {
   class PoroScatraPart2WC : public PoroScatraPart
   {
-  public:
+   public:
+    //! explicit constructor
+    explicit PoroScatraPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    //!explicit constructor
-    explicit PoroScatraPart2WC(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
-
-    //!virtual destructor
+    //! virtual destructor
     virtual ~PoroScatraPart2WC(){};
 
-    //!full time loop
+    //! full time loop
     virtual void Timeloop();
 
     //! read and set fields needed for restart
@@ -53,8 +51,7 @@ namespace POROELAST
     //! write output print to screen
     void Output();
 
-  protected:
-
+   protected:
     //! perform iteration step of structure field
     void DoPoroStep();
 
@@ -77,7 +74,7 @@ namespace POROELAST
     double ittol_;
   };
 
-}
+}  // namespace POROELAST
 
 
 #endif /* PORO_SCATRA_PART_2WC_H_ */

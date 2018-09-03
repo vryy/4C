@@ -2,7 +2,8 @@
 /*!
 \file scatra_ele_calc_elch_electrode.H
 
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge within isothermal electrodes
+\brief evaluation of scatra elements for conservation of mass concentration and electronic charge
+within isothermal electrodes
 
 \level 2
 
@@ -26,302 +27,306 @@ namespace DRT
   {
     // forward declarations
     class ScaTraEleDiffManagerElchElectrode;
-    template<int NSD, int NEN> class ScaTraEleInternalVariableManagerElchElectrode;
-    template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElchElectrode;
+    template <int NSD, int NEN>
+    class ScaTraEleInternalVariableManagerElchElectrode;
+    template <DRT::Element::DiscretizationType distype>
+    class ScaTraEleUtilsElchElectrode;
 
     // class implementation
-    template<DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype>
     class ScaTraEleCalcElchElectrode : public ScaTraEleCalcElch<distype>
     {
-      public:
+     public:
+      //! singleton access method
+      static ScaTraEleCalcElchElectrode<distype>* Instance(const int numdofpernode,
+          const int numscal, const std::string& disname,
+          const ScaTraEleCalcElchElectrode* delete_me = NULL);
 
-        //! singleton access method
-        static ScaTraEleCalcElchElectrode<distype>* Instance(
-            const int numdofpernode,
-            const int numscal,
-            const std::string& disname,
-            const ScaTraEleCalcElchElectrode* delete_me = NULL
-            );
+      //! singleton destruction
+      virtual void Done();
 
-        //! singleton destruction
-        virtual void Done();
+      //! evaluate action
+      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, const SCATRA::Action& action,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
 
-        //! evaluate action
-        virtual int EvaluateAction(
-            DRT::Element*                 ele,
-            Teuchos::ParameterList&       params,
-            DRT::Discretization&          discretization,
-            const SCATRA::Action&         action,
-            DRT::Element::LocationArray&  la,
-            Epetra_SerialDenseMatrix&     elemat1_epetra,
-            Epetra_SerialDenseMatrix&     elemat2_epetra,
-            Epetra_SerialDenseVector&     elevec1_epetra,
-            Epetra_SerialDenseVector&     elevec2_epetra,
-            Epetra_SerialDenseVector&     elevec3_epetra
-            );
+     protected:
+      //! protected constructor for singletons
+      ScaTraEleCalcElchElectrode(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-      protected:
+      //! destructor
+      virtual ~ScaTraEleCalcElchElectrode() { return; }
 
-        //! protected constructor for singletons
-        ScaTraEleCalcElchElectrode(const int numdofpernode,const int numscal,const std::string& disname);
+      //! abbreviations
+      typedef ScaTraEleCalc<distype> my;
+      typedef ScaTraEleCalcElch<distype> myelch;
 
-        //! destructor
-        virtual ~ScaTraEleCalcElchElectrode(){return;}
+      /*========================================================================*/
+      //! @name general framework
+      /*========================================================================*/
 
-        //! abbreviations
-        typedef ScaTraEleCalc<distype> my;
-        typedef ScaTraEleCalcElch<distype> myelch;
+      //! calculate contributions to element matrix and residual (inside loop over all scalars)
+      virtual void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Epetra_SerialDenseVector& erhs,                         //!< element rhs to calculate+
+          const int k,                                            //!< index of current scalar
+          const double fac,                                       //!< domain-integration factor
+          const double timefacfac,  //!< domain-integration factor times time-integration factor
+          const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
+          const double taufac,  //!< tau times domain-integration factor
+          const double
+              timetaufac,  //!< domain-integration factor times tau times time-integration factor
+          const double rhstaufac,  //!< time-integration factor for rhs times tau times
+                                   //!< domain-integration factor
+          LINALG::Matrix<my::nen_, 1>&
+              tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
+          double& rhsint  //!< rhs at Gauss point
+      );
 
-        /*========================================================================*/
-        //! @name general framework
-        /*========================================================================*/
+      //! calculate contributions to element matrix and residual (outside loop over all scalars)
+      virtual void CalcMatAndRhsOutsideScalarLoop(
+          Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
+          const double fac,                //!< domain-integration factor
+          const double timefacfac,  //!< domain-integration factor times time-integration factor
+          const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
+      );
 
-        //! calculate contributions to element matrix and residual (inside loop over all scalars)
-        virtual void CalcMatAndRhs(
-            Epetra_SerialDenseMatrix&     emat,         //!< element matrix to calculate
-            Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate+
-            const int                     k,            //!< index of current scalar
-            const double                  fac,          //!< domain-integration factor
-            const double                  timefacfac,   //!< domain-integration factor times time-integration factor
-            const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-            const double                  taufac,       //!< tau times domain-integration factor
-            const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
-            const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
-            LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-            double&                       rhsint        //!< rhs at Gauss point
-            );
+      //! compute additional flux terms across Dirichlet boundaries
+      virtual void CorrectionForFluxAcrossDC(
+          DRT::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,           //!< location vector
+          Epetra_SerialDenseMatrix& emat,       //!< element matrix to calculate
+          Epetra_SerialDenseVector& erhs        //!< element rhs to calculate
+      )
+      {
+        return;
+      };
 
-        //! calculate contributions to element matrix and residual (outside loop over all scalars)
-        virtual void CalcMatAndRhsOutsideScalarLoop(
-            Epetra_SerialDenseMatrix&   emat,         //!< element matrix to calculate
-            Epetra_SerialDenseVector&   erhs,         //!< element rhs to calculate
-            const double                fac,          //!< domain-integration factor
-            const double                timefacfac,   //!< domain-integration factor times time-integration factor
-            const double                rhsfac        //!< time-integration factor for rhs times domain-integration factor
-            );
+      /*========================================================================*/
+      //! @name material and related and related functions
+      /*========================================================================*/
 
-        //! compute additional flux terms across Dirichlet boundaries
-        virtual void CorrectionForFluxAcrossDC(
-          DRT::Discretization&        discretization,   //!< discretization
-          const std::vector<int>&     lm,               //!< location vector
-          Epetra_SerialDenseMatrix&   emat,             //!< element matrix to calculate
-          Epetra_SerialDenseVector&   erhs              //!< element rhs to calculate
-        ){return;};
+      //! get material parameters
+      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                          //!< density at t_(n)
+          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
+          double& visc,                 //!< fluid viscosity
+          const int iquad = -1          //!< id of current gauss point (default = -1)
+      );
 
-        /*========================================================================*/
-        //! @name material and related and related functions
-        /*========================================================================*/
+      /*========================================================================*/
+      //! @name methods for evaluation of individual terms
+      /*========================================================================*/
 
-        //! get material parameters
-        virtual void GetMaterialParams(
-          const DRT::Element*                  ele,           //!< the element we are dealing with
-          std::vector<double>&                 densn,         //!< density at t_(n)
-          std::vector<double>&                 densnp,        //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>&                 densam,        //!< density at t_(n+alpha_M)
-          double&                              visc,          //!< fluid viscosity
-          const int                            iquad=-1       //!< id of current gauss point (default = -1)
-        );
+      //! CalcMat: linearizations of diffusion term and Ohmic overpotential w.r.t. structural
+      //! displacements
+      void CalcDiffODMesh(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+          const int k,                                     //!< index of current scalar
+          const int ndofpernodemesh,  //!< number of structural degrees of freedom per node
+          const double diffcoeff,     //!< diffusion coefficient
+          const double fac,           //!< domain-integration factor
+          const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
+          const double J,       //!< Jacobian determinant det(dx/ds)
+          const LINALG::Matrix<my::nsd_, 1>& gradphi,    //!< gradient of current scalar
+          const LINALG::Matrix<my::nsd_, 1>& convelint,  //!< convective velocity
+          const LINALG::Matrix<1, my::nsd_ * my::nen_>&
+              dJ_dmesh  //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural
+                        //!< displacements
+      );
 
-        /*========================================================================*/
-        //! @name methods for evaluation of individual terms
-        /*========================================================================*/
+      //! CalcMat: linearization of diffusion coefficient in diffusion term
+      void CalcMatDiffCoeffLin(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                          //!< index of current scalar
+          const double timefacfac,  //!< domain-integration factor times time-integration factor
+          const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const double scalar  //!< scaling factor for element matrix contributions
+      );
 
-        //! CalcMat: linearizations of diffusion term and Ohmic overpotential w.r.t. structural displacements
-        void CalcDiffODMesh(
-            Epetra_SerialDenseMatrix&                    emat,              //!< element matrix
-            const int                                    k,                 //!< index of current scalar
-            const int                                    ndofpernodemesh,   //!< number of structural degrees of freedom per node
-            const double                                 diffcoeff,         //!< diffusion coefficient
-            const double                                 fac,               //!< domain-integration factor
-            const double                                 rhsfac,            //!< time-integration factor for rhs times domain-integration factor
-            const double                                 J,                 //!< Jacobian determinant det(dx/ds)
-            const LINALG::Matrix<my::nsd_,1>&            gradphi,           //!< gradient of current scalar
-            const LINALG::Matrix<my::nsd_,1>&            convelint,         //!< convective velocity
-            const LINALG::Matrix<1,my::nsd_*my::nen_>&   dJ_dmesh           //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural displacements
-            );
+      //! CalcMat: potential equation div i with inserted current - ohmic overpotential
+      void CalcMatPotEquDiviOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const double timefacfac,  //!< domain-integration factor times time-integration factor
+          const double invf,        //!< 1/F
+          const LINALG::Matrix<my::nsd_, 1>& gradpot,  //!< gradient of potential at GP
+          const double scalar  //!< scaling factor for element matrix contributions
+      );
 
-        //! CalcMat: linearization of diffusion coefficient in diffusion term
-        void CalcMatDiffCoeffLin(
-          Epetra_SerialDenseMatrix&                          emat,         //!< element matrix to be filled
-          const int                                          k,            //!< index of current scalar
-          const double                                       timefacfac,   //!< domain-integration factor times time-integration factor
-          const LINALG::Matrix<my::nsd_,1>&                  gradphi,      //!< gradient of concentration at GP
-          const double                                       scalar        //!< scaling factor for element matrix contributions
-        );
+      //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
+      void CalcRhsPotEquDiviOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+          const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
+          const double invf,    //!< 1./F
+          const LINALG::Matrix<my::nsd_, 1>& gradpot,  //!< gradient of potential at GP
+          const double scalar  //!< scaling factor for element residual contributions
+      );
 
-        //! CalcMat: potential equation div i with inserted current - ohmic overpotential
-        void CalcMatPotEquDiviOhm(
-            Epetra_SerialDenseMatrix&           emat,         //!< element matrix to be filled
-            const double                        timefacfac,   //!< domain-integration factor times time-integration factor
-            const double                        invf,         //!< 1/F
-            const LINALG::Matrix<my::nsd_,1>&   gradpot,      //!< gradient of potential at GP
-            const double                        scalar        //!< scaling factor for element matrix contributions
-            );
+      //! calculate weighted current density
+      virtual void CalculateCurrent(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                    //!< type fo flux
+          const double fac                                           //!< integration factor
+      );
 
-        //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
-        void CalcRhsPotEquDiviOhm(
-            Epetra_SerialDenseVector&           erhs,      //!< element vector to be filled
-            const double                        rhsfac,    //!< time-integration factor for rhs times domain-integration factor
-            const double                        invf,      //!< 1./F
-            const LINALG::Matrix<my::nsd_,1>&   gradpot,   //!< gradient of potential at GP
-            const double                        scalar     //!< scaling factor for element residual contributions
-            );
+      /*========================================================================*/
+      //! @name additional service routines
+      /*========================================================================*/
 
-        //! calculate weighted current density
-        virtual void CalculateCurrent(
-            LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
-            const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-            const double                    fac         //!< integration factor
-            );
+      //! validity check with respect to input parameters, degrees of freedom, number of scalars
+      //! etc.
+      virtual void CheckElchElementParameter(DRT::Element* ele  //!< current element
+      );
 
-        /*========================================================================*/
-        //! @name additional service routines
-        /*========================================================================*/
+      //! get conductivity
+      void GetConductivity(const enum INPAR::ELCH::EquPot
+                               equpot,  //!< type of closing equation for electric potential
+          double& sigma_all,            //!< conductivity of electrolyte solution
+          std::vector<double>&
+              sigma,    //!< conductivity or a single ion + overall electrolyte solution
+          bool effCond  //!< flag if effective conductivity should be calculated
+      );
 
-        //! validity check with respect to input parameters, degrees of freedom, number of scalars etc.
-        virtual void CheckElchElementParameter(
-            DRT::Element*              ele  //!< current element
-        );
+      //! calculate electrode state of charge and C rate
+      virtual void CalculateElectrodeSOCAndCRate(
+          const DRT::Element* const& ele,             //!< the element we are dealing with
+          const DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la,            //!< location array
+          Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+      );
 
-        //! get conductivity
-        void GetConductivity(
-          const enum INPAR::ELCH::EquPot   equpot,      //!< type of closing equation for electric potential
-          double&                          sigma_all,   //!< conductivity of electrolyte solution
-          std::vector<double>&             sigma,       //!< conductivity or a single ion + overall electrolyte solution
-          bool                             effCond      //!< flag if effective conductivity should be calculated
-        );
+      //! calculate weighted mass flux (no reactive flux so far)
+      virtual void CalculateFlux(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                 //!< type fo flux
+          const int k                                             //!< index of current scalar
+      );
 
-        //! calculate electrode state of charge and C rate
-        virtual void CalculateElectrodeSOCAndCRate(
-            const DRT::Element* const&     ele,              //!< the element we are dealing with
-            const DRT::Discretization&     discretization,   //!< discretization
-            DRT::Element::LocationArray&   la,               //!< location array
-            Epetra_SerialDenseVector&      scalars           //!< result vector for scalar integrals to be computed
-            );
+      //! calculate error of numerical solution with respect to analytical solution
+      virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
+          Teuchos::ParameterList& params,                                     //!< parameter list
+          Epetra_SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+      );
 
-        //! calculate weighted mass flux (no reactive flux so far)
-        virtual void CalculateFlux(
-            LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
-            const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
-            const int                       k           //!< index of current scalar
-        );
+      //! set internal variables for electrodes
+      virtual void SetInternalVariablesForMatAndRHS();
 
-        //! calculate error of numerical solution with respect to analytical solution
-        virtual void CalErrorComparedToAnalytSolution(
-            const DRT::Element*         ele,      //!< element
-            Teuchos::ParameterList&     params,   //!< parameter list
-            Epetra_SerialDenseVector&   errors    //!< vector containing L2 and H1 error norms
-            );
+      //! get diffusion manager for electrodes
+      Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> DiffManager()
+      {
+        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);
+      };
 
-        //! set internal variables for electrodes
-        virtual void SetInternalVariablesForMatAndRHS();
+     private:
+      //! get internal variable manager for electrodes
+      Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>> VarManager()
+      {
+        return Teuchos::rcp_static_cast<
+            ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>>(
+            my::scatravarmanager_);
+      };
 
-        //! get diffusion manager for electrodes
-        Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);};
-
-      private:
-
-        //! get internal variable manager for electrodes
-        Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_,my::nen_> >(my::scatravarmanager_);};
-
-        //! get utility class supporting element evaluation for electrodes
-        DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils(){return static_cast<DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(myelch::utils_);};
+      //! get utility class supporting element evaluation for electrodes
+      DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils()
+      {
+        return static_cast<DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(myelch::utils_);
+      };
     };
 
 
     //! ScaTraEleDiffManagerElchElectrode implementation
     /*!
-      This class is derived from the standard ScaTraEleDiffManager and keeps all electrode-specific transport parameters.
+      This class is derived from the standard ScaTraEleDiffManager and keeps all electrode-specific
+      transport parameters.
     */
     class ScaTraEleDiffManagerElchElectrode : public ScaTraEleDiffManagerElch
     {
-      public:
+     public:
+      ScaTraEleDiffManagerElchElectrode(int numscal)
+          : ScaTraEleDiffManagerElch(numscal),
+            derivdiff_(numscal, std::vector<double>(numscal, 0.0)),
+            cond_(0.0),
+            derivcond_(numscal, 0.0)
+      {
+        return;
+      }
 
-        ScaTraEleDiffManagerElchElectrode(int numscal) :
-          ScaTraEleDiffManagerElch(numscal),
-          derivdiff_(numscal,std::vector<double>(numscal,0.0)),
-          cond_(0.0),
-          derivcond_(numscal,0.0)
-        {return;}
+      virtual ~ScaTraEleDiffManagerElchElectrode() { return; };
 
-        virtual ~ScaTraEleDiffManagerElchElectrode(){return;};
+      /*========================================================================*/
+      //! @name access methods
+      /*========================================================================*/
 
-        /*========================================================================*/
-        //! @name access methods
-        /*========================================================================*/
+      //! Set derivative of diffusion coefficients with respect to concentrations
+      void SetDerivIsoDiffCoef(const double derivdiff, const int k, const int iscal)
+      {
+        (derivdiff_[k])[iscal] = derivdiff;
+        return;
+      };
 
-        //! Set derivative of diffusion coefficients with respect to concentrations
-        void SetDerivIsoDiffCoef(const double derivdiff,const int k,const int iscal)
+      //! Access routine for derivative of diffusion coefficients with respect to concentrations
+      double GetDerivIsoDiffCoef(const int k, const int iscal) { return (derivdiff_[k])[iscal]; };
+
+      //! Set conductivity of the electrolyte solution
+      void SetCond(const double cond)
+      {
+        cond_ = cond;
+        return;
+      };
+
+      //! Access routine for conductivity of the electrolyte solution
+      double GetCond() { return cond_; };
+
+      //! Set derivative of the conductivity with respect to concentrations
+      void SetDerivCond(const double derivcond, const int k)
+      {
+        derivcond_[k] = derivcond;
+        return;
+      };
+
+      //! Access routine for derivative of the conductivity with respect to concentrations
+      double GetDerivCond(const int k) { return derivcond_[k]; };
+
+      /*========================================================================*/
+      //! @name output
+      /*========================================================================*/
+
+      //! print transport parameters to screen
+      virtual void OutputTransportParams(const int numscal)
+      {
+        for (int k = 0; k < numscal; ++k)
+          std::cout << "diffusion coefficient " << k << ":   " << diff_[k] << std::endl;
+
+        for (int k = 0; k < numscal; ++k)
         {
-          (derivdiff_[k])[iscal] = derivdiff;
-          return;
-        };
-
-        //! Access routine for derivative of diffusion coefficients with respect to concentrations
-        double GetDerivIsoDiffCoef(const int k,const int iscal){return (derivdiff_[k])[iscal];};
-
-        //! Set conductivity of the electrolyte solution
-        void SetCond(const double cond)
-        {
-          cond_ = cond;
-          return;
-        };
-
-        //! Access routine for conductivity of the electrolyte solution
-        double GetCond(){return cond_;};
-
-        //! Set derivative of the conductivity with respect to concentrations
-        void SetDerivCond(const double derivcond,const int k)
-        {
-          derivcond_[k] = derivcond;
-          return;
-        };
-
-        //! Access routine for derivative of the conductivity with respect to concentrations
-        double GetDerivCond(const int k){return derivcond_[k];};
-
-        /*========================================================================*/
-        //! @name output
-        /*========================================================================*/
-
-        //! print transport parameters to screen
-        virtual void OutputTransportParams(const int numscal)
-        {
-          for(int k=0;k<numscal;++k)
-            std::cout << "diffusion coefficient " << k << ":   " << diff_[k] << std::endl;
-
-          for(int k=0;k<numscal;++k)
+          for (int iscal = 0; iscal < numscal; ++iscal)
           {
-            for(int iscal=0;iscal<numscal;++iscal)
-            {
-              std::cout << "derivative of diffusion coefficient (" << k << "," << iscal << "):  " << (derivdiff_[k])[iscal] << std::endl;
-            }
+            std::cout << "derivative of diffusion coefficient (" << k << "," << iscal
+                      << "):  " << (derivdiff_[k])[iscal] << std::endl;
           }
-          std::cout << std::endl;
+        }
+        std::cout << std::endl;
 
-          std::cout << "conductivity:   " << cond_ << std::endl;
+        std::cout << "conductivity:   " << cond_ << std::endl;
 
-          for(int k=0;k<numscal;++k)
-            std::cout << "derivative of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
-          std::cout << std::endl;
+        for (int k = 0; k < numscal; ++k)
+          std::cout << "derivative of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
+        std::cout << std::endl;
 
-          return;
-        };
+        return;
+      };
 
-      protected:
+     protected:
+      /*========================================================================*/
+      //! @name transport parameter
+      /*========================================================================*/
 
-        /*========================================================================*/
-        //! @name transport parameter
-        /*========================================================================*/
+      //! derivative of diffusion coefficients with respect to concentrations
+      std::vector<std::vector<double>> derivdiff_;
 
-        //! derivative of diffusion coefficients with respect to concentrations
-        std::vector< std::vector<double> > derivdiff_;
+      //! conductivity of the electrolyte solution
+      double cond_;
 
-        //! conductivity of the electrolyte solution
-        double cond_;
-
-        //! derivative of the conductivity with respect to concentrations
-        std::vector<double> derivcond_;
+      //! derivative of the conductivity with respect to concentrations
+      std::vector<double> derivcond_;
     };
 
 
@@ -329,47 +334,53 @@ namespace DRT
     /*!
       This class keeps all internal electrode-specific variables.
     */
-    template<int NSD, int NEN>
-    class ScaTraEleInternalVariableManagerElchElectrode : public ScaTraEleInternalVariableManagerElch<NSD,NEN>
+    template <int NSD, int NEN>
+    class ScaTraEleInternalVariableManagerElchElectrode
+        : public ScaTraEleInternalVariableManagerElch<NSD, NEN>
     {
-      public:
+     public:
+      typedef ScaTraEleInternalVariableManager<NSD, NEN> vm;
+      typedef ScaTraEleInternalVariableManagerElch<NSD, NEN> vmelch;
 
-        typedef ScaTraEleInternalVariableManager<NSD,NEN> vm;
-        typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vmelch;
+      //! constructor
+      ScaTraEleInternalVariableManagerElchElectrode(
+          int numscal, const DRT::ELEMENTS::ScaTraEleParameterElch* elchpara)
+          : ScaTraEleInternalVariableManagerElch<NSD, NEN>(numscal, elchpara),
+            invf_(1. / vmelch::parameters_->Faraday())
+      {
+        return;
+      }
 
-        //! constructor
-        ScaTraEleInternalVariableManagerElchElectrode(int numscal,const DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
-          ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,elchpara),
-          invf_(1./vmelch::parameters_->Faraday())
-        {return;}
+      //! destructor
+      virtual ~ScaTraEleInternalVariableManagerElchElectrode() { return; };
 
-        //! destructor
-        virtual ~ScaTraEleInternalVariableManagerElchElectrode(){return;};
+      //! compute and set internal electrode-specific variables
+      void SetInternalVariablesElchElectrode(
+          const LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
+          const LINALG::Matrix<NSD, NEN>&
+              derxy,  //!< global derivatives of shape functions w.r.t x,y,z
+          const std::vector<LINALG::Matrix<NEN, 1>>&
+              ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,  //!< nodal state variables at t_(n)
+          const LINALG::Matrix<NSD, NEN>&
+              econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+          const std::vector<LINALG::Matrix<NEN, 1>>&
+              ehist  //!< history vector of transported scalars
+      )
+      {
+        // set internal variables in base variable manager
+        vmelch::SetInternalVariablesElch(funct, derxy, ephinp, ephin, econvelnp, ehist);
 
-        //! compute and set internal electrode-specific variables
-        void SetInternalVariablesElchElectrode(
-            const LINALG::Matrix<NEN,1>&                 funct,       //!< array for shape functions
-            const LINALG::Matrix<NSD,NEN>&               derxy,       //!< global derivatives of shape functions w.r.t x,y,z
-            const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-            const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal state variables at t_(n)
-            const LINALG::Matrix<NSD,NEN>&               econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-            const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //!< history vector of transported scalars
-            )
-        {
-          // set internal variables in base variable manager
-          vmelch::SetInternalVariablesElch(funct,derxy,ephinp,ephin,econvelnp,ehist);
+        return;
+      };
 
-          return;
-        };
+      //! return constant parameter 1./F
+      double InvF() { return invf_; };
 
-        //! return constant parameter 1./F
-        double InvF(){return invf_;};
-
-      protected:
-
-        //! constant parameter 1./F
-        const double invf_;
-    }; // class ScaTraEleInternalVariableManagerElchElectrode
-  } // namespace ELEMENTS
-} // namespace DRT
+     protected:
+      //! constant parameter 1./F
+      const double invf_;
+    };  // class ScaTraEleInternalVariableManagerElchElectrode
+  }     // namespace ELEMENTS
+}  // namespace DRT
 #endif

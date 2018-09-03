@@ -30,125 +30,120 @@ namespace DRT
 
 namespace INVANA
 {
+  /*! \class MatParManagerPerPatch
+   *  \brief Class to have patchwise constant parameters
+   *
+   *  \author kehl \date 08/2016
+   */
+  class MatParManagerPerPatch : public MatParManagerPerElement
+  {
+   public:
+    //! constructor
+    MatParManagerPerPatch(Teuchos::RCP<DRT::Discretization> discret);
 
-/*! \class MatParManagerPerPatch
- *  \brief Class to have patchwise constant parameters
- *
- *  \author kehl \date 08/2016
- */
-class MatParManagerPerPatch  : public MatParManagerPerElement
-{
+    //! destructor
+    virtual ~MatParManagerPerPatch(){};
 
-public:
+    //! Setup specific parametrization layout
+    virtual void Setup();
 
-  //! constructor
-  MatParManagerPerPatch(Teuchos::RCP<DRT::Discretization> discret);
+    //! Account for distributed chain-rule application
+    virtual void Finalize(
+        Teuchos::RCP<Epetra_MultiVector> source, Teuchos::RCP<Epetra_MultiVector> target);
 
-  //! destructor
-  virtual ~MatParManagerPerPatch(){};
+    //! Return initial covariance guess
+    virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
 
-  //! Setup specific parametrization layout
-  virtual void Setup();
+   protected:
+    //! Get current material parameters
+    virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
 
-  //! Account for distributed chain-rule application
-  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> source,
-      Teuchos::RCP<Epetra_MultiVector> target
-      );
+    //! apply projection to INVANA::DcsMatrix and get diagonal
+    virtual void ApplyParametrization(
+        DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
 
-  //! Return initial covariance guess
-  virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
+    //! Initialize optimization parameters
+    virtual void InitParameters();
 
-protected:
+    //! Chain rule application
+    virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos,
+        int paraposglobal, int paraposlocal);
 
-  //! Get current material parameters
-  virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
+   private:
+    //! @name Setup the parametrization
+    //@{
 
-  //! apply projection to INVANA::DcsMatrix and get diagonal
-  virtual void ApplyParametrization(DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
+    //! Create projection to patch-wise atoms
+    void CreateProjection();
+    //@}
 
-  //! Initialize optimization parameters
-  virtual void InitParameters();
+    //! @name Helper to setup the parametrization
+    //@{
 
-  //! Chain rule application
-  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-      double val, int elepos, int paraposglobal, int paraposlocal);
+    //! Read elementwise parameter distribution from input
+    void ReadMAPApproximation();
 
-private:
+    //! Create a dictionary of patch atoms for a specific number of patches
+    void CreateLevelDictionary(int patchlevel  // [in] patchlevel to create atoms for
+    );
 
-  //! @name Setup the parametrization
-  //@{
+    //! check the approximation power of this dictionary
+    double CheckApproximation();
 
-  //! Create projection to patch-wise atoms
-  void CreateProjection();
-  //@}
+    //! find connectivities within levels
+    void FindLevelConnectivity(
+        std::map<int, std::vector<int>>& neighbourhood,  // [in] neighbourinformation
+        std::map<int, std::vector<int>>& patches         // [out] patches within this level
+    );
 
-  //! @name Helper to setup the parametrization
-  //@{
+    //! Make a histogram of the elementwise solution
+    void MakeHistogram();
 
-  //! Read elementwise parameter distribution from input
-  void ReadMAPApproximation();
+    //! Find bin with maximum number of entries
+    void FindHistogramMax(std::map<int, int>& hisbins, int& index);
 
-  //! Create a dictionary of patch atoms for a specific number of patches
-  void CreateLevelDictionary(int patchlevel // [in] patchlevel to create atoms for
-      );
+    //! quality threshold for the approximation
+    double qthresh_;
 
-  //! check the approximation power of this dictionary
-  double CheckApproximation();
+    //! histogram of the elementwise parameters
+    std::vector<double> histvalues_;
 
-  //! find connectivities within levels
-  void FindLevelConnectivity(std::map<int, std::vector<int> >& neighbourhood, // [in] neighbourinformation
-      std::map<int, std::vector<int> >& patches // [out] patches within this level
-      );
+    //! bins of the histogram
+    std::map<int, int> histbins_;
 
-  //! Make a histogram of the elementwise solution
-  void MakeHistogram();
+    // file to read the map approximation from
+    std::string map_restart_file_;
 
-  //! Find bin with maximum number of entries
-  void FindHistogramMax(std::map<int,int>& hisbins, int& index);
+    // step from which to read the map approximation
+    int map_restart_step_;
+    //@}
 
-  //! quality threshold for the approximation
-  double qthresh_;
+    //! @name Parameters of the initial elementwise distribution
+    //@{
 
-  //! histogram of the elementwise parameters
-  std::vector<double> histvalues_;
+    //! elementwise set of optimization parameters
+    Teuchos::RCP<Epetra_MultiVector> optparams_elewise_;
 
-  //! bins of the histogram
-  std::map<int,int> histbins_;
+    //! elementwise layout
+    Teuchos::RCP<Epetra_Map> elewise_map_;
 
-  // file to read the map approximation from
-  std::string map_restart_file_;
+    //! Covariance approximation
+    Teuchos::RCP<DcsMatrix> fullcovariance_;
+    //@}
 
-  // step from which to read the map approximation
-  int map_restart_step_;
-  //@}
+    //! @name Projection between sparse appoximation and full basis
+    //@{
 
-  //! @name Parameters of the initial elementwise distribution
-  //@{
+    //! maps of the atoms of the final dictionary
+    Teuchos::RCP<LINALG::MultiMapExtractor> patchmap_;
+    //@}
 
-  //! elementwise set of optimization parameters
-  Teuchos::RCP<Epetra_MultiVector> optparams_elewise_;
+    //! global optimization parameter id to patch id
+    std::map<int, int> pidtopatch_;
 
-  //! elementwise layout
-  Teuchos::RCP<Epetra_Map> elewise_map_;
-
-  //! Covariance approximation
-  Teuchos::RCP<DcsMatrix> fullcovariance_;
-  //@}
-
-  //! @name Projection between sparse appoximation and full basis
-  //@{
-
-  //! maps of the atoms of the final dictionary
-  Teuchos::RCP<LINALG::MultiMapExtractor> patchmap_;
-  //@}
-
-  //! global optimization parameter id to patch id
-  std::map<int,int> pidtopatch_;
-
-  //! number of patch levels
-  int max_num_levels_;
-
-};
+    //! number of patch levels
+    int max_num_levels_;
+  };
 }  // namespace INVANA
 
 #endif

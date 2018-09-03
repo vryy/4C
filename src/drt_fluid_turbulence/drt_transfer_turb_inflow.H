@@ -26,7 +26,7 @@ to)
 
 */
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -34,185 +34,156 @@ namespace DRT
 
 namespace FLD
 {
-
-class TransferTurbulentInflowCondition
-{
-public:
-  /*!
-  \brief Standard Constructor
-
-  */
-  TransferTurbulentInflowCondition(
-    Teuchos::RCP<DRT::Discretization>  dis,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps
-    );
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~TransferTurbulentInflowCondition();
-
-  /*!
-  \brief Transfer process copying values from master boundary to slave
-         boundary (slave must be of Dirichlet type, otherwise this
-         operation doesn't make to mauch sense)
-
-         Intended to be called after ApplyDirichlet, overwriting the
-         dummy Dirichlet values on the slave boundary by the values
-         of the last time step on the master boundary
-  */
-  virtual void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
-                Teuchos::RCP<Epetra_Vector>       velnp,
-                const double                      time);
-
-protected:
-
-  //! there are two types of tranfer conditions. values are transferred
-  //! from master to slave conditions
-  enum ToggleType
+  class TransferTurbulentInflowCondition
   {
-    none,
-    master,
-    slave
-  };
+   public:
+    /*!
+    \brief Standard Constructor
 
-  //! get all data from condtion
-  void GetData(int & id,int & direction,ToggleType & type,const DRT::Condition*);
+    */
+    TransferTurbulentInflowCondition(
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~TransferTurbulentInflowCondition();
+
+    /*!
+    \brief Transfer process copying values from master boundary to slave
+           boundary (slave must be of Dirichlet type, otherwise this
+           operation doesn't make to mauch sense)
+
+           Intended to be called after ApplyDirichlet, overwriting the
+           dummy Dirichlet values on the slave boundary by the values
+           of the last time step on the master boundary
+    */
+    virtual void Transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
+        const double time);
+
+   protected:
+    //! there are two types of tranfer conditions. values are transferred
+    //! from master to slave conditions
+    enum ToggleType
+    {
+      none,
+      master,
+      slave
+    };
+
+    //! get all data from condtion
+    void GetData(int& id, int& direction, ToggleType& type, const DRT::Condition*);
 
 #ifdef PARALLEL
-  //! receive a block in the round robin communication pattern
-  void ReceiveBlock(
-    std::vector<char>  & rblock  ,
-    DRT::Exporter & exporter,
-    MPI_Request   & request );
+    //! receive a block in the round robin communication pattern
+    void ReceiveBlock(std::vector<char>& rblock, DRT::Exporter& exporter, MPI_Request& request);
 
-  //! send a block in the round robin communication pattern
-  void SendBlock(
-    std::vector<char>  & sblock  ,
-    DRT::Exporter & exporter,
-    MPI_Request   & request );
+    //! send a block in the round robin communication pattern
+    void SendBlock(std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request);
 #endif
 
-  //! unpack all master values contained in receive block
-  void UnpackLocalMasterValues(
-    std::vector<int>             & mymasters    ,
-    std::vector<std::vector<double> > & mymasters_vel,
-    std::vector<char>            & rblock
-    );
+    //! unpack all master values contained in receive block
+    void UnpackLocalMasterValues(std::vector<int>& mymasters,
+        std::vector<std::vector<double>>& mymasters_vel, std::vector<char>& rblock);
 
-  //! pack all master values into a send block
-  void PackLocalMasterValues(
-    std::vector<int>             & mymasters    ,
-    std::vector<std::vector<double> > & mymasters_vel,
-    DRT::PackBuffer         & sblock
-    );
+    //! pack all master values into a send block
+    void PackLocalMasterValues(std::vector<int>& mymasters,
+        std::vector<std::vector<double>>& mymasters_vel, DRT::PackBuffer& sblock);
 
-  //! for all values avaible on the processor, do the final setting of the value
-  virtual void SetValuesAvailableOnThisProc(
-    std::vector<int>                 & mymasters,
-    std::vector<std::vector<double> >     & mymasters_vel,
-    Teuchos::RCP<Epetra_Vector>   velnp);
+    //! for all values avaible on the processor, do the final setting of the value
+    virtual void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
+        std::vector<std::vector<double>>& mymasters_vel, Teuchos::RCP<Epetra_Vector> velnp);
 
-  //! flag active boundary condition (may be used to switch off everything)
-  bool                             active_;
+    //! flag active boundary condition (may be used to switch off everything)
+    bool active_;
 
-  //! the discretisation
-  Teuchos::RCP<DRT::Discretization> dis_;
+    //! the discretisation
+    Teuchos::RCP<DRT::Discretization> dis_;
 
-  //! info on DIirchlet boundary
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    //! info on DIirchlet boundary
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-  //! the connectivity of the boundary condition
-  std::map<int,std::vector<int> >       midtosid_;
+    //! the connectivity of the boundary condition
+    std::map<int, std::vector<int>> midtosid_;
 
-  //! time curve number
-  int curve_;
+    //! time curve number
+    int curve_;
 
-  int numveldof_;
+    int numveldof_;
+  };
 
-};
+  class TransferTurbulentInflowConditionXW : public TransferTurbulentInflowCondition
+  {
+   public:
+    /*!
+    \brief Standard Constructor
 
-class TransferTurbulentInflowConditionXW : public TransferTurbulentInflowCondition
-{
-public:
-  /*!
-  \brief Standard Constructor
+    */
+    TransferTurbulentInflowConditionXW(
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
 
-  */
-  TransferTurbulentInflowConditionXW(
-    Teuchos::RCP<DRT::Discretization>  dis,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps
-    );
+    /*!
+    \brief Destructor
 
-  /*!
-  \brief Destructor
+    */
+    virtual ~TransferTurbulentInflowConditionXW();
 
-  */
-  virtual ~TransferTurbulentInflowConditionXW();
+    /*!
+    \brief Transfer process copying values from master boundary to slave
+           boundary (slave must be of Dirichlet type, otherwise this
+           operation doesn't make to mauch sense)
 
-  /*!
-  \brief Transfer process copying values from master boundary to slave
-         boundary (slave must be of Dirichlet type, otherwise this
-         operation doesn't make to mauch sense)
+           Intended to be called after ApplyDirichlet, overwriting the
+           dummy Dirichlet values on the slave boundary by the values
+           of the last time step on the master boundary
+    */
+    void Transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
+        const double time);
 
-         Intended to be called after ApplyDirichlet, overwriting the
-         dummy Dirichlet values on the slave boundary by the values
-         of the last time step on the master boundary
-  */
-  void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
-                Teuchos::RCP<Epetra_Vector>       velnp,
-                const double                      time);
-
-private:
-  //! for all values avaible on the processor, do the final setting of the value
-  void SetValuesAvailableOnThisProc(
-    std::vector<int>                 & mymasters,
-    std::vector<std::vector<double> >     & mymasters_vel,
-    Teuchos::RCP<Epetra_Vector>   velnp);
-};
+   private:
+    //! for all values avaible on the processor, do the final setting of the value
+    void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
+        std::vector<std::vector<double>>& mymasters_vel, Teuchos::RCP<Epetra_Vector> velnp);
+  };
 
 
-class TransferTurbulentInflowConditionNodal : public TransferTurbulentInflowCondition
-{
-public:
-  /*!
-  \brief Standard Constructor
+  class TransferTurbulentInflowConditionNodal : public TransferTurbulentInflowCondition
+  {
+   public:
+    /*!
+    \brief Standard Constructor
 
-  */
-  TransferTurbulentInflowConditionNodal(
-    Teuchos::RCP<DRT::Discretization>  dis,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps
-    );
+    */
+    TransferTurbulentInflowConditionNodal(
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
 
-  /*!
-  \brief Destructor
+    /*!
+    \brief Destructor
 
-  */
-  virtual ~TransferTurbulentInflowConditionNodal();
+    */
+    virtual ~TransferTurbulentInflowConditionNodal();
 
-  /*!
-  \brief Transfer process copying values from master boundary to slave
-         boundary (slave must be of Dirichlet type, otherwise this
-         operation doesn't make to mauch sense)
+    /*!
+    \brief Transfer process copying values from master boundary to slave
+           boundary (slave must be of Dirichlet type, otherwise this
+           operation doesn't make to mauch sense)
 
-         Intended to be called after ApplyDirichlet, overwriting the
-         dummy Dirichlet values on the slave boundary by the values
-         of the last time step on the master boundary
-  */
-  void Transfer(const Teuchos::RCP<Epetra_Vector> invec ,
-                Teuchos::RCP<Epetra_Vector>       outvec,
-                const double                      time);
+           Intended to be called after ApplyDirichlet, overwriting the
+           dummy Dirichlet values on the slave boundary by the values
+           of the last time step on the master boundary
+    */
+    void Transfer(const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec,
+        const double time);
 
-  bool IsActive(){return active_;}
-private:
-  //! for all values avaible on the processor, do the final setting of the value
-  void SetValuesAvailableOnThisProc(
-    std::vector<int>                 & mymasters,
-    std::vector<std::vector<double> >     & mymasters_vec,
-    Teuchos::RCP<Epetra_Vector>   outvec);
-};
+    bool IsActive() { return active_; }
 
-} // end namespace FLD
+   private:
+    //! for all values avaible on the processor, do the final setting of the value
+    void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
+        std::vector<std::vector<double>>& mymasters_vec, Teuchos::RCP<Epetra_Vector> outvec);
+  };
+
+}  // end namespace FLD
 
 #endif  // #ifndef TRANSFERTURBINF_H

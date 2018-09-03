@@ -17,10 +17,9 @@
 DRT::ElementRegisterType DRT::ElementRegisterType::instance_;
 
 
-DRT::ParObject* DRT::ElementRegisterType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ElementRegisterType::Create(const std::vector<char>& data)
 {
-  DRT::ElementRegister* object =
-    new DRT::ElementRegister(DRT::Element::element_none);
+  DRT::ElementRegister* object = new DRT::ElementRegister(DRT::Element::element_none);
   object->Unpack(data);
   return object;
 }
@@ -29,9 +28,7 @@ DRT::ParObject* DRT::ElementRegisterType::Create( const std::vector<char> & data
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::ElementRegister::ElementRegister(DRT::Element::ElementType etype) :
-ParObject(),
-etype_(etype)
+DRT::ElementRegister::ElementRegister(DRT::Element::ElementType etype) : ParObject(), etype_(etype)
 {
   return;
 }
@@ -39,9 +36,8 @@ etype_(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::ElementRegister::ElementRegister(const DRT::ElementRegister& old) :
-ParObject(old),
-etype_(old.etype_)
+DRT::ElementRegister::ElementRegister(const DRT::ElementRegister& old)
+    : ParObject(old), etype_(old.etype_)
 {
   return;
 }
@@ -49,10 +45,7 @@ etype_(old.etype_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::ElementRegister::~ElementRegister()
-{
-  return;
-}
+DRT::ElementRegister::~ElementRegister() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -67,7 +60,7 @@ DRT::ElementRegister* DRT::ElementRegister::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::ElementRegister& eler)
+ostream& operator<<(ostream& os, const DRT::ElementRegister& eler)
 {
   eler.Print(os);
   return os;
@@ -80,18 +73,18 @@ ostream& operator << (ostream& os, const DRT::ElementRegister& eler)
 void DRT::ElementRegister::Print(ostream& os) const
 {
   os << "ElementRegister to element with type ";
-  switch(Type())
+  switch (Type())
   {
     case DRT::Element::element_shell8line:
       os << "Shell8Line ";
-    break;
+      break;
     case DRT::Element::element_shell8:
       os << "Shell8 ";
-    break;
+      break;
     case DRT::Element::element_none:
     default:
       dserror("Unknown type of element");
-    break;
+      break;
   }
   return;
 }
@@ -102,14 +95,14 @@ void DRT::ElementRegister::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::ElementRegister::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
   // add type of element
-  AddtoPack(data,etype_);
+  AddtoPack(data, etype_);
 
   return;
 }
@@ -124,12 +117,12 @@ void DRT::ElementRegister::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  ExtractfromPack(position,data,etype_);
+  ExtractfromPack(position, data, etype_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

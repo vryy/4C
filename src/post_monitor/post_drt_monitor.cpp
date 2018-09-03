@@ -28,43 +28,39 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MonWriter::MonWriter(
-  PostProblem& problem,
-  std::string& infieldtype,
-  int node
-  )
-  : myrank_(problem.comm()->MyPID()) // get my processor id
+MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
+    int node)
+    : myrank_(problem.comm()->MyPID())  // get my processor id
 {
   // determine the owner of the node
   nodeowner_ = false;
 
   int numdis = problem.num_discr();
-  //std::string fieldtype = "";
+  // std::string fieldtype = "";
   // loop over all available discretizations
-  for (int i=0; i<numdis; ++i)
+  for (int i = 0; i < numdis; ++i)
   {
     PostField* field = problem.get_discretization(i);
-    if (field->name()==infieldtype)
+    if (field->name() == infieldtype)
     {
       // pointer (rcp) to actual discretisation
-      Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+      Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
       // store, if this node belongs to me
       if (mydiscrete->HaveGlobalNode(node))
       {
         nodeowner_ = mydiscrete->HaveGlobalNode(node);
       }
     }
-  }// end loop over dis
+  }  // end loop over dis
 
-  //ensure that we really found exactly one node owner
+  // ensure that we really found exactly one node owner
   {
-    int localnodeowner = (int) nodeowner_;
+    int localnodeowner = (int)nodeowner_;
     int numnodeowner = 0;
-    (problem.comm())->SumAll(&localnodeowner,&numnodeowner,1);
-    if ((myrank_==0) and (numnodeowner==0))
-      dserror("Could not find node %d",node);
-    if ((myrank_==0) and (numnodeowner>1))
-      dserror("Found more than one owner of node %d: %d",node,numnodeowner);
+    (problem.comm())->SumAll(&localnodeowner, &numnodeowner, 1);
+    if ((myrank_ == 0) and (numnodeowner == 0)) dserror("Could not find node %d", node);
+    if ((myrank_ == 0) and (numnodeowner > 1))
+      dserror("Found more than one owner of node %d: %d", node, numnodeowner);
   }
 
   return;
@@ -72,11 +68,7 @@ MonWriter::MonWriter(
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonFile(
-  PostProblem& problem,
-  std::string& infieldtype,
-  int node
-  )
+void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int node)
 {
   // create my output file
   std::string filename = problem.outname() + ".mon";
@@ -85,7 +77,7 @@ void MonWriter::WriteMonFile(
   {
     outfile.open(filename.c_str());
   }
-  //int numdis = problem.num_discr();
+  // int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
@@ -94,7 +86,7 @@ void MonWriter::WriteMonFile(
   CheckInfieldType(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+  Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   int dim = problem.num_dim();
 
@@ -105,7 +97,7 @@ void MonWriter::WriteMonFile(
   // Note that datamap can only be computed in WriteResult(...), which is pure virtual on
   // this level. Hence offset is split up into two parts!
   // First part:
-  const int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+  const int offset1 = -field->discretization()->DofRowMap()->MinAllGID();
 
   // global nodal dof numbers
   std::vector<int> gdof;
@@ -114,7 +106,8 @@ void MonWriter::WriteMonFile(
   {
     // test, if this node belongs to me
     bool ismynode = mydiscrete->HaveGlobalNode(node);
-    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be serial)
+    if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
+                    // serial)
       FieldError(node);
 
     // pointer to my actual node
@@ -123,9 +116,9 @@ void MonWriter::WriteMonFile(
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
     // set some dummy values
-    for(unsigned i=0;i < gdof.size();i++)
+    for (unsigned i = 0; i < gdof.size(); i++)
     {
-      gdof[i]+=offset1;
+      gdof[i] += offset1;
     }
 
     // write header
@@ -138,12 +131,12 @@ void MonWriter::WriteMonFile(
     outfile << "\n";
     outfile << "#\n";
 
-    WriteTableHead(outfile,dim);
+    WriteTableHead(outfile, dim);
   }
-  else // this proc is not the node owner
+  else  // this proc is not the node owner
   {
     // set some dummy values
-    for(int i=0; i < dim+1; ++i)
+    for (int i = 0; i < dim + 1; ++i)
     {
       gdof.push_back(-1);
     }
@@ -153,25 +146,19 @@ void MonWriter::WriteMonFile(
   // writing step size is considered
   if (nodeowner_)
   {
-    while(result.next_result())
-      WriteResult(outfile,result,gdof,dim);
+    while (result.next_result()) WriteResult(outfile, result, gdof, dim);
   }
 
   // close file
-  if (outfile.is_open())
-    outfile.close();
+  if (outfile.is_open()) outfile.close();
 }
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonStressFile(
-  PostProblem& problem,
-  std::string& infieldtype,
-  std::string stresstype,
-  int node
-  )
+    PostProblem& problem, std::string& infieldtype, std::string stresstype, int node)
 {
   // stop it now
-  if ( (stresstype != "none") and (stresstype != "ndxyz") )
+  if ((stresstype != "none") and (stresstype != "ndxyz"))
     dserror("Cannot deal with requested stress output type: %s", stresstype.c_str());
 
   // write stress
@@ -192,14 +179,10 @@ void MonWriter::WriteMonStressFile(
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonStrainFile(
-  PostProblem& problem,
-  std::string& infieldtype,
-  std::string straintype,
-  int node
-  )
+    PostProblem& problem, std::string& infieldtype, std::string straintype, int node)
 {
   // stop it now
-  if ( (straintype != "none") and (straintype != "ndxyz") )
+  if ((straintype != "none") and (straintype != "ndxyz"))
     dserror("Cannot deal with requested strain output type: %s", straintype.c_str());
 
   if (straintype != "none")
@@ -222,14 +205,10 @@ void MonWriter::WriteMonStrainFile(
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonPlStrainFile(
-  PostProblem& problem,
-  std::string& infieldtype,
-  std::string straintype,
-  int node
-  )
+    PostProblem& problem, std::string& infieldtype, std::string straintype, int node)
 {
   // stop it now
-  if ( (straintype != "none") and (straintype != "ndxyz") )
+  if ((straintype != "none") and (straintype != "ndxyz"))
     dserror("Cannot deal with requested plastic strain output type: %s", straintype.c_str());
 
   if (straintype != "none")
@@ -251,15 +230,9 @@ void MonWriter::WriteMonPlStrainFile(
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonStrFile(
-  const std::string& filename,
-  PostProblem& problem,
-  std::string& infieldtype,
-  const std::string strname,
-  const std::string strtype,
-  std::vector<std::string> groupnames,
-  int node
-  )
+void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& problem,
+    std::string& infieldtype, const std::string strname, const std::string strtype,
+    std::vector<std::string> groupnames, int node)
 {
   // create my output file
   std::ofstream outfile;
@@ -267,7 +240,7 @@ void MonWriter::WriteMonStrFile(
   {
     outfile.open(filename.c_str());
   }
-  //int numdis = problem.num_discr();
+  // int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
@@ -276,7 +249,7 @@ void MonWriter::WriteMonStrFile(
   CheckInfieldType(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+  Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -290,13 +263,14 @@ void MonWriter::WriteMonStrFile(
   // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
   // this level. Hence offset is split up into two parts!
   // First part:
-  const int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+  const int offset1 = -field->discretization()->DofRowMap()->MinAllGID();
 
   if (nodeowner_)
   {
     // test, if this node belongs to me
     bool ismynode = mydiscrete->HaveGlobalNode(node);
-    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+    if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
+                    // seriell)
       FieldError(node);
 
     // pointer to my actual node
@@ -305,7 +279,7 @@ void MonWriter::WriteMonStrFile(
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
     // set some dummy values
-    for(unsigned i=0;i < gdof.size();i++)
+    for (unsigned i = 0; i < gdof.size(); i++)
     {
       gdof[i] += offset1;
     }
@@ -319,12 +293,12 @@ void MonWriter::WriteMonStrFile(
     outfile << "\n";
     outfile << "#\n";
 
-    WriteStrTableHead(outfile,strname,strtype,dim);
+    WriteStrTableHead(outfile, strname, strtype, dim);
   }
-  else // this proc is not the node owner
+  else  // this proc is not the node owner
   {
     // set some dummy values
-    for(int i=0; i < dim+1; ++i)
+    for (int i = 0; i < dim + 1; ++i)
     {
       gdof.push_back(-1);
     }
@@ -336,24 +310,19 @@ void MonWriter::WriteMonStrFile(
   // utilising an assembly call. The assembly is parallel and thus all processors
   // have to be incoporated --- at least I think so.
   // (culpit: bborn, 07/09)
-  for (std::vector<std::string>::iterator gn=groupnames.begin(); gn!=groupnames.end(); ++gn)
-    WriteStrResults(outfile,problem,result,gdof,dim,strtype,*gn,node);
+  for (std::vector<std::string>::iterator gn = groupnames.begin(); gn != groupnames.end(); ++gn)
+    WriteStrResults(outfile, problem, result, gdof, dim, strtype, *gn, node);
 
-  if (outfile.is_open())
-    outfile.close();
+  if (outfile.is_open()) outfile.close();
 }
 
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonHeatfluxFile(
-  PostProblem& problem,
-  std::string& infieldtype,
-  std::string heatfluxtype,
-  int node
-  )
+    PostProblem& problem, std::string& infieldtype, std::string heatfluxtype, int node)
 {
   // stop it now
-  if ( (heatfluxtype != "none") and (heatfluxtype != "ndxyz") )
+  if ((heatfluxtype != "none") and (heatfluxtype != "ndxyz"))
     dserror("Cannot deal with requested heatflux output type: %s", heatfluxtype.c_str());
 
   // write heatflux
@@ -377,17 +346,12 @@ void MonWriter::WriteMonHeatfluxFile(
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonTempgradFile(
-  PostProblem& problem,
-  std::string& infieldtype,
-  std::string tempgradtype,
-  int node
-  )
+    PostProblem& problem, std::string& infieldtype, std::string tempgradtype, int node)
 {
   // stop it now
-  if ( (tempgradtype != "none") and (tempgradtype != "ndxyz") )
-    dserror("Cannot deal with requested temperature gradient output type: %s",
-      tempgradtype.c_str()
-      );
+  if ((tempgradtype != "none") and (tempgradtype != "ndxyz"))
+    dserror(
+        "Cannot deal with requested temperature gradient output type: %s", tempgradtype.c_str());
 
   if (tempgradtype != "none")
   {
@@ -408,15 +372,9 @@ void MonWriter::WriteMonTempgradFile(
 
 
 /*----------------------------------------------------------------------*/
-void MonWriter::WriteMonThrFile(
-  const std::string& filename,
-  PostProblem& problem,
-  std::string& infieldtype,
-  const std::string thrname,
-  const std::string thrtype,
-  std::vector<std::string> groupnames,
-  int node
-  )
+void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& problem,
+    std::string& infieldtype, const std::string thrname, const std::string thrtype,
+    std::vector<std::string> groupnames, int node)
 {
   // create my output file
   std::ofstream outfile;
@@ -425,7 +383,7 @@ void MonWriter::WriteMonThrFile(
     outfile.open(filename.c_str());
   }
 
-//  int numdis = problem.num_discr();
+  //  int numdis = problem.num_discr();
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
@@ -434,7 +392,7 @@ void MonWriter::WriteMonThrFile(
   CheckInfieldType(infieldtype);
 
   // pointer (rcp) to actual discretisation
-  Teuchos::RCP< DRT::Discretization > mydiscrete = field->discretization();
+  Teuchos::RCP<DRT::Discretization> mydiscrete = field->discretization();
   // space dimension of the problem
   const int dim = problem.num_dim();
 
@@ -448,13 +406,14 @@ void MonWriter::WriteMonThrFile(
   // Note that datamap can only be compute in WriteResult(...), which is pure virtual on
   // this level. Hence offset is split up into two parts!
   // First part:
-  const int offset1 = - field->discretization()->DofRowMap()->MinAllGID();
+  const int offset1 = -field->discretization()->DofRowMap()->MinAllGID();
 
   if (nodeowner_)
   {
     // test, if this node belongs to me
     bool ismynode = mydiscrete->HaveGlobalNode(node);
-    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+    if (!ismynode)  // if this node does not belong to this field ( or proc, but we should be
+                    // seriell)
       FieldError(node);
 
     // pointer to my actual node
@@ -463,7 +422,7 @@ void MonWriter::WriteMonThrFile(
     // global nodal dof numbers
     gdof = mydiscrete->Dof(mynode);
     // set some dummy values
-    for(unsigned i=0;i < gdof.size();i++)
+    for (unsigned i = 0; i < gdof.size(); i++)
     {
       gdof[i] += offset1;
     }
@@ -478,12 +437,12 @@ void MonWriter::WriteMonThrFile(
     outfile << "\n";
     outfile << "#\n";
 
-    WriteThrTableHead(outfile,thrname,thrtype,dim);
+    WriteThrTableHead(outfile, thrname, thrtype, dim);
   }
-  else // this proc is not the node owner
+  else  // this proc is not the node owner
   {
     // set some dummy values
-    for(int i=0; i < dim+1; ++i)
+    for (int i = 0; i < dim + 1; ++i)
     {
       gdof.push_back(-1);
     }
@@ -495,12 +454,11 @@ void MonWriter::WriteMonThrFile(
   // nodes is done by DRT::Discretization utilising an assembly call. The
   // assembly is parallel and thus all processors have to be incoporated
   // --- at least I think so. (culpit: bborn, 07/09)
-  for (std::vector<std::string>::iterator gn=groupnames.begin(); gn!=groupnames.end(); ++gn)
-    WriteThrResults(outfile,problem,result,gdof,dim,thrtype,*gn,node);
+  for (std::vector<std::string>::iterator gn = groupnames.begin(); gn != groupnames.end(); ++gn)
+    WriteThrResults(outfile, problem, result, gdof, dim, thrtype, *gn, node);
 
-  if (outfile.is_open())
-    outfile.close();
-} // WriteMonThrFile()
+  if (outfile.is_open()) outfile.close();
+}  // WriteMonThrFile()
 
 
 /*----------------------------------------------------------------------*/
@@ -524,7 +482,7 @@ void FluidMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void FluidMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to fluid field!",node);
+  dserror("Node %i does not belong to fluid field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -538,41 +496,38 @@ void FluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "# step   time     u_x      u_y      p\n";
-    break;
-  case 3:
-    outfile << "# step   time     u_x      u_y      u_z      p\n";
-    break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+      outfile << "# step   time     u_x      u_y      p\n";
+      break;
+    case 3:
+      outfile << "# step   time     u_x      u_y      u_z      p\n";
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 void FluidMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
-  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velnp");
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(20) << result.step();
   outfile << std::right << std::setw(20) << std::scientific << result.time();
 
-  //compute second part of offset
+  // compute second part of offset
   int offset2 = velmap.MinAllGID();
 
   // do output for velocity and pressure
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for (unsigned i = 0; i < gdof.size(); ++i)
   {
-    const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
+    const int lid = velmap.LID(gdof[i] + offset2);
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific
+            << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -584,13 +539,14 @@ void FluidMonWriter::WriteResult(
 void RedAirwayMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "red_airway")
-    std::cout << "\nPure red_airway problem, field option other than red_airway has been ignored!\n\n";
+    std::cout
+        << "\nPure red_airway problem, field option other than red_airway has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
 void RedAirwayMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to red_airway field!",node);
+  dserror("Node %i does not belong to red_airway field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -607,24 +563,20 @@ void RedAirwayMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void RedAirwayMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
-  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("PO2");
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("PO2");
   const Epetra_BlockMap& pmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(20) << result.step();
   outfile << std::right << std::setw(20) << std::scientific << result.time();
 
-  //compute second part of offset
-//  int offset2 = pmap.MinAllGID();
+  // compute second part of offset
+  //  int offset2 = pmap.MinAllGID();
 
   // do output for velocity and pressure
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for (unsigned i = 0; i < gdof.size(); ++i)
   {
     const int lid = pmap.LID(gdof[i]);
     outfile << std::right << std::setw(20) << (*resvec)[lid];
@@ -634,59 +586,20 @@ void RedAirwayMonWriter::WriteResult(
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "structure")
-    std::cout << "\nPure structural problem, field option other than structure has been ignored!\n\n";
+    std::cout
+        << "\nPure structural problem, field option other than structure has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::FieldError(int node)
-{;
+{
+  ;
   dserror("Node %i does not belong to structure field!", node);
 }
 
@@ -701,47 +614,31 @@ void StructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << "d_x"
-            << std::right << std::setw(16) << "d_y"
-            << std::right << std::setw(16) << "v_x"
-            << std::right << std::setw(16) << "v_y"
-            << std::right << std::setw(16) << "a_x"
-            << std::right << std::setw(16) << "a_y"
-            << std::endl;
-    break;
-  case 3:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << "d_x"
-            << std::right << std::setw(16) << "d_y"
-            << std::right << std::setw(16) << "d_z"
-            << std::right << std::setw(16) << "v_x"
-            << std::right << std::setw(16) << "v_y"
-            << std::right << std::setw(16) << "v_z"
-            << std::right << std::setw(16) << "a_x"
-            << std::right << std::setw(16) << "a_y"
-            << std::right << std::setw(16) << "a_z"
-            << std::right << std::setw(16) << "p"
-            << std::endl;
-    break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << "d_x" << std::right << std::setw(16)
+              << "d_y" << std::right << std::setw(16) << "v_x" << std::right << std::setw(16)
+              << "v_y" << std::right << std::setw(16) << "a_x" << std::right << std::setw(16)
+              << "a_y" << std::endl;
+      break;
+    case 3:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << "d_x" << std::right << std::setw(16)
+              << "d_y" << std::right << std::setw(16) << "d_z" << std::right << std::setw(16)
+              << "v_x" << std::right << std::setw(16) << "v_y" << std::right << std::setw(16)
+              << "v_z" << std::right << std::setw(16) << "a_x" << std::right << std::setw(16)
+              << "a_y" << std::right << std::setw(16) << "a_z" << std::right << std::setw(16) << "p"
+              << std::endl;
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
 
@@ -759,7 +656,7 @@ void StructMonWriter::WriteResult(
   {
     if (gdof.size() == (unsigned)dim)  // ordinary case: 3 displ DOFs
       noddof = (unsigned)dim;
-    else if (gdof.size() == (unsigned)dim+1)  // displacement+pressure: 3+1 DOFs
+    else if (gdof.size() == (unsigned)dim + 1)  // displacement+pressure: 3+1 DOFs
       noddof = (unsigned)dim;
     else  // eg. shell with displacement+rotation: 3+3 DOFs
       noddof = gdof.size();
@@ -775,10 +672,10 @@ void StructMonWriter::WriteResult(
   int offset2 = dispmap.MinAllGID();
 
   // do output of displacement
-  for(unsigned i=0; i < noddof; ++i)
+  for (unsigned i = 0; i < noddof; ++i)
   {
-    const int lid = dispmap.LID(gdof[i]+offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    const int lid = dispmap.LID(gdof[i] + offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -786,7 +683,8 @@ void StructMonWriter::WriteResult(
 
   // check if velocity is available
   MAP* dummydir;
-  if (map_find_map(result.group(), "velocity", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
+  if (map_find_map(result.group(), "velocity", &dummydir) and
+      result.field()->problem()->struct_vel_acc() == "yes")
   {
     // get actual result vector velocity
     resvec = result.read_result("velocity");
@@ -796,10 +694,10 @@ void StructMonWriter::WriteResult(
     offset2 = velmap.MinAllGID();
 
     // do output of velocity
-    for(unsigned i=0; i <  noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
-      const int lid = velmap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      const int lid = velmap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -807,26 +705,27 @@ void StructMonWriter::WriteResult(
   // acceleration
 
   // check if acceleration is available
-  if (map_find_map(result.group(), "acceleration", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
+  if (map_find_map(result.group(), "acceleration", &dummydir) and
+      result.field()->problem()->struct_vel_acc() == "yes")
   {
     // get actual result vector acceleration
     resvec = result.read_result("acceleration");
     const Epetra_BlockMap& accmap = resvec->Map();
 
-    //compute second part of offset
+    // compute second part of offset
     offset2 = accmap.MinAllGID();
 
     // do output for acceleration
-    for(unsigned i=0; i <  noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
-      const int lid = accmap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      const int lid = accmap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
 
   // pressure
-  if (gdof.size() == (unsigned)dim+1)
+  if (gdof.size() == (unsigned)dim + 1)
   {
     // get actual result vector displacement/pressure
     resvec = result.read_result("displacement");
@@ -838,8 +737,8 @@ void StructMonWriter::WriteResult(
     // do output of pressure
     {
       const unsigned i = (unsigned)dim;
-      const int lid = pressmap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      const int lid = pressmap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -849,54 +748,35 @@ void StructMonWriter::WriteResult(
 
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteStrTableHead(
-  std::ofstream& outfile,
-  const std::string strname,
-  const std::string strtype,
-  const int dim
-  )
+    std::ofstream& outfile, const std::string strname, const std::string strtype, const int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << strname+"_xx"
-            << std::right << std::setw(16) << strname+"_yy"
-            << std::right << std::setw(16) << strname+"_xy"
-            << std::endl;
-    break;
-  case 3:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << strname+"_xx"
-            << std::right << std::setw(16) << strname+"_yy"
-            << std::right << std::setw(16) << strname+"_zz"
-            << std::right << std::setw(16) << strname+"_xy"
-            << std::right << std::setw(16) << strname+"_yz"
-            << std::right << std::setw(16) << strname+"_zx"
-            << std::endl;
-    break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << strname + "_xx" << std::right
+              << std::setw(16) << strname + "_yy" << std::right << std::setw(16) << strname + "_xy"
+              << std::endl;
+      break;
+    case 3:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << strname + "_xx" << std::right
+              << std::setw(16) << strname + "_yy" << std::right << std::setw(16) << strname + "_zz"
+              << std::right << std::setw(16) << strname + "_xy" << std::right << std::setw(16)
+              << strname + "_yz" << std::right << std::setw(16) << strname + "_zx" << std::endl;
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteStrResults(
-  std::ofstream& outfile,
-  PostProblem& problem,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim,
-  std::string strtype,
-  std::string groupname,
-  const int node
-  )
+void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& problem,
+    PostResult& result, std::vector<int>& gdof, int dim, std::string strtype, std::string groupname,
+    const int node)
 {
   result.next_result();  // needed
   if (map_has_map(result.group(), groupname.c_str()))
@@ -950,8 +830,7 @@ void StructMonWriter::WriteStrResults(
     PostField* field = GetFieldPtr(problem);
 
     // inform (eagerly waiting) user
-    if (myrank_ == 0)
-      std::cout << "writing node-based " << out << std::endl;
+    if (myrank_ == 0) std::cout << "writing node-based " << out << std::endl;
 
     // DOFs at node
     int numdf = 0;
@@ -964,29 +843,22 @@ void StructMonWriter::WriteStrResults(
 
     // this is a loop over all time steps that should be written
     // bottom control here, because first set has been read already
-    do {
-      WriteStrResult(outfile,field,result,groupname,name,numdf,node);
+    do
+    {
+      WriteStrResult(outfile, field, result, groupname, name, numdf, node);
     } while (result.next_result());
-
   }
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void StructMonWriter::WriteStrResult(
-  std::ofstream& outfile,
-  PostField*& field,
-  PostResult& result,
-  const std::string groupname,
-  const std::string name,
-  const int numdf,
-  const int node
-  ) const
+void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
+    const std::string groupname, const std::string name, const int numdf, const int node) const
 {
   // get stresses/strains at Gauss points
-  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data
-    = result.read_result_serialdensematrix(groupname);
+  const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> data =
+      result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
   const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
 
@@ -996,21 +868,20 @@ void StructMonWriter::WriteStrResult(
   p.set("gpstressmap", data);
 
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
-  p.set("poststress",nodal_stress);
-  dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-    if (nodal_stress==Teuchos::null)
-    {
-      dserror("vector containing nodal stresses/strains not available");
-    }
+  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap, 6));
+  p.set("poststress", nodal_stress);
+  dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  if (nodal_stress == Teuchos::null)
+  {
+    dserror("vector containing nodal stresses/strains not available");
+  }
   if (nodeowner_)
   {
     outfile << std::right << std::setw(10) << result.step();
     outfile << std::right << std::setw(16) << std::scientific << result.time();
-    for (int i=0;i<6;i++)
-    outfile << std::right << std::setw(16) << std::scientific << (*nodal_stress)[i][node];
+    for (int i = 0; i < 6; i++)
+      outfile << std::right << std::setw(16) << std::scientific << (*nodal_stress)[i][node];
     outfile << std::endl;
-
   }
 
   return;
@@ -1026,10 +897,7 @@ void AleMonWriter::CheckInfieldType(std::string& infieldtype)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::FieldError(int node)
-{
-  dserror("Node %i does not belong to ALE field!", node);
-}
+void AleMonWriter::FieldError(int node) { dserror("Node %i does not belong to ALE field!", node); }
 
 /*----------------------------------------------------------------------*/
 void AleMonWriter::WriteHeader(std::ofstream& outfile)
@@ -1042,40 +910,36 @@ void AleMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "# step   time     d_x      d_y\n";
-    break;
-  case 3:
-   outfile << "# step   time     d_x      d_y      d_z\n";
-   break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+      outfile << "# step   time     d_x      d_y\n";
+      break;
+    case 3:
+      outfile << "# step   time     d_x      d_y      d_z\n";
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 void AleMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("displacement");
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(10) << result.step();
   outfile << std::right << std::setw(16) << std::scientific << result.time();
 
-  //compute second part of offset
+  // compute second part of offset
   int offset2 = dispmap.MinAllGID();
 
   // do output for velocity and pressure
-  for(unsigned i=0; i < gdof.size()-1; ++i)
+  for (unsigned i = 0; i < gdof.size() - 1; ++i)
   {
-    const int lid = dispmap.LID(gdof[i]+offset2);
+    const int lid = dispmap.LID(gdof[i] + offset2);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
@@ -1089,8 +953,7 @@ PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "fluid")
-    dserror("Fieldtype of field 1 is not fluid.");
+  if (myfield->name() != "fluid") dserror("Fieldtype of field 1 is not fluid.");
   return myfield;
 }
 
@@ -1107,36 +970,23 @@ void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
   {
     case 2:
     {
-      outfile << "#"
-      << std::right << std::setw(9) << "step"
-      << std::right << std::setw(16) << "time"
-      << std::right << std::setw(16) << "d_x"
-      << std::right << std::setw(16) << "d_y"
-      << std::right << std::setw(16) << "u_x"
-      << std::right << std::setw(16) << "u_y"
-      << std::right << std::setw(16) << "p"
-      << std::right << std::setw(16) << "lambda_x"
-      << std::right << std::setw(16) << "lambda_y"
-      << std::endl;
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << "d_x" << std::right << std::setw(16)
+              << "d_y" << std::right << std::setw(16) << "u_x" << std::right << std::setw(16)
+              << "u_y" << std::right << std::setw(16) << "p" << std::right << std::setw(16)
+              << "lambda_x" << std::right << std::setw(16) << "lambda_y" << std::endl;
 
       break;
     }
     case 3:
     {
-      outfile << "#"
-      << std::right << std::setw(9) << "step"
-      << std::right << std::setw(16) << "time"
-      << std::right << std::setw(16) << "d_x"
-      << std::right << std::setw(16) << "d_y"
-      << std::right << std::setw(16) << "d_z"
-      << std::right << std::setw(16) << "u_x"
-      << std::right << std::setw(16) << "u_y"
-      << std::right << std::setw(16) << "u_z"
-      << std::right << std::setw(16) << "p"
-      << std::right << std::setw(16) << "lambda_x"
-      << std::right << std::setw(16) << "lambda_y"
-      << std::right << std::setw(16) << "lambda_z"
-      << std::endl;
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << "d_x" << std::right << std::setw(16)
+              << "d_y" << std::right << std::setw(16) << "d_z" << std::right << std::setw(16)
+              << "u_x" << std::right << std::setw(16) << "u_y" << std::right << std::setw(16)
+              << "u_z" << std::right << std::setw(16) << "p" << std::right << std::setw(16)
+              << "lambda_x" << std::right << std::setw(16) << "lambda_y" << std::right
+              << std::setw(16) << "lambda_z" << std::endl;
 
       break;
     }
@@ -1150,25 +1000,21 @@ void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 
 /*----------------------------------------------------------------------*/
 void FsiFluidMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("dispnp");
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("dispnp");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(10) << result.step();
   outfile << std::right << std::setw(16) << std::scientific << result.time();
 
-  //compute second part of offset
+  // compute second part of offset
   int offset2 = dispmap.MinAllGID();
 
-  for(unsigned i=0; i < gdof.size()-1; ++i)
+  for (unsigned i = 0; i < gdof.size() - 1; ++i)
   {
-    const int lid = dispmap.LID(gdof[i]+offset2);
+    const int lid = dispmap.LID(gdof[i] + offset2);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1177,13 +1023,13 @@ void FsiFluidMonWriter::WriteResult(
   resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
 
-  //compute second part of offset
+  // compute second part of offset
   offset2 = velmap.MinAllGID();
 
   // do output for velocity and pressure
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for (unsigned i = 0; i < gdof.size(); ++i)
   {
-    const int lid = velmap.LID(gdof[i]+offset2);
+    const int lid = velmap.LID(gdof[i] + offset2);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1195,18 +1041,18 @@ void FsiFluidMonWriter::WriteResult(
     resvec = result.read_result("fsilambda");
     const Epetra_BlockMap& lambdamap = resvec->Map();
 
-    //compute second part of offset
+    // compute second part of offset
     offset2 = lambdamap.MinAllGID();
 
-    for(unsigned i=0; i < gdof.size()-1; ++i)
+    for (unsigned i = 0; i < gdof.size() - 1; ++i)
     {
-      const int lid = lambdamap.LID(gdof[i]+offset2);
-        outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+      const int lid = lambdamap.LID(gdof[i] + offset2);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
   else
   {
-    for(unsigned i=0; i < gdof.size()-1; ++i)
+    for (unsigned i = 0; i < gdof.size() - 1; ++i)
     {
       outfile << std::right << std::setw(16) << "not avail.";
     }
@@ -1223,8 +1069,7 @@ PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
-  if (myfield->name() != "structure")
-    dserror("Fieldtype of field 1 is not structure.");
+  if (myfield->name() != "structure") dserror("Fieldtype of field 1 is not structure.");
   return myfield;
 }
 
@@ -1239,53 +1084,33 @@ void FsiStructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << "d_x"
-            << std::right << std::setw(16) << "d_y"
-            << std::right << std::setw(16) << "v_x"
-            << std::right << std::setw(16) << "v_y"
-            << std::right << std::setw(16) << "a_x"
-            << std::right << std::setw(16) << "a_y"
-            << std::right << std::setw(16) << "p"
-            << std::right << std::setw(16) << "lambda_x"
-            << std::right << std::setw(16) << "lambda_y"
-            << std::endl;
-    break;
-  case 3:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << "d_x"
-            << std::right << std::setw(16) << "d_y"
-            << std::right << std::setw(16) << "d_z"
-            << std::right << std::setw(16) << "v_x"
-            << std::right << std::setw(16) << "v_y"
-            << std::right << std::setw(16) << "v_z"
-            << std::right << std::setw(16) << "a_x"
-            << std::right << std::setw(16) << "a_y"
-            << std::right << std::setw(16) << "a_z"
-            << std::right << std::setw(16) << "p"
-            << std::right << std::setw(16) << "lambda_x"
-            << std::right << std::setw(16) << "lambda_y"
-            << std::right << std::setw(16) << "lambda_z"
-            << std::endl;
-    break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << "d_x" << std::right << std::setw(16)
+              << "d_y" << std::right << std::setw(16) << "v_x" << std::right << std::setw(16)
+              << "v_y" << std::right << std::setw(16) << "a_x" << std::right << std::setw(16)
+              << "a_y" << std::right << std::setw(16) << "p" << std::right << std::setw(16)
+              << "lambda_x" << std::right << std::setw(16) << "lambda_y" << std::endl;
+      break;
+    case 3:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << "d_x" << std::right << std::setw(16)
+              << "d_y" << std::right << std::setw(16) << "d_z" << std::right << std::setw(16)
+              << "v_x" << std::right << std::setw(16) << "v_y" << std::right << std::setw(16)
+              << "v_z" << std::right << std::setw(16) << "a_x" << std::right << std::setw(16)
+              << "a_y" << std::right << std::setw(16) << "a_z" << std::right << std::setw(16) << "p"
+              << std::right << std::setw(16) << "lambda_x" << std::right << std::setw(16)
+              << "lambda_y" << std::right << std::setw(16) << "lambda_z" << std::endl;
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 void FsiStructMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
 
@@ -1303,7 +1128,7 @@ void FsiStructMonWriter::WriteResult(
   {
     if (gdof.size() == (unsigned)dim)  // ordinary case: 3 displ DOFs
       noddof = (unsigned)dim;
-    else if (gdof.size() == (unsigned)dim+1)  // displacement+pressure: 3+1 DOFs
+    else if (gdof.size() == (unsigned)dim + 1)  // displacement+pressure: 3+1 DOFs
       noddof = (unsigned)dim;
     else  // eg. shell with displacement+rotation: 3+3 DOFs
       noddof = gdof.size();
@@ -1319,10 +1144,10 @@ void FsiStructMonWriter::WriteResult(
   int offset2 = dispmap.MinAllGID();
 
   // do output of displacement
-  for(unsigned i=0; i < noddof; ++i)
+  for (unsigned i = 0; i < noddof; ++i)
   {
-    const int lid = dispmap.LID(gdof[i]+offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    const int lid = dispmap.LID(gdof[i] + offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1330,7 +1155,8 @@ void FsiStructMonWriter::WriteResult(
 
   // check if velocity is available
   MAP* dummydir;
-  if (map_find_map(result.group(), "velocity", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
+  if (map_find_map(result.group(), "velocity", &dummydir) and
+      result.field()->problem()->struct_vel_acc() == "yes")
   {
     // get actual result vector velocity
     resvec = result.read_result("velocity");
@@ -1340,16 +1166,16 @@ void FsiStructMonWriter::WriteResult(
     offset2 = velmap.MinAllGID();
 
     // do output of velocity
-    for(unsigned i=0; i <  noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
-      const int lid = velmap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      const int lid = velmap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
   else
   {
-    for(unsigned i=0; i < noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
       outfile << std::right << std::setw(16) << "not avail.";
     }
@@ -1358,33 +1184,34 @@ void FsiStructMonWriter::WriteResult(
   // acceleration
 
   // check if acceleration is available
-  if (map_find_map(result.group(), "acceleration", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
+  if (map_find_map(result.group(), "acceleration", &dummydir) and
+      result.field()->problem()->struct_vel_acc() == "yes")
   {
     // get actual result vector acceleration
     resvec = result.read_result("acceleration");
     const Epetra_BlockMap& accmap = resvec->Map();
 
-    //compute second part of offset
+    // compute second part of offset
     offset2 = accmap.MinAllGID();
 
     // do output for acceleration
-    for(unsigned i=0; i <  noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
-      const int lid = accmap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      const int lid = accmap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
   else
   {
-    for(unsigned i=0; i < noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
       outfile << std::right << std::setw(16) << "not avail.";
     }
   }
 
   // pressure
-  if (gdof.size() == (unsigned)dim+1)
+  if (gdof.size() == (unsigned)dim + 1)
   {
     // get actual result vector displacement/pressure
     resvec = result.read_result("displacement");
@@ -1396,8 +1223,8 @@ void FsiStructMonWriter::WriteResult(
     // do output of pressure
     {
       const unsigned i = (unsigned)dim;
-      const int lid = pressmap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      const int lid = pressmap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -1413,19 +1240,19 @@ void FsiStructMonWriter::WriteResult(
     resvec = result.read_result("fsilambda");
     const Epetra_BlockMap& lambdamap = resvec->Map();
 
-    //compute second part of offset
+    // compute second part of offset
     offset2 = lambdamap.MinAllGID();
 
-    for(unsigned i=0; i < noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
-      const int lid = lambdamap.LID(gdof[i]+offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-        outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+      const int lid = lambdamap.LID(gdof[i] + offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
   else
   {
-    for(unsigned i=0; i < noddof; ++i)
+    for (unsigned i = 0; i < noddof; ++i)
     {
       outfile << std::right << std::setw(16) << "not avail.";
     }
@@ -1441,8 +1268,7 @@ PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "fluid")
-    dserror("Fieldtype of field 1 is not fluid.");
+  if (myfield->name() != "fluid") dserror("Fieldtype of field 1 is not fluid.");
   return myfield;
 }
 
@@ -1479,8 +1305,7 @@ PostField* ScatraMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "scatra")
-    dserror("Fieldtype of field 1 is not scatra.");
+  if (myfield->name() != "scatra") dserror("Fieldtype of field 1 is not scatra.");
   return myfield;
 }
 
@@ -1489,42 +1314,39 @@ void ScatraMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "# step   time     phi\n";
-    break;
-  case 3:
-   outfile << "# step   time     phi\n";
-   break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+      outfile << "# step   time     phi\n";
+      break;
+    case 3:
+      outfile << "# step   time     phi\n";
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 void ScatraMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP< Epetra_Vector > resvec = result.read_result("phinp");
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("phinp");
 
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(10) << result.step();
   outfile << std::right << std::setw(20) << std::scientific << result.time();
 
-  //compute second part of offset
+  // compute second part of offset
   int offset2 = dispmap.MinAllGID();
 
   // do output for velocity
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for (unsigned i = 0; i < gdof.size(); ++i)
   {
-    const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
+    const int lid = dispmap.LID(gdof[i] + offset2);
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific
+            << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -1554,21 +1376,14 @@ void ThermoMonWriter::WriteHeader(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
-  outfile << "#"
-          << std::right << std::setw(9) << "step"
-          << std::right << std::setw(16) << "time"
-          << std::right << std::setw(16) << "theta"
-          << std::right << std::setw(16) << "thetarate"
+  outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16) << "time"
+          << std::right << std::setw(16) << "theta" << std::right << std::setw(16) << "thetarate"
           << std::endl;
 }
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteResult(
-  std::ofstream& outfile,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim
-  )
+    std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // write front
 
@@ -1586,10 +1401,10 @@ void ThermoMonWriter::WriteResult(
   int offset2 = dispmap.MinAllGID();
 
   // do output of temperature (always one DOF)
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for (unsigned i = 0; i < gdof.size(); ++i)
   {
-    const int lid = dispmap.LID(gdof[i]+offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    const int lid = dispmap.LID(gdof[i] + offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1603,10 +1418,10 @@ void ThermoMonWriter::WriteResult(
   offset2 = ratemap.MinAllGID();
 
   // do output of temperature rate
-  for(unsigned i=0; i < gdof.size(); ++i)
+  for (unsigned i = 0; i < gdof.size(); ++i)
   {
-    const int lid = ratemap.LID(gdof[i]+offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    const int lid = ratemap.LID(gdof[i] + offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1615,57 +1430,37 @@ void ThermoMonWriter::WriteResult(
 
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteThrTableHead(
-  std::ofstream& outfile,
-  const std::string thrname,
-  const std::string thrtype,
-  const int dim
-  )
+    std::ofstream& outfile, const std::string thrname, const std::string thrtype, const int dim)
 {
   switch (dim)
   {
-  case 1:
-     outfile << "#"
-             << std::right << std::setw(9) << "step"
-             << std::right << std::setw(16) << "time"
-             << std::right << std::setw(16) << thrname+"_x"
-             << std::endl;
-     break;
-  case 2:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << thrname+"_x"
-            << std::right << std::setw(16) << thrname+"_y"
-            << std::endl;
-    break;
-  case 3:
-    outfile << "#"
-            << std::right << std::setw(9) << "step"
-            << std::right << std::setw(16) << "time"
-            << std::right << std::setw(16) << thrname+"_x"
-            << std::right << std::setw(16) << thrname+"_y"
-            << std::right << std::setw(16) << thrname+"_z"
-            << std::endl;
-    break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 1:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << thrname + "_x" << std::endl;
+      break;
+    case 2:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << thrname + "_x" << std::right
+              << std::setw(16) << thrname + "_y" << std::endl;
+      break;
+    case 3:
+      outfile << "#" << std::right << std::setw(9) << "step" << std::right << std::setw(16)
+              << "time" << std::right << std::setw(16) << thrname + "_x" << std::right
+              << std::setw(16) << thrname + "_y" << std::right << std::setw(16) << thrname + "_z"
+              << std::endl;
+      break;
+    default:
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
   }
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteThrResults(
-  std::ofstream& outfile,
-  PostProblem& problem,
-  PostResult& result,
-  std::vector<int>& gdof,
-  int dim,
-  std::string thrtype,
-  std::string groupname,
-  const int node
-  )
+void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& problem,
+    PostResult& result, std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname,
+    const int node)
 {
   result.next_result();  // needed
   if (map_has_map(result.group(), groupname.c_str()))
@@ -1703,35 +1498,26 @@ void ThermoMonWriter::WriteThrResults(
     PostField* field = GetFieldPtr(problem);
 
     // inform (eagerly waiting) user
-    if (myrank_ == 0)
-      std::cout << "writing node-based " << out << std::endl;
+    if (myrank_ == 0) std::cout << "writing node-based " << out << std::endl;
 
     // this is a loop over all time steps that should be written
     // bottom control here, because first set has been read already
     do
     {
-      WriteThrResult(outfile,field,result,groupname,name,dim,node);
+      WriteThrResult(outfile, field, result, groupname, name, dim, node);
     } while (result.next_result());
-
   }
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::WriteThrResult(
-  std::ofstream& outfile,
-  PostField*& field,
-  PostResult& result,
-  const std::string groupname,
-  const std::string name,
-  const int dim,
-  const int node
-  ) const
+void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, PostResult& result,
+    const std::string groupname, const std::string name, const int dim, const int node) const
 {
   // get heatfluxes/temperature gradients at Gauss points
-  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data
-    = result.read_result_serialdensematrix(groupname);
+  const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> data =
+      result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
   const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
 
@@ -1746,7 +1532,7 @@ void ThermoMonWriter::WriteThrResult(
   Teuchos::RCP<Epetra_Vector> heatfluxx = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> heatfluxy = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> heatfluxz = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
-  dis->Evaluate(p,Teuchos::null,Teuchos::null,heatfluxx,heatfluxy,heatfluxz);
+  dis->Evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
   const unsigned numdofpernode = 1;
 
@@ -1760,24 +1546,21 @@ void ThermoMonWriter::WriteThrResult(
     std::vector<double> nodal_heatfluxes;
     if (dim == 3)
     {
-      if (lnodedofs.size() < numdofpernode)
-        dserror("Too few DOFs at node of interest");
-      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
-      nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]]/adjele);
-      nodal_heatfluxes.push_back((*heatfluxz)[lnodedofs[0]]/adjele);
+      if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]] / adjele);
+      nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]] / adjele);
+      nodal_heatfluxes.push_back((*heatfluxz)[lnodedofs[0]] / adjele);
     }
     else if (dim == 2)
     {
-      if (lnodedofs.size() < numdofpernode)
-        dserror("Too few DOFs at node of interest");
-      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
-      nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]]/adjele);
+      if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]] / adjele);
+      nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]] / adjele);
     }
     else if (dim == 1)
     {
-      if (lnodedofs.size() < numdofpernode)
-        dserror("Too few DOFs at node of interest");
-      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]]/adjele);
+      if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+      nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]] / adjele);
     }
     else
     {
@@ -1790,7 +1573,8 @@ void ThermoMonWriter::WriteThrResult(
     // current time step
     outfile << std::right << std::setw(16) << std::scientific << result.time();
     // current heatfluxes
-    for (std::vector<double>::iterator ns=nodal_heatfluxes.begin(); ns!=nodal_heatfluxes.end(); ++ns)
+    for (std::vector<double>::iterator ns = nodal_heatfluxes.begin(); ns != nodal_heatfluxes.end();
+         ++ns)
       outfile << std::right << std::setw(16) << std::scientific << *ns;
     outfile << std::endl;
   }
@@ -1807,8 +1591,7 @@ PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "structure")
-    dserror("Fieldtype of field 1 is not structure.");
+  if (myfield->name() != "structure") dserror("Fieldtype of field 1 is not structure.");
   return myfield;
 }
 
@@ -1827,8 +1610,7 @@ PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
-  if (myfield->name() != "thermo")
-    dserror("Fieldtype of field 2 is not thermo.");
+  if (myfield->name() != "thermo") dserror("Fieldtype of field 2 is not thermo.");
   return myfield;
 }
 
@@ -1837,7 +1619,6 @@ void TsiThermoMonWriter::WriteHeader(std::ofstream& outfile)
 {
   outfile << "# TSI problem, writing nodal data of thermal node ";
 }
-
 
 
 
@@ -1858,19 +1639,21 @@ int main(int argc, char** argv)
 {
   // command line processor to deal with arguments
   Teuchos::CommandLineProcessor my_comlinproc;
-  my_comlinproc.setDocString("Post DRT monitoring filter\n\nwrite nodal result data of specified node into outfile.mon");
+  my_comlinproc.setDocString(
+      "Post DRT monitoring filter\n\nwrite nodal result data of specified node into outfile.mon");
 
   bool required = true;
   /* Set an additional integer command line option which is the global node Id
      of the node you're interested in */
   int node = 0;
-  my_comlinproc.setOption("node", &node, "Global node number",required);
+  my_comlinproc.setOption("node", &node, "Global node number", required);
   /* Set a string command line option */
   std::string infieldtype = "fluid";
-  my_comlinproc.setOption("field", &infieldtype, "Field to which output node belongs (fluid, structure, ale, scatra)");
+  my_comlinproc.setOption(
+      "field", &infieldtype, "Field to which output node belongs (fluid, structure, ale, scatra)");
 
   // my post processing problem itself
-  PostProblem problem(my_comlinproc,argc,argv);
+  PostProblem problem(my_comlinproc, argc, argv);
 
 
   switch (problem.Problemtype())
@@ -1879,21 +1662,21 @@ int main(int argc, char** argv)
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     {
-      if(infieldtype == "fluid")
+      if (infieldtype == "fluid")
       {
-        FsiFluidMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        FsiFluidMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
-      else if(infieldtype == "structure")
+      else if (infieldtype == "structure")
       {
-        FsiStructMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        FsiStructMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
-      else if(infieldtype == "ale")
+      else if (infieldtype == "ale")
       {
         dserror("There is no ALE output. Displacements of fluid nodes can be printed.");
-        FsiAleMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        FsiAleMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       else
       {
@@ -1904,10 +1687,10 @@ int main(int argc, char** argv)
     case prb_structure:
     case prb_xcontact:
     {
-      StructMonWriter mymonwriter(problem,infieldtype,node);
-      mymonwriter.WriteMonFile(problem,infieldtype,node);
-      mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
-      mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
+      StructMonWriter mymonwriter(problem, infieldtype, node);
+      mymonwriter.WriteMonFile(problem, infieldtype, node);
+      mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
+      mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
       break;
     }
     case prb_loma:
@@ -1918,51 +1701,51 @@ int main(int argc, char** argv)
     case prb_fps3i:
     case prb_cavitation:
     {
-      if(infieldtype == "scatra")
+      if (infieldtype == "scatra")
       {
-        ScatraMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        ScatraMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
-      else if(infieldtype == "fluid")
+      else if (infieldtype == "fluid")
       {
-        FluidMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        FluidMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       break;
     }
     case prb_ale:
     {
-      AleMonWriter mymonwriter(problem,infieldtype,node);
-      mymonwriter.WriteMonFile(problem,infieldtype,node);
+      AleMonWriter mymonwriter(problem, infieldtype, node);
+      mymonwriter.WriteMonFile(problem, infieldtype, node);
       break;
     }
     case prb_thermo:
     {
-      ThermoMonWriter mymonwriter(problem,infieldtype,node);
-      mymonwriter.WriteMonFile(problem,infieldtype,node);
-      mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
-      mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+      ThermoMonWriter mymonwriter(problem, infieldtype, node);
+      mymonwriter.WriteMonFile(problem, infieldtype, node);
+      mymonwriter.WriteMonHeatfluxFile(problem, infieldtype, problem.heatfluxtype(), node);
+      mymonwriter.WriteMonTempgradFile(problem, infieldtype, problem.tempgradtype(), node);
       break;
     }
     case prb_tsi:
     {
-      if(infieldtype == "structure")
+      if (infieldtype == "structure")
       {
-        TsiStructMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
-        mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
-        mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
-        mymonwriter.WriteMonPlStrainFile(problem,infieldtype,problem.straintype(),node);
+        TsiStructMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
+        mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
+        mymonwriter.WriteMonPlStrainFile(problem, infieldtype, problem.straintype(), node);
       }
-      else if(infieldtype == "thermo")
+      else if (infieldtype == "thermo")
       {
-        TsiThermoMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
-        mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
-        mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
+        TsiThermoMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
+        mymonwriter.WriteMonStressFile(problem, infieldtype, problem.stresstype(), node);
+        mymonwriter.WriteMonStrainFile(problem, infieldtype, problem.straintype(), node);
         // TODO: bugfix in case of coupled tsi
-//        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
-//        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
+        //        mymonwriter.WriteMonHeatfluxFile(problem,infieldtype,problem.heatfluxtype(),node);
+        //        mymonwriter.WriteMonTempgradFile(problem,infieldtype,problem.tempgradtype(),node);
       }
       else
       {
@@ -1980,24 +1763,24 @@ int main(int argc, char** argv)
     }
     case prb_red_airways:
     {
-      if(infieldtype == "red_airway")
+      if (infieldtype == "red_airway")
       {
-        RedAirwayMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        RedAirwayMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       break;
     }
     case prb_poroelast:
     {
-      if(infieldtype == "fluid")
+      if (infieldtype == "fluid")
       {
-        FluidMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        FluidMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
-      else if(infieldtype == "structure")
+      else if (infieldtype == "structure")
       {
-        StructMonWriter mymonwriter(problem,infieldtype,node);
-        mymonwriter.WriteMonFile(problem,infieldtype,node);
+        StructMonWriter mymonwriter(problem, infieldtype, node);
+        mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       break;
     }

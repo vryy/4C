@@ -32,13 +32,13 @@ namespace NLNSOL
   namespace UTILS
   {
     class NlnConfig;
-  } // namespace UTILS
-} // namespace NLNSOL
+  }  // namespace UTILS
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 
@@ -62,42 +62,39 @@ namespace NLNSOL
    */
   class NlnOperatorFactory
   {
-    public:
+   public:
+    //! @name Construction / Destruction
+    //@{
 
-      //! @name Construction / Destruction
-      //@{
+    //! Constructor (empty)
+    NlnOperatorFactory();
 
-      //! Constructor (empty)
-      NlnOperatorFactory();
+    //! Destructor
+    virtual ~NlnOperatorFactory(){};
 
-      //! Destructor
-      virtual ~NlnOperatorFactory(){};
+    //@}
 
-      //@}
+    //! @name Creation on nonlinear operators
+    //@{
 
-      //! @name Creation on nonlinear operators
-      //@{
+    /*! \brief Create a user-given nonlinear operator
+     *
+     *  The nonlinear operator to be created is configured via the parameter
+     *  "nonlinear operator: type" in the parameter list \c list in the global configuration
+     *  list \c config.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> Create(
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,  ///< configuration of nonlinear solver
+        const std::string listname  ///< name of sublist with configuration of nonlinear operator
+    );
 
-      /*! \brief Create a user-given nonlinear operator
-       *
-       *  The nonlinear operator to be created is configured via the parameter
-       *  "nonlinear operator: type" in the parameter list \c list in the global configuration
-       *  list \c config.
-       *
-       *  \author mayr.mt \date 10/2015
-       */
-      virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> Create(
-          Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
-          const std::string listname ///< name of sublist with configuration of nonlinear operator
-          );
+    //@}
 
-      //@}
-
-    protected:
-
-    private:
-
-  }; // class NlnOperatorFactory
-} // namespace NLNSOL
+   protected:
+   private:
+  };  // class NlnOperatorFactory
+}  // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_FACTORY_H */

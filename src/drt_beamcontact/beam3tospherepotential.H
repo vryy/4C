@@ -24,288 +24,273 @@
 #include "../drt_lib/standardtypes_cpp.H"
 
 // forward declarations
-namespace DRT {
-namespace ELEMENTS {
-  class Rigidsphere;
-  class Beam3Base;
-}
-}
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    class Rigidsphere;
+    class Beam3Base;
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 namespace CONTACT
 {
-
-/*!
- \brief class for potential-based interaction of a 3D beam element and a rigid sphere
- */
-
-class Beam3tospherepotentialinterface
-{
-public:
-
-  //! @name Friends
-  //no friend classes defined
-  //@}
-
-
-  Beam3tospherepotentialinterface() {}
-
   /*!
-  \brief Destructor
-  */
-  virtual ~Beam3tospherepotentialinterface() {}
+   \brief class for potential-based interaction of a 3D beam element and a rigid sphere
+   */
 
-  //@}
-
-  //! @name Access methods
-  /*!
-  \brief Get problem discretization
-  */
-  virtual const DRT::Discretization& ProblemDiscret() const =0;
-
-  /*!
-  \brief Get beam contact discretization
-  */
-  virtual const DRT::Discretization& ContactDiscret() const =0;
-
-  /*!
-  \brief Get offset of dofs between cdiscret and pdiscret
-  */
-  virtual const std::map<int,int>& DofOffset() const =0;
-
-  /*!
-  \brief Get first element
-  */
-  virtual const DRT::Element* Element1()=0;
-
-  /*!
-  \brief Get second element
-  */
-  virtual const DRT::Element* Element2()=0;
+  class Beam3tospherepotentialinterface
+  {
+   public:
+    //! @name Friends
+    // no friend classes defined
+    //@}
 
 
-  //! @name Public evaluation methods
-  /*!
-  \brief Evaluate this contact element pair
-  */
-  virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
-                        Epetra_Vector& fint,
-                        const std::vector<DRT::Condition*> chargeconds,
-                        const double k,
-                        const double m) =0;
+    Beam3tospherepotentialinterface() {}
 
-  //! return appropriate internal implementation class (acts as a simple factory)
-  static Teuchos::RCP<Beam3tospherepotentialinterface> Impl(const int numnodes,
-                                     const int numnodalvalues,
-                                     const DRT::Discretization& pdiscret,
-                                     const DRT::Discretization& cdiscret,
-                                     const std::map<int,int>& dofoffsetmap,
-                                     DRT::Element* element1,
-                                     DRT::Element* element2,
-                                     Teuchos::ParameterList beampotparams);
+    /*!
+    \brief Destructor
+    */
+    virtual ~Beam3tospherepotentialinterface() {}
 
-  /*
-  \brief Update nodal coordinates of both elements at the beginning of a new time step!
-  */
-  virtual void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
-                            Epetra_SerialDenseMatrix& newele2pos)=0;
+    //@}
 
-}; // class Beam3tospherepotentialinterface
+    //! @name Access methods
+    /*!
+    \brief Get problem discretization
+    */
+    virtual const DRT::Discretization& ProblemDiscret() const = 0;
 
+    /*!
+    \brief Get beam contact discretization
+    */
+    virtual const DRT::Discretization& ContactDiscret() const = 0;
 
+    /*!
+    \brief Get offset of dofs between cdiscret and pdiscret
+    */
+    virtual const std::map<int, int>& DofOffset() const = 0;
 
-template<const int numnodes , const int numnodalvalues>
-class Beam3tospherepotential: public CONTACT::Beam3tospherepotentialinterface
-{
-public:
+    /*!
+    \brief Get first element
+    */
+    virtual const DRT::Element* Element1() = 0;
 
-  //! @name Friends
-  //no friend classes defined
-  //@}
-
-  //! @name Constructors and destructors and related methods
-  /*!
-  \brief Standard Constructor
-  \param pdiscret (in): the problem discretization
-  \param cdiscret (in): the beam contact discretization
-  \param dofoffset (in): offset of dof between pdiscret and cdiscret
-  \param element1 (in): first element of contact pair
-  \param element2 (in): second element of contact pair
-  \param ele1pos (in): nodal coordinates of first element
-  \param ele2pos (in): nodal coordinates of second element
-  */
-  Beam3tospherepotential(  const DRT::Discretization& pdiscret,
-                    const DRT::Discretization& cdiscret,
-                    const std::map<int,int>& dofoffsetmap,
-                    DRT::Element* element1,
-                    DRT::Element* element2,
-                    Teuchos::ParameterList beampotparams);
-
-  /*!
-  \brief Copy Constructor
-  Makes a deep copy of this contact element pair
-  */
-  Beam3tospherepotential(const Beam3tospherepotential& old);
-
-  /*!
-  \brief Destructor
-  */
-  virtual ~Beam3tospherepotential() {};
-  //@}
+    /*!
+    \brief Get second element
+    */
+    virtual const DRT::Element* Element2() = 0;
 
 
-  //! @name Access methods
-  /*!
-  \brief Get problem discretization
-  */
-  inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_;};
+    //! @name Public evaluation methods
+    /*!
+    \brief Evaluate this contact element pair
+    */
+    virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+        const std::vector<DRT::Condition*> chargeconds, const double k, const double m) = 0;
 
-  /*!
-  \brief Get beam contact discretization
-  */
-  inline const DRT::Discretization& ContactDiscret() const { return cdiscret_;};
+    //! return appropriate internal implementation class (acts as a simple factory)
+    static Teuchos::RCP<Beam3tospherepotentialinterface> Impl(const int numnodes,
+        const int numnodalvalues, const DRT::Discretization& pdiscret,
+        const DRT::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
+        DRT::Element* element1, DRT::Element* element2, Teuchos::ParameterList beampotparams);
 
-  /*!
-  \brief Get offset of dofs between cdiscret and pdiscret
-  */
-  inline const std::map<int,int>& DofOffset() const { return dofoffsetmap_;};
+    /*
+    \brief Update nodal coordinates of both elements at the beginning of a new time step!
+    */
+    virtual void UpdateElePos(
+        Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos) = 0;
 
-  /*!
-  \brief Get first element
-  */
-  inline const DRT::Element* Element1() { return element1_;};
-
-  /*!
-  \brief Get first element
-  */
-  inline const DRT::Element* Element2() { return element2_;};
+  };  // class Beam3tospherepotentialinterface
 
 
-  //! @name Public evaluation methods
-  /*!
-  \brief Evaluate this contact element pair
-  */
 
-  /*!
-  \brief Evaluate this contact element pair
-  */
-  bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
-                Epetra_Vector& fint,
-                const std::vector<DRT::Condition*> chargeconds,
-                const double k,
-                const double m);
+  template <const int numnodes, const int numnodalvalues>
+  class Beam3tospherepotential : public CONTACT::Beam3tospherepotentialinterface
+  {
+   public:
+    //! @name Friends
+    // no friend classes defined
+    //@}
 
-  /*
-  \brief Update nodal coordinates of both elements at the beginning of a new time step!
-  */
-  void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
-                    Epetra_SerialDenseMatrix& newele2pos);
+    //! @name Constructors and destructors and related methods
+    /*!
+    \brief Standard Constructor
+    \param pdiscret (in): the problem discretization
+    \param cdiscret (in): the beam contact discretization
+    \param dofoffset (in): offset of dof between pdiscret and cdiscret
+    \param element1 (in): first element of contact pair
+    \param element2 (in): second element of contact pair
+    \param ele1pos (in): nodal coordinates of first element
+    \param ele2pos (in): nodal coordinates of second element
+    */
+    Beam3tospherepotential(const DRT::Discretization& pdiscret, const DRT::Discretization& cdiscret,
+        const std::map<int, int>& dofoffsetmap, DRT::Element* element1, DRT::Element* element2,
+        Teuchos::ParameterList beampotparams);
 
-  //@}
-private:
+    /*!
+    \brief Copy Constructor
+    Makes a deep copy of this contact element pair
+    */
+    Beam3tospherepotential(const Beam3tospherepotential& old);
 
-  //! @name member variables
+    /*!
+    \brief Destructor
+    */
+    virtual ~Beam3tospherepotential(){};
+    //@}
 
-  //! reference to problem discretization
-  const DRT::Discretization& pdiscret_;
 
-  //! reference to beam contact discretization
-  const DRT::Discretization& cdiscret_;
+    //! @name Access methods
+    /*!
+    \brief Get problem discretization
+    */
+    inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_; };
 
-  //! dof offset between pdiscret and cdiscret
-  const std::map<int,int>& dofoffsetmap_;
+    /*!
+    \brief Get beam contact discretization
+    */
+    inline const DRT::Discretization& ContactDiscret() const { return cdiscret_; };
 
-  //! first element of contact pair
-  DRT::ELEMENTS::Beam3Base* element1_;
+    /*!
+    \brief Get offset of dofs between cdiscret and pdiscret
+    */
+    inline const std::map<int, int>& DofOffset() const { return dofoffsetmap_; };
 
-  //! second element of contact pair
-  DRT::ELEMENTS::Rigidsphere* element2_;
+    /*!
+    \brief Get first element
+    */
+    inline const DRT::Element* Element1() { return element1_; };
 
-  //! beam contact parameter list
-  Teuchos::ParameterList bpotparams_;
+    /*!
+    \brief Get first element
+    */
+    inline const DRT::Element* Element2() { return element2_; };
 
-  //! line and point charge condition
-  std::vector<DRT::Condition*> chargeconds_;
 
-  //! current node coordinates of the two elements
-  LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele1pos_;
-  LINALG::TMatrix<TYPE,3,1> ele2pos_;
+    //! @name Public evaluation methods
+    /*!
+    \brief Evaluate this contact element pair
+    */
 
-  //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
-  double k_;
-  double m_;
+    /*!
+    \brief Evaluate this contact element pair
+    */
+    bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+        const std::vector<DRT::Condition*> chargeconds, const double k, const double m);
 
-  //!current Newton iteration
-  int iter_;
+    /*
+    \brief Update nodal coordinates of both elements at the beginning of a new time step!
+    */
+    void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos);
 
-  //!current time step
-  int numstep_;
+    //@}
+   private:
+    //! @name member variables
 
-  //!time step size
-  double dt_;
+    //! reference to problem discretization
+    const DRT::Discretization& pdiscret_;
 
-  //! initial beam element length
-  double ele1length_;
+    //! reference to beam contact discretization
+    const DRT::Discretization& cdiscret_;
 
-  //! Cross-section radius of beam 1
-  double radius1_;
+    //! dof offset between pdiscret and cdiscret
+    const std::map<int, int>& dofoffsetmap_;
 
-  //! Cross-section radius of beam 2
-  double radius2_;
+    //! first element of contact pair
+    DRT::ELEMENTS::Beam3Base* element1_;
 
-  //! resulting forces on element 1 and 2
-  LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1> fpot1_;
-  LINALG::TMatrix<TYPE, 3, 1> fpot2_;
+    //! second element of contact pair
+    DRT::ELEMENTS::Rigidsphere* element2_;
 
-  //! stiffness contributions
-  LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 3*numnodes*numnodalvalues+3> stiffpot1_;
-  LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues+3> stiffpot2_;
+    //! beam contact parameter list
+    Teuchos::ParameterList bpotparams_;
 
-  //@}
+    //! line and point charge condition
+    std::vector<DRT::Condition*> chargeconds_;
 
-  //! @name Private evaluation methods
+    //! current node coordinates of the two elements
+    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> ele1pos_;
+    LINALG::TMatrix<TYPE, 3, 1> ele2pos_;
 
-  /*!
-  \brief Evaluate forces and stiffness contribution resulting from potential-based interaction
-  */
-  void EvaluateFpotandStiffpot_LargeSepApprox();
+    //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
+    double k_;
+    double m_;
 
-  /*!
-  \brief Assemble forces fpot1/2 into fint
-  */
-  void AssembleFpot(Epetra_Vector& fint);
+    //! current Newton iteration
+    int iter_;
 
-  /*!
-  \brief Assemble stiffness contributions stiffpot1/2 into stiffmatrix
-  */
-  void AssembleStiffpot(LINALG::SparseMatrix& stiffmatrix);
+    //! current time step
+    int numstep_;
 
-  /*!
-  \brief Calculate shape function values for given parameter values
-  */
-  void GetShapeFunctions( std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i,
-                          std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
-                          DRT::UTILS::IntegrationPoints1D& gausspoints);
+    //! time step size
+    double dt_;
 
-  /*!
-  \brief Compute coordinates of centreline points from the discretization
-  */
-  void ComputeCoords(LINALG::TMatrix<TYPE,3,1>& r,
-                     const LINALG::Matrix<1,numnodes*numnodalvalues>& N_i,
-                     const LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> elepos);
+    //! initial beam element length
+    double ele1length_;
 
-  /*!
-  \brief Get global dofs of a node
+    //! Cross-section radius of beam 1
+    double radius1_;
 
-  Internally this method first extracts the dofs of the given node
-  in the beam contact discretization (which has its own dofs) and
-  then transfers these dofs to their actual GIDs in the underlying
-  problem discretization by applying the pre-computed dofoffset_.
-  */
-  std::vector<int> GetGlobalDofs(const DRT::Node* node);
+    //! Cross-section radius of beam 2
+    double radius2_;
 
-  //@}
+    //! resulting forces on element 1 and 2
+    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> fpot1_;
+    LINALG::TMatrix<TYPE, 3, 1> fpot2_;
 
-}; // class Beam3tospherepotential
-} // namespace CONTACT
+    //! stiffness contributions
+    LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3>
+        stiffpot1_;
+    LINALG::TMatrix<TYPE, 3, 3 * numnodes * numnodalvalues + 3> stiffpot2_;
+
+    //@}
+
+    //! @name Private evaluation methods
+
+    /*!
+    \brief Evaluate forces and stiffness contribution resulting from potential-based interaction
+    */
+    void EvaluateFpotandStiffpot_LargeSepApprox();
+
+    /*!
+    \brief Assemble forces fpot1/2 into fint
+    */
+    void AssembleFpot(Epetra_Vector& fint);
+
+    /*!
+    \brief Assemble stiffness contributions stiffpot1/2 into stiffmatrix
+    */
+    void AssembleStiffpot(LINALG::SparseMatrix& stiffmatrix);
+
+    /*!
+    \brief Calculate shape function values for given parameter values
+    */
+    void GetShapeFunctions(std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+        std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
+        DRT::UTILS::IntegrationPoints1D& gausspoints);
+
+    /*!
+    \brief Compute coordinates of centreline points from the discretization
+    */
+    void ComputeCoords(LINALG::TMatrix<TYPE, 3, 1>& r,
+        const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+        const LINALG::TMatrix<TYPE, 3 * numnodes * numnodalvalues, 1> elepos);
+
+    /*!
+    \brief Get global dofs of a node
+
+    Internally this method first extracts the dofs of the given node
+    in the beam contact discretization (which has its own dofs) and
+    then transfers these dofs to their actual GIDs in the underlying
+    problem discretization by applying the pre-computed dofoffset_.
+    */
+    std::vector<int> GetGlobalDofs(const DRT::Node* node);
+
+    //@}
+
+  };  // class Beam3tospherepotential
+}  // namespace CONTACT
 
 #endif  // #ifndef BEAM3TOSPHEREPOT_H

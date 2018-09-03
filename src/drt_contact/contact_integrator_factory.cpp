@@ -32,10 +32,8 @@ CONTACT::INTEGRATOR::Factory::Factory()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrator(
-    const INPAR::CONTACT::SolvingStrategy& sol_type,
-    Teuchos::ParameterList& p_mortar,
-    const DRT::Element::DiscretizationType& slave_type,
-    const Epetra_Comm& comm) const
+    const INPAR::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& p_mortar,
+    const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm) const
 {
   Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
   switch (sol_type)
@@ -46,62 +44,55 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
     case INPAR::CONTACT::solution_combo:
     {
       integrator = Teuchos::rcp<CONTACT::CoIntegrator>(
-          new CONTACT::AUG::IntegrationWrapper( p_mortar,slave_type,comm) );
+          new CONTACT::AUG::IntegrationWrapper(p_mortar, slave_type, comm));
       break;
     }
     case INPAR::CONTACT::solution_xcontact:
     {
-      integrator = Teuchos::rcp<CONTACT::CoIntegrator>( BuildXIntegrator(
-          p_mortar,slave_type,comm) );
+      integrator =
+          Teuchos::rcp<CONTACT::CoIntegrator>(BuildXIntegrator(p_mortar, slave_type, comm));
       break;
     }
     case INPAR::CONTACT::solution_nitsche:
     {
-      if (p_mortar.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
-        integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitscheTsi(
-            p_mortar,slave_type,comm) );
-      else if (p_mortar.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+      if (p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+        integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitscheTsi(p_mortar, slave_type, comm));
+      else if (p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
       {
-        integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitschePoro(
-            p_mortar,slave_type, comm) );
+        integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitschePoro(p_mortar, slave_type, comm));
       }
       else
-        integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitsche(
-            p_mortar,slave_type,comm) );
+        integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitsche(p_mortar, slave_type, comm));
       break;
     }
     case INPAR::CONTACT::solution_penalty:
     {
-      if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>( p_mortar, "ALGORITHM" )
-          == INPAR::MORTAR::algorithm_gpts)
-        integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitsche(
-            p_mortar,slave_type,comm ) );
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(p_mortar, "ALGORITHM") ==
+          INPAR::MORTAR::algorithm_gpts)
+        integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitsche(p_mortar, slave_type, comm));
       else
-        integrator = Teuchos::rcp( new CONTACT::CoIntegrator(
-                  p_mortar,slave_type,comm ) );
+        integrator = Teuchos::rcp(new CONTACT::CoIntegrator(p_mortar, slave_type, comm));
       break;
     }
     case INPAR::CONTACT::solution_lagmult:
     case INPAR::CONTACT::solution_uzawa:
     {
-      integrator = Teuchos::rcp(new CONTACT::CoIntegrator(
-          p_mortar,slave_type,comm));
+      integrator = Teuchos::rcp(new CONTACT::CoIntegrator(p_mortar, slave_type, comm));
       break;
     }
     case INPAR::CONTACT::solution_ehl:
     {
-      integrator = Teuchos::rcp( new CONTACT::CoIntegratorEhl(
-          p_mortar,slave_type,comm) );
+      integrator = Teuchos::rcp(new CONTACT::CoIntegratorEhl(p_mortar, slave_type, comm));
 
       break;
     }
     default:
     {
-      dserror( "Unsupported solving strategy! (stype = %s | %d)",
-          INPAR::CONTACT::SolvingStrategy2String( sol_type ).c_str(), sol_type );
-      exit( EXIT_FAILURE );
+      dserror("Unsupported solving strategy! (stype = %s | %d)",
+          INPAR::CONTACT::SolvingStrategy2String(sol_type).c_str(), sol_type);
+      exit(EXIT_FAILURE);
     }
-  } // end switch
+  }  // end switch
 
   return integrator;
 }
@@ -109,8 +100,7 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoIntegrator* CONTACT::INTEGRATOR::Factory::BuildXIntegrator(
-    Teuchos::ParameterList& p_mortar,
-    const DRT::Element::DiscretizationType& slave_type,
+    Teuchos::ParameterList& p_mortar, const DRT::Element::DiscretizationType& slave_type,
     const Epetra_Comm& comm) const
 {
   CONTACT::CoIntegrator* xintegrator = NULL;
@@ -118,13 +108,13 @@ CONTACT::CoIntegrator* CONTACT::INTEGRATOR::Factory::BuildXIntegrator(
   {
     case DRT::Element::line2:
     {
-      xintegrator = BuildConcreteXIntegrator<DRT::Element::line2>(p_mortar,comm);
+      xintegrator = BuildConcreteXIntegrator<DRT::Element::line2>(p_mortar, comm);
       break;
     }
     default:
     {
-      dserror("Unsupported slave element type! (eletype = %d | %s)",
-          slave_type,DRT::DistypeToString(slave_type).c_str());
+      dserror("Unsupported slave element type! (eletype = %d | %s)", slave_type,
+          DRT::DistypeToString(slave_type).c_str());
       break;
     }
   }
@@ -135,11 +125,9 @@ CONTACT::CoIntegrator* CONTACT::INTEGRATOR::Factory::BuildXIntegrator(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::BuildIntegrator(
-    const INPAR::CONTACT::SolvingStrategy& sol_type,
-    Teuchos::ParameterList& p_mortar,
-    const DRT::Element::DiscretizationType& slave_type,
-    const Epetra_Comm& comm)
+    const INPAR::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& p_mortar,
+    const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm)
 {
   Factory factory;
-  return factory.BuildIntegrator(sol_type,p_mortar,slave_type,comm);
+  return factory.BuildIntegrator(sol_type, p_mortar, slave_type, comm);
 }

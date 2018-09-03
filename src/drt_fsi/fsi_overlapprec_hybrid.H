@@ -24,8 +24,8 @@ namespace LINALG
   namespace SOLVER
   {
     class IFPACKPreconditioner;
-  } // namespace SOLVER
-} // namespace LINALG
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 /*----------------------------------------------------------------------------*/
@@ -58,32 +58,23 @@ namespace FSI
    */
   class OverlappingBlockMatrixHybridSchwarz : public OverlappingBlockMatrix
   {
-  public:
-
+   public:
     //! Constructor
-    OverlappingBlockMatrixHybridSchwarz(
-        const LINALG::MultiMapExtractor& maps,
-        ADAPTER::FSIStructureWrapper& structure, ///< structure field
-        ADAPTER::Fluid& fluid, ///< fluid field
-        ADAPTER::AleFsiWrapper& ale, ///< ale field
-        bool structuresplit, ///< structure split or fluid split?
-        int symmetric,
-        std::vector<std::string>& blocksmoother,
-        std::vector<double>& schuromega,
-        std::vector<double>& omega,
-        std::vector<int>& iterations,
-        std::vector<double>& somega,
-        std::vector<int>& siterations,
-        std::vector<double>& fomega,
-        std::vector<int>& fiterations,
-        std::vector<double>& aomega,
-        std::vector<int>& aiterations,
-        int analyze, ///< Run FSIAMG anaylzer?
-        INPAR::FSI::LinearBlockSolver strategy, ///< type of linear preconditioner
-        std::list<int> interfaceprocs, ///< IDs of processors that own interface nodes
-        INPAR::FSI::Verbosity verbosity, ///< verbosity of FSI algorithm
-        FILE* err=NULL ///< error file handle
-        );
+    OverlappingBlockMatrixHybridSchwarz(const LINALG::MultiMapExtractor& maps,
+        ADAPTER::FSIStructureWrapper& structure,  ///< structure field
+        ADAPTER::Fluid& fluid,                    ///< fluid field
+        ADAPTER::AleFsiWrapper& ale,              ///< ale field
+        bool structuresplit,                      ///< structure split or fluid split?
+        int symmetric, std::vector<std::string>& blocksmoother, std::vector<double>& schuromega,
+        std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
+        std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
+        std::vector<double>& aomega, std::vector<int>& aiterations,
+        int analyze,                             ///< Run FSIAMG anaylzer?
+        INPAR::FSI::LinearBlockSolver strategy,  ///< type of linear preconditioner
+        std::list<int> interfaceprocs,           ///< IDs of processors that own interface nodes
+        INPAR::FSI::Verbosity verbosity,         ///< verbosity of FSI algorithm
+        FILE* err = NULL                         ///< error file handle
+    );
 
     //! @name Setup
     //@{
@@ -111,10 +102,7 @@ namespace FSI
      *  stationary Richardson iteration, where each ApplyInverse() might also be
      *  a stationary Richardson iteration by itself.
      */
-    virtual int ApplyInverse(
-        const Epetra_MultiVector& X,
-        Epetra_MultiVector& Y
-        ) const;
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     //@}
 
@@ -126,10 +114,8 @@ namespace FSI
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! type of preconditioner
     INPAR::FSI::LinearBlockSolver strategy_;
 
@@ -147,8 +133,7 @@ namespace FSI
 
     //! Apply #ifpackprec_ on all procs or on interface procs only
     bool additiveschwarzeverywhere_;
-
   };
-}
+}  // namespace FSI
 
-#endif // #ifndef FSI_OVERLAPPREC_HYBRID_H
+#endif  // #ifndef FSI_OVERLAPPREC_HYBRID_H

@@ -18,25 +18,20 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for constant 1D_Artery
     ///
     // This object exists only once for each read Newton fluid. ???
     class Cnst_1d_art : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      Cnst_1d_art(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Cnst_1d_art() { }
+      virtual ~Cnst_1d_art() {}
 
       /// @name material parameters
       //@{
@@ -65,20 +60,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class Cnst_1d_artType : public DRT::ParObjectType
-{
-public:
+  class Cnst_1d_artType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "Cnst_1d_artType"; }
 
-  std::string Name() const { return "Cnst_1d_artType"; }
+    static Cnst_1d_artType& Instance() { return instance_; };
 
-  static Cnst_1d_artType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static Cnst_1d_artType instance_;
-};
+   private:
+    static Cnst_1d_artType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for constant 1D_Artery material
@@ -86,8 +79,7 @@ private:
   /// This object exists (several times) at every element
   class Cnst_1d_art : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Cnst_1d_art();
 
@@ -102,7 +94,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return Cnst_1d_artType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return Cnst_1d_artType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -136,7 +131,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_cnst_art; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Cnst_1d_art( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Cnst_1d_art(*this)); }
 
     /// return viscosity
     double Viscosity() const { return params_->viscosity_; }
@@ -158,24 +153,24 @@ private:
 
     /// return artery external pressure
     double pext(int i) const
-           {if(i==0)
-              return params_->pext1_;
-            else if(i==1)
-              return params_->pext2_;
-            else dserror("There is no pressure with id %d",i);
-              return 0.0;
-           }
+    {
+      if (i == 0)
+        return params_->pext1_;
+      else if (i == 1)
+        return params_->pext2_;
+      else
+        dserror("There is no pressure with id %d", i);
+      return 0.0;
+    }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Cnst_1d_art* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

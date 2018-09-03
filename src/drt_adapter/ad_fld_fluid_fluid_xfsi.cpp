@@ -33,22 +33,14 @@ Can only be used in conjunction with XFluidFluid!
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidFluidXFSI::FluidFluidXFSI(
-    Teuchos::RCP< Fluid> fluid,   // the XFluid object
-    const std::string    coupling_name_xfsi,
-    Teuchos::RCP<LINALG::Solver>      solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<IO::DiscretizationWriter> output )
-: XFluidFSI(fluid,
-    coupling_name_xfsi,
-    solver,
-    params,
-    output)
+ADAPTER::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
+    const std::string coupling_name_xfsi, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : XFluidFSI(fluid, coupling_name_xfsi, solver, params, output)
 {
   // make sure
-  if (fluid_ == Teuchos::null)
-    dserror("Failed to create the underlying fluid adapter");
-   return;
+  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -59,9 +51,8 @@ void ADAPTER::FluidFluidXFSI::Init()
   XFluidFSI::Init();
 
   // cast fluid to fluidimplicit
-  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_,true);
+  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_, true);
 
   // use block matrix for fluid-fluid, do nothing otherwise
   xfluidfluid_->UseBlockMatrix();
-
 }

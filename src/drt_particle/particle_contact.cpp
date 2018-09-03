@@ -45,13 +45,13 @@
 #include <fstream>
 
 bool ispartofset = false;
-//double ispartofset_i = -1;
-//double ispartofset_j = -1;
+// double ispartofset_i = -1;
+// double ispartofset_j = -1;
 
 typedef Sacado::Fad::DFad<double> FAD;
 
-//TODO: Remove data.id from CalculateTangentialContactForce and CalculateRollingContactForce
-//TODO: Remove timestep frfom CalcNeighboringParticle and CalcParticleWallContact
+// TODO: Remove data.id from CalculateTangentialContactForce and CalculateRollingContactForce
+// TODO: Remove timestep frfom CalcNeighboringParticle and CalcParticleWallContact
 
 //#define OUTPUT
 
@@ -60,93 +60,101 @@ typedef Sacado::Fad::DFad<double> FAD;
  *----------------------------------------------------------------------*/
 
 PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-  const Teuchos::ParameterList& particledynparams
-  ) :
-  normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particledynparams,"NORMAL_CONTACT_LAW")),
-  rolling_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(particledynparams,"ROLLING_CONTACT_LAW")),
-  normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalAdhesion>(particledynparams,"NORMAL_ADHESION_LAW")),
-  nue_(0.),
-  young_(0.),
-  yield_(0.),
-  r_min_(particledynparams.get<double>("MIN_RADIUS")),
-  r_max_(particledynparams.get<double>("MAX_RADIUS")),
-  v_max_(particledynparams.get<double>("MAX_VELOCITY")),
-  c_(particledynparams.get<double>("REL_PENETRATION")),
-  c_wall_(particledynparams.get<double>("REL_PENETRATION_WALL")),
-  dt_krit_(0.),
-  e_(particledynparams.get<double>("COEFF_RESTITUTION")),
-  e_wall_(particledynparams.get<double>("COEFF_RESTITUTION_WALL")),
-  k_normal_(particledynparams.get<double>("NORMAL_STIFF")),
-  k_normal_wall_(particledynparams.get<double>("NORMAL_STIFF_WALL")),
-  k_tang_(0.),
-  k_tang_wall_(0.),
-  k_roll_wall_(0.),
-  k_roll_(0.),
-  kappa_(0.),
-  kappa_wall_(0.),
-  d_normal_(0.),
-  d_tang_(0.),
-  d_normal_wall_(0.),
-  d_tang_wall_(0.),
-  d_roll_wall_(0.),
-  d_roll_(0.),
-  mu_(particledynparams.get<double>("FRICT_COEFF")),
-  mu_wall_(particledynparams.get<double>("FRICT_COEFF_WALL")),
-  mu_roll_wall_(particledynparams.get<double>("ROLL_FRICT_COEFF_WALL")),
-  mu_roll_(particledynparams.get<double>("ROLL_FRICT_COEFF")),
-  tension_cutoff_(DRT::INPUT::IntegralValue<int>(particledynparams,"TENSION_CUTOFF") == 1),
-  damp_reg_fac_(particledynparams.get<double>("DAMP_REG_FAC")),
-  contact_energy_(0.),
-  g_max_(0.0),
-  g_max_particle_(0.0),
-  g_max_wall_(0.0),
-  g_max_particle_rel_(0.0),
-  g_max_wall_rel_(0.0),
-  yield_max_rel_(0.0),
-  g_alltimemax_particle_(0.0),
-  g_alltimemax_wall_(0.0),
-  g_alltimemax_particle_rel_(0.0),
-  g_alltimemax_wall_rel_(0.0),
-  yield_alltimemax_rel_(0.0),
-  adhesion_eq_gap_(particledynparams.get<double>("ADHESION_EQ_GAP")),
-  adhesion_normal_stiff_(particledynparams.get<double>("ADHESION_NORMAL_STIFF")),
-  adhesion_normal_damp_(particledynparams.get<double>("ADHESION_NORMAL_DAMP")),
-  adhesion_normal_eps_(particledynparams.get<double>("ADHESION_NORMAL_EPS")),
-  adhesion_max_force_(particledynparams.get<double>("ADHESION_MAX_FORCE")),
-  adhesion_max_disp_(particledynparams.get<double>("ADHESION_MAX_DISP")),
-  adhesion_surface_energy_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY")),
-  adhesion_surface_energy_factor_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_FACTOR")),
-  adhesion_surface_energy_wall_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_WALL")),
-  adhesion_surface_energy_wall_factor_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_WALL_FACTOR")),
-  adhesion_maxwalleleID_(particledynparams.get<int>("ADHESION_MAXWALLELEID")),
-  adhesion_minwalleleID_(particledynparams.get<int>("ADHESION_MINWALLELEID")),
-  adhesion_surface_energy_distribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::AdhesionSurfaceEnergyDistribution>(particledynparams,"ADHESION_SURFACE_ENERGY_DISTRIBUTION")),
-  adhesion_surface_energy_distribution_sigma_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA")),
-  adhesion_surface_energy_cutoff_factor_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_CUTOFF_FACTOR")),
-  adhesion_max_contact_pressure_(particledynparams.get<double>("ADHESION_MAX_CONTACT_PRESSURE")),
-  adhesion_max_contact_pressure_wall_(particledynparams.get<double>("ADHESION_MAX_CONTACT_PRESSURE_WALL")),
-  adhesion_variant_max_contact_force_(DRT::INPUT::IntegralValue<int>(particledynparams,"ADHESION_VARIANT_MAX_CONTACT_FORCE")),
-  adhesion_vdW_curve_shift_(particledynparams.get<int>("ADHESION_VDW_CURVE_SHIFT")),
-  writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
-  myrank_(discret->Comm().MyPID()),
-  discret_(discret),
-  particle_algorithm_(particlealgorithm),
-  particleData_(0)
+    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+    const Teuchos::ParameterList& particledynparams)
+    : normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(
+          particledynparams, "NORMAL_CONTACT_LAW")),
+      rolling_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(
+          particledynparams, "ROLLING_CONTACT_LAW")),
+      normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalAdhesion>(
+          particledynparams, "NORMAL_ADHESION_LAW")),
+      nue_(0.),
+      young_(0.),
+      yield_(0.),
+      r_min_(particledynparams.get<double>("MIN_RADIUS")),
+      r_max_(particledynparams.get<double>("MAX_RADIUS")),
+      v_max_(particledynparams.get<double>("MAX_VELOCITY")),
+      c_(particledynparams.get<double>("REL_PENETRATION")),
+      c_wall_(particledynparams.get<double>("REL_PENETRATION_WALL")),
+      dt_krit_(0.),
+      e_(particledynparams.get<double>("COEFF_RESTITUTION")),
+      e_wall_(particledynparams.get<double>("COEFF_RESTITUTION_WALL")),
+      k_normal_(particledynparams.get<double>("NORMAL_STIFF")),
+      k_normal_wall_(particledynparams.get<double>("NORMAL_STIFF_WALL")),
+      k_tang_(0.),
+      k_tang_wall_(0.),
+      k_roll_wall_(0.),
+      k_roll_(0.),
+      kappa_(0.),
+      kappa_wall_(0.),
+      d_normal_(0.),
+      d_tang_(0.),
+      d_normal_wall_(0.),
+      d_tang_wall_(0.),
+      d_roll_wall_(0.),
+      d_roll_(0.),
+      mu_(particledynparams.get<double>("FRICT_COEFF")),
+      mu_wall_(particledynparams.get<double>("FRICT_COEFF_WALL")),
+      mu_roll_wall_(particledynparams.get<double>("ROLL_FRICT_COEFF_WALL")),
+      mu_roll_(particledynparams.get<double>("ROLL_FRICT_COEFF")),
+      tension_cutoff_(DRT::INPUT::IntegralValue<int>(particledynparams, "TENSION_CUTOFF") == 1),
+      damp_reg_fac_(particledynparams.get<double>("DAMP_REG_FAC")),
+      contact_energy_(0.),
+      g_max_(0.0),
+      g_max_particle_(0.0),
+      g_max_wall_(0.0),
+      g_max_particle_rel_(0.0),
+      g_max_wall_rel_(0.0),
+      yield_max_rel_(0.0),
+      g_alltimemax_particle_(0.0),
+      g_alltimemax_wall_(0.0),
+      g_alltimemax_particle_rel_(0.0),
+      g_alltimemax_wall_rel_(0.0),
+      yield_alltimemax_rel_(0.0),
+      adhesion_eq_gap_(particledynparams.get<double>("ADHESION_EQ_GAP")),
+      adhesion_normal_stiff_(particledynparams.get<double>("ADHESION_NORMAL_STIFF")),
+      adhesion_normal_damp_(particledynparams.get<double>("ADHESION_NORMAL_DAMP")),
+      adhesion_normal_eps_(particledynparams.get<double>("ADHESION_NORMAL_EPS")),
+      adhesion_max_force_(particledynparams.get<double>("ADHESION_MAX_FORCE")),
+      adhesion_max_disp_(particledynparams.get<double>("ADHESION_MAX_DISP")),
+      adhesion_surface_energy_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY")),
+      adhesion_surface_energy_factor_(
+          particledynparams.get<double>("ADHESION_SURFACE_ENERGY_FACTOR")),
+      adhesion_surface_energy_wall_(particledynparams.get<double>("ADHESION_SURFACE_ENERGY_WALL")),
+      adhesion_surface_energy_wall_factor_(
+          particledynparams.get<double>("ADHESION_SURFACE_ENERGY_WALL_FACTOR")),
+      adhesion_maxwalleleID_(particledynparams.get<int>("ADHESION_MAXWALLELEID")),
+      adhesion_minwalleleID_(particledynparams.get<int>("ADHESION_MINWALLELEID")),
+      adhesion_surface_energy_distribution_(
+          DRT::INPUT::IntegralValue<INPAR::PARTICLE::AdhesionSurfaceEnergyDistribution>(
+              particledynparams, "ADHESION_SURFACE_ENERGY_DISTRIBUTION")),
+      adhesion_surface_energy_distribution_sigma_(
+          particledynparams.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA")),
+      adhesion_surface_energy_cutoff_factor_(
+          particledynparams.get<double>("ADHESION_SURFACE_ENERGY_CUTOFF_FACTOR")),
+      adhesion_max_contact_pressure_(
+          particledynparams.get<double>("ADHESION_MAX_CONTACT_PRESSURE")),
+      adhesion_max_contact_pressure_wall_(
+          particledynparams.get<double>("ADHESION_MAX_CONTACT_PRESSURE_WALL")),
+      adhesion_variant_max_contact_force_(
+          DRT::INPUT::IntegralValue<int>(particledynparams, "ADHESION_VARIANT_MAX_CONTACT_FORCE")),
+      adhesion_vdW_curve_shift_(particledynparams.get<int>("ADHESION_VDW_CURVE_SHIFT")),
+      writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
+      myrank_(discret->Comm().MyPID()),
+      discret_(discret),
+      particle_algorithm_(particlealgorithm),
+      particleData_(0)
 {
+  if (adhesion_surface_energy_wall_ < 0) adhesion_surface_energy_wall_ = adhesion_surface_energy_;
 
-  if(adhesion_surface_energy_wall_<0)
-    adhesion_surface_energy_wall_ = adhesion_surface_energy_;
-
-  if(adhesion_surface_energy_wall_factor_<0)
+  if (adhesion_surface_energy_wall_factor_ < 0)
     adhesion_surface_energy_wall_factor_ = adhesion_surface_energy_factor_;
 
-  if(adhesion_max_contact_pressure_wall_ > 0)
+  if (adhesion_max_contact_pressure_wall_ > 0)
     adhesion_max_contact_pressure_wall_ = adhesion_max_contact_pressure_;
 
   // extract the material (only one material allowed in vector)
-  if(particle_algorithm_->ParticleMat().size()!=1)
+  if (particle_algorithm_->ParticleMat().size() != 1)
     dserror("Only one particle material allowed in ParticleCollisionHandlerBase so far!");
   const MAT::PAR::ParticleMat* const particleMat = particle_algorithm_->ParticleMat()[0];
 
@@ -156,131 +164,157 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   young_ = particleMat->youngModulus_;
   yield_ = particleMat->yieldStrength_;
 
-  for(int i = 0;i<30;i++)
+  for (int i = 0; i < 30; i++)
   {
     wallcontact_counter_(i) = i;
   }
 
-  if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
   {
     // safety checks for particle-particle contact
-    if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or young_<0.0)
-      dserror("Invalid input parameter (MIN_RADIUS, MAX_RADIUS, MAX_VELOCITY, YOUNG's modulus have to be larger than zero)");
-    if(nue_<=-1.0 or nue_>0.5)
+    if (r_min_ < 0.0 or r_max_ < 0.0 or v_max_ < 0.0 or young_ < 0.0)
+      dserror(
+          "Invalid input parameter (MIN_RADIUS, MAX_RADIUS, MAX_VELOCITY, YOUNG's modulus have to "
+          "be larger than zero)");
+    if (nue_ <= -1.0 or nue_ > 0.5)
       dserror("Invalid input parameter (NUE has to be in the range ]-1.0;0.5])");
-    if(not((c_ <= 0. and k_normal_ > 0.) or (c_ > 0. and v_max_ > 0. and k_normal_ <= 0.)))
-      dserror("For particle-particle contact, you must correctly specify either the relative penetration (along with the maximum velocity), or the normal stiffness, but neither both nor none of them!");
-    if(r_min_>r_max_)
-      dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
+    if (not((c_ <= 0. and k_normal_ > 0.) or (c_ > 0. and v_max_ > 0. and k_normal_ <= 0.)))
+      dserror(
+          "For particle-particle contact, you must correctly specify either the relative "
+          "penetration (along with the maximum velocity), or the normal stiffness, but neither "
+          "both nor none of them!");
+    if (r_min_ > r_max_) dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
     if (particleMat->initRadius_ < r_min_)
       dserror("INITRADIUS too small (it should be >= MIN_RADIUS)");
     if (particleMat->initRadius_ > r_max_)
       dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
-    if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
+    if (e_ < 0.0 and
+        (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or
+            particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 
     // no further information necessary for MD like contact
-    if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD)
-      return;
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD) return;
 
     // compute minimum particle mass
     double mass_min(0.);
-    const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(particleMat);
-    if(particlematellipsoids == NULL)
-      mass_min = density * 4.0/3.0 * M_PI * pow( r_min_ ,3.0 );
+    const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids =
+        dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(particleMat);
+    if (particlematellipsoids == NULL)
+      mass_min = density * 4.0 / 3.0 * M_PI * pow(r_min_, 3.0);
     else
-      mass_min = density * 4.0/3.0 * M_PI * particlematellipsoids->SemiAxes()(0) * particlematellipsoids->SemiAxes()(1) * particlematellipsoids->SemiAxes()(2);
+      mass_min = density * 4.0 / 3.0 * M_PI * particlematellipsoids->SemiAxes()(0) *
+                 particlematellipsoids->SemiAxes()(1) * particlematellipsoids->SemiAxes()(2);
 
     // data for critical time step computation for DEM like contact
     double k_tkrit = 0.0;
 
-    const double G = young_ / (2.0*(1.0+nue_));
+    const double G = young_ / (2.0 * (1.0 + nue_));
 
     // kappa - tangential to normal stiffness ratio
-    kappa_ = (1.0-nue_)/(1.0-0.5*nue_);
+    kappa_ = (1.0 - nue_) / (1.0 - 0.5 * nue_);
 
-    if(particle_algorithm_->WallDiscret() != Teuchos::null)
+    if (particle_algorithm_->WallDiscret() != Teuchos::null)
     {
       // safety checks for particle-wall contact
-      if(not((c_wall_ <= 0. and k_normal_wall_ > 0.) or (c_wall_ > 0. and v_max_ > 0. and k_normal_wall_ <= 0.)))
-        dserror("For particle-wall contact, you must correctly specify either the relative penetration (along with the maximum velocity), or the normal stiffness, but neither both nor none of them!");
-      if(e_wall_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
+      if (not((c_wall_ <= 0. and k_normal_wall_ > 0.) or
+              (c_wall_ > 0. and v_max_ > 0. and k_normal_wall_ <= 0.)))
+        dserror(
+            "For particle-wall contact, you must correctly specify either the relative penetration "
+            "(along with the maximum velocity), or the normal stiffness, but neither both nor none "
+            "of them!");
+      if (e_wall_ < 0.0 and
+          (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or
+              particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD))
         dserror("Invalid input parameter COEFF_RESTITUTION_WALL for this kind of contact law!");
 
       // wall material properties: young's modulus, poisson's ratio and shear modulus
       const double young_wall = particledynparams.get<double>("YOUNG_WALL");
       const double nue_wall = particledynparams.get<double>("NUE_WALL");
-      if ( young_wall<0.0 or nue_wall<=-1.0 or nue_wall>0.5 )
-        dserror("Invalid input parameter (YOUNG_WALL has to be larger than zero, NUE_WALL has to be in the range ]-1.0;0.5])");
-      const double G_wall = 0.5*young_wall/(1.0+nue_wall);
+      if (young_wall < 0.0 or nue_wall <= -1.0 or nue_wall > 0.5)
+        dserror(
+            "Invalid input parameter (YOUNG_WALL has to be larger than zero, NUE_WALL has to be in "
+            "the range ]-1.0;0.5])");
+      const double G_wall = 0.5 * young_wall / (1.0 + nue_wall);
 
-      if(G_wall<0.0)
-        dserror("Wall shear modulus has to be larger than zero");
+      if (G_wall < 0.0) dserror("Wall shear modulus has to be larger than zero");
 
       // kappa - tangential to normal stiffness ratio
-      kappa_wall_ = ( (1.0-nue_)/G + (1.0-nue_wall)/G_wall ) / ( (1.0-0.5*nue_)/G + (1.0-0.5*nue_wall)/G_wall );
+      kappa_wall_ = ((1.0 - nue_) / G + (1.0 - nue_wall) / G_wall) /
+                    ((1.0 - 0.5 * nue_) / G + (1.0 - 0.5 * nue_wall) / G_wall);
     }
 
     //------------stiffness----------------------------
-    switch(normal_contact_)
+    switch (normal_contact_)
     {
-    case INPAR::PARTICLE::LinSpring:
-    case INPAR::PARTICLE::LinSpringDamp:
-    {
-      // calculate normal stiffness from relative penetration and other input parameters if necessary
-      if(c_ > 0.)
-        k_normal_ = 2./3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
-      if(c_wall_ > 0.)
-        k_normal_wall_ = 2./3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_wall_ * c_wall_);
-
-      // for tangential contact same stiffness is used
-      k_tang_ = kappa_ * k_normal_;
-      k_roll_ = k_tang_;
-      k_tang_wall_ = kappa_wall_ * k_normal_wall_;
-      k_roll_wall_ = k_tang_wall_;
-
-
-      // critical time step size is calculated based on particle-particle (not particle-wall) contact
-      k_tkrit = k_normal_;
-
-      break;
-    }
-
-    case INPAR::PARTICLE::Hertz:
-    case INPAR::PARTICLE::LeeHerrmann:
-    case INPAR::PARTICLE::KuwabaraKono:
-    case INPAR::PARTICLE::Tsuji:
-    {
-      if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
-        dserror("tangential contact only with linear normal model implemented");
-
-      if(c_ > 0.)
+      case INPAR::PARTICLE::LinSpring:
+      case INPAR::PARTICLE::LinSpringDamp:
       {
-        // calculate normal stiffness from relative penetration and other input parameters if necessary
-        k_normal_ = 10./3. * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.*c_,2.5);
+        // calculate normal stiffness from relative penetration and other input parameters if
+        // necessary
+        if (c_ > 0.) k_normal_ = 2. / 3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+        if (c_wall_ > 0.)
+          k_normal_wall_ =
+              2. / 3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_wall_ * c_wall_);
 
-        // critical time step size is calculated based on particle-particle (not particle-wall) contact
-        k_tkrit = 2./3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+        // for tangential contact same stiffness is used
+        k_tang_ = kappa_ * k_normal_;
+        k_roll_ = k_tang_;
+        k_tang_wall_ = kappa_wall_ * k_normal_wall_;
+        k_roll_wall_ = k_tang_wall_;
+
+
+        // critical time step size is calculated based on particle-particle (not particle-wall)
+        // contact
+        k_tkrit = k_normal_;
+
+        break;
       }
-      else
-        // critical time step size is calculated based on particle-particle (not particle-wall) contact
-        k_tkrit = pow(2048./1875. * density * v_max_ * v_max_ * M_PI * pow(r_max_,3) * pow(k_normal_,4),0.2);
 
-      if(c_wall_ > 0.)
-        // calculate normal stiffness from relative penetration and other input parameters if necessary
-        k_normal_wall_ = 10./3. * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.*c_wall_,2.5);
+      case INPAR::PARTICLE::Hertz:
+      case INPAR::PARTICLE::LeeHerrmann:
+      case INPAR::PARTICLE::KuwabaraKono:
+      case INPAR::PARTICLE::Tsuji:
+      {
+        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+          dserror("tangential contact only with linear normal model implemented");
 
-      // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
-      // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
+        if (c_ > 0.)
+        {
+          // calculate normal stiffness from relative penetration and other input parameters if
+          // necessary
+          k_normal_ =
+              10. / 3. * M_PI * density * v_max_ * v_max_ * pow(r_max_, 0.5) / pow(2. * c_, 2.5);
 
-      break;
-    }
+          // critical time step size is calculated based on particle-particle (not particle-wall)
+          // contact
+          k_tkrit = 2. / 3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+        }
+        else
+          // critical time step size is calculated based on particle-particle (not particle-wall)
+          // contact
+          k_tkrit = pow(
+              2048. / 1875. * density * v_max_ * v_max_ * M_PI * pow(r_max_, 3) * pow(k_normal_, 4),
+              0.2);
 
-    default:
-    {
-      dserror("Normal contact law does not exist!");
-      break;
-    }
+        if (c_wall_ > 0.)
+          // calculate normal stiffness from relative penetration and other input parameters if
+          // necessary
+          k_normal_wall_ = 10. / 3. * M_PI * density * v_max_ * v_max_ * pow(r_max_, 0.5) /
+                           pow(2. * c_wall_, 2.5);
+
+        // for tangential contact the user specified (nonlinear) normal stiffness which has to be
+        // transformed into a linear normal stiffness with the same relative penetration which is
+        // used as (linear) tangential stiffness afterwards
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Normal contact law does not exist!");
+        break;
+      }
     }
     //---------------------------------------------------------
 
@@ -289,25 +323,26 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     d_tang_ = -1.0;
     d_roll_ = -1.0;
 
-    if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+    if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
     {
       double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP");
-      if(user_normal_damping >= 0.0)
+      if (user_normal_damping >= 0.0)
       {
         dserror("Invalid input parameter NORMAL_DAMP for this kind of contact law");
       }
       double user_tang_damping = particledynparams.get<double>("TANG_DAMP");
-      if(user_tang_damping >= 0.0)
+      if (user_tang_damping >= 0.0)
       {
         dserror("Invalid input parameter TANG_DAMP for this kind of contact law");
       }
     }
 
-    if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
+    if (normal_contact_ == INPAR::PARTICLE::LeeHerrmann ||
+        normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
         normal_contact_ == INPAR::PARTICLE::Tsuji)
     {
       double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP");
-      if(user_normal_damping >= 0.0)
+      if (user_normal_damping >= 0.0)
       {
         // user has to specify normal damping coefficient
         d_normal_ = user_normal_damping;
@@ -317,43 +352,44 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
         dserror("For this kind of contact law the input parameter NORMAL_DAMP is invalid");
       }
       double user_tang_damping = particledynparams.get<double>("TANG_DAMP");
-      if(user_tang_damping >= 0.0)
+      if (user_tang_damping >= 0.0)
       {
         // user has to specify tangential damping coefficient
         d_tang_ = user_tang_damping;
       }
       else
       {
-        if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
+        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
           dserror("For this kind of contact law the input parameter TANG_DAMP is invalid");
       }
     }
     //------------------damping (wall)--------------------------------
-    if(particle_algorithm_->WallDiscret() != Teuchos::null)
+    if (particle_algorithm_->WallDiscret() != Teuchos::null)
     {
       d_normal_wall_ = -1.0;
       d_tang_wall_ = -1.0;
       d_roll_wall_ = 1.04797e-07;
 
-      if(normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+      if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
       {
         double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP_WALL");
-        if(user_normal_damping >= 0.0)
+        if (user_normal_damping >= 0.0)
         {
           dserror("Invalid input parameter NORMAL_DAMP_WALL for this kind of contact law");
         }
         double user_tang_damping = particledynparams.get<double>("TANG_DAMP_WALL");
-        if(user_tang_damping >= 0.0)
+        if (user_tang_damping >= 0.0)
         {
           dserror("Invalid input parameter TANG_DAMP_WALL for this kind of contact law");
         }
       }
 
-      if(normal_contact_ == INPAR::PARTICLE::LeeHerrmann || normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
+      if (normal_contact_ == INPAR::PARTICLE::LeeHerrmann ||
+          normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
           normal_contact_ == INPAR::PARTICLE::Tsuji)
       {
         double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP_WALL");
-        if(user_normal_damping >= 0.0)
+        if (user_normal_damping >= 0.0)
         {
           // user has to specify normal damping coefficient
           d_normal_wall_ = user_normal_damping;
@@ -363,14 +399,14 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
           dserror("For this kind of contact law the input parameter NORMAL_DAMP_WALL is invalid");
         }
         double user_tang_damping = particledynparams.get<double>("TANG_DAMP_WALL");
-        if(user_tang_damping >= 0.0)
+        if (user_tang_damping >= 0.0)
         {
           // user has to specify tangential damping coefficient
           d_tang_wall_ = user_tang_damping;
         }
         else
         {
-          if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
+          if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
             dserror("For this kind of contact law the input parameter TANG_DAMP_WALL is invalid");
         }
       }
@@ -381,89 +417,97 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     const double safety = 0.75;
 
     // initialize factor
-    if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM)
-    { factor = 0.34; }
-    if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
-    { factor = 0.22; }
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM)
+    {
+      factor = 0.34;
+    }
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+    {
+      factor = 0.22;
+    }
 
     // calculate critical time step for DEM like contact
-    dt_krit_ = safety * factor * sqrt( mass_min / k_tkrit );
+    dt_krit_ = safety * factor * sqrt(mass_min / k_tkrit);
 
     double dt = particledynparams.get<double>("TIMESTEP");
-    if(dt>dt_krit_ and myrank_==0)
+    if (dt > dt_krit_ and myrank_ == 0)
     {
       std::cout << "\n\nW A R N I N G : time step larger than critical time step!" << std::endl;
-      std::cout << "W A R N I N G : calculated critical time step: "<<dt_krit_<<" !\n\n" << std::endl;
+      std::cout << "W A R N I N G : calculated critical time step: " << dt_krit_ << " !\n\n"
+                << std::endl;
     }
 
     // check frictional coefficient
-    if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
     {
-      if(mu_<=0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_<=0.0))
-       dserror("Friction coefficient invalid");
+      if (mu_ <= 0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_ <= 0.0))
+        dserror("Friction coefficient invalid");
     }
   }
 
   // safety checks for particle adhesion
-  switch(normal_adhesion_)
+  switch (normal_adhesion_)
   {
     case INPAR::PARTICLE::adhesion_none:
     {
-      if(std::abs(adhesion_eq_gap_) > GEO::TOL14
-          or adhesion_normal_stiff_ >= 0.
-          or adhesion_normal_damp_ >= 0.
-          or adhesion_normal_eps_ >= 0.
-          or adhesion_max_force_ >= 0.
-          or adhesion_max_disp_ >= 0.
-          or adhesion_surface_energy_ >= 0.)
-        dserror("If you do not want to consider particle adhesion, please do not specify any associated parameters in the input file!");
+      if (std::abs(adhesion_eq_gap_) > GEO::TOL14 or adhesion_normal_stiff_ >= 0. or
+          adhesion_normal_damp_ >= 0. or adhesion_normal_eps_ >= 0. or adhesion_max_force_ >= 0. or
+          adhesion_max_disp_ >= 0. or adhesion_surface_energy_ >= 0.)
+        dserror(
+            "If you do not want to consider particle adhesion, please do not specify any "
+            "associated parameters in the input file!");
 
       break;
     }
 
     case INPAR::PARTICLE::adhesion_linspring:
     {
-      if(adhesion_normal_stiff_ <= 0.
-          or adhesion_normal_damp_ >= 0.
-          or adhesion_normal_eps_ >= 0.)
-        dserror("Invalid particle adhesion parameters specified in input file for linear-spring model!");
+      if (adhesion_normal_stiff_ <= 0. or adhesion_normal_damp_ >= 0. or adhesion_normal_eps_ >= 0.)
+        dserror(
+            "Invalid particle adhesion parameters specified in input file for linear-spring "
+            "model!");
 
-      if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
-        dserror("ParticleInteractionType NormalAndTang_DEM not possible in combination with AdhesionType adhesion_linspring!");
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        dserror(
+            "ParticleInteractionType NormalAndTang_DEM not possible in combination with "
+            "AdhesionType adhesion_linspring!");
 
       break;
     }
 
     case INPAR::PARTICLE::adhesion_linspringdamp:
     {
-      if(adhesion_normal_stiff_ <= 0.
-          or adhesion_normal_damp_ <= 0.
-          or adhesion_normal_eps_ >= 0.)
-        dserror("Invalid particle adhesion parameters specified in input file for linear-spring-damp model!");
+      if (adhesion_normal_stiff_ <= 0. or adhesion_normal_damp_ <= 0. or adhesion_normal_eps_ >= 0.)
+        dserror(
+            "Invalid particle adhesion parameters specified in input file for linear-spring-damp "
+            "model!");
 
-      if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
-        dserror("ParticleInteractionType NormalAndTang_DEM not possible in combination with AdhesionType adhesion_linspringdamp!");
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        dserror(
+            "ParticleInteractionType NormalAndTang_DEM not possible in combination with "
+            "AdhesionType adhesion_linspringdamp!");
 
       break;
     }
 
     case INPAR::PARTICLE::adhesion_vdWDMT:
     {
-      if(adhesion_normal_stiff_ >= 0.
-          or adhesion_normal_damp_ >= 0.
-          or adhesion_normal_eps_ <= 0.
-      or adhesion_surface_energy_ <= 0.)
-        dserror("Invalid particle adhesion parameters specified in input file for van der Waals-DMT adhesion model!");
+      if (adhesion_normal_stiff_ >= 0. or adhesion_normal_damp_ >= 0. or
+          adhesion_normal_eps_ <= 0. or adhesion_surface_energy_ <= 0.)
+        dserror(
+            "Invalid particle adhesion parameters specified in input file for van der Waals-DMT "
+            "adhesion model!");
 
       break;
     }
 
     case INPAR::PARTICLE::adhesion_regDMT:
     {
-      if(adhesion_normal_stiff_ >= 0.
-          or adhesion_normal_damp_ >= 0.
-      or adhesion_surface_energy_ <= 0.)
-        dserror("Invalid particle adhesion parameters specified in input file for regularized DMT adhesion model!");
+      if (adhesion_normal_stiff_ >= 0. or adhesion_normal_damp_ >= 0. or
+          adhesion_surface_energy_ <= 0.)
+        dserror(
+            "Invalid particle adhesion parameters specified in input file for regularized DMT "
+            "adhesion model!");
 
       break;
     }
@@ -481,54 +525,49 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 /*----------------------------------------------------------------------*
  | set states from time integrator to prepare collisions   catta 09/16  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerBase::Init(
-    Teuchos::RCP<Epetra_Vector> disn,
-    Teuchos::RCP<Epetra_Vector> veln,
-    Teuchos::RCP<Epetra_Vector> angVeln,
-    Teuchos::RCP<const Epetra_Vector> radiusn,
-    Teuchos::RCP<Epetra_Vector> orientn,
+void PARTICLE::ParticleCollisionHandlerBase::Init(Teuchos::RCP<Epetra_Vector> disn,
+    Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> angVeln,
+    Teuchos::RCP<const Epetra_Vector> radiusn, Teuchos::RCP<Epetra_Vector> orientn,
     Teuchos::RCP<Epetra_Vector> mass)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerBase::Init");
 
   // dof based vectors
-  Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  Teuchos::RCP<Epetra_Vector> angVelnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(), false);
+  Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(), false);
+  Teuchos::RCP<Epetra_Vector> angVelnCol = LINALG::CreateVector(*discret_->DofColMap(), false);
   Teuchos::RCP<Epetra_Vector> orientnCol(Teuchos::null);
-  if(orientn != Teuchos::null)
-    orientnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  if (orientn != Teuchos::null) orientnCol = LINALG::CreateVector(*discret_->DofColMap(), false);
 
   // export dof based vectors
   int err = 0;
   err += disnCol->Import(*disn, *particle_algorithm_->DofImporter(), Insert);
   err += velnCol->Import(*veln, *particle_algorithm_->DofImporter(), Insert);
   err += angVelnCol->Import(*angVeln, *particle_algorithm_->DofImporter(), Insert);
-  if(orientn != Teuchos::null)
+  if (orientn != Teuchos::null)
     err += orientnCol->Import(*orientn, *particle_algorithm_->DofImporter(), Insert);
   if (err)
     dserror("Export using importer failed for dof based Epetesistencera_Vector: return value != 0");
 
   // node based vector
-  Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(), false);
 
   // export node based vector
   err += massCol->Import(*mass, *particle_algorithm_->NodeImporter(), Insert);
-  if (err)
-    dserror("Export using importer failed for node based Epetra_Vector: return value != 0");
+  if (err) dserror("Export using importer failed for node based Epetra_Vector: return value != 0");
 
   // export radius vector
   bool radius_nodebased(true);
   Teuchos::RCP<Epetra_Vector> radiusnCol(Teuchos::null);
-  if(radiusn->Map().SameAs(*discret_->NodeRowMap()))
+  if (radiusn->Map().SameAs(*discret_->NodeRowMap()))
   {
-    radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+    radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(), false);
     err += radiusnCol->Import(*radiusn, *particle_algorithm_->NodeImporter(), Insert);
   }
-  else if(radiusn->Map().SameAs(*discret_->DofRowMap()))
+  else if (radiusn->Map().SameAs(*discret_->DofRowMap()))
   {
     radius_nodebased = false;
-    radiusnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+    radiusnCol = LINALG::CreateVector(*discret_->DofColMap(), false);
     err += radiusnCol->Import(*radiusn, *particle_algorithm_->DofImporter(), Insert);
   }
   else
@@ -541,10 +580,10 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
   const int numcolparticles = discret_->NodeColMap()->NumMyElements();
   particleData_.resize(numcolparticles);
 
-  for (int i=0; i<numcolparticles; ++i)
+  for (int i = 0; i < numcolparticles; ++i)
   {
     // particle for which data will be collected
-    DRT::Node *particle = discret_->lColNode(i);
+    DRT::Node* particle = discret_->lColNode(i);
 
     std::vector<int> lm;
     lm.reserve(3);
@@ -554,19 +593,19 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
 
     ParticleCollData& data = particleData_[particle->LID()];
 
-    //position, velocity and angular velocity of particle
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disnCol,data.dis,lm);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velnCol,data.vel,lm);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*angVelnCol,data.angvel,lm);
-    if(orientn != Teuchos::null)
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*orientnCol,data.ang,lm);
+    // position, velocity and angular velocity of particle
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3, 1>>(*disnCol, data.dis, lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3, 1>>(*velnCol, data.vel, lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3, 1>>(*angVelnCol, data.angvel, lm);
+    if (orientn != Teuchos::null)
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3, 1>>(*orientnCol, data.ang, lm);
 
     const int lid = particle->LID();
-    if(radius_nodebased)
+    if (radius_nodebased)
       data.rad = (*radiusnCol)[lid];
     else
     {
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*radiusnCol,data.semiaxes,lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3, 1>>(*radiusnCol, data.semiaxes, lm);
       data.rad = data.semiaxes.MaxValue();
     }
     data.mass = (*massCol)[lid];
@@ -582,8 +621,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
     data.id = particle->Id();
 
 #ifdef DEBUG
-  if(particle->NumElement() != 1)
-    dserror("More than one element for this particle");
+    if (particle->NumElement() != 1) dserror("More than one element for this particle");
 #endif
   }
 }
@@ -591,7 +629,7 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
 /*----------------------------------------------------------------------*
  | assemble energies of particles                          ghamm 09/13  |
  *----------------------------------------------------------------------*/
-double PARTICLE::ParticleCollisionHandlerBase::EnergyAssemble(double owner_i,double owner_j)
+double PARTICLE::ParticleCollisionHandlerBase::EnergyAssemble(double owner_i, double owner_j)
 {
   // initialize scaling factor to unity
   double value = 1.0;
@@ -601,17 +639,16 @@ double PARTICLE::ParticleCollisionHandlerBase::EnergyAssemble(double owner_i,dou
 
   // adjust scaling factor in parallel case if necessary
   // contact with wall
-  if(owner_j<0)
+  if (owner_j < 0)
   {
-    if(owner_i!=myrank)
-     value = 0.0;
+    if (owner_i != myrank) value = 0.0;
   }
   // contact between particle_i and particle_j
   else
   {
-    if((owner_i==myrank && owner_j!=myrank) or (owner_i!=myrank && owner_j==myrank))
+    if ((owner_i == myrank && owner_j != myrank) or (owner_i != myrank && owner_j == myrank))
       value = 0.5;
-    else if(owner_i!=myrank and owner_j!=myrank)
+    else if (owner_i != myrank and owner_j != myrank)
       value = 0.0;
   }
 
@@ -624,16 +661,10 @@ double PARTICLE::ParticleCollisionHandlerBase::EnergyAssemble(double owner_i,dou
  | constructor for DEM based particle contact              ghamm 09/13  |
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleCollisionHandlerDEM::ParticleCollisionHandlerDEM(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-  const Teuchos::ParameterList& particledynparams
-  ) :
-  PARTICLE::ParticleCollisionHandlerBase(
-    discret,
-    particlealgorithm,
-    particledynparams
-    ),
-  writecontactforcesevery_(particledynparams.get<int>("CONTACTFORCESEVRY"))
+    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+    const Teuchos::ParameterList& particledynparams)
+    : PARTICLE::ParticleCollisionHandlerBase(discret, particlealgorithm, particledynparams),
+      writecontactforcesevery_(particledynparams.get<int>("CONTACTFORCESEVRY"))
 {
   return;
 }
@@ -642,12 +673,9 @@ PARTICLE::ParticleCollisionHandlerDEM::ParticleCollisionHandlerDEM(
 /*----------------------------------------------------------------------*
  | compute collisions (inter-particle and particle-wall)   ghamm 09/13  |
  *----------------------------------------------------------------------*/
-double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
-  const double dt,
-  Teuchos::RCP<Epetra_Vector> f_contact,
-  Teuchos::RCP<Epetra_Vector> m_contact,
-  Teuchos::RCP<Epetra_FEVector> f_structure,
-  int timestep)
+double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(const double dt,
+    Teuchos::RCP<Epetra_Vector> f_contact, Teuchos::RCP<Epetra_Vector> m_contact,
+    Teuchos::RCP<Epetra_FEVector> f_structure, int timestep)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
 
@@ -664,7 +692,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
   Teuchos::RCP<const Epetra_Vector> walldisn(Teuchos::null);
   Teuchos::RCP<const Epetra_Vector> wallveln(Teuchos::null);
-  if(walldiscret != Teuchos::null)
+  if (walldiscret != Teuchos::null)
   {
     walldisn = walldiscret->GetState("walldisnp");
     wallveln = walldiscret->GetState("wallvelnp");
@@ -680,12 +708,12 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
   // loop over all row particles
   const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
-  for(int rowPar_i=0; rowPar_i<numrowparticles; ++rowPar_i)
+  for (int rowPar_i = 0; rowPar_i < numrowparticles; ++rowPar_i)
   {
     // extract the particle
-    DRT::Node *currparticle = discret_->lRowNode(rowPar_i);
+    DRT::Node* currparticle = discret_->lRowNode(rowPar_i);
 
-    //find the bin it belongs to
+    // find the bin it belongs to
     DRT::Element* currentBin = currparticle->Elements()[0];
 
     // check I own the bin
@@ -693,9 +721,8 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
     const int binId = currentBin->Id();
     // if a bin has already been examined --> continue with next particle
-    if( examinedbins.find(binId) != examinedbins.end() )
-      continue;
-    //else: bin is examined for the first time --> new entry in examinedbins_
+    if (examinedbins.find(binId) != examinedbins.end()) continue;
+    // else: bin is examined for the first time --> new entry in examinedbins_
     examinedbins.insert(binId);
 
     // extract the pointer to the particles
@@ -709,7 +736,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, &neighboring_walls);
 
     // loop over all particles in CurrentBin
-    for(int i=0; i<currentBin->NumNode(); ++i)
+    for (int i = 0; i < currentBin->NumNode(); ++i)
     {
       // determine the particle we are analizing
       DRT::Node* particle_i = currentBinParticles[i];
@@ -718,49 +745,46 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       ParticleCollData& data_i = particleData_[particle_i->LID()];
 
       // compute contact with neighboring walls
-      CalcNeighboringWallsContact(particle_i, data_i, neighboring_walls, dt,
-          walldiscret, walldisn, wallveln, f_contact, m_contact, f_structure, timestep);
+      CalcNeighboringWallsContact(particle_i, data_i, neighboring_walls, dt, walldiscret, walldisn,
+          wallveln, f_contact, m_contact, f_structure, timestep);
 
       if (f_contact != Teuchos::null and m_contact != Teuchos::null)
       {
         // compute contact with neighboring particles
-        CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
-            havepbc, dt, f_contact, m_contact, timestep);
+        CalcNeighboringParticlesContact(
+            particle_i, data_i, neighboring_particles, havepbc, dt, f_contact, m_contact, timestep);
       }
     }
   }
 
   // communicate maximum particle-particle or particle-wall penetration
   double g_max(g_max_);
-  particle_algorithm_->Comm().MaxAll(&g_max,&g_max_,1);
+  particle_algorithm_->Comm().MaxAll(&g_max, &g_max_, 1);
 
   double g_max_particle(g_max_particle_);
-  particle_algorithm_->Comm().MaxAll(&g_max_particle,&g_max_particle_,1);
-  if(g_max_particle_>g_alltimemax_particle_)
-    g_alltimemax_particle_=g_max_particle_;
+  particle_algorithm_->Comm().MaxAll(&g_max_particle, &g_max_particle_, 1);
+  if (g_max_particle_ > g_alltimemax_particle_) g_alltimemax_particle_ = g_max_particle_;
 
   double g_max_wall(g_max_wall_);
-  particle_algorithm_->Comm().MaxAll(&g_max_wall,&g_max_wall_,1);
-  if(g_max_wall_>g_alltimemax_wall_)
-    g_alltimemax_wall_=g_max_wall_;
+  particle_algorithm_->Comm().MaxAll(&g_max_wall, &g_max_wall_, 1);
+  if (g_max_wall_ > g_alltimemax_wall_) g_alltimemax_wall_ = g_max_wall_;
 
   double g_max_particle_rel(g_max_particle_rel_);
-  particle_algorithm_->Comm().MaxAll(&g_max_particle_rel,&g_max_particle_rel_,1);
-  if(g_max_particle_rel_>g_alltimemax_particle_rel_)
-    g_alltimemax_particle_rel_=g_max_particle_rel_;
+  particle_algorithm_->Comm().MaxAll(&g_max_particle_rel, &g_max_particle_rel_, 1);
+  if (g_max_particle_rel_ > g_alltimemax_particle_rel_)
+    g_alltimemax_particle_rel_ = g_max_particle_rel_;
 
   double g_max_wall_rel(g_max_wall_rel_);
-  particle_algorithm_->Comm().MaxAll(&g_max_wall_rel,&g_max_wall_rel_,1);
-  if(g_max_wall_rel_>g_alltimemax_wall_rel_)
-    g_alltimemax_wall_rel_=g_max_wall_rel_;
+  particle_algorithm_->Comm().MaxAll(&g_max_wall_rel, &g_max_wall_rel_, 1);
+  if (g_max_wall_rel_ > g_alltimemax_wall_rel_) g_alltimemax_wall_rel_ = g_max_wall_rel_;
 
   double yield_max_rel(yield_max_rel_);
-  particle_algorithm_->Comm().MaxAll(&yield_max_rel,&yield_max_rel_,1);
-  if(yield_max_rel_>yield_alltimemax_rel_)
-    yield_alltimemax_rel_=yield_max_rel_;
+  particle_algorithm_->Comm().MaxAll(&yield_max_rel, &yield_max_rel_, 1);
+  if (yield_max_rel_ > yield_alltimemax_rel_) yield_alltimemax_rel_ = yield_max_rel_;
 
-  // gather *.csv files with normal particle-particle and particle-wall contact forces across all processors if applicable
-  if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0)
+  // gather *.csv files with normal particle-particle and particle-wall contact forces across all
+  // processors if applicable
+  if (writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0)
     GatherNormalContactForcesToFile();
 
   // erase temporary storage for collision data
@@ -773,129 +797,146 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
  | calculate contact with neighboring particles             ghamm 04/16 |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
-    DRT::Node*                           particle_i,              //!< i-th particle
-    ParticleCollData&                    data_i,                  //!< collision data associated with i-th particle
-    const std::list<DRT::Node*>&         neighboring_particles,   //!< list of particles adjacent to i-th particle
-    const bool                           havepbc,                 //!< flag indicating periodic boundaries
-    const double                         dt,                      //!< time step size
-    const Teuchos::RCP<Epetra_Vector>&   f_contact,               //!< global force vector
-    const Teuchos::RCP<Epetra_Vector>&   m_contact,               //!< global moment vector
-    int timestep
-    )
+    DRT::Node* particle_i,     //!< i-th particle
+    ParticleCollData& data_i,  //!< collision data associated with i-th particle
+    const std::list<DRT::Node*>&
+        neighboring_particles,                     //!< list of particles adjacent to i-th particle
+    const bool havepbc,                            //!< flag indicating periodic boundaries
+    const double dt,                               //!< time step size
+    const Teuchos::RCP<Epetra_Vector>& f_contact,  //!< global force vector
+    const Teuchos::RCP<Epetra_Vector>& m_contact,  //!< global moment vector
+    int timestep)
 {
+  std::map<int, PARTICLE::Collision>& history_particle_i =
+      static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle();
+  std::map<int, PARTICLE::Adhesion>& history_particle_i_adhesion =
+      static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle_adhesion();
+  if (history_particle_i.size() > 20)
+    dserror(
+        "Particle i is in contact with more than 20 particles! Check whether history is deleted "
+        "correctly!");
 
-  std::map<int, PARTICLE::Collision>& history_particle_i = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle();
-  std::map<int, PARTICLE::Adhesion>& history_particle_i_adhesion = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_particle_adhesion();
-  if(history_particle_i.size() > 20)
-    dserror("Particle i is in contact with more than 20 particles! Check whether history is deleted correctly!");
-
-  // check whether there is contact between particle i and all other particles in the neighborhood except those which
-  // have a lower or equal ID than particle i (--> ignoring self-contact)
-  for(std::list<DRT::Node*>::const_iterator j=neighboring_particles.begin(); j!=neighboring_particles.end(); ++j)
+  // check whether there is contact between particle i and all other particles in the neighborhood
+  // except those which have a lower or equal ID than particle i (--> ignoring self-contact)
+  for (std::list<DRT::Node*>::const_iterator j = neighboring_particles.begin();
+       j != neighboring_particles.end(); ++j)
   {
     DRT::Node* neighborparticle = (*j);
 
     // extract data
     ParticleCollData& data_j = particleData_[neighborparticle->LID()];
-    std::map<int, PARTICLE::Collision>& history_particle_j = static_cast<PARTICLE::ParticleNode*>(neighborparticle)->Get_history_particle();
-    std::map<int, PARTICLE::Adhesion>& history_particle_j_adhesion = static_cast<PARTICLE::ParticleNode*>(neighborparticle)->Get_history_particle_adhesion();
-    if(history_particle_j.size() > 20)
-      dserror("Particle j is in contact with more than 20 particles! Check whether history is deleted correctly!");
+    std::map<int, PARTICLE::Collision>& history_particle_j =
+        static_cast<PARTICLE::ParticleNode*>(neighborparticle)->Get_history_particle();
+    std::map<int, PARTICLE::Adhesion>& history_particle_j_adhesion =
+        static_cast<PARTICLE::ParticleNode*>(neighborparticle)->Get_history_particle_adhesion();
+    if (history_particle_j.size() > 20)
+      dserror(
+          "Particle j is in contact with more than 20 particles! Check whether history is deleted "
+          "correctly!");
 
     // evaluate contact only once in case we own particle j. Otherwise compute everything,
     // the assemble method does not write in case the particle is a ghost
-    if((data_i.id < data_j.id || data_j.owner != myrank_) and (ispartofset == false))
+    if ((data_i.id < data_j.id || data_j.owner != myrank_) and (ispartofset == false))
     {
       double m_eff = 0;
       m_eff = data_i.mass * data_j.mass / (data_i.mass + data_j.mass);
 
       // might need to shift position of particle j in the presence of periodic boundary conditions
-      static LINALG::Matrix<3,1> data_i_dis, data_j_dis;
+      static LINALG::Matrix<3, 1> data_i_dis, data_j_dis;
       data_i_dis.Clear();
       data_j_dis.Clear();
 
-      if(havepbc)
+      if (havepbc)
       {
         // store original positions of particles i and j
         data_i_dis.SetCopy(data_i.dis);
         data_j_dis.SetCopy(data_j.dis);
 
         // perform shifting if necessary
-        for(unsigned idim=0; idim<3; ++idim)
-          if(particle_algorithm_->BinStrategy().HavePBC(idim))
+        for (unsigned idim = 0; idim < 3; ++idim)
+          if (particle_algorithm_->BinStrategy().HavePBC(idim))
           {
             const double distance = abs(data_j.dis(idim) - data_i.dis(idim));
             const double contactdistance = data_i.rad + data_j.rad;
             const double pbcdelta = particle_algorithm_->BinStrategy().PBCDelta(idim);
 
-            // no interior contact in periodic direction --> shift particle to check for exterior contact
-            if(distance > contactdistance)
+            // no interior contact in periodic direction --> shift particle to check for exterior
+            // contact
+            if (distance > contactdistance)
             {
-              // check global IDs of particles i and j to decide which particle to shift --> prevents roundoff differences due to parallelization
-              if(data_i.id < data_j.id)
-                data_j.dis(idim) += ((data_j.dis(idim) < data_i.dis(idim)) - (data_j.dis(idim) > data_i.dis(idim))) * pbcdelta;
+              // check global IDs of particles i and j to decide which particle to shift -->
+              // prevents roundoff differences due to parallelization
+              if (data_i.id < data_j.id)
+                data_j.dis(idim) += ((data_j.dis(idim) < data_i.dis(idim)) -
+                                        (data_j.dis(idim) > data_i.dis(idim))) *
+                                    pbcdelta;
               else
-                data_i.dis(idim) += ((data_i.dis(idim) < data_j.dis(idim)) - (data_i.dis(idim) > data_j.dis(idim))) * pbcdelta;
+                data_i.dis(idim) += ((data_i.dis(idim) < data_j.dis(idim)) -
+                                        (data_i.dis(idim) > data_j.dis(idim))) *
+                                    pbcdelta;
             }
 
-            // interior contact in periodic direction --> make sure that there is no exterior contact at the same time
-            else if(distance > pbcdelta - contactdistance)
-              dserror("Cannot have interior and exterior contact in periodic direction at the same time!");
+            // interior contact in periodic direction --> make sure that there is no exterior
+            // contact at the same time
+            else if (distance > pbcdelta - contactdistance)
+              dserror(
+                  "Cannot have interior and exterior contact in periodic direction at the same "
+                  "time!");
           }
       }
 
       // compute contact normal, contact gap, and vectors from particle centers to contact point C
-      static LINALG::Matrix<3,1> r_iC, r_jC, normal;
+      static LINALG::Matrix<3, 1> r_iC, r_jC, normal;
       r_iC.Clear();
       r_jC.Clear();
       normal.Clear();
 
       double g(0.);
-      ComputeContactPointAndNormalAndGap(r_iC,r_jC,normal,g,data_i,data_j);
+      ComputeContactPointAndNormalAndGap(r_iC, r_jC, normal, g, data_i, data_j);
 
       // in case of penetration or adhesion, contact forces and moments are calculated
-      if(g <= 0.0 or ConsiderNormalAdhesion(g))
+      if (g <= 0.0 or ConsiderNormalAdhesion(g))
       {
         // contact forces
-        double totalnormalforce = 0.0; //contact and adhesion forces
-        double normalcontactforce = 0.0; //only contact forces
-        static LINALG::Matrix<3,1> tangentcontactforce(true);
-        static LINALG::Matrix<3,1> tangentrollingforce(true);
+        double totalnormalforce = 0.0;    // contact and adhesion forces
+        double normalcontactforce = 0.0;  // only contact forces
+        static LINALG::Matrix<3, 1> tangentcontactforce(true);
+        static LINALG::Matrix<3, 1> tangentrollingforce(true);
         tangentcontactforce.Clear();
         tangentrollingforce.Clear();
 
-        if(g<=0. and std::abs(g)>g_max_)
-          g_max_ = std::abs(g);
+        if (g <= 0. and std::abs(g) > g_max_) g_max_ = std::abs(g);
 
-        if(g<=0. and std::abs(g)>g_max_particle_)
-          g_max_particle_ = std::abs(g);
+        if (g <= 0. and std::abs(g) > g_max_particle_) g_max_particle_ = std::abs(g);
 
         double g_rel = 0.0;
-        if(data_i.rad>data_j.rad)
-          g_rel = std::abs(g)/data_j.rad;
+        if (data_i.rad > data_j.rad)
+          g_rel = std::abs(g) / data_j.rad;
         else
-          g_rel = std::abs(g)/data_i.rad;
+          g_rel = std::abs(g) / data_i.rad;
 
-        if(g<=0. and std::abs(g_rel)>g_max_particle_rel_)
+        if (g <= 0. and std::abs(g_rel) > g_max_particle_rel_)
           g_max_particle_rel_ = std::abs(g_rel);
 
         // relative velocity in contact point between particles i and j
-        static LINALG::Matrix<3,1> v_rel;
+        static LINALG::Matrix<3, 1> v_rel;
         v_rel.Clear();
 
-        ComputeRelativeVelocity(v_rel,r_iC,r_jC,data_i,data_j);
+        ComputeRelativeVelocity(v_rel, r_iC, r_jC, data_i, data_j);
 
         // part of v_rel in normal direction: v_rel * n
         const double v_rel_normal(v_rel.Dot(normal));
 
-        if(normal_adhesion_!=INPAR::PARTICLE::adhesion_none)
+        if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
         {
           // if history variables do not exist -> create them
-          if(history_particle_i_adhesion.find(data_j.id) == history_particle_i_adhesion.end())
+          if (history_particle_i_adhesion.find(data_j.id) == history_particle_i_adhesion.end())
           {
             // safety check
-            if(history_particle_j_adhesion.find(data_i.id) != history_particle_j_adhesion.end())
-              dserror("History of particle j contains particle i, but not vice versa! Something must be wrong...");
+            if (history_particle_j_adhesion.find(data_i.id) != history_particle_j_adhesion.end())
+              dserror(
+                  "History of particle j contains particle i, but not vice versa! Something must "
+                  "be wrong...");
 
             // initialize history of particle i
             PARTICLE::Adhesion adhe;
@@ -907,13 +948,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
             adhe.normal_adhesion_force = 0.0;
 
             // insert new entries
-            history_particle_i_adhesion.insert(std::pair<int,PARTICLE::Adhesion>(data_j.id,adhe));
-            history_particle_j_adhesion.insert(std::pair<int,PARTICLE::Adhesion>(data_i.id,adhe));
+            history_particle_i_adhesion.insert(std::pair<int, PARTICLE::Adhesion>(data_j.id, adhe));
+            history_particle_j_adhesion.insert(std::pair<int, PARTICLE::Adhesion>(data_i.id, adhe));
           }
 
           // safety check
-          else if(history_particle_j_adhesion.find(data_i.id) == history_particle_j_adhesion.end())
-            dserror("History of particle i contains particle j, but not vice versa! Something must be wrong...");
+          else if (history_particle_j_adhesion.find(data_i.id) == history_particle_j_adhesion.end())
+            dserror(
+                "History of particle i contains particle j, but not vice versa! Something must be "
+                "wrong...");
         }
 
         // extract histories
@@ -925,32 +968,40 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         // obtain history of particle j by copying from history of particle i
         history_particle_j_i_adhesion.adhesion = history_particle_i_j_adhesion.adhesion;
         history_particle_j_i_adhesion.surface_energy = history_particle_i_j_adhesion.surface_energy;
-        history_particle_j_i_adhesion.normal_adhesion_force = history_particle_i_j_adhesion.normal_adhesion_force;
+        history_particle_j_i_adhesion.normal_adhesion_force =
+            history_particle_i_j_adhesion.normal_adhesion_force;
 
         // calculation of normal contact force
-        CalculateNormalContactForce(g, data_i.rad, data_j.rad, v_rel_normal, m_eff, history_particle_i_j_adhesion, totalnormalforce, normalcontactforce, data_i.owner, data_j.owner);
+        CalculateNormalContactForce(g, data_i.rad, data_j.rad, v_rel_normal, m_eff,
+            history_particle_i_j_adhesion, totalnormalforce, normalcontactforce, data_i.owner,
+            data_j.owner);
 
         // output normal contact force between the two particles to *.csv file if applicable
-        if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and data_i.owner == myrank_ and data_j.owner <= myrank_)
+        if (writecontactforcesevery_ and
+            particle_algorithm_->Step() % writecontactforcesevery_ == 0 and
+            data_i.owner == myrank_ and data_j.owner <= myrank_)
         {
-          LINALG::Matrix<3,1> forceapplicationpoint(true);
-          forceapplicationpoint.Update(1.,data_i.dis,data_i.rad+0.5*g,normal);
-          OutputNormalContactForceToFile(totalnormalforce,forceapplicationpoint);
+          LINALG::Matrix<3, 1> forceapplicationpoint(true);
+          forceapplicationpoint.Update(1., data_i.dis, data_i.rad + 0.5 * g, normal);
+          OutputNormalContactForceToFile(totalnormalforce, forceapplicationpoint);
         };
 
         // calculation of tangential contact force
-        if(g <= 0. and particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        if (g <= 0. and
+            particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
         {
           // velocity v_rel_tangential
-          static LINALG::Matrix<3,1> v_rel_tangential;
+          static LINALG::Matrix<3, 1> v_rel_tangential;
           v_rel_tangential.Clear();
-          v_rel_tangential.Update(1.,v_rel,-v_rel_normal,normal);
+          v_rel_tangential.Update(1., v_rel, -v_rel_normal, normal);
           // if history variables do not exist -> create them
-          if(history_particle_i.find(data_j.id) == history_particle_i.end())
+          if (history_particle_i.find(data_j.id) == history_particle_i.end())
           {
             // safety check
-            if(history_particle_j.find(data_i.id) != history_particle_j.end())
-              dserror("History of particle j contains particle i, but not vice versa! Something must be wrong...");
+            if (history_particle_j.find(data_i.id) != history_particle_j.end())
+              dserror(
+                  "History of particle j contains particle i, but not vice versa! Something must "
+                  "be wrong...");
 
             // initialize history of particle i
             PARTICLE::Collision col;
@@ -960,12 +1011,14 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
             memset(col.g_r, 0., sizeof(col.g_r));
 
             // insert new entries
-            history_particle_i.insert(std::pair<int,PARTICLE::Collision>(data_j.id,col));
-            history_particle_j.insert(std::pair<int,PARTICLE::Collision>(data_i.id,col));
+            history_particle_i.insert(std::pair<int, PARTICLE::Collision>(data_j.id, col));
+            history_particle_j.insert(std::pair<int, PARTICLE::Collision>(data_i.id, col));
           }
           // safety check
-          else if(history_particle_j.find(data_i.id) == history_particle_j.end())
-            dserror("History of particle i contains particle j, but not vice versa! Something must be wrong...");
+          else if (history_particle_j.find(data_i.id) == history_particle_j.end())
+            dserror(
+                "History of particle i contains particle j, but not vice versa! Something must be "
+                "wrong...");
 
           // extract histories
           PARTICLE::Collision& history_particle_i_j = history_particle_i[data_j.id];
@@ -974,28 +1027,27 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
           CalculateTangentialContactForce(normalcontactforce, normal, tangentcontactforce,
               history_particle_i_j, v_rel_tangential, m_eff, dt, data_i.owner, data_j.owner);
 
-            if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
-            {
-              // rolling velocity in contact point between particles i and j
-              static LINALG::Matrix<3,1> v_roll;
-              v_roll.Clear();
+          if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+          {
+            // rolling velocity in contact point between particles i and j
+            static LINALG::Matrix<3, 1> v_roll;
+            v_roll.Clear();
 
-              // compute rolling velocity
-              ComputeRollingVelocity(v_roll,normal,r_iC,r_jC,data_i,data_j);
+            // compute rolling velocity
+            ComputeRollingVelocity(v_roll, normal, r_iC, r_jC, data_i, data_j);
 
-              // calculate rolling contact force
-              CalculateRollingContactForce(normalcontactforce, normal, tangentrollingforce,
+            // calculate rolling contact force
+            CalculateRollingContactForce(normalcontactforce, normal, tangentrollingforce,
                 history_particle_i_j, v_roll, m_eff, dt, data_i.owner, data_j.owner);
-
-            }
-            else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
-            {
-              CalculateVirtualRollingForce(normalcontactforce, normal, tangentrollingforce,
+          }
+          else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+          {
+            CalculateVirtualRollingForce(normalcontactforce, normal, tangentrollingforce,
                 data_i.angvel, data_j.angvel, data_i.rad, data_j.rad, data_i.owner, data_j.owner);
-            }
+          }
 
           // obtain history of particle j by copying from history of particle i
-          for(unsigned dim=0; dim<3; ++dim)
+          for (unsigned dim = 0; dim < 3; ++dim)
           {
             history_particle_j_i.g_t[dim] = -history_particle_i_j.g_t[dim];
             history_particle_j_i.g_r[dim] = -history_particle_i_j.g_r[dim];
@@ -1005,61 +1057,61 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         }
 
         // calculation of overall contact forces and moments acting on particles i and j
-        static LINALG::Matrix<3,1> contactforce_i, contactforce_j, contactmoment_i, contactmoment_j;
+        static LINALG::Matrix<3, 1> contactforce_i, contactforce_j, contactmoment_i,
+            contactmoment_j;
         contactforce_i.Clear();
         contactforce_j.Clear();
         contactmoment_i.Clear();
         contactmoment_j.Clear();
 
-        contactforce_i.Update(totalnormalforce,normal,1.,tangentcontactforce);
-        contactforce_j.Update(-1.,contactforce_i); // actio = reactio
-        contactmoment_i.CrossProduct(r_iC,contactforce_i);
-        contactmoment_j.CrossProduct(r_jC,contactforce_j);
+        contactforce_i.Update(totalnormalforce, normal, 1., tangentcontactforce);
+        contactforce_j.Update(-1., contactforce_i);  // actio = reactio
+        contactmoment_i.CrossProduct(r_iC, contactforce_i);
+        contactmoment_j.CrossProduct(r_jC, contactforce_j);
 
         // contact moment contributions from rolling resistance
-          static LINALG::Matrix<3,1> rollfricmoment_i, rollfricmoment_j;
-          rollfricmoment_i.Clear();
-          rollfricmoment_j.Clear();
+        static LINALG::Matrix<3, 1> rollfricmoment_i, rollfricmoment_j;
+        rollfricmoment_i.Clear();
+        rollfricmoment_j.Clear();
 
-          if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
-          {
-            double r_ij = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
-            rollfricmoment_i.CrossProduct(tangentrollingforce, normal);
-            rollfricmoment_i.Update(r_ij, rollfricmoment_i);
-            rollfricmoment_j.Update(-1.0,rollfricmoment_i);
-            contactmoment_i.Update(1.0,rollfricmoment_i,1.0);
-            contactmoment_j.Update(1.0,rollfricmoment_j,1.0);
-
-          }
-          else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
-          {
-          rollfricmoment_i.CrossProduct(normal,tangentrollingforce);
-          rollfricmoment_j.Update(-1.0,rollfricmoment_i);
-          contactmoment_i.Update(1.0,rollfricmoment_i,1.0);
-          contactmoment_j.Update(1.0,rollfricmoment_j,1.0);
-          }
+        if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+        {
+          double r_ij = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
+          rollfricmoment_i.CrossProduct(tangentrollingforce, normal);
+          rollfricmoment_i.Update(r_ij, rollfricmoment_i);
+          rollfricmoment_j.Update(-1.0, rollfricmoment_i);
+          contactmoment_i.Update(1.0, rollfricmoment_i, 1.0);
+          contactmoment_j.Update(1.0, rollfricmoment_j, 1.0);
+        }
+        else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+        {
+          rollfricmoment_i.CrossProduct(normal, tangentrollingforce);
+          rollfricmoment_j.Update(-1.0, rollfricmoment_i);
+          contactmoment_i.Update(1.0, rollfricmoment_i, 1.0);
+          contactmoment_j.Update(1.0, rollfricmoment_j, 1.0);
+        }
 
         // assembly contact forces and moments for particles i and j
         LINALG::Assemble(*f_contact, contactforce_i, data_i.lm, data_i.owner);
         LINALG::Assemble(*f_contact, contactforce_j, data_j.lm, data_j.owner);
         LINALG::Assemble(*m_contact, contactmoment_i, data_i.lm, data_i.owner);
         LINALG::Assemble(*m_contact, contactmoment_j, data_j.lm, data_j.owner);
-
       }
-      if(g > 0 and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 and no adhesion --> no contact
+      if (g > 0 and
+          particle_algorithm_->ParticleInteractionType() ==
+              INPAR::PARTICLE::NormalAndTang_DEM)  // g > 0.0 and no adhesion --> no contact
       {
-
         // erase entries in histories if still existing
         history_particle_i.erase(data_j.id);
         history_particle_j.erase(data_i.id);
       }
-      if(ConsiderNormalAdhesion(g) != 1 and normal_adhesion_!=INPAR::PARTICLE::adhesion_none)
+      if (ConsiderNormalAdhesion(g) != 1 and normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
       {
         history_particle_i_adhesion.erase(data_j.id);
         history_particle_j_adhesion.erase(data_i.id);
       }
       // undo periodic shift of position of particle i or j if necessary
-      if(havepbc)
+      if (havepbc)
       {
         data_i.dis.SetCopy(data_i_dis);
         data_j.dis.SetCopy(data_j_dis);
@@ -1074,18 +1126,18 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
  | calculate contact with neighboring walls                ghamm 04/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
-    DRT::Node*                                        particle_i,          //!< i-th particle
-    const ParticleCollData&                           data_i,              //!< collision data associated with i-th particle
-    const boost::unordered_map<int,DRT::Element*>&    neighboring_walls,   //!< map of wall elements adjacent to i-th particle
-    const double                                      dt,                  //!< time step size
-    const Teuchos::RCP<DRT::Discretization>&          walldiscret,         //!< wall discretization
-    const Teuchos::RCP<const Epetra_Vector>&          walldisn,            //!< wall displacement
-    const Teuchos::RCP<const Epetra_Vector>&          wallveln,            //!< wall velocity
-    const Teuchos::RCP<Epetra_Vector>&                f_contact,           //!< global force vector
-    const Teuchos::RCP<Epetra_Vector>&                m_contact,           //!< global moment vector
-    const Teuchos::RCP<Epetra_FEVector>&              f_structure,          //!< global wall force vector
-    int timestep
-    )
+    DRT::Node* particle_i,           //!< i-th particle
+    const ParticleCollData& data_i,  //!< collision data associated with i-th particle
+    const boost::unordered_map<int, DRT::Element*>&
+        neighboring_walls,  //!< map of wall elements adjacent to i-th particle
+    const double dt,        //!< time step size
+    const Teuchos::RCP<DRT::Discretization>& walldiscret,  //!< wall discretization
+    const Teuchos::RCP<const Epetra_Vector>& walldisn,     //!< wall displacement
+    const Teuchos::RCP<const Epetra_Vector>& wallveln,     //!< wall velocity
+    const Teuchos::RCP<Epetra_Vector>& f_contact,          //!< global force vector
+    const Teuchos::RCP<Epetra_Vector>& m_contact,          //!< global moment vector
+    const Teuchos::RCP<Epetra_FEVector>& f_structure,      //!< global wall force vector
+    int timestep)
 {
   const double mass_i = data_i.mass;
   const double radius_i = data_i.rad;
@@ -1100,7 +1152,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   std::set<int> unusedIds;
 
   // check whether there is contact between particle i and neighboring walls
-  for(boost::unordered_map<int, DRT::Element*>::const_iterator w=neighboring_walls.begin(); w!=neighboring_walls.end();  ++w)
+  for (boost::unordered_map<int, DRT::Element*>::const_iterator w = neighboring_walls.begin();
+       w != neighboring_walls.end(); ++w)
   {
     DRT::Element* neighboringwallele = w->second;
     const int numnodes = neighboringwallele->NumNode();
@@ -1109,67 +1162,69 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
 
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    neighboringwallele->LocationVector(*walldiscret,lm_wall,lmowner,lmstride);
+    neighboringwallele->LocationVector(*walldiscret, lm_wall, lmowner, lmstride);
 
     // nodal displacements
     std::vector<double> nodal_disp(numnodes * 3);
-    DRT::UTILS::ExtractMyValues(*walldisn,nodal_disp,lm_wall);
+    DRT::UTILS::ExtractMyValues(*walldisn, nodal_disp, lm_wall);
 
     // get current position of nodes: x = X + u
-    std::map<int,LINALG::Matrix<3,1> > nodeCoord;
+    std::map<int, LINALG::Matrix<3, 1>> nodeCoord;
     DRT::Node** wallnodes = neighboringwallele->Nodes();
-    for(int counter=0; counter<numnodes; ++counter)
+    for (int counter = 0; counter < numnodes; ++counter)
     {
-      static LINALG::Matrix<3,1> currpos;
+      static LINALG::Matrix<3, 1> currpos;
       currpos.Clear();
 
       const double* X = wallnodes[counter]->X();
-      currpos(0) = X[0] + nodal_disp[counter*3+0];
-      currpos(1) = X[1] + nodal_disp[counter*3+1];
-      currpos(2) = X[2] + nodal_disp[counter*3+2];
+      currpos(0) = X[0] + nodal_disp[counter * 3 + 0];
+      currpos(1) = X[1] + nodal_disp[counter * 3 + 1];
+      currpos(2) = X[2] + nodal_disp[counter * 3 + 2];
       nodeCoord[wallnodes[counter]->Id()] = currpos;
     }
 
-    // compute contact normal, contact gap, contact point on wall element, and type of nearest contact object
-    static LINALG::Matrix<3,1> nearestPoint, normal;
+    // compute contact normal, contact gap, contact point on wall element, and type of nearest
+    // contact object
+    static LINALG::Matrix<3, 1> nearestPoint, normal;
     nearestPoint.Clear();
     normal.Clear();
 
     GEO::ObjectType objecttype(GEO::NOTYPE_OBJECT);
     double penetration(0.);
-    ComputeContactPointAndNormalAndGapAndObjectType(nearestPoint,objecttype,normal,penetration,neighboringwallele,nodeCoord,data_i);
+    ComputeContactPointAndNormalAndGapAndObjectType(
+        nearestPoint, objecttype, normal, penetration, neighboringwallele, nodeCoord, data_i);
 
-    if(penetration <= 0.0 or ConsiderNormalAdhesion(penetration))
+    if (penetration <= 0.0 or ConsiderNormalAdhesion(penetration))
     {
       // get pointer to the current object type of closest point
-      std::vector<WallContactPoint> *pointer=0;
-      switch(objecttype)
+      std::vector<WallContactPoint>* pointer = 0;
+      switch (objecttype)
       {
-      case GEO::SURFACE_OBJECT:
-      {
-        pointer = &surfaces;
-      }
-      break;
-      case GEO::LINE_OBJECT:
-      {
-        pointer = &lines;
-      }
-      break;
-      case GEO::NODE_OBJECT:
-      {
-        pointer = &nodes;
-      }
-      break;
-      default:
-        dserror("unknown object type");
-      break;
+        case GEO::SURFACE_OBJECT:
+        {
+          pointer = &surfaces;
+        }
+        break;
+        case GEO::LINE_OBJECT:
+        {
+          pointer = &lines;
+        }
+        break;
+        case GEO::NODE_OBJECT:
+        {
+          pointer = &nodes;
+        }
+        break;
+        default:
+          dserror("unknown object type");
+          break;
       }
 
       // check, whether point has already been detected (e.g. one line element between two surfaces)
       bool insert = true;
-      for(size_t i=0; i<(*pointer).size(); ++i)
+      for (size_t i = 0; i < (*pointer).size(); ++i)
       {
-        static LINALG::Matrix<3,1> distance_vector;
+        static LINALG::Matrix<3, 1> distance_vector;
         distance_vector.Clear();
 
         distance_vector.Update(1.0, nearestPoint, -1.0, (*pointer)[i].point);
@@ -1186,9 +1241,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
       }
 
       // insert contact point with current surface in corresponding map (surf, line, node)
-      if(insert)
+      if (insert)
       {
-        WallContactPoint currentContact = { neighboringwallele->Id(), nearestPoint, normal, penetration, nodeCoord, lm_wall, lmowner };
+        WallContactPoint currentContact = {neighboringwallele->Id(), nearestPoint, normal,
+            penetration, nodeCoord, lm_wall, lmowner};
         (*pointer).push_back(currentContact);
       }
     }
@@ -1201,92 +1257,91 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
 
   // find entries of lines and nodes which are within the penetration volume of the current particle
   // hierarchical: surfaces first
-  for(size_t s=0; s<surfaces.size(); ++s)
+  for (size_t s = 0; s < surfaces.size(); ++s)
   {
-    if(surfaces[s].penetration < 0.)
+    if (surfaces[s].penetration < 0.)
     {
       // within this radius no other contact point can lie: radius = sqrt(r_i^2 - (r_i-|g|)^2)
-      const double rminusg = radius_i-std::abs(surfaces[s].penetration);
-      const double radius_surface = sqrt(radius_i*radius_i - rminusg*rminusg);
+      const double rminusg = radius_i - std::abs(surfaces[s].penetration);
+      const double radius_surface = sqrt(radius_i * radius_i - rminusg * rminusg);
 
-      for(size_t l=0; l<lines.size(); ++l)
+      for (size_t l = 0; l < lines.size(); ++l)
       {
-        static LINALG::Matrix<3,1> distance_vector;
+        static LINALG::Matrix<3, 1> distance_vector;
         distance_vector.Clear();
 
         distance_vector.Update(1.0, surfaces[s].point, -1.0, lines[l].point);
         const double distance = distance_vector.Norm2();
-        if(distance <= radius_surface)
-          unusedIds.insert(lines[l].eleid);
+        if (distance <= radius_surface) unusedIds.insert(lines[l].eleid);
       }
-      for(size_t p=0; p<nodes.size(); ++p)
+      for (size_t p = 0; p < nodes.size(); ++p)
       {
-        static LINALG::Matrix<3,1> distance_vector;
+        static LINALG::Matrix<3, 1> distance_vector;
         distance_vector.Clear();
 
         distance_vector.Update(1.0, surfaces[s].point, -1.0, nodes[p].point);
         const double distance = distance_vector.Norm2();
-        if(distance <= radius_surface)
-          unusedIds.insert(nodes[p].eleid);
+        if (distance <= radius_surface) unusedIds.insert(nodes[p].eleid);
       }
     }
   }
   // find entries of nodes which are within the penetration volume of the current particle
   // hierarchical: lines next
-  for(size_t l=0; l<lines.size(); ++l)
+  for (size_t l = 0; l < lines.size(); ++l)
   {
-    if(lines[l].penetration < 0.)
+    if (lines[l].penetration < 0.)
     {
       // radius = sqrt(r_i^2 - (r_i-|g|)^2)
-      const double rminusg = radius_i-std::abs(lines[l].penetration);
-      const double radius_line = sqrt(radius_i*radius_i - rminusg*rminusg);
+      const double rminusg = radius_i - std::abs(lines[l].penetration);
+      const double radius_line = sqrt(radius_i * radius_i - rminusg * rminusg);
 
-      for(size_t p=0; p<nodes.size(); ++p)
+      for (size_t p = 0; p < nodes.size(); ++p)
       {
-        static LINALG::Matrix<3,1> distance_vector;
+        static LINALG::Matrix<3, 1> distance_vector;
         distance_vector.Clear();
 
         distance_vector.Update(1.0, lines[l].point, -1.0, nodes[p].point);
         const double distance = distance_vector.Norm2();
-        if(distance <= radius_line)
-          unusedIds.insert(nodes[p].eleid);
+        if (distance <= radius_line) unusedIds.insert(nodes[p].eleid);
       }
     }
   }
 
   // write entries of lines and nodes to surfaces if contact has to be evaluated
-  for(size_t l=0; l<lines.size(); ++l)
+  for (size_t l = 0; l < lines.size(); ++l)
   {
-    if( !unusedIds.count(lines[l].eleid) )
-      surfaces.push_back(lines[l]);
+    if (!unusedIds.count(lines[l].eleid)) surfaces.push_back(lines[l]);
   }
-  for(size_t p=0; p<nodes.size(); ++p)
+  for (size_t p = 0; p < nodes.size(); ++p)
   {
-    if( !unusedIds.count(nodes[p].eleid) )
-      surfaces.push_back(nodes[p]);
+    if (!unusedIds.count(nodes[p].eleid)) surfaces.push_back(nodes[p]);
   }
 
   // evaluate contact between particle_i and entries of surfaces
-  std::map<int, PARTICLE::Collision>& history_wall = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall();
-  std::map<int, PARTICLE::Adhesion>& history_wall_adhesion = static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall_adhesion();
-  if(history_wall.size() > 3 and normal_adhesion_ == INPAR::PARTICLE::adhesion_none)
-    std::cout << "ATTENTION: Contact of particle " << data_i.id << " with " << history_wall.size() << " wall elements." << std::endl;
+  std::map<int, PARTICLE::Collision>& history_wall =
+      static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall();
+  std::map<int, PARTICLE::Adhesion>& history_wall_adhesion =
+      static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall_adhesion();
+  if (history_wall.size() > 3 and normal_adhesion_ == INPAR::PARTICLE::adhesion_none)
+    std::cout << "ATTENTION: Contact of particle " << data_i.id << " with " << history_wall.size()
+              << " wall elements." << std::endl;
 
-  for(size_t s=0; s<surfaces.size(); ++s)
+  for (size_t s = 0; s < surfaces.size(); ++s)
   {
     // gid of wall element
     const WallContactPoint& wallcontact = surfaces[s];
     const int gid_wall = wallcontact.eleid;
 
     //-------get velocity of contact point-----------------------
-    static LINALG::Matrix<3,1> vel_nearestPoint;
+    static LINALG::Matrix<3, 1> vel_nearestPoint;
     vel_nearestPoint.Clear();
-    //vel_nearestPoint.PutScalar(0.0);
-    static LINALG::Matrix<2,1> elecoord;
+    // vel_nearestPoint.PutScalar(0.0);
+    static LINALG::Matrix<2, 1> elecoord;
     elecoord.Clear();
 
-    DRT::Element *CurrentEle = walldiscret->gElement(gid_wall);
-    const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(CurrentEle, wallcontact.nodalCoordinates));
+    DRT::Element* CurrentEle = walldiscret->gElement(gid_wall);
+    const LINALG::SerialDenseMatrix xyze(
+        GEO::getCurrentNodalPositions(CurrentEle, wallcontact.nodalCoordinates));
 
     // get coordinates of the projection point in parameter space of the element (xi_coordinates)
     GEO::CurrentToSurfaceElementCoordinates(CurrentEle->Shape(), xyze, wallcontact.point, elecoord);
@@ -1295,13 +1350,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     Epetra_SerialDenseVector funct(numnodes);
 
     // get shape functions of the element evaluated at the projection point
-    DRT::UTILS::shape_function_2D(funct,elecoord(0,0),elecoord(1,0),CurrentEle->Shape());
+    DRT::UTILS::shape_function_2D(funct, elecoord(0, 0), elecoord(1, 0), CurrentEle->Shape());
 
     std::vector<double> nodal_vel(numnodes * 3);
-    DRT::UTILS::ExtractMyValues(*wallveln,nodal_vel,wallcontact.lm);
-    for(int node=0; node<numnodes; ++node)
+    DRT::UTILS::ExtractMyValues(*wallveln, nodal_vel, wallcontact.lm);
+    for (int node = 0; node < numnodes; ++node)
     {
-      for(int dim=0; dim<3; ++dim)
+      for (int dim = 0; dim < 3; ++dim)
       {
         vel_nearestPoint(dim) += funct[node] * nodal_vel[node * 3 + dim];
       }
@@ -1309,14 +1364,14 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     //-----------------------------------------------------------
 
     // relative velocity in contact point between particle and wall element
-    static LINALG::Matrix<3,1> r_iC;
+    static LINALG::Matrix<3, 1> r_iC;
     r_iC.Clear();
 
-    r_iC.Update(1.,wallcontact.point,-1.,data_i.dis);
-    static LINALG::Matrix<3,1> v_rel;
+    r_iC.Update(1., wallcontact.point, -1., data_i.dis);
+    static LINALG::Matrix<3, 1> v_rel;
     v_rel.Clear();
 
-    ComputeRelativeVelocity(v_rel,r_iC,vel_nearestPoint,data_i);
+    ComputeRelativeVelocity(v_rel, r_iC, vel_nearestPoint, data_i);
 
     // part of v_rel in normal-direction: v_rel * n
     const double v_rel_normal(v_rel.Dot(wallcontact.normal));
@@ -1324,41 +1379,36 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     // penetration
     // g = norm_r_contact - radius_i;
     const double g(wallcontact.penetration);
-    if(g<=0. and std::abs(g)>g_max_)
-      g_max_ = std::abs(g);
-    if(g<=0. and std::abs(g)>g_max_wall_)
-      g_max_wall_ = std::abs(g);
-    const double g_rel = g/radius_i;
-    if(g<=0. and std::abs(g_rel)>g_max_wall_rel_)
-      g_max_wall_rel_ = std::abs(g_rel);
+    if (g <= 0. and std::abs(g) > g_max_) g_max_ = std::abs(g);
+    if (g <= 0. and std::abs(g) > g_max_wall_) g_max_wall_ = std::abs(g);
+    const double g_rel = g / radius_i;
+    if (g <= 0. and std::abs(g_rel) > g_max_wall_rel_) g_max_wall_rel_ = std::abs(g_rel);
     //-------------------------------------------------------
 
     // normalized mass
     const double m_eff = mass_i;
 
     // contact force
-    double totalnormalforce = 0.0; //contact and adhesion forces
-    double normalcontactforce = 0.0; //only contact forces
-    static LINALG::Matrix<3,1> tangentcontactforce;
-    //tangentcontactforce.PutScalar(0.0);
-    static LINALG::Matrix<3,1> tangentrollingforce;
+    double totalnormalforce = 0.0;    // contact and adhesion forces
+    double normalcontactforce = 0.0;  // only contact forces
+    static LINALG::Matrix<3, 1> tangentcontactforce;
+    // tangentcontactforce.PutScalar(0.0);
+    static LINALG::Matrix<3, 1> tangentrollingforce;
     tangentcontactforce.Clear();
     tangentrollingforce.Clear();
 
     // normal contact force between particle and wall (note: owner_j = -1)
     int owner_wall = -1;
     // disable adhesion between selected wall elements
-    //The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
-    if(adhesion_maxwalleleID_ > 0 and gid_wall > adhesion_maxwalleleID_ -1)
-      owner_wall = -2;
+    // The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
+    if (adhesion_maxwalleleID_ > 0 and gid_wall > adhesion_maxwalleleID_ - 1) owner_wall = -2;
 
     // The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
-    if(adhesion_minwalleleID_ > 0 and gid_wall < adhesion_minwalleleID_ -1)
-      owner_wall = -2;
+    if (adhesion_minwalleleID_ > 0 and gid_wall < adhesion_minwalleleID_ - 1) owner_wall = -2;
 
-    if(normal_adhesion_!=INPAR::PARTICLE::adhesion_none)
+    if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
     {
-      if(history_wall_adhesion.find(gid_wall) == history_wall_adhesion.end())
+      if (history_wall_adhesion.find(gid_wall) == history_wall_adhesion.end())
       {
         PARTICLE::Adhesion adhe;
         // initialize adhesion
@@ -1369,143 +1419,151 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
         adhe.normal_adhesion_force = 0.0;
 
         // insert new entry
-        history_wall_adhesion.insert(std::pair<int,PARTICLE::Adhesion>(gid_wall,adhe));
+        history_wall_adhesion.insert(std::pair<int, PARTICLE::Adhesion>(gid_wall, adhe));
       }
     }
 
     ComputeAdhesionSurfaceEnergyDistribution(history_wall_adhesion[gid_wall], true);
 
-    CalculateNormalContactForce(g, data_i.rad, 0., v_rel_normal, m_eff, history_wall_adhesion[gid_wall], totalnormalforce, normalcontactforce, owner_i, owner_wall,true);
+    CalculateNormalContactForce(g, data_i.rad, 0., v_rel_normal, m_eff,
+        history_wall_adhesion[gid_wall], totalnormalforce, normalcontactforce, owner_i, owner_wall,
+        true);
 
     // output normal contact force between particle and wall to *.csv file if applicable
-    if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and owner_i == myrank_)
-      OutputNormalContactForceToFile(totalnormalforce,wallcontact.point);
+    if (writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and
+        owner_i == myrank_)
+      OutputNormalContactForceToFile(totalnormalforce, wallcontact.point);
 
-    if(g <= 0. and particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+    if (g <= 0. and
+        particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
     {
       // velocity v_rel_tangential
-      static LINALG::Matrix<3,1> v_rel_tangential;
+      static LINALG::Matrix<3, 1> v_rel_tangential;
       v_rel_tangential.Clear();
 
       v_rel_tangential.Update(1., v_rel, -v_rel_normal, wallcontact.normal);
 
       // if g < 0 and g_lasttimestep > 0 -> create history variables
-      if(history_wall.find(gid_wall) == history_wall.end())
+      if (history_wall.find(gid_wall) == history_wall.end())
       {
-         PARTICLE::Collision col;
-         // initialize with stick
-         col.stick = true;
-         col.stick_roll = true;
-         // initialize g_t[3] and g_r[3]
-         for(int dim=0; dim<3; ++dim)
-         {
-           col.g_t[dim] = 0.0;
-           col.g_r[dim] = 0.0;
-         }
+        PARTICLE::Collision col;
+        // initialize with stick
+        col.stick = true;
+        col.stick_roll = true;
+        // initialize g_t[3] and g_r[3]
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          col.g_t[dim] = 0.0;
+          col.g_r[dim] = 0.0;
+        }
 
-         // insert new entry
-         history_wall.insert(std::pair<int,PARTICLE::Collision>(gid_wall,col));
+        // insert new entry
+        history_wall.insert(std::pair<int, PARTICLE::Collision>(gid_wall, col));
       }
 
       // calculation of tangential contact force
       CalculateTangentialContactForce(normalcontactforce, wallcontact.normal, tangentcontactforce,
-                  history_wall[gid_wall], v_rel_tangential, m_eff, dt, owner_i, -1);
+          history_wall[gid_wall], v_rel_tangential, m_eff, dt, owner_i, -1);
 
       // calculation of virtual force tangentrollingforce representing rolling friciton
-      //TODO: We still need a valid value for wall_angvel in the case the wall surfaces are actually rotating!
-      static LINALG::Matrix<3,1> wall_angvel(true);
+      // TODO: We still need a valid value for wall_angvel in the case the wall surfaces are
+      // actually rotating!
+      static LINALG::Matrix<3, 1> wall_angvel(true);
       wall_angvel.Clear();
 
-        if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
-        {
-          // rolling velocity in contact point between particles i and j
-          static LINALG::Matrix<3,1> v_roll;
-          v_roll.Clear();
+      if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+      {
+        // rolling velocity in contact point between particles i and j
+        static LINALG::Matrix<3, 1> v_roll;
+        v_roll.Clear();
 
-          //compute rolling velocity
-          ComputeRollingVelocity(v_roll,r_iC,data_i);
+        // compute rolling velocity
+        ComputeRollingVelocity(v_roll, r_iC, data_i);
 
-          // calculate rolling contact force
-          CalculateRollingContactForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
+        // calculate rolling contact force
+        CalculateRollingContactForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
             history_wall[gid_wall], v_roll, m_eff, dt, owner_i, -1);
-
-        }
-        else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
-        {
+      }
+      else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+      {
         CalculateVirtualRollingForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
-                    data_i.angvel, wall_angvel, data_i.rad, 0.0, data_i.owner, owner_wall,true);
-        }
+            data_i.angvel, wall_angvel, data_i.rad, 0.0, data_i.owner, owner_wall, true);
+      }
     }
 
     // calculation of overall contact force
-    static LINALG::Matrix<3,1> contactforce;
+    static LINALG::Matrix<3, 1> contactforce;
     contactforce.Clear();
 
-    contactforce.Update(totalnormalforce,wallcontact.normal,1.,tangentcontactforce);
+    contactforce.Update(totalnormalforce, wallcontact.normal, 1., tangentcontactforce);
 
     // calculation of overall contact moment: m_i = (r_i * n) x F_t
-    static LINALG::Matrix<3,1> contactmoment;
+    static LINALG::Matrix<3, 1> contactmoment;
     contactmoment.Clear();
 
-    contactmoment.CrossProduct(r_iC,contactforce);
+    contactmoment.CrossProduct(r_iC, contactforce);
 
     // contact moment contributions from rolling resistance
-      static LINALG::Matrix<3,1> rollfricmoment;
-      rollfricmoment.Clear();
+    static LINALG::Matrix<3, 1> rollfricmoment;
+    rollfricmoment.Clear();
 
-      if(rolling_contact_==INPAR::PARTICLE::rolling_constant)
-      {
-        rollfricmoment.CrossProduct(wallcontact.normal,tangentrollingforce);
-        rollfricmoment.Update(-r_iC.Norm2(), rollfricmoment);
-        contactmoment.Update(1.0,rollfricmoment,1.0);
-      }
-      else if(rolling_contact_==INPAR::PARTICLE::rolling_viscous)
-      {
-      rollfricmoment.CrossProduct(wallcontact.normal,tangentrollingforce);
-      contactmoment.Update(1.0,rollfricmoment,1.0);
-      }
+    if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+    {
+      rollfricmoment.CrossProduct(wallcontact.normal, tangentrollingforce);
+      rollfricmoment.Update(-r_iC.Norm2(), rollfricmoment);
+      contactmoment.Update(1.0, rollfricmoment, 1.0);
+    }
+    else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+    {
+      rollfricmoment.CrossProduct(wallcontact.normal, tangentrollingforce);
+      contactmoment.Update(1.0, rollfricmoment, 1.0);
+    }
 
     if (f_contact != Teuchos::null and m_contact != Teuchos::null)
     {
       // do assembly of contact forces
-      LINALG::Assemble(*f_contact,contactforce,lm_i,owner_i);
+      LINALG::Assemble(*f_contact, contactforce, lm_i, owner_i);
       // do assembly of contact moments
-      LINALG::Assemble(*m_contact,contactmoment,lm_i,owner_i);
+      LINALG::Assemble(*m_contact, contactmoment, lm_i, owner_i);
     }
 
     if (f_structure != Teuchos::null)
     {
       // forces on wall elements
       double nodal_forces[numnodes * 3];
-      for(int node=0; node<numnodes; ++node)
+      for (int node = 0; node < numnodes; ++node)
       {
-        for(int dim=0; dim<3; ++dim)
+        for (int dim = 0; dim < 3; ++dim)
         {
-          nodal_forces[node * 3 + dim] = funct[node] *(- contactforce(dim));
+          nodal_forces[node * 3 + dim] = funct[node] * (-contactforce(dim));
         }
       }
 
       // assembly of contact forces on walls
-      if(owner_i == myrank_)
+      if (owner_i == myrank_)
       {
-        const int err = f_structure->SumIntoGlobalValues(numnodes * 3, &(wallcontact.lm)[0], &nodal_forces[0]);
-        if (err<0)
-          dserror("summing into Epetra_FEVector failed");
+        const int err =
+            f_structure->SumIntoGlobalValues(numnodes * 3, &(wallcontact.lm)[0], &nodal_forces[0]);
+        if (err < 0) dserror("summing into Epetra_FEVector failed");
       }
     }
-  } // end for contact points on surfaces
+  }  // end for contact points on surfaces
 
-  if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
   {
-    //delete those entries in history_wall_ which are no longer in contact with particle_i in current time step
-    for(boost::unordered_map<int, DRT::Element*>::const_iterator w=neighboring_walls.begin(); w != neighboring_walls.end(); ++w)
+    // delete those entries in history_wall_ which are no longer in contact with particle_i in
+    // current time step
+    for (boost::unordered_map<int, DRT::Element*>::const_iterator w = neighboring_walls.begin();
+         w != neighboring_walls.end(); ++w)
     {
       const int gid_wall = w->first;
-      if( unusedIds.find(gid_wall) != unusedIds.end() and history_wall.find(gid_wall) != history_wall.end() )
+      if (unusedIds.find(gid_wall) != unusedIds.end() and
+          history_wall.find(gid_wall) != history_wall.end())
       {
         history_wall.erase(gid_wall);
       }
-      if( unusedIds.find(gid_wall) != unusedIds.end() and history_wall_adhesion.find(gid_wall) != history_wall_adhesion.end() )
+      if (unusedIds.find(gid_wall) != unusedIds.end() and
+          history_wall_adhesion.find(gid_wall) != history_wall_adhesion.end())
       {
         history_wall_adhesion.erase(gid_wall);
       }
@@ -1517,22 +1575,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
 /*----------------------------------------------------------------------*
  | calculate normal contact force for single contact pair  ghamm 09/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
-  const double g,
-  const double radius_i,
-  const double radius_j,
-  const double v_rel_normal,
-  const double m_eff,
-  PARTICLE::Adhesion &currentAdhe,
-  double& totalnormalforce,
-  double& normalcontactforce,
-  const int owner_i,
-  const int owner_j,
-  bool iswallele
-  )
+void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const double g,
+    const double radius_i, const double radius_j, const double v_rel_normal, const double m_eff,
+    PARTICLE::Adhesion& currentAdhe, double& totalnormalforce, double& normalcontactforce,
+    const int owner_i, const int owner_j, bool iswallele)
 {
   // evaluate normal contact force arising from penalty contact
-  if(g <= 0.)
+  if (g <= 0.)
   {
     // damping parameter
     double d = 0.0;
@@ -1550,14 +1599,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     // damping parameter
     // TODO: for uni-sized particles this can be done once in the beginning -> efficiency
     // TODO: different m_eff for particle-wall and particel-particle needed when uni-size assumption
-    if(owner_j < 0) // contact particle-wall
+    if (owner_j < 0)  // contact particle-wall
     {
-      if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
+      if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
       {
-        if(e_wall_ != 0.0)
+        if (e_wall_ != 0.0)
         {
           const double lnewall = log(e_wall_);
-          d = 2.0 * std::abs(lnewall) * sqrt(k_normal_wall_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+          d = 2.0 * std::abs(lnewall) *
+              sqrt(k_normal_wall_ * m_eff / (lnewall * lnewall + M_PI * M_PI));
         }
         else
         {
@@ -1569,14 +1619,14 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
         d = d_normal_wall_;
       }
     }
-    else // contact particle-particle
+    else  // contact particle-particle
     {
-      if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
+      if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
       {
-        if(e_ != 0.0)
+        if (e_ != 0.0)
         {
           const double lne = log(e_);
-          d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+          d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne * lne + M_PI * M_PI));
         }
         else
         {
@@ -1591,142 +1641,144 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
 
     // contact force
     const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
-    switch(normal_contact_)
+    switch (normal_contact_)
     {
-    case INPAR::PARTICLE::LinSpring:
-    {
-      totalnormalforce = k * g;
-
-      if(writeenergyevery_)
+      case INPAR::PARTICLE::LinSpring:
       {
-        //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * g * g;
-      }
-    }
-    break;
-    case INPAR::PARTICLE::Hertz:
-    {
-      totalnormalforce = - k * pow(-g,1.5);
+        totalnormalforce = k * g;
 
-      if(writeenergyevery_)
-      {
-        //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
-      }
-    }
-    break;
-    case INPAR::PARTICLE::LinSpringDamp:
-    {
-      // linear regularization of damping force to reach full amplitude for g = damp_reg_fac_ * r_min
-      if(damp_reg_fac_>0.0)
-      {
-        double rad_min = radius_i;
-        if(radius_j<radius_i)
-          rad_min = radius_j;
-
-        if (abs(g) < damp_reg_fac_ * rad_min)
+        if (writeenergyevery_)
         {
-          totalnormalforce = k * g - d * v_rel_normal * (abs(g)/(damp_reg_fac_*rad_min));
+          // monitor E N E R G Y: here: calculate energy of elastic contact
+          contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.5 * k * g * g;
+        }
+      }
+      break;
+      case INPAR::PARTICLE::Hertz:
+      {
+        totalnormalforce = -k * pow(-g, 1.5);
+
+        if (writeenergyevery_)
+        {
+          // monitor E N E R G Y: here: calculate energy of elastic contact
+          contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.4 * k * pow(-g, 2.5);
+        }
+      }
+      break;
+      case INPAR::PARTICLE::LinSpringDamp:
+      {
+        // linear regularization of damping force to reach full amplitude for g = damp_reg_fac_ *
+        // r_min
+        if (damp_reg_fac_ > 0.0)
+        {
+          double rad_min = radius_i;
+          if (radius_j < radius_i) rad_min = radius_j;
+
+          if (abs(g) < damp_reg_fac_ * rad_min)
+          {
+            totalnormalforce = k * g - d * v_rel_normal * (abs(g) / (damp_reg_fac_ * rad_min));
+          }
+          else
+          {
+            totalnormalforce = k * g - d * v_rel_normal;
+          }
         }
         else
-        {
           totalnormalforce = k * g - d * v_rel_normal;
+
+        // tension-cutoff
+        if (tension_cutoff_ && totalnormalforce > 0.0)
+        {
+          totalnormalforce = 0.0;
+        }
+
+        if (writeenergyevery_)
+        {
+          // monitor E N E R G Y: here: calculate energy of elastic contact
+          contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.5 * k * g * g;
         }
       }
-      else
-        totalnormalforce = k * g - d * v_rel_normal;
-
-      // tension-cutoff
-      if(tension_cutoff_ && totalnormalforce > 0.0)
-      {
-        totalnormalforce = 0.0;
-      }
-
-      if(writeenergyevery_)
-      {
-        //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * g * g;
-      }
-    }
-    break;
-    case INPAR::PARTICLE::LeeHerrmann:
-    {
-      // m_eff = m_i * m_j / ( m_i + m_j)
-
-      totalnormalforce = - k * pow(-g,1.5) - m_eff * d * v_rel_normal;
-
-      // tension-cutoff
-      if(tension_cutoff_ && totalnormalforce > 0.0)
-      {
-        totalnormalforce = 0.0;
-      }
-
-      if(writeenergyevery_)
-      {
-        //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
-      }
-    }
-    break;
-    case INPAR::PARTICLE::KuwabaraKono:
-    {
-      totalnormalforce = - k * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.5);
-
-      // tension-cutoff
-      if(tension_cutoff_ && totalnormalforce > 0.0)
-      {
-        totalnormalforce = 0.0;
-      }
-
-      if(writeenergyevery_)
-      {
-        //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
-      }
-    }
-    break;
-    case INPAR::PARTICLE::Tsuji:
-    {
-      totalnormalforce = - k * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.25);
-
-      // tension-cutoff
-      if(tension_cutoff_ && totalnormalforce > 0.0)
-      {
-        totalnormalforce = 0.0;
-      }
-
-      if(writeenergyevery_)
-      {
-        //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
-      }
-    }
-    break;
-    default:
-      dserror("specified normal contact law does not exist");
       break;
+      case INPAR::PARTICLE::LeeHerrmann:
+      {
+        // m_eff = m_i * m_j / ( m_i + m_j)
+
+        totalnormalforce = -k * pow(-g, 1.5) - m_eff * d * v_rel_normal;
+
+        // tension-cutoff
+        if (tension_cutoff_ && totalnormalforce > 0.0)
+        {
+          totalnormalforce = 0.0;
+        }
+
+        if (writeenergyevery_)
+        {
+          // monitor E N E R G Y: here: calculate energy of elastic contact
+          contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.4 * k * pow(-g, 2.5);
+        }
+      }
+      break;
+      case INPAR::PARTICLE::KuwabaraKono:
+      {
+        totalnormalforce = -k * pow(-g, 1.5) - d * v_rel_normal * pow(-g, 0.5);
+
+        // tension-cutoff
+        if (tension_cutoff_ && totalnormalforce > 0.0)
+        {
+          totalnormalforce = 0.0;
+        }
+
+        if (writeenergyevery_)
+        {
+          // monitor E N E R G Y: here: calculate energy of elastic contact
+          contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.4 * k * pow(-g, 2.5);
+        }
+      }
+      break;
+      case INPAR::PARTICLE::Tsuji:
+      {
+        totalnormalforce = -k * pow(-g, 1.5) - d * v_rel_normal * pow(-g, 0.25);
+
+        // tension-cutoff
+        if (tension_cutoff_ && totalnormalforce > 0.0)
+        {
+          totalnormalforce = 0.0;
+        }
+
+        if (writeenergyevery_)
+        {
+          // monitor E N E R G Y: here: calculate energy of elastic contact
+          contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.4 * k * pow(-g, 2.5);
+        }
+      }
+      break;
+      default:
+        dserror("specified normal contact law does not exist");
+        break;
     }
-    normalcontactforce=totalnormalforce;
+    normalcontactforce = totalnormalforce;
   }
   // evaluate normal contact force arising from particle adhesion
-  if(normal_adhesion_ != INPAR::PARTICLE::adhesion_none  and owner_j > -2)
+  if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none and owner_j > -2)
   {
     // initialize variable for normal adhesion energy
     double normaladhesionforce(0.), normaladhesionenergy(0.);
 
     // calculate normal adhesion force and update internal system energy if applicable
-    switch(normal_adhesion_)
+    switch (normal_adhesion_)
     {
       case INPAR::PARTICLE::adhesion_linspring:
       case INPAR::PARTICLE::adhesion_linspringdamp:
       {
-        normaladhesionforce = adhesion_normal_stiff_*(g-adhesion_eq_gap_);
+        normaladhesionforce = adhesion_normal_stiff_ * (g - adhesion_eq_gap_);
 
-        if(normal_adhesion_ == INPAR::PARTICLE::adhesion_linspringdamp)
-          normaladhesionforce -= 2.*adhesion_normal_damp_*sqrt(adhesion_normal_stiff_*m_eff)*v_rel_normal;
+        if (normal_adhesion_ == INPAR::PARTICLE::adhesion_linspringdamp)
+          normaladhesionforce -=
+              2. * adhesion_normal_damp_ * sqrt(adhesion_normal_stiff_ * m_eff) * v_rel_normal;
 
-        if(writeenergyevery_)
-          normaladhesionenergy = EnergyAssemble(owner_i,owner_j)*0.5*adhesion_normal_stiff_*pow(g-adhesion_eq_gap_,2);
+        if (writeenergyevery_)
+          normaladhesionenergy = EnergyAssemble(owner_i, owner_j) * 0.5 * adhesion_normal_stiff_ *
+                                 pow(g - adhesion_eq_gap_, 2);
 
         break;
       }
@@ -1740,100 +1792,118 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
 
         double adhesion_contact_pressure = adhesion_max_contact_pressure_;
 
-        if(iswallele==true) // wall contact
+        if (iswallele == true)  // wall contact
         {
           r_rep = radius_i;
           adhesion_surface_energy_factor = adhesion_surface_energy_wall_factor_;
           adhesion_contact_pressure = adhesion_max_contact_pressure_wall_;
         }
 
-        if(adhesion_surface_energy_factor != 1 and adhesion_contact_pressure > 0)
+        if (adhesion_surface_energy_factor != 1 and adhesion_contact_pressure > 0)
           dserror("ADHESION_CONTACT_PRESSURE has to be defined and negative!");
 
-        double E_rep = young_ / (2*(1-pow(nue_,2.0)));
-        double adhesion_contact_force = (pow(PI * adhesion_contact_pressure,3.0) * pow(r_rep,2.0)) / (6 * pow(E_rep,2.0));
+        double E_rep = young_ / (2 * (1 - pow(nue_, 2.0)));
+        double adhesion_contact_force =
+            (pow(PI * adhesion_contact_pressure, 3.0) * pow(r_rep, 2.0)) / (6 * pow(E_rep, 2.0));
 
-        if(adhesion_variant_max_contact_force_)
-          adhesion_contact_force = adhesion_contact_pressure;
+        if (adhesion_variant_max_contact_force_) adhesion_contact_force = adhesion_contact_pressure;
 
-        if(adhesion_contact_force>0)
-          dserror("Check input parameter ADHESION_MAX_CONTACT_PRESSURE and ADHESION_MAX_CONTACT_PRESSURE_WALL. The pressure has to be negative!");
+        if (adhesion_contact_force > 0)
+          dserror(
+              "Check input parameter ADHESION_MAX_CONTACT_PRESSURE and "
+              "ADHESION_MAX_CONTACT_PRESSURE_WALL. The pressure has to be negative!");
 
         double normaladhesionforce_pullout_max = 4 * PI * r_rep * adhesion_surface_energy;
-        double normaladhesionforce_pullout = 4 * PI * r_rep * adhesion_surface_energy * adhesion_surface_energy_factor;
+        double normaladhesionforce_pullout =
+            4 * PI * r_rep * adhesion_surface_energy * adhesion_surface_energy_factor;
         // calculate g where maximum pullout force is achieved
         const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
         double g_intersect_max = adhesion_contact_force / k;
-        //double slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (g_intersect_min - g_intersect_max);
+        // double slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) /
+        // (g_intersect_min - g_intersect_max);
         double slope = 0.;
-        if(g_intersect_max!=0)
-          slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (- g_intersect_max);
-        //double y_intercept = (normaladhesionforce_pullout_max * g_intersect_min - normaladhesionforce_pullout * g_intersect_max) / (g_intersect_min - g_intersect_max);
+        if (g_intersect_max != 0)
+          slope =
+              (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (-g_intersect_max);
+        // double y_intercept = (normaladhesionforce_pullout_max * g_intersect_min -
+        // normaladhesionforce_pullout * g_intersect_max) / (g_intersect_min - g_intersect_max);
         double y_intercept = normaladhesionforce_pullout;
-        // calculate g at intersection between normaladhesionforce and normaladhesionforce_pullout_min
+        // calculate g at intersection between normaladhesionforce and
+        // normaladhesionforce_pullout_min
         double g_intersect_min = 0;
 
-        if(adhesion_vdW_curve_shift_ != 1)
+        if (adhesion_vdW_curve_shift_ != 1)
         {
-          if(slope == 0)
+          if (slope == 0)
           {
-            g_intersect_min = sqrt((adhesion_normal_eps_ * r_rep) / (6 * normaladhesionforce_pullout));
+            g_intersect_min =
+                sqrt((adhesion_normal_eps_ * r_rep) / (6 * normaladhesionforce_pullout));
           }
           else
-            CalculateIntersectionGap(slope, y_intercept, 0, -(1./6) * adhesion_normal_eps_ * r_rep, g_intersect_min);
+            CalculateIntersectionGap(
+                slope, y_intercept, 0, -(1. / 6) * adhesion_normal_eps_ * r_rep, g_intersect_min);
         }
 
         double g_offset = sqrt((adhesion_normal_eps_ * r_rep) / (6. * normaladhesionforce_pullout));
 
-        //Here we compare with a finite value instead of zero in order to avoid division by zero!
-        //For small values of g, we will run into the cut-off case "if(normaladhesionforce > normaladhesionforce_pullout)" anyways.
-        if(g<g_intersect_max)
+        // Here we compare with a finite value instead of zero in order to avoid division by zero!
+        // For small values of g, we will run into the cut-off case "if(normaladhesionforce >
+        // normaladhesionforce_pullout)" anyways.
+        if (g < g_intersect_max)
         {
           normaladhesionforce = normaladhesionforce_pullout_max;
         }
-        else if(g>=g_intersect_max and g<g_intersect_min)
+        else if (g >= g_intersect_max and g < g_intersect_min)
         {
           normaladhesionforce = slope * g + y_intercept;
         }
         else
         {
-          if(adhesion_vdW_curve_shift_ == 1)
+          if (adhesion_vdW_curve_shift_ == 1)
           {
-            normaladhesionforce = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g + g_offset,2.0));
+            normaladhesionforce =
+                (1. / 6) * adhesion_normal_eps_ * (r_rep / pow(g + g_offset, 2.0));
           }
           else
           {
-            normaladhesionforce = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g,2.0));
+            normaladhesionforce = (1. / 6) * adhesion_normal_eps_ * (r_rep / pow(g, 2.0));
           }
         }
 
-        if(adhesion_vdW_curve_shift_ ==1)
+        if (adhesion_vdW_curve_shift_ == 1)
         {
-          if(normaladhesionforce > currentAdhe.normal_adhesion_force or normaladhesionforce < normaladhesionforce_pullout)
-            {
-              currentAdhe.normal_adhesion_force = normaladhesionforce;
-            }
-          else
-          {
-            double g_max = sqrt((adhesion_normal_eps_ * r_rep) / (6 * currentAdhe.normal_adhesion_force)) - g_offset;
-            if(g >= g_max)
-            {
-              currentAdhe.normal_adhesion_force = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g + g_offset,2.0));
-            }
-          }
-        }
-        else
-        {
-          if(normaladhesionforce > currentAdhe.normal_adhesion_force or (normaladhesionforce < normaladhesionforce_pullout and g > g_intersect_min))
+          if (normaladhesionforce > currentAdhe.normal_adhesion_force or
+              normaladhesionforce < normaladhesionforce_pullout)
           {
             currentAdhe.normal_adhesion_force = normaladhesionforce;
           }
           else
           {
-            double g_max = sqrt((adhesion_normal_eps_ * r_rep) / (6 * currentAdhe.normal_adhesion_force));
-            if(g >= g_max)
+            double g_max =
+                sqrt((adhesion_normal_eps_ * r_rep) / (6 * currentAdhe.normal_adhesion_force)) -
+                g_offset;
+            if (g >= g_max)
             {
-              currentAdhe.normal_adhesion_force = (1./6) * adhesion_normal_eps_ * (r_rep/pow(g,2.0));
+              currentAdhe.normal_adhesion_force =
+                  (1. / 6) * adhesion_normal_eps_ * (r_rep / pow(g + g_offset, 2.0));
+            }
+          }
+        }
+        else
+        {
+          if (normaladhesionforce > currentAdhe.normal_adhesion_force or
+              (normaladhesionforce < normaladhesionforce_pullout and g > g_intersect_min))
+          {
+            currentAdhe.normal_adhesion_force = normaladhesionforce;
+          }
+          else
+          {
+            double g_max =
+                sqrt((adhesion_normal_eps_ * r_rep) / (6 * currentAdhe.normal_adhesion_force));
+            if (g >= g_max)
+            {
+              currentAdhe.normal_adhesion_force =
+                  (1. / 6) * adhesion_normal_eps_ * (r_rep / pow(g, 2.0));
             }
           }
         }
@@ -1848,43 +1918,46 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
         double adhesion_surface_energy = currentAdhe.surface_energy;
         double adhesion_surface_energy_factor = adhesion_surface_energy_factor_;
         double adhesion_contact_pressure = adhesion_max_contact_pressure_;
-        if(iswallele==true) // wall contact
+        if (iswallele == true)  // wall contact
         {
           r_rep = radius_i;
           adhesion_surface_energy_factor = adhesion_surface_energy_wall_factor_;
           adhesion_contact_pressure = adhesion_max_contact_pressure_wall_;
         }
 
-        if(adhesion_surface_energy_factor != 1 and adhesion_contact_pressure > 0)
+        if (adhesion_surface_energy_factor != 1 and adhesion_contact_pressure > 0)
           dserror("ADHESION_CONTACT_PRESSURE has to be defined and negative!");
 
-        double E_rep = young_ / (2*(1-pow(nue_,2.0)));
-        double adhesion_contact_force = (pow(PI * adhesion_contact_pressure,3.0) * pow(r_rep,2.0)) / (6 * pow(E_rep,2.0));
+        double E_rep = young_ / (2 * (1 - pow(nue_, 2.0)));
+        double adhesion_contact_force =
+            (pow(PI * adhesion_contact_pressure, 3.0) * pow(r_rep, 2.0)) / (6 * pow(E_rep, 2.0));
 
-        if(adhesion_variant_max_contact_force_)
-          adhesion_contact_force = adhesion_contact_pressure;
+        if (adhesion_variant_max_contact_force_) adhesion_contact_force = adhesion_contact_pressure;
 
-        double normaladhesionforce_pullout = 4 * PI * r_rep * adhesion_surface_energy * adhesion_surface_energy_factor;
+        double normaladhesionforce_pullout =
+            4 * PI * r_rep * adhesion_surface_energy * adhesion_surface_energy_factor;
         double normaladhesionforce_pullout_max = 4 * PI * r_rep * adhesion_surface_energy;
 
-        double g_reg = adhesion_max_disp_; // regularizaton with adhesion_max_disp_
+        double g_reg = adhesion_max_disp_;  // regularizaton with adhesion_max_disp_
 
         // calculate g where maximum pullout force is achieved
         const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
         double g_intersect_max = adhesion_contact_force / k;
 
         double slope = 0.;
-                if(g_intersect_max!=0)
-                  slope = (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (- g_intersect_max);
+        if (g_intersect_max != 0)
+          slope =
+              (normaladhesionforce_pullout - normaladhesionforce_pullout_max) / (-g_intersect_max);
 
         double y_intercept = normaladhesionforce_pullout;
 
         double g_intersect_min = 0;
 
-        if(adhesion_vdW_curve_shift_ != 1)
+        if (adhesion_vdW_curve_shift_ != 1)
         {
-          g_intersect_min = (normaladhesionforce_pullout_max - y_intercept) / (slope + normaladhesionforce_pullout_max / g_reg);
-          if(g_intersect_min < 0)
+          g_intersect_min = (normaladhesionforce_pullout_max - y_intercept) /
+                            (slope + normaladhesionforce_pullout_max / g_reg);
+          if (g_intersect_min < 0)
             dserror("The combination of these input parameters leads to an unreasonable result!");
         }
 
@@ -1892,19 +1965,19 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
         {
           normaladhesionforce = normaladhesionforce_pullout_max;
         }
-        else if (g>=g_intersect_max and g<g_intersect_min)
+        else if (g >= g_intersect_max and g < g_intersect_min)
         {
           normaladhesionforce = slope * g + y_intercept;
         }
-        else if (g>= g_intersect_min and g< g_reg)
+        else if (g >= g_intersect_min and g < g_reg)
         {
-          if(adhesion_vdW_curve_shift_ == 1)
+          if (adhesion_vdW_curve_shift_ == 1)
           {
-            normaladhesionforce = normaladhesionforce_pullout * (1 - g/g_reg);
+            normaladhesionforce = normaladhesionforce_pullout * (1 - g / g_reg);
           }
           else
           {
-            normaladhesionforce = normaladhesionforce_pullout_max * (1-g/g_reg);
+            normaladhesionforce = normaladhesionforce_pullout_max * (1 - g / g_reg);
           }
         }
         else
@@ -1912,33 +1985,37 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
           normaladhesionforce = 0.;
         }
 
-        if(adhesion_vdW_curve_shift_ == 1)
+        if (adhesion_vdW_curve_shift_ == 1)
         {
-          if(normaladhesionforce > currentAdhe.normal_adhesion_force or normaladhesionforce < normaladhesionforce_pullout)
+          if (normaladhesionforce > currentAdhe.normal_adhesion_force or
+              normaladhesionforce < normaladhesionforce_pullout)
           {
             currentAdhe.normal_adhesion_force = normaladhesionforce;
           }
           else
           {
-            double g_max = (1 - currentAdhe.normal_adhesion_force / normaladhesionforce_pullout) * g_reg;
-            if(g > g_max)
+            double g_max =
+                (1 - currentAdhe.normal_adhesion_force / normaladhesionforce_pullout) * g_reg;
+            if (g > g_max)
             {
-              currentAdhe.normal_adhesion_force = normaladhesionforce_pullout * (1-g/g_reg);
+              currentAdhe.normal_adhesion_force = normaladhesionforce_pullout * (1 - g / g_reg);
             }
           }
         }
         else
         {
-          if(normaladhesionforce > currentAdhe.normal_adhesion_force or (normaladhesionforce < normaladhesionforce_pullout and g > g_intersect_min))
+          if (normaladhesionforce > currentAdhe.normal_adhesion_force or
+              (normaladhesionforce < normaladhesionforce_pullout and g > g_intersect_min))
           {
             currentAdhe.normal_adhesion_force = normaladhesionforce;
           }
           else
           {
-            double g_max = (1 - currentAdhe.normal_adhesion_force / normaladhesionforce_pullout_max) * g_reg;
-            if(g > g_max)
+            double g_max =
+                (1 - currentAdhe.normal_adhesion_force / normaladhesionforce_pullout_max) * g_reg;
+            if (g > g_max)
             {
-              currentAdhe.normal_adhesion_force = normaladhesionforce_pullout_max * (1-g/g_reg);
+              currentAdhe.normal_adhesion_force = normaladhesionforce_pullout_max * (1 - g / g_reg);
             }
           }
         }
@@ -1955,43 +2032,51 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     }
 
 
-    bool assemble=true;
-    // For the cases adhesion_linspring and adhesion_linspringdamp a maximal tension / pulling force exists.
-    // If this threshold value is exceeded, the adhesive connection breaks and the force drops to zero.
-    if(normal_adhesion_==INPAR::PARTICLE::adhesion_linspring or normal_adhesion_==INPAR::PARTICLE::adhesion_linspringdamp)
+    bool assemble = true;
+    // For the cases adhesion_linspring and adhesion_linspringdamp a maximal tension / pulling force
+    // exists. If this threshold value is exceeded, the adhesive connection breaks and the force
+    // drops to zero.
+    if (normal_adhesion_ == INPAR::PARTICLE::adhesion_linspring or
+        normal_adhesion_ == INPAR::PARTICLE::adhesion_linspringdamp)
     {
-      if(adhesion_max_force_>0 and std::abs(normaladhesionforce) > adhesion_max_force_)
-        assemble=false;
+      if (adhesion_max_force_ > 0 and std::abs(normaladhesionforce) > adhesion_max_force_)
+        assemble = false;
     }
 
-    if(assemble)
+    if (assemble)
     {
       totalnormalforce += normaladhesionforce;
       contact_energy_ += normaladhesionenergy;
     }
   }
 
-  if(normalcontactforce<0 and yield_ > 0.)
+  if (normalcontactforce < 0 and yield_ > 0.)
   {
     // calculate maximal von-Mises equilibrium stress in the particle
-    double E_rep = young_ / (2*(1-pow(nue_,2.0)));
-    double R_rep = (radius_i*radius_j)/(radius_i + radius_j);
-    if(iswallele==true) // wall contact
+    double E_rep = young_ / (2 * (1 - pow(nue_, 2.0)));
+    double R_rep = (radius_i * radius_j) / (radius_i + radius_j);
+    if (iswallele == true)  // wall contact
       R_rep = radius_i;
 
-    double sigma_v_max = 0.6 * pow(((6*std::abs(normalcontactforce)*pow(E_rep,2.0))/ (pow(PI,3.0)*pow(R_rep,2.0))),(1.0/3.0));
+    double sigma_v_max = 0.6 * pow(((6 * std::abs(normalcontactforce) * pow(E_rep, 2.0)) /
+                                       (pow(PI, 3.0) * pow(R_rep, 2.0))),
+                                   (1.0 / 3.0));
 
     double yield_criterion = sigma_v_max / yield_;
 
-    if(yield_criterion>yield_max_rel_)
-      yield_max_rel_ = yield_criterion;
+    if (yield_criterion > yield_max_rel_) yield_max_rel_ = yield_criterion;
 
-    if(yield_max_rel_ > 1.1)
+    if (yield_max_rel_ > 1.1)
     {
 #ifndef PARTICLE_NOTIMESTEPDSERROR
-      dserror("WARNING!!! Von-Mises yield criterion exceeded by more than 10 percent - elastic theory is not valid anymore");
+      dserror(
+          "WARNING!!! Von-Mises yield criterion exceeded by more than 10 percent - elastic theory "
+          "is not valid anymore");
 #else
-      std::cout << "WARNING!!! Von-Mises yield criterion exceeded by more than 10 percent - elastic theory is not valid anymore" << std::endl << std::endl;
+      std::cout << "WARNING!!! Von-Mises yield criterion exceeded by more than 10 percent - "
+                   "elastic theory is not valid anymore"
+                << std::endl
+                << std::endl;
 #endif
     }
   }
@@ -2005,16 +2090,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
  | contact pair                                                         |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
-  const double normalcontactforce,
-  const LINALG::Matrix<3,1>& normal,
-  LINALG::Matrix<3,1>& tangentcontactforce,
-  PARTICLE::Collision &currentColl,
-  const LINALG::Matrix<3,1>& v_rel_tangential,
-  const double m_eff,
-  const double dt,
-  const int owner_i,
-  const int owner_j
-  )
+    const double normalcontactforce, const LINALG::Matrix<3, 1>& normal,
+    LINALG::Matrix<3, 1>& tangentcontactforce, PARTICLE::Collision& currentColl,
+    const LINALG::Matrix<3, 1>& v_rel_tangential, const double m_eff, const double dt,
+    const int owner_i, const int owner_j)
 {
   // damping parameter
   double d = -0.0;
@@ -2023,19 +2102,20 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   // frictional coefficient
   double mu = -1.0;
 
-  if(owner_j<0) //contact particle-wall
+  if (owner_j < 0)  // contact particle-wall
   {
     // friction
     mu = mu_wall_;
     // stiffness
     k = k_tang_wall_;
     // damping
-    if(d_tang_wall_ < 0.0)
+    if (d_tang_wall_ < 0.0)
     {
-      if(e_wall_ != 0.0)
+      if (e_wall_ != 0.0)
       {
         const double lnewall = log(e_wall_);
-        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_wall_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+        d = 2.0 * std::abs(lnewall) *
+            sqrt(k_normal_wall_ * m_eff / (lnewall * lnewall + M_PI * M_PI));
       }
       else
       {
@@ -2047,19 +2127,19 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
       d = d_tang_wall_;
     }
   }
-  else // contact particle-particle
+  else  // contact particle-particle
   {
     // friction
     mu = mu_;
     // stiffness
     k = k_tang_;
     // damping
-    if(d_tang_ < 0.0)
+    if (d_tang_ < 0.0)
     {
-      if(e_ != 0.0)
+      if (e_ != 0.0)
       {
         const double lne = log(e_);
-        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne * lne + M_PI * M_PI));
       }
       else
       {
@@ -2075,7 +2155,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   // store length of g_t at time n
   double old_length = 0.0;
   double interime = 0.0;
-  for(int n=0; n<3; ++n)
+  for (int n = 0; n < 3; ++n)
   {
     old_length += currentColl.g_t[n] * currentColl.g_t[n];
     interime += normal(n) * currentColl.g_t[n];
@@ -2084,36 +2164,36 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
 
   // projection of g_t onto current normal at time n+1
   double new_length = 0.0;
-  for(int n=0; n<3; ++n)
+  for (int n = 0; n < 3; ++n)
   {
-    currentColl.g_t[n] += - interime * normal(n);
+    currentColl.g_t[n] += -interime * normal(n);
     new_length += currentColl.g_t[n] * currentColl.g_t[n];
   }
   new_length = sqrt(new_length);
 
   // ensure that g_t has the same length as before projection
   // if almost no tangential spring elongation, neglect it
-  if(new_length > 1.0E-14)
+  if (new_length > 1.0E-14)
   {
-    const double scale = old_length/new_length;
-    for(int n=0; n<3; ++n)
+    const double scale = old_length / new_length;
+    for (int n = 0; n < 3; ++n)
     {
       currentColl.g_t[n] = scale * currentColl.g_t[n];
     }
   }
 
   // update of elastic tangential displacement if stick is true
-  if(currentColl.stick == true)
+  if (currentColl.stick == true)
   {
-    for(int n=0; n<3; ++n)
+    for (int n = 0; n < 3; ++n)
     {
       currentColl.g_t[n] += v_rel_tangential(n) * dt;
     }
   }
 
   // calculate tangential test force
-  for(int n=0; n<3; ++n)
-    tangentcontactforce(n) = - k * currentColl.g_t[n] - d * v_rel_tangential(n);
+  for (int n = 0; n < 3; ++n)
+    tangentcontactforce(n) = -k * currentColl.g_t[n] - d * v_rel_tangential(n);
 
   // norm of tangential contact force
   const double norm_f_t(tangentcontactforce.Norm2());
@@ -2121,38 +2201,38 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   // Coulomb friction law
 
   // tangential contact force for "stick" - case----------------------
-  if( norm_f_t <= (mu * std::abs(normalcontactforce)) )
+  if (norm_f_t <= (mu * std::abs(normalcontactforce)))
   {
     currentColl.stick = true;
-    //tangential contact force already calculated
+    // tangential contact force already calculated
   }
-  else //"slip"-case
+  else  //"slip"-case
   {
     currentColl.stick = false;
-    //calculate tangent vector ( unit vector in (test-)tangentcontactforce-direction )
-    static LINALG::Matrix<3,1> tangent;
+    // calculate tangent vector ( unit vector in (test-)tangentcontactforce-direction )
+    static LINALG::Matrix<3, 1> tangent;
     tangent.Clear();
 
-    tangent.Update(1.0/norm_f_t,tangentcontactforce);
+    tangent.Update(1.0 / norm_f_t, tangentcontactforce);
 
     // calculate tangent contact force and tangential displacements
-    tangentcontactforce.Update(mu*std::abs(normalcontactforce),tangent);
-    const double kinv = 1.0/k;
-    for(int n=0; n<3; ++n)
-      currentColl.g_t[n] = - kinv * (tangentcontactforce(n) + d * v_rel_tangential(n));
+    tangentcontactforce.Update(mu * std::abs(normalcontactforce), tangent);
+    const double kinv = 1.0 / k;
+    for (int n = 0; n < 3; ++n)
+      currentColl.g_t[n] = -kinv * (tangentcontactforce(n) + d * v_rel_tangential(n));
   }
   //---------------------------------------------------------------
 
-  if(writeenergyevery_)
+  if (writeenergyevery_)
   {
     new_length = 0.0;
-    for(int n=0; n<3; ++n)
+    for (int n = 0; n < 3; ++n)
     {
       new_length += currentColl.g_t[n] * currentColl.g_t[n];
     }
     new_length = sqrt(new_length);
 
-    contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * new_length * new_length;
+    contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.5 * k * new_length * new_length;
   }
 
   return;
@@ -2164,16 +2244,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
  | contact pair                                                         |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
-  const double normalcontactforce,
-  const LINALG::Matrix<3,1>& normal,
-  LINALG::Matrix<3,1>& tangentrollingforce,
-  PARTICLE::Collision &currentColl,
-  const LINALG::Matrix<3,1>& v_roll,
-  const double m_eff,
-  const double dt,
-  const int owner_i,
-  const int owner_j
-  )
+    const double normalcontactforce, const LINALG::Matrix<3, 1>& normal,
+    LINALG::Matrix<3, 1>& tangentrollingforce, PARTICLE::Collision& currentColl,
+    const LINALG::Matrix<3, 1>& v_roll, const double m_eff, const double dt, const int owner_i,
+    const int owner_j)
 {
   // damping parameter
   double d = -0.0;
@@ -2182,19 +2256,20 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
   // frictional coefficient
   double mu = -1.0;
 
-  if(owner_j<0) //contact particle-wall
+  if (owner_j < 0)  // contact particle-wall
   {
     // friction
     mu = mu_roll_wall_;
     // stiffness
     k = k_roll_wall_;
     // damping
-    if(d_roll_wall_ < 0.0)
+    if (d_roll_wall_ < 0.0)
     {
-      if(e_wall_ != 0.0)
+      if (e_wall_ != 0.0)
       {
         const double lnewall = log(e_wall_);
-        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_wall_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+        d = 2.0 * std::abs(lnewall) *
+            sqrt(k_normal_wall_ * m_eff / (lnewall * lnewall + M_PI * M_PI));
       }
       else
       {
@@ -2206,19 +2281,19 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
       d = d_roll_wall_;
     }
   }
-  else // contact particle-particle
+  else  // contact particle-particle
   {
     // friction
     mu = mu_roll_;
     // stiffness
     k = k_roll_;
     // damping
-    if(d_roll_ < 0.0)
+    if (d_roll_ < 0.0)
     {
-      if(e_ != 0.0)
+      if (e_ != 0.0)
       {
         const double lne = log(e_);
-        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne * lne + M_PI * M_PI));
       }
       else
       {
@@ -2234,7 +2309,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
   // store length of g_r at time n
   double old_length = 0.0;
   double interime = 0.0;
-  for(int n=0; n<3; ++n)
+  for (int n = 0; n < 3; ++n)
   {
     old_length += currentColl.g_r[n] * currentColl.g_r[n];
     interime += normal(n) * currentColl.g_r[n];
@@ -2243,36 +2318,35 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
 
   // projection of g_r onto current normal at time n+1
   double new_length = 0.0;
-  for(int n=0; n<3; ++n)
+  for (int n = 0; n < 3; ++n)
   {
-    currentColl.g_r[n] += - interime * normal(n);
+    currentColl.g_r[n] += -interime * normal(n);
     new_length += currentColl.g_r[n] * currentColl.g_r[n];
   }
   new_length = sqrt(new_length);
 
   // ensure that g_r has the same length as before projection
   // if almost no rolling spring elongation, neglect it
-  if(new_length > 1.0E-14)
+  if (new_length > 1.0E-14)
   {
-    const double scale = old_length/new_length;
-    for(int n=0; n<3; ++n)
+    const double scale = old_length / new_length;
+    for (int n = 0; n < 3; ++n)
     {
       currentColl.g_r[n] = scale * currentColl.g_r[n];
     }
   }
 
   // update of elastic rolling displacement if stick is true
-  if(currentColl.stick_roll == true)
+  if (currentColl.stick_roll == true)
   {
-    for(int n=0; n<3; ++n)
+    for (int n = 0; n < 3; ++n)
     {
       currentColl.g_r[n] += v_roll(n) * dt;
     }
   }
 
   // calculate rolling test force
-  for(int n=0; n<3; ++n)
-    tangentrollingforce(n) = - k * currentColl.g_r[n] - d * v_roll(n);
+  for (int n = 0; n < 3; ++n) tangentrollingforce(n) = -k * currentColl.g_r[n] - d * v_roll(n);
 
   // norm of rolling contact force
   const double norm_f_r(tangentrollingforce.Norm2());
@@ -2280,40 +2354,40 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
   // Coulomb friction law
 
   // rolling contact force for "stick" - case----------------------
-  if( norm_f_r <= (mu * std::abs(normalcontactforce)) )
+  if (norm_f_r <= (mu * std::abs(normalcontactforce)))
   {
     currentColl.stick_roll = true;
-    //rolling contact force already calculated
+    // rolling contact force already calculated
   }
-  else //"slip"-case
+  else  //"slip"-case
   {
     currentColl.stick_roll = false;
-    //calculate tangent vector ( unit vector in (test-)rollingcontactforce-direction )
-    static LINALG::Matrix<3,1> tangent;
+    // calculate tangent vector ( unit vector in (test-)rollingcontactforce-direction )
+    static LINALG::Matrix<3, 1> tangent;
     tangent.Clear();
 
-    tangent.Update(1.0/norm_f_r,tangentrollingforce);
+    tangent.Update(1.0 / norm_f_r, tangentrollingforce);
 
     // calculate rolling contact force and rolling displacements
-    tangentrollingforce.Update(mu*std::abs(normalcontactforce),tangent);
-    const double kinv = 1.0/k;
-    for(int n=0; n<3; ++n)
+    tangentrollingforce.Update(mu * std::abs(normalcontactforce), tangent);
+    const double kinv = 1.0 / k;
+    for (int n = 0; n < 3; ++n)
     {
-      currentColl.g_r[n] = - kinv * (tangentrollingforce(n) + d * v_roll(n));
+      currentColl.g_r[n] = -kinv * (tangentrollingforce(n) + d * v_roll(n));
     }
   }
   //---------------------------------------------------------------
 
-  if(writeenergyevery_)
+  if (writeenergyevery_)
   {
     new_length = 0.0;
-    for(int n=0; n<3; ++n)
+    for (int n = 0; n < 3; ++n)
     {
       new_length += currentColl.g_r[n] * currentColl.g_r[n];
     }
-    new_length  = sqrt(new_length);
+    new_length = sqrt(new_length);
 
-    contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * new_length * new_length;
+    contact_energy_ += EnergyAssemble(owner_i, owner_j) * 0.5 * k * new_length * new_length;
   }
 
   return;
@@ -2321,60 +2395,62 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateRollingContactForce(
 
 
 /*------------------------------------------------------------------------------------------------------*
- | compute contact normal, contact gap, and vectors from particle centers to contact point   fang 10/17 |
+ | compute contact normal, contact gap, and vectors from particle centers to contact point   fang
+ 10/17 |
  *------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeContactPointAndNormalAndGap(
-    LINALG::Matrix<3,1>&      r_iC,     //!< vector from center of particle i to contact point C
-    LINALG::Matrix<3,1>&      r_jC,     //!< vector from center of particle j to contact point C
-    LINALG::Matrix<3,1>&      normal,   //!< contact normal
-    double&                   gap,      //!< contact gap
-    const ParticleCollData&   data_i,   //!< collision data for particle i
-    const ParticleCollData&   data_j    //!< collision data for particle j
+    LINALG::Matrix<3, 1>& r_iC,      //!< vector from center of particle i to contact point C
+    LINALG::Matrix<3, 1>& r_jC,      //!< vector from center of particle j to contact point C
+    LINALG::Matrix<3, 1>& normal,    //!< contact normal
+    double& gap,                     //!< contact gap
+    const ParticleCollData& data_i,  //!< collision data for particle i
+    const ParticleCollData& data_j   //!< collision data for particle j
     ) const
 {
   // compute distance vector between particles i and j
-  normal.Update(1.,data_j.dis,-1.,data_i.dis);
+  normal.Update(1., data_j.dis, -1., data_i.dis);
 
   // compute contact gap, i.e., negative contact penetration
-  gap = normal.Norm2()-data_i.rad-data_j.rad;
+  gap = normal.Norm2() - data_i.rad - data_j.rad;
 
   // compute contact normal vector
-  normal.Scale(1./normal.Norm2());
+  normal.Scale(1. / normal.Norm2());
 
   // compute vectors from particle centers to contact point
-  r_iC.Update(data_i.rad+.5*gap,normal);
-  r_jC.Update(-data_j.rad-.5*gap,normal);
+  r_iC.Update(data_i.rad + .5 * gap, normal);
+  r_jC.Update(-data_j.rad - .5 * gap, normal);
 
   return;
 }
 
 
 /*---------------------------------------------------------------------------------------------------------------------*
- | compute contact normal, contact gap, contact point on wall element, and type of nearest contact object   fang 10/17 |
+ | compute contact normal, contact gap, contact point on wall element, and type of nearest contact
+ object   fang 10/17 |
  *---------------------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeContactPointAndNormalAndGapAndObjectType(
-    LINALG::Matrix<3,1>&                        C,              //!< contact point on wall element
-    GEO::ObjectType&                            objecttype,     //!< type of nearest contact object
-    LINALG::Matrix<3,1>&                        normal,         //!< contact normal
-    double&                                     gap,            //!< contact gap
-    DRT::Element*                               wallele,        //!< wall element
-    const std::map<int,LINALG::Matrix<3,1> >&   nodecoord,      //!< node coordinates of wall element
-    const ParticleCollData&                     data            //!< particle collision data
+    LINALG::Matrix<3, 1>& C,                               //!< contact point on wall element
+    GEO::ObjectType& objecttype,                           //!< type of nearest contact object
+    LINALG::Matrix<3, 1>& normal,                          //!< contact normal
+    double& gap,                                           //!< contact gap
+    DRT::Element* wallele,                                 //!< wall element
+    const std::map<int, LINALG::Matrix<3, 1>>& nodecoord,  //!< node coordinates of wall element
+    const ParticleCollData& data                           //!< particle collision data
     ) const
 {
   // find contact point on wall element, i.e., point with smallest distance to particle center
-  objecttype = GEO::nearest3DObjectOnElement(wallele,nodecoord,data.dis,C);
+  objecttype = GEO::nearest3DObjectOnElement(wallele, nodecoord, data.dis, C);
 
   // compute vector from particle center to contact point on wall element
-  normal.Update(1.,C,-1.,data.dis);
+  normal.Update(1., C, -1., data.dis);
 
   // compute distance between particle center and contact point on wall element
   const double distance = normal.Norm2();
-  if(distance < GEO::TOL14)
+  if (distance < GEO::TOL14)
     dserror("Particle center and contact point on wall element coincide! Bad initialization?");
 
   // compute contact normal vector
-  normal.Scale(1./distance);
+  normal.Scale(1. / distance);
 
   // compute contact gap
   gap = distance - data.rad;
@@ -2387,27 +2463,27 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeContactPointAndNormalAndGapAn
  | compute relative velocity in contact point between two particles   fang 10/17 |
  *-------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeRelativeVelocity(
-    LINALG::Matrix<3,1>&         v_rel,    //!< relative velocity between two particles
-    const LINALG::Matrix<3,1>&   r_iC,     //!< vector from center of particle i to contact point C
-    const LINALG::Matrix<3,1>&   r_jC,     //!< vector from center of particle j to contact point C
-    const ParticleCollData&      data_i,   //!< collision data for particle i
-    const ParticleCollData&      data_j    //!< collision data for particle j
+    LINALG::Matrix<3, 1>& v_rel,       //!< relative velocity between two particles
+    const LINALG::Matrix<3, 1>& r_iC,  //!< vector from center of particle i to contact point C
+    const LINALG::Matrix<3, 1>& r_jC,  //!< vector from center of particle j to contact point C
+    const ParticleCollData& data_i,    //!< collision data for particle i
+    const ParticleCollData& data_j     //!< collision data for particle j
     ) const
 {
   // compute relative velocity between two particles:
   // v_rel = v_i - v_j + omega_i x r_iC - omega_j x r_jC
 
   // compute translational part
-  v_rel.Update(1.,data_i.vel,-1.,data_j.vel);
+  v_rel.Update(1., data_i.vel, -1., data_j.vel);
 
   // add rotational part, taking account of roundoff in parallel settings
-  static LINALG::Matrix<3,1> v_rel_rot_i, v_rel_rot_j;
+  static LINALG::Matrix<3, 1> v_rel_rot_i, v_rel_rot_j;
   v_rel_rot_i.Clear();
   v_rel_rot_j.Clear();
 
-  v_rel_rot_i.CrossProduct(data_i.angvel,r_iC);
-  v_rel_rot_j.CrossProduct(data_j.angvel,r_jC);
-  if(data_i.id < data_j.id)
+  v_rel_rot_i.CrossProduct(data_i.angvel, r_iC);
+  v_rel_rot_j.CrossProduct(data_j.angvel, r_jC);
+  if (data_i.id < data_j.id)
   {
     v_rel += v_rel_rot_i;
     v_rel -= v_rel_rot_j;
@@ -2426,23 +2502,24 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeRelativeVelocity(
  | compute relative velocity in contact point between particle and wall element   fang 10/17 |
  *-------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeRelativeVelocity(
-    LINALG::Matrix<3,1>&         v_rel,   //!< relative velocity between particle and wall element
-    const LINALG::Matrix<3,1>&   r_C,     //!< vector from center of particle to contact point C on wall element
-    const LINALG::Matrix<3,1>&   v_C,     //!< velocity of contact point C on wall element
-    const ParticleCollData&      data     //!< particle collision data
+    LINALG::Matrix<3, 1>& v_rel,  //!< relative velocity between particle and wall element
+    const LINALG::Matrix<3, 1>&
+        r_C,  //!< vector from center of particle to contact point C on wall element
+    const LINALG::Matrix<3, 1>& v_C,  //!< velocity of contact point C on wall element
+    const ParticleCollData& data      //!< particle collision data
     ) const
 {
   // compute relative velocity between particle and wall element:
   // v_rel = v_i + omega_i x r_iC - v_C = (v_i - v_C) + omega_i x r_iC
 
   // compute translational part
-  v_rel.Update(1.,data.vel,-1.,v_C);
+  v_rel.Update(1., data.vel, -1., v_C);
 
   // add rotational part
-  static LINALG::Matrix<3,1> v_rel_rot;
+  static LINALG::Matrix<3, 1> v_rel_rot;
   v_rel_rot.Clear();
 
-  v_rel_rot.CrossProduct(data.angvel,r_C);
+  v_rel_rot.CrossProduct(data.angvel, r_C);
   v_rel += v_rel_rot;
 
   return;
@@ -2453,12 +2530,12 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeRelativeVelocity(
  | compute rolling velocity in contact point between two particles      meier 03/18 |
  *-----------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
-    LINALG::Matrix<3,1>&         v_roll,   //!< rolling velocity between two particles
-    const LINALG::Matrix<3,1>&   normal,   //!< contact normal
-    const LINALG::Matrix<3,1>&   r_iC,     //!< vector from center of particle i to contact point C
-    const LINALG::Matrix<3,1>&   r_jC,     //!< vector from center of particle j to contact point C
-    const ParticleCollData&      data_i,   //!< collision data for particle i
-    const ParticleCollData&      data_j    //!< collision data for particle j
+    LINALG::Matrix<3, 1>& v_roll,        //!< rolling velocity between two particles
+    const LINALG::Matrix<3, 1>& normal,  //!< contact normal
+    const LINALG::Matrix<3, 1>& r_iC,    //!< vector from center of particle i to contact point C
+    const LINALG::Matrix<3, 1>& r_jC,    //!< vector from center of particle j to contact point C
+    const ParticleCollData& data_i,      //!< collision data for particle i
+    const ParticleCollData& data_j       //!< collision data for particle j
     ) const
 {
   // compute rolling velocity between two particles:
@@ -2469,7 +2546,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
   r_ijC = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
 
   // compute rotational part, taking account of roundoff i parallel settings
-  static LINALG::Matrix<3,1> v_roll_rot_i, v_roll_rot_j;
+  static LINALG::Matrix<3, 1> v_roll_rot_i, v_roll_rot_j;
   v_roll_rot_i.Clear();
   v_roll_rot_j.Clear();
 
@@ -2487,9 +2564,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
  | compute rolling velocity in contact point between particle and wall element       meier 03/18 |
  *-----------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
-    LINALG::Matrix<3,1>&         v_roll,   //!< rolling velocity between two particles
-    const LINALG::Matrix<3,1>&   r_C,     //!< vector from center of particle to contact point C
-    const ParticleCollData&      data   //!< collision data for particle
+    LINALG::Matrix<3, 1>& v_roll,     //!< rolling velocity between two particles
+    const LINALG::Matrix<3, 1>& r_C,  //!< vector from center of particle to contact point C
+    const ParticleCollData& data      //!< collision data for particle
     ) const
 {
   // compute rolling velocity between two particles:
@@ -2504,21 +2581,19 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeRollingVelocity(
  | compute surface energy distribution for particle-particle and particle-wall       meier 03/18 |
  *-----------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribution(
-    PARTICLE::Adhesion &currentAdhe,
-    bool iswallele
-) const
+    PARTICLE::Adhesion& currentAdhe, bool iswallele) const
 {
   // if particle is in contact with wall, but was not in contact in the prior timstep
-  if(currentAdhe.adhesion == false)
+  if (currentAdhe.adhesion == false)
   {
     currentAdhe.adhesion = true;
 
-    switch(adhesion_surface_energy_distribution_)
+    switch (adhesion_surface_energy_distribution_)
     {
       case INPAR::PARTICLE::adhesionsurfaceenergydistribution_none:
       {
         currentAdhe.surface_energy = adhesion_surface_energy_;
-        if(iswallele == true)
+        if (iswallele == true)
         {
           currentAdhe.surface_energy = adhesion_surface_energy_wall_;
         }
@@ -2528,27 +2603,42 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribu
       case INPAR::PARTICLE::adhesionsurfaceenergydistribution_normal:
       {
         double adhesionsurfaceenergy = adhesion_surface_energy_;
-        if(iswallele == true)
+        if (iswallele == true)
         {
           adhesionsurfaceenergy = adhesion_surface_energy_wall_;
         }
         // calculate minimum and maximum surface energy for particles
-        double min_surface_energy = adhesionsurfaceenergy - adhesion_surface_energy_cutoff_factor_ * adhesion_surface_energy_distribution_sigma_;
-        double max_surface_energy = adhesionsurfaceenergy + adhesion_surface_energy_cutoff_factor_ * adhesion_surface_energy_distribution_sigma_;
+        double min_surface_energy =
+            adhesionsurfaceenergy -
+            adhesion_surface_energy_cutoff_factor_ * adhesion_surface_energy_distribution_sigma_;
+        double max_surface_energy =
+            adhesionsurfaceenergy +
+            adhesion_surface_energy_cutoff_factor_ * adhesion_surface_energy_distribution_sigma_;
 
         // loop over all particles
-        for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+        for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
         {
-          // initialize random number generator with current particle radius or its natural logarithm as mean and input parameter value as standard deviation
-          DRT::Problem::Instance()->Random()->SetMeanVariance(adhesion_surface_energy_distribution_ == INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal ? log(adhesionsurfaceenergy) : adhesionsurfaceenergy,DRT::Problem::Instance()->ParticleParams().get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA"));
+          // initialize random number generator with current particle radius or its natural
+          // logarithm as mean and input parameter value as standard deviation
+          DRT::Problem::Instance()->Random()->SetMeanVariance(
+              adhesion_surface_energy_distribution_ ==
+                      INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal
+                  ? log(adhesionsurfaceenergy)
+                  : adhesionsurfaceenergy,
+              DRT::Problem::Instance()->ParticleParams().get<double>(
+                  "ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA"));
 
           // generate normally or log-normally distributed random value for particle radius
-          double random_surface_energy = adhesion_surface_energy_distribution_ == INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal ? exp(DRT::Problem::Instance()->Random()->Normal()) : DRT::Problem::Instance()->Random()->Normal();
+          double random_surface_energy =
+              adhesion_surface_energy_distribution_ ==
+                      INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal
+                  ? exp(DRT::Problem::Instance()->Random()->Normal())
+                  : DRT::Problem::Instance()->Random()->Normal();
 
           // check whether random value lies within allowed bounds, and adjust otherwise
-          if(random_surface_energy > max_surface_energy)
+          if (random_surface_energy > max_surface_energy)
             random_surface_energy = max_surface_energy;
-          else if(random_surface_energy < min_surface_energy)
+          else if (random_surface_energy < min_surface_energy)
             random_surface_energy = min_surface_energy;
 
           currentAdhe.surface_energy = random_surface_energy;
@@ -2573,11 +2663,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribu
  | intersects linear ramp                                               |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalculateIntersectionGap(
-    double a,
-    double b,
-    double c,
-    double d,
-    double& gap_intersect)
+    double a, double b, double c, double d, double& gap_intersect)
 {
   double x1 = 0;
   double x2 = 0;
@@ -2586,25 +2672,25 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateIntersectionGap(
   b /= a;
   c /= a;
   d /= a;
-  double q = (3.0 * c - pow(b,2.0))/9.0;
+  double q = (3.0 * c - pow(b, 2.0)) / 9.0;
   double r = -(27.0 * d) + b * (9.0 * c - 2.0 * pow(b, 2.0));
   r /= 54.0;
-  double disc = pow(q,3.0) + pow(r,2.0);
-  double term1 = b/3.0;
+  double disc = pow(q, 3.0) + pow(r, 2.0);
+  double term1 = b / 3.0;
   double r13 = 0;
 
-  if(disc > 0)
+  if (disc > 0)
     dserror("The combination of these input parameters leads to an unreasonable result!");
 
-  //All roots real, at least two are equal
+  // All roots real, at least two are equal
   if (disc == 0)
   {
-    r13 = ((r < 0) ? -pow(-r,1.0/3.0) : pow(r, 1.0/3.0));
+    r13 = ((r < 0) ? -pow(-r, 1.0 / 3.0) : pow(r, 1.0 / 3.0));
     x1 = -term1 + 2.0 * r13;
     x2 = -(r13 + term1);
     x3 = -(r13 + term1);
 
-    if(x1 > x2)
+    if (x1 > x2)
       gap_intersect = x1;
     else
       gap_intersect = x2;
@@ -2613,15 +2699,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateIntersectionGap(
   {
     q = -q;
     double dum1 = pow(q, 3.0);
-    dum1 = acos(r/sqrt(dum1));
+    dum1 = acos(r / sqrt(dum1));
     r13 = 2.0 * sqrt(q);
-    x1 = -term1 + r13 * cos(dum1/3.0);
-    x2 = -term1 + r13 * cos((dum1 + 2.0 * PI)/3.0);
-    x3 = -term1 + r13 * cos((dum1 + 4.0 * PI)/3.0);
+    x1 = -term1 + r13 * cos(dum1 / 3.0);
+    x2 = -term1 + r13 * cos((dum1 + 2.0 * PI) / 3.0);
+    x3 = -term1 + r13 * cos((dum1 + 4.0 * PI) / 3.0);
 
     if (x1 > x2)
     {
-      if(x3 > x1)
+      if (x3 > x1)
         gap_intersect = x1;
       else
       {
@@ -2633,8 +2719,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateIntersectionGap(
     }
     else
     {
-    if (x3 > x2)
-      gap_intersect = x2;
+      if (x3 > x2)
+        gap_intersect = x2;
       else
       {
         if (x3 > x1)
@@ -2653,43 +2739,34 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateIntersectionGap(
  | rolling resistance for single contact pair                           |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalculateVirtualRollingForce(
-    const double normalcontactforce,
-    const LINALG::Matrix<3,1>& normal,
-    LINALG::Matrix<3,1>& tangentrollingforce,
-  const LINALG::Matrix<3,1> angvel_i,
-  const LINALG::Matrix<3,1> angvel_j,
-    const double radius_i,
-    const double radius_j,
-    const int owner_i,
-    const int owner_j,
-    bool iswallele
-    )
+    const double normalcontactforce, const LINALG::Matrix<3, 1>& normal,
+    LINALG::Matrix<3, 1>& tangentrollingforce, const LINALG::Matrix<3, 1> angvel_i,
+    const LINALG::Matrix<3, 1> angvel_j, const double radius_i, const double radius_j,
+    const int owner_i, const int owner_j, bool iswallele)
 {
-
   // calculate damping constant
-  double R_rep = (radius_i*radius_j)/(radius_i + radius_j);
-    if(iswallele==true) // wall contact
-      R_rep = radius_i;
+  double R_rep = (radius_i * radius_j) / (radius_i + radius_j);
+  if (iswallele == true)  // wall contact
+    R_rep = radius_i;
 
-  const double theta = (young_/(1- pow(nue_,2.0) )) * pow(0.5*R_rep,0.5);
+  const double theta = (young_ / (1 - pow(nue_, 2.0))) * pow(0.5 * R_rep, 0.5);
   const double C_1 = 1.15344;
-  const double d_rol = mu_roll_*(1-e_) / (C_1 * pow(theta,0.4) *pow(v_max_,0.2));
+  const double d_rol = mu_roll_ * (1 - e_) / (C_1 * pow(theta, 0.4) * pow(v_max_, 0.2));
 
   // calculate force
-  static LINALG::Matrix<3,1> vel_i;
+  static LINALG::Matrix<3, 1> vel_i;
   vel_i.Clear();
 
-  vel_i.CrossProduct(normal,angvel_i);
-  static LINALG::Matrix<3,1> vel_j;
+  vel_i.CrossProduct(normal, angvel_i);
+  static LINALG::Matrix<3, 1> vel_j;
   vel_j.Clear();
 
-  vel_j.CrossProduct(normal,angvel_j);
-  for(int dim=0; dim<3; ++dim)
-    tangentrollingforce(dim) = vel_j(dim) - vel_i(dim);
+  vel_j.CrossProduct(normal, angvel_j);
+  for (int dim = 0; dim < 3; ++dim) tangentrollingforce(dim) = vel_j(dim) - vel_i(dim);
 
   tangentrollingforce.Scale(R_rep * d_rol * normalcontactforce);
 
-  if(normalcontactforce>1.0e-13)
+  if (normalcontactforce > 1.0e-13)
   {
     std::cout << "normalcontactforce: " << normalcontactforce << std::endl;
     dserror("normal force positive!");
@@ -2704,43 +2781,44 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateVirtualRollingForce(
  *---------------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerDEM::ConsiderNormalAdhesion(const double normalgap) const
 {
-  return normal_adhesion_ != INPAR::PARTICLE::adhesion_none and (adhesion_max_disp_ < 0. or normalgap <= adhesion_eq_gap_ + adhesion_max_disp_);
+  return normal_adhesion_ != INPAR::PARTICLE::adhesion_none and
+         (adhesion_max_disp_ < 0. or normalgap <= adhesion_eq_gap_ + adhesion_max_disp_);
 }
 
 
 /*----------------------------------------------------------------------------------------------------------------------*
- | gather *.csv files with normal particle-particle and particle-wall contact forces across all processors   fang 02/17 |
+ | gather *.csv files with normal particle-particle and particle-wall contact forces across all
+ processors   fang 02/17 |
  *----------------------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() const
 {
   // gathering is performed by first processor only
-  if(myrank_ == 0)
+  if (myrank_ == 0)
   {
     // open destination file
     std::ostringstream step;
     step << particle_algorithm_->Step();
-    const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".particle_contact_forces.csv."+step.str());
+    const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName() +
+                               ".particle_contact_forces.csv." + step.str());
     std::ofstream file;
     file.open(filename.c_str());
 
     // loop over all processors
-    for(int iproc=0; iproc<discret_->Comm().NumProc(); ++iproc)
+    for (int iproc = 0; iproc < discret_->Comm().NumProc(); ++iproc)
     {
       // open source file associated with current processor
       std::ostringstream iprocstr;
       iprocstr << iproc;
-      const std::string procfilename(filename+"."+iprocstr.str());
+      const std::string procfilename(filename + "." + iprocstr.str());
       std::ifstream procfile;
       procfile.open(procfilename.c_str());
 
       // gather current source file into destination file
-      if(procfile)
-        file << procfile.rdbuf();
+      if (procfile) file << procfile.rdbuf();
 
       // close and remove current source file
       procfile.close();
-      if(remove(procfilename.c_str()))
-        dserror("Couldn't remove file named "+procfilename+"!");
+      if (remove(procfilename.c_str())) dserror("Couldn't remove file named " + procfilename + "!");
     }
 
     // close destination file
@@ -2752,11 +2830,12 @@ void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() co
 
 
 /*------------------------------------------------------------------------------------------------------------*
- | write normal contact force between two particles or between particle and wall into *.csv file   fang 02/17 |
+ | write normal contact force between two particles or between particle and wall into *.csv file
+ fang 02/17 |
  *------------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::OutputNormalContactForceToFile(
-    const double&                normalcontactforce,     //!< normal contact force
-    const LINALG::Matrix<3,1>&   forceapplicationpoint   //!< force application point
+    const double& normalcontactforce,                  //!< normal contact force
+    const LINALG::Matrix<3, 1>& forceapplicationpoint  //!< force application point
     ) const
 {
   // set file name
@@ -2764,27 +2843,29 @@ void PARTICLE::ParticleCollisionHandlerDEM::OutputNormalContactForceToFile(
   step << particle_algorithm_->Step();
   std::ostringstream myrank;
   myrank << myrank_;
-  const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".particle_contact_forces.csv."+step.str()+"."+myrank.str());
+  const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName() +
+                             ".particle_contact_forces.csv." + step.str() + "." + myrank.str());
 
   // open file in appropriate mode
   std::ofstream file;
-  FILE* temp = fopen(filename.c_str(),"r");
-  if(!temp)
+  FILE* temp = fopen(filename.c_str(), "r");
+  if (!temp)
   {
-    file.open(filename.c_str(),std::fstream::trunc);
+    file.open(filename.c_str(), std::fstream::trunc);
 
     // write header at beginning of file
-    if(myrank_ == 0)
-      file << "x,y,z,F" << std::endl;
+    if (myrank_ == 0) file << "x,y,z,F" << std::endl;
   }
   else
   {
     fclose(temp);
-    file.open(filename.c_str(),std::fstream::app);
+    file.open(filename.c_str(), std::fstream::app);
   }
 
   // write application point and value of normal contact force to file
-  file << std::setprecision(16) << std::fixed << forceapplicationpoint(0) << "," << forceapplicationpoint(1) << "," << forceapplicationpoint(2) << "," << normalcontactforce << std::endl;
+  file << std::setprecision(16) << std::fixed << forceapplicationpoint(0) << ","
+       << forceapplicationpoint(1) << "," << forceapplicationpoint(2) << "," << normalcontactforce
+       << std::endl;
 
   // close file
   file.close();
@@ -2797,15 +2878,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::OutputNormalContactForceToFile(
  | constructor                                               fang 09/17 |
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMEllipsoids(
-    Teuchos::RCP<DRT::Discretization>   discret,             //!< particle discretization
-    Teuchos::RCP<PARTICLE::Algorithm>   particlealgorithm,   //!< particle algorithm
-    const Teuchos::ParameterList&       particledynparams    //!< parameter list
-    ) :
-    // call base class constructor
-    ParticleCollisionHandlerDEM(discret,particlealgorithm,particledynparams)
+    Teuchos::RCP<DRT::Discretization> discret,            //!< particle discretization
+    Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,  //!< particle algorithm
+    const Teuchos::ParameterList& particledynparams       //!< parameter list
+    )
+    :  // call base class constructor
+      ParticleCollisionHandlerDEM(discret, particlealgorithm, particledynparams)
 {
   // safety check
-  if(normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+  if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
     dserror("Adhesion not yet implemented for ellipsoidal particles!");
 
   // store minimum and maximum radii
@@ -2816,54 +2897,70 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
   // to be explicitly prescribed in the *.dat file prior to the actual simulation
 
   // extract material parameters for ellipsoidal particles
-  const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids = dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(particle_algorithm_->ParticleMat()[0]);
-  if(particlematellipsoids == NULL)
+  const MAT::PAR::ParticleMatEllipsoids* const particlematellipsoids =
+      dynamic_cast<const MAT::PAR::ParticleMatEllipsoids* const>(
+          particle_algorithm_->ParticleMat()[0]);
+  if (particlematellipsoids == NULL)
     dserror("Couldn't extract material parameters for ellipsoidal particles!");
 
   // extract semi-axes of ellipsoidal particles
-  const LINALG::Matrix<3,1>& semiaxes = particlematellipsoids->SemiAxes();
+  const LINALG::Matrix<3, 1>& semiaxes = particlematellipsoids->SemiAxes();
 
   // safety checks
-  switch(normal_contact_)
+  switch (normal_contact_)
   {
     case INPAR::PARTICLE::LinSpring:
     case INPAR::PARTICLE::LinSpringDamp:
     {
       // stiffness value not explicitly prescribed
-      if(particledynparams.get<double>("NORMAL_STIFF") <= 0. or
-        (particle_algorithm_->WallDiscret() != Teuchos::null and particledynparams.get<double>("NORMAL_STIFF_WALL") <= 0.))
+      if (particledynparams.get<double>("NORMAL_STIFF") <= 0. or
+          (particle_algorithm_->WallDiscret() != Teuchos::null and
+              particledynparams.get<double>("NORMAL_STIFF_WALL") <= 0.))
       {
         // extract maximum angular velocity of ellipsoidal particles
         const double angVel_max = particledynparams.get<double>("MAX_ANGULAR_VELOCITY");
 
         // compute equivalent radius
-        const double r_equiv = pow(semiaxes(0)*semiaxes(1)*semiaxes(2),1./3.);
+        const double r_equiv = pow(semiaxes(0) * semiaxes(1) * semiaxes(2), 1. / 3.);
 
         // compute square of maximum rotational velocity
-        const double v_rot_sq = .2*angVel_max*angVel_max*(r_max_*r_max_+r_equiv*r_equiv/(r_max_*r_max_*r_min_*r_min_));
+        const double v_rot_sq =
+            .2 * angVel_max * angVel_max *
+            (r_max_ * r_max_ + r_equiv * r_equiv / (r_max_ * r_max_ * r_min_ * r_min_));
 
         // safety check for particle-particle contact
-        if(particledynparams.get<double>("NORMAL_STIFF") <= 0.)
+        if (particledynparams.get<double>("NORMAL_STIFF") <= 0.)
         {
           // minimum stiffness value in conservative case
-          const double k_normal_conservative = 2./3.*r_equiv*r_equiv*r_equiv*M_PI*particlematellipsoids->initDensity_*(v_max_*v_max_+v_rot_sq)/(c_*c_*r_max_*r_max_);
+          const double k_normal_conservative =
+              2. / 3. * r_equiv * r_equiv * r_equiv * M_PI * particlematellipsoids->initDensity_ *
+              (v_max_ * v_max_ + v_rot_sq) / (c_ * c_ * r_max_ * r_max_);
 
           // stiffness value must be explicitly prescribed
-          dserror("For ellipsoidal particles, the penalty contact stiffness for particle-particle contact "
-                  "must be prescribed manually! The value should be at least greater than %lf (no rotation considered) "
-                  "or even greater than %lf (worst-case scenario with rotation, very conservative).",k_normal_,k_normal_conservative);
+          dserror(
+              "For ellipsoidal particles, the penalty contact stiffness for particle-particle "
+              "contact "
+              "must be prescribed manually! The value should be at least greater than %lf (no "
+              "rotation considered) "
+              "or even greater than %lf (worst-case scenario with rotation, very conservative).",
+              k_normal_, k_normal_conservative);
         }
 
         // safety check for particle-wall contact
         else
         {
           // minimum stiffness value in conservative case
-          const double k_normal_wall_conservative = 2./3.*r_equiv*r_equiv*r_equiv*M_PI*particlematellipsoids->initDensity_*(v_max_*v_max_+v_rot_sq)/(c_wall_*c_wall_*r_max_*r_max_);
+          const double k_normal_wall_conservative =
+              2. / 3. * r_equiv * r_equiv * r_equiv * M_PI * particlematellipsoids->initDensity_ *
+              (v_max_ * v_max_ + v_rot_sq) / (c_wall_ * c_wall_ * r_max_ * r_max_);
 
           // stiffness value must be explicitly prescribed
-          dserror("For ellipsoidal particles, the penalty contact stiffness for particle-wall contact "
-                  "must be prescribed manually! The value should be at least greater than %lf (no rotation considered) "
-                  "or even greater than %lf (worst-case scenario with rotation, very conservative).",k_normal_wall_,k_normal_wall_conservative);
+          dserror(
+              "For ellipsoidal particles, the penalty contact stiffness for particle-wall contact "
+              "must be prescribed manually! The value should be at least greater than %lf (no "
+              "rotation considered) "
+              "or even greater than %lf (worst-case scenario with rotation, very conservative).",
+              k_normal_wall_, k_normal_wall_conservative);
         }
       }
 
@@ -2894,171 +2991,429 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
  | check whether two ellipsoids collide                            fang 10/17 |
  *----------------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::CollisionCheck(
-    const LINALG::Matrix<4,4>&   E_i,   //!< first ellipsoid matrix in homogeneous coordinates
-    const LINALG::Matrix<4,4>&   E_j    //!< second ellipsoid matrix in homogeneous coordinates
+    const LINALG::Matrix<4, 4>& E_i,  //!< first ellipsoid matrix in homogeneous coordinates
+    const LINALG::Matrix<4, 4>& E_j   //!< second ellipsoid matrix in homogeneous coordinates
     ) const
 {
-  // We consider two ellipsoids described by the ellipsoid matrices E_i and E_j, i.e., by quadric equations in
-  // homogeneous coordinates. The generalized eigenproblem det(lambda E_i + E_j) = 0 leads to the characteristic
-  // equation a*lambda^4 + b*lambda^3 + c*lambda^2 + d*lambda + e. The two ellipsoids are separated if and
-  // only if the characteristic equation has two distinct positive roots. One can show that this is equivalent
-  // to all four roots being real.
+  // We consider two ellipsoids described by the ellipsoid matrices E_i and E_j, i.e., by quadric
+  // equations in homogeneous coordinates. The generalized eigenproblem det(lambda E_i + E_j) = 0
+  // leads to the characteristic equation a*lambda^4 + b*lambda^3 + c*lambda^2 + d*lambda + e. The
+  // two ellipsoids are separated if and only if the characteristic equation has two distinct
+  // positive roots. One can show that this is equivalent to all four roots being real.
 
   // change sign of matrix E_i to obtain standard generalized eigenproblem E_j*x = lambda E_i_temp*x
-  static LINALG::Matrix<4,4> E_i_temp;
+  static LINALG::Matrix<4, 4> E_i_temp;
   E_i_temp.Clear();
   E_i_temp = E_i;
   E_i_temp.Scale(-1.);
 
   // check whether standard generalized eigenproblem exhibits complex eigenvalues
-  static LINALG::Matrix<3,1> dummy;
+  static LINALG::Matrix<3, 1> dummy;
   dummy.Clear();
-  return ComputeEigenVectors(E_j,E_i_temp,dummy,dummy,dummy,dummy);
+  return ComputeEigenVectors(E_j, E_i_temp, dummy, dummy, dummy, dummy);
 
-  // alternative way of checking whether standard generalized eigenproblem exhibits complex eigenvalues:
-  // only compute eigenvalues, but not the corresponding eigenvectors, employing a different set of LAPACK routines
-  // however: method not reliable, sometimes gives small, artificial complex parts of actually purely real eigenvalues
+  // alternative way of checking whether standard generalized eigenproblem exhibits complex
+  // eigenvalues: only compute eigenvalues, but not the corresponding eigenvectors, employing a
+  // different set of LAPACK routines however: method not reliable, sometimes gives small,
+  // artificial complex parts of actually purely real eigenvalues
   //      --> method deactivated at the moment...
-  return ComplexEigenValues(E_j,E_i_temp);
+  return ComplexEigenValues(E_j, E_i_temp);
 
-  // alternative way of checking whether the characteristic equation has two distinct positive roots:
-  // discriminant of characteristic equation must be positive and auxiliary quantity P (see below) must be negative
-  // however: method not reliable in case of small discriminant (absolute value < 1.e-7), most probably due to roundoff
+  // alternative way of checking whether the characteristic equation has two distinct positive
+  // roots: discriminant of characteristic equation must be positive and auxiliary quantity P (see
+  // below) must be negative however: method not reliable in case of small discriminant (absolute
+  // value < 1.e-7), most probably due to roundoff
   //      --> method deactivated at the moment...
   // compute coefficients of characteristic equation
-  double a = E_i(0,0)*E_i(1,1)*E_i(2,2)*E_i(3,3) - E_i(0,0)*E_i(1,1)*E_i(2,3)*E_i(3,2) - E_i(0,0)*E_i(1,2)*E_i(2,1)*E_i(3,3)
-           + E_i(0,0)*E_i(1,2)*E_i(2,3)*E_i(3,1) + E_i(0,0)*E_i(1,3)*E_i(2,1)*E_i(3,2) - E_i(0,0)*E_i(1,3)*E_i(2,2)*E_i(3,1)
-           - E_i(0,1)*E_i(1,0)*E_i(2,2)*E_i(3,3) + E_i(0,1)*E_i(1,0)*E_i(2,3)*E_i(3,2) + E_i(0,1)*E_i(1,2)*E_i(2,0)*E_i(3,3)
-           - E_i(0,1)*E_i(1,2)*E_i(2,3)*E_i(3,0) - E_i(0,1)*E_i(1,3)*E_i(2,0)*E_i(3,2) + E_i(0,1)*E_i(1,3)*E_i(2,2)*E_i(3,0)
-           + E_i(0,2)*E_i(1,0)*E_i(2,1)*E_i(3,3) - E_i(0,2)*E_i(1,0)*E_i(2,3)*E_i(3,1) - E_i(0,2)*E_i(1,1)*E_i(2,0)*E_i(3,3)
-           + E_i(0,2)*E_i(1,1)*E_i(2,3)*E_i(3,0) + E_i(0,2)*E_i(1,3)*E_i(2,0)*E_i(3,1) - E_i(0,2)*E_i(1,3)*E_i(2,1)*E_i(3,0)
-           - E_i(0,3)*E_i(1,0)*E_i(2,1)*E_i(3,2) + E_i(0,3)*E_i(1,0)*E_i(2,2)*E_i(3,1) + E_i(0,3)*E_i(1,1)*E_i(2,0)*E_i(3,2)
-           - E_i(0,3)*E_i(1,1)*E_i(2,2)*E_i(3,0) - E_i(0,3)*E_i(1,2)*E_i(2,0)*E_i(3,1) + E_i(0,3)*E_i(1,2)*E_i(2,1)*E_i(3,0);
-  double b = E_i(0,0)*E_i(1,1)*E_i(2,2)*E_j(3,3) - E_i(0,0)*E_i(1,1)*E_i(2,3)*E_j(3,2) - E_i(0,0)*E_i(1,1)*E_i(3,2)*E_j(2,3)
-           + E_i(0,0)*E_i(1,1)*E_i(3,3)*E_j(2,2) - E_i(0,0)*E_i(1,2)*E_i(2,1)*E_j(3,3) + E_i(0,0)*E_i(1,2)*E_i(2,3)*E_j(3,1)
-           + E_i(0,0)*E_i(1,2)*E_i(3,1)*E_j(2,3) - E_i(0,0)*E_i(1,2)*E_i(3,3)*E_j(2,1) + E_i(0,0)*E_i(1,3)*E_i(2,1)*E_j(3,2)
-           - E_i(0,0)*E_i(1,3)*E_i(2,2)*E_j(3,1) - E_i(0,0)*E_i(1,3)*E_i(3,1)*E_j(2,2) + E_i(0,0)*E_i(1,3)*E_i(3,2)*E_j(2,1)
-           + E_i(0,0)*E_i(2,1)*E_i(3,2)*E_j(1,3) - E_i(0,0)*E_i(2,1)*E_i(3,3)*E_j(1,2) - E_i(0,0)*E_i(2,2)*E_i(3,1)*E_j(1,3)
-           + E_i(0,0)*E_i(2,2)*E_i(3,3)*E_j(1,1) + E_i(0,0)*E_i(2,3)*E_i(3,1)*E_j(1,2) - E_i(0,0)*E_i(2,3)*E_i(3,2)*E_j(1,1)
-           - E_i(0,1)*E_i(1,0)*E_i(2,2)*E_j(3,3) + E_i(0,1)*E_i(1,0)*E_i(2,3)*E_j(3,2) + E_i(0,1)*E_i(1,0)*E_i(3,2)*E_j(2,3)
-           - E_i(0,1)*E_i(1,0)*E_i(3,3)*E_j(2,2) + E_i(0,1)*E_i(1,2)*E_i(2,0)*E_j(3,3) - E_i(0,1)*E_i(1,2)*E_i(2,3)*E_j(3,0)
-           - E_i(0,1)*E_i(1,2)*E_i(3,0)*E_j(2,3) + E_i(0,1)*E_i(1,2)*E_i(3,3)*E_j(2,0) - E_i(0,1)*E_i(1,3)*E_i(2,0)*E_j(3,2)
-           + E_i(0,1)*E_i(1,3)*E_i(2,2)*E_j(3,0) + E_i(0,1)*E_i(1,3)*E_i(3,0)*E_j(2,2) - E_i(0,1)*E_i(1,3)*E_i(3,2)*E_j(2,0)
-           - E_i(0,1)*E_i(2,0)*E_i(3,2)*E_j(1,3) + E_i(0,1)*E_i(2,0)*E_i(3,3)*E_j(1,2) + E_i(0,1)*E_i(2,2)*E_i(3,0)*E_j(1,3)
-           - E_i(0,1)*E_i(2,2)*E_i(3,3)*E_j(1,0) - E_i(0,1)*E_i(2,3)*E_i(3,0)*E_j(1,2) + E_i(0,1)*E_i(2,3)*E_i(3,2)*E_j(1,0)
-           + E_i(0,2)*E_i(1,0)*E_i(2,1)*E_j(3,3) - E_i(0,2)*E_i(1,0)*E_i(2,3)*E_j(3,1) - E_i(0,2)*E_i(1,0)*E_i(3,1)*E_j(2,3)
-           + E_i(0,2)*E_i(1,0)*E_i(3,3)*E_j(2,1) - E_i(0,2)*E_i(1,1)*E_i(2,0)*E_j(3,3) + E_i(0,2)*E_i(1,1)*E_i(2,3)*E_j(3,0)
-           + E_i(0,2)*E_i(1,1)*E_i(3,0)*E_j(2,3) - E_i(0,2)*E_i(1,1)*E_i(3,3)*E_j(2,0) + E_i(0,2)*E_i(1,3)*E_i(2,0)*E_j(3,1)
-           - E_i(0,2)*E_i(1,3)*E_i(2,1)*E_j(3,0) - E_i(0,2)*E_i(1,3)*E_i(3,0)*E_j(2,1) + E_i(0,2)*E_i(1,3)*E_i(3,1)*E_j(2,0)
-           + E_i(0,2)*E_i(2,0)*E_i(3,1)*E_j(1,3) - E_i(0,2)*E_i(2,0)*E_i(3,3)*E_j(1,1) - E_i(0,2)*E_i(2,1)*E_i(3,0)*E_j(1,3)
-           + E_i(0,2)*E_i(2,1)*E_i(3,3)*E_j(1,0) + E_i(0,2)*E_i(2,3)*E_i(3,0)*E_j(1,1) - E_i(0,2)*E_i(2,3)*E_i(3,1)*E_j(1,0)
-           - E_i(0,3)*E_i(1,0)*E_i(2,1)*E_j(3,2) + E_i(0,3)*E_i(1,0)*E_i(2,2)*E_j(3,1) + E_i(0,3)*E_i(1,0)*E_i(3,1)*E_j(2,2)
-           - E_i(0,3)*E_i(1,0)*E_i(3,2)*E_j(2,1) + E_i(0,3)*E_i(1,1)*E_i(2,0)*E_j(3,2) - E_i(0,3)*E_i(1,1)*E_i(2,2)*E_j(3,0)
-           - E_i(0,3)*E_i(1,1)*E_i(3,0)*E_j(2,2) + E_i(0,3)*E_i(1,1)*E_i(3,2)*E_j(2,0) - E_i(0,3)*E_i(1,2)*E_i(2,0)*E_j(3,1)
-           + E_i(0,3)*E_i(1,2)*E_i(2,1)*E_j(3,0) + E_i(0,3)*E_i(1,2)*E_i(3,0)*E_j(2,1) - E_i(0,3)*E_i(1,2)*E_i(3,1)*E_j(2,0)
-           - E_i(0,3)*E_i(2,0)*E_i(3,1)*E_j(1,2) + E_i(0,3)*E_i(2,0)*E_i(3,2)*E_j(1,1) + E_i(0,3)*E_i(2,1)*E_i(3,0)*E_j(1,2)
-           - E_i(0,3)*E_i(2,1)*E_i(3,2)*E_j(1,0) - E_i(0,3)*E_i(2,2)*E_i(3,0)*E_j(1,1) + E_i(0,3)*E_i(2,2)*E_i(3,1)*E_j(1,0)
-           - E_i(1,0)*E_i(2,1)*E_i(3,2)*E_j(0,3) + E_i(1,0)*E_i(2,1)*E_i(3,3)*E_j(0,2) + E_i(1,0)*E_i(2,2)*E_i(3,1)*E_j(0,3)
-           - E_i(1,0)*E_i(2,2)*E_i(3,3)*E_j(0,1) - E_i(1,0)*E_i(2,3)*E_i(3,1)*E_j(0,2) + E_i(1,0)*E_i(2,3)*E_i(3,2)*E_j(0,1)
-           + E_i(1,1)*E_i(2,0)*E_i(3,2)*E_j(0,3) - E_i(1,1)*E_i(2,0)*E_i(3,3)*E_j(0,2) - E_i(1,1)*E_i(2,2)*E_i(3,0)*E_j(0,3)
-           + E_i(1,1)*E_i(2,2)*E_i(3,3)*E_j(0,0) + E_i(1,1)*E_i(2,3)*E_i(3,0)*E_j(0,2) - E_i(1,1)*E_i(2,3)*E_i(3,2)*E_j(0,0)
-           - E_i(1,2)*E_i(2,0)*E_i(3,1)*E_j(0,3) + E_i(1,2)*E_i(2,0)*E_i(3,3)*E_j(0,1) + E_i(1,2)*E_i(2,1)*E_i(3,0)*E_j(0,3)
-           - E_i(1,2)*E_i(2,1)*E_i(3,3)*E_j(0,0) - E_i(1,2)*E_i(2,3)*E_i(3,0)*E_j(0,1) + E_i(1,2)*E_i(2,3)*E_i(3,1)*E_j(0,0)
-           + E_i(1,3)*E_i(2,0)*E_i(3,1)*E_j(0,2) - E_i(1,3)*E_i(2,0)*E_i(3,2)*E_j(0,1) - E_i(1,3)*E_i(2,1)*E_i(3,0)*E_j(0,2)
-           + E_i(1,3)*E_i(2,1)*E_i(3,2)*E_j(0,0) + E_i(1,3)*E_i(2,2)*E_i(3,0)*E_j(0,1) - E_i(1,3)*E_i(2,2)*E_i(3,1)*E_j(0,0);
-  double c = E_i(0,0)*E_i(1,1)*E_j(2,2)*E_j(3,3) - E_i(0,0)*E_i(1,1)*E_j(2,3)*E_j(3,2) - E_i(0,0)*E_i(1,2)*E_j(2,1)*E_j(3,3)
-           + E_i(0,0)*E_i(1,2)*E_j(2,3)*E_j(3,1) + E_i(0,0)*E_i(1,3)*E_j(2,1)*E_j(3,2) - E_i(0,0)*E_i(1,3)*E_j(2,2)*E_j(3,1)
-           - E_i(0,0)*E_i(2,1)*E_j(1,2)*E_j(3,3) + E_i(0,0)*E_i(2,1)*E_j(1,3)*E_j(3,2) + E_i(0,0)*E_i(2,2)*E_j(1,1)*E_j(3,3)
-           - E_i(0,0)*E_i(2,2)*E_j(1,3)*E_j(3,1) - E_i(0,0)*E_i(2,3)*E_j(1,1)*E_j(3,2) + E_i(0,0)*E_i(2,3)*E_j(1,2)*E_j(3,1)
-           + E_i(0,0)*E_i(3,1)*E_j(1,2)*E_j(2,3) - E_i(0,0)*E_i(3,1)*E_j(1,3)*E_j(2,2) - E_i(0,0)*E_i(3,2)*E_j(1,1)*E_j(2,3)
-           + E_i(0,0)*E_i(3,2)*E_j(1,3)*E_j(2,1) + E_i(0,0)*E_i(3,3)*E_j(1,1)*E_j(2,2) - E_i(0,0)*E_i(3,3)*E_j(1,2)*E_j(2,1)
-           - E_i(0,1)*E_i(1,0)*E_j(2,2)*E_j(3,3) + E_i(0,1)*E_i(1,0)*E_j(2,3)*E_j(3,2) + E_i(0,1)*E_i(1,2)*E_j(2,0)*E_j(3,3)
-           - E_i(0,1)*E_i(1,2)*E_j(2,3)*E_j(3,0) - E_i(0,1)*E_i(1,3)*E_j(2,0)*E_j(3,2) + E_i(0,1)*E_i(1,3)*E_j(2,2)*E_j(3,0)
-           + E_i(0,1)*E_i(2,0)*E_j(1,2)*E_j(3,3) - E_i(0,1)*E_i(2,0)*E_j(1,3)*E_j(3,2) - E_i(0,1)*E_i(2,2)*E_j(1,0)*E_j(3,3)
-           + E_i(0,1)*E_i(2,2)*E_j(1,3)*E_j(3,0) + E_i(0,1)*E_i(2,3)*E_j(1,0)*E_j(3,2) - E_i(0,1)*E_i(2,3)*E_j(1,2)*E_j(3,0)
-           - E_i(0,1)*E_i(3,0)*E_j(1,2)*E_j(2,3) + E_i(0,1)*E_i(3,0)*E_j(1,3)*E_j(2,2) + E_i(0,1)*E_i(3,2)*E_j(1,0)*E_j(2,3)
-           - E_i(0,1)*E_i(3,2)*E_j(1,3)*E_j(2,0) - E_i(0,1)*E_i(3,3)*E_j(1,0)*E_j(2,2) + E_i(0,1)*E_i(3,3)*E_j(1,2)*E_j(2,0)
-           + E_i(0,2)*E_i(1,0)*E_j(2,1)*E_j(3,3) - E_i(0,2)*E_i(1,0)*E_j(2,3)*E_j(3,1) - E_i(0,2)*E_i(1,1)*E_j(2,0)*E_j(3,3)
-           + E_i(0,2)*E_i(1,1)*E_j(2,3)*E_j(3,0) + E_i(0,2)*E_i(1,3)*E_j(2,0)*E_j(3,1) - E_i(0,2)*E_i(1,3)*E_j(2,1)*E_j(3,0)
-           - E_i(0,2)*E_i(2,0)*E_j(1,1)*E_j(3,3) + E_i(0,2)*E_i(2,0)*E_j(1,3)*E_j(3,1) + E_i(0,2)*E_i(2,1)*E_j(1,0)*E_j(3,3)
-           - E_i(0,2)*E_i(2,1)*E_j(1,3)*E_j(3,0) - E_i(0,2)*E_i(2,3)*E_j(1,0)*E_j(3,1) + E_i(0,2)*E_i(2,3)*E_j(1,1)*E_j(3,0)
-           + E_i(0,2)*E_i(3,0)*E_j(1,1)*E_j(2,3) - E_i(0,2)*E_i(3,0)*E_j(1,3)*E_j(2,1) - E_i(0,2)*E_i(3,1)*E_j(1,0)*E_j(2,3)
-           + E_i(0,2)*E_i(3,1)*E_j(1,3)*E_j(2,0) + E_i(0,2)*E_i(3,3)*E_j(1,0)*E_j(2,1) - E_i(0,2)*E_i(3,3)*E_j(1,1)*E_j(2,0)
-           - E_i(0,3)*E_i(1,0)*E_j(2,1)*E_j(3,2) + E_i(0,3)*E_i(1,0)*E_j(2,2)*E_j(3,1) + E_i(0,3)*E_i(1,1)*E_j(2,0)*E_j(3,2)
-           - E_i(0,3)*E_i(1,1)*E_j(2,2)*E_j(3,0) - E_i(0,3)*E_i(1,2)*E_j(2,0)*E_j(3,1) + E_i(0,3)*E_i(1,2)*E_j(2,1)*E_j(3,0)
-           + E_i(0,3)*E_i(2,0)*E_j(1,1)*E_j(3,2) - E_i(0,3)*E_i(2,0)*E_j(1,2)*E_j(3,1) - E_i(0,3)*E_i(2,1)*E_j(1,0)*E_j(3,2)
-           + E_i(0,3)*E_i(2,1)*E_j(1,2)*E_j(3,0) + E_i(0,3)*E_i(2,2)*E_j(1,0)*E_j(3,1) - E_i(0,3)*E_i(2,2)*E_j(1,1)*E_j(3,0)
-           - E_i(0,3)*E_i(3,0)*E_j(1,1)*E_j(2,2) + E_i(0,3)*E_i(3,0)*E_j(1,2)*E_j(2,1) + E_i(0,3)*E_i(3,1)*E_j(1,0)*E_j(2,2)
-           - E_i(0,3)*E_i(3,1)*E_j(1,2)*E_j(2,0) - E_i(0,3)*E_i(3,2)*E_j(1,0)*E_j(2,1) + E_i(0,3)*E_i(3,2)*E_j(1,1)*E_j(2,0)
-           + E_i(1,0)*E_i(2,1)*E_j(0,2)*E_j(3,3) - E_i(1,0)*E_i(2,1)*E_j(0,3)*E_j(3,2) - E_i(1,0)*E_i(2,2)*E_j(0,1)*E_j(3,3)
-           + E_i(1,0)*E_i(2,2)*E_j(0,3)*E_j(3,1) + E_i(1,0)*E_i(2,3)*E_j(0,1)*E_j(3,2) - E_i(1,0)*E_i(2,3)*E_j(0,2)*E_j(3,1)
-           - E_i(1,0)*E_i(3,1)*E_j(0,2)*E_j(2,3) + E_i(1,0)*E_i(3,1)*E_j(0,3)*E_j(2,2) + E_i(1,0)*E_i(3,2)*E_j(0,1)*E_j(2,3)
-           - E_i(1,0)*E_i(3,2)*E_j(0,3)*E_j(2,1) - E_i(1,0)*E_i(3,3)*E_j(0,1)*E_j(2,2) + E_i(1,0)*E_i(3,3)*E_j(0,2)*E_j(2,1)
-           - E_i(1,1)*E_i(2,0)*E_j(0,2)*E_j(3,3) + E_i(1,1)*E_i(2,0)*E_j(0,3)*E_j(3,2) + E_i(1,1)*E_i(2,2)*E_j(0,0)*E_j(3,3)
-           - E_i(1,1)*E_i(2,2)*E_j(0,3)*E_j(3,0) - E_i(1,1)*E_i(2,3)*E_j(0,0)*E_j(3,2) + E_i(1,1)*E_i(2,3)*E_j(0,2)*E_j(3,0)
-           + E_i(1,1)*E_i(3,0)*E_j(0,2)*E_j(2,3) - E_i(1,1)*E_i(3,0)*E_j(0,3)*E_j(2,2) - E_i(1,1)*E_i(3,2)*E_j(0,0)*E_j(2,3)
-           + E_i(1,1)*E_i(3,2)*E_j(0,3)*E_j(2,0) + E_i(1,1)*E_i(3,3)*E_j(0,0)*E_j(2,2) - E_i(1,1)*E_i(3,3)*E_j(0,2)*E_j(2,0)
-           + E_i(1,2)*E_i(2,0)*E_j(0,1)*E_j(3,3) - E_i(1,2)*E_i(2,0)*E_j(0,3)*E_j(3,1) - E_i(1,2)*E_i(2,1)*E_j(0,0)*E_j(3,3)
-           + E_i(1,2)*E_i(2,1)*E_j(0,3)*E_j(3,0) + E_i(1,2)*E_i(2,3)*E_j(0,0)*E_j(3,1) - E_i(1,2)*E_i(2,3)*E_j(0,1)*E_j(3,0)
-           - E_i(1,2)*E_i(3,0)*E_j(0,1)*E_j(2,3) + E_i(1,2)*E_i(3,0)*E_j(0,3)*E_j(2,1) + E_i(1,2)*E_i(3,1)*E_j(0,0)*E_j(2,3)
-           - E_i(1,2)*E_i(3,1)*E_j(0,3)*E_j(2,0) - E_i(1,2)*E_i(3,3)*E_j(0,0)*E_j(2,1) + E_i(1,2)*E_i(3,3)*E_j(0,1)*E_j(2,0)
-           - E_i(1,3)*E_i(2,0)*E_j(0,1)*E_j(3,2) + E_i(1,3)*E_i(2,0)*E_j(0,2)*E_j(3,1) + E_i(1,3)*E_i(2,1)*E_j(0,0)*E_j(3,2)
-           - E_i(1,3)*E_i(2,1)*E_j(0,2)*E_j(3,0) - E_i(1,3)*E_i(2,2)*E_j(0,0)*E_j(3,1) + E_i(1,3)*E_i(2,2)*E_j(0,1)*E_j(3,0)
-           + E_i(1,3)*E_i(3,0)*E_j(0,1)*E_j(2,2) - E_i(1,3)*E_i(3,0)*E_j(0,2)*E_j(2,1) - E_i(1,3)*E_i(3,1)*E_j(0,0)*E_j(2,2)
-           + E_i(1,3)*E_i(3,1)*E_j(0,2)*E_j(2,0) + E_i(1,3)*E_i(3,2)*E_j(0,0)*E_j(2,1) - E_i(1,3)*E_i(3,2)*E_j(0,1)*E_j(2,0)
-           + E_i(2,0)*E_i(3,1)*E_j(0,2)*E_j(1,3) - E_i(2,0)*E_i(3,1)*E_j(0,3)*E_j(1,2) - E_i(2,0)*E_i(3,2)*E_j(0,1)*E_j(1,3)
-           + E_i(2,0)*E_i(3,2)*E_j(0,3)*E_j(1,1) + E_i(2,0)*E_i(3,3)*E_j(0,1)*E_j(1,2) - E_i(2,0)*E_i(3,3)*E_j(0,2)*E_j(1,1)
-           - E_i(2,1)*E_i(3,0)*E_j(0,2)*E_j(1,3) + E_i(2,1)*E_i(3,0)*E_j(0,3)*E_j(1,2) + E_i(2,1)*E_i(3,2)*E_j(0,0)*E_j(1,3)
-           - E_i(2,1)*E_i(3,2)*E_j(0,3)*E_j(1,0) - E_i(2,1)*E_i(3,3)*E_j(0,0)*E_j(1,2) + E_i(2,1)*E_i(3,3)*E_j(0,2)*E_j(1,0)
-           + E_i(2,2)*E_i(3,0)*E_j(0,1)*E_j(1,3) - E_i(2,2)*E_i(3,0)*E_j(0,3)*E_j(1,1) - E_i(2,2)*E_i(3,1)*E_j(0,0)*E_j(1,3)
-           + E_i(2,2)*E_i(3,1)*E_j(0,3)*E_j(1,0) + E_i(2,2)*E_i(3,3)*E_j(0,0)*E_j(1,1) - E_i(2,2)*E_i(3,3)*E_j(0,1)*E_j(1,0)
-           - E_i(2,3)*E_i(3,0)*E_j(0,1)*E_j(1,2) + E_i(2,3)*E_i(3,0)*E_j(0,2)*E_j(1,1) + E_i(2,3)*E_i(3,1)*E_j(0,0)*E_j(1,2)
-           - E_i(2,3)*E_i(3,1)*E_j(0,2)*E_j(1,0) - E_i(2,3)*E_i(3,2)*E_j(0,0)*E_j(1,1) + E_i(2,3)*E_i(3,2)*E_j(0,1)*E_j(1,0);
-  double d = E_i(0,0)*E_j(1,1)*E_j(2,2)*E_j(3,3) - E_i(0,0)*E_j(1,1)*E_j(2,3)*E_j(3,2) - E_i(0,0)*E_j(1,2)*E_j(2,1)*E_j(3,3)
-           + E_i(0,0)*E_j(1,2)*E_j(2,3)*E_j(3,1) + E_i(0,0)*E_j(1,3)*E_j(2,1)*E_j(3,2) - E_i(0,0)*E_j(1,3)*E_j(2,2)*E_j(3,1)
-           - E_i(0,1)*E_j(1,0)*E_j(2,2)*E_j(3,3) + E_i(0,1)*E_j(1,0)*E_j(2,3)*E_j(3,2) + E_i(0,1)*E_j(1,2)*E_j(2,0)*E_j(3,3)
-           - E_i(0,1)*E_j(1,2)*E_j(2,3)*E_j(3,0) - E_i(0,1)*E_j(1,3)*E_j(2,0)*E_j(3,2) + E_i(0,1)*E_j(1,3)*E_j(2,2)*E_j(3,0)
-           + E_i(0,2)*E_j(1,0)*E_j(2,1)*E_j(3,3) - E_i(0,2)*E_j(1,0)*E_j(2,3)*E_j(3,1) - E_i(0,2)*E_j(1,1)*E_j(2,0)*E_j(3,3)
-           + E_i(0,2)*E_j(1,1)*E_j(2,3)*E_j(3,0) + E_i(0,2)*E_j(1,3)*E_j(2,0)*E_j(3,1) - E_i(0,2)*E_j(1,3)*E_j(2,1)*E_j(3,0)
-           - E_i(0,3)*E_j(1,0)*E_j(2,1)*E_j(3,2) + E_i(0,3)*E_j(1,0)*E_j(2,2)*E_j(3,1) + E_i(0,3)*E_j(1,1)*E_j(2,0)*E_j(3,2)
-           - E_i(0,3)*E_j(1,1)*E_j(2,2)*E_j(3,0) - E_i(0,3)*E_j(1,2)*E_j(2,0)*E_j(3,1) + E_i(0,3)*E_j(1,2)*E_j(2,1)*E_j(3,0)
-           - E_i(1,0)*E_j(0,1)*E_j(2,2)*E_j(3,3) + E_i(1,0)*E_j(0,1)*E_j(2,3)*E_j(3,2) + E_i(1,0)*E_j(0,2)*E_j(2,1)*E_j(3,3)
-           - E_i(1,0)*E_j(0,2)*E_j(2,3)*E_j(3,1) - E_i(1,0)*E_j(0,3)*E_j(2,1)*E_j(3,2) + E_i(1,0)*E_j(0,3)*E_j(2,2)*E_j(3,1)
-           + E_i(1,1)*E_j(0,0)*E_j(2,2)*E_j(3,3) - E_i(1,1)*E_j(0,0)*E_j(2,3)*E_j(3,2) - E_i(1,1)*E_j(0,2)*E_j(2,0)*E_j(3,3)
-           + E_i(1,1)*E_j(0,2)*E_j(2,3)*E_j(3,0) + E_i(1,1)*E_j(0,3)*E_j(2,0)*E_j(3,2) - E_i(1,1)*E_j(0,3)*E_j(2,2)*E_j(3,0)
-           - E_i(1,2)*E_j(0,0)*E_j(2,1)*E_j(3,3) + E_i(1,2)*E_j(0,0)*E_j(2,3)*E_j(3,1) + E_i(1,2)*E_j(0,1)*E_j(2,0)*E_j(3,3)
-           - E_i(1,2)*E_j(0,1)*E_j(2,3)*E_j(3,0) - E_i(1,2)*E_j(0,3)*E_j(2,0)*E_j(3,1) + E_i(1,2)*E_j(0,3)*E_j(2,1)*E_j(3,0)
-           + E_i(1,3)*E_j(0,0)*E_j(2,1)*E_j(3,2) - E_i(1,3)*E_j(0,0)*E_j(2,2)*E_j(3,1) - E_i(1,3)*E_j(0,1)*E_j(2,0)*E_j(3,2)
-           + E_i(1,3)*E_j(0,1)*E_j(2,2)*E_j(3,0) + E_i(1,3)*E_j(0,2)*E_j(2,0)*E_j(3,1) - E_i(1,3)*E_j(0,2)*E_j(2,1)*E_j(3,0)
-           + E_i(2,0)*E_j(0,1)*E_j(1,2)*E_j(3,3) - E_i(2,0)*E_j(0,1)*E_j(1,3)*E_j(3,2) - E_i(2,0)*E_j(0,2)*E_j(1,1)*E_j(3,3)
-           + E_i(2,0)*E_j(0,2)*E_j(1,3)*E_j(3,1) + E_i(2,0)*E_j(0,3)*E_j(1,1)*E_j(3,2) - E_i(2,0)*E_j(0,3)*E_j(1,2)*E_j(3,1)
-           - E_i(2,1)*E_j(0,0)*E_j(1,2)*E_j(3,3) + E_i(2,1)*E_j(0,0)*E_j(1,3)*E_j(3,2) + E_i(2,1)*E_j(0,2)*E_j(1,0)*E_j(3,3)
-           - E_i(2,1)*E_j(0,2)*E_j(1,3)*E_j(3,0) - E_i(2,1)*E_j(0,3)*E_j(1,0)*E_j(3,2) + E_i(2,1)*E_j(0,3)*E_j(1,2)*E_j(3,0)
-           + E_i(2,2)*E_j(0,0)*E_j(1,1)*E_j(3,3) - E_i(2,2)*E_j(0,0)*E_j(1,3)*E_j(3,1) - E_i(2,2)*E_j(0,1)*E_j(1,0)*E_j(3,3)
-           + E_i(2,2)*E_j(0,1)*E_j(1,3)*E_j(3,0) + E_i(2,2)*E_j(0,3)*E_j(1,0)*E_j(3,1) - E_i(2,2)*E_j(0,3)*E_j(1,1)*E_j(3,0)
-           - E_i(2,3)*E_j(0,0)*E_j(1,1)*E_j(3,2) + E_i(2,3)*E_j(0,0)*E_j(1,2)*E_j(3,1) + E_i(2,3)*E_j(0,1)*E_j(1,0)*E_j(3,2)
-           - E_i(2,3)*E_j(0,1)*E_j(1,2)*E_j(3,0) - E_i(2,3)*E_j(0,2)*E_j(1,0)*E_j(3,1) + E_i(2,3)*E_j(0,2)*E_j(1,1)*E_j(3,0)
-           - E_i(3,0)*E_j(0,1)*E_j(1,2)*E_j(2,3) + E_i(3,0)*E_j(0,1)*E_j(1,3)*E_j(2,2) + E_i(3,0)*E_j(0,2)*E_j(1,1)*E_j(2,3)
-           - E_i(3,0)*E_j(0,2)*E_j(1,3)*E_j(2,1) - E_i(3,0)*E_j(0,3)*E_j(1,1)*E_j(2,2) + E_i(3,0)*E_j(0,3)*E_j(1,2)*E_j(2,1)
-           + E_i(3,1)*E_j(0,0)*E_j(1,2)*E_j(2,3) - E_i(3,1)*E_j(0,0)*E_j(1,3)*E_j(2,2) - E_i(3,1)*E_j(0,2)*E_j(1,0)*E_j(2,3)
-           + E_i(3,1)*E_j(0,2)*E_j(1,3)*E_j(2,0) + E_i(3,1)*E_j(0,3)*E_j(1,0)*E_j(2,2) - E_i(3,1)*E_j(0,3)*E_j(1,2)*E_j(2,0)
-           - E_i(3,2)*E_j(0,0)*E_j(1,1)*E_j(2,3) + E_i(3,2)*E_j(0,0)*E_j(1,3)*E_j(2,1) + E_i(3,2)*E_j(0,1)*E_j(1,0)*E_j(2,3)
-           - E_i(3,2)*E_j(0,1)*E_j(1,3)*E_j(2,0) - E_i(3,2)*E_j(0,3)*E_j(1,0)*E_j(2,1) + E_i(3,2)*E_j(0,3)*E_j(1,1)*E_j(2,0)
-           + E_i(3,3)*E_j(0,0)*E_j(1,1)*E_j(2,2) - E_i(3,3)*E_j(0,0)*E_j(1,2)*E_j(2,1) - E_i(3,3)*E_j(0,1)*E_j(1,0)*E_j(2,2)
-           + E_i(3,3)*E_j(0,1)*E_j(1,2)*E_j(2,0) + E_i(3,3)*E_j(0,2)*E_j(1,0)*E_j(2,1) - E_i(3,3)*E_j(0,2)*E_j(1,1)*E_j(2,0);
-  double e = E_j(0,0)*E_j(1,1)*E_j(2,2)*E_j(3,3) - E_j(0,0)*E_j(1,1)*E_j(2,3)*E_j(3,2) - E_j(0,0)*E_j(1,2)*E_j(2,1)*E_j(3,3)
-           + E_j(0,0)*E_j(1,2)*E_j(2,3)*E_j(3,1) + E_j(0,0)*E_j(1,3)*E_j(2,1)*E_j(3,2) - E_j(0,0)*E_j(1,3)*E_j(2,2)*E_j(3,1)
-           - E_j(0,1)*E_j(1,0)*E_j(2,2)*E_j(3,3) + E_j(0,1)*E_j(1,0)*E_j(2,3)*E_j(3,2) + E_j(0,1)*E_j(1,2)*E_j(2,0)*E_j(3,3)
-           - E_j(0,1)*E_j(1,2)*E_j(2,3)*E_j(3,0) - E_j(0,1)*E_j(1,3)*E_j(2,0)*E_j(3,2) + E_j(0,1)*E_j(1,3)*E_j(2,2)*E_j(3,0)
-           + E_j(0,2)*E_j(1,0)*E_j(2,1)*E_j(3,3) - E_j(0,2)*E_j(1,0)*E_j(2,3)*E_j(3,1) - E_j(0,2)*E_j(1,1)*E_j(2,0)*E_j(3,3)
-           + E_j(0,2)*E_j(1,1)*E_j(2,3)*E_j(3,0) + E_j(0,2)*E_j(1,3)*E_j(2,0)*E_j(3,1) - E_j(0,2)*E_j(1,3)*E_j(2,1)*E_j(3,0)
-           - E_j(0,3)*E_j(1,0)*E_j(2,1)*E_j(3,2) + E_j(0,3)*E_j(1,0)*E_j(2,2)*E_j(3,1) + E_j(0,3)*E_j(1,1)*E_j(2,0)*E_j(3,2)
-           - E_j(0,3)*E_j(1,1)*E_j(2,2)*E_j(3,0) - E_j(0,3)*E_j(1,2)*E_j(2,0)*E_j(3,1) + E_j(0,3)*E_j(1,2)*E_j(2,1)*E_j(3,0);
+  double a = E_i(0, 0) * E_i(1, 1) * E_i(2, 2) * E_i(3, 3) -
+             E_i(0, 0) * E_i(1, 1) * E_i(2, 3) * E_i(3, 2) -
+             E_i(0, 0) * E_i(1, 2) * E_i(2, 1) * E_i(3, 3) +
+             E_i(0, 0) * E_i(1, 2) * E_i(2, 3) * E_i(3, 1) +
+             E_i(0, 0) * E_i(1, 3) * E_i(2, 1) * E_i(3, 2) -
+             E_i(0, 0) * E_i(1, 3) * E_i(2, 2) * E_i(3, 1) -
+             E_i(0, 1) * E_i(1, 0) * E_i(2, 2) * E_i(3, 3) +
+             E_i(0, 1) * E_i(1, 0) * E_i(2, 3) * E_i(3, 2) +
+             E_i(0, 1) * E_i(1, 2) * E_i(2, 0) * E_i(3, 3) -
+             E_i(0, 1) * E_i(1, 2) * E_i(2, 3) * E_i(3, 0) -
+             E_i(0, 1) * E_i(1, 3) * E_i(2, 0) * E_i(3, 2) +
+             E_i(0, 1) * E_i(1, 3) * E_i(2, 2) * E_i(3, 0) +
+             E_i(0, 2) * E_i(1, 0) * E_i(2, 1) * E_i(3, 3) -
+             E_i(0, 2) * E_i(1, 0) * E_i(2, 3) * E_i(3, 1) -
+             E_i(0, 2) * E_i(1, 1) * E_i(2, 0) * E_i(3, 3) +
+             E_i(0, 2) * E_i(1, 1) * E_i(2, 3) * E_i(3, 0) +
+             E_i(0, 2) * E_i(1, 3) * E_i(2, 0) * E_i(3, 1) -
+             E_i(0, 2) * E_i(1, 3) * E_i(2, 1) * E_i(3, 0) -
+             E_i(0, 3) * E_i(1, 0) * E_i(2, 1) * E_i(3, 2) +
+             E_i(0, 3) * E_i(1, 0) * E_i(2, 2) * E_i(3, 1) +
+             E_i(0, 3) * E_i(1, 1) * E_i(2, 0) * E_i(3, 2) -
+             E_i(0, 3) * E_i(1, 1) * E_i(2, 2) * E_i(3, 0) -
+             E_i(0, 3) * E_i(1, 2) * E_i(2, 0) * E_i(3, 1) +
+             E_i(0, 3) * E_i(1, 2) * E_i(2, 1) * E_i(3, 0);
+  double b = E_i(0, 0) * E_i(1, 1) * E_i(2, 2) * E_j(3, 3) -
+             E_i(0, 0) * E_i(1, 1) * E_i(2, 3) * E_j(3, 2) -
+             E_i(0, 0) * E_i(1, 1) * E_i(3, 2) * E_j(2, 3) +
+             E_i(0, 0) * E_i(1, 1) * E_i(3, 3) * E_j(2, 2) -
+             E_i(0, 0) * E_i(1, 2) * E_i(2, 1) * E_j(3, 3) +
+             E_i(0, 0) * E_i(1, 2) * E_i(2, 3) * E_j(3, 1) +
+             E_i(0, 0) * E_i(1, 2) * E_i(3, 1) * E_j(2, 3) -
+             E_i(0, 0) * E_i(1, 2) * E_i(3, 3) * E_j(2, 1) +
+             E_i(0, 0) * E_i(1, 3) * E_i(2, 1) * E_j(3, 2) -
+             E_i(0, 0) * E_i(1, 3) * E_i(2, 2) * E_j(3, 1) -
+             E_i(0, 0) * E_i(1, 3) * E_i(3, 1) * E_j(2, 2) +
+             E_i(0, 0) * E_i(1, 3) * E_i(3, 2) * E_j(2, 1) +
+             E_i(0, 0) * E_i(2, 1) * E_i(3, 2) * E_j(1, 3) -
+             E_i(0, 0) * E_i(2, 1) * E_i(3, 3) * E_j(1, 2) -
+             E_i(0, 0) * E_i(2, 2) * E_i(3, 1) * E_j(1, 3) +
+             E_i(0, 0) * E_i(2, 2) * E_i(3, 3) * E_j(1, 1) +
+             E_i(0, 0) * E_i(2, 3) * E_i(3, 1) * E_j(1, 2) -
+             E_i(0, 0) * E_i(2, 3) * E_i(3, 2) * E_j(1, 1) -
+             E_i(0, 1) * E_i(1, 0) * E_i(2, 2) * E_j(3, 3) +
+             E_i(0, 1) * E_i(1, 0) * E_i(2, 3) * E_j(3, 2) +
+             E_i(0, 1) * E_i(1, 0) * E_i(3, 2) * E_j(2, 3) -
+             E_i(0, 1) * E_i(1, 0) * E_i(3, 3) * E_j(2, 2) +
+             E_i(0, 1) * E_i(1, 2) * E_i(2, 0) * E_j(3, 3) -
+             E_i(0, 1) * E_i(1, 2) * E_i(2, 3) * E_j(3, 0) -
+             E_i(0, 1) * E_i(1, 2) * E_i(3, 0) * E_j(2, 3) +
+             E_i(0, 1) * E_i(1, 2) * E_i(3, 3) * E_j(2, 0) -
+             E_i(0, 1) * E_i(1, 3) * E_i(2, 0) * E_j(3, 2) +
+             E_i(0, 1) * E_i(1, 3) * E_i(2, 2) * E_j(3, 0) +
+             E_i(0, 1) * E_i(1, 3) * E_i(3, 0) * E_j(2, 2) -
+             E_i(0, 1) * E_i(1, 3) * E_i(3, 2) * E_j(2, 0) -
+             E_i(0, 1) * E_i(2, 0) * E_i(3, 2) * E_j(1, 3) +
+             E_i(0, 1) * E_i(2, 0) * E_i(3, 3) * E_j(1, 2) +
+             E_i(0, 1) * E_i(2, 2) * E_i(3, 0) * E_j(1, 3) -
+             E_i(0, 1) * E_i(2, 2) * E_i(3, 3) * E_j(1, 0) -
+             E_i(0, 1) * E_i(2, 3) * E_i(3, 0) * E_j(1, 2) +
+             E_i(0, 1) * E_i(2, 3) * E_i(3, 2) * E_j(1, 0) +
+             E_i(0, 2) * E_i(1, 0) * E_i(2, 1) * E_j(3, 3) -
+             E_i(0, 2) * E_i(1, 0) * E_i(2, 3) * E_j(3, 1) -
+             E_i(0, 2) * E_i(1, 0) * E_i(3, 1) * E_j(2, 3) +
+             E_i(0, 2) * E_i(1, 0) * E_i(3, 3) * E_j(2, 1) -
+             E_i(0, 2) * E_i(1, 1) * E_i(2, 0) * E_j(3, 3) +
+             E_i(0, 2) * E_i(1, 1) * E_i(2, 3) * E_j(3, 0) +
+             E_i(0, 2) * E_i(1, 1) * E_i(3, 0) * E_j(2, 3) -
+             E_i(0, 2) * E_i(1, 1) * E_i(3, 3) * E_j(2, 0) +
+             E_i(0, 2) * E_i(1, 3) * E_i(2, 0) * E_j(3, 1) -
+             E_i(0, 2) * E_i(1, 3) * E_i(2, 1) * E_j(3, 0) -
+             E_i(0, 2) * E_i(1, 3) * E_i(3, 0) * E_j(2, 1) +
+             E_i(0, 2) * E_i(1, 3) * E_i(3, 1) * E_j(2, 0) +
+             E_i(0, 2) * E_i(2, 0) * E_i(3, 1) * E_j(1, 3) -
+             E_i(0, 2) * E_i(2, 0) * E_i(3, 3) * E_j(1, 1) -
+             E_i(0, 2) * E_i(2, 1) * E_i(3, 0) * E_j(1, 3) +
+             E_i(0, 2) * E_i(2, 1) * E_i(3, 3) * E_j(1, 0) +
+             E_i(0, 2) * E_i(2, 3) * E_i(3, 0) * E_j(1, 1) -
+             E_i(0, 2) * E_i(2, 3) * E_i(3, 1) * E_j(1, 0) -
+             E_i(0, 3) * E_i(1, 0) * E_i(2, 1) * E_j(3, 2) +
+             E_i(0, 3) * E_i(1, 0) * E_i(2, 2) * E_j(3, 1) +
+             E_i(0, 3) * E_i(1, 0) * E_i(3, 1) * E_j(2, 2) -
+             E_i(0, 3) * E_i(1, 0) * E_i(3, 2) * E_j(2, 1) +
+             E_i(0, 3) * E_i(1, 1) * E_i(2, 0) * E_j(3, 2) -
+             E_i(0, 3) * E_i(1, 1) * E_i(2, 2) * E_j(3, 0) -
+             E_i(0, 3) * E_i(1, 1) * E_i(3, 0) * E_j(2, 2) +
+             E_i(0, 3) * E_i(1, 1) * E_i(3, 2) * E_j(2, 0) -
+             E_i(0, 3) * E_i(1, 2) * E_i(2, 0) * E_j(3, 1) +
+             E_i(0, 3) * E_i(1, 2) * E_i(2, 1) * E_j(3, 0) +
+             E_i(0, 3) * E_i(1, 2) * E_i(3, 0) * E_j(2, 1) -
+             E_i(0, 3) * E_i(1, 2) * E_i(3, 1) * E_j(2, 0) -
+             E_i(0, 3) * E_i(2, 0) * E_i(3, 1) * E_j(1, 2) +
+             E_i(0, 3) * E_i(2, 0) * E_i(3, 2) * E_j(1, 1) +
+             E_i(0, 3) * E_i(2, 1) * E_i(3, 0) * E_j(1, 2) -
+             E_i(0, 3) * E_i(2, 1) * E_i(3, 2) * E_j(1, 0) -
+             E_i(0, 3) * E_i(2, 2) * E_i(3, 0) * E_j(1, 1) +
+             E_i(0, 3) * E_i(2, 2) * E_i(3, 1) * E_j(1, 0) -
+             E_i(1, 0) * E_i(2, 1) * E_i(3, 2) * E_j(0, 3) +
+             E_i(1, 0) * E_i(2, 1) * E_i(3, 3) * E_j(0, 2) +
+             E_i(1, 0) * E_i(2, 2) * E_i(3, 1) * E_j(0, 3) -
+             E_i(1, 0) * E_i(2, 2) * E_i(3, 3) * E_j(0, 1) -
+             E_i(1, 0) * E_i(2, 3) * E_i(3, 1) * E_j(0, 2) +
+             E_i(1, 0) * E_i(2, 3) * E_i(3, 2) * E_j(0, 1) +
+             E_i(1, 1) * E_i(2, 0) * E_i(3, 2) * E_j(0, 3) -
+             E_i(1, 1) * E_i(2, 0) * E_i(3, 3) * E_j(0, 2) -
+             E_i(1, 1) * E_i(2, 2) * E_i(3, 0) * E_j(0, 3) +
+             E_i(1, 1) * E_i(2, 2) * E_i(3, 3) * E_j(0, 0) +
+             E_i(1, 1) * E_i(2, 3) * E_i(3, 0) * E_j(0, 2) -
+             E_i(1, 1) * E_i(2, 3) * E_i(3, 2) * E_j(0, 0) -
+             E_i(1, 2) * E_i(2, 0) * E_i(3, 1) * E_j(0, 3) +
+             E_i(1, 2) * E_i(2, 0) * E_i(3, 3) * E_j(0, 1) +
+             E_i(1, 2) * E_i(2, 1) * E_i(3, 0) * E_j(0, 3) -
+             E_i(1, 2) * E_i(2, 1) * E_i(3, 3) * E_j(0, 0) -
+             E_i(1, 2) * E_i(2, 3) * E_i(3, 0) * E_j(0, 1) +
+             E_i(1, 2) * E_i(2, 3) * E_i(3, 1) * E_j(0, 0) +
+             E_i(1, 3) * E_i(2, 0) * E_i(3, 1) * E_j(0, 2) -
+             E_i(1, 3) * E_i(2, 0) * E_i(3, 2) * E_j(0, 1) -
+             E_i(1, 3) * E_i(2, 1) * E_i(3, 0) * E_j(0, 2) +
+             E_i(1, 3) * E_i(2, 1) * E_i(3, 2) * E_j(0, 0) +
+             E_i(1, 3) * E_i(2, 2) * E_i(3, 0) * E_j(0, 1) -
+             E_i(1, 3) * E_i(2, 2) * E_i(3, 1) * E_j(0, 0);
+  double c = E_i(0, 0) * E_i(1, 1) * E_j(2, 2) * E_j(3, 3) -
+             E_i(0, 0) * E_i(1, 1) * E_j(2, 3) * E_j(3, 2) -
+             E_i(0, 0) * E_i(1, 2) * E_j(2, 1) * E_j(3, 3) +
+             E_i(0, 0) * E_i(1, 2) * E_j(2, 3) * E_j(3, 1) +
+             E_i(0, 0) * E_i(1, 3) * E_j(2, 1) * E_j(3, 2) -
+             E_i(0, 0) * E_i(1, 3) * E_j(2, 2) * E_j(3, 1) -
+             E_i(0, 0) * E_i(2, 1) * E_j(1, 2) * E_j(3, 3) +
+             E_i(0, 0) * E_i(2, 1) * E_j(1, 3) * E_j(3, 2) +
+             E_i(0, 0) * E_i(2, 2) * E_j(1, 1) * E_j(3, 3) -
+             E_i(0, 0) * E_i(2, 2) * E_j(1, 3) * E_j(3, 1) -
+             E_i(0, 0) * E_i(2, 3) * E_j(1, 1) * E_j(3, 2) +
+             E_i(0, 0) * E_i(2, 3) * E_j(1, 2) * E_j(3, 1) +
+             E_i(0, 0) * E_i(3, 1) * E_j(1, 2) * E_j(2, 3) -
+             E_i(0, 0) * E_i(3, 1) * E_j(1, 3) * E_j(2, 2) -
+             E_i(0, 0) * E_i(3, 2) * E_j(1, 1) * E_j(2, 3) +
+             E_i(0, 0) * E_i(3, 2) * E_j(1, 3) * E_j(2, 1) +
+             E_i(0, 0) * E_i(3, 3) * E_j(1, 1) * E_j(2, 2) -
+             E_i(0, 0) * E_i(3, 3) * E_j(1, 2) * E_j(2, 1) -
+             E_i(0, 1) * E_i(1, 0) * E_j(2, 2) * E_j(3, 3) +
+             E_i(0, 1) * E_i(1, 0) * E_j(2, 3) * E_j(3, 2) +
+             E_i(0, 1) * E_i(1, 2) * E_j(2, 0) * E_j(3, 3) -
+             E_i(0, 1) * E_i(1, 2) * E_j(2, 3) * E_j(3, 0) -
+             E_i(0, 1) * E_i(1, 3) * E_j(2, 0) * E_j(3, 2) +
+             E_i(0, 1) * E_i(1, 3) * E_j(2, 2) * E_j(3, 0) +
+             E_i(0, 1) * E_i(2, 0) * E_j(1, 2) * E_j(3, 3) -
+             E_i(0, 1) * E_i(2, 0) * E_j(1, 3) * E_j(3, 2) -
+             E_i(0, 1) * E_i(2, 2) * E_j(1, 0) * E_j(3, 3) +
+             E_i(0, 1) * E_i(2, 2) * E_j(1, 3) * E_j(3, 0) +
+             E_i(0, 1) * E_i(2, 3) * E_j(1, 0) * E_j(3, 2) -
+             E_i(0, 1) * E_i(2, 3) * E_j(1, 2) * E_j(3, 0) -
+             E_i(0, 1) * E_i(3, 0) * E_j(1, 2) * E_j(2, 3) +
+             E_i(0, 1) * E_i(3, 0) * E_j(1, 3) * E_j(2, 2) +
+             E_i(0, 1) * E_i(3, 2) * E_j(1, 0) * E_j(2, 3) -
+             E_i(0, 1) * E_i(3, 2) * E_j(1, 3) * E_j(2, 0) -
+             E_i(0, 1) * E_i(3, 3) * E_j(1, 0) * E_j(2, 2) +
+             E_i(0, 1) * E_i(3, 3) * E_j(1, 2) * E_j(2, 0) +
+             E_i(0, 2) * E_i(1, 0) * E_j(2, 1) * E_j(3, 3) -
+             E_i(0, 2) * E_i(1, 0) * E_j(2, 3) * E_j(3, 1) -
+             E_i(0, 2) * E_i(1, 1) * E_j(2, 0) * E_j(3, 3) +
+             E_i(0, 2) * E_i(1, 1) * E_j(2, 3) * E_j(3, 0) +
+             E_i(0, 2) * E_i(1, 3) * E_j(2, 0) * E_j(3, 1) -
+             E_i(0, 2) * E_i(1, 3) * E_j(2, 1) * E_j(3, 0) -
+             E_i(0, 2) * E_i(2, 0) * E_j(1, 1) * E_j(3, 3) +
+             E_i(0, 2) * E_i(2, 0) * E_j(1, 3) * E_j(3, 1) +
+             E_i(0, 2) * E_i(2, 1) * E_j(1, 0) * E_j(3, 3) -
+             E_i(0, 2) * E_i(2, 1) * E_j(1, 3) * E_j(3, 0) -
+             E_i(0, 2) * E_i(2, 3) * E_j(1, 0) * E_j(3, 1) +
+             E_i(0, 2) * E_i(2, 3) * E_j(1, 1) * E_j(3, 0) +
+             E_i(0, 2) * E_i(3, 0) * E_j(1, 1) * E_j(2, 3) -
+             E_i(0, 2) * E_i(3, 0) * E_j(1, 3) * E_j(2, 1) -
+             E_i(0, 2) * E_i(3, 1) * E_j(1, 0) * E_j(2, 3) +
+             E_i(0, 2) * E_i(3, 1) * E_j(1, 3) * E_j(2, 0) +
+             E_i(0, 2) * E_i(3, 3) * E_j(1, 0) * E_j(2, 1) -
+             E_i(0, 2) * E_i(3, 3) * E_j(1, 1) * E_j(2, 0) -
+             E_i(0, 3) * E_i(1, 0) * E_j(2, 1) * E_j(3, 2) +
+             E_i(0, 3) * E_i(1, 0) * E_j(2, 2) * E_j(3, 1) +
+             E_i(0, 3) * E_i(1, 1) * E_j(2, 0) * E_j(3, 2) -
+             E_i(0, 3) * E_i(1, 1) * E_j(2, 2) * E_j(3, 0) -
+             E_i(0, 3) * E_i(1, 2) * E_j(2, 0) * E_j(3, 1) +
+             E_i(0, 3) * E_i(1, 2) * E_j(2, 1) * E_j(3, 0) +
+             E_i(0, 3) * E_i(2, 0) * E_j(1, 1) * E_j(3, 2) -
+             E_i(0, 3) * E_i(2, 0) * E_j(1, 2) * E_j(3, 1) -
+             E_i(0, 3) * E_i(2, 1) * E_j(1, 0) * E_j(3, 2) +
+             E_i(0, 3) * E_i(2, 1) * E_j(1, 2) * E_j(3, 0) +
+             E_i(0, 3) * E_i(2, 2) * E_j(1, 0) * E_j(3, 1) -
+             E_i(0, 3) * E_i(2, 2) * E_j(1, 1) * E_j(3, 0) -
+             E_i(0, 3) * E_i(3, 0) * E_j(1, 1) * E_j(2, 2) +
+             E_i(0, 3) * E_i(3, 0) * E_j(1, 2) * E_j(2, 1) +
+             E_i(0, 3) * E_i(3, 1) * E_j(1, 0) * E_j(2, 2) -
+             E_i(0, 3) * E_i(3, 1) * E_j(1, 2) * E_j(2, 0) -
+             E_i(0, 3) * E_i(3, 2) * E_j(1, 0) * E_j(2, 1) +
+             E_i(0, 3) * E_i(3, 2) * E_j(1, 1) * E_j(2, 0) +
+             E_i(1, 0) * E_i(2, 1) * E_j(0, 2) * E_j(3, 3) -
+             E_i(1, 0) * E_i(2, 1) * E_j(0, 3) * E_j(3, 2) -
+             E_i(1, 0) * E_i(2, 2) * E_j(0, 1) * E_j(3, 3) +
+             E_i(1, 0) * E_i(2, 2) * E_j(0, 3) * E_j(3, 1) +
+             E_i(1, 0) * E_i(2, 3) * E_j(0, 1) * E_j(3, 2) -
+             E_i(1, 0) * E_i(2, 3) * E_j(0, 2) * E_j(3, 1) -
+             E_i(1, 0) * E_i(3, 1) * E_j(0, 2) * E_j(2, 3) +
+             E_i(1, 0) * E_i(3, 1) * E_j(0, 3) * E_j(2, 2) +
+             E_i(1, 0) * E_i(3, 2) * E_j(0, 1) * E_j(2, 3) -
+             E_i(1, 0) * E_i(3, 2) * E_j(0, 3) * E_j(2, 1) -
+             E_i(1, 0) * E_i(3, 3) * E_j(0, 1) * E_j(2, 2) +
+             E_i(1, 0) * E_i(3, 3) * E_j(0, 2) * E_j(2, 1) -
+             E_i(1, 1) * E_i(2, 0) * E_j(0, 2) * E_j(3, 3) +
+             E_i(1, 1) * E_i(2, 0) * E_j(0, 3) * E_j(3, 2) +
+             E_i(1, 1) * E_i(2, 2) * E_j(0, 0) * E_j(3, 3) -
+             E_i(1, 1) * E_i(2, 2) * E_j(0, 3) * E_j(3, 0) -
+             E_i(1, 1) * E_i(2, 3) * E_j(0, 0) * E_j(3, 2) +
+             E_i(1, 1) * E_i(2, 3) * E_j(0, 2) * E_j(3, 0) +
+             E_i(1, 1) * E_i(3, 0) * E_j(0, 2) * E_j(2, 3) -
+             E_i(1, 1) * E_i(3, 0) * E_j(0, 3) * E_j(2, 2) -
+             E_i(1, 1) * E_i(3, 2) * E_j(0, 0) * E_j(2, 3) +
+             E_i(1, 1) * E_i(3, 2) * E_j(0, 3) * E_j(2, 0) +
+             E_i(1, 1) * E_i(3, 3) * E_j(0, 0) * E_j(2, 2) -
+             E_i(1, 1) * E_i(3, 3) * E_j(0, 2) * E_j(2, 0) +
+             E_i(1, 2) * E_i(2, 0) * E_j(0, 1) * E_j(3, 3) -
+             E_i(1, 2) * E_i(2, 0) * E_j(0, 3) * E_j(3, 1) -
+             E_i(1, 2) * E_i(2, 1) * E_j(0, 0) * E_j(3, 3) +
+             E_i(1, 2) * E_i(2, 1) * E_j(0, 3) * E_j(3, 0) +
+             E_i(1, 2) * E_i(2, 3) * E_j(0, 0) * E_j(3, 1) -
+             E_i(1, 2) * E_i(2, 3) * E_j(0, 1) * E_j(3, 0) -
+             E_i(1, 2) * E_i(3, 0) * E_j(0, 1) * E_j(2, 3) +
+             E_i(1, 2) * E_i(3, 0) * E_j(0, 3) * E_j(2, 1) +
+             E_i(1, 2) * E_i(3, 1) * E_j(0, 0) * E_j(2, 3) -
+             E_i(1, 2) * E_i(3, 1) * E_j(0, 3) * E_j(2, 0) -
+             E_i(1, 2) * E_i(3, 3) * E_j(0, 0) * E_j(2, 1) +
+             E_i(1, 2) * E_i(3, 3) * E_j(0, 1) * E_j(2, 0) -
+             E_i(1, 3) * E_i(2, 0) * E_j(0, 1) * E_j(3, 2) +
+             E_i(1, 3) * E_i(2, 0) * E_j(0, 2) * E_j(3, 1) +
+             E_i(1, 3) * E_i(2, 1) * E_j(0, 0) * E_j(3, 2) -
+             E_i(1, 3) * E_i(2, 1) * E_j(0, 2) * E_j(3, 0) -
+             E_i(1, 3) * E_i(2, 2) * E_j(0, 0) * E_j(3, 1) +
+             E_i(1, 3) * E_i(2, 2) * E_j(0, 1) * E_j(3, 0) +
+             E_i(1, 3) * E_i(3, 0) * E_j(0, 1) * E_j(2, 2) -
+             E_i(1, 3) * E_i(3, 0) * E_j(0, 2) * E_j(2, 1) -
+             E_i(1, 3) * E_i(3, 1) * E_j(0, 0) * E_j(2, 2) +
+             E_i(1, 3) * E_i(3, 1) * E_j(0, 2) * E_j(2, 0) +
+             E_i(1, 3) * E_i(3, 2) * E_j(0, 0) * E_j(2, 1) -
+             E_i(1, 3) * E_i(3, 2) * E_j(0, 1) * E_j(2, 0) +
+             E_i(2, 0) * E_i(3, 1) * E_j(0, 2) * E_j(1, 3) -
+             E_i(2, 0) * E_i(3, 1) * E_j(0, 3) * E_j(1, 2) -
+             E_i(2, 0) * E_i(3, 2) * E_j(0, 1) * E_j(1, 3) +
+             E_i(2, 0) * E_i(3, 2) * E_j(0, 3) * E_j(1, 1) +
+             E_i(2, 0) * E_i(3, 3) * E_j(0, 1) * E_j(1, 2) -
+             E_i(2, 0) * E_i(3, 3) * E_j(0, 2) * E_j(1, 1) -
+             E_i(2, 1) * E_i(3, 0) * E_j(0, 2) * E_j(1, 3) +
+             E_i(2, 1) * E_i(3, 0) * E_j(0, 3) * E_j(1, 2) +
+             E_i(2, 1) * E_i(3, 2) * E_j(0, 0) * E_j(1, 3) -
+             E_i(2, 1) * E_i(3, 2) * E_j(0, 3) * E_j(1, 0) -
+             E_i(2, 1) * E_i(3, 3) * E_j(0, 0) * E_j(1, 2) +
+             E_i(2, 1) * E_i(3, 3) * E_j(0, 2) * E_j(1, 0) +
+             E_i(2, 2) * E_i(3, 0) * E_j(0, 1) * E_j(1, 3) -
+             E_i(2, 2) * E_i(3, 0) * E_j(0, 3) * E_j(1, 1) -
+             E_i(2, 2) * E_i(3, 1) * E_j(0, 0) * E_j(1, 3) +
+             E_i(2, 2) * E_i(3, 1) * E_j(0, 3) * E_j(1, 0) +
+             E_i(2, 2) * E_i(3, 3) * E_j(0, 0) * E_j(1, 1) -
+             E_i(2, 2) * E_i(3, 3) * E_j(0, 1) * E_j(1, 0) -
+             E_i(2, 3) * E_i(3, 0) * E_j(0, 1) * E_j(1, 2) +
+             E_i(2, 3) * E_i(3, 0) * E_j(0, 2) * E_j(1, 1) +
+             E_i(2, 3) * E_i(3, 1) * E_j(0, 0) * E_j(1, 2) -
+             E_i(2, 3) * E_i(3, 1) * E_j(0, 2) * E_j(1, 0) -
+             E_i(2, 3) * E_i(3, 2) * E_j(0, 0) * E_j(1, 1) +
+             E_i(2, 3) * E_i(3, 2) * E_j(0, 1) * E_j(1, 0);
+  double d = E_i(0, 0) * E_j(1, 1) * E_j(2, 2) * E_j(3, 3) -
+             E_i(0, 0) * E_j(1, 1) * E_j(2, 3) * E_j(3, 2) -
+             E_i(0, 0) * E_j(1, 2) * E_j(2, 1) * E_j(3, 3) +
+             E_i(0, 0) * E_j(1, 2) * E_j(2, 3) * E_j(3, 1) +
+             E_i(0, 0) * E_j(1, 3) * E_j(2, 1) * E_j(3, 2) -
+             E_i(0, 0) * E_j(1, 3) * E_j(2, 2) * E_j(3, 1) -
+             E_i(0, 1) * E_j(1, 0) * E_j(2, 2) * E_j(3, 3) +
+             E_i(0, 1) * E_j(1, 0) * E_j(2, 3) * E_j(3, 2) +
+             E_i(0, 1) * E_j(1, 2) * E_j(2, 0) * E_j(3, 3) -
+             E_i(0, 1) * E_j(1, 2) * E_j(2, 3) * E_j(3, 0) -
+             E_i(0, 1) * E_j(1, 3) * E_j(2, 0) * E_j(3, 2) +
+             E_i(0, 1) * E_j(1, 3) * E_j(2, 2) * E_j(3, 0) +
+             E_i(0, 2) * E_j(1, 0) * E_j(2, 1) * E_j(3, 3) -
+             E_i(0, 2) * E_j(1, 0) * E_j(2, 3) * E_j(3, 1) -
+             E_i(0, 2) * E_j(1, 1) * E_j(2, 0) * E_j(3, 3) +
+             E_i(0, 2) * E_j(1, 1) * E_j(2, 3) * E_j(3, 0) +
+             E_i(0, 2) * E_j(1, 3) * E_j(2, 0) * E_j(3, 1) -
+             E_i(0, 2) * E_j(1, 3) * E_j(2, 1) * E_j(3, 0) -
+             E_i(0, 3) * E_j(1, 0) * E_j(2, 1) * E_j(3, 2) +
+             E_i(0, 3) * E_j(1, 0) * E_j(2, 2) * E_j(3, 1) +
+             E_i(0, 3) * E_j(1, 1) * E_j(2, 0) * E_j(3, 2) -
+             E_i(0, 3) * E_j(1, 1) * E_j(2, 2) * E_j(3, 0) -
+             E_i(0, 3) * E_j(1, 2) * E_j(2, 0) * E_j(3, 1) +
+             E_i(0, 3) * E_j(1, 2) * E_j(2, 1) * E_j(3, 0) -
+             E_i(1, 0) * E_j(0, 1) * E_j(2, 2) * E_j(3, 3) +
+             E_i(1, 0) * E_j(0, 1) * E_j(2, 3) * E_j(3, 2) +
+             E_i(1, 0) * E_j(0, 2) * E_j(2, 1) * E_j(3, 3) -
+             E_i(1, 0) * E_j(0, 2) * E_j(2, 3) * E_j(3, 1) -
+             E_i(1, 0) * E_j(0, 3) * E_j(2, 1) * E_j(3, 2) +
+             E_i(1, 0) * E_j(0, 3) * E_j(2, 2) * E_j(3, 1) +
+             E_i(1, 1) * E_j(0, 0) * E_j(2, 2) * E_j(3, 3) -
+             E_i(1, 1) * E_j(0, 0) * E_j(2, 3) * E_j(3, 2) -
+             E_i(1, 1) * E_j(0, 2) * E_j(2, 0) * E_j(3, 3) +
+             E_i(1, 1) * E_j(0, 2) * E_j(2, 3) * E_j(3, 0) +
+             E_i(1, 1) * E_j(0, 3) * E_j(2, 0) * E_j(3, 2) -
+             E_i(1, 1) * E_j(0, 3) * E_j(2, 2) * E_j(3, 0) -
+             E_i(1, 2) * E_j(0, 0) * E_j(2, 1) * E_j(3, 3) +
+             E_i(1, 2) * E_j(0, 0) * E_j(2, 3) * E_j(3, 1) +
+             E_i(1, 2) * E_j(0, 1) * E_j(2, 0) * E_j(3, 3) -
+             E_i(1, 2) * E_j(0, 1) * E_j(2, 3) * E_j(3, 0) -
+             E_i(1, 2) * E_j(0, 3) * E_j(2, 0) * E_j(3, 1) +
+             E_i(1, 2) * E_j(0, 3) * E_j(2, 1) * E_j(3, 0) +
+             E_i(1, 3) * E_j(0, 0) * E_j(2, 1) * E_j(3, 2) -
+             E_i(1, 3) * E_j(0, 0) * E_j(2, 2) * E_j(3, 1) -
+             E_i(1, 3) * E_j(0, 1) * E_j(2, 0) * E_j(3, 2) +
+             E_i(1, 3) * E_j(0, 1) * E_j(2, 2) * E_j(3, 0) +
+             E_i(1, 3) * E_j(0, 2) * E_j(2, 0) * E_j(3, 1) -
+             E_i(1, 3) * E_j(0, 2) * E_j(2, 1) * E_j(3, 0) +
+             E_i(2, 0) * E_j(0, 1) * E_j(1, 2) * E_j(3, 3) -
+             E_i(2, 0) * E_j(0, 1) * E_j(1, 3) * E_j(3, 2) -
+             E_i(2, 0) * E_j(0, 2) * E_j(1, 1) * E_j(3, 3) +
+             E_i(2, 0) * E_j(0, 2) * E_j(1, 3) * E_j(3, 1) +
+             E_i(2, 0) * E_j(0, 3) * E_j(1, 1) * E_j(3, 2) -
+             E_i(2, 0) * E_j(0, 3) * E_j(1, 2) * E_j(3, 1) -
+             E_i(2, 1) * E_j(0, 0) * E_j(1, 2) * E_j(3, 3) +
+             E_i(2, 1) * E_j(0, 0) * E_j(1, 3) * E_j(3, 2) +
+             E_i(2, 1) * E_j(0, 2) * E_j(1, 0) * E_j(3, 3) -
+             E_i(2, 1) * E_j(0, 2) * E_j(1, 3) * E_j(3, 0) -
+             E_i(2, 1) * E_j(0, 3) * E_j(1, 0) * E_j(3, 2) +
+             E_i(2, 1) * E_j(0, 3) * E_j(1, 2) * E_j(3, 0) +
+             E_i(2, 2) * E_j(0, 0) * E_j(1, 1) * E_j(3, 3) -
+             E_i(2, 2) * E_j(0, 0) * E_j(1, 3) * E_j(3, 1) -
+             E_i(2, 2) * E_j(0, 1) * E_j(1, 0) * E_j(3, 3) +
+             E_i(2, 2) * E_j(0, 1) * E_j(1, 3) * E_j(3, 0) +
+             E_i(2, 2) * E_j(0, 3) * E_j(1, 0) * E_j(3, 1) -
+             E_i(2, 2) * E_j(0, 3) * E_j(1, 1) * E_j(3, 0) -
+             E_i(2, 3) * E_j(0, 0) * E_j(1, 1) * E_j(3, 2) +
+             E_i(2, 3) * E_j(0, 0) * E_j(1, 2) * E_j(3, 1) +
+             E_i(2, 3) * E_j(0, 1) * E_j(1, 0) * E_j(3, 2) -
+             E_i(2, 3) * E_j(0, 1) * E_j(1, 2) * E_j(3, 0) -
+             E_i(2, 3) * E_j(0, 2) * E_j(1, 0) * E_j(3, 1) +
+             E_i(2, 3) * E_j(0, 2) * E_j(1, 1) * E_j(3, 0) -
+             E_i(3, 0) * E_j(0, 1) * E_j(1, 2) * E_j(2, 3) +
+             E_i(3, 0) * E_j(0, 1) * E_j(1, 3) * E_j(2, 2) +
+             E_i(3, 0) * E_j(0, 2) * E_j(1, 1) * E_j(2, 3) -
+             E_i(3, 0) * E_j(0, 2) * E_j(1, 3) * E_j(2, 1) -
+             E_i(3, 0) * E_j(0, 3) * E_j(1, 1) * E_j(2, 2) +
+             E_i(3, 0) * E_j(0, 3) * E_j(1, 2) * E_j(2, 1) +
+             E_i(3, 1) * E_j(0, 0) * E_j(1, 2) * E_j(2, 3) -
+             E_i(3, 1) * E_j(0, 0) * E_j(1, 3) * E_j(2, 2) -
+             E_i(3, 1) * E_j(0, 2) * E_j(1, 0) * E_j(2, 3) +
+             E_i(3, 1) * E_j(0, 2) * E_j(1, 3) * E_j(2, 0) +
+             E_i(3, 1) * E_j(0, 3) * E_j(1, 0) * E_j(2, 2) -
+             E_i(3, 1) * E_j(0, 3) * E_j(1, 2) * E_j(2, 0) -
+             E_i(3, 2) * E_j(0, 0) * E_j(1, 1) * E_j(2, 3) +
+             E_i(3, 2) * E_j(0, 0) * E_j(1, 3) * E_j(2, 1) +
+             E_i(3, 2) * E_j(0, 1) * E_j(1, 0) * E_j(2, 3) -
+             E_i(3, 2) * E_j(0, 1) * E_j(1, 3) * E_j(2, 0) -
+             E_i(3, 2) * E_j(0, 3) * E_j(1, 0) * E_j(2, 1) +
+             E_i(3, 2) * E_j(0, 3) * E_j(1, 1) * E_j(2, 0) +
+             E_i(3, 3) * E_j(0, 0) * E_j(1, 1) * E_j(2, 2) -
+             E_i(3, 3) * E_j(0, 0) * E_j(1, 2) * E_j(2, 1) -
+             E_i(3, 3) * E_j(0, 1) * E_j(1, 0) * E_j(2, 2) +
+             E_i(3, 3) * E_j(0, 1) * E_j(1, 2) * E_j(2, 0) +
+             E_i(3, 3) * E_j(0, 2) * E_j(1, 0) * E_j(2, 1) -
+             E_i(3, 3) * E_j(0, 2) * E_j(1, 1) * E_j(2, 0);
+  double e = E_j(0, 0) * E_j(1, 1) * E_j(2, 2) * E_j(3, 3) -
+             E_j(0, 0) * E_j(1, 1) * E_j(2, 3) * E_j(3, 2) -
+             E_j(0, 0) * E_j(1, 2) * E_j(2, 1) * E_j(3, 3) +
+             E_j(0, 0) * E_j(1, 2) * E_j(2, 3) * E_j(3, 1) +
+             E_j(0, 0) * E_j(1, 3) * E_j(2, 1) * E_j(3, 2) -
+             E_j(0, 0) * E_j(1, 3) * E_j(2, 2) * E_j(3, 1) -
+             E_j(0, 1) * E_j(1, 0) * E_j(2, 2) * E_j(3, 3) +
+             E_j(0, 1) * E_j(1, 0) * E_j(2, 3) * E_j(3, 2) +
+             E_j(0, 1) * E_j(1, 2) * E_j(2, 0) * E_j(3, 3) -
+             E_j(0, 1) * E_j(1, 2) * E_j(2, 3) * E_j(3, 0) -
+             E_j(0, 1) * E_j(1, 3) * E_j(2, 0) * E_j(3, 2) +
+             E_j(0, 1) * E_j(1, 3) * E_j(2, 2) * E_j(3, 0) +
+             E_j(0, 2) * E_j(1, 0) * E_j(2, 1) * E_j(3, 3) -
+             E_j(0, 2) * E_j(1, 0) * E_j(2, 3) * E_j(3, 1) -
+             E_j(0, 2) * E_j(1, 1) * E_j(2, 0) * E_j(3, 3) +
+             E_j(0, 2) * E_j(1, 1) * E_j(2, 3) * E_j(3, 0) +
+             E_j(0, 2) * E_j(1, 3) * E_j(2, 0) * E_j(3, 1) -
+             E_j(0, 2) * E_j(1, 3) * E_j(2, 1) * E_j(3, 0) -
+             E_j(0, 3) * E_j(1, 0) * E_j(2, 1) * E_j(3, 2) +
+             E_j(0, 3) * E_j(1, 0) * E_j(2, 2) * E_j(3, 1) +
+             E_j(0, 3) * E_j(1, 1) * E_j(2, 0) * E_j(3, 2) -
+             E_j(0, 3) * E_j(1, 1) * E_j(2, 2) * E_j(3, 0) -
+             E_j(0, 3) * E_j(1, 2) * E_j(2, 0) * E_j(3, 1) +
+             E_j(0, 3) * E_j(1, 2) * E_j(2, 1) * E_j(3, 0);
 
   // normalize coefficients w.r.t. first coefficient a for better conditioning
-  if(abs(a) > 1.e-16)
+  if (abs(a) > 1.e-16)
   {
-    const double inverse = 1./a;
+    const double inverse = 1. / a;
     a = 1.;
     b *= inverse;
     c *= inverse;
@@ -3067,13 +3422,16 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::CollisionCheck(
   }
 
   // compute discriminant of characteristic equation
-  const double discriminant = 256.*a*a*a*e*e*e - 192.*a*a*b*d*e*e - 128.*a*a*c*c*e*e + 144.*a*a*c*d*d*e
-                            -  27.*a*a*d*d*d*d + 144.*a*b*b*c*e*e -   6.*a*b*b*d*d*e -  80.*a*b*c*c*d*e
-                            +  18.*a*b*c*d*d*d +  16.*a*c*c*c*c*e -   4.*a*c*c*c*d*d -  27.*b*b*b*b*e*e
-                            +  18.*b*b*b*c*d*e -   4.*b*b*b*d*d*d -   4.*b*b*c*c*c*e +      b*b*c*c*d*d;
+  const double discriminant =
+      256. * a * a * a * e * e * e - 192. * a * a * b * d * e * e - 128. * a * a * c * c * e * e +
+      144. * a * a * c * d * d * e - 27. * a * a * d * d * d * d + 144. * a * b * b * c * e * e -
+      6. * a * b * b * d * d * e - 80. * a * b * c * c * d * e + 18. * a * b * c * d * d * d +
+      16. * a * c * c * c * c * e - 4. * a * c * c * c * d * d - 27. * b * b * b * b * e * e +
+      18. * b * b * b * c * d * e - 4. * b * b * b * d * d * d - 4. * b * b * c * c * c * e +
+      b * b * c * c * d * d;
 
   // compute auxiliary quantity
-  const double P = 8.*a*c - 3.*b*b;
+  const double P = 8. * a * c - 3. * b * b;
 
   // collision check via discriminant and auxiliary quantity
   return (discriminant > 0. and P < 0.) ? false : true;
@@ -3084,93 +3442,99 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::CollisionCheck(
  | compute contact point on particle surface                       fang 10/17 |
  *----------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPoint(
-    LINALG::Matrix<1,4>&         C_particle,   //!< contact point on particle surface
-    const LINALG::Matrix<3,1>&   semiaxes,     //!< particle semi-axes
-    const LINALG::Matrix<4,4>&   T,            //!< translation matrix
-    const LINALG::Matrix<4,4>&   R,            //!< rotation matrix
-    const LINALG::Matrix<1,4>&   C,            //!< contact point inside contact plane
-    const LINALG::Matrix<1,4>&   d             //!< direction vector of contact line
+    LINALG::Matrix<1, 4>& C_particle,      //!< contact point on particle surface
+    const LINALG::Matrix<3, 1>& semiaxes,  //!< particle semi-axes
+    const LINALG::Matrix<4, 4>& T,         //!< translation matrix
+    const LINALG::Matrix<4, 4>& R,         //!< rotation matrix
+    const LINALG::Matrix<1, 4>& C,         //!< contact point inside contact plane
+    const LINALG::Matrix<1, 4>& d          //!< direction vector of contact line
     ) const
 {
   // procedure:
   // 1.) affinely transform the ellipsoidal particle to a unit sphere centered at the origin
   //     of the coordinate system, employing homogeneous coordinates and the following steps:
   //     a) translate each point X on the surface of the original ellipsoid by the same distance,
-  //        such that the center of the ellipsoid coincides with the origin of the coordinate system,
-  //        and obtain the translated point Xt = X * T on the surface of the translated ellipsoid
-  //     b) rotate the translated ellipsoid, such that its semi-axes are parallel to the coordinate axes,
+  //        such that the center of the ellipsoid coincides with the origin of the coordinate
+  //        system, and obtain the translated point Xt = X * T on the surface of the translated
+  //        ellipsoid
+  //     b) rotate the translated ellipsoid, such that its semi-axes are parallel to the coordinate
+  //     axes,
   //        and thereby transform each point Xt into Xtt = Xt * R = Xt * T * R
-  //     c) scale the translated and rotated ellipsoid, such that all of its semi-axes have unit length,
-  //        and thereby transform each point Xtt into X' = Xtt * S = Xt * R * S = X * T * R * S = X * M,
-  //        where M = T * R * S is the overall transformation matrix
-  // 2.) apply the same transformation to the contact line L = C + t * d = C + t * (V3 - V2), where C is
-  //     the contact point inside the contact plane, t is the line parameter, d is the direction vector,
-  //     and V2 and V3 are the two last eigenvectors of the generalized eigenproblem
-  // 3.) compute the two intersection points between the unit sphere and the transformed line L', given by
+  //     c) scale the translated and rotated ellipsoid, such that all of its semi-axes have unit
+  //     length,
+  //        and thereby transform each point Xtt into X' = Xtt * S = Xt * R * S = X * T * R * S = X
+  //        * M, where M = T * R * S is the overall transformation matrix
+  // 2.) apply the same transformation to the contact line L = C + t * d = C + t * (V3 - V2), where
+  // C is
+  //     the contact point inside the contact plane, t is the line parameter, d is the direction
+  //     vector, and V2 and V3 are the two last eigenvectors of the generalized eigenproblem
+  // 3.) compute the two intersection points between the unit sphere and the transformed line L',
+  // given by
   //     L' = C' + t * d' = C' + t * (V3' - V2')
-  // 4.) transform back the point closer to C' to obtain the sought contact point on the particle surface
+  // 4.) transform back the point closer to C' to obtain the sought contact point on the particle
+  // surface
 
   // step 1.)
 
   // compute overall transformation matrix M
-  static LINALG::Matrix<4,4> M;
+  static LINALG::Matrix<4, 4> M;
   M.Clear();
-  ComputeTransformationMatrix(M,semiaxes,T,R);
+  ComputeTransformationMatrix(M, semiaxes, T, R);
 
   // step 2.)
 
   // transform contact point C
-  static LINALG::Matrix<1,4> C_t;
+  static LINALG::Matrix<1, 4> C_t;
   C_t.Clear();
-  C_t.Multiply(C,M);
+  C_t.Multiply(C, M);
   C_t(3) = 0.;
 
   // transform direction vector d
-  static LINALG::Matrix<1,4> d_t;
+  static LINALG::Matrix<1, 4> d_t;
   d_t.Clear();
-  d_t.Multiply(d,M);
+  d_t.Multiply(d, M);
 
   // normalize transformed direction vector d'
-  d_t.Scale(1./d_t.Norm2());
+  d_t.Scale(1. / d_t.Norm2());
 
   // step 3.)
-  // each of the two intersection points lies on both the surface of the unit sphere and the transformed line
-  // we thus solve the quadratic equation || C' + t * d' ||^2 = 1 for the line parameter t
+  // each of the two intersection points lies on both the surface of the unit sphere and the
+  // transformed line we thus solve the quadratic equation || C' + t * d' ||^2 = 1 for the line
+  // parameter t
 
   // precompute components
   double Cd = C_t.Dot(d_t);
-  double root = sqrt(Cd*Cd-(C_t.Dot(C_t)-1.));
+  double root = sqrt(Cd * Cd - (C_t.Dot(C_t) - 1.));
 
   // determine solutions of quadratic equation
-  double t1 = -Cd+root;
-  double t2 = -Cd-root;
+  double t1 = -Cd + root;
+  double t2 = -Cd - root;
 
   // step 4.)
 
   // compute intersection point closer to C'
-  static LINALG::Matrix<1,4> C_particle_t;
+  static LINALG::Matrix<1, 4> C_particle_t;
   C_particle_t.Clear();
   double t = abs(t1) < abs(t2) ? t1 : t2;
-  for(int i=0; i<3; ++i)
-    C_particle_t(i) = C_t(i)+t*d_t(i);
+  for (int i = 0; i < 3; ++i) C_particle_t(i) = C_t(i) + t * d_t(i);
   C_particle_t(3) = 1.;
 
   // invert overall transformation matrix M
-  if(false)
+  if (false)
   {
-    // for some unknown reason, the FixedSizeSerialDenseSolver yields slightly different results with the GCC and Clang compilers,
-    // giving rise to self-amplifying roundoff differences and ultimately causing test cases to fail with one of the two compilers
-    // therefore, the following code is deactivated and replaced by the alternative algorithm given below
-    LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
+    // for some unknown reason, the FixedSizeSerialDenseSolver yields slightly different results
+    // with the GCC and Clang compilers, giving rise to self-amplifying roundoff differences and
+    // ultimately causing test cases to fail with one of the two compilers therefore, the following
+    // code is deactivated and replaced by the alternative algorithm given below
+    LINALG::FixedSizeSerialDenseSolver<4, 4> inverter;
     inverter.SetMatrix(M);
-    if(inverter.Invert())
-      dserror("Inversion of 4x4 matrix failed!");
+    if (inverter.Invert()) dserror("Inversion of 4x4 matrix failed!");
   }
   else
-    ComputeTransformationMatrixInverse(M,semiaxes,T,R);
+    ComputeTransformationMatrixInverse(M, semiaxes, T, R);
 
   // transform intersection point back
-  C_particle.Multiply(C_particle_t,M);
+  C_particle.Multiply(C_particle_t, M);
   C_particle(3) = 0.;
 
   return;
@@ -3178,19 +3542,20 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPoint(
 
 
 /*---------------------------------------------------------------------------------------------------*
- | compute eigenvectors of B^-1 * A and determine whether there are complex eigenvalues   fang 10/17 |
+ | compute eigenvectors of B^-1 * A and determine whether there are complex eigenvalues   fang 10/17
+ |
  *---------------------------------------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEigenVectors(
-    const LINALG::Matrix<4,4>&   A,    //!< first matrix of generalized eigenproblem
-    const LINALG::Matrix<4,4>&   B,    //!< second matrix of generalized eigenproblem
-    LINALG::Matrix<3,1>&         V0,   //!< first eigenvector of generalized eigenproblem
-    LINALG::Matrix<3,1>&         V1,   //!< second eigenvector of generalized eigenproblem
-    LINALG::Matrix<3,1>&         V2,   //!< third eigenvector of generalized eigenproblem
-    LINALG::Matrix<3,1>&         V3    //!< fourth eigenvector of generalized eigenproblem
+    const LINALG::Matrix<4, 4>& A,  //!< first matrix of generalized eigenproblem
+    const LINALG::Matrix<4, 4>& B,  //!< second matrix of generalized eigenproblem
+    LINALG::Matrix<3, 1>& V0,       //!< first eigenvector of generalized eigenproblem
+    LINALG::Matrix<3, 1>& V1,       //!< second eigenvector of generalized eigenproblem
+    LINALG::Matrix<3, 1>& V2,       //!< third eigenvector of generalized eigenproblem
+    LINALG::Matrix<3, 1>& V3        //!< fourth eigenvector of generalized eigenproblem
     ) const
 {
   // compute eigenvalues and eigenvectors of matrix B^-1 * A
-  static LINALG::Matrix<4,4> A_temp, B_temp, vr;
+  static LINALG::Matrix<4, 4> A_temp, B_temp, vr;
   A_temp.Clear();
   B_temp.Clear();
   vr.Clear();
@@ -3199,40 +3564,40 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEigenVectors(
   B_temp = B;
   const char jobvl = 'N', jobvr = 'V';
   const int n(4), lwork(32);
-  LINALG::Matrix<1,4> alphar;
-  static LINALG::Matrix<1,4> alphai, beta;
+  LINALG::Matrix<1, 4> alphar;
+  static LINALG::Matrix<1, 4> alphai, beta;
   alphai.Clear();
   beta.Clear();
 
   double work[32];
   int info;
-  dggev(&jobvl,&jobvr,&n,A_temp.A(),&n,B_temp.A(),&n,alphar.A(),alphai.A(),beta.A(),NULL,&n,vr.A(),&n,work,&lwork,&info);
-  if(info)
-    dserror("LAPACK algorithm GGEV yielded error code %d!",info);
+  dggev(&jobvl, &jobvr, &n, A_temp.A(), &n, B_temp.A(), &n, alphar.A(), alphai.A(), beta.A(), NULL,
+      &n, vr.A(), &n, work, &lwork, &info);
+  if (info) dserror("LAPACK algorithm GGEV yielded error code %d!", info);
   alphar.EDivide(beta);
 
   // normalize eigenvectors w.r.t. respective last homogeneous coordinates
-  for(unsigned i=0; i<4 ; ++i)
+  for (unsigned i = 0; i < 4; ++i)
   {
     // compute inverse of current last homogeneous coordinate, avoiding division by zero
-    const double inverse = abs(vr(3,i)) > 1.e-16 ? 1./vr(3,i) : 1.e16;
+    const double inverse = abs(vr(3, i)) > 1.e-16 ? 1. / vr(3, i) : 1.e16;
 
     // normalize current eigenvector
-    for(unsigned j=0; j<4 ; ++j)
-      vr(j,i) *= inverse;
+    for (unsigned j = 0; j < 4; ++j) vr(j, i) *= inverse;
   }
 
   // sort eigenvectors in ascending order of real parts of associated eigenvalues
-  std::vector<int> indices(4,0);
+  std::vector<int> indices(4, 0);
 
-  std::iota(indices.begin(),indices.end(),0);
-  std::sort(indices.begin(),indices.end(),[&alphar](int a, int b){return alphar(a) < alphar(b);});
-  for(unsigned i=0; i<3 ; ++i)
+  std::iota(indices.begin(), indices.end(), 0);
+  std::sort(
+      indices.begin(), indices.end(), [&alphar](int a, int b) { return alphar(a) < alphar(b); });
+  for (unsigned i = 0; i < 3; ++i)
   {
-    V0(i) = vr(i,indices[0]);
-    V1(i) = vr(i,indices[1]);
-    V2(i) = vr(i,indices[2]);
-    V3(i) = vr(i,indices[3]);
+    V0(i) = vr(i, indices[0]);
+    V1(i) = vr(i, indices[1]);
+    V2(i) = vr(i, indices[2]);
+    V3(i) = vr(i, indices[3]);
   }
 
   // determine whether there are complex eigenvalues
@@ -3244,51 +3609,54 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEigenVectors(
  | compute ellipsoid matrix expressed in homogeneous coordinates   fang 10/17 |
  *----------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeEllipsoidMatrix(
-    LINALG::Matrix<4,4>&         E,          //!< ellipsoid matrix
-    const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
-    const LINALG::Matrix<4,4>&   T,          //!< translation matrix
-    const LINALG::Matrix<4,4>&   R           //!< rotation matrix
+    LINALG::Matrix<4, 4>& E,               //!< ellipsoid matrix
+    const LINALG::Matrix<3, 1>& semiaxes,  //!< ellipsoid semi-axes
+    const LINALG::Matrix<4, 4>& T,         //!< translation matrix
+    const LINALG::Matrix<4, 4>& R          //!< rotation matrix
     ) const
 {
   // clear ellipsoid matrix
   E.Clear();
 
   // assemble plain ellipsoid matrix without considering translation and rotation
-  E(0,0) = 1./(semiaxes(0)*semiaxes(0));
-  E(1,1) = 1./(semiaxes(1)*semiaxes(1));
-  E(2,2) = 1./(semiaxes(2)*semiaxes(2));
-  E(3,3) = -1.;
+  E(0, 0) = 1. / (semiaxes(0) * semiaxes(0));
+  E(1, 1) = 1. / (semiaxes(1) * semiaxes(1));
+  E(2, 2) = 1. / (semiaxes(2) * semiaxes(2));
+  E(3, 3) = -1.;
 
   // compute ellipsoid matrix expressed in homogeneous coordinates:
-  // E = T * R * S * R^T * T^T, where S is the plain ellipsoid matrix without considering translation and rotation
-  static LINALG::Matrix<4,4> temp4x4;
+  // E = T * R * S * R^T * T^T, where S is the plain ellipsoid matrix without considering
+  // translation and rotation
+  static LINALG::Matrix<4, 4> temp4x4;
   temp4x4.Clear();
 
-  temp4x4.MultiplyNT(E,R);
-  E.Multiply(R,temp4x4);
-  temp4x4.MultiplyNT(E,T);
-  E.Multiply(T,temp4x4);
+  temp4x4.MultiplyNT(E, R);
+  E.Multiply(R, temp4x4);
+  temp4x4.MultiplyNT(E, T);
+  E.Multiply(T, temp4x4);
 
   return;
 }
 
 
 /*------------------------------------------------------------------------------------------------------*
- | compute contact normal, contact gap, and vectors from particle centers to contact point   fang 10/17 |
+ | compute contact normal, contact gap, and vectors from particle centers to contact point   fang
+ 10/17 |
  *------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNormalAndGap(
-    LINALG::Matrix<3,1>&      r_iC,     //!< vector from center of particle i to contact point C
-    LINALG::Matrix<3,1>&      r_jC,     //!< vector from center of particle j to contact point C
-    LINALG::Matrix<3,1>&      normal,   //!< contact normal
-    double&                   gap,      //!< contact gap
-    const ParticleCollData&   data_i,   //!< collision data for particle i
-    const ParticleCollData&   data_j    //!< collision data for particle j
+    LINALG::Matrix<3, 1>& r_iC,      //!< vector from center of particle i to contact point C
+    LINALG::Matrix<3, 1>& r_jC,      //!< vector from center of particle j to contact point C
+    LINALG::Matrix<3, 1>& normal,    //!< contact normal
+    double& gap,                     //!< contact gap
+    const ParticleCollData& data_i,  //!< collision data for particle i
+    const ParticleCollData& data_j   //!< collision data for particle j
     ) const
 {
-  // initialize matrices for collision detection for ellipsoidal particles (involving homogeneous coordinates)
-  static LINALG::Matrix<4,4> T_i, T_j;   // translation matrices
-  static LINALG::Matrix<4,4> R_i, R_j;   // rotation matrices
-  static LINALG::Matrix<4,4> E_i, E_j;   // final ellipsoid matrices
+  // initialize matrices for collision detection for ellipsoidal particles (involving homogeneous
+  // coordinates)
+  static LINALG::Matrix<4, 4> T_i, T_j;  // translation matrices
+  static LINALG::Matrix<4, 4> R_i, R_j;  // rotation matrices
+  static LINALG::Matrix<4, 4> E_i, E_j;  // final ellipsoid matrices
   T_i.Clear();
   T_j.Clear();
   R_i.Clear();
@@ -3297,18 +3665,18 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
   E_j.Clear();
 
   // assemble translation, rotation, and ellipsoid matrices for ellipsoids i and j
-  ComputeTranslationMatrix(T_i,data_i.dis);
-  ComputeRotationMatrix(R_i,data_i.ang);
-  ComputeEllipsoidMatrix(E_i,data_i.semiaxes,T_i,R_i);
-  ComputeTranslationMatrix(T_j,data_j.dis);
-  ComputeRotationMatrix(R_j,data_j.ang);
-  ComputeEllipsoidMatrix(E_j,data_j.semiaxes,T_j,R_j);
+  ComputeTranslationMatrix(T_i, data_i.dis);
+  ComputeRotationMatrix(R_i, data_i.ang);
+  ComputeEllipsoidMatrix(E_i, data_i.semiaxes, T_i, R_i);
+  ComputeTranslationMatrix(T_j, data_j.dis);
+  ComputeRotationMatrix(R_j, data_j.ang);
+  ComputeEllipsoidMatrix(E_j, data_j.semiaxes, T_j, R_j);
 
   // perform collision check
-  if(CollisionCheck(E_i,E_j))
+  if (CollisionCheck(E_i, E_j))
   {
-    // collision case: gradually shrink ellipsoids until they are separated, then compute eigenvectors to determine contact point
-    // initialize scaling factor
+    // collision case: gradually shrink ellipsoids until they are separated, then compute
+    // eigenvectors to determine contact point initialize scaling factor
     double W(1.);
 
     // begin shrinking procedure
@@ -3321,104 +3689,104 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
       W -= W_delta;
 
       // safety check
-      if(W < .9)
-        dserror("Ellipsoids shrunk more than 10%%... maybe something is wrong...");
+      if (W < .9) dserror("Ellipsoids shrunk more than 10%%... maybe something is wrong...");
 
       // update matrices for shrunk ellipsoids
       // note: only the bottom right entry of either E_i or E_j depends on the scaling factor W,
       //       according to [... some terms independent of W ...] - W^2
-      const double E_3_3_delta = 2.*W*W_delta-W_delta*W_delta;
-      E_i(3,3) += E_3_3_delta;
-      E_j(3,3) += E_3_3_delta;
+      const double E_3_3_delta = 2. * W * W_delta - W_delta * W_delta;
+      E_i(3, 3) += E_3_3_delta;
+      E_j(3, 3) += E_3_3_delta;
     }
 
     // perform collision check for shrunk ellipsoids
-    while(CollisionCheck(E_i,E_j));
+    while (CollisionCheck(E_i, E_j));
 
     // solve generalized eigenproblem as soon as shrunk ellipsoids no longer collide:
     //     lambda * E_i * V + E_j * V = 0   or   lambda * E_j * V + E_i * V = 0
     // --> compute eigenvectors V0, V1, V2, and V3 of:
     //     ((-E_i)^-1 * E_j)   or   ((-E_j)^-1 * E_i)
-    // although the eigenvectors of both matrices are analytically identical, computationally they are not,
-    // and therefore we check the global IDs of particles i and j to always solve the same eigenproblem,
-    // no matter how many processors are employed
-    static LINALG::Matrix<3,1> V0, V1, V2, V3;
+    // although the eigenvectors of both matrices are analytically identical, computationally they
+    // are not, and therefore we check the global IDs of particles i and j to always solve the same
+    // eigenproblem, no matter how many processors are employed
+    static LINALG::Matrix<3, 1> V0, V1, V2, V3;
     V0.Clear();
     V1.Clear();
     V2.Clear();
     V3.Clear();
 
-    if(data_i.id < data_j.id)
+    if (data_i.id < data_j.id)
     {
       E_i.Scale(-1.);
-      if(ComputeEigenVectors(E_j,E_i,V0,V1,V2,V3))
+      if (ComputeEigenVectors(E_j, E_i, V0, V1, V2, V3))
         dserror("Shrunk ellipsoids still collide!");
     }
     else
     {
       E_j.Scale(-1.);
-      if(ComputeEigenVectors(E_i,E_j,V0,V1,V2,V3))
+      if (ComputeEigenVectors(E_i, E_j, V0, V1, V2, V3))
         dserror("Shrunk ellipsoids still collide!");
     }
 
     // compute contact point inside contact plane
-    static LINALG::Matrix<3,1> C;
+    static LINALG::Matrix<3, 1> C;
     C.Clear();
-    C.Update(V2,V3);
+    C.Update(V2, V3);
     C.Scale(.5);
 
     // compute vectors from particle centers to contact point
-    r_iC.Update(1.,C,-1.,data_i.dis);
-    r_jC.Update(1.,C,-1.,data_j.dis);
+    r_iC.Update(1., C, -1., data_i.dis);
+    r_jC.Update(1., C, -1., data_j.dis);
 
     // compute normal vector of contact plane
     V0 -= C;
     V1 -= C;
-    normal.CrossProduct(V1,V0);
-    normal.Scale(1./normal.Norm2());
+    normal.CrossProduct(V1, V0);
+    normal.Scale(1. / normal.Norm2());
 
     // check whether normal vector points from particle i to particle j, and flip if not
-    static LINALG::Matrix<3,1> r_ij;
+    static LINALG::Matrix<3, 1> r_ij;
     r_ij.Clear();
-    r_ij.Update(-1.,data_i.dis,1.,data_j.dis);
-    if(normal.Dot(r_ij) < 0)
-      normal.Scale(-1.);
+    r_ij.Update(-1., data_i.dis, 1., data_j.dis);
+    if (normal.Dot(r_ij) < 0) normal.Scale(-1.);
 
     // compute contact points on the surfaces of particles i and j:
-    // 1.) define the line L = C + t * d = C + t * (V3 - V2), where C is the contact point inside the contact plane,
-    //     t is the line parameter, d is the direction vector, and V2 and V3 are the two last eigenvectors of the
-    //     generalized eigenproblem
-    // 2.) compute contact point on the surface of particle i by intersecting particle i and line L after an affine
+    // 1.) define the line L = C + t * d = C + t * (V3 - V2), where C is the contact point inside
+    // the contact plane,
+    //     t is the line parameter, d is the direction vector, and V2 and V3 are the two last
+    //     eigenvectors of the generalized eigenproblem
+    // 2.) compute contact point on the surface of particle i by intersecting particle i and line L
+    // after an affine
     //     transformation
-    // 3.) repeat step 2.) for particle j to obtain the sought contact point on the surface of particle j
+    // 3.) repeat step 2.) for particle j to obtain the sought contact point on the surface of
+    // particle j
 
     // step 1.)
     // express contact point C in homogeneous coordinates
     // the last homogeneous coordinate of any point is unity by definition
-    static LINALG::Matrix<1,4> C_hom;
+    static LINALG::Matrix<1, 4> C_hom;
     C_hom.Clear();
-    for(int i=0; i<3; ++i)
-      C_hom(i) = C(i);
+    for (int i = 0; i < 3; ++i) C_hom(i) = C(i);
     C_hom(3) = 1.;
 
     // express direction vector d = V3 - V2 of line L in homogeneous coordinates
     // note that the last homogeneous coordinate is zero, since d is a vector and not a point
-    // think of d as the difference of the two points V3 and V2, each with last homogeneous coordinate 1
-    static LINALG::Matrix<1,4> d_hom;
+    // think of d as the difference of the two points V3 and V2, each with last homogeneous
+    // coordinate 1
+    static LINALG::Matrix<1, 4> d_hom;
     d_hom.Clear();
-    for(int i=0; i<3; ++i)
-      d_hom(i)= V3(i)-V2(i);
+    for (int i = 0; i < 3; ++i) d_hom(i) = V3(i) - V2(i);
     d_hom(3) = 0.;
 
     // step 2.)
-    static LINALG::Matrix<1,4> C_i;
+    static LINALG::Matrix<1, 4> C_i;
     C_i.Clear();
-    ComputeContactPoint(C_i,data_i.semiaxes,T_i,R_i,C_hom,d_hom);
+    ComputeContactPoint(C_i, data_i.semiaxes, T_i, R_i, C_hom, d_hom);
 
     // step 3.)
-    static LINALG::Matrix<1,4> C_j;
+    static LINALG::Matrix<1, 4> C_j;
     C_j.Clear();
-    ComputeContactPoint(C_j,data_j.semiaxes,T_j,R_j,C_hom,d_hom);
+    ComputeContactPoint(C_j, data_j.semiaxes, T_j, R_j, C_hom, d_hom);
 
     // compute contact gap: gap = || C_i - C_j ||
     C_i -= C_j;
@@ -3434,104 +3802,110 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
 
 
 /*---------------------------------------------------------------------------------------------------------------------*
- | compute contact normal, contact gap, contact point on wall element, and type of nearest contact object   fang 10/17 |
+ | compute contact normal, contact gap, contact point on wall element, and type of nearest contact
+ object   fang 10/17 |
  *---------------------------------------------------------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNormalAndGapAndObjectType(
-    LINALG::Matrix<3,1>&                        C,              //!< contact point on wall element
-    GEO::ObjectType&                            objecttype,     //!< type of nearest contact object
-    LINALG::Matrix<3,1>&                        normal,         //!< contact normal
-    double&                                     gap,            //!< contact gap
-    DRT::Element*                               wallele,        //!< wall element
-    const std::map<int,LINALG::Matrix<3,1> >&   nodecoord,      //!< node coordinates of wall element
-    const ParticleCollData&                     data            //!< particle collision data
-    ) const
+void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::
+    ComputeContactPointAndNormalAndGapAndObjectType(
+        LINALG::Matrix<3, 1>& C,                               //!< contact point on wall element
+        GEO::ObjectType& objecttype,                           //!< type of nearest contact object
+        LINALG::Matrix<3, 1>& normal,                          //!< contact normal
+        double& gap,                                           //!< contact gap
+        DRT::Element* wallele,                                 //!< wall element
+        const std::map<int, LINALG::Matrix<3, 1>>& nodecoord,  //!< node coordinates of wall element
+        const ParticleCollData& data                           //!< particle collision data
+        ) const
 {
   // for ellipsoidal particles, particle-wall contact is evaluated as follows:
-  // 1.) affinely transform a given ellipsoid to a unit sphere centered at the origin of the coordinate system,
+  // 1.) affinely transform a given ellipsoid to a unit sphere centered at the origin of the
+  // coordinate system,
   //     employing homogeneous coordinates
   // 2.) apply the same affine transformation to the wall element
-  // 3.) project the center of the unit sphere onto the transformed wall element to obtain the contact point
+  // 3.) project the center of the unit sphere onto the transformed wall element to obtain the
+  // contact point
   //     on the transformed wall element
-  // 4.) compute the contact point on the surface of the unit sphere, i.e., the intersection point between
-  //     the surface of the unit sphere and the line through the center of the unit sphere and the contact point
-  //     on the transformed wall element
-  // 5.) transform back the contact point on the surface of the unit sphere to obtain the contact point on the
+  // 4.) compute the contact point on the surface of the unit sphere, i.e., the intersection point
+  // between
+  //     the surface of the unit sphere and the line through the center of the unit sphere and the
+  //     contact point on the transformed wall element
+  // 5.) transform back the contact point on the surface of the unit sphere to obtain the contact
+  // point on the
   //     surface of the original ellipsoid
-  // 6.) project the contact point on the surface of the original ellipsoid onto the original wall element to
+  // 6.) project the contact point on the surface of the original ellipsoid onto the original wall
+  // element to
   //     obtain the contact point on the original wall element
-  // 7.) calculate the contact normal and the contact gap from the contact points on the original wall element
+  // 7.) calculate the contact normal and the contact gap from the contact points on the original
+  // wall element
   //     and the surface of the original ellipsoid
 
   // step 1.)
   // compute transformation matrix M in homogeneous coordinates
-  static LINALG::Matrix<4,4> T, R, M;
+  static LINALG::Matrix<4, 4> T, R, M;
   T.Clear();
   R.Clear();
   M.Clear();
 
-  ComputeTranslationMatrix(T,data.dis);
-  ComputeRotationMatrix(R,data.ang);
-  ComputeTransformationMatrix(M,data.semiaxes,T,R);
+  ComputeTranslationMatrix(T, data.dis);
+  ComputeRotationMatrix(R, data.ang);
+  ComputeTransformationMatrix(M, data.semiaxes, T, R);
 
   // step 2.)
   // transform the node coordinates of the wall element
-  std::map<int,LINALG::Matrix<3,1> > nodecoord_t;
-  static LINALG::Matrix<3,1> coord, coord_t;
-  static LINALG::Matrix<1,4> coord_hom, coord_hom_t;
+  std::map<int, LINALG::Matrix<3, 1>> nodecoord_t;
+  static LINALG::Matrix<3, 1> coord, coord_t;
+  static LINALG::Matrix<1, 4> coord_hom, coord_hom_t;
   coord.Clear();
   coord_t.Clear();
   coord_hom.Clear();
   coord_hom_t.Clear();
 
-  for(int inode=0; inode<wallele->NumNode(); ++inode)
+  for (int inode = 0; inode < wallele->NumNode(); ++inode)
   {
-    const LINALG::Matrix<3,1>& currnodecoord = nodecoord.at(wallele->Nodes()[inode]->Id());
-    for(int i=0; i<3; ++i)
-      coord_hom(i) = currnodecoord(i);
+    const LINALG::Matrix<3, 1>& currnodecoord = nodecoord.at(wallele->Nodes()[inode]->Id());
+    for (int i = 0; i < 3; ++i) coord_hom(i) = currnodecoord(i);
     coord_hom(3) = 1.;
-    coord_hom_t.Multiply(coord_hom,M);
-    for(int i=0; i<3; ++i)
-      coord_t(i) = coord_hom_t(i);
+    coord_hom_t.Multiply(coord_hom, M);
+    for (int i = 0; i < 3; ++i) coord_t(i) = coord_hom_t(i);
     nodecoord_t[wallele->Nodes()[inode]->Id()] = coord_t;
   }
 
   // step 3.)
   coord_t.Clear();
-  GEO::nearest3DObjectOnElement(wallele,nodecoord_t,coord_t,C);
+  GEO::nearest3DObjectOnElement(wallele, nodecoord_t, coord_t, C);
 
   // step 4.)
   const double norm1 = C.Norm2();
-  C.Scale(1./norm1);
+  C.Scale(1. / norm1);
 
   // step 5.)
-  for(int i=0; i<3; ++i)
-    coord_hom_t(i) = C(i);
+  for (int i = 0; i < 3; ++i) coord_hom_t(i) = C(i);
   coord_hom_t(3) = 1.;
-  if(false)
+  if (false)
   {
-    // for some unknown reason, the FixedSizeSerialDenseSolver yields slightly different results with the GCC and Clang compilers,
-    // giving rise to self-amplifying roundoff differences and ultimately causing test cases to fail with one of the two compilers
-    // therefore, the following code is deactivated and replaced by the alternative algorithm given below
-    LINALG::FixedSizeSerialDenseSolver<4,4> inverter;
+    // for some unknown reason, the FixedSizeSerialDenseSolver yields slightly different results
+    // with the GCC and Clang compilers, giving rise to self-amplifying roundoff differences and
+    // ultimately causing test cases to fail with one of the two compilers therefore, the following
+    // code is deactivated and replaced by the alternative algorithm given below
+    LINALG::FixedSizeSerialDenseSolver<4, 4> inverter;
     inverter.SetMatrix(M);
-    if(inverter.Invert())
-      dserror("Inversion of 4x4 matrix failed!");
+    if (inverter.Invert()) dserror("Inversion of 4x4 matrix failed!");
   }
   else
-    ComputeTransformationMatrixInverse(M,data.semiaxes,T,R);
-  coord_hom.Multiply(coord_hom_t,M);
-  for(int i=0; i<3; ++i)
-    coord(i) = coord_hom(i);
+    ComputeTransformationMatrixInverse(M, data.semiaxes, T, R);
+  coord_hom.Multiply(coord_hom_t, M);
+  for (int i = 0; i < 3; ++i) coord(i) = coord_hom(i);
 
   // step 6.)
-  objecttype = GEO::nearest3DObjectOnElement(wallele,nodecoord,coord,C);
-  if(objecttype != GEO::SURFACE_OBJECT)
-    dserror("For ellipsoidal particles, particle-wall contact is only implemented for surfaces, but not for lines and corners!");
+  objecttype = GEO::nearest3DObjectOnElement(wallele, nodecoord, coord, C);
+  if (objecttype != GEO::SURFACE_OBJECT)
+    dserror(
+        "For ellipsoidal particles, particle-wall contact is only implemented for surfaces, but "
+        "not for lines and corners!");
 
   // step 7.)
-  normal.Update(1.,coord,-1.,C);
+  normal.Update(1., coord, -1., C);
   const double norm2 = normal.Norm2();
-  normal.Scale(1./norm2);
+  normal.Scale(1. / norm2);
   gap = norm1 < 1. ? -norm2 : norm2;
 
   return;
@@ -3542,89 +3916,89 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeContactPointAndNorm
  | compute rotation matrix expressed in homogeneous coordinates   fang 10/17 |
  *---------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeRotationMatrix(
-    LINALG::Matrix<4,4>&         R,      //!< rotation matrix
-    const LINALG::Matrix<3,1>&   angle   //!< rotation angle vector
+    LINALG::Matrix<4, 4>& R,           //!< rotation matrix
+    const LINALG::Matrix<3, 1>& angle  //!< rotation angle vector
     ) const
 {
   // clear rotation matrix
   R.Clear();
 
   // compute rotation matrix expressed in homogeneous coordinates
-  static LINALG::Matrix<3,3> temp3x3;
+  static LINALG::Matrix<3, 3> temp3x3;
   temp3x3.Clear();
 
-  LARGEROTATIONS::angletotriad(angle,temp3x3);
-  for(int i=0; i<3; ++i)
-    for(int j=0; j<3; ++j)
-      R(i,j) = temp3x3(i,j);
-  R(3,3) = 1.;
+  LARGEROTATIONS::angletotriad(angle, temp3x3);
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j) R(i, j) = temp3x3(i, j);
+  R(3, 3) = 1.;
 
   return;
 }
 
 
 /*------------------------------------------------------------------------------------------------------------------------*
- | compute matrix transforming an ellipsoid to a unit sphere centered at the origin of the coordinate system   fang 10/17 |
+ | compute matrix transforming an ellipsoid to a unit sphere centered at the origin of the
+ coordinate system   fang 10/17 |
  *------------------------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTransformationMatrix(
-    LINALG::Matrix<4,4>&         M,          //!< transformation matrix
-    const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
-    const LINALG::Matrix<4,4>&   T,          //!< translation matrix
-    const LINALG::Matrix<4,4>&   R           //!< rotation matrix
+    LINALG::Matrix<4, 4>& M,               //!< transformation matrix
+    const LINALG::Matrix<3, 1>& semiaxes,  //!< ellipsoid semi-axes
+    const LINALG::Matrix<4, 4>& T,         //!< translation matrix
+    const LINALG::Matrix<4, 4>& R          //!< rotation matrix
     ) const
 {
   // clear transformation matrix
   M.Clear();
 
   // assemble scaling matrix to affinely transform a plain ellipsoid to a plain unit sphere
-  M(0,0) = 1./(semiaxes(0));
-  M(1,1) = 1./(semiaxes(1));
-  M(2,2) = 1./(semiaxes(2));
-  M(3,3) = 1.;
+  M(0, 0) = 1. / (semiaxes(0));
+  M(1, 1) = 1. / (semiaxes(1));
+  M(2, 2) = 1. / (semiaxes(2));
+  M(3, 3) = 1.;
 
   // multiply rotation matrix R by scaling matrix
-  static LINALG::Matrix<4,4> temp4x4;
+  static LINALG::Matrix<4, 4> temp4x4;
   temp4x4.Clear();
-  temp4x4.Multiply(R,M);
+  temp4x4.Multiply(R, M);
 
   // multiply translation matrix T by result R * M
-  M.Multiply(T,temp4x4);
+  M.Multiply(T, temp4x4);
 
   return;
 }
 
 
 /*-----------------------------------------------------------------------------------------------------------------------------*
- | compute matrix transforming a unit sphere centered at the origin of the coordinate system back to an ellipsoid   fang 11/17 |
+ | compute matrix transforming a unit sphere centered at the origin of the coordinate system back to
+ an ellipsoid   fang 11/17 |
  *-----------------------------------------------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTransformationMatrixInverse(
-    LINALG::Matrix<4,4>&         M_inv,      //!< inverse transformation matrix
-    const LINALG::Matrix<3,1>&   semiaxes,   //!< ellipsoid semi-axes
-    const LINALG::Matrix<4,4>&   T,          //!< translation matrix
-    const LINALG::Matrix<4,4>&   R           //!< rotation matrix
+    LINALG::Matrix<4, 4>& M_inv,           //!< inverse transformation matrix
+    const LINALG::Matrix<3, 1>& semiaxes,  //!< ellipsoid semi-axes
+    const LINALG::Matrix<4, 4>& T,         //!< translation matrix
+    const LINALG::Matrix<4, 4>& R          //!< rotation matrix
     ) const
 {
   // clear inverse transformation matrix
   M_inv.Clear();
 
   // assemble inverse scaling matrix to affinely transform a plain unit sphere to a plain ellipsoid
-  M_inv(0,0) = semiaxes(0);
-  M_inv(1,1) = semiaxes(1);
-  M_inv(2,2) = semiaxes(2);
-  M_inv(3,3) = 1.;
+  M_inv(0, 0) = semiaxes(0);
+  M_inv(1, 1) = semiaxes(1);
+  M_inv(2, 2) = semiaxes(2);
+  M_inv(3, 3) = 1.;
 
   // multiply inverse scaling matrix by inverse rotation matrix R^T
-  static LINALG::Matrix<4,4> temp4x4;
+  static LINALG::Matrix<4, 4> temp4x4;
   temp4x4.Clear();
-  temp4x4.MultiplyNT(M_inv,R);
+  temp4x4.MultiplyNT(M_inv, R);
 
   // multiply result M_inv * R by inverse translation matrix T_inv
-  static LINALG::Matrix<4,4> T_inv;
+  static LINALG::Matrix<4, 4> T_inv;
   T_inv.Clear();
   T_inv = T;
-  for(int i=0; i<3; ++i)
-    T_inv(3,i) = -T_inv(3,i);
-  M_inv.Multiply(temp4x4,T_inv);
+  for (int i = 0; i < 3; ++i) T_inv(3, i) = -T_inv(3, i);
+  M_inv.Multiply(temp4x4, T_inv);
 
   return;
 }
@@ -3634,124 +4008,119 @@ void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTransformationMatri
  | compute translation matrix expressed in homogeneous coordinates   fang 10/17 |
  *------------------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComputeTranslationMatrix(
-    LINALG::Matrix<4,4>&         T,             //!< translation matrix
-    const LINALG::Matrix<3,1>&   displacement   //!< displacement vector
+    LINALG::Matrix<4, 4>& T,                  //!< translation matrix
+    const LINALG::Matrix<3, 1>& displacement  //!< displacement vector
     ) const
 {
   // clear translation matrix
   T.Clear();
 
   // compute translation matrix expressed in homogeneous coordinates
-  for(int i=0; i<4; ++i)
-    T(i,i) = 1.;
-  for(int dim=0; dim<3; ++dim)
-    T(3,dim) = -displacement(dim);
+  for (int i = 0; i < 4; ++i) T(i, i) = 1.;
+  for (int dim = 0; dim < 3; ++dim) T(3, dim) = -displacement(dim);
 
   return;
 }
 
 
 /*-----------------------------------------------------------------------------------------------------------*
- | determine whether the generalized eigenproblem A*x = lambda B*x exhibits complex eigenvalues   fang 10/17 |
+ | determine whether the generalized eigenproblem A*x = lambda B*x exhibits complex eigenvalues fang
+ 10/17 |
  *-----------------------------------------------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComplexEigenValues(
-    const LINALG::Matrix<4,4>&   A,   //!< first matrix of generalized eigenproblem
-    const LINALG::Matrix<4,4>&   B    //!< second matrix of generalized eigenproblem
+    const LINALG::Matrix<4, 4>& A,  //!< first matrix of generalized eigenproblem
+    const LINALG::Matrix<4, 4>& B   //!< second matrix of generalized eigenproblem
     ) const
 {
   // set number of matrix rows or columns
   int N(4);
 
   // copy matrices A and B
-  Epetra_SerialDenseMatrix A_temp(N,N), B_temp(N,N);
-  for(int i=0; i<N; ++i)
-    for(int j=0; j<N; ++j)
+  Epetra_SerialDenseMatrix A_temp(N, N), B_temp(N, N);
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < N; ++j)
     {
-      A_temp(i,j) = A(i,j);
-      B_temp(i,j) = B(i,j);
+      A_temp(i, j) = A(i, j);
+      B_temp(i, j) = B(i, j);
     }
 
   //
   // step 1: transform matrix B to upper triangluar matrix via QR factorization
   //
 
-  int jpvt[N];     // order of permutation matrix
-  double tau[N];   // factor for calculation of orthogonal matrix Q
-  int lwork(3*N+1), info;
+  int jpvt[N];    // order of permutation matrix
+  double tau[N];  // factor for calculation of orthogonal matrix Q
+  int lwork(3 * N + 1), info;
   double dummy_lwork[lwork];
-  dgeqp3(&N,&N,B_temp.A(),&N,jpvt,tau,dummy_lwork,&lwork,&info);
-  if(info < 0)
-    dserror("LAPACK algorithm dgeqp3: The %d-th argument has an illegal value!",info);
+  dgeqp3(&N, &N, B_temp.A(), &N, jpvt, tau, dummy_lwork, &lwork, &info);
+  if (info < 0) dserror("LAPACK algorithm dgeqp3: The %d-th argument has an illegal value!", info);
 
   // calculate matrix Q from multiplying Householder transformations
-  Epetra_SerialDenseMatrix Q(N,N), temp(N,N);
-  for(int i=0; i<N; ++i)
-    Q(i,i) = 1.;
-  for(int i=0; i<N; ++i)
+  Epetra_SerialDenseMatrix Q(N, N), temp(N, N);
+  for (int i = 0; i < N; ++i) Q(i, i) = 1.;
+  for (int i = 0; i < N; ++i)
   {
     Epetra_SerialDenseVector v(N);
     v(i) = 1.;
-    for(int j=i+1; j<N; ++j)
-      v(j) = B_temp(j,i);
-    Epetra_SerialDenseMatrix H(N,N);
-    H.Multiply('N','T',tau[i],v,v,0.);
+    for (int j = i + 1; j < N; ++j) v(j) = B_temp(j, i);
+    Epetra_SerialDenseMatrix H(N, N);
+    H.Multiply('N', 'T', tau[i], v, v, 0.);
     H.Scale(-1.);
-    for(int j=0; j<N; ++j)
-      H(j,j) += 1.;
-    Q.Apply(H,temp);
+    for (int j = 0; j < N; ++j) H(j, j) += 1.;
+    Q.Apply(H, temp);
     Q = temp;
   }
 
   // calculate permutation matrix P
-  Epetra_SerialDenseMatrix P(N,N);
-  for(int i=0; i<N; ++i)
-    P(jpvt[i]-1,i) = 1.;
+  Epetra_SerialDenseMatrix P(N, N);
+  for (int i = 0; i < N; ++i) P(jpvt[i] - 1, i) = 1.;
 
   // annul lower diagonal entries of B
-  for(int i=0; i<N; ++i)
-    for(int j=i+1; j<N; ++j)
-      B_temp(j,i) = 0.;
+  for (int i = 0; i < N; ++i)
+    for (int j = i + 1; j < N; ++j) B_temp(j, i) = 0.;
 
   // transform matrix A according to Q^T * A * P
-  temp.Multiply('T','N',1.,Q,A_temp,0.);
-  A_temp.Multiply('N','N',1.,temp,P,0.);
+  temp.Multiply('T', 'N', 1., Q, A_temp, 0.);
+  A_temp.Multiply('N', 'N', 1., temp, P, 0.);
 
   //
-  // step 2: transform matrix A to upper Hessenberg matrix and keep matrix B as upper diagonal matrix
+  // step 2: transform matrix A to upper Hessenberg matrix and keep matrix B as upper diagonal
+  // matrix
   //
 
   char job = 'P';
   int ilo, ihi;
-  double dummy_N[N], dummy_6N[6*N];
-  dggbal(&job,&N,A_temp.A(),&N,B_temp.A(),&N,&ilo,&ihi,dummy_N,dummy_N,dummy_6N,&info);
-  if(info)
-    dserror("LAPACK algorithm dggbal threw error code %d!",info);
+  double dummy_N[N], dummy_6N[6 * N];
+  dggbal(&job, &N, A_temp.A(), &N, B_temp.A(), &N, &ilo, &ihi, dummy_N, dummy_N, dummy_6N, &info);
+  if (info) dserror("LAPACK algorithm dggbal threw error code %d!", info);
 
   char comp = 'I';
-  Epetra_SerialDenseMatrix Z(N,N);
-  dgghrd(&comp,&comp,&N,&ilo,&ihi,A_temp.A(),&N,B_temp.A(),&N,Q.A(),&N,Z.A(),&N,&info);
-  if(info < 0)
-    dserror("LAPACK algorithm dgghrd: The %d-th argument has an illegal value!",info);
+  Epetra_SerialDenseMatrix Z(N, N);
+  dgghrd(&comp, &comp, &N, &ilo, &ihi, A_temp.A(), &N, B_temp.A(), &N, Q.A(), &N, Z.A(), &N, &info);
+  if (info < 0) dserror("LAPACK algorithm dgghrd: The %d-th argument has an illegal value!", info);
 
   //
-  // step 3: transform upper Hessenberg matrix A to upper diagonal matrix and keep matrix B as upper diagonal matrix via QZ transformation
+  // step 3: transform upper Hessenberg matrix A to upper diagonal matrix and keep matrix B as upper
+  // diagonal matrix via QZ transformation
   //
 
   // vectors containing eigenvalues of generalized eigenproblem
   double alphar[N], alphai[N], beta[N];
 
-  job ='E';
+  job = 'E';
   comp = 'V';
-  dhgeqz(&job,&comp,&comp,&N,&ilo,&ihi,A_temp.A(),&N,B_temp.A(),&N,alphar,alphai,beta,Q.A(),&N,Z.A(),&N,dummy_N,&N,&info);
-  if(info < 0)
-    dserror("LAPACK algorithm dhgeqz: The %d-th argument has an illegal value!",info);
-  else if(info > N)
-    dserror("LAPACK algorithm dhgeqz: The QZ iteration did not converge! (H,T) is not in Schur form, but the eigenvalues should be correct!");
+  dhgeqz(&job, &comp, &comp, &N, &ilo, &ihi, A_temp.A(), &N, B_temp.A(), &N, alphar, alphai, beta,
+      Q.A(), &N, Z.A(), &N, dummy_N, &N, &info);
+  if (info < 0)
+    dserror("LAPACK algorithm dhgeqz: The %d-th argument has an illegal value!", info);
+  else if (info > N)
+    dserror(
+        "LAPACK algorithm dhgeqz: The QZ iteration did not converge! (H,T) is not in Schur form, "
+        "but the eigenvalues should be correct!");
 
   bool complex(false);
-  for(int i=0; i<N; ++i)
-    if(abs(alphai[i]) > 1.e-16)
-      complex = true;
+  for (int i = 0; i < N; ++i)
+    if (abs(alphai[i]) > 1.e-16) complex = true;
 
   return complex;
 }
@@ -3761,18 +4130,12 @@ bool PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ComplexEigenValues(
  | constructor for MD based particle contact               ghamm 09/13  |
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleCollisionHandlerMD::ParticleCollisionHandlerMD(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-  const Teuchos::ParameterList& particledynparams
-  ) :
-  PARTICLE::ParticleCollisionHandlerBase(
-    discret,
-    particlealgorithm,
-    particledynparams
-    )
+    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+    const Teuchos::ParameterList& particledynparams)
+    : PARTICLE::ParticleCollisionHandlerBase(discret, particlealgorithm, particledynparams)
 {
   // safety check
-  if(particlealgorithm->BinStrategy()->HavePBC())
+  if (particlealgorithm->BinStrategy()->HavePBC())
     dserror("Periodic boundary conditions not yet implemented for molecular dynamics!");
 
   return;
@@ -3782,14 +4145,10 @@ PARTICLE::ParticleCollisionHandlerMD::ParticleCollisionHandlerMD(
 /*----------------------------------------------------------------------*
  | compute collisions (inter-particle and particle-wall)   ghamm 09/13  |
  *----------------------------------------------------------------------*/
-double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
-  double dt,
-  Teuchos::RCP<Epetra_Vector> disn,
-  Teuchos::RCP<Epetra_Vector> veln,
-  Teuchos::RCP<Epetra_FEVector> f_structure,
-  int timestep)
+double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
+    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
+    Teuchos::RCP<Epetra_FEVector> f_structure, int timestep)
 {
-
   // ddt is the most advanced collision time (between [0,dt))
   double ddt = 0.0;
   std::set<Teuchos::RCP<Event>, Event::Helper> eventqueue;
@@ -3807,14 +4166,15 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 
 #ifdef OUTPUT
     std::cout << " Dealing with the collision event at time " << next_event->time
-        << " between the two collision partners " << next_event->particle_1->Id() << " & ";
+              << " between the two collision partners " << next_event->particle_1->Id() << " & ";
     if (next_event->coltype == INPAR::PARTICLE::particle_particle)
     {
       std::cout << "GID of second particle " << next_event->particle_2->Id() << std::endl;
     }
     else if (next_event->coltype == INPAR::PARTICLE::particle_wall)
     {
-      std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(next_event)->wall->Id() << std::endl;
+      std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(next_event)->wall->Id()
+                << std::endl;
     }
 #endif
 
@@ -3833,7 +4193,9 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 #endif
 
       // loop over event queue and erase invalid collisions
-      for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter=eventqueue.begin(); iter!=eventqueue.end(); /*no ++iter*/)
+      for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter = eventqueue.begin();
+           iter != eventqueue.end();
+          /*no ++iter*/)
       {
 #ifdef OUTPUT
         Teuchos::RCP<Event> output1 = *iter;
@@ -3844,16 +4206,18 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
         }
         else if (output1->coltype == INPAR::PARTICLE::particle_wall)
         {
-          std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output1)->wall->Id() << std::endl;
+          std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output1)->wall->Id()
+                    << std::endl;
         }
 #endif
         Teuchos::RCP<Event> invalid_col = *iter;
         if (next_event->coltype == INPAR::PARTICLE::particle_particle)
         {
-          if ((invalid_col->coltype == INPAR::PARTICLE::particle_particle) and (invalid_col->particle_1->Id() == next_event->particle_1->Id()
-                  or invalid_col->particle_1->Id() == next_event->particle_2->Id()
-                  or invalid_col->particle_2->Id() == next_event->particle_1->Id()
-                  or invalid_col->particle_2->Id() == next_event->particle_2->Id()))
+          if ((invalid_col->coltype == INPAR::PARTICLE::particle_particle) and
+              (invalid_col->particle_1->Id() == next_event->particle_1->Id() or
+                  invalid_col->particle_1->Id() == next_event->particle_2->Id() or
+                  invalid_col->particle_2->Id() == next_event->particle_1->Id() or
+                  invalid_col->particle_2->Id() == next_event->particle_2->Id()))
           {
 #ifdef OUTPUT
             std::cout << " Erasing the following elements from the eventqueue: " << std::endl;
@@ -3867,14 +4231,16 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
             ++iter;
             eventqueue.erase(tmp);
           }
-          else if ((invalid_col->coltype == INPAR::PARTICLE::particle_wall) and (invalid_col->particle_1->Id() == next_event->particle_1->Id()
-                  or invalid_col->particle_1->Id() == next_event->particle_2->Id()))
+          else if ((invalid_col->coltype == INPAR::PARTICLE::particle_wall) and
+                   (invalid_col->particle_1->Id() == next_event->particle_1->Id() or
+                       invalid_col->particle_1->Id() == next_event->particle_2->Id()))
           {
 #ifdef OUTPUT
             std::cout << " Erasing the following elements from the eventqueue: " << std::endl;
             std::cout << " happening at time:  " << invalid_col->time << std::endl;
             std::cout << "GID of first particle " << invalid_col->particle_1->Id() << std::endl;
-            std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(invalid_col)->wall->Id() << std::endl;
+            std::cout << "GID of wall "
+                      << Teuchos::rcp_dynamic_cast<WallEvent>(invalid_col)->wall->Id() << std::endl;
 #endif
 
             std::set<Teuchos::RCP<Event>, Event::Helper>::iterator tmp = iter;
@@ -3888,8 +4254,9 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
         }
         else if (next_event->coltype == INPAR::PARTICLE::particle_wall)
         {
-          if ((invalid_col->coltype == INPAR::PARTICLE::particle_particle) and (invalid_col->particle_1->Id() == next_event->particle_1->Id()
-                  or invalid_col->particle_2->Id() == next_event->particle_1->Id()))
+          if ((invalid_col->coltype == INPAR::PARTICLE::particle_particle) and
+              (invalid_col->particle_1->Id() == next_event->particle_1->Id() or
+                  invalid_col->particle_2->Id() == next_event->particle_1->Id()))
 
           {
 #ifdef OUTPUT
@@ -3903,13 +4270,15 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
             ++iter;
             eventqueue.erase(tmp);
           }
-          else if ((invalid_col->coltype == INPAR::PARTICLE::particle_wall) and (invalid_col->particle_1->Id() == next_event->particle_1->Id()))
+          else if ((invalid_col->coltype == INPAR::PARTICLE::particle_wall) and
+                   (invalid_col->particle_1->Id() == next_event->particle_1->Id()))
           {
 #ifdef OUTPUT
             std::cout << " Erasing the following elements from the eventqueue: " << std::endl;
             std::cout << " happening at time:  " << invalid_col->time << std::endl;
             std::cout << "GID of first particle " << invalid_col->particle_1->Id() << std::endl;
-            std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(invalid_col)->wall->Id() << std::endl;
+            std::cout << "GID of wall "
+                      << Teuchos::rcp_dynamic_cast<WallEvent>(invalid_col)->wall->Id() << std::endl;
 #endif
 
             std::set<Teuchos::RCP<Event>, Event::Helper>::iterator tmp = iter;
@@ -3926,44 +4295,45 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
       }
 
 #ifdef OUTPUT
-        std::cout << "The eventqueue contains after deleting invalid events: ";
-        int count = 0;
-        for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter2 = eventqueue.begin(); iter2 != eventqueue.end(); ++iter2)
-        {
-          std::cout << "This is entry number " << count << " of the eventqueue:" << std::endl;
+      std::cout << "The eventqueue contains after deleting invalid events: ";
+      int count = 0;
+      for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter2 = eventqueue.begin();
+           iter2 != eventqueue.end(); ++iter2)
+      {
+        std::cout << "This is entry number " << count << " of the eventqueue:" << std::endl;
 
-          Teuchos::RCP<Event> output2 = *iter2;
-          std::cout << " happening at time:  " << output2->time << std::endl;
-          std::cout << "GID of first particle " << output2->particle_1->Id() << std::endl;
-          if (output2->coltype == INPAR::PARTICLE::particle_particle)
-          {
-            std::cout << "GID of second particle " << output2->particle_2->Id() << std::endl;
-          }
-          else if (output2->coltype == INPAR::PARTICLE::particle_wall)
-          {
-            std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id() << std::endl;
-          }
-          count++;
+        Teuchos::RCP<Event> output2 = *iter2;
+        std::cout << " happening at time:  " << output2->time << std::endl;
+        std::cout << "GID of first particle " << output2->particle_1->Id() << std::endl;
+        if (output2->coltype == INPAR::PARTICLE::particle_particle)
+        {
+          std::cout << "GID of second particle " << output2->particle_2->Id() << std::endl;
         }
-        std::cout << std::endl;
+        else if (output2->coltype == INPAR::PARTICLE::particle_wall)
+        {
+          std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id()
+                    << std::endl;
+        }
+        count++;
+      }
+      std::cout << std::endl;
 #endif
 
       SearchForNewCollisions(next_event, eventqueue, dt);
     }
-
   }
 
 
   // updating of all particles to the end of the current time step
-  for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
-    (particleData_[i].dis).Update(dt - particleData_[i].ddt,particleData_[i].vel,1);
+  for (int i = 0; i < discret_->NodeColMap()->NumMyElements(); ++i)
+    (particleData_[i].dis).Update(dt - particleData_[i].ddt, particleData_[i].vel, 1);
 
   // copy values from col to row layout
-  for(int i=0; i<discret_->NumMyColNodes(); ++i)
+  for (int i = 0; i < discret_->NumMyColNodes(); ++i)
   {
     if (particleData_[i].owner == myrank_)
     {
-      for (int dim=0;dim<3;++dim)
+      for (int dim = 0; dim < 3; ++dim)
       {
         int lidDof = disn->Map().LID((particleData_[i].lm)[dim]);
 
@@ -3975,12 +4345,12 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 
 #ifdef DEBUG
   // test for inter-particle penetration --> endless loops can be caused by overlapping particles
-  for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
+  for (int i = 0; i < discret_->NodeColMap()->NumMyElements(); ++i)
   {
     DRT::Node* currparticle = discret_->lColNode(i);
 
-    static LINALG::Matrix<3,1> currposition;
-    static LINALG::Matrix<3,1> currvelocity;
+    static LINALG::Matrix<3, 1> currposition;
+    static LINALG::Matrix<3, 1> currvelocity;
     currposition.Clear();
     currvelocity.Clear();
 
@@ -3992,18 +4362,21 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
     // gather all particles and walls in the vicinity of currparticle
     std::list<DRT::Node*> neighboring_particles;
     boost::unordered_map<int, DRT::Element*> neighboring_walls;
-    particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighboring_walls);
+    particle_algorithm_->GetNeighbouringItems(
+        currparticle, neighboring_particles, neighboring_walls);
 
-    // loop over all neighbouring particles and check if the sum of their radii is larger than their distance
-    for (std::list<DRT::Node*>::iterator iter=neighboring_particles.begin(); iter!=neighboring_particles.end(); ++iter)
+    // loop over all neighbouring particles and check if the sum of their radii is larger than their
+    // distance
+    for (std::list<DRT::Node*>::iterator iter = neighboring_particles.begin();
+         iter != neighboring_particles.end(); ++iter)
     {
       if (currparticle->Id() >= (*iter)->Id())
       {
         continue;
       }
 
-      static LINALG::Matrix<3,1> iterposition;
-      static LINALG::Matrix<3,1> itervelocity;
+      static LINALG::Matrix<3, 1> iterposition;
+      static LINALG::Matrix<3, 1> itervelocity;
       iterposition.Clear();
       itervelocity.Clear();
       double iterradius;
@@ -4011,7 +4384,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 
       GetCollisionData(*iter, iterposition, itervelocity, iterradius, itertime);
 
-      static LINALG::Matrix<3,1> distance;
+      static LINALG::Matrix<3, 1> distance;
       distance.Clear();
       distance.Update(1.0, currposition, -1.0, iterposition);
       if (distance.Norm2() - (currradius + iterradius) < -GEO::TOL14)
@@ -4021,7 +4394,8 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
     }
 
     // test for particle-wall penetration
-    for (boost::unordered_map<int, DRT::Element*>::iterator iter=neighboring_walls.begin(); iter!=neighboring_walls.end(); ++iter)
+    for (boost::unordered_map<int, DRT::Element*>::iterator iter = neighboring_walls.begin();
+         iter != neighboring_walls.end(); ++iter)
     {
       Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
       Teuchos::RCP<const Epetra_Vector> walldisnp = walldiscret->GetState("walldisnp");
@@ -4031,33 +4405,33 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
       int numnodes = currElem->NumNode();
 
       std::vector<int> lm;
-      lm.reserve(numnodes*3);
+      lm.reserve(numnodes * 3);
 
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       currElem->LocationVector(*walldiscret, lm, lmowner, lmstride);
 
-      std::map<int, LINALG::Matrix<3,1> > wallpositions;
+      std::map<int, LINALG::Matrix<3, 1>> wallpositions;
       // nodal position of wall at the end of the time step
-      std::vector<double> nodaldisnp(numnodes*3);
+      std::vector<double> nodaldisnp(numnodes * 3);
       DRT::UTILS::ExtractMyValues(*walldisnp, nodaldisnp, lm);
 
-      for (int j=0; j<numnodes; ++j)
+      for (int j = 0; j < numnodes; ++j)
       {
         const DRT::Node* node = nodes[j];
 
-        static LINALG::Matrix<3,1> nodepos;
+        static LINALG::Matrix<3, 1> nodepos;
         nodepos.Clear();
-        for (int i=0; i<3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-          nodepos(i) = node->X()[i] + nodaldisnp[3*j + i];
+          nodepos(i) = node->X()[i] + nodaldisnp[3 * j + i];
         }
         wallpositions[node->Id()] = nodepos;
       }
 
-      LINALG::Matrix<3,1> minDistCoords;
+      LINALG::Matrix<3, 1> minDistCoords;
       GEO::nearest3DObjectOnElement(currElem, wallpositions, currposition, minDistCoords);
-      static LINALG::Matrix<3,1> distance;
+      static LINALG::Matrix<3, 1> distance;
       distance.Clear();
       distance.Update(1.0, currposition, -1.0, minDistCoords);
 
@@ -4086,159 +4460,171 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
  | contact for one event is evaluated                      ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
-  Teuchos::RCP<Event> next_event,
-  const double dt
-  )
+    Teuchos::RCP<Event> next_event, const double dt)
 {
   // STARTING FROM HERE:
   // event.time in event queue is related to beginning of time step
 
   // check for Particle Particle Collision or Particle Wall Collision
-  switch(next_event->coltype)
+  switch (next_event->coltype)
   {
-  case INPAR::PARTICLE::particle_particle:
-  {
+    case INPAR::PARTICLE::particle_particle:
+    {
 #ifdef OUTPUT
-    std::cout << "Handle collision of particle " << next_event->particle_1->Id()
-        << " with partice " << next_event->particle_2->Id() << std::endl;
+      std::cout << "Handle collision of particle " << next_event->particle_1->Id()
+                << " with partice " << next_event->particle_2->Id() << std::endl;
 #endif
 
-    // get particle data
-    DRT::Node* particle_1 = next_event->particle_1;
-    DRT::Node* particle_2 = next_event->particle_2;
+      // get particle data
+      DRT::Node* particle_1 = next_event->particle_1;
+      DRT::Node* particle_2 = next_event->particle_2;
 
-    int lid_1 = particle_1->LID();
-    int lid_2 = particle_2->LID();
+      int lid_1 = particle_1->LID();
+      int lid_2 = particle_2->LID();
 
-    static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2, pos_1_new, pos_2_new, vel_1_new, vel_2_new;
-    pos_1.Clear();
-    pos_2.Clear();
-    vel_1.Clear();
-    vel_2.Clear();
-    pos_1_new.Clear();
-    pos_2_new.Clear();
-    vel_1_new.Clear();
-    vel_2_new.Clear();
+      static LINALG::Matrix<3, 1> pos_1, pos_2, vel_1, vel_2, pos_1_new, pos_2_new, vel_1_new,
+          vel_2_new;
+      pos_1.Clear();
+      pos_2.Clear();
+      vel_1.Clear();
+      vel_2.Clear();
+      pos_1_new.Clear();
+      pos_2_new.Clear();
+      vel_1_new.Clear();
+      vel_2_new.Clear();
 
-    pos_1 = particleData_[lid_1].dis;
-    pos_2 = particleData_[lid_2].dis;
-    vel_1 = particleData_[lid_1].vel;
-    vel_2 = particleData_[lid_2].vel;
+      pos_1 = particleData_[lid_1].dis;
+      pos_2 = particleData_[lid_2].dis;
+      vel_1 = particleData_[lid_1].vel;
+      vel_2 = particleData_[lid_2].vel;
 
-    // compute particle positions and collision normal at collision time
-    static LINALG::Matrix<3,1> unitcollnormal;
-    unitcollnormal.Clear();
-    pos_1_new.Update(1.,pos_1,next_event->time-particleData_[lid_1].ddt,vel_1);
-    pos_2_new.Update(1.,pos_2,next_event->time-particleData_[lid_2].ddt,vel_2);
-    unitcollnormal.Update(1.,pos_2_new,-1.,pos_1_new);
-    unitcollnormal.Scale(1.0/unitcollnormal.Norm2());
+      // compute particle positions and collision normal at collision time
+      static LINALG::Matrix<3, 1> unitcollnormal;
+      unitcollnormal.Clear();
+      pos_1_new.Update(1., pos_1, next_event->time - particleData_[lid_1].ddt, vel_1);
+      pos_2_new.Update(1., pos_2, next_event->time - particleData_[lid_2].ddt, vel_2);
+      unitcollnormal.Update(1., pos_2_new, -1., pos_1_new);
+      unitcollnormal.Scale(1.0 / unitcollnormal.Norm2());
 
-    // compute velocities of particles in normal direction
-    const double veln1(vel_1.Dot(unitcollnormal));
-    const double veln2(vel_2.Dot(unitcollnormal));
+      // compute velocities of particles in normal direction
+      const double veln1(vel_1.Dot(unitcollnormal));
+      const double veln2(vel_2.Dot(unitcollnormal));
 
-    // check for collision: normal velocity of particle_1 must be greater than of particle_2
-    const double deltaveln = veln1 - veln2;
-    if (deltaveln > GEO::TOL14)
-    {
-      // get masses
-      const double mass_1 = particleData_[lid_1].mass;
-      const double mass_2 = particleData_[lid_2].mass;
-      const double invmass = 1.0 / (mass_1 + mass_2);
+      // check for collision: normal velocity of particle_1 must be greater than of particle_2
+      const double deltaveln = veln1 - veln2;
+      if (deltaveln > GEO::TOL14)
+      {
+        // get masses
+        const double mass_1 = particleData_[lid_1].mass;
+        const double mass_2 = particleData_[lid_2].mass;
+        const double invmass = 1.0 / (mass_1 + mass_2);
 
 
-      // compute new velocities in normal direction
-      const double veln1_new = veln1 - (1.0 + e_) * mass_2 * deltaveln * invmass;
-      const double veln2_new = veln2 + (1.0 + e_) * mass_1 * deltaveln * invmass;
+        // compute new velocities in normal direction
+        const double veln1_new = veln1 - (1.0 + e_) * mass_2 * deltaveln * invmass;
+        const double veln2_new = veln2 + (1.0 + e_) * mass_1 * deltaveln * invmass;
 
-      // compute new velocities
-      vel_1_new.Update(1.,vel_1,veln1_new-veln1,unitcollnormal);
-      vel_2_new.Update(1.,vel_2,veln2_new-veln2,unitcollnormal);
+        // compute new velocities
+        vel_1_new.Update(1., vel_1, veln1_new - veln1, unitcollnormal);
+        vel_2_new.Update(1., vel_2, veln2_new - veln2, unitcollnormal);
 
-      // update ddt
-      particleData_[lid_1].ddt = next_event->time;
-      particleData_[lid_2].ddt = next_event->time;
+        // update ddt
+        particleData_[lid_1].ddt = next_event->time;
+        particleData_[lid_2].ddt = next_event->time;
 
-      particleData_[lid_1].dis = pos_1_new;
-      particleData_[lid_2].dis = pos_2_new;
+        particleData_[lid_1].dis = pos_1_new;
+        particleData_[lid_2].dis = pos_2_new;
 
-      particleData_[lid_1].vel = vel_1_new;
-      particleData_[lid_2].vel = vel_2_new;
+        particleData_[lid_1].vel = vel_1_new;
+        particleData_[lid_2].vel = vel_2_new;
 
 #ifdef OUTPUT
-      std::cout << "New position of particle with GID " << particle_1->Id() << "  x: " << pos_1_new(0) << "  y: " << pos_1_new(1) << "  z: " << pos_1_new(2) << std::endl;
-      std::cout << "New position of particle with GID " << particle_2->Id() << "  x: " << pos_2_new(0) << "  y: " << pos_2_new(1) << "  z: " << pos_2_new(2) << std::endl;
+        std::cout << "New position of particle with GID " << particle_1->Id()
+                  << "  x: " << pos_1_new(0) << "  y: " << pos_1_new(1) << "  z: " << pos_1_new(2)
+                  << std::endl;
+        std::cout << "New position of particle with GID " << particle_2->Id()
+                  << "  x: " << pos_2_new(0) << "  y: " << pos_2_new(1) << "  z: " << pos_2_new(2)
+                  << std::endl;
+#endif
+      }
+    }
+    break;
+    case INPAR::PARTICLE::particle_wall:
+    {
+#ifdef OUTPUT
+      std::cout << "Handle collision of particle " << next_event->particle_1->Id()
+                << " with wall id: " << Teuchos::rcp_static_cast<WallEvent>(next_event)->wall->Id()
+                << std::endl;
+#endif
+
+      // collision time
+      double colltime = next_event->time;
+
+      static LINALG::Matrix<3, 1> initposition;
+      initposition.Clear();
+      static LINALG::Matrix<3, 1> initvelocity;
+      initvelocity.Clear();
+      double radius;
+      double particle_time;
+
+      GetCollisionData(next_event->particle_1, initposition, initvelocity, radius, particle_time);
+
+      // advance particle in time to collision time
+      static LINALG::Matrix<3, 1> newpos;
+      newpos.Clear();
+      newpos.Update(1.0, initposition, colltime - particle_time, initvelocity);
+
+      static LINALG::Matrix<3, 1> collnormal;
+      collnormal.Clear();
+      collnormal.Update(
+          1.0, newpos, -1.0, Teuchos::rcp_static_cast<WallEvent>(next_event)->wallcollpoint_pos);
+
+      // safety check
+      double normallength = collnormal.Norm2();
+      if (std::abs(normallength - radius) > GEO::TOL7)
+      {
+        std::cout << "ran into error :" << std::endl;
+        std::cout << "particle pos: " << newpos << std::endl;
+        std::cout << "wallcollpoint_pos: "
+                  << Teuchos::rcp_static_cast<WallEvent>(next_event)->wallcollpoint_pos
+                  << std::endl;
+        std::cout << "normallength: " << normallength << std::endl;
+        std::cout << "radius: " << radius << std::endl;
+        std::cout << "colltime: " << colltime << std::endl;
+        std::cout << "particle_time: " << particle_time << std::endl;
+        dserror("Particle and wall collision detected but distance does not match radius");
+      }
+
+      // normalize colnormal
+      collnormal.Scale(1.0 / normallength);
+      double veln_particle = collnormal.Dot(initvelocity);
+      double veln_wall =
+          Teuchos::rcp_static_cast<WallEvent>(next_event)->wallcollpoint_vel.Dot(collnormal);
+
+      // walls have infinite mass
+      static LINALG::Matrix<3, 1> newvel;
+      newvel.Clear();
+      newvel.Update(1.0, initvelocity, (1.0 + e_wall_) * (veln_wall - veln_particle), collnormal);
+
+      // write particle data
+      int lid = next_event->particle_1->LID();
+      particleData_[lid].ddt = next_event->time;
+      particleData_[lid].dis = newpos;
+      particleData_[lid].vel = newvel;
+
+#ifdef OUTPUT
+      std::cout << "New position of particle " << next_event->particle_1->Id()
+                << "  x: " << newpos(0) << "  y: " << newpos(1) << "  z: " << newpos(2)
+                << std::endl;
+      std::cout << "New velocity of particle " << next_event->particle_1->Id()
+                << "  x: " << newvel(0) << "  y: " << newvel(1) << "  z: " << newvel(2)
+                << std::endl;
 #endif
     }
-  }
-  break;
-  case INPAR::PARTICLE::particle_wall:
-  {
-#ifdef OUTPUT
-    std::cout << "Handle collision of particle " << next_event->particle_1->Id()
-        << " with wall id: " << Teuchos::rcp_static_cast<WallEvent>(next_event)->wall->Id() << std::endl;
-#endif
-
-    // collision time
-    double colltime = next_event->time;
-
-    static LINALG::Matrix<3,1> initposition;
-    initposition.Clear();
-    static LINALG::Matrix<3,1> initvelocity;
-    initvelocity.Clear();
-    double radius;
-    double particle_time;
-
-    GetCollisionData(next_event->particle_1, initposition, initvelocity, radius, particle_time);
-
-    // advance particle in time to collision time
-    static LINALG::Matrix<3,1> newpos;
-    newpos.Clear();
-    newpos.Update(1.0, initposition, colltime - particle_time, initvelocity);
-
-    static LINALG::Matrix<3,1> collnormal;
-    collnormal.Clear();
-    collnormal.Update(1.0, newpos, -1.0, Teuchos::rcp_static_cast<WallEvent>(next_event)->wallcollpoint_pos);
-
-    // safety check
-    double normallength = collnormal.Norm2();
-    if (std::abs(normallength - radius) > GEO::TOL7)
-    {
-      std::cout << "ran into error :" << std::endl;
-      std::cout << "particle pos: " << newpos << std::endl;
-      std::cout << "wallcollpoint_pos: " << Teuchos::rcp_static_cast<WallEvent>(next_event)->wallcollpoint_pos << std::endl;
-      std::cout << "normallength: " << normallength << std::endl;
-      std::cout << "radius: " << radius << std::endl;
-      std::cout << "colltime: " << colltime << std::endl;
-      std::cout << "particle_time: " << particle_time << std::endl;
-      dserror("Particle and wall collision detected but distance does not match radius");
-    }
-
-    // normalize colnormal
-    collnormal.Scale(1.0 / normallength);
-    double veln_particle = collnormal.Dot(initvelocity);
-    double veln_wall = Teuchos::rcp_static_cast<WallEvent>(next_event)->wallcollpoint_vel.Dot(collnormal);
-
-    // walls have infinite mass
-    static LINALG::Matrix<3,1> newvel;
-    newvel.Clear();
-    newvel.Update(1.0, initvelocity, (1.0 + e_wall_) * (veln_wall - veln_particle), collnormal);
-
-    // write particle data
-    int lid = next_event->particle_1->LID();
-    particleData_[lid].ddt = next_event->time;
-    particleData_[lid].dis = newpos;
-    particleData_[lid].vel = newvel;
-
-#ifdef OUTPUT
-    std::cout << "New position of particle " << next_event->particle_1->Id() << "  x: " << newpos(0) << "  y: " << newpos(1) << "  z: " << newpos(2) << std::endl;
-    std::cout << "New velocity of particle " << next_event->particle_1->Id() << "  x: " << newvel(0) << "  y: " << newvel(1) << "  z: " << newvel(2) << std::endl;
-#endif
-  }
-  break;
-  default:
-    dserror("collision type does not exist");
-  break;
+    break;
+    default:
+      dserror("collision type does not exist");
+      break;
   }
 
   return;
@@ -4249,26 +4635,23 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
  | returns time to inter-particle collision in event       ghamm 09/13  |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionWithParticle(
-  DRT::Node* particle_1,
-  DRT::Node* particle_2,
-  const double remaining_dt
-  )
+    DRT::Node* particle_1, DRT::Node* particle_2, const double remaining_dt)
 {
   Teuchos::RCP<Event> newevent = Teuchos::null;
-  // IMPORTANT: First Particle is the colliding particle which carries the current time in the ddt_-vector
+  // IMPORTANT: First Particle is the colliding particle which carries the current time in the
+  // ddt_-vector
 
   // leave in case of self-contact
-  if (particle_1->Id() == particle_2->Id())
-    return newevent;
+  if (particle_1->Id() == particle_2->Id()) return newevent;
 
-  static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2;
+  static LINALG::Matrix<3, 1> pos_1, pos_2, vel_1, vel_2;
   pos_1.Clear();
   pos_2.Clear();
   vel_1.Clear();
   vel_2.Clear();
 
   double rad_1, rad_2, ddt_1, ddt_2;
-  if(not particleData_.empty())
+  if (not particleData_.empty())
   {
     const ParticleCollData& particle1 = particleData_[particle_1->LID()];
     pos_1.Update(particle1.dis);
@@ -4283,14 +4666,15 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
   }
   else
   {
-    GetCollisionData(particle_1, particle_2, pos_1, pos_2, vel_1, vel_2, rad_1, rad_2, ddt_1, ddt_2);
+    GetCollisionData(
+        particle_1, particle_2, pos_1, pos_2, vel_1, vel_2, rad_1, rad_2, ddt_1, ddt_2);
   }
 
-  static LINALG::Matrix<3,1> deltax, deltav;
+  static LINALG::Matrix<3, 1> deltax, deltav;
   deltax.Clear();
   deltav.Clear();
 
-  for (int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     // first particle is the colliding particle thus it carries the actual time in the ddt_-vector
     // additionally the second particle needs to be updated to the time of particle_1
@@ -4308,7 +4692,7 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
 
   const double discriminant = b * b - 4.0 * a * c;
 
-  if (discriminant >= 0.0 and a>0.0)
+  if (discriminant >= 0.0 and a > 0.0)
   {
     const double sqrdiscr = sqrt(discriminant);
     const double inv2a = 1.0 / (2.0 * a);
@@ -4318,34 +4702,39 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
     // immediate collision of particles expected
     if (std::abs(tc1) <= GEO::TOL14 or std::abs(tc2) <= GEO::TOL14)
     {
-      // compute collision normal to detect whether collision has already happened at the end of the last time step
-      static LINALG::Matrix<3,1> colnormal;
+      // compute collision normal to detect whether collision has already happened at the end of the
+      // last time step
+      static LINALG::Matrix<3, 1> colnormal;
       colnormal.Clear();
       colnormal.Update(1.0, pos_2, -1.0, pos_1);
 
       // velocities of particles in normal direction
-      const double vel_col_1 =   vel_1.Dot(colnormal);
-      const double vel_col_2 = - vel_2.Dot(colnormal);
+      const double vel_col_1 = vel_1.Dot(colnormal);
+      const double vel_col_2 = -vel_2.Dot(colnormal);
 
       if ((vel_col_1 + vel_col_2) > GEO::TOL14)
       {
-        newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, ddt_1+0.0, particle_1, particle_2));
+        newevent = Teuchos::rcp(
+            new Event(INPAR::PARTICLE::particle_particle, ddt_1 + 0.0, particle_1, particle_2));
       }
     }
     // tc1 is negative
-    else if (tc1 < -GEO::TOL14 and tc2 > GEO::TOL14 and tc2 < 1.1*remaining_dt)
+    else if (tc1 < -GEO::TOL14 and tc2 > GEO::TOL14 and tc2 < 1.1 * remaining_dt)
     {
-      newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, ddt_1+tc2, particle_1, particle_2));
+      newevent = Teuchos::rcp(
+          new Event(INPAR::PARTICLE::particle_particle, ddt_1 + tc2, particle_1, particle_2));
     }
     // tc2 is negative
-    else if (tc1 > GEO::TOL14 and tc2 < -GEO::TOL14 and tc1 < 1.1*remaining_dt)
+    else if (tc1 > GEO::TOL14 and tc2 < -GEO::TOL14 and tc1 < 1.1 * remaining_dt)
     {
-      newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, ddt_1+tc1, particle_1, particle_2));
+      newevent = Teuchos::rcp(
+          new Event(INPAR::PARTICLE::particle_particle, ddt_1 + tc1, particle_1, particle_2));
     }
     // both positive, smaller one is chosen (tc1 is almost identical to tc2)
-    else if (tc1 > GEO::TOL14 and tc2 > GEO::TOL14 and std::min(tc1, tc2) < 1.1*remaining_dt)
+    else if (tc1 > GEO::TOL14 and tc2 > GEO::TOL14 and std::min(tc1, tc2) < 1.1 * remaining_dt)
     {
-      newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, ddt_1+std::min(tc1, tc2), particle_1, particle_2));
+      newevent = Teuchos::rcp(new Event(
+          INPAR::PARTICLE::particle_particle, ddt_1 + std::min(tc1, tc2), particle_1, particle_2));
     }
   }
 
@@ -4358,20 +4747,17 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
  | returns time to particle-wall collision in event        ghamm 09/13  |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionWithWall(
-  DRT::Node* particle,
-  DRT::Element* wall,
-  const double dt
-  )
+    DRT::Node* particle, DRT::Element* wall, const double dt)
 {
-  static LINALG::Matrix<3,1> position;
-  static LINALG::Matrix<3,1> velocity;
+  static LINALG::Matrix<3, 1> position;
+  static LINALG::Matrix<3, 1> velocity;
   position.Clear();
   velocity.Clear();
 
   double radius;
   double particle_time;
 
-  if(not particleData_.empty())
+  if (not particleData_.empty())
   {
     const ParticleCollData& data1 = particleData_[particle->LID()];
     position.Update(data1.dis);
@@ -4385,10 +4771,11 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   }
 
   // variables to be filled with collision data
-  double timetocollision = 0.0;;
-  static LINALG::Matrix<3,1> wallcoll_pos;
+  double timetocollision = 0.0;
+  ;
+  static LINALG::Matrix<3, 1> wallcoll_pos;
   wallcoll_pos.Clear();
-  static LINALG::Matrix<3,1> wallcoll_vel;
+  static LINALG::Matrix<3, 1> wallcoll_vel;
   wallcoll_vel.Clear();
 
   // get wall discretization and displacement states
@@ -4413,39 +4800,42 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   std::vector<double> nodaldisnp(numnodes * 3);
   DRT::UTILS::ExtractMyValues(*walldisnp, nodaldisnp, lm);
 
-  Epetra_SerialDenseMatrix xyze_n(3,numnodes);
-  Epetra_SerialDenseMatrix xyze_np(3,numnodes);
+  Epetra_SerialDenseMatrix xyze_n(3, numnodes);
+  Epetra_SerialDenseMatrix xyze_np(3, numnodes);
 
-  for (int inode=0; inode<numnodes; ++inode)
+  for (int inode = 0; inode < numnodes; ++inode)
   {
     const DRT::Node* node = nodes[inode];
     const double* x_refe = node->X();
-    for (int a=0; a<3; ++a)
+    for (int a = 0; a < 3; ++a)
     {
-      xyze_n(a,inode) = x_refe[a] + nodaldisn[3 * inode + a];
-      xyze_np(a,inode) = x_refe[a] + nodaldisnp[3 * inode + a];
+      xyze_n(a, inode) = x_refe[a] + nodaldisn[3 * inode + a];
+      xyze_np(a, inode) = x_refe[a] + nodaldisnp[3 * inode + a];
     }
   }
 
   // Note: particles can already be advanced to some point in [0,dt)
-  // Hence, their position is already updated to that point in time (done in HandleCollision) while wall positions are always
-  // interpolated to the respective time using displacements from time n and n+1
-  const bool validcollision = ComputeCollisionOfParticleWithWall(wall, xyze_n, xyze_np, position, velocity,
-      radius, timetocollision, wallcoll_pos, wallcoll_vel, dt - particle_time, dt);
+  // Hence, their position is already updated to that point in time (done in HandleCollision) while
+  // wall positions are always interpolated to the respective time using displacements from time n
+  // and n+1
+  const bool validcollision = ComputeCollisionOfParticleWithWall(wall, xyze_n, xyze_np, position,
+      velocity, radius, timetocollision, wallcoll_pos, wallcoll_vel, dt - particle_time, dt);
 
-  // fill particle-wall event in which time to collision is inserted here so that current time needs to be added
+  // fill particle-wall event in which time to collision is inserted here so that current time needs
+  // to be added
   Teuchos::RCP<WallEvent> wallevent = Teuchos::null;
-  if(validcollision == true)
+  if (validcollision == true)
   {
-    wallevent = Teuchos::rcp(new WallEvent(INPAR::PARTICLE::particle_wall, particle_time+timetocollision, particle, wall, wallcoll_pos, wallcoll_vel));
+    wallevent = Teuchos::rcp(new WallEvent(INPAR::PARTICLE::particle_wall,
+        particle_time + timetocollision, particle, wall, wallcoll_pos, wallcoll_vel));
 
 #ifdef DEBUG
     // safety check
     double colltime = wallevent->time;
 
-    static LINALG::Matrix<3,1> initposition;
+    static LINALG::Matrix<3, 1> initposition;
     initposition.Clear();
-    static LINALG::Matrix<3,1> initvelocity;
+    static LINALG::Matrix<3, 1> initvelocity;
     initvelocity.Clear();
 
     double radius;
@@ -4454,23 +4844,26 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
     GetCollisionData(particle, initposition, initvelocity, radius, particle_time);
 
     // advance particle in time to collision time
-    static LINALG::Matrix<3,1> newpos;
+    static LINALG::Matrix<3, 1> newpos;
     newpos.Clear();
     newpos.Update(1.0, initposition, colltime - particle_time, initvelocity);
 
-    static LINALG::Matrix<3,1> collnormal;
+    static LINALG::Matrix<3, 1> collnormal;
     collnormal.Clear();
-    collnormal.Update(1.0, newpos, -1.0, Teuchos::rcp_static_cast<WallEvent>(wallevent)->wallcollpoint_pos);
+    collnormal.Update(
+        1.0, newpos, -1.0, Teuchos::rcp_static_cast<WallEvent>(wallevent)->wallcollpoint_pos);
 
     double normallength = collnormal.Norm2();
     if (std::abs(normallength - radius) > GEO::TOL7)
     {
       std::cout << "ran into error :" << std::endl;
       std::cout << "particle pos: " << newpos << std::endl;
-      std::cout << "wallcollpoint_pos: " << Teuchos::rcp_static_cast<WallEvent>(wallevent)->wallcollpoint_pos << std::endl;
+      std::cout << "wallcollpoint_pos: "
+                << Teuchos::rcp_static_cast<WallEvent>(wallevent)->wallcollpoint_pos << std::endl;
       std::cout << "normallength: " << normallength << std::endl;
       std::cout << "radius: " << radius << std::endl;
-      std::cout << "wall id: " << wall->Id() << " and particle lid: " << particle->LID() << " and particle gid: " << particle->Id() << std::endl;
+      std::cout << "wall id: " << wall->Id() << " and particle lid: " << particle->LID()
+                << " and particle gid: " << particle->Id() << std::endl;
       std::cout << "colltime: " << colltime << std::endl;
       std::cout << "particle_time: " << particle_time << std::endl;
       dserror("Particle and wall collision detected but distance does not match radius");
@@ -4486,9 +4879,7 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
  | setup of initial event queue at time step begin         ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
-  std::set<Teuchos::RCP<Event>, Event::Helper>& eventqueue,
-  const double dt
-  )
+    std::set<Teuchos::RCP<Event>, Event::Helper>& eventqueue, const double dt)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerMD::InitializingEventqueue");
 
@@ -4497,17 +4888,17 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
   // list of all particles in the neighborhood of currparticle
   std::list<DRT::Node*> neighboring_particles;
 
-  for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
+  for (int i = 0; i < discret_->NodeColMap()->NumMyElements(); ++i)
   {
     // particle for which contact will be detected
-    DRT::Node *currparticle = discret_->lColNode(i);
+    DRT::Node* currparticle = discret_->lColNode(i);
 
     DRT::Element** currele = currparticle->Elements();
     DRT::Element* currbin = currele[0];
     const int binId = currbin->Id();
 
     // if a bin has already been examined --> continue with next particle
-    if( examinedbins.count(binId) == 1 )
+    if (examinedbins.count(binId) == 1)
     {
       continue;
     }
@@ -4522,20 +4913,23 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     boost::unordered_map<int, DRT::Element*> neighbouring_walls;
 
     // gather all neighboring particles and wall elements
-    particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighbouring_walls);
+    particle_algorithm_->GetNeighbouringItems(
+        currparticle, neighboring_particles, neighbouring_walls);
 
     DRT::Node** particles = currbin->Nodes();
-    for(int iparticle=0; iparticle<currbin->NumNode(); ++iparticle)
+    for (int iparticle = 0; iparticle < currbin->NumNode(); ++iparticle)
     {
       DRT::Node* currnode = particles[iparticle];
 
       // loop over all neighboring particles and check if they collide with currnode
-      for (std::list<DRT::Node*>::iterator iter=neighboring_particles.begin(); iter!=neighboring_particles.end(); ++iter)
+      for (std::list<DRT::Node*>::iterator iter = neighboring_particles.begin();
+           iter != neighboring_particles.end(); ++iter)
       {
-        // in order to avoid double evaluation of the same contact, only search for contact when id_1 < id_2
+        // in order to avoid double evaluation of the same contact, only search for contact when
+        // id_1 < id_2
         if (currnode->Id() > (*iter)->Id())
         {
-          continue; // with next particle in neighborhood
+          continue;  // with next particle in neighborhood
         }
 
         Teuchos::RCP<PARTICLE::Event> newevent = ComputeCollisionWithParticle(currnode, *iter, dt);
@@ -4551,7 +4945,8 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
       }
 
       // loop over all neighbouring wall elements and check if they collide with currparticle
-      for (boost::unordered_map<int, DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
+      for (boost::unordered_map<int, DRT::Element*>::iterator iter = neighbouring_walls.begin();
+           iter != neighbouring_walls.end(); ++iter)
       {
         Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(currnode, iter->second, dt);
 
@@ -4561,7 +4956,8 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 #ifdef OUTPUT
           std::cout << "inserting particle-wall collision in the event queue" << std::endl;
 #endif
-          // here we are at the beginning of the time step so that event.time does not need an update
+          // here we are at the beginning of the time step so that event.time does not need an
+          // update
           eventqueue.insert(newevent);
         }
       }
@@ -4572,7 +4968,8 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 #ifdef OUTPUT
   std::cout << "The eventqueue contains after initializing: ";
   int count = 0;
-  for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter2 = eventqueue.begin(); iter2 != eventqueue.end(); ++iter2)
+  for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter2 = eventqueue.begin();
+       iter2 != eventqueue.end(); ++iter2)
   {
     std::cout << "This is entry number " << count << " of the eventqueue:" << std::endl;
 
@@ -4585,7 +4982,8 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     }
     else if (output2->coltype == INPAR::PARTICLE::particle_wall)
     {
-      std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id() << std::endl;
+      std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id()
+                << std::endl;
     }
     count++;
   }
@@ -4600,11 +4998,8 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
  | event queue is filled with new events based on          ghamm 09/13  |
  | particles that have just collided                                    |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
-  Teuchos::RCP<Event> lastevent,
-  std::set<Teuchos::RCP<Event>, Event::Helper>& eventqueue,
-  const double dt
-  )
+void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(Teuchos::RCP<Event> lastevent,
+    std::set<Teuchos::RCP<Event>, Event::Helper>& eventqueue, const double dt)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerMD::UpdatdingEventqueue");
 
@@ -4614,15 +5009,18 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   //
   // searching for new collisions for the first particle of the last collision
   //
-  particle_algorithm_->GetNeighbouringItems(lastevent->particle_1, neighbouring_particles, neighbouring_walls);
+  particle_algorithm_->GetNeighbouringItems(
+      lastevent->particle_1, neighbouring_particles, neighbouring_walls);
 
   // particle-particle collision
-  for (std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
+  for (std::list<DRT::Node*>::iterator iter = neighbouring_particles.begin();
+       iter != neighbouring_particles.end(); ++iter)
   {
     // IMPORTANT: first particle must be the particle, that collided in this time step
-    Teuchos::RCP<Event> newevent = ComputeCollisionWithParticle(lastevent->particle_1, *iter, dt-lastevent->time);
+    Teuchos::RCP<Event> newevent =
+        ComputeCollisionWithParticle(lastevent->particle_1, *iter, dt - lastevent->time);
 
-    if(newevent != Teuchos::null)
+    if (newevent != Teuchos::null)
     {
       if (lastevent->coltype == INPAR::PARTICLE::particle_particle)
       {
@@ -4640,12 +5038,13 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   }
 
   // particle-wall collision
-  for(boost::unordered_map<int, DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
+  for (boost::unordered_map<int, DRT::Element*>::iterator iter = neighbouring_walls.begin();
+       iter != neighbouring_walls.end(); ++iter)
   {
-    Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_1, iter->second, dt);
+    Teuchos::RCP<WallEvent> newevent =
+        ComputeCollisionWithWall(lastevent->particle_1, iter->second, dt);
 
-    if (newevent != Teuchos::null)
-      eventqueue.insert(newevent);
+    if (newevent != Teuchos::null) eventqueue.insert(newevent);
   }
 
   //
@@ -4656,14 +5055,17 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     // reuse neighborhood in case both particles reside in the same bin
     const int binId_part1 = lastevent->particle_1->Elements()[0]->Id();
     const int binId_part2 = lastevent->particle_2->Elements()[0]->Id();
-    if( binId_part1 != binId_part2)
-      particle_algorithm_->GetNeighbouringItems(lastevent->particle_2, neighbouring_particles, neighbouring_walls);
+    if (binId_part1 != binId_part2)
+      particle_algorithm_->GetNeighbouringItems(
+          lastevent->particle_2, neighbouring_particles, neighbouring_walls);
 
     // particle-particle collision
-    for(std::list<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
+    for (std::list<DRT::Node*>::iterator iter = neighbouring_particles.begin();
+         iter != neighbouring_particles.end(); ++iter)
     {
       // IMPORTANT: first particle must be the particle, that collided in this time step
-      Teuchos::RCP<Event> newevent = ComputeCollisionWithParticle(lastevent->particle_2, *iter, dt-lastevent->time);
+      Teuchos::RCP<Event> newevent =
+          ComputeCollisionWithParticle(lastevent->particle_2, *iter, dt - lastevent->time);
 
       // do not add event of particles that has already been processed in lastevent
       if (newevent != Teuchos::null and newevent->particle_2->Id() != lastevent->particle_1->Id())
@@ -4673,9 +5075,11 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     }
 
     // particle-wall collision
-    for(boost::unordered_map<int, DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
+    for (boost::unordered_map<int, DRT::Element*>::iterator iter = neighbouring_walls.begin();
+         iter != neighbouring_walls.end(); ++iter)
     {
-      Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_2, iter->second, dt);
+      Teuchos::RCP<WallEvent> newevent =
+          ComputeCollisionWithWall(lastevent->particle_2, iter->second, dt);
 
       if (newevent != Teuchos::null)
       {
@@ -4687,7 +5091,8 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
 #ifdef OUTPUT
   std::cout << "The eventqueue contains after searching for new events: ";
   int count = 0;
-  for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter2 = eventqueue.begin(); iter2 != eventqueue.end(); ++iter2)
+  for (std::set<Teuchos::RCP<Event>, Event::Helper>::iterator iter2 = eventqueue.begin();
+       iter2 != eventqueue.end(); ++iter2)
   {
     std::cout << "This is entry number " << count << " of the eventqueue:" << std::endl;
 
@@ -4700,7 +5105,8 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     }
     else if (output2->coltype == INPAR::PARTICLE::particle_wall)
     {
-      std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id() << std::endl;
+      std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id()
+                << std::endl;
     }
     count++;
   }
@@ -4715,83 +5121,83 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
  | computes time to collision between a particle and a     ghamm 05/14  |
  | wall: searches hierarchically element, edges, corners                |
  *----------------------------------------------------------------------*/
-bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
-    DRT::Element* wallele,
-    const Epetra_SerialDenseMatrix& xyze_n,
-    const Epetra_SerialDenseMatrix& xyze_np,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wall_pos,
-    LINALG::Matrix<3,1>& wall_vel,
-    const double remaining_dt,
-    const double dt)
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(DRT::Element* wallele,
+    const Epetra_SerialDenseMatrix& xyze_n, const Epetra_SerialDenseMatrix& xyze_np,
+    const LINALG::Matrix<3, 1>& particle_pos, const LINALG::Matrix<3, 1>& particle_vel,
+    const double radius, double& timetocollision, LINALG::Matrix<3, 1>& wall_pos,
+    LINALG::Matrix<3, 1>& wall_vel, const double remaining_dt, const double dt)
 {
   bool checkedges = false;
   bool checkcorners = false;
 
   // check collision with element itself first
-  bool validcollision = ComputeCollisionOfParticleWithElement(wallele, xyze_n, xyze_np, particle_pos, particle_vel,
-      radius, timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
+  bool validcollision =
+      ComputeCollisionOfParticleWithElement(wallele, xyze_n, xyze_np, particle_pos, particle_vel,
+          radius, timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
 
   // if necessary, check for collision of particle with edges of element
-  if(checkedges == true)
+  if (checkedges == true)
   {
     DRT::Element::DiscretizationType eleshape = wallele->Shape();
     // some variables to store data to find closest collision point with edges of wall element
-    double timetocollision_line = GEO::LARGENUMBER;;
-    static LINALG::Matrix<3,1> wallcollpoint_pos_line;
+    double timetocollision_line = GEO::LARGENUMBER;
+    ;
+    static LINALG::Matrix<3, 1> wallcollpoint_pos_line;
     wallcollpoint_pos_line.Clear();
-    static LINALG::Matrix<3,1> wallcollpoint_vel_line;
+    static LINALG::Matrix<3, 1> wallcollpoint_vel_line;
     wallcollpoint_vel_line.Clear();
-    // set time to collision to a large number and search for edge collision points which are closer than this number
+    // set time to collision to a large number and search for edge collision points which are closer
+    // than this number
     timetocollision = GEO::LARGENUMBER;
 
     // run over all line elements
-    const std::vector<Teuchos::RCP<DRT::Element> > eleLines = wallele->Lines();
+    const std::vector<Teuchos::RCP<DRT::Element>> eleLines = wallele->Lines();
 
     const int numnodes_line = eleLines[0]->NumNode();
-    Epetra_SerialDenseMatrix xyze_line_n(3,numnodes_line);
-    Epetra_SerialDenseMatrix xyze_line_np(3,numnodes_line);
+    Epetra_SerialDenseMatrix xyze_line_n(3, numnodes_line);
+    Epetra_SerialDenseMatrix xyze_line_np(3, numnodes_line);
 
     bool validlinecollision = false;
     bool checkcorners_iter = false;
-    for(int i=0; i<wallele->NumLine(); ++i)
+    for (int i = 0; i < wallele->NumLine(); ++i)
     {
-      for(int inode=0; inode<numnodes_line; ++inode)
+      for (int inode = 0; inode < numnodes_line; ++inode)
       {
-        switch(eleshape)
+        switch (eleshape)
         {
-        case DRT::Element::tri3:
-        case DRT::Element::tri6:
-        {
-          for (int a=0; a<3; ++a)
+          case DRT::Element::tri3:
+          case DRT::Element::tri6:
           {
-            xyze_line_n(a,inode) = xyze_n(a,DRT::UTILS::eleNodeNumbering_tri6_lines[i][inode]);
-            xyze_line_np(a,inode) = xyze_np(a,DRT::UTILS::eleNodeNumbering_tri6_lines[i][inode]);
+            for (int a = 0; a < 3; ++a)
+            {
+              xyze_line_n(a, inode) = xyze_n(a, DRT::UTILS::eleNodeNumbering_tri6_lines[i][inode]);
+              xyze_line_np(a, inode) =
+                  xyze_np(a, DRT::UTILS::eleNodeNumbering_tri6_lines[i][inode]);
+            }
+            break;
           }
-          break;
-        }
-        case DRT::Element::quad4:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        {
-          for (int a=0; a<3; ++a)
+          case DRT::Element::quad4:
+          case DRT::Element::quad8:
+          case DRT::Element::quad9:
           {
-            xyze_line_n(a,inode) = xyze_n(a,DRT::UTILS::eleNodeNumbering_quad9_lines[i][inode]);
-            xyze_line_np(a,inode) = xyze_np(a,DRT::UTILS::eleNodeNumbering_quad9_lines[i][inode]);
+            for (int a = 0; a < 3; ++a)
+            {
+              xyze_line_n(a, inode) = xyze_n(a, DRT::UTILS::eleNodeNumbering_quad9_lines[i][inode]);
+              xyze_line_np(a, inode) =
+                  xyze_np(a, DRT::UTILS::eleNodeNumbering_quad9_lines[i][inode]);
+            }
+            break;
           }
-          break;
-        }
-        default: dserror("intface type not supported %d", wallele->Shape());
-          break;
+          default:
+            dserror("intface type not supported %d", wallele->Shape());
+            break;
         }
       }
 
       // find possible collision point for this line
-      validlinecollision = ComputeCollisionOfParticleWithLine(eleLines[i]->Shape(), xyze_line_n, xyze_line_np, particle_pos, particle_vel,
-          radius, timetocollision_line, wallcollpoint_pos_line, wallcollpoint_vel_line, remaining_dt, dt, checkcorners_iter);
+      validlinecollision = ComputeCollisionOfParticleWithLine(eleLines[i]->Shape(), xyze_line_n,
+          xyze_line_np, particle_pos, particle_vel, radius, timetocollision_line,
+          wallcollpoint_pos_line, wallcollpoint_vel_line, remaining_dt, dt, checkcorners_iter);
 
       // find closest valid edge contact point if more than one exists
       // check whether collision time is reasonable
@@ -4802,50 +5208,54 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
         wall_pos.Update(wallcollpoint_pos_line);
         wall_vel.Update(wallcollpoint_vel_line);
 #ifdef OUTPUT
-        std::cout << "found the following valid line pos: " <<wall_pos(0) << " " << wall_pos(1) << " " << wall_pos(2) << std::endl;
-        std::cout << "found the following valid line time to coll: " << timetocollision << std::endl;
+        std::cout << "found the following valid line pos: " << wall_pos(0) << " " << wall_pos(1)
+                  << " " << wall_pos(2) << std::endl;
+        std::cout << "found the following valid line time to coll: " << timetocollision
+                  << std::endl;
 #endif
       }
-      if(checkcorners_iter == true)
-        checkcorners = true;
+      if (checkcorners_iter == true) checkcorners = true;
     }
 
     // if something was found, corners do not need to be checked
-    if(validcollision == true)
+    if (validcollision == true)
     {
       return validcollision;
     }
   }
 
   // if necessary, check for collision of particle with corners of element
-  if(checkcorners == true)
+  if (checkcorners == true)
   {
     // some variables to store data to find closest collision point with edges of wall element
     double timetocollision_corner = GEO::LARGENUMBER;
-    static LINALG::Matrix<3,1> wallcollpoint_pos_corner;
+    static LINALG::Matrix<3, 1> wallcollpoint_pos_corner;
     wallcollpoint_pos_corner.Clear();
-    static LINALG::Matrix<3,1> wallcollpoint_vel_corner;
+    static LINALG::Matrix<3, 1> wallcollpoint_vel_corner;
     wallcollpoint_vel_corner.Clear();
 
-    // set time to collision to a large number and search for edge collision points which are closer than this number
+    // set time to collision to a large number and search for edge collision points which are closer
+    // than this number
     timetocollision = GEO::LARGENUMBER;
 
     // loop all corner nodes
     bool validcornercollision = false;
-    for(int inode=0; inode<DRT::UTILS::getNumberOfElementCornerNodes(wallele->Shape()); ++inode)
+    for (int inode = 0; inode < DRT::UTILS::getNumberOfElementCornerNodes(wallele->Shape());
+         ++inode)
     {
-      Epetra_SerialDenseMatrix xyze_corner_n(3,1);
-      Epetra_SerialDenseMatrix xyze_corner_np(3,1);
+      Epetra_SerialDenseMatrix xyze_corner_n(3, 1);
+      Epetra_SerialDenseMatrix xyze_corner_np(3, 1);
 
-      for (int a=0; a<3; ++a)
+      for (int a = 0; a < 3; ++a)
       {
-        xyze_corner_n(a,0) = xyze_n(a,inode);
-        xyze_corner_np(a,0) = xyze_np(a,inode);
+        xyze_corner_n(a, 0) = xyze_n(a, inode);
+        xyze_corner_np(a, 0) = xyze_np(a, inode);
       }
 
       // find possible collision point for this corner
-      validcornercollision = ComputeCollisionOfParticleWithCorner(xyze_corner_n, xyze_corner_np, particle_pos, particle_vel,
-          radius, timetocollision_corner, wallcollpoint_pos_corner, wallcollpoint_vel_corner, remaining_dt, dt);
+      validcornercollision = ComputeCollisionOfParticleWithCorner(xyze_corner_n, xyze_corner_np,
+          particle_pos, particle_vel, radius, timetocollision_corner, wallcollpoint_pos_corner,
+          wallcollpoint_vel_corner, remaining_dt, dt);
 
       // find closest valid corner contact point if more than one exists
       // check whether collision time is reasonable
@@ -4866,38 +5276,31 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
  | computes time to collision between a particle  and      ghamm 04/14  |
  | an element for hard sphere particles (templated on distype of ele)   |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE>
+template <DRT::Element::DiscretizationType DISTYPE>
 bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElementT_FAD(
-    DRT::Element* wallele,
-    const Epetra_SerialDenseMatrix& xyze_n,
-    const Epetra_SerialDenseMatrix& xyze_final,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wallcollpoint_pos,
-    LINALG::Matrix<3,1>& wallcollpoint_vel,
-    const double remaining_dt,
-    const double dt,
-    bool& checkedges)
+    DRT::Element* wallele, const Epetra_SerialDenseMatrix& xyze_n,
+    const Epetra_SerialDenseMatrix& xyze_final, const LINALG::Matrix<3, 1>& particle_pos,
+    const LINALG::Matrix<3, 1>& particle_vel, const double radius, double& timetocollision,
+    LINALG::Matrix<3, 1>& wallcollpoint_pos, LINALG::Matrix<3, 1>& wallcollpoint_vel,
+    const double remaining_dt, const double dt, bool& checkedges)
 {
   bool validcollision = false;
 
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // solution vector
-  static LINALG::TMatrix<FAD,3,1> coll_solution;
-  static LINALG::TMatrix<FAD,3,1> wallcollpoint_pos_fad;
-  static LINALG::TMatrix<FAD,3,1> wallcollpoint_vel_fad;
-  static LINALG::TMatrix<FAD,3,1> particle_pos_fad;
-  static LINALG::TMatrix<FAD,3,1> particle_vel_fad;
+  static LINALG::TMatrix<FAD, 3, 1> coll_solution;
+  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_pos_fad;
+  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_vel_fad;
+  static LINALG::TMatrix<FAD, 3, 1> particle_pos_fad;
+  static LINALG::TMatrix<FAD, 3, 1> particle_vel_fad;
   coll_solution.Clear();
   wallcollpoint_pos_fad.Clear();
   wallcollpoint_vel_fad.Clear();
   particle_pos_fad.Clear();
   particle_vel_fad.Clear();
 
-  for(int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     particle_pos_fad(i) = particle_pos(i);
     particle_vel_fad(i) = particle_vel(i);
@@ -4909,11 +5312,10 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
   coll_solution(2) = 0.0;
 
   // setup FAD
-  for(int i=0; i<3; ++i)
-    coll_solution(i).diff(i,3);
+  for (int i = 0; i < 3; ++i) coll_solution(i).diff(i, 3);
 
   // unit normal at collision point
-  static LINALG::TMatrix<FAD,3,1> unitnormal;
+  static LINALG::TMatrix<FAD, 3, 1> unitnormal;
   unitnormal.Clear();
 
   // velocity of wall element is constant over the time step
@@ -4922,19 +5324,19 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
   vele += xyze_final;
   vele.Scale(1.0 / dt);
 
-  static LINALG::TMatrix<FAD,3,numnode> vele_fad;
-  static LINALG::TMatrix<FAD,3,numnode> xyze_n_fad;
-  static LINALG::TMatrix<FAD,3,numnode> xyze_colltime;
+  static LINALG::TMatrix<FAD, 3, numnode> vele_fad;
+  static LINALG::TMatrix<FAD, 3, numnode> xyze_n_fad;
+  static LINALG::TMatrix<FAD, 3, numnode> xyze_colltime;
   vele_fad.Clear();
   xyze_n_fad.Clear();
   xyze_colltime.Clear();
 
-  for(int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
-    for(int j=0; j<numnode; ++j)
+    for (int j = 0; j < numnode; ++j)
     {
-      vele_fad(i,j) = vele(i,j);
-      xyze_n_fad(i,j) = xyze_n(i,j);
+      vele_fad(i, j) = vele(i, j);
+      xyze_n_fad(i, j) = xyze_n(i, j);
     }
   }
 
@@ -4950,68 +5352,67 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     ++iter;
 
     // compute wall positions at collision time: xyze_colltime = xyze_n + colltime*vele
-    FAD colltime = dt-remaining_dt+coll_solution(2);
+    FAD colltime = dt - remaining_dt + coll_solution(2);
     xyze_colltime.Update(1.0, xyze_n_fad, colltime, vele_fad);
 
     // position and velocity of wall collision point at collision time
-    static LINALG::TMatrix<FAD,numnode,1> funct;
+    static LINALG::TMatrix<FAD, numnode, 1> funct;
     funct.Clear();
     DRT::UTILS::shape_function<DISTYPE>(coll_solution, funct);
     wallcollpoint_pos_fad.Clear();
     wallcollpoint_vel_fad.Clear();
-    for(int i=0; i<numnode; ++i)
-      for(int j=0; j<3; ++j)
+    for (int i = 0; i < numnode; ++i)
+      for (int j = 0; j < 3; ++j)
       {
-        wallcollpoint_pos_fad(j) += xyze_colltime(j,i) * funct(i);
-        wallcollpoint_vel_fad(j) += vele_fad(j,i) * funct(i);
+        wallcollpoint_pos_fad(j) += xyze_colltime(j, i) * funct(i);
+        wallcollpoint_vel_fad(j) += vele_fad(j, i) * funct(i);
       }
 
     // get unit normal of wall element at collision point
     {
-      static LINALG::TMatrix<FAD,2,numnode> deriv;
+      static LINALG::TMatrix<FAD, 2, numnode> deriv;
       deriv.Clear();
-      DRT::UTILS::shape_function_2D_deriv1(deriv,coll_solution(0),coll_solution(1),DISTYPE);
+      DRT::UTILS::shape_function_2D_deriv1(deriv, coll_solution(0), coll_solution(1), DISTYPE);
 
       // compute dXYZ / drs
-      static LINALG::TMatrix<FAD,3,2> dxyzdrs;
+      static LINALG::TMatrix<FAD, 3, 2> dxyzdrs;
       dxyzdrs.Clear();
       dxyzdrs.Clear();
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<2; ++j)
-          for (int k=0; k<numnode; ++k)
-            dxyzdrs(i,j) += xyze_colltime(i,k)*deriv(j,k);
+      for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 2; ++j)
+          for (int k = 0; k < numnode; ++k) dxyzdrs(i, j) += xyze_colltime(i, k) * deriv(j, k);
 
       // compute normal at collision point
-      unitnormal(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
-      unitnormal(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
-      unitnormal(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(1,0) * dxyzdrs(0,1);
+      unitnormal(0) = dxyzdrs(1, 0) * dxyzdrs(2, 1) - dxyzdrs(2, 0) * dxyzdrs(1, 1);
+      unitnormal(1) = dxyzdrs(2, 0) * dxyzdrs(0, 1) - dxyzdrs(0, 0) * dxyzdrs(2, 1);
+      unitnormal(2) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(1, 0) * dxyzdrs(0, 1);
 
-      FAD norm = unitnormal(0)*unitnormal(0) + unitnormal(1)*unitnormal(1) + unitnormal(2)*unitnormal(2);
+      FAD norm = unitnormal(0) * unitnormal(0) + unitnormal(1) * unitnormal(1) +
+                 unitnormal(2) * unitnormal(2);
 
       // normalize
-      unitnormal.Scale(1.0 / std::pow(norm,0.5));
+      unitnormal.Scale(1.0 / std::pow(norm, 0.5));
     }
 
     // update particle position to current time
-    static LINALG::TMatrix<FAD,3,1> particle_pos_colltime;
+    static LINALG::TMatrix<FAD, 3, 1> particle_pos_colltime;
     particle_pos_colltime.Clear();
     particle_pos_colltime.Update(1.0, particle_pos_fad, coll_solution(2), particle_vel_fad);
 
     // check whether normal is pointing outward (particle is inside) and adapt it if necessary
-    static LINALG::TMatrix<FAD,3,1> testvector_fad;
+    static LINALG::TMatrix<FAD, 3, 1> testvector_fad;
     testvector_fad.Clear();
     testvector_fad.Update(1.0, wallcollpoint_pos_fad, -1.0, particle_pos_colltime);
 
-    if (unitnormal.Dot(testvector_fad) < 0.0)
-      unitnormal.Scale(-1.0);
+    if (unitnormal.Dot(testvector_fad) < 0.0) unitnormal.Scale(-1.0);
 
     // compute residual
-    static LINALG::TMatrix<FAD,3,1> residual;
+    static LINALG::TMatrix<FAD, 3, 1> residual;
     residual.Clear();
     double bnorm = 0.0;
-    for (int i=0; i<3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-      residual(i) = particle_pos_colltime(i)  + unitnormal(i) * radius - wallcollpoint_pos_fad(i);
+      residual(i) = particle_pos_colltime(i) + unitnormal(i) * radius - wallcollpoint_pos_fad(i);
       bnorm += residual(i).val() * residual(i).val();
     }
 
@@ -5021,10 +5422,10 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     }
 
     // compute dF/dx
-    static LINALG::Matrix<3,3> A;
+    static LINALG::Matrix<3, 3> A;
     A.Clear();
 
-    for (int j=0; j<3; ++j)
+    for (int j = 0; j < 3; ++j)
     {
       A(0, j) = residual(0).dx(j);
       A(1, j) = residual(1).dx(j);
@@ -5032,21 +5433,21 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     }
 
     // compute rhs
-    static LINALG::Matrix<3,1> b;
+    static LINALG::Matrix<3, 1> b;
     b.Clear();
-    for (int i=0; i<3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-      b(i) = - residual(i).val();
+      b(i) = -residual(i).val();
     }
 
     // solve linear problem A dx = b
-    static LINALG::Matrix<3,1> dx;
+    static LINALG::Matrix<3, 1> dx;
     dx.Clear();
     const double det = LINALG::scaledGaussElimination<3>(A, b, dx);
 
     if (std::abs(det) < GEO::TOL14)
     {
-      if(unitnormal.Dot(particle_vel_fad) < GEO::TOL10 and iter>1)
+      if (unitnormal.Dot(particle_vel_fad) < GEO::TOL10 and iter > 1)
       {
 #ifdef OUTPUT
         std::cout << "particle path is parallel to wall --> left iteration" << std::endl;
@@ -5056,7 +5457,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     }
 
     // update of coll_solution
-    for (int i=0; i<3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
       coll_solution(i) += dx(i);
     }
@@ -5080,12 +5481,13 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     // check whether collision time is reasonable
     if (coll_solution(2) >= -GEO::TOL14 and coll_solution(2) < 1.1 * remaining_dt)
     {
-      // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
+      // decide if collision is still going to happen (--> valid) or has already happened in the
+      // last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
         validcollision = true;
         timetocollision = coll_solution(2).val();
-        for(int j=0; j<3; ++j)
+        for (int j = 0; j < 3; ++j)
         {
           wallcollpoint_pos(j) = wallcollpoint_pos_fad(j).val();
           wallcollpoint_vel(j) = wallcollpoint_vel_fad(j).val();
@@ -5100,11 +5502,11 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
   else
   {
     // pre computations
-    static LINALG::Matrix<3,1> particevel_cpy;
+    static LINALG::Matrix<3, 1> particevel_cpy;
     particevel_cpy.Clear();
-    static LINALG::Matrix<3,1> wallvel_cpy;
+    static LINALG::Matrix<3, 1> wallvel_cpy;
     wallvel_cpy.Clear();
-    for(int j=0; j<3; ++j)
+    for (int j = 0; j < 3; ++j)
     {
       particevel_cpy(j) = particle_vel_fad(j).val();
       wallvel_cpy(j) = wallcollpoint_vel_fad(j).val();
@@ -5112,7 +5514,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
 
     // particle path points in element direction
     // slightly flying away is still treated as possible edge contact scenario
-    if ((scalar_partvel - scalar_wallvel) > -0.1*(particevel_cpy.Norm1()+wallvel_cpy.Norm1()))
+    if ((scalar_partvel - scalar_wallvel) > -0.1 * (particevel_cpy.Norm1() + wallvel_cpy.Norm1()))
     {
       checkedges = true;
     }
@@ -5137,50 +5539,43 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
  | an element for hard sphere particles                                 |
  *----------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement(
-    DRT::Element* wallele,
-    const Epetra_SerialDenseMatrix& xyze_current,
-    const Epetra_SerialDenseMatrix& xyze_final,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wall_pos,
-    LINALG::Matrix<3,1>& wall_vel,
-    const double remaining_dt,
-    const double dt,
-    bool& checkedges)
+    DRT::Element* wallele, const Epetra_SerialDenseMatrix& xyze_current,
+    const Epetra_SerialDenseMatrix& xyze_final, const LINALG::Matrix<3, 1>& particle_pos,
+    const LINALG::Matrix<3, 1>& particle_vel, const double radius, double& timetocollision,
+    LINALG::Matrix<3, 1>& wall_pos, LINALG::Matrix<3, 1>& wall_vel, const double remaining_dt,
+    const double dt, bool& checkedges)
 {
   bool validcollision = false;
   switch (wallele->Shape())
   {
-  case DRT::Element::quad4:
-    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad4>(
-        wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
-        timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
-    break;
-  case DRT::Element::quad8:
-    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad8>(
-        wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
-        timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
-    break;
-  case DRT::Element::quad9:
-    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad9>(
-        wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
-        timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
-    break;
-  case DRT::Element::tri3:
-    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri3>(
-        wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
-        timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
-    break;
-  case DRT::Element::tri6:
-    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri6>(
-        wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
-        timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
-    break;
-  default:
-    dserror("please add your surface element type here");
-    break;
+    case DRT::Element::quad4:
+      validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad4>(wallele,
+          xyze_current, xyze_final, particle_pos, particle_vel, radius, timetocollision, wall_pos,
+          wall_vel, remaining_dt, dt, checkedges);
+      break;
+    case DRT::Element::quad8:
+      validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad8>(wallele,
+          xyze_current, xyze_final, particle_pos, particle_vel, radius, timetocollision, wall_pos,
+          wall_vel, remaining_dt, dt, checkedges);
+      break;
+    case DRT::Element::quad9:
+      validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad9>(wallele,
+          xyze_current, xyze_final, particle_pos, particle_vel, radius, timetocollision, wall_pos,
+          wall_vel, remaining_dt, dt, checkedges);
+      break;
+    case DRT::Element::tri3:
+      validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri3>(wallele,
+          xyze_current, xyze_final, particle_pos, particle_vel, radius, timetocollision, wall_pos,
+          wall_vel, remaining_dt, dt, checkedges);
+      break;
+    case DRT::Element::tri6:
+      validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri6>(wallele,
+          xyze_current, xyze_final, particle_pos, particle_vel, radius, timetocollision, wall_pos,
+          wall_vel, remaining_dt, dt, checkedges);
+      break;
+    default:
+      dserror("please add your surface element type here");
+      break;
   }
 
   return validcollision;
@@ -5192,27 +5587,23 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
  | an element edge for hard sphere particles (templated on distype      |
  | of wall element edge)                                                |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE>
+template <DRT::Element::DiscretizationType DISTYPE>
 bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
-    const Epetra_SerialDenseMatrix& xyze_line_n,
-    const Epetra_SerialDenseMatrix& xyze_line_np,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wallcollpoint_pos,
-    LINALG::Matrix<3,1>& wallcollpoint_vel,
-    bool& checkcorners)
+    const Epetra_SerialDenseMatrix& xyze_line_n, const Epetra_SerialDenseMatrix& xyze_line_np,
+    const LINALG::Matrix<3, 1>& particle_pos, const LINALG::Matrix<3, 1>& particle_vel,
+    const double radius, double& timetocollision, LINALG::Matrix<3, 1>& wallcollpoint_pos,
+    LINALG::Matrix<3, 1>& wallcollpoint_vel, bool& checkcorners)
 {
   // TODO:
-  // TODO: this method only works for fixed walls, terms with time derivatives of wall position are missing
+  // TODO: this method only works for fixed walls, terms with time derivatives of wall position are
+  // missing
   // TODO:
   bool validlinecollision = false;
 
   const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // coll_solution contains: r and time to collision (r is element coord)
-  static LINALG::Matrix<2,1> coll_solution;
+  static LINALG::Matrix<2, 1> coll_solution;
   coll_solution.Clear();
 
   // initial guess for edge collision point
@@ -5221,20 +5612,22 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
   coll_solution(1) = 0.0;
 
   // connection vector between edge coll point and particle position
-  static LINALG::Matrix<3,1> F;
+  static LINALG::Matrix<3, 1> F;
   F.Clear();
   // compute first derivative of r
-  static LINALG::Matrix<3,1> F_deriv1;
+  static LINALG::Matrix<3, 1> F_deriv1;
   F_deriv1.Clear();
   // compute second derivative of r
-  static LINALG::Matrix<3,1> F_deriv2;
+  static LINALG::Matrix<3, 1> F_deriv2;
   F_deriv2.Clear();
 
   double distance = 0.0;
 
-  // the following functional is minimized iteratively (variables are ele coord and time to collision (ttc)):
-  // [ { EdgeCollPoint(t) - (particle_pos + ttc * particle_vel) }^2 - radius^2 ]^2 +
-  //     0.5 * ( [EdgeCollPoint(t)- (particle_pos + ttc * particle_vel)] dot EdgeCollPoint_deriv(t) )^2
+  // the following functional is minimized iteratively (variables are ele coord and time to
+  // collision (ttc)): [ { EdgeCollPoint(t) - (particle_pos + ttc * particle_vel) }^2 - radius^2 ]^2
+  // +
+  //     0.5 * ( [EdgeCollPoint(t)- (particle_pos + ttc * particle_vel)] dot EdgeCollPoint_deriv(t)
+  //     )^2
   // with t = dt - remaining_dt + ttc
 
   // iteration for contact search
@@ -5245,20 +5638,20 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     ++iter;
 
     // update particle position to current time
-    static LINALG::Matrix<3,1> particle_pos_t;
+    static LINALG::Matrix<3, 1> particle_pos_t;
     particle_pos_t.Clear();
     particle_pos_t.Update(1.0, particle_pos, coll_solution(1), particle_vel);
 
     // determine shapefunction, 1. and 2. derivative at current solution
-    static LINALG::Matrix<numnodes,1> funct;
+    static LINALG::Matrix<numnodes, 1> funct;
     funct.Clear();
     DRT::UTILS::shape_function_1D(funct, coll_solution(0), DISTYPE);
 
-    static LINALG::Matrix<1,numnodes> deriv1;
+    static LINALG::Matrix<1, numnodes> deriv1;
     deriv1.Clear();
     DRT::UTILS::shape_function_1D_deriv1(deriv1, coll_solution(0), DISTYPE);
 
-    static LINALG::Matrix<1,numnodes> deriv2;
+    static LINALG::Matrix<1, numnodes> deriv2;
     deriv2.Clear();
     DRT::UTILS::shape_function_1D_deriv2(deriv2, coll_solution(0), DISTYPE);
 
@@ -5268,19 +5661,19 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     F_deriv1.Clear();
     F_deriv2.Clear();
 
-    for(int i=0; i<3; ++i)
-      for(int inode=0; inode<numnodes; ++inode)
+    for (int i = 0; i < 3; ++i)
+      for (int inode = 0; inode < numnodes; ++inode)
       {
-        wallcollpoint_pos(i) += xyze_line_np(i,inode) * funct(inode);
-        F_deriv1(i)          += xyze_line_np(i,inode) * deriv1(0,inode);
-        F_deriv2(i)          += xyze_line_np(i,inode) * deriv2(0,inode);
+        wallcollpoint_pos(i) += xyze_line_np(i, inode) * funct(inode);
+        F_deriv1(i) += xyze_line_np(i, inode) * deriv1(0, inode);
+        F_deriv2(i) += xyze_line_np(i, inode) * deriv2(0, inode);
       }
 
     // subtract current particle position from the edge collision point
     F.Update(1.0, wallcollpoint_pos, -1.0, particle_pos_t);
 
     // compute rhs
-    static LINALG::Matrix<2,1> b_line;
+    static LINALG::Matrix<2, 1> b_line;
     b_line.Clear();
 
     double dotprod_pos_pos = 0.0;
@@ -5289,23 +5682,22 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     double dotprod_pos_deriv2 = 0.0;
     double dotprod_pos_v = 0.0;
     double dotprod_v_deriv1 = 0.0;
-    for(int i=0; i<3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-      dotprod_pos_pos    += F(i)*F(i);
-      dotprod_pos_deriv1 += F(i)*F_deriv1(i);
-      dotprod_deriv1_deriv1 += F_deriv1(i)*F_deriv1(i);
-      dotprod_pos_deriv2 += F(i)*F_deriv2(i);
-      dotprod_pos_v      += - F(i)*particle_vel(i);
-      dotprod_v_deriv1   += - particle_vel(i)*F_deriv1(i);
+      dotprod_pos_pos += F(i) * F(i);
+      dotprod_pos_deriv1 += F(i) * F_deriv1(i);
+      dotprod_deriv1_deriv1 += F_deriv1(i) * F_deriv1(i);
+      dotprod_pos_deriv2 += F(i) * F_deriv2(i);
+      dotprod_pos_v += -F(i) * particle_vel(i);
+      dotprod_v_deriv1 += -particle_vel(i) * F_deriv1(i);
     }
 
-    const double pos2subtractrad2 = dotprod_pos_pos - radius*radius;
+    const double pos2subtractrad2 = dotprod_pos_pos - radius * radius;
 
-    b_line(0) = pos2subtractrad2*2.0*dotprod_pos_deriv1 +
-                  dotprod_pos_deriv1*(dotprod_deriv1_deriv1 + dotprod_pos_deriv2);
+    b_line(0) = pos2subtractrad2 * 2.0 * dotprod_pos_deriv1 +
+                dotprod_pos_deriv1 * (dotprod_deriv1_deriv1 + dotprod_pos_deriv2);
 
-    b_line(1) = pos2subtractrad2*2.0*dotprod_pos_v +
-                  dotprod_pos_deriv1*dotprod_v_deriv1;
+    b_line(1) = pos2subtractrad2 * 2.0 * dotprod_pos_v + dotprod_pos_deriv1 * dotprod_v_deriv1;
 
     // distance between particle and edge
     distance = F.Norm2() - radius;
@@ -5321,51 +5713,51 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
 
     // determine system matrix A_line
     // compute dF/dx
-    static LINALG::Matrix<2,2> A_line;
+    static LINALG::Matrix<2, 2> A_line;
     A_line.Clear();
 
     double dotprod_deriv1_deriv2 = 0.0;
     double dotprod_v_deriv2 = 0.0;
     double dotprod_v_v = 0.0;
-    for(int i=0; i<3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-      dotprod_deriv1_deriv2 += F_deriv1(i)*F_deriv2(i);
-      dotprod_v_deriv2   += - particle_vel(i)*F_deriv2(i);
-      dotprod_v_v += particle_vel(i)*particle_vel(i);
+      dotprod_deriv1_deriv2 += F_deriv1(i) * F_deriv2(i);
+      dotprod_v_deriv2 += -particle_vel(i) * F_deriv2(i);
+      dotprod_v_v += particle_vel(i) * particle_vel(i);
     }
 
     // A_line(0,0)
-    A_line(0,0) = 2.0*dotprod_pos_deriv1*2.0*dotprod_pos_deriv1 +
-                    pos2subtractrad2*2.0*(dotprod_pos_deriv2 + dotprod_deriv1_deriv1) +
-                    (dotprod_deriv1_deriv1 + dotprod_pos_deriv2)*(dotprod_deriv1_deriv1 + dotprod_pos_deriv2) +
-                    dotprod_pos_deriv1*3.0*dotprod_deriv1_deriv2;
+    A_line(0, 0) = 2.0 * dotprod_pos_deriv1 * 2.0 * dotprod_pos_deriv1 +
+                   pos2subtractrad2 * 2.0 * (dotprod_pos_deriv2 + dotprod_deriv1_deriv1) +
+                   (dotprod_deriv1_deriv1 + dotprod_pos_deriv2) *
+                       (dotprod_deriv1_deriv1 + dotprod_pos_deriv2) +
+                   dotprod_pos_deriv1 * 3.0 * dotprod_deriv1_deriv2;
 
     // A_line(0,1)
-    A_line(0,1) = 2.0*dotprod_pos_v*2.0*dotprod_pos_deriv1 +
-                    pos2subtractrad2*2.0*dotprod_v_deriv1 +
-                    dotprod_v_deriv1*(dotprod_deriv1_deriv1 + dotprod_pos_deriv2) +
-                    dotprod_pos_deriv1*dotprod_v_deriv2;
+    A_line(0, 1) = 2.0 * dotprod_pos_v * 2.0 * dotprod_pos_deriv1 +
+                   pos2subtractrad2 * 2.0 * dotprod_v_deriv1 +
+                   dotprod_v_deriv1 * (dotprod_deriv1_deriv1 + dotprod_pos_deriv2) +
+                   dotprod_pos_deriv1 * dotprod_v_deriv2;
 
     // A_line(1,0)
-    A_line(1,0) = A_line(0,1);
+    A_line(1, 0) = A_line(0, 1);
 
     // A_line(1,1)
-    A_line(1,1) = 2.0*dotprod_pos_v*2.0*dotprod_pos_v +
-                    pos2subtractrad2*2.0*dotprod_v_v +
-                    dotprod_v_deriv1*dotprod_v_deriv1;
+    A_line(1, 1) = 2.0 * dotprod_pos_v * 2.0 * dotprod_pos_v +
+                   pos2subtractrad2 * 2.0 * dotprod_v_v + dotprod_v_deriv1 * dotprod_v_deriv1;
 
 
     // solve linear problem A dx = b
-    static LINALG::Matrix<2,1> dx_line;
+    static LINALG::Matrix<2, 1> dx_line;
     dx_line.Clear();
     const double det = LINALG::scaledGaussElimination<2>(A_line, b_line, dx_line);
 
     if (std::abs(det) < GEO::TOL14)
     {
-      static LINALG::Matrix<3,1> crossproduct;
+      static LINALG::Matrix<3, 1> crossproduct;
       crossproduct.Clear();
       crossproduct.CrossProduct(particle_vel, F_deriv1);
-      if(crossproduct.Norm1() < GEO::TOL10 and iter>1)
+      if (crossproduct.Norm1() < GEO::TOL10 and iter > 1)
       {
 #ifdef OUTPUT
         std::cout << "particle path is parallel to line --> left iteration" << std::endl;
@@ -5380,7 +5772,8 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
   }
 
   // check whether collision position is valid and otherwise check for corner collision points
-  if (GEO::checkPositionWithinElementParameterSpace(coll_solution, DISTYPE) == true and distance/radius < GEO::TOL7)
+  if (GEO::checkPositionWithinElementParameterSpace(coll_solution, DISTYPE) == true and
+      distance / radius < GEO::TOL7)
   {
     // check whether collision time is reasonable
     if (coll_solution(1) >= -GEO::TOL14)
@@ -5388,7 +5781,8 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
       const double scalar_partvel = F.Dot(particle_vel);
       const double scalar_wallvel = F.Dot(wallcollpoint_vel);
 
-      // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
+      // decide if collision is still going to happen (--> valid) or has already happened in the
+      // last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
         timetocollision = coll_solution(1);
@@ -5410,18 +5804,12 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
  | an element edge for hard sphere particles (templated on distype      |
  | of wall element edge)                                                |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE>
+template <DRT::Element::DiscretizationType DISTYPE>
 bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_FAD(
-    const Epetra_SerialDenseMatrix& xyze_line_n,
-    const Epetra_SerialDenseMatrix& xyze_line_np,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wallcollpoint_pos,
-    LINALG::Matrix<3,1>& wallcollpoint_vel,
-    const double remaining_dt,
-    const double dt,
+    const Epetra_SerialDenseMatrix& xyze_line_n, const Epetra_SerialDenseMatrix& xyze_line_np,
+    const LINALG::Matrix<3, 1>& particle_pos, const LINALG::Matrix<3, 1>& particle_vel,
+    const double radius, double& timetocollision, LINALG::Matrix<3, 1>& wallcollpoint_pos,
+    LINALG::Matrix<3, 1>& wallcollpoint_vel, const double remaining_dt, const double dt,
     bool& checkcorners)
 {
 #ifdef DEBUG
@@ -5432,12 +5820,12 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // solution vector
-  static LINALG::TMatrix<FAD,2,1> coll_solution;
-  static LINALG::TMatrix<FAD,3,1> wallcollpoint_pos_fad;
-  static LINALG::TMatrix<FAD,3,1> wallcollpoint_vel_fad;
-  static LINALG::TMatrix<FAD,3,1> wallcollpoint_deriv_vel_fad;
-  static LINALG::TMatrix<FAD,3,1> particle_pos_fad;
-  static LINALG::TMatrix<FAD,3,1> particle_vel_fad;
+  static LINALG::TMatrix<FAD, 2, 1> coll_solution;
+  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_pos_fad;
+  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_vel_fad;
+  static LINALG::TMatrix<FAD, 3, 1> wallcollpoint_deriv_vel_fad;
+  static LINALG::TMatrix<FAD, 3, 1> particle_pos_fad;
+  static LINALG::TMatrix<FAD, 3, 1> particle_vel_fad;
   coll_solution.Clear();
   wallcollpoint_pos_fad.Clear();
   wallcollpoint_vel_fad.Clear();
@@ -5445,7 +5833,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   particle_pos_fad.Clear();
   particle_vel_fad.Clear();
 
-  for(int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     particle_pos_fad(i) = particle_pos(i);
     particle_vel_fad(i) = particle_vel(i);
@@ -5457,47 +5845,48 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   coll_solution(1) = 0.0;
 
   // setup FAD
-  for(int i=0; i<2; ++i)
-    coll_solution(i).diff(i,2);
+  for (int i = 0; i < 2; ++i) coll_solution(i).diff(i, 2);
 
   // unit normal at collision point
-  static LINALG::TMatrix<FAD,3,1> unitnormal;
+  static LINALG::TMatrix<FAD, 3, 1> unitnormal;
   unitnormal.Clear();
 
   // velocity of wall element is constant over the time step
-  static LINALG::TMatrix<FAD,3,numnodes> vele_fad;
-  static LINALG::TMatrix<FAD,3,numnodes> xyze_n_fad;
-  static LINALG::TMatrix<FAD,3,numnodes> xyze_colltime;
+  static LINALG::TMatrix<FAD, 3, numnodes> vele_fad;
+  static LINALG::TMatrix<FAD, 3, numnodes> xyze_n_fad;
+  static LINALG::TMatrix<FAD, 3, numnodes> xyze_colltime;
   vele_fad.Clear();
   xyze_n_fad.Clear();
   xyze_colltime.Clear();
 
   const double invdt = 1.0 / dt;
-  for(int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
-    for(int j=0; j<numnodes; ++j)
+    for (int j = 0; j < numnodes; ++j)
     {
-      vele_fad(i,j) = (xyze_line_np(i,j) - xyze_line_n(i,j))*invdt;
-      xyze_n_fad(i,j) = xyze_line_n(i,j);
+      vele_fad(i, j) = (xyze_line_np(i, j) - xyze_line_n(i, j)) * invdt;
+      xyze_n_fad(i, j) = xyze_line_n(i, j);
     }
   }
 
   // connection vector between edge coll point and particle position
-  static LINALG::TMatrix<FAD,3,1> F;
+  static LINALG::TMatrix<FAD, 3, 1> F;
   F.Clear();
   // compute first derivative of r
-  static LINALG::TMatrix<FAD,3,1> F_deriv1;
+  static LINALG::TMatrix<FAD, 3, 1> F_deriv1;
   F_deriv1.Clear();
   // compute second derivative of r
-  static LINALG::TMatrix<FAD,3,1> F_deriv2;
+  static LINALG::TMatrix<FAD, 3, 1> F_deriv2;
   F_deriv2.Clear();
 
   double distance = 0.0;
   double ttc_old = GEO::LARGENUMBER;
 
-  // the following functional is minimized iteratively (variables are ele coord and time to collision (ttc)):
-  // [ { EdgeCollPoint(t) - (particle_pos + ttc * particle_vel) }^2 - radius^2 ]^2 +
-  //     0.5 * ( [EdgeCollPoint(t)- (particle_pos + ttc * particle_vel)] dot EdgeCollPoint_deriv(t) )^2
+  // the following functional is minimized iteratively (variables are ele coord and time to
+  // collision (ttc)): [ { EdgeCollPoint(t) - (particle_pos + ttc * particle_vel) }^2 - radius^2 ]^2
+  // +
+  //     0.5 * ( [EdgeCollPoint(t)- (particle_pos + ttc * particle_vel)] dot EdgeCollPoint_deriv(t)
+  //     )^2
   // with t = dt - remaining_dt + ttc
 
   // iteration for contact search
@@ -5509,101 +5898,130 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 
     // compute wall positions at collision time: xyze_colltime = xyze_n + colltime*vele
     static FAD colltime;
-    colltime=0.0;
-    colltime = dt-remaining_dt+coll_solution(1);
+    colltime = 0.0;
+    colltime = dt - remaining_dt + coll_solution(1);
     xyze_colltime.Update(1.0, xyze_n_fad, colltime, vele_fad);
 
     // update particle position to current time
-    static LINALG::TMatrix<FAD,3,1> particle_pos_colltime;
+    static LINALG::TMatrix<FAD, 3, 1> particle_pos_colltime;
     particle_pos_colltime.Clear();
     particle_pos_colltime.Update(1.0, particle_pos_fad, coll_solution(1), particle_vel_fad);
 
     // determine shape function, 1. and 2. derivative at current solution
-    static LINALG::TMatrix<FAD,numnodes,1> funct;
+    static LINALG::TMatrix<FAD, numnodes, 1> funct;
     funct.Clear();
     DRT::UTILS::shape_function_1D(funct, coll_solution(0), DISTYPE);
 
-    static LINALG::TMatrix<FAD,1,numnodes> deriv1;
+    static LINALG::TMatrix<FAD, 1, numnodes> deriv1;
     deriv1.Clear();
     DRT::UTILS::shape_function_1D_deriv1(deriv1, coll_solution(0), DISTYPE);
 
-    static LINALG::TMatrix<FAD,1,numnodes> deriv2;
+    static LINALG::TMatrix<FAD, 1, numnodes> deriv2;
     deriv2.Clear();
     DRT::UTILS::shape_function_1D_deriv2(deriv2, coll_solution(0), DISTYPE);
 
-    // position and velocity of wall collision point at collision time and derivs (unrolled due to FAD)
-    switch(numnodes)
+    // position and velocity of wall collision point at collision time and derivs (unrolled due to
+    // FAD)
+    switch (numnodes)
     {
-    case 2:
-      wallcollpoint_pos_fad(0) = xyze_colltime(0,0) * funct(0) + xyze_colltime(0,1) * funct(1);
-      wallcollpoint_pos_fad(1) = xyze_colltime(1,0) * funct(0) + xyze_colltime(1,1) * funct(1);
-      wallcollpoint_pos_fad(2) = xyze_colltime(2,0) * funct(0) + xyze_colltime(2,1) * funct(1);
+      case 2:
+        wallcollpoint_pos_fad(0) = xyze_colltime(0, 0) * funct(0) + xyze_colltime(0, 1) * funct(1);
+        wallcollpoint_pos_fad(1) = xyze_colltime(1, 0) * funct(0) + xyze_colltime(1, 1) * funct(1);
+        wallcollpoint_pos_fad(2) = xyze_colltime(2, 0) * funct(0) + xyze_colltime(2, 1) * funct(1);
 
-      wallcollpoint_vel_fad(0) = vele_fad(0,0) * funct(0) + vele_fad(0,1) * funct(1);
-      wallcollpoint_vel_fad(1) = vele_fad(1,0) * funct(0) + vele_fad(1,1) * funct(1);
-      wallcollpoint_vel_fad(2) = vele_fad(2,0) * funct(0) + vele_fad(2,1) * funct(1);
+        wallcollpoint_vel_fad(0) = vele_fad(0, 0) * funct(0) + vele_fad(0, 1) * funct(1);
+        wallcollpoint_vel_fad(1) = vele_fad(1, 0) * funct(0) + vele_fad(1, 1) * funct(1);
+        wallcollpoint_vel_fad(2) = vele_fad(2, 0) * funct(0) + vele_fad(2, 1) * funct(1);
 
-      wallcollpoint_deriv_vel_fad(0) = vele_fad(0,0) * deriv1(0,0) + vele_fad(0,1) * deriv1(0,1);
-      wallcollpoint_deriv_vel_fad(1) = vele_fad(1,0) * deriv1(0,0) + vele_fad(1,1) * deriv1(0,1);
-      wallcollpoint_deriv_vel_fad(2) = vele_fad(2,0) * deriv1(0,0) + vele_fad(2,1) * deriv1(0,1);
+        wallcollpoint_deriv_vel_fad(0) =
+            vele_fad(0, 0) * deriv1(0, 0) + vele_fad(0, 1) * deriv1(0, 1);
+        wallcollpoint_deriv_vel_fad(1) =
+            vele_fad(1, 0) * deriv1(0, 0) + vele_fad(1, 1) * deriv1(0, 1);
+        wallcollpoint_deriv_vel_fad(2) =
+            vele_fad(2, 0) * deriv1(0, 0) + vele_fad(2, 1) * deriv1(0, 1);
 
-      F_deriv1(0) = xyze_colltime(0,0) * deriv1(0,0) + xyze_colltime(0,1) * deriv1(0,1);
-      F_deriv1(1) = xyze_colltime(1,0) * deriv1(0,0) + xyze_colltime(1,1) * deriv1(0,1);
-      F_deriv1(2) = xyze_colltime(2,0) * deriv1(0,0) + xyze_colltime(2,1) * deriv1(0,1);
+        F_deriv1(0) = xyze_colltime(0, 0) * deriv1(0, 0) + xyze_colltime(0, 1) * deriv1(0, 1);
+        F_deriv1(1) = xyze_colltime(1, 0) * deriv1(0, 0) + xyze_colltime(1, 1) * deriv1(0, 1);
+        F_deriv1(2) = xyze_colltime(2, 0) * deriv1(0, 0) + xyze_colltime(2, 1) * deriv1(0, 1);
 
-      F_deriv2(0) = xyze_colltime(0,0) * deriv2(0,0) + xyze_colltime(0,1) * deriv2(0,1);
-      F_deriv2(1) = xyze_colltime(1,0) * deriv2(0,0) + xyze_colltime(1,1) * deriv2(0,1);
-      F_deriv2(2) = xyze_colltime(2,0) * deriv2(0,0) + xyze_colltime(2,1) * deriv2(0,1);
-      break;
-    case 3:
-      wallcollpoint_pos_fad(0) = xyze_colltime(0,0) * funct(0) + xyze_colltime(0,1) * funct(1) + xyze_colltime(0,2) * funct(2);
-      wallcollpoint_pos_fad(1) = xyze_colltime(1,0) * funct(0) + xyze_colltime(1,1) * funct(1) + xyze_colltime(1,2) * funct(2);
-      wallcollpoint_pos_fad(2) = xyze_colltime(2,0) * funct(0) + xyze_colltime(2,1) * funct(1) + xyze_colltime(2,2) * funct(2);
+        F_deriv2(0) = xyze_colltime(0, 0) * deriv2(0, 0) + xyze_colltime(0, 1) * deriv2(0, 1);
+        F_deriv2(1) = xyze_colltime(1, 0) * deriv2(0, 0) + xyze_colltime(1, 1) * deriv2(0, 1);
+        F_deriv2(2) = xyze_colltime(2, 0) * deriv2(0, 0) + xyze_colltime(2, 1) * deriv2(0, 1);
+        break;
+      case 3:
+        wallcollpoint_pos_fad(0) = xyze_colltime(0, 0) * funct(0) + xyze_colltime(0, 1) * funct(1) +
+                                   xyze_colltime(0, 2) * funct(2);
+        wallcollpoint_pos_fad(1) = xyze_colltime(1, 0) * funct(0) + xyze_colltime(1, 1) * funct(1) +
+                                   xyze_colltime(1, 2) * funct(2);
+        wallcollpoint_pos_fad(2) = xyze_colltime(2, 0) * funct(0) + xyze_colltime(2, 1) * funct(1) +
+                                   xyze_colltime(2, 2) * funct(2);
 
-      wallcollpoint_vel_fad(0) = vele_fad(0,0) * funct(0) + vele_fad(0,1) * funct(1) + vele_fad(0,2) * funct(2);
-      wallcollpoint_vel_fad(1) = vele_fad(1,0) * funct(0) + vele_fad(1,1) * funct(1) + vele_fad(1,2) * funct(2);
-      wallcollpoint_vel_fad(2) = vele_fad(2,0) * funct(0) + vele_fad(2,1) * funct(1) + vele_fad(2,2) * funct(2);
+        wallcollpoint_vel_fad(0) =
+            vele_fad(0, 0) * funct(0) + vele_fad(0, 1) * funct(1) + vele_fad(0, 2) * funct(2);
+        wallcollpoint_vel_fad(1) =
+            vele_fad(1, 0) * funct(0) + vele_fad(1, 1) * funct(1) + vele_fad(1, 2) * funct(2);
+        wallcollpoint_vel_fad(2) =
+            vele_fad(2, 0) * funct(0) + vele_fad(2, 1) * funct(1) + vele_fad(2, 2) * funct(2);
 
-      wallcollpoint_deriv_vel_fad(0) = vele_fad(0,0) * deriv1(0,0) + vele_fad(0,1) * deriv1(0,1) + vele_fad(0,2) * deriv1(0,2);
-      wallcollpoint_deriv_vel_fad(1) = vele_fad(1,0) * deriv1(0,0) + vele_fad(1,1) * deriv1(0,1) + vele_fad(1,2) * deriv1(0,2);
-      wallcollpoint_deriv_vel_fad(2) = vele_fad(2,0) * deriv1(0,0) + vele_fad(2,1) * deriv1(0,1) + vele_fad(2,2) * deriv1(0,2);
+        wallcollpoint_deriv_vel_fad(0) = vele_fad(0, 0) * deriv1(0, 0) +
+                                         vele_fad(0, 1) * deriv1(0, 1) +
+                                         vele_fad(0, 2) * deriv1(0, 2);
+        wallcollpoint_deriv_vel_fad(1) = vele_fad(1, 0) * deriv1(0, 0) +
+                                         vele_fad(1, 1) * deriv1(0, 1) +
+                                         vele_fad(1, 2) * deriv1(0, 2);
+        wallcollpoint_deriv_vel_fad(2) = vele_fad(2, 0) * deriv1(0, 0) +
+                                         vele_fad(2, 1) * deriv1(0, 1) +
+                                         vele_fad(2, 2) * deriv1(0, 2);
 
-      F_deriv1(0) = xyze_colltime(0,0) * deriv1(0,0) + xyze_colltime(0,1) * deriv1(0,1) + xyze_colltime(0,2) * deriv1(0,2);
-      F_deriv1(1) = xyze_colltime(1,0) * deriv1(0,0) + xyze_colltime(1,1) * deriv1(0,1) + xyze_colltime(1,2) * deriv1(0,2);
-      F_deriv1(2) = xyze_colltime(2,0) * deriv1(0,0) + xyze_colltime(2,1) * deriv1(0,1) + xyze_colltime(2,2) * deriv1(0,2);
+        F_deriv1(0) = xyze_colltime(0, 0) * deriv1(0, 0) + xyze_colltime(0, 1) * deriv1(0, 1) +
+                      xyze_colltime(0, 2) * deriv1(0, 2);
+        F_deriv1(1) = xyze_colltime(1, 0) * deriv1(0, 0) + xyze_colltime(1, 1) * deriv1(0, 1) +
+                      xyze_colltime(1, 2) * deriv1(0, 2);
+        F_deriv1(2) = xyze_colltime(2, 0) * deriv1(0, 0) + xyze_colltime(2, 1) * deriv1(0, 1) +
+                      xyze_colltime(2, 2) * deriv1(0, 2);
 
-      F_deriv2(0) = xyze_colltime(0,0) * deriv2(0,0) + xyze_colltime(0,1) * deriv2(0,1) + xyze_colltime(0,2) * deriv2(0,2);
-      F_deriv2(1) = xyze_colltime(1,0) * deriv2(0,0) + xyze_colltime(1,1) * deriv2(0,1) + xyze_colltime(1,2) * deriv2(0,2);
-      F_deriv2(2) = xyze_colltime(2,0) * deriv2(0,0) + xyze_colltime(2,1) * deriv2(0,1) + xyze_colltime(2,2) * deriv2(0,2);
-      break;
-    default:
-      dserror("not yet implemented");
-      break;
+        F_deriv2(0) = xyze_colltime(0, 0) * deriv2(0, 0) + xyze_colltime(0, 1) * deriv2(0, 1) +
+                      xyze_colltime(0, 2) * deriv2(0, 2);
+        F_deriv2(1) = xyze_colltime(1, 0) * deriv2(0, 0) + xyze_colltime(1, 1) * deriv2(0, 1) +
+                      xyze_colltime(1, 2) * deriv2(0, 2);
+        F_deriv2(2) = xyze_colltime(2, 0) * deriv2(0, 0) + xyze_colltime(2, 1) * deriv2(0, 1) +
+                      xyze_colltime(2, 2) * deriv2(0, 2);
+        break;
+      default:
+        dserror("not yet implemented");
+        break;
     }
 
     // subtract current particle position from the edge collision point
     F.Update(1.0, wallcollpoint_pos_fad, -1.0, particle_pos_colltime);
 
     // compute rhs
-    static LINALG::TMatrix<FAD,2,1> residual;
+    static LINALG::TMatrix<FAD, 2, 1> residual;
     residual.Clear();
     static FAD dotprod_pos_pos, dotprod_pos_deriv1, dotprod_deriv1_deriv1, dotprod_pos_deriv2,
-               dotprod_pos_v, dotprod_v_deriv1, dotprod_pos_derivv, pos2subtractrad2;
+        dotprod_pos_v, dotprod_v_deriv1, dotprod_pos_derivv, pos2subtractrad2;
 
-    dotprod_pos_pos = F(0)*F(0) + F(1)*F(1) + F(2)*F(2);
-    dotprod_pos_deriv1 = F(0)*F_deriv1(0) + F(1)*F_deriv1(1) + F(2)*F_deriv1(2);
-    dotprod_deriv1_deriv1 = F_deriv1(0)*F_deriv1(0) + F_deriv1(1)*F_deriv1(1) + F_deriv1(2)*F_deriv1(2);
-    dotprod_pos_deriv2 = F(0)*F_deriv2(0) + F(1)*F_deriv2(1) + F(2)*F_deriv2(2);
-    dotprod_pos_v = F(0)*(wallcollpoint_vel_fad(0) - particle_vel(0)) + F(1)*(wallcollpoint_vel_fad(1) - particle_vel(1)) + F(2)*(wallcollpoint_vel_fad(2) - particle_vel(2));
-    dotprod_v_deriv1 = (wallcollpoint_vel_fad(0) - particle_vel(0))*F_deriv1(0) + (wallcollpoint_vel_fad(1) - particle_vel(1))*F_deriv1(1) +(wallcollpoint_vel_fad(2) - particle_vel(2))*F_deriv1(2);
-    dotprod_pos_derivv = F(0)*wallcollpoint_deriv_vel_fad(0) + F(1)*wallcollpoint_deriv_vel_fad(1) + F(2)*wallcollpoint_deriv_vel_fad(2);
-    pos2subtractrad2 = dotprod_pos_pos - radius*radius;
+    dotprod_pos_pos = F(0) * F(0) + F(1) * F(1) + F(2) * F(2);
+    dotprod_pos_deriv1 = F(0) * F_deriv1(0) + F(1) * F_deriv1(1) + F(2) * F_deriv1(2);
+    dotprod_deriv1_deriv1 =
+        F_deriv1(0) * F_deriv1(0) + F_deriv1(1) * F_deriv1(1) + F_deriv1(2) * F_deriv1(2);
+    dotprod_pos_deriv2 = F(0) * F_deriv2(0) + F(1) * F_deriv2(1) + F(2) * F_deriv2(2);
+    dotprod_pos_v = F(0) * (wallcollpoint_vel_fad(0) - particle_vel(0)) +
+                    F(1) * (wallcollpoint_vel_fad(1) - particle_vel(1)) +
+                    F(2) * (wallcollpoint_vel_fad(2) - particle_vel(2));
+    dotprod_v_deriv1 = (wallcollpoint_vel_fad(0) - particle_vel(0)) * F_deriv1(0) +
+                       (wallcollpoint_vel_fad(1) - particle_vel(1)) * F_deriv1(1) +
+                       (wallcollpoint_vel_fad(2) - particle_vel(2)) * F_deriv1(2);
+    dotprod_pos_derivv = F(0) * wallcollpoint_deriv_vel_fad(0) +
+                         F(1) * wallcollpoint_deriv_vel_fad(1) +
+                         F(2) * wallcollpoint_deriv_vel_fad(2);
+    pos2subtractrad2 = dotprod_pos_pos - radius * radius;
 
-    residual(0) = pos2subtractrad2*2.0*dotprod_pos_deriv1 +
-                  dotprod_pos_deriv1*(dotprod_deriv1_deriv1 + dotprod_pos_deriv2);
+    residual(0) = pos2subtractrad2 * 2.0 * dotprod_pos_deriv1 +
+                  dotprod_pos_deriv1 * (dotprod_deriv1_deriv1 + dotprod_pos_deriv2);
 
-    residual(1) = pos2subtractrad2*2.0*dotprod_pos_v +
-                  dotprod_pos_deriv1*(dotprod_v_deriv1+dotprod_pos_derivv);
+    residual(1) = pos2subtractrad2 * 2.0 * dotprod_pos_v +
+                  dotprod_pos_deriv1 * (dotprod_v_deriv1 + dotprod_pos_derivv);
 
     // distance between particle and edge
     const double distance_old = distance;
@@ -5611,16 +6029,18 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     const double residualnorm1 = std::abs(residual(0).val()) + std::abs(residual(1).val());
 
     // break if collision found or residual is small and collision not possible
-    if (distance<GEO::TOL12 || (residualnorm1<1.0e-12*radius*radius && distance>GEO::TOL2*radius))
+    if (distance < GEO::TOL12 ||
+        (residualnorm1 < 1.0e-12 * radius * radius && distance > GEO::TOL2 * radius))
     {
       break;
     }
 
     // break here if there will be definitely no contact using some heuristic
-    if (iter>2 && ((std::abs(distance-distance_old)<0.1*radius && distance>radius) || std::abs(coll_solution(0).val())>1.5) )
+    if (iter > 2 && ((std::abs(distance - distance_old) < 0.1 * radius && distance > radius) ||
+                        std::abs(coll_solution(0).val()) > 1.5))
     {
 #ifdef OUTPUT
-    std::cout << "break due to far away of line" << std::endl;
+      std::cout << "break due to far away of line" << std::endl;
 #endif
 #ifndef DEBUG
       break;
@@ -5628,10 +6048,10 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
       heuristic_break = true;
 #endif
     }
-    if (residualnorm1<1.0e-12*radius*radius && distance>GEO::TOL2*radius)
+    if (residualnorm1 < 1.0e-12 * radius * radius && distance > GEO::TOL2 * radius)
     {
 #ifdef OUTPUT
-    std::cout << "break due to reached tolerance and medium far away of line" << std::endl;
+      std::cout << "break due to reached tolerance and medium far away of line" << std::endl;
 #endif
 #ifndef DEBUG
       break;
@@ -5639,11 +6059,12 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
       heuristic_break = true;
 #endif
     }
-    const double remainingtime = std::max(2.0*remaining_dt,GEO::TOL2*dt);
-    if (iter>2 && (coll_solution(1).val()>remainingtime && std::abs(coll_solution(1).val()-ttc_old)<0.2*remainingtime))
+    const double remainingtime = std::max(2.0 * remaining_dt, GEO::TOL2 * dt);
+    if (iter > 2 && (coll_solution(1).val() > remainingtime &&
+                        std::abs(coll_solution(1).val() - ttc_old) < 0.2 * remainingtime))
     {
 #ifdef OUTPUT
-    std::cout << "break due to time to collision with line too large" << std::endl;
+      std::cout << "break due to time to collision with line too large" << std::endl;
 #endif
 #ifndef DEBUG
       break;
@@ -5660,43 +6081,43 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     ttc_old = coll_solution(1).val();
 
     // compute dF/dx
-    static LINALG::Matrix<2,2> A;
+    static LINALG::Matrix<2, 2> A;
     A.Clear();
 
-    for (int j=0; j<2; ++j)
+    for (int j = 0; j < 2; ++j)
     {
       A(0, j) = residual(0).dx(j);
       A(1, j) = residual(1).dx(j);
     }
 
     // compute rhs
-    static LINALG::Matrix<2,1> b;
+    static LINALG::Matrix<2, 1> b;
     b.Clear();
-    for (int i=0; i<2; ++i)
+    for (int i = 0; i < 2; ++i)
     {
-      b(i) = - residual(i).val();
+      b(i) = -residual(i).val();
     }
 
     // solve linear problem A dx = b
-    static LINALG::Matrix<2,1> dx;
+    static LINALG::Matrix<2, 1> dx;
     dx.Clear();
     const double det = LINALG::scaledGaussElimination<2>(A, b, dx);
 
     if (std::abs(det) < GEO::TOL14)
     {
-      static LINALG::Matrix<3,1> copy_particle_vel, copy_F_deriv1;
+      static LINALG::Matrix<3, 1> copy_particle_vel, copy_F_deriv1;
       copy_particle_vel.Clear();
       copy_F_deriv1.Clear();
 
-      for(int i=0; i<3; ++i)
+      for (int i = 0; i < 3; ++i)
       {
         copy_particle_vel(i) = particle_vel_fad(i).val();
         copy_F_deriv1(i) = F_deriv1(i).val();
       }
-      static LINALG::Matrix<3,1> crossproduct;
+      static LINALG::Matrix<3, 1> crossproduct;
       crossproduct.Clear();
       crossproduct.CrossProduct(copy_particle_vel, copy_F_deriv1);
-      if(crossproduct.Norm1() < GEO::TOL10 and iter>1)
+      if (crossproduct.Norm1() < GEO::TOL10 and iter > 1)
       {
 #ifdef OUTPUT
         std::cout << "particle path is parallel to line --> left iteration" << std::endl;
@@ -5707,7 +6128,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     }
 
     // update of coll_solution
-    for (int i=0; i<2; ++i)
+    for (int i = 0; i < 2; ++i)
     {
       coll_solution(i) += dx(i);
     }
@@ -5723,10 +6144,11 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   }
 
   // check whether collision position is valid and otherwise check for corner collision points
-  if (GEO::checkPositionWithinElementParameterSpace(coll_solution, DISTYPE) == true and distance < GEO::TOL7*radius)
+  if (GEO::checkPositionWithinElementParameterSpace(coll_solution, DISTYPE) == true and
+      distance < GEO::TOL7 * radius)
   {
 #ifdef OUTPUT
-      std::cout << "elecoord is within parameter space and distance is small" << std::endl;
+    std::cout << "elecoord is within parameter space and distance is small" << std::endl;
 #endif
     // check whether collision time is reasonable
     if (coll_solution(1) >= -GEO::TOL14 && coll_solution(1) < 1.1 * remaining_dt)
@@ -5734,12 +6156,13 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
       FAD scalar_partvel = F.Dot(particle_vel_fad);
       FAD scalar_wallvel = F.Dot(wallcollpoint_vel_fad);
 
-      // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
+      // decide if collision is still going to happen (--> valid) or has already happened in the
+      // last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
         timetocollision = coll_solution(1).val();
         validlinecollision = true;
-        for(int j=0; j<3; ++j)
+        for (int j = 0; j < 3; ++j)
         {
           wallcollpoint_pos(j) = wallcollpoint_pos_fad(j).val();
           wallcollpoint_vel(j) = wallcollpoint_vel_fad(j).val();
@@ -5748,11 +6171,11 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 #ifdef DEBUG
         {
           // advance particle in time to collision time
-          static LINALG::Matrix<3,1> newpos;
+          static LINALG::Matrix<3, 1> newpos;
           newpos.Clear();
           newpos.Update(1.0, particle_pos, timetocollision, particle_vel);
 
-          static LINALG::Matrix<3,1> collnormal;
+          static LINALG::Matrix<3, 1> collnormal;
           collnormal.Clear();
           collnormal.Update(1.0, newpos, -1.0, wallcollpoint_pos);
 
@@ -5769,7 +6192,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
             dserror("Particle and wall collision detected but distance does not match radius");
           }
         }
-        if(heuristic_break == true)
+        if (heuristic_break == true)
           dserror("in release version, the loop would have been left due to heuristic criterion");
 #endif
       }
@@ -5789,41 +6212,34 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
  | an element edge for hard sphere particles                            |
  *----------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
-    const DRT::Element::DiscretizationType distype,
-    const Epetra_SerialDenseMatrix& xyze_line_n,
-    const Epetra_SerialDenseMatrix& xyze_line_np,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wallcollpoint_pos,
-    LINALG::Matrix<3,1>& wallcollpoint_vel,
-    const double remaining_dt,
-    const double dt,
-    bool& checkcorners)
+    const DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze_line_n,
+    const Epetra_SerialDenseMatrix& xyze_line_np, const LINALG::Matrix<3, 1>& particle_pos,
+    const LINALG::Matrix<3, 1>& particle_vel, const double radius, double& timetocollision,
+    LINALG::Matrix<3, 1>& wallcollpoint_pos, LINALG::Matrix<3, 1>& wallcollpoint_vel,
+    const double remaining_dt, const double dt, bool& checkcorners)
 {
   bool validlinecollision = false;
   switch (distype)
   {
-  case DRT::Element::line2:
-//    validlinecollision = ComputeCollisionOfParticleWithLineT<DRT::Element::line2>(
-//        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
-//        timetocollision, wallcollpoint_pos, wallcollpoint_vel, checkcorners);
-    validlinecollision = ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line2>(
-        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
-        timetocollision, wallcollpoint_pos, wallcollpoint_vel,remaining_dt, dt, checkcorners);
-    break;
-  case DRT::Element::line3:
-//    validlinecollision = ComputeCollisionOfParticleWithLineT<DRT::Element::line3>(
-//        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
-//        timetocollision, wallcollpoint_pos, wallcollpoint_vel, checkcorners);
-    validlinecollision = ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line3>(
-        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
-        timetocollision, wallcollpoint_pos, wallcollpoint_vel,remaining_dt, dt, checkcorners);
-    break;
-  default:
-    dserror("please add your line element type here");
-    break;
+    case DRT::Element::line2:
+      //    validlinecollision = ComputeCollisionOfParticleWithLineT<DRT::Element::line2>(
+      //        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
+      //        timetocollision, wallcollpoint_pos, wallcollpoint_vel, checkcorners);
+      validlinecollision = ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line2>(xyze_line_n,
+          xyze_line_np, particle_pos, particle_vel, radius, timetocollision, wallcollpoint_pos,
+          wallcollpoint_vel, remaining_dt, dt, checkcorners);
+      break;
+    case DRT::Element::line3:
+      //    validlinecollision = ComputeCollisionOfParticleWithLineT<DRT::Element::line3>(
+      //        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
+      //        timetocollision, wallcollpoint_pos, wallcollpoint_vel, checkcorners);
+      validlinecollision = ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line3>(xyze_line_n,
+          xyze_line_np, particle_pos, particle_vel, radius, timetocollision, wallcollpoint_pos,
+          wallcollpoint_vel, remaining_dt, dt, checkcorners);
+      break;
+    default:
+      dserror("please add your line element type here");
+      break;
   }
 
   return validlinecollision;
@@ -5835,16 +6251,10 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
  | an element corner for hard sphere particles                          |
  *----------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
-    const Epetra_SerialDenseMatrix& xyze_corner_n,
-    const Epetra_SerialDenseMatrix& xyze_corner_np,
-    const LINALG::Matrix<3,1>& particle_pos,
-    const LINALG::Matrix<3,1>& particle_vel,
-    const double radius,
-    double& timetocollision,
-    LINALG::Matrix<3,1>& wallcollpoint_pos,
-    LINALG::Matrix<3,1>& wallcollpoint_vel,
-    const double remaining_dt,
-    const double dt)
+    const Epetra_SerialDenseMatrix& xyze_corner_n, const Epetra_SerialDenseMatrix& xyze_corner_np,
+    const LINALG::Matrix<3, 1>& particle_pos, const LINALG::Matrix<3, 1>& particle_vel,
+    const double radius, double& timetocollision, LINALG::Matrix<3, 1>& wallcollpoint_pos,
+    LINALG::Matrix<3, 1>& wallcollpoint_vel, const double remaining_dt, const double dt)
 {
   bool validcornercollision = false;
 
@@ -5852,19 +6262,18 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
   Epetra_SerialDenseMatrix vcorner(xyze_corner_n);
   vcorner.Scale(-1.0);
   vcorner += xyze_corner_np;
-  static LINALG::Matrix<3,1> corner_vel;
+  static LINALG::Matrix<3, 1> corner_vel;
   corner_vel.Clear();
-  for(int i=0; i<3; ++i)
-    corner_vel(i) = vcorner(i,0);
+  for (int i = 0; i < 3; ++i) corner_vel(i) = vcorner(i, 0);
   corner_vel.Scale(1.0 / dt);
 
-  static LINALG::Matrix<3,1> deltax, deltav;
+  static LINALG::Matrix<3, 1> deltax, deltav;
   deltax.Clear();
   deltav.Clear();
 
-  for (int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
   {
-    deltax(i) = xyze_corner_n(i,0) + (dt - remaining_dt) *  corner_vel(i) - particle_pos(i) ;
+    deltax(i) = xyze_corner_n(i, 0) + (dt - remaining_dt) * corner_vel(i) - particle_pos(i);
     deltav(i) = corner_vel(i) - particle_vel(i);
   }
 
@@ -5877,7 +6286,7 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
 
   const double discriminant = b * b - 4.0 * a * c;
 
-  if (discriminant >= 0.0 and a>0.0)
+  if (discriminant >= 0.0 and a > 0.0)
   {
     const double sqrdiscr = sqrt(discriminant);
     const double inv2a = 1.0 / (2.0 * a);
@@ -5901,18 +6310,20 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
     }
 
     // check whether collision time is reasonable
-    if (timetocollision >= -GEO::TOL14 && timetocollision < 1.1*remaining_dt)
+    if (timetocollision >= -GEO::TOL14 && timetocollision < 1.1 * remaining_dt)
     {
       const double scalar_partvel = particle_vel.Dot(deltax);
       const double scalar_wallvel = corner_vel.Dot(deltax);
 
-      // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
+      // decide if collision is still going to happen (--> valid) or has already happened in the
+      // last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
         validcornercollision = true;
-        for(int j=0; j<3; ++j)
+        for (int j = 0; j < 3; ++j)
         {
-          wallcollpoint_pos(j) = xyze_corner_n(j,0) + (dt - remaining_dt + timetocollision) *  corner_vel(j);
+          wallcollpoint_pos(j) =
+              xyze_corner_n(j, 0) + (dt - remaining_dt + timetocollision) * corner_vel(j);
           wallcollpoint_vel(j) = corner_vel(j);
         }
       }
@@ -5926,27 +6337,19 @@ bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
 /*----------------------------------------------------------------------*
  | necessary data for computing particle collisions        ghamm 09/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
-  const DRT::Node* particle_1,
-  const DRT::Node* particle_2,
-  LINALG::Matrix<3,1>& pos_1,
-  LINALG::Matrix<3,1>& pos_2,
-  LINALG::Matrix<3,1>& vel_1,
-  LINALG::Matrix<3,1>& vel_2,
-  double& rad_1,
-  double& rad_2,
-  double& ddt_1,
-  double& ddt_2
-  )
+void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(const DRT::Node* particle_1,
+    const DRT::Node* particle_2, LINALG::Matrix<3, 1>& pos_1, LINALG::Matrix<3, 1>& pos_2,
+    LINALG::Matrix<3, 1>& vel_1, LINALG::Matrix<3, 1>& vel_2, double& rad_1, double& rad_2,
+    double& ddt_1, double& ddt_2)
 {
   // data of particle 1
-  if(particle_1 != NULL)
+  if (particle_1 != NULL)
   {
     GetCollisionData(particle_1, pos_1, vel_1, rad_1, ddt_1);
   }
 
   // data of particle 2
-  if(particle_2 != NULL)
+  if (particle_2 != NULL)
   {
     GetCollisionData(particle_2, pos_2, vel_2, rad_2, ddt_2);
   }
@@ -5958,13 +6361,8 @@ void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
 /*----------------------------------------------------------------------*
  | necessary data for computing particle collisions        ghamm 09/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
-  const DRT::Node* particle,
-  LINALG::Matrix<3,1>& dis,
-  LINALG::Matrix<3,1>& vel,
-  double& rad,
-  double& ddt
-  )
+void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(const DRT::Node* particle,
+    LINALG::Matrix<3, 1>& dis, LINALG::Matrix<3, 1>& vel, double& rad, double& ddt)
 {
   // data of particle 1
   const int lid = particle->LID();
@@ -5982,7 +6380,8 @@ void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
  *----------------------------------------------------------------------*/
 bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RCP<Event> event2)
 {
-  if (event1->coltype == INPAR::PARTICLE::particle_particle and event2->coltype == INPAR::PARTICLE::particle_particle)
+  if (event1->coltype == INPAR::PARTICLE::particle_particle and
+      event2->coltype == INPAR::PARTICLE::particle_particle)
   {
     // compare two events with particle-particle-collision
     // check if these two events are happening simultaneously
@@ -6017,7 +6416,6 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       }
       else
         return gid1 < gid3;
-
     }
     else
     {
@@ -6025,7 +6423,8 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       return event1->time < event2->time;
     }
   }
-  else if (event1->coltype == INPAR::PARTICLE::particle_particle and event2->coltype == INPAR::PARTICLE::particle_wall)
+  else if (event1->coltype == INPAR::PARTICLE::particle_particle and
+           event2->coltype == INPAR::PARTICLE::particle_wall)
   {
     // compare event particle-particle-collision with event particle-wall-collision
     // check if these two events are happening simultaneously
@@ -6054,7 +6453,8 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       return event1->time < event2->time;
     }
   }
-  else if (event1->coltype == INPAR::PARTICLE::particle_wall and event2->coltype == INPAR::PARTICLE::particle_particle)
+  else if (event1->coltype == INPAR::PARTICLE::particle_wall and
+           event2->coltype == INPAR::PARTICLE::particle_particle)
   {
     // compare event particle-wall-collision with event particle-particle-collision
     // check if these two events are happening simultaneously
@@ -6083,7 +6483,8 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       return event1->time < event2->time;
     }
   }
-  else if (event1->coltype == INPAR::PARTICLE::particle_wall and event2->coltype == INPAR::PARTICLE::particle_wall)
+  else if (event1->coltype == INPAR::PARTICLE::particle_wall and
+           event2->coltype == INPAR::PARTICLE::particle_wall)
   {
     // compare event particle-wall-collision with event particle-wall-collision
     // check if these two events are happening simultaneously
@@ -6094,8 +6495,10 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
 
       if (gid1 == gid3)
       {
-        std::cout << ("INFO: PARTICLE AND TWO WALLS COLLIDING AT THE SAME TIME OR EDGE CONTACT!") << std::endl;
-        return Teuchos::rcp_dynamic_cast<WallEvent>(event1,true)->wall->Id() < Teuchos::rcp_dynamic_cast<WallEvent>(event2,true)->wall->Id();
+        std::cout << ("INFO: PARTICLE AND TWO WALLS COLLIDING AT THE SAME TIME OR EDGE CONTACT!")
+                  << std::endl;
+        return Teuchos::rcp_dynamic_cast<WallEvent>(event1, true)->wall->Id() <
+               Teuchos::rcp_dynamic_cast<WallEvent>(event2, true)->wall->Id();
       }
       else
         return gid1 < gid3;

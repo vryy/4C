@@ -21,7 +21,6 @@
 
 void tutorial_drt()
 {
-
   /// print welcome message to screen
   printwelcomemessage();
 
@@ -39,91 +38,90 @@ void tutorial_drt()
   /// this list contains all parameters specified in your .dat- (input-) file.
   const Teuchos::ParameterList& tutorialparams = problem->TutorialParams();
 
-  /// choose algorithm : this must be specified in your .dat- (input-) file next to the parameter 'TYPE'
-  int tutorial_type = DRT::INPUT::IntegralValue<int>(tutorialparams,"TYPE");
+  /// choose algorithm : this must be specified in your .dat- (input-) file next to the parameter
+  /// 'TYPE'
+  int tutorial_type = DRT::INPUT::IntegralValue<int>(tutorialparams, "TYPE");
 
 
   /// detect type of tutorial and build corresponding objects
   switch (tutorial_type)
   {
-  case INPAR::TUTORIAL::nonlinear_truss:
-  {
-    /// initialize rcp pointer to nonlinear truss tutorial object
-    Teuchos::RCP<TUTORIAL::NonlinearTruss> algorithm_object = Teuchos::null;
+    case INPAR::TUTORIAL::nonlinear_truss:
+    {
+      /// initialize rcp pointer to nonlinear truss tutorial object
+      Teuchos::RCP<TUTORIAL::NonlinearTruss> algorithm_object = Teuchos::null;
 
-    /// build object containing algorithm for nonlinear truss tutorial
-    algorithm_object = Teuchos::rcp(new TUTORIAL::NonlinearTruss());
+      /// build object containing algorithm for nonlinear truss tutorial
+      algorithm_object = Teuchos::rcp(new TUTORIAL::NonlinearTruss());
 
-    /// define geometry and boundary conditions, and print to screen
-    algorithm_object->SetupProblem();
+      /// define geometry and boundary conditions, and print to screen
+      algorithm_object->SetupProblem();
 
-    /// execute the time loop
-    algorithm_object->TimeLoop();
+      /// execute the time loop
+      algorithm_object->TimeLoop();
 
-    /// show the results
-    algorithm_object->PrintResults();
+      /// show the results
+      algorithm_object->PrintResults();
 
-    /// clean up the tutorial
-    algorithm_object->TutorialDone();
+      /// clean up the tutorial
+      algorithm_object->TutorialDone();
 
-    break;
-  }
-  case INPAR::TUTORIAL::partitioned_fixed_point_scheme:
-  {
-    /// initialize rcp pointer to struct-ale coupling tutorial object
-    Teuchos::RCP<TUTORIAL::FixedPointScheme> algorithm_object = Teuchos::null;
+      break;
+    }
+    case INPAR::TUTORIAL::partitioned_fixed_point_scheme:
+    {
+      /// initialize rcp pointer to struct-ale coupling tutorial object
+      Teuchos::RCP<TUTORIAL::FixedPointScheme> algorithm_object = Teuchos::null;
 
-    /// build object containing algorithm for struct-ale coupling tutorial
-    algorithm_object = Teuchos::rcp(new TUTORIAL::FixedPointScheme());
+      /// build object containing algorithm for struct-ale coupling tutorial
+      algorithm_object = Teuchos::rcp(new TUTORIAL::FixedPointScheme());
 
-    /// execute the time loop
-    algorithm_object->TimeLoop();
+      /// execute the time loop
+      algorithm_object->TimeLoop();
 
-    break;
-  }
-  case INPAR::TUTORIAL::struct_ale_coupling:
-  {
-    /// initialize rcp pointer to struct-ale coupling tutorial object
-    Teuchos::RCP<TUTORIAL::StructAleCoupling> algorithm_object = Teuchos::null;
+      break;
+    }
+    case INPAR::TUTORIAL::struct_ale_coupling:
+    {
+      /// initialize rcp pointer to struct-ale coupling tutorial object
+      Teuchos::RCP<TUTORIAL::StructAleCoupling> algorithm_object = Teuchos::null;
 
-    /// build object containing algorithm for struct-ale coupling tutorial
-    algorithm_object = Teuchos::rcp(new TUTORIAL::StructAleCoupling());
+      /// build object containing algorithm for struct-ale coupling tutorial
+      algorithm_object = Teuchos::rcp(new TUTORIAL::StructAleCoupling());
 
-    /// define geometry and boundary conditions, and print to screen
-    algorithm_object->SetupProblem();
+      /// define geometry and boundary conditions, and print to screen
+      algorithm_object->SetupProblem();
 
-    /// execute the time loop
-    algorithm_object->TimeLoop();
+      /// execute the time loop
+      algorithm_object->TimeLoop();
 
-    /// show the results
-    algorithm_object->PrintResults();
+      /// show the results
+      algorithm_object->PrintResults();
 
-    /// clean up the tutorial
-    algorithm_object->TutorialDone();
+      /// clean up the tutorial
+      algorithm_object->TutorialDone();
 
-    break;
-  }
-  default:
-  {
-    dserror("no valid tutorial type specified");
-    break;
-  }// default
+      break;
+    }
+    default:
+    {
+      dserror("no valid tutorial type specified");
+      break;
+    }  // default
 
-  }// switch tutorial_type
+  }  // switch tutorial_type
 
   return;
-} // tutorial_drt
+}  // tutorial_drt
 
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
 void printwelcomemessage()
 {
-  std::cout<<"\n*****************************************************************"<<std::endl;
-  std::cout<<"*                                                               *"<<std::endl;
-  std::cout<<"*          WELCOME TO THE HANDS-ON C++/BACI TUTORIAL            *"<<std::endl;
-  std::cout<<"*                                                               *"<<std::endl;
-  std::cout<<"*****************************************************************\n"<<std::endl;
-
+  std::cout << "\n*****************************************************************" << std::endl;
+  std::cout << "*                                                               *" << std::endl;
+  std::cout << "*          WELCOME TO THE HANDS-ON C++/BACI TUTORIAL            *" << std::endl;
+  std::cout << "*                                                               *" << std::endl;
+  std::cout << "*****************************************************************\n" << std::endl;
 }
-

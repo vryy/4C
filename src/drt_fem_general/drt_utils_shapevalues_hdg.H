@@ -25,7 +25,6 @@ namespace DRT
 {
   namespace UTILS
   {
-
     /*!
     \brief helper data type to evaluate only nonzero element shape functions on face
 
@@ -36,33 +35,24 @@ namespace DRT
       // shape function
       void Shape(int numrows, int numcols)
       {
-        matrix_.LightShape(numrows,numcols);
+        matrix_.LightShape(numrows, numcols);
         isNonzero_.resize(numrows);
         return;
       }
 
       // for analog usage as a pure matrix
-      double & operator () (const int row, const int col)
-      {
-        return matrix_(row,col);
-      }
+      double &operator()(const int row, const int col) { return matrix_(row, col); }
 
       // for analog usage as a pure matrix
-      double operator () (const int row, const int col) const
-      {
-        return matrix_(row,col);
-      }
+      double operator()(const int row, const int col) const { return matrix_(row, col); }
 
-      bool NonzeroOnFace(const int index) const
-      {
-        return isNonzero_[index];
-      }
+      bool NonzeroOnFace(const int index) const { return isNonzero_[index]; }
 
       LINALG::SerialDenseMatrix matrix_;
       std::vector<bool> isNonzero_;
 
       // assignment operator
-      ShapeValuesInteriorOnFace & operator =(ShapeValuesInteriorOnFace &other)
+      ShapeValuesInteriorOnFace &operator=(ShapeValuesInteriorOnFace &other)
       {
         matrix_ = other.matrix_;
         isNonzero_ = other.isNonzero_;
@@ -75,15 +65,14 @@ namespace DRT
     */
     struct ShapeValuesFaceParams
     {
-      explicit ShapeValuesFaceParams(unsigned int degree,
-                                     bool completepoly,
-                                     unsigned int quadraturedegree)
-      :
-      degree_(degree),
-      completepoly_(completepoly),
-      quadraturedegree_(quadraturedegree),
-      face_ (0)
-      {}
+      explicit ShapeValuesFaceParams(
+          unsigned int degree, bool completepoly, unsigned int quadraturedegree)
+          : degree_(degree),
+            completepoly_(completepoly),
+            quadraturedegree_(quadraturedegree),
+            face_(0)
+      {
+      }
 
       unsigned int degree_;
       bool completepoly_;
@@ -100,8 +89,7 @@ namespace DRT
         // Simply encode the various integer values into a single number, all of
         // them take small numbers so this is easily possible. Beware about this when
         // adding further information, tough (might overflow when larger than 4 billion).
-        return std::size_t(degree_) + 32 * completepoly_ + 64 * quadraturedegree_ +
-            4096 * face_;
+        return std::size_t(degree_) + 32 * completepoly_ + 64 * quadraturedegree_ + 4096 * face_;
       }
     };
 
@@ -115,9 +103,10 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class ShapeValues
     {
-    public:
+     public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned int nen_ =
+          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       //! number of space dimensions
       static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -126,29 +115,31 @@ namespace DRT
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       ///! number of nodes on faces
-      static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+      static const unsigned int nfn_ = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
       /*!
       \brief Initialize the data structure for shape functions, set element-independent data
 
       @param degree  Degree of the polynomial
-      @param completepoly  Sets whether to use a polynomial of complete degree or tensor degree (on hex); on tet, only complete degree makes sense
-      @param quadratureDegree  Sets the degree of polynomials the Gauss formula should integrate exactly; typically 2*degree
+      @param completepoly  Sets whether to use a polynomial of complete degree or tensor degree (on
+      hex); on tet, only complete degree makes sense
+      @param quadratureDegree  Sets the degree of polynomials the Gauss formula should integrate
+      exactly; typically 2*degree
        */
-      ShapeValues (const unsigned int degree,
-                   const bool         completepoly,
-                   const unsigned int quadratureDegree);
+      ShapeValues(
+          const unsigned int degree, const bool completepoly, const unsigned int quadratureDegree);
 
       /*!
-      \brief Compute element-dependent data, like gradients in real cell, integration weights, for element dofs
+      \brief Compute element-dependent data, like gradients in real cell, integration weights, for
+      element dofs
       */
-      void Evaluate              (const DRT::Element &ele);
+      void Evaluate(const DRT::Element &ele);
 
       /// polynomial degree
       unsigned int degree_;
 
       /// underlying polynomial space for element interior, created in constructor
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_> > polySpace_;
+      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_>> polySpace_;
 
       /// scalar dofs per element
       unsigned int ndofs_;
@@ -162,22 +153,30 @@ namespace DRT
       /// number of integration points
       unsigned int nqpoints_;
 
-      LINALG::SerialDenseMatrix     funct;   /// values of mapping shape functions on all quadrature points
-      LINALG::Matrix<nsd_,nen_>     deriv;   /// gradients of mapping shape functions
-      LINALG::SerialDenseMatrix     xyzreal; /// coordinates of all quadrature points in real space
-      LINALG::SerialDenseMatrix     nodexyzunit; /// coordinates of all node (support) points of Lagrange basis functions in unit coordinates (all points at cell center for Legendre-type polynomials)
-      LINALG::SerialDenseMatrix     nodexyzreal; /// coordinates of all node (support) points of Lagrange basis functions in real space (all points at cell center for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix
+          funct;  /// values of mapping shape functions on all quadrature points
+      LINALG::Matrix<nsd_, nen_> deriv;   /// gradients of mapping shape functions
+      LINALG::SerialDenseMatrix xyzreal;  /// coordinates of all quadrature points in real space
+      LINALG::SerialDenseMatrix
+          nodexyzunit;  /// coordinates of all node (support) points of Lagrange basis functions in
+                        /// unit coordinates (all points at cell center for Legendre-type
+                        /// polynomials)
+      LINALG::SerialDenseMatrix
+          nodexyzreal;  /// coordinates of all node (support) points of Lagrange basis functions in
+                        /// real space (all points at cell center for Legendre-type polynomials)
 
-      LINALG::SerialDenseMatrix     shfunct; /// evaluated HDG shape functions on all quadrature points
-      LINALG::SerialDenseVector     shfunctAvg;/// average of shfunctF on cell
-      LINALG::SerialDenseMatrix     shderiv; /// evaluated HDG shape function gradients in unit coordinates
-      LINALG::SerialDenseMatrix     shderxy; /// evaluated HDG shape function gradients in real coordinates
+      LINALG::SerialDenseMatrix shfunct;  /// evaluated HDG shape functions on all quadrature points
+      LINALG::SerialDenseVector shfunctAvg;  /// average of shfunctF on cell
+      LINALG::SerialDenseMatrix
+          shderiv;  /// evaluated HDG shape function gradients in unit coordinates
+      LINALG::SerialDenseMatrix
+          shderxy;  /// evaluated HDG shape function gradients in real coordinates
 
-      LINALG::Matrix<nsd_,1>        xsi;     /// quadrature points
-      LINALG::Matrix<nsd_,nsd_>     xjm;     /// Jacobi matrix of transformation
-      LINALG::Matrix<nsd_,nsd_>     xji;     /// inverse of Jacobi matrix of transformation
-      LINALG::Matrix<nsd_,nen_>     xyze;    /// element nodes
-      LINALG::SerialDenseVector     jfac;    /// Jacobian determinant times quadrature weight
+      LINALG::Matrix<nsd_, 1> xsi;      /// quadrature points
+      LINALG::Matrix<nsd_, nsd_> xjm;   /// Jacobi matrix of transformation
+      LINALG::Matrix<nsd_, nsd_> xji;   /// inverse of Jacobi matrix of transformation
+      LINALG::Matrix<nsd_, nen_> xyze;  /// element nodes
+      LINALG::SerialDenseVector jfac;   /// Jacobian determinant times quadrature weight
     };
 
     /// Helper class for evaluating HDG polynomials, geometry, etc.
@@ -189,12 +188,13 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class ShapeValuesFace
     {
-    public:
+     public:
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-      static const unsigned int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      static const unsigned int nen_ =
+          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       ///! number of nodes on faces
-      static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+      static const unsigned int nfn_ = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
       //! number of space dimensions
       static const unsigned int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -203,30 +203,31 @@ namespace DRT
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /*!
-      \brief Constructor which does the things which do not need to be redone for the same parameters
+      \brief Constructor which does the things which do not need to be redone for the same
+      parameters
       */
       ShapeValuesFace(ShapeValuesFaceParams params);
 
       /*!
-      \brief Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
+      \brief Compute element-dependent data on faces, like integration weights, normal vectors,
+      correctly oriented trace variables
       */
-      void EvaluateFace(const DRT::Element &ele,
-                        const unsigned int  face);
+      void EvaluateFace(const DRT::Element &ele, const unsigned int face);
 
       /*!
       \brief Consider the orientation of faces for face degrees of freedom
        */
-      void AdjustFaceOrientation (const DRT::Element &ele,
-                                  const unsigned int  face);
+      void AdjustFaceOrientation(const DRT::Element &ele, const unsigned int face);
 
-      /// Parameters underlying this structure, necessary for evaluating element basis functions on faces
+      /// Parameters underlying this structure, necessary for evaluating element basis functions on
+      /// faces
       ShapeValuesFaceParams params_;
 
       /// polynomial degree
       unsigned int degree_;
 
       /// underlying polynomial space for faces
-      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_-1> > polySpace_;
+      Teuchos::RCP<DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpace_;
 
       /// scalar dofs per face
       unsigned int nfdofs_;
@@ -237,28 +238,37 @@ namespace DRT
       /// number of integration points on face
       unsigned int nqpoints_;
 
-      LINALG::SerialDenseMatrix     funct;  /// values of mapping shape functions on all face quadrature points
-      LINALG::Matrix<nsd_-1,nfn_>   deriv;  /// gradients of mapping shape functions on face
-      LINALG::Matrix<nsd_-1,nsd_-1> metricTensor; /// metric tensor on face
-      LINALG::Matrix<nsd_,1>        normal;  /// normal vector
+      LINALG::SerialDenseMatrix
+          funct;  /// values of mapping shape functions on all face quadrature points
+      LINALG::Matrix<nsd_ - 1, nfn_> deriv;  /// gradients of mapping shape functions on face
+      LINALG::Matrix<nsd_ - 1, nsd_ - 1> metricTensor;  /// metric tensor on face
+      LINALG::Matrix<nsd_, 1> normal;                   /// normal vector
 
-      LINALG::SerialDenseMatrix     xyzreal;/// coordinates of face quadrature points in real space
-      LINALG::SerialDenseMatrix     nodexyzunit; /// coordinates of all node (support) points of face Lagrange basis functions in unit coordinates (invalid for Legendre-type polynomials)
-      LINALG::SerialDenseMatrix     nodexyzreal; /// coordinates of all node (support) points of face Lagrange basis functions in real space (invalid for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix xyzreal;  /// coordinates of face quadrature points in real space
+      LINALG::SerialDenseMatrix
+          nodexyzunit;  /// coordinates of all node (support) points of face Lagrange basis
+                        /// functions in unit coordinates (invalid for Legendre-type polynomials)
+      LINALG::SerialDenseMatrix
+          nodexyzreal;  /// coordinates of all node (support) points of face Lagrange basis
+                        /// functions in real space (invalid for Legendre-type polynomials)
 
-      LINALG::SerialDenseMatrix     shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
-      LINALG::SerialDenseMatrix     shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
-      ShapeValuesInteriorOnFace     shfunctI;/// evaluated shape functions on face for interior HDG polynomials
-      LINALG::SerialDenseMatrix     normals; /// normal vectors on a single face for all quadrature points
+      LINALG::SerialDenseMatrix shfunct;  /// evaluated shape functions for HDG face polynomials,
+                                          /// permuted to account for face orientation
+      LINALG::SerialDenseMatrix shfunctNoPermute;  /// evaluated shape functions for HDG face
+                                                   /// polynomials in natural ordering
+      ShapeValuesInteriorOnFace
+          shfunctI;  /// evaluated shape functions on face for interior HDG polynomials
+      LINALG::SerialDenseMatrix
+          normals;  /// normal vectors on a single face for all quadrature points
 
-      LINALG::Matrix<nsd_-1,1>      xsi;    /// face quadrature points
-      LINALG::Matrix<nsd_,nfn_>     xyze;   /// face nodes
-      LINALG::SerialDenseVector     jfac;   /// face Jacobian determinant times quadrature weight
+      LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
+      LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
+      LINALG::SerialDenseVector jfac;   /// face Jacobian determinant times quadrature weight
 
-      std::vector<std::vector<int> > faceNodeOrder; /// numbering of nodes belonging to faces
+      std::vector<std::vector<int>> faceNodeOrder;  /// numbering of nodes belonging to faces
 
-    private:
-      LINALG::SerialDenseVector     faceValues; /// Evaluated basis functions on face
+     private:
+      LINALG::SerialDenseVector faceValues;  /// Evaluated basis functions on face
     };
 
     /*!
@@ -269,21 +279,22 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class ShapeValuesFaceCache : public SingletonDestruction
     {
-    public:
+     public:
       /// return instance
-      static ShapeValuesFaceCache<distype> & Instance();
+      static ShapeValuesFaceCache<distype> &Instance();
 
       /// cleanup
       virtual void Done();
 
       /// give pointer to corresponding shape values face
-      Teuchos::RCP<ShapeValuesFace<distype> > Create(ShapeValuesFaceParams params);
-    private:
+      Teuchos::RCP<ShapeValuesFace<distype>> Create(ShapeValuesFaceParams params);
+
+     private:
       /// instance
-      static ShapeValuesFaceCache<distype> * instance_;
+      static ShapeValuesFaceCache<distype> *instance_;
 
       /// the actual cache; contains all pairs
-      std::map<std::size_t, Teuchos::RCP<ShapeValuesFace<distype> > > svf_cache_;
+      std::map<std::size_t, Teuchos::RCP<ShapeValuesFace<distype>>> svf_cache_;
     };
 
     /*!
@@ -294,24 +305,25 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class ShapeValuesInteriorOnFaceCache : public SingletonDestruction
     {
-    public:
+     public:
       /// return instance
-      static ShapeValuesInteriorOnFaceCache & Instance();
+      static ShapeValuesInteriorOnFaceCache &Instance();
 
       /// cleanup
       virtual void Done();
 
       /// give pointer to corresponding shape values face
       Teuchos::RCP<ShapeValuesInteriorOnFace> Create(ShapeValuesFaceParams params);
-    private:
+
+     private:
       /// instance
-      static ShapeValuesInteriorOnFaceCache * instance_;
+      static ShapeValuesInteriorOnFaceCache *instance_;
 
       /// the actual cache; contains all pairs
-      std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace> > cache_;
+      std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>> cache_;
     };
 
-  }
-}
+  }  // namespace UTILS
+}  // namespace DRT
 
 #endif

@@ -42,12 +42,12 @@ namespace ART
       friend class ArtNetExplicitTimeInt;
 
 
-    public:
+     public:
       /*!
       \brief Standard Constructor
       */
-      ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
-          Teuchos::ParameterList & params);
+      ArtWriteGnuplotWrapper(
+          Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params);
 
       /*!
       \brief Destructor
@@ -57,21 +57,21 @@ namespace ART
       /*!
       \brief Standard write
       */
-      void Write(Teuchos::ParameterList & params);
+      void Write(Teuchos::ParameterList& params);
 
 
-    private:
+     private:
       /*!
       \brief all single artery write conditions
      */
-      std::map<const int, Teuchos::RCP<class ArtWriteGnuplot> >  agmap_;
-      std::map<const int, const std::vector<int> *  >        agnode_map_;
+      std::map<const int, Teuchos::RCP<class ArtWriteGnuplot>> agmap_;
+      std::map<const int, const std::vector<int>*> agnode_map_;
 
 
       //! 1d artery discretization
-      Teuchos::RCP<DRT::Discretization>      discret_;
+      Teuchos::RCP<DRT::Discretization> discret_;
 
-    }; // class ArtWriteGnuplotWrapper
+    };  // class ArtWriteGnuplotWrapper
 
 
 
@@ -88,8 +88,7 @@ namespace ART
     {
       friend class ArtWriteGnuplotWrapper;
 
-    public:
-
+     public:
       /*!
       \brief Standard Constructor
      */
@@ -103,21 +102,17 @@ namespace ART
       /*!
       \brief Destructor
       */
-      virtual ~ArtWriteGnuplot(){}
+      virtual ~ArtWriteGnuplot() {}
 
-    protected:
-
-
+     protected:
       /*!
       \Solve the write the results of an artery
       */
-      void Write(Teuchos::RCP<DRT::Discretization>  discret,
-                 Teuchos::ParameterList &           params,
-                 const std::vector<int> *           nodes);
+      void Write(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& params,
+          const std::vector<int>* nodes);
 
 
-    private:
-
+     private:
       //! An epetra wrapper for Dense matrix solver
       Teuchos::RCP<std::ofstream> fout_;
 
@@ -126,8 +121,8 @@ namespace ART
 
 
     };  // class ArtWriteGnuplot
-  }
-}
+  }     // namespace UTILS
+}  // namespace ART
 
 
-#endif //ART_WRITE_GNUPLOT_H_
+#endif  // ART_WRITE_GNUPLOT_H_

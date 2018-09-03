@@ -19,23 +19,18 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// parameters for material according to mixture-fraction approach
     class MixFrac : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      MixFrac(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      MixFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ MixFrac() { ; }
+      virtual ~MixFrac() { ; }
 
       /// @name material parameters
       //@{
@@ -59,29 +54,26 @@ namespace MAT
 
     };  // class MixFrac
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class MixFracType : public DRT::ParObjectType
-{
-public:
+  class MixFracType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MixFracType"; }
 
-  std::string Name() const { return "MixFracType"; }
+    static MixFracType& Instance() { return instance_; };
 
-  static MixFracType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static MixFracType instance_;
-};
+   private:
+    static MixFracType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for material according to mixture-fraction approach
-  class  MixFrac : public Material
+  class MixFrac : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     MixFrac();
 
@@ -130,7 +122,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_mixfrac; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MixFrac( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new MixFrac(*this)); }
 
     /// compute dynamic viscosity
     double ComputeViscosity(const double temp) const;
@@ -153,14 +145,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::MixFrac* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif
-

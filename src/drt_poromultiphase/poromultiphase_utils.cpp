@@ -33,72 +33,67 @@
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    int& nds_disp,
-    int& nds_vel,
-    int& nds_solidpressure)
+void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
+    const std::string& struct_disname, const std::string& fluid_disname, int& nds_disp,
+    int& nds_vel, int& nds_solidpressure)
 {
   // Scheme   : the structure discretization is received from the input.
   //            Then, a poro fluid disc. is cloned.
-  //            If an artery discretization with non-matching coupling is present, we first redistribute
+  //            If an artery discretization with non-matching coupling is present, we first
+  //            redistribute
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  //1.-Initialization.
+  // 1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   // possible redistribution
-  if(DRT::Problem::Instance()->DoesExistDis("artery"))
+  if (DRT::Problem::Instance()->DoesExistDis("artery"))
   {
     Teuchos::RCP<DRT::Discretization> arterydis = Teuchos::null;
     arterydis = DRT::Problem::Instance()->GetDis("artery");
 
     // get coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
+        DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+            problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+            "ARTERY_COUPLING_METHOD");
 
     // curr_ele_length: defined as element-wise quantity
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( 0, 1, 0, false ));
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, 1, 0, false));
     // add it to artery discretization
     arterydis->AddDofSet(dofsetaux);
 
-    switch(arterycoupl)
+    switch (arterycoupl)
     {
-    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-    {
-      // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
-      // DofSets -> done in poromultiphase_scatra_utils.cpp
-      bool ghost_artery = true;
-      if(problem->ProblemType() == prb_poromultiphasescatra)
-        ghost_artery = false;
-      // redistribute discretizations
-      POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(structdis, arterydis, ghost_artery);
-      break;
-    }
-    default:
-    {
-      break;
-    }
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      {
+        // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
+        // DofSets -> done in poromultiphase_scatra_utils.cpp
+        bool ghost_artery = true;
+        if (problem->ProblemType() == prb_poromultiphasescatra) ghost_artery = false;
+        // redistribute discretizations
+        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(structdis, arterydis, ghost_artery);
+        break;
+      }
+      default:
+      {
+        break;
+      }
     }
     arterydis->FillComplete();
   }
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  if(!structdis->Filled())
-    structdis->FillComplete();
-  if(!fluiddis->Filled())
-    fluiddis->FillComplete();
+  if (!structdis->Filled()) structdis->FillComplete();
+  if (!fluiddis->Filled()) fluiddis->FillComplete();
 
-  if (fluiddis->NumGlobalNodes()==0)
+  if (fluiddis->NumGlobalNodes() == 0)
   {
     // fill poro fluid discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
-        structdis,
-        fluiddis);
+        structdis, fluiddis);
   }
   else
   {
@@ -113,18 +108,17 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
 
-  //assign structure dof set to fluid and save the dofset number
+  // assign structure dof set to fluid and save the dofset number
   nds_disp = fluiddis->AddDofSet(structdofset);
-  if (nds_disp!=1)
-    dserror("unexpected dof sets in porofluid field");
+  if (nds_disp != 1) dserror("unexpected dof sets in porofluid field");
   // velocities live on same dofs as displacements
-  nds_vel=nds_disp;
+  nds_vel = nds_disp;
 
-  if (structdis->AddDofSet(fluiddofset)!=1)
-    dserror("unexpected dof sets in structure field");
+  if (structdis->AddDofSet(fluiddofset) != 1) dserror("unexpected dof sets in structure field");
 
   // build auxiliary dofset for postprocessing solid pressures
-  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1,0,0,false));
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, false));
   nds_solidpressure = fluiddis->AddDofSet(dofsetaux);
   // add it also to the solid field
   structdis->AddDofSet(fluiddis->GetDofSetProxy(nds_solidpressure));
@@ -139,15 +133,14 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
  | exchange material pointers of both discretizations       vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::UTILS::AssignMaterialPointers(
-    const std::string& struct_disname,
-    const std::string& fluid_disname)
+    const std::string& struct_disname, const std::string& fluid_disname)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
 
-  POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
 }
 
 /*----------------------------------------------------------------------*
@@ -155,47 +148,38 @@ void POROMULTIPHASE::UTILS::AssignMaterialPointers(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
     INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
-    const Teuchos::ParameterList& timeparams,
-    const Epetra_Comm& comm)
+    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
   Teuchos::RCP<ADAPTER::PoroMultiPhase> algo = Teuchos::null;
 
-  switch(solscheme)
+  switch (solscheme)
   {
-  case INPAR::POROMULTIPHASE::solscheme_twoway_partitioned:
-  {
-    // call constructor
-    algo =
-        Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(
-                comm,
-                timeparams));
-    break;
-  }
-  case INPAR::POROMULTIPHASE::solscheme_twoway_monolithic:
-  {
-    const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams,"ARTERY_COUPLING");
-    if(!artery_coupl)
+    case INPAR::POROMULTIPHASE::solscheme_twoway_partitioned:
     {
       // call constructor
-      algo =
-          Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(
-                  comm,
-                  timeparams));
+      algo = Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(comm, timeparams));
+      break;
     }
-    else
+    case INPAR::POROMULTIPHASE::solscheme_twoway_monolithic:
     {
-      // call constructor
-      algo =
-          Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling(
-                  comm,
-                  timeparams));
+      const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams, "ARTERY_COUPLING");
+      if (!artery_coupl)
+      {
+        // call constructor
+        algo = Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(comm, timeparams));
+      }
+      else
+      {
+        // call constructor
+        algo = Teuchos::rcp(
+            new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling(comm, timeparams));
+      }
+      break;
     }
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
-    break;
+    default:
+      dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+      break;
   }
 
   return algo;
@@ -205,9 +189,7 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
  | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
 double POROMULTIPHASE::UTILS::CalculateVectorNorm(
-  const enum INPAR::POROMULTIPHASE::VectorNorm norm,
-  const Teuchos::RCP<const Epetra_Vector> vect
-  )
+    const enum INPAR::POROMULTIPHASE::VectorNorm norm, const Teuchos::RCP<const Epetra_Vector> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
@@ -231,7 +213,7 @@ double POROMULTIPHASE::UTILS::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
-    return vectnorm/sqrt((double) vect->GlobalLength());
+    return vectnorm / sqrt((double)vect->GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
@@ -246,7 +228,7 @@ double POROMULTIPHASE::UTILS::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
-    return vectnorm/((double) vect->GlobalLength());
+    return vectnorm / ((double)vect->GlobalLength());
   }
   else
   {
@@ -260,24 +242,22 @@ double POROMULTIPHASE::UTILS::CalculateVectorNorm(
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PrintLogo()
 {
- std::cout << "This is a Porous Media problem with multiphase flow and deformation" << std::endl;
- std::cout << "" << std::endl;
- std::cout << "              +----------+" << std::endl;
- std::cout << "              |  Krebs-  |" << std::endl;
- std::cout << "              |  Modell  |" << std::endl;
- std::cout << "              +----------+" << std::endl;
- std::cout << "              |          |" << std::endl;
- std::cout << "              |          |" << std::endl;
- std::cout << " /\\           |          /\\" << std::endl;
- std::cout << "( /   @ @    (|)        ( /   @ @    ()" << std::endl;
- std::cout << " \\  __| |__  /           \\  __| |__  /" << std::endl;
- std::cout << "  \\/   \"   \\/             \\/   \"   \\/" << std::endl;
- std::cout << " /-|       |-\\           /-|       |-\\" << std::endl;
- std::cout << "/ /-\\     /-\\ \\         / /-\\     /-\\ \\" << std::endl;
- std::cout << " / /-`---'-\\ \\           / /-`---'-\\ \\" << std::endl;
- std::cout << "  /         \\             /         \\" << std::endl;
+  std::cout << "This is a Porous Media problem with multiphase flow and deformation" << std::endl;
+  std::cout << "" << std::endl;
+  std::cout << "              +----------+" << std::endl;
+  std::cout << "              |  Krebs-  |" << std::endl;
+  std::cout << "              |  Modell  |" << std::endl;
+  std::cout << "              +----------+" << std::endl;
+  std::cout << "              |          |" << std::endl;
+  std::cout << "              |          |" << std::endl;
+  std::cout << " /\\           |          /\\" << std::endl;
+  std::cout << "( /   @ @    (|)        ( /   @ @    ()" << std::endl;
+  std::cout << " \\  __| |__  /           \\  __| |__  /" << std::endl;
+  std::cout << "  \\/   \"   \\/             \\/   \"   \\/" << std::endl;
+  std::cout << " /-|       |-\\           /-|       |-\\" << std::endl;
+  std::cout << "/ /-\\     /-\\ \\         / /-\\     /-\\ \\" << std::endl;
+  std::cout << " / /-`---'-\\ \\           / /-`---'-\\ \\" << std::endl;
+  std::cout << "  /         \\             /         \\" << std::endl;
 
   return;
-
-
 }

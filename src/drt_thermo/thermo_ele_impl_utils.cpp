@@ -17,7 +17,7 @@
 
 namespace THR
 {
-} // namespace THR
+}  // namespace THR
 
 
 #endif  // D_THERMO

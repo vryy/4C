@@ -25,20 +25,20 @@ namespace SCATRA
   // class implementation
   class ElchResultTest : public ScaTraResultTest
   {
-    public:
+   public:
+    //! constructor
+    ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint);
 
-      //! constructor
-      ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint);
+   private:
+    //! return pointer to elch time integrator after cast
+    Teuchos::RCP<const SCATRA::ScaTraTimIntElch> ElchTimInt() const
+    {
+      return Teuchos::rcp_dynamic_cast<const SCATRA::ScaTraTimIntElch>(scatratimint_);
+    };
 
-    private:
-
-      //! return pointer to elch time integrator after cast
-      Teuchos::RCP<const SCATRA::ScaTraTimIntElch> ElchTimInt() const {return Teuchos::rcp_dynamic_cast<const SCATRA::ScaTraTimIntElch>(scatratimint_);};
-
-      //! get special result to be tested
-      double ResultSpecial(
-          const std::string   quantity   //! name of quantity to be tested
-          ) const;
-  }; // class ElchResultTest : public ScaTraResultTest
-} // namespace SCATRA
+    //! get special result to be tested
+    double ResultSpecial(const std::string quantity  //! name of quantity to be tested
+        ) const;
+  };  // class ElchResultTest : public ScaTraResultTest
+}  // namespace SCATRA
 #endif

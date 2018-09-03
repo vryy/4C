@@ -23,58 +23,56 @@
 
 namespace INVANA
 {
+  class CholFactorBase;
 
-class CholFactorBase;
 
+  /*! \class RegularizationTikhonov
+   * \brief Tikhonov regularization
+   *
+   * Classical Tikhonov regularization, with an identity differential operator.
+   *
+   * This represents as prior belief on the parameters a multivariate normal
+   * distribution, with an identity covariance and some common mean shift. So
+   * the covariance is entirely represented by the weight of the regularization.
+   *
+   * \author kehl
+   */
+  class RegularizationTikhonov : public RegularizationBase
+  {
+   public:
+    //! constructor
+    RegularizationTikhonov();
 
-/*! \class RegularizationTikhonov
- * \brief Tikhonov regularization
- *
- * Classical Tikhonov regularization, with an identity differential operator.
- *
- * This represents as prior belief on the parameters a multivariate normal
- * distribution, with an identity covariance and some common mean shift. So
- * the covariance is entirely represented by the weight of the regularization.
- *
- * \author kehl
- */
-class RegularizationTikhonov: public RegularizationBase
-{
-public:
+    //! destructor
+    virtual ~RegularizationTikhonov(){};
 
-  //! constructor
-  RegularizationTikhonov();
+    //! setup of the class content (nothing to be done here)
+    virtual void Setup(const Teuchos::ParameterList& invp);
 
-  //! destructor
-  virtual ~RegularizationTikhonov(){};
+    //! @name Evaluation methods
+    //@{
 
-  //! setup of the class content (nothing to be done here)
-  virtual void Setup(const Teuchos::ParameterList& invp);
+    //! Evaluate value of the regularization functional
+    virtual void Evaluate(const Epetra_MultiVector& theta,  /// [in] vector to be regularized
+        double* value                                       /// [out] functional value
+    );
 
-  //! @name Evaluation methods
-  //@{
+    //! Evaluate gradient of the regularization functional
+    virtual void EvaluateGradient(
+        const Epetra_MultiVector& theta,           /// [in] vector to be regularized
+        Teuchos::RCP<Epetra_MultiVector> gradient  /// [out] directional derivative wrt. theta
+    );
+    //@}
 
-  //! Evaluate value of the regularization functional
-  virtual void Evaluate(const Epetra_MultiVector& theta, /// [in] vector to be regularized
-      double* value /// [out] functional value
-      );
+   private:
+    //! factorization of the covariance matrix
+    Teuchos::RCP<CholFactorBase> cov_factor_;
 
-  //! Evaluate gradient of the regularization functional
-  virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
-      Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
-      );
-  //@}
+    //! Parameter list with inverse analysis paremeters
+    Teuchos::ParameterList params_;
+  };
 
-private:
-
-  //! factorization of the covariance matrix
-  Teuchos::RCP<CholFactorBase> cov_factor_;
-
-  //! Parameter list with inverse analysis paremeters
-  Teuchos::ParameterList params_;
-};
-
-}
+}  // namespace INVANA
 
 /*----------------------------------------------------------------------*/
 #endif

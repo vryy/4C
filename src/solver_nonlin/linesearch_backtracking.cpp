@@ -42,9 +42,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 NLNSOL::LineSearchBacktracking::LineSearchBacktracking()
- : NLNSOL::LineSearchBase(),
-   itermax_(4),
-   backtrackfac_(0.5)
+    : NLNSOL::LineSearchBase(), itermax_(4), backtrackfac_(0.5)
 {
   return;
 }
@@ -53,7 +51,10 @@ NLNSOL::LineSearchBacktracking::LineSearchBacktracking()
 void NLNSOL::LineSearchBacktracking::Setup()
 {
   // make sure that Init() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
 
   // fill member variables
   itermax_ = MyGetParameter<int>("line search: max number of backtracking steps");
@@ -66,17 +67,22 @@ void NLNSOL::LineSearchBacktracking::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
-    bool& suffdecr) const
+void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam, bool& suffdecr) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchBacktracking::ComputeLSParam");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::LineSearchBacktracking::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // make sure that Init() and Setup() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // start backtracking with full step
   lsparam = 1.0;
@@ -87,14 +93,13 @@ void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
 
   // check for sufficient decrease
-  Teuchos::RCP<Epetra_MultiVector> fnew =
-      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
   ComputeF(*xnew, *fnew);
   double fnorm2 = 1.0e+12;
   bool converged = ConvergenceCheck(*fnew, fnorm2);
   suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
-  int iter = 0; // iteration index for multiple backtracking steps
+  int iter = 0;  // iteration index for multiple backtracking steps
 
   while (not converged and not suffdecr and iter < itermax_)
   {
@@ -103,7 +108,7 @@ void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
     // halve trial line search parameter
     lsparam *= backtrackfac_;
 
-//    *out << "lsparam = " << lsparam;// << std::endl;
+    //    *out << "lsparam = " << lsparam;// << std::endl;
 
     // take a reduced step
     xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
@@ -113,17 +118,15 @@ void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
     converged = ConvergenceCheck(*fnew, fnorm2);
     suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
-//    *out << "\tfnorm2 = " << fnorm2
-//         << "\tinitnorm = " << GetFNormOld()
-//         << std::endl;
+    //    *out << "\tfnorm2 = " << fnorm2
+    //         << "\tinitnorm = " << GetFNormOld()
+    //         << std::endl;
   }
 
   if (getVerbLevel() > Teuchos::VERB_LOW)
   {
-    *getOStream() << LabelShort()
-        << ": lsparam = " << lsparam
-        << " after " << iter
-        << " iterations." << std::endl;
+    *getOStream() << LabelShort() << ": lsparam = " << lsparam << " after " << iter
+                  << " iterations." << std::endl;
   }
 
   return;

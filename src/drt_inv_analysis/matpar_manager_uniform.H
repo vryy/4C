@@ -30,76 +30,70 @@ namespace DRT
 
 namespace INVANA
 {
+  /*! \class MatParManagerUniform
+   *  \brief Class to have patchwise constant parameters
+   *
+   *  Patches are created as the material blocks given
+   *  in the input file.
+   *
+   *  \author kehl \date 08/2016
+   */
+  class MatParManagerUniform : public MatParManagerPerElement
+  {
+   public:
+    //! constructor
+    MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
-/*! \class MatParManagerUniform
- *  \brief Class to have patchwise constant parameters
- *
- *  Patches are created as the material blocks given
- *  in the input file.
- *
- *  \author kehl \date 08/2016
- */
-class MatParManagerUniform  : public MatParManagerPerElement
-{
+    //! destructor
+    virtual ~MatParManagerUniform(){};
 
-public:
+    //! Setup specific parametrization layout
+    virtual void Setup();
 
-  //! constructor
-  MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
+    //! Account for distributed chain-rule application
+    virtual void Finalize(
+        Teuchos::RCP<Epetra_MultiVector> source, Teuchos::RCP<Epetra_MultiVector> target);
 
-  //! destructor
-  virtual ~MatParManagerUniform(){};
-
-  //! Setup specific parametrization layout
-  virtual void Setup();
-
-  //! Account for distributed chain-rule application
-  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> source,
-      Teuchos::RCP<Epetra_MultiVector> target
-      );
-
-  //! Return initial covariance guess
-  virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
+    //! Return initial covariance guess
+    virtual Teuchos::RCP<Epetra_CrsMatrix> InitialCovariance();
 
 
-protected:
+   protected:
+    //! Get current material parameters
+    virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
 
-  //! Get current material parameters
-  virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
+    //! apply projection to INVANA::DcsMatrix and get diagonal
+    virtual void ApplyParametrization(
+        DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
 
-  //! apply projection to INVANA::DcsMatrix and get diagonal
-  virtual void ApplyParametrization(DcsMatrix& matrix, Teuchos::RCP<Epetra_MultiVector> diagonals);
+    //! Initialize optimization parameters
+    virtual void InitParameters();
 
-  //! Initialize optimization parameters
-  virtual void InitParameters();
+    //! Chain rule application
+    virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos,
+        int paraposglobal, int paraposlocal);
 
-  //! Chain rule application
-  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-      double val, int elepos, int paraposglobal, int paraposlocal);
+   private:
+    //! @name Setup the parametrization
+    //@{
 
-private:
+    //! Create projection to patch-wise atoms
+    void CreateProjection();
+    //@}
 
-  //! @name Setup the parametrization
-  //@{
+    //! @name Parameters of the initial elementwise distribution
+    //@{
 
-  //! Create projection to patch-wise atoms
-  void CreateProjection();
-  //@}
+    //! elementwise set of optimization parameters
+    Teuchos::RCP<Epetra_MultiVector> optparams_elewise_;
 
-  //! @name Parameters of the initial elementwise distribution
-  //@{
+    //! elementwise layout
+    Teuchos::RCP<Epetra_Map> elewise_map_;
+    //@}
 
-  //! elementwise set of optimization parameters
-  Teuchos::RCP<Epetra_MultiVector> optparams_elewise_;
-
-  //! elementwise layout
-  Teuchos::RCP<Epetra_Map> elewise_map_;
-  //@}
-
-  //! global optimization parameter id to patch id
-  std::map<int,int> pidtopatch_;
-
-};
+    //! global optimization parameter id to patch id
+    std::map<int, int> pidtopatch_;
+  };
 }  // namespace INVANA
 
 #endif

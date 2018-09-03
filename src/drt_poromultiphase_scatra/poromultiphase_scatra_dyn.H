@@ -16,9 +16,8 @@
 
 
 /*! entry point for the solution of poro multiphase problems problems */
-void poromultiphasescatra_dyn(
-    int restart        /* do we have to perform a restart?  */
-    );
+void poromultiphasescatra_dyn(int restart /* do we have to perform a restart?  */
+);
 
 
 #endif /* SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_DYN_H_ */

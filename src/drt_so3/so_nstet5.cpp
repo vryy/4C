@@ -27,17 +27,14 @@
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
-DRT::ELEMENTS::NStet5Type& DRT::ELEMENTS::NStet5Type::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::NStet5Type& DRT::ELEMENTS::NStet5Type::Instance() { return instance_; }
 
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::NStet5* object = new DRT::ELEMENTS::NStet5(-1,-1);
+  DRT::ELEMENTS::NStet5* object = new DRT::ELEMENTS::NStet5(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -45,14 +42,12 @@ DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create( const std::vector<char> & dat
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const std::string eletype,
-                                                            const std::string eledistype,
-                                                            const int id,
-                                                            const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(
+    const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if ( eletype=="NSTET5" )
+  if (eletype == "NSTET5")
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -61,16 +56,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const std::string 
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
   return ele;
 }
 
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void DRT::ELEMENTS::NStet5Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::NStet5Type::NodalBlockInformation(
+    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -80,33 +76,34 @@ void DRT::ELEMENTS::NStet5Type::NodalBlockInformation( DRT::Element * dwele, int
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
+    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
 
   // do nullspace for element degrees of freedom
   const Epetra_Map* rowmap = dis.DofRowMap(0);
   const int lrows = rowmap->NumMyElements();
   double* mode[6];
-  for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
+  for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
 
-  for (int i=0; i<dis.NumMyRowElements(); ++i)
+  for (int i = 0; i < dis.NumMyRowElements(); ++i)
   {
     DRT::Element* ele = dis.lRowElement(i);
     DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(ele);
     if (!nstet) continue;
     const double* x = nstet->MidX();
-    std::vector<int> dofs = dis.Dof(0,ele);
+    std::vector<int> dofs = dis.Dof(0, ele);
 #ifdef DEBUG
     if (dofs.size() != 3) dserror("Wrong number of dofs");
 #endif
-    for (unsigned j=0; j<dofs.size(); ++j)
+    for (unsigned j = 0; j < dofs.size(); ++j)
     {
       const int dof = dofs[j];
       const int lid = rowmap->LID(dof);
-      if (lid<0) dserror("Cannot find element dof in dofrowmap");
+      if (lid < 0) dserror("Cannot find element dof in dofrowmap");
       switch (j)
-        {
+      {
         case 0:
           mode[0][lid] = 1.0;
           mode[1][lid] = 0.0;
@@ -114,7 +111,7 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std
           mode[3][lid] = 0.0;
           mode[4][lid] = x[2] - x0[2];
           mode[5][lid] = -x[1] + x0[1];
-        break;
+          break;
         case 1:
           mode[0][lid] = 0.0;
           mode[1][lid] = 1.0;
@@ -122,7 +119,7 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std
           mode[3][lid] = -x[2] + x0[2];
           mode[4][lid] = 0.0;
           mode[5][lid] = x[0] - x0[0];
-        break;
+          break;
         case 2:
           mode[0][lid] = 0.0;
           mode[1][lid] = 0.0;
@@ -130,48 +127,48 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std
           mode[3][lid] = x[1] - x0[1];
           mode[4][lid] = -x[0] + x0[0];
           mode[5][lid] = 0.0;
-        break;
+          break;
         default:
           dserror("Only dofs 0 - 5 supported");
-        break;
-        } // switch (j)
+          break;
+      }  // switch (j)
     }
   }
 }
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::NStet5Type::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["NSTET5"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["NSTET5"];
 
   defs["TET4"]
-  .AddIntVector("TET4",4)
-  .AddNamedInt("MAT")
-  .AddNamedString("KINEM")
-  .AddOptionalNamedDoubleVector("RAD",3)
-  .AddOptionalNamedDoubleVector("AXI",3)
-  .AddOptionalNamedDoubleVector("CIR",3)
-  .AddOptionalNamedDoubleVector("FIBER1",3)
-  .AddOptionalNamedDoubleVector("FIBER2",3)
-  .AddOptionalNamedDoubleVector("FIBER3",3)
-  .AddOptionalNamedDouble("HU")
-  .AddOptionalNamedDouble("lambda")
-  .AddOptionalNamedDouble("GROWTHTRIG")
-  ;
+      .AddIntVector("TET4", 4)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddOptionalNamedDoubleVector("RAD", 3)
+      .AddOptionalNamedDoubleVector("AXI", 3)
+      .AddOptionalNamedDoubleVector("CIR", 3)
+      .AddOptionalNamedDoubleVector("FIBER1", 3)
+      .AddOptionalNamedDoubleVector("FIBER2", 3)
+      .AddOptionalNamedDoubleVector("FIBER3", 3)
+      .AddOptionalNamedDouble("HU")
+      .AddOptionalNamedDouble("lambda")
+      .AddOptionalNamedDouble("GROWTHTRIG");
 }
 
 
 /*-----------------------------------------------------------------------
  |  ctor (public)                                              gee 03/12|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStet5::NStet5(int id, int owner) :
-DRT::Element(id,owner),
-material_(0),
-V_(-1.0),
-pstype_(INPAR::STR::prestress_none),
-pstime_(0.0),
-time_(0.0)
+DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
+    : DRT::Element(id, owner),
+      material_(0),
+      V_(-1.0),
+      pstype_(INPAR::STR::prestress_none),
+      pstime_(0.0),
+      time_(0.0)
 {
   sublm_[0] = 0;
   sublm_[1] = 1;
@@ -191,18 +188,18 @@ time_(0.0)
   sublm_[15] = 4;
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
-  if (params!=Teuchos::null)
+  if (params != Teuchos::null)
   {
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
 
-  if (pstype_==INPAR::STR::prestress_mulf)
-    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4,4,true));
+  if (pstype_ == INPAR::STR::prestress_mulf)
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));
 
-  if (pstype_==INPAR::STR::prestress_id)
-    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4,4,true));
+  if (pstype_ == INPAR::STR::prestress_id)
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4, 4, true));
 
 
   return;
@@ -211,20 +208,20 @@ time_(0.0)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         gee 03/128|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old) :
-DRT::Element(old),
-material_(old.material_),
-V_(old.V_),
-pstype_(old.pstype_),
-pstime_(old.pstime_),
-time_(old.time_)
+DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old)
+    : DRT::Element(old),
+      material_(old.material_),
+      V_(old.V_),
+      pstype_(old.pstype_),
+      pstime_(old.pstime_),
+      time_(old.time_)
 {
-  for (int i=0; i<16; ++i) sublm_[i] = old.sublm_[i];
+  for (int i = 0; i < 16; ++i) sublm_[i] = old.sublm_[i];
 
-  if (pstype_==INPAR::STR::prestress_mulf)
+  if (pstype_ == INPAR::STR::prestress_mulf)
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
-  if (pstype_==INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::prestress_id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
 
   return;
@@ -233,10 +230,7 @@ time_(old.time_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              gee 03/12|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NStet5::~NStet5()
-{
-  return;
-}
+DRT::ELEMENTS::NStet5::~NStet5() { return; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -244,34 +238,34 @@ DRT::ELEMENTS::NStet5::~NStet5()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
   // add base class Element
   Element::Pack(data);
   // material_
-  AddtoPack(data,material_);
+  AddtoPack(data, material_);
   // stresstype_
-  AddtoPack(data,stresstype_);
+  AddtoPack(data, stresstype_);
   // V_
-  AddtoPack(data,V_);
+  AddtoPack(data, V_);
 
   // prestress_
-  AddtoPack(data,pstype_);
-  AddtoPack(data,pstime_);
-  AddtoPack(data,time_);
-  if (pstype_==INPAR::STR::prestress_mulf)
+  AddtoPack(data, pstype_);
+  AddtoPack(data, pstime_);
+  AddtoPack(data, time_);
+  if (pstype_ == INPAR::STR::prestress_mulf)
   {
-    DRT::ParObject::AddtoPack(data,*prestress_);
+    DRT::ParObject::AddtoPack(data, *prestress_);
   }
 
   // invdesign_
-  if (pstype_==INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::prestress_id)
   {
-    DRT::ParObject::AddtoPack(data,*invdesign_);
+    DRT::ParObject::AddtoPack(data, *invdesign_);
   }
 
   return;
@@ -287,45 +281,45 @@ void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // material_
-  ExtractfromPack(position,data,material_);
+  ExtractfromPack(position, data, material_);
   // stresstype_
-  stresstype_ = static_cast<StressType>( ExtractInt(position,data) );
+  stresstype_ = static_cast<StressType>(ExtractInt(position, data));
   // V_
-  ExtractfromPack(position,data,V_);
+  ExtractfromPack(position, data, V_);
 
   // prestress_
-  pstype_ = static_cast<INPAR::STR::PreStress>( ExtractInt(position,data) );
-  ExtractfromPack(position,data,pstime_);
-  ExtractfromPack(position,data,time_);
-  if (pstype_==INPAR::STR::prestress_mulf)
+  pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
+  ExtractfromPack(position, data, pstime_);
+  ExtractfromPack(position, data, time_);
+  if (pstype_ == INPAR::STR::prestress_mulf)
   {
     std::vector<char> tmpprestress(0);
-    ExtractfromPack(position,data,tmpprestress);
+    ExtractfromPack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4,4,true));
+      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));
     prestress_->Unpack(tmpprestress);
   }
 
   // invdesign_
-  if (pstype_==INPAR::STR::prestress_id)
+  if (pstype_ == INPAR::STR::prestress_id)
   {
     std::vector<char> tmpinvdesign(0);
-    ExtractfromPack(position,data,tmpinvdesign);
+    ExtractfromPack(position, data, tmpinvdesign);
     if (invdesign_ == Teuchos::null)
-      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4,4,true));
+      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4, 4, true));
     invdesign_->Unpack(tmpinvdesign);
   }
 
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -333,15 +327,15 @@ void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::so_nstet5_expol(LINALG::Matrix<1,6>& stresses,
-                                        LINALG::Matrix<4,6>& nodalstresses)
+void DRT::ELEMENTS::NStet5::so_nstet5_expol(
+    LINALG::Matrix<1, 6>& stresses, LINALG::Matrix<4, 6>& nodalstresses)
 {
-  LINALG::Matrix<4,1> expol;
-  expol(0,0)=1.0;
-  expol(1,0)=1.0;
-  expol(2,0)=1.0;
-  expol(3,0)=1.0;
-  nodalstresses.Multiply(expol,stresses);
+  LINALG::Matrix<4, 1> expol;
+  expol(0, 0) = 1.0;
+  expol(1, 0) = 1.0;
+  expol(2, 0) = 1.0;
+  expol(3, 0) = 1.0;
+  nodalstresses.Multiply(expol, stresses);
   return;
 }
 
@@ -357,49 +351,49 @@ void DRT::ELEMENTS::NStet5::Print(std::ostream& os) const
 }
 
 
-  /*====================================================================*/
-  /* 4-node tetrahedra node topology*/
-  /*--------------------------------------------------------------------*/
-  /* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
-   * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
-   *  4-node hexahedron: node 0,1,...,3
-   *
-   * -----------------------
-   *- this is the numbering used in GiD & EXODUS!!
-   *      3-
-   *      |\ ---
-   *      |  \    ---
-   *      |    \      ---
-   *      |      \        -2
-   *      |        \       /\
-   *      |          \   /   \
-   *      |            X      \
-   *      |          /   \     \
-   *      |        /       \    \
-   *      |      /           \   \
-   *      |    /               \  \
-   *      |  /                   \ \
-   *      |/                       \\
-   *      0--------------------------1
-   */
-  /*====================================================================*/
+/*====================================================================*/
+/* 4-node tetrahedra node topology*/
+/*--------------------------------------------------------------------*/
+/* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
+ * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
+ *  4-node hexahedron: node 0,1,...,3
+ *
+ * -----------------------
+ *- this is the numbering used in GiD & EXODUS!!
+ *      3-
+ *      |\ ---
+ *      |  \    ---
+ *      |    \      ---
+ *      |      \        -2
+ *      |        \       /\
+ *      |          \   /   \
+ *      |            X      \
+ *      |          /   \     \
+ *      |        /       \    \
+ *      |      /           \   \
+ *      |    /               \  \
+ *      |  /                   \ \
+ *      |/                       \\
+ *      0--------------------------1
+ */
+/*====================================================================*/
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  gee 03/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Volumes()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Volumes()
 {
   dserror("volume not impl. yet");
-  std::vector<Teuchos::RCP<Element> > volumes(1);
-  volumes[0]= Teuchos::rcp(this, false);
+  std::vector<Teuchos::RCP<Element>> volumes(1);
+  volumes[0] = Teuchos::rcp(this, false);
   return volumes;
 }
 
 
- /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                             gee 03/12|
- *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Surfaces()
+/*----------------------------------------------------------------------*
+|  get vector of surfaces (public)                             gee 03/12|
+*----------------------------------------------------------------------*/
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -408,13 +402,14 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, DRT::Element>(
+      DRT::UTILS::buildSurfaces, this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gee 03/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NStet5::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -423,7 +418,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Lines()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine, DRT::Element>(
+      DRT::UTILS::buildLines, this);
 }
 
 
@@ -433,20 +429,16 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Lines()
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(
-                           std::map<int,DRT::ELEMENTS::NStet5*>& elecids,
-                           std::map<int,DRT::Node*>&             noderids,
-                           const int                        myrank,
-                           const int                        numproc,
-                           DRT::Discretization&             dis)
+void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
+    std::map<int, DRT::Node*>& noderids, const int myrank, const int numproc,
+    DRT::Discretization& dis)
 {
   const int numele = dis.NumMyColElements();
 
-  for (int i=0; i<numele; ++i)
+  for (int i = 0; i < numele; ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::NStet5* actele =
-                    dynamic_cast<DRT::ELEMENTS::NStet5*>(dis.lColElement(i));
+    DRT::ELEMENTS::NStet5* actele = dynamic_cast<DRT::ELEMENTS::NStet5*>(dis.lColElement(i));
     if (!actele) dserror("cast to NStet5* failed");
 
     // init the element
@@ -456,13 +448,12 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(
     elecids[actele->Id()] = actele;
 
     // compute a map of all row nodes adjacent to a NStet5 element
-    for (int j=0; j<actele->NumNode(); ++j)
+    for (int j = 0; j < actele->NumNode(); ++j)
     {
       DRT::Node* node = actele->Nodes()[j];
-      if (myrank == node->Owner())
-        noderids[node->Id()] = node;
+      if (myrank == node->Owner()) noderids[node->Id()] = node;
     }
-  } // i
+  }  // i
 
   return;
 }
@@ -471,60 +462,53 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::InitAdjacency(
-                     std::map<int,DRT::ELEMENTS::NStet5*>&          elecids,
-                     std::map<int,DRT::Node*>&                      noderids,
-                     std::map<int,std::vector<DRT::ELEMENTS::NStet5*> >& adjele,
-                     std::map<int,std::map<int,DRT::Node*> >&           adjnode,
-                     std::map<int,std::vector<int> >&                   adjlm,
-                     std::map<int,std::map<int,std::vector<int> > >&    adjsubele,
-                     std::map<int,std::vector<std::vector<std::vector<int> > > >& adjlmlm,
-                     DRT::Discretization&                     dis)
+void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet5*>& elecids,
+    std::map<int, DRT::Node*>& noderids, std::map<int, std::vector<DRT::ELEMENTS::NStet5*>>& adjele,
+    std::map<int, std::map<int, DRT::Node*>>& adjnode, std::map<int, std::vector<int>>& adjlm,
+    std::map<int, std::map<int, std::vector<int>>>& adjsubele,
+    std::map<int, std::vector<std::vector<std::vector<int>>>>& adjlmlm, DRT::Discretization& dis)
 {
-  std::map<int,DRT::Node*>::iterator node;
-  for (node=noderids.begin(); node != noderids.end(); ++node)
+  std::map<int, DRT::Node*>::iterator node;
+  for (node = noderids.begin(); node != noderids.end(); ++node)
   {
-    DRT::Node* nodeL  = node->second;
+    DRT::Node* nodeL = node->second;
     const int nodeidL = nodeL->Id();
 
     //-----------------------------------------------------------------
     // list of adjacent elements
     std::vector<DRT::ELEMENTS::NStet5*> myadjele(0);
-    for (int j=0; j<nodeL->NumElement(); ++j)
+    for (int j = 0; j < nodeL->NumElement(); ++j)
     {
       const int eleid = node->second->Elements()[j]->Id();
-      std::map<int,DRT::ELEMENTS::NStet5*>::iterator ele = elecids_.find(eleid);
-      if (ele==elecids_.end()) continue;
+      std::map<int, DRT::ELEMENTS::NStet5*>::iterator ele = elecids_.find(eleid);
+      if (ele == elecids_.end()) continue;
       myadjele.push_back(ele->second);
     }
     adjele[nodeidL] = myadjele;
 
     //-----------------------------------------------------------------
     // patch of all nodes adjacent to adjacent elements
-    std::map<int,DRT::Node*> nodepatch;
-    for (unsigned j=0; j<myadjele.size(); ++j)
+    std::map<int, DRT::Node*> nodepatch;
+    for (unsigned j = 0; j < myadjele.size(); ++j)
     {
       DRT::Node** nodes = myadjele[j]->Nodes();
-      for (int k=0; k<myadjele[j]->NumNode(); ++k)
-        nodepatch[nodes[k]->Id()] = nodes[k];
+      for (int k = 0; k < myadjele[j]->NumNode(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
     }
     adjnode[nodeidL] = nodepatch;
 
     //-----------------------------------------------------------------
     // lm array
-    const int ndofperpatch = ((int)nodepatch.size() +
-                              (int)myadjele.size()) * 3;
+    const int ndofperpatch = ((int)nodepatch.size() + (int)myadjele.size()) * 3;
 
     // location and ownership vector of nodal patch
     std::vector<int> lm(ndofperpatch);
-    std::map<int,DRT::Node*>::iterator pnode;
-    int count=0;
+    std::map<int, DRT::Node*>::iterator pnode;
+    int count = 0;
     // add dofs of nodes
-    for (pnode=nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
+    for (pnode = nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
     {
       const std::vector<int>& dofs = dis.Dof(pnode->second);
-      for (unsigned j=0; j<dofs.size(); ++j)
-        lm[count++]        = dofs[j];
+      for (unsigned j = 0; j < dofs.size(); ++j) lm[count++] = dofs[j];
     }
 
 #if 0
@@ -535,11 +519,10 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 #endif
 
     // add dofs of center nodes from elements. These appear as element dofs
-    for (unsigned j=0; j<myadjele.size(); ++j)
+    for (unsigned j = 0; j < myadjele.size(); ++j)
     {
       const std::vector<int>& dofs = dis.Dof(myadjele[j]);
-      for (unsigned j=0; j<dofs.size(); ++j)
-        lm[count++]        = dofs[j];
+      for (unsigned j = 0; j < dofs.size(); ++j) lm[count++] = dofs[j];
     }
 
 #if 0
@@ -552,12 +535,12 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 
     //-----------------------------------------------------------------
     // for each adjele, find out which subelements I participate in
-    std::map<int,std::vector<int> > masterele;
-    for (unsigned j=0; j<myadjele.size(); ++j)
+    std::map<int, std::vector<int>> masterele;
+    for (unsigned j = 0; j < myadjele.size(); ++j)
     {
       DRT::ELEMENTS::NStet5* ele = myadjele[j];
       bool foundit = false;
-      for (int i=0; i<ele->NumNode(); ++i)
+      for (int i = 0; i < ele->NumNode(); ++i)
       {
         if (ele->Nodes()[i]->Id() == nodeL->Id())
         {
@@ -567,17 +550,17 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
           // determine subelements node i is attached to
           // its attached to definitely 3 out of 4 subelements
           std::vector<int> subele;
-          for (int k=0; k<4; ++k)
+          for (int k = 0; k < 4; ++k)
           {
-            const int* sublm = ele->SubLM(k); // subelement k
-            for (int l=0; l<3; ++l) // the first 3 nodes of the subelement
+            const int* sublm = ele->SubLM(k);  // subelement k
+            for (int l = 0; l < 3; ++l)        // the first 3 nodes of the subelement
               if (sublm[l] == i)
               {
                 subele.push_back(k);
                 break;
               }
           }
-          if ((int)subele.size()!=3) dserror("Node not attached to exactly 3 subelements");
+          if ((int)subele.size() != 3) dserror("Node not attached to exactly 3 subelements");
 #if 0
           printf("node %d ele %d subele.size %d :",nodeidL,ele->Id(),(int)subele.size());
           for (int l=0; l<(int)subele.size(); ++l) printf("%d ",subele[l]);
@@ -591,7 +574,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
         }
       }
       if (!foundit) dserror("Weired, this adjele seems not attached to me");
-    } // for (unsigned j=0; j<myadjele.size(); ++j)
+    }  // for (unsigned j=0; j<myadjele.size(); ++j)
     if (masterele.size() != myadjele.size()) dserror("subelement connectivity wrong");
 
     adjsubele[nodeidL] = masterele;
@@ -602,50 +585,46 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 
     //-----------------------------------------------------------------
     // for each adjele and its subele, build local connectivity
-    std::vector<std::vector<std::vector<int> > > lmlm((int)myadjele.size());
-    for (unsigned j=0; j<myadjele.size(); ++j)
+    std::vector<std::vector<std::vector<int>>> lmlm((int)myadjele.size());
+    for (unsigned j = 0; j < myadjele.size(); ++j)
     {
       DRT::ELEMENTS::NStet5* ele = myadjele[j];
       std::vector<int>& subele = masterele[ele->Id()];
       lmlm[j].resize((int)subele.size());
-      for (unsigned k=0; k<subele.size(); ++k)
+      for (unsigned k = 0; k < subele.size(); ++k)
       {
-        const int   subeleid = subele[k];
-        const int*  sublm    = ele->SubLM(subeleid);
+        const int subeleid = subele[k];
+        const int* sublm = ele->SubLM(subeleid);
         std::vector<int> elelm;
-        for (int l=0; l<4; ++l) // loop nodes of subelement and collect dofs
+        for (int l = 0; l < 4; ++l)  // loop nodes of subelement and collect dofs
         {
-          if (sublm[l]!=4) // node 4 is center node owned by the element
+          if (sublm[l] != 4)  // node 4 is center node owned by the element
           {
             std::vector<int> dofs = dis.Dof(ele->Nodes()[sublm[l]]);
-            for (unsigned n=0; n<dofs.size(); ++n) elelm.push_back(dofs[n]);
+            for (unsigned n = 0; n < dofs.size(); ++n) elelm.push_back(dofs[n]);
           }
           else
           {
             std::vector<int> dofs = dis.Dof(ele);
-            for (unsigned n=0; n<dofs.size(); ++n) elelm.push_back(dofs[n]);
+            for (unsigned n = 0; n < dofs.size(); ++n) elelm.push_back(dofs[n]);
           }
         }
         if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
         lmlm[j][k].resize(12);
-        for (int l=0; l<12; ++l)
+        for (int l = 0; l < 12; ++l)
         {
-          std::vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[l]);
-          lmlm[j][k][l] = fool-lm.begin();
+          std::vector<int>::iterator fool = find(lm.begin(), lm.end(), elelm[l]);
+          lmlm[j][k][l] = fool - lm.begin();
         }
-
       }
     }
     adjlmlm[nodeidL] = lmlm;
 
 
 
-  } // for (node=noderids.begin(); node != noderids.end(); ++node)
+  }  // for (node=noderids.begin(); node != noderids.end(); ++node)
   return;
 }
-
-
-
 
 
 
@@ -661,18 +640,15 @@ int DRT::ELEMENTS::NStet5Type::Initialize(DRT::Discretization& dis)
 
   //----------------------------------------------------------------------
   // init elements, make maps of column elements and row nodes
-  InitElementsandMaps(elecids_,noderids_,myrank,numproc,dis);
+  InitElementsandMaps(elecids_, noderids_, myrank, numproc, dis);
 
   //----------------------------------------------------------------------
   // compute adjacency for each row node
   // make patch of adjacent elements
   // make patch of adjacent nodes (including center node itself)
   // make lm for nodal patch
-  InitAdjacency(elecids_,noderids_,adjele_,adjnode_,adjlm_,adjsubele_,lmlm_,dis);
+  InitAdjacency(elecids_, noderids_, adjele_, adjnode_, adjlm_, adjsubele_, lmlm_, dis);
 
 
   return 0;
 }
-
-
-

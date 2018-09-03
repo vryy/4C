@@ -19,13 +19,10 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
  *----------------------------------------------------------------------*/
-FLD::TimIntAC::TimIntAC(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid)
+FLD::TimIntAC::TimIntAC(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -33,10 +30,7 @@ FLD::TimIntAC::TimIntAC(
 /*----------------------------------------------------------------------*
 | Destructor (public)                                        Thon 12/14 |
 *-----------------------------------------------------------------------*/
-FLD::TimIntAC::~TimIntAC()
-{
-  return;
-}
+FLD::TimIntAC::~TimIntAC() { return; }
 
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        Thon 12/14 |
@@ -44,13 +38,13 @@ FLD::TimIntAC::~TimIntAC()
 void FLD::TimIntAC::ReadRestart(int step)
 {
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
-  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idyn,"RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");
 
-  if (not restartfrompartfsi) //standard restart
+  if (not restartfrompartfsi)  // standard restart
   {
-    IO::DiscretizationReader reader(discret_,step);
+    IO::DiscretizationReader reader(discret_, step);
 
-    reader.ReadVector(trueresidual_,"trueresidual");
+    reader.ReadVector(trueresidual_, "trueresidual");
   }
 
   return;
@@ -64,7 +58,7 @@ void FLD::TimIntAC::Output()
   FluidImplicitTimeInt::Output();
 
   // output of solution
-  if ( uprestart_ > 0 and step_%uprestart_ == 0 )
+  if (uprestart_ > 0 and step_ % uprestart_ == 0)
   {
     output_->WriteVector("trueresidual", trueresidual_);
   }

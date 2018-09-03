@@ -46,7 +46,7 @@ namespace PARTICLE
 */
 class PartResultTest : public DRT::ResultTest
 {
-public:
+ public:
   //! Constructor for particle time integrators of general kind
   PartResultTest(PARTICLE::TimInt& tintegrator);
 
@@ -60,16 +60,14 @@ public:
 
   //! test special quantity not associated with a particular element or node
   void TestSpecial(
-      DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-      int&                          nerr,        //!< number of failed result tests
-      int&                          test_count   ///< number of result tests
-      );
+      DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+      int& nerr,                        //!< number of failed result tests
+      int& test_count                   ///< number of result tests
+  );
 
-private:
-
+ private:
   //! get special result to be tested
-  double ResultSpecial(
-      const std::string&   quantity   //! name of quantity to be tested
+  double ResultSpecial(const std::string& quantity  //! name of quantity to be tested
       ) const;
 
   //! our discretisation
@@ -99,7 +97,6 @@ private:
   const double externalenergy_;
   //! maximum particle-particle or particle-wall penetration
   const double maxpenetration_;
-
 };
 
 #endif /* #ifndef PARTICLERESULTTEST_H */

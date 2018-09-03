@@ -36,29 +36,31 @@ namespace XFEM
 
   class XFPCoupling_Manager : public Coupling_Manager, public Coupling_Comm_Manager
   {
-    public:
-
+   public:
     /// constructor
     explicit XFPCoupling_Manager(Teuchos::RCP<ConditionManager> condmanager,
-        Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx);
+        Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid,
+        std::vector<int> idx);
 
     //! @name Destruction
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~XFPCoupling_Manager(){}
+    virtual ~XFPCoupling_Manager() {}
 
-    //!predict states in the coupling object
-    virtual void PredictCouplingStates(){}
+    //! predict states in the coupling object
+    virtual void PredictCouplingStates() {}
 
-    //! Initializes the couplings (done at the beginning of the algorithm after fields have their state for timestep n)
-    virtual void InitCouplingStates(){return;};
+    //! Initializes the couplings (done at the beginning of the algorithm after fields have their
+    //! state for timestep n)
+    virtual void InitCouplingStates() { return; };
 
     virtual void SetCouplingStates();
 
     virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
 
-    virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,const LINALG::MultiMapExtractor& me, double scaling);
+    virtual void AddCouplingRHS(
+        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling);
 
     //! Update (Perform after Each Timestep)
     virtual void Update(double scaling);
@@ -69,8 +71,7 @@ namespace XFEM
     //! Read Restart (For lambda_)
     virtual void ReadRestart(IO::DiscretizationReader& reader);
 
-    private:
-
+   private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))
     double GetInterfaceTimefac();
 
@@ -89,7 +90,8 @@ namespace XFEM
     std::string cond_name_pf_ps_;
     std::string cond_name_pf_pf_;
 
-    //Global Index in the blockmatrix of the coupled sytem [0] = structure-, [1] = fluid- block, [2] = porofluid-block
+    // Global Index in the blockmatrix of the coupled sytem [0] = structure-, [1] = fluid- block,
+    // [2] = porofluid-block
     std::vector<int> idx_;
 
     bool interface_second_order_;
@@ -97,11 +99,11 @@ namespace XFEM
     //--------------------------------------------------------------------------//
     //! @name Store the Coupling RHS of the Old Timestep in lambda
 
-    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure, Robin-type forces
-    //! consisting of fluid forces and the Nitsche penalty term contribution)
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure,
+    //! Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_ps_;
     Teuchos::RCP<Epetra_Vector> lambda_pf_;
   };
-}
+}  // namespace XFEM
 #endif

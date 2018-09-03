@@ -46,19 +46,18 @@ void STR::MODELEVALUATOR::Generic::Init(
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr,
-    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr,
-    const int& dof_offset)
+    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset)
 {
   // call setup after init()
   issetup_ = false;
 
   eval_data_ptr_ = eval_data_ptr;
-  gstate_ptr_    = gstate_ptr;
-  gio_ptr_       = gio_ptr;
-  discret_ptr_   = gstate_ptr->GetMutableDiscret();
-  int_ptr_       = int_ptr;
-  timint_ptr_    = timint_ptr;
-  dof_offset_    = dof_offset;
+  gstate_ptr_ = gstate_ptr;
+  gio_ptr_ = gio_ptr;
+  discret_ptr_ = gstate_ptr->GetMutableDiscret();
+  int_ptr_ = int_ptr;
+  timint_ptr_ = timint_ptr;
+  dof_offset_ = dof_offset;
 
   isinit_ = true;
 }
@@ -67,16 +66,14 @@ void STR::MODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Generic::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Generic::CheckInit() const
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -121,8 +118,7 @@ Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::MODELEVALUATOR::Generic::GS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState()
-    const
+const STR::TIMINT::BaseDataGlobalState& STR::MODELEVALUATOR::Generic::GState() const
 {
   CheckInit();
   return *gstate_ptr_;
@@ -194,10 +190,7 @@ const STR::Integrator& STR::MODELEVALUATOR::Generic::Int() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::IntPtr()
-{
-  return int_ptr_;
-}
+Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::IntPtr() { return int_ptr_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -220,12 +213,11 @@ const int& STR::MODELEVALUATOR::Generic::DofOffset() const
 Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Generic::GetFextIncr() const
 {
   CheckInitSetup();
-  const Epetra_Vector& fextn  = *GState().GetFextN();
+  const Epetra_Vector& fextn = *GState().GetFextN();
   const Epetra_Vector& fextnp = *GState().GetFextNp();
 
-  Teuchos::RCP<Epetra_Vector> fext_incr =
-      Teuchos::rcp<Epetra_Vector>( new Epetra_Vector( fextnp ) );
-  fext_incr->Update(-1.0,fextn,1.0);
+  Teuchos::RCP<Epetra_Vector> fext_incr = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(fextnp));
+  fext_incr->Update(-1.0, fextn, 1.0);
 
   return fext_incr;
 }
@@ -236,9 +228,7 @@ bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
 {
   // --- Did an exception occur during the evaluation process? -----------------
   bool ok = true;
-  if (fetestexcept(FE_INVALID)    or
-      fetestexcept(FE_OVERFLOW)   or
-      fetestexcept(FE_DIVBYZERO))
+  if (fetestexcept(FE_INVALID) or fetestexcept(FE_OVERFLOW) or fetestexcept(FE_DIVBYZERO))
     ok = false;
 
   // --- Did the element evaluation detect an error? ---------------------------
@@ -248,6 +238,6 @@ bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
   // --- check for local errors on each proc and communicate the information ---
   int lerr = (ok ? 0 : 1);
   int gerr = 0;
-  gstate_ptr_->GetComm().SumAll(&lerr,&gerr,1);
-  return (gerr==0);
+  gstate_ptr_->GetComm().SumAll(&lerr, &gerr, 1);
+  return (gerr == 0);
 }

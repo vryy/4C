@@ -27,61 +27,40 @@
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimIntCentrDiff::TimIntCentrDiff
-(
-  const Teuchos::ParameterList& timeparams,
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& sdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-)
-: TimIntExpl
-  (
-    timeparams,
-    ioparams,
-    sdynparams,
-    xparams,
-    actdis,
-    solver,
-    contactsolver,
-    output
-  ),
-  fextn_(Teuchos::null),
-  fintn_(Teuchos::null),
-  fviscn_(Teuchos::null),
-  fcmtn_(Teuchos::null),
-  frimpn_(Teuchos::null)
+STR::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
+      fextn_(Teuchos::null),
+      fintn_(Teuchos::null),
+      fviscn_(Teuchos::null),
+      fcmtn_(Teuchos::null),
+      frimpn_(Teuchos::null)
 {
   // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // First do everything on the more basic objects like the discretizations, like e.g.
+  // redistribution of elements. Only then call the setup to this class. This will call the setup to
+  // all classes in the inheritance hierarchy. This way, this class may also override a method that
+  // is called during Setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntCentrDiff::Init
-(
-    const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver
-)
+void STR::TimIntCentrDiff::Init(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
 {
   // call Init() in base class
-  STR::TimIntExpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+  STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
   // info to user
   if (myrank_ == 0)
   {
-    std::cout << "with central differences"
-              << std::endl;
+    std::cout << "with central differences" << std::endl;
   }
 
   // let it rain
@@ -103,10 +82,10 @@ void STR::TimIntCentrDiff::Setup()
   ResizeMStep();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*DofRowMapView(), true);
-  fintn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
   fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_ = LINALG::CreateVector(*DofRowMapView(), true);
   frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
 
@@ -131,8 +110,8 @@ int STR::TimIntCentrDiff::IntegrateStep()
   // time this step
   timer_->ResetStartTime();
 
-  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
-  const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
+  const double dt = (*dt_)[0];     // \f$\Delta t_{n}\f$
+  const double dthalf = dt / 2.0;  // \f$\Delta t_{n+1/2}\f$
 
   // new velocities \f$V_{n+1/2}\f$
   veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -157,7 +136,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
   // TIMING
-  //double dtcpu = timer_->WallTime();
+  // double dtcpu = timer_->WallTime();
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -168,9 +147,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
     Epetra_Vector disinc = Epetra_Vector(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
-    ApplyForceInternal(timen_, dt,
-                       disn_, Teuchos::rcp(&disinc,false), veln_,
-                       fintn_);
+    ApplyForceInternal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
   }
 
   // *********** time measurement ***********
@@ -192,10 +169,12 @@ int STR::TimIntCentrDiff::IntegrateStep()
   {
     fcmtn_->PutScalar(0.0);
 
-    if(cmtbridge_->HaveMeshtying())
-      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
-    if(cmtbridge_->HaveContact())
-      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
+    if (cmtbridge_->HaveMeshtying())
+      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(
+          disn_, stiff_, fcmtn_, stepn_, 0, false);
+    if (cmtbridge_->HaveContact())
+      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(
+          disn_, stiff_, fcmtn_, stepn_, 0, false);
   }
 
   // *********** time measurement ***********
@@ -229,7 +208,8 @@ int STR::TimIntCentrDiff::IntegrateStep()
     accn_->PutScalar(0.0);
 
     // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
-    if (lumpmass_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_)==Teuchos::null)
+    if (lumpmass_ == false ||
+        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_) == Teuchos::null)
     {
       // linear solver call
       // refactor==false: This is not necessary, because we always
@@ -241,11 +221,12 @@ int STR::TimIntCentrDiff::IntegrateStep()
     // direct inversion based on lumped mass matrix
     else
     {
-      Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
+      Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
+          Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
       Teuchos::RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
-      if (error!=0) dserror("ERROR: ExtractDiagonalCopy went wrong");
-      accn_->ReciprocalMultiply(1.0,*diagonal,*frimpn_,0.0);
+      if (error != 0) dserror("ERROR: ExtractDiagonalCopy went wrong");
+      accn_->ReciprocalMultiply(1.0, *diagonal, *frimpn_, 0.0);
     }
   }
 
@@ -300,8 +281,7 @@ void STR::TimIntCentrDiff::UpdateStepElement()
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------*/

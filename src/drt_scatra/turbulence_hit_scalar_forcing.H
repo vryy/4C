@@ -2,7 +2,8 @@
 
 \file turbulence_hit_scalar_forcing.H
 
-\brief routines to calculate forcing for homogeneous isotropic turbulence simulations with passive-scalar transport
+\brief routines to calculate forcing for homogeneous isotropic turbulence simulations with
+passive-scalar transport
 
 \level 2
 
@@ -26,7 +27,7 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_scatra.H"
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -34,23 +35,21 @@ namespace DRT
 
 namespace SCATRA
 {
+  // forward declarations
+  class ScaTraTimIntImpl;
 
-// forward declarations
-class ScaTraTimIntImpl;
-
-class HomIsoTurbScalarForcing
-{
-  public:
-
+  class HomIsoTurbScalarForcing
+  {
+   public:
     //! constructor
     HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint);
 
     //! destructor
-    ~HomIsoTurbScalarForcing(){return;};
+    ~HomIsoTurbScalarForcing() { return; };
 
-//    //! set time integration scheme specific vectors (required for gen-alpha)
-//    void SetTimeIntSpecificVectors(Teuchos::RCP<Epetra_Vector> phiaf,
-//                                   bool gen_alpha = false);
+    //    //! set time integration scheme specific vectors (required for gen-alpha)
+    //    void SetTimeIntSpecificVectors(Teuchos::RCP<Epetra_Vector> phiaf,
+    //                                   bool gen_alpha = false);
 
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::SCATRA::InitialField init_field_type);
@@ -67,21 +66,18 @@ class HomIsoTurbScalarForcing
     //! time update of energy spectrum
     void TimeUpdateForcing();
 
-  protected:
-
+   protected:
     //! sort criterium for double values up to a tolerance of 10-9
     class LineSortCriterion
     {
-      public:
-        bool operator() (const double& p1,
-                         const double& p2) const { return (p1 < p2 - 1E-9);}
+     public:
+      bool operator()(const double& p1, const double& p2) const { return (p1 < p2 - 1E-9); }
 
-      protected:
-      private:
+     protected:
+     private:
     };
 
-  private:
-
+   private:
     //! type of forcing
     INPAR::FLUID::ForcingType forcing_type_;
 
@@ -106,16 +102,16 @@ class HomIsoTurbScalarForcing
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double> > coordinates_;
+    Teuchos::RCP<std::vector<double>> coordinates_;
 
     //! vector of wave numbers
-    Teuchos::RCP<std::vector<double> > wavenumbers_;
+    Teuchos::RCP<std::vector<double>> wavenumbers_;
 
     //! vector scalar variance spectrum (sum over k=const) at time n
-    Teuchos::RCP<std::vector<double> > scalarvariancespectrum_n_;
+    Teuchos::RCP<std::vector<double>> scalarvariancespectrum_n_;
 
     //! vector scalar variance spectrum  (sum over k=const) at time n+1/n+af
-    Teuchos::RCP<std::vector<double> > scalarvariancespectrum_np_;
+    Teuchos::RCP<std::vector<double>> scalarvariancespectrum_np_;
 
     //! time step length
     double dt_;
@@ -128,17 +124,13 @@ class HomIsoTurbScalarForcing
 
     //! interpolation function
     static double Interpolate(
-      const double& x,
-      const double& x_1,
-      const double& x_2,
-      const double& y_1,
-      const double& y_2)
+        const double& x, const double& x_1, const double& x_2, const double& y_1, const double& y_2)
     {
       const double value = y_1 + (y_2 - y_1) / (x_2 - x_1) * (x - x_1);
       return value;
     }
-};
+  };
 
-}
+}  // namespace SCATRA
 
 #endif

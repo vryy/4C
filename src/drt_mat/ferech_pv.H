@@ -21,22 +21,17 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material with simplified chemical
     /// kinetics due to Ferziger and Echekki (1993) (original version and
     /// modification by Poinsot and Veynante (2005)) (progress variable)
     class FerEchPV : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      FerEchPV(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      FerEchPV(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~FerEchPV() { ; }
@@ -81,20 +76,18 @@ namespace MAT
   }  // namespace PAR
 
 
-class FerEchPVType : public DRT::ParObjectType
-{
-public:
+  class FerEchPVType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "FerEchPVType"; }
 
-  std::string Name() const { return "FerEchPVType"; }
+    static FerEchPVType& Instance() { return instance_; };
 
-  static FerEchPVType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static FerEchPVType instance_;
-};
+   private:
+    static FerEchPVType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material with simplified chemical
@@ -102,8 +95,7 @@ private:
   /// modification by Poinsot and Veynante (2005)) (progress variable)
   class FerEchPV : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     FerEchPV();
 
@@ -153,7 +145,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_ferech_pv; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new FerEchPV( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new FerEchPV(*this)); }
 
     /// compute temperature
     double ComputeTemperature(const double provar) const;
@@ -211,13 +203,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::FerEchPV* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

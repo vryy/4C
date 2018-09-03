@@ -2,7 +2,8 @@
 /*!
  \file fluidporo_relpermeability_law.H
 
- \brief calculation classes for evaluation of constitutive relation for permeability for multiphase porous flow
+ \brief calculation classes for evaluation of constitutive relation for permeability for multiphase
+ porous flow
 
    \level 3
 
@@ -18,132 +19,114 @@
 
 namespace MAT
 {
-namespace PAR
-{
-  //! interface class for generic relative permeability law
-  class FluidPoroRelPermeabilityLaw : public Parameter
+  namespace PAR
   {
+    //! interface class for generic relative permeability law
+    class FluidPoroRelPermeabilityLaw : public Parameter
+    {
+     public:
+      /// standard constructor
+      explicit FluidPoroRelPermeabilityLaw(
+          Teuchos::RCP<MAT::PAR::Material> matdata, bool constrelpermeability)
+          : Parameter(matdata), constrelpermeability_(constrelpermeability){};
 
-  public:
+      /// destructor
+      virtual ~FluidPoroRelPermeabilityLaw() { ; }
 
-    /// standard constructor
-    explicit FluidPoroRelPermeabilityLaw(
-      Teuchos::RCP<MAT::PAR::Material> matdata,
-      bool constrelpermeability
-      ):Parameter(matdata),
-      constrelpermeability_(constrelpermeability)
-    {};
+      // get relative permeability
+      virtual double GetRelPermeability(const double saturation) const = 0;
 
-    /// destructor
-    virtual ~FluidPoroRelPermeabilityLaw() { ; }
+      // get derivative of relative permeability with respect to the saturation of this phase
+      virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const = 0;
 
-    // get relative permeability
-    virtual double GetRelPermeability(const double saturation) const=0;
+      // check for constant permeability
+      bool HasConstantRelPermeability() const { return constrelpermeability_; }
 
-    // get derivative of relative permeability with respect to the saturation of this phase
-    virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const=0;
+      /// factory method
+      static MAT::PAR::FluidPoroRelPermeabilityLaw* CreateRelPermeabilityLaw(int matID);
 
-    // check for constant permeability
-    bool HasConstantRelPermeability() const
-    {return constrelpermeability_;}
+     private:
+      const bool constrelpermeability_;
+    };
 
-    /// factory method
-    static MAT::PAR::FluidPoroRelPermeabilityLaw* CreateRelPermeabilityLaw(int matID);
+    //! class for constant relative permeability law
+    class FluidPoroRelPermeabilityLawConstant : public FluidPoroRelPermeabilityLaw
+    {
+     public:
+      /// standard constructor
+      explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-  private:
-    const bool constrelpermeability_;
+      /// destructor
+      virtual ~FluidPoroRelPermeabilityLawConstant() { ; }
 
-  };
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
 
-  //! class for constant relative permeability law
-   class FluidPoroRelPermeabilityLawConstant : public FluidPoroRelPermeabilityLaw
-   {
+      // get permeability
+      double GetRelPermeability(const double saturation) const { return relpermeability_; };
 
-   public:
+      // get derivative of relative permeability with respect to the saturation of this phase
+      virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+      {
+        return 0.0;
+      };
 
-     /// standard constructor
-     explicit FluidPoroRelPermeabilityLawConstant(
-       Teuchos::RCP<MAT::PAR::Material> matdata
-       );
+     private:
+      /// @name material parameters
+      //@{
+      /// permeability (constant in this case)
+      const double relpermeability_;
+      //@}
+    };
 
-     /// destructor
-     virtual ~FluidPoroRelPermeabilityLawConstant() { ; }
-
-     /// create material instance of matching type with my parameters
-     virtual Teuchos::RCP<MAT::Material> CreateMaterial()
-            {return Teuchos::null;};
-
-     // get permeability
-     double GetRelPermeability(const double saturation) const
-     {return relpermeability_;};
-
-     // get derivative of relative permeability with respect to the saturation of this phase
-     virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
-     {return 0.0;};
-
-   private:
-    /// @name material parameters
-    //@{
-    /// permeability (constant in this case)
-    const double relpermeability_;
-    //@}
-
-   };
-
-   //! class for varying relative permeability
-   // relative permeabilty of phase i is calculated via saturation_i^exponent as in
-   // G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
-   // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484, 2014
+    //! class for varying relative permeability
+    // relative permeabilty of phase i is calculated via saturation_i^exponent as in
+    // G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
+    // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484, 2014
     class FluidPoroRelPermeabilityLawExponent : public FluidPoroRelPermeabilityLaw
     {
-
-    public:
-
+     public:
       /// standard constructor
-      explicit FluidPoroRelPermeabilityLawExponent(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~FluidPoroRelPermeabilityLawExponent() { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial()
-             {return Teuchos::null;};
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
 
       // get permeability
       double GetRelPermeability(const double saturation) const
       {
-        if(saturation > minsat_)
-          return std::pow(saturation,exp_);
+        if (saturation > minsat_)
+          return std::pow(saturation, exp_);
         else
-          return std::pow(minsat_,exp_);
+          return std::pow(minsat_, exp_);
       };
 
       // get derivative of relative permeability with respect to the saturation of this phase
       double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
       {
-        if(saturation > minsat_)
-          return exp_*std::pow(saturation,(exp_-1.0));
+        if (saturation > minsat_)
+          return exp_ * std::pow(saturation, (exp_ - 1.0));
         else
           return 0.0;
       };
 
-    private:
-     /// @name material parameters
-     //@{
-     /// exponent
-     const double exp_;
-     /// minimal saturation used for computation -> this variable can be set by the user to avoid very
-     /// small values for the relative permeability
-     const double minsat_;
-     //@}
-
+     private:
+      /// @name material parameters
+      //@{
+      /// exponent
+      const double exp_;
+      /// minimal saturation used for computation -> this variable can be set by the user to avoid
+      /// very small values for the relative permeability
+      const double minsat_;
+      //@}
     };
 
 
-}
-}
+  }  // namespace PAR
+}  // namespace MAT
 
 
 

@@ -40,17 +40,16 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::LineSearchFullStep::LineSearchFullStep()
- : NLNSOL::LineSearchBase()
-{
-  return;
-}
+NLNSOL::LineSearchFullStep::LineSearchFullStep() : NLNSOL::LineSearchBase() { return; }
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::LineSearchFullStep::Setup()
 {
   // make sure that Init() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
 
   // SetupLineSearch() has been called
   SetIsSetup();
@@ -59,17 +58,22 @@ void NLNSOL::LineSearchFullStep::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam,
-    bool& suffdecr) const
+void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam, bool& suffdecr) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchFullStep::ComputeLSParam");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::LineSearchFullStep::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // make sure that Init() and Setup() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // full step without caring for sufficient decrease
   ComputeLSParam(lsparam);
@@ -80,8 +84,7 @@ void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam,
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
 
   // check for sufficient decrease
-  Teuchos::RCP<Epetra_MultiVector> fnew =
-      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
   ComputeF(*xnew, *fnew);
   double fnorm2 = 0.0;
   ConvergenceCheck(*fnew, fnorm2);
@@ -94,13 +97,19 @@ void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam,
 void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchFullStep::ComputeLSParam");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::LineSearchFullStep::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // make sure that Init() and Setup() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // full step
   lsparam = 1.0;

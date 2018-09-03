@@ -24,20 +24,20 @@
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 02/2017 |
  *----------------------------------------------------------------------*/
-PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup(
-    const Epetra_Comm&              comm,         //! communicator
-    const Teuchos::ParameterList&   pasi_params   //! input parameters for particle structure interaction
-    ) :
-    // instantiate pasi algorithm class
-    PartitionedAlgo(comm,pasi_params)
+PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup(const Epetra_Comm& comm,  //! communicator
+    const Teuchos::ParameterList&
+        pasi_params  //! input parameters for particle structure interaction
+    )
+    :  // instantiate pasi algorithm class
+      PartitionedAlgo(comm, pasi_params)
 {
-
   // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // First do everything on the more basic objects like the discretizations, like e.g.
+  // redistribution of elements. Only then call the setup to this class. This will call the setup to
+  // all classes in the inheritance hierarchy. This way, this class may also override a method that
+  // is called during Setup() in a base class.
 
-} // PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup()
+}  // PASI::PASI_PartOneWayCoup::PASI_PartOneWayCoup()
 
 /*----------------------------------------------------------------------*
  | partitioned one way coupled timeloop                  sfuchs 02/2017 |
@@ -73,4 +73,4 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
   }
 
   return;
-} // PASI::PASI_PartOneWayCoup::Timeloop()
+}  // PASI::PASI_PartOneWayCoup::Timeloop()

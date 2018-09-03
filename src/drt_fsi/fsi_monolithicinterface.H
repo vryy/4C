@@ -3,18 +3,16 @@
 
 namespace FSI
 {
-
   /// Interface of monolithic algorithms to NOX group
   class MonolithicInterface
   {
-  public:
-
+   public:
     virtual ~MonolithicInterface() {}
 
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
+    virtual void SetupRHS(Epetra_Vector& f, bool firstcall = false) = 0;
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix() = 0;
@@ -31,6 +29,6 @@ namespace FSI
 
     //@}
   };
-}
+}  // namespace FSI
 
 #endif

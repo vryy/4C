@@ -29,12 +29,9 @@ namespace ADAPTER
   /// fluid with moving interfaces
   class FluidImmersed : public FluidMovingBoundary
   {
-  public:
-
+   public:
     /// constructor
-    explicit FluidImmersed(const Teuchos::ParameterList& prbdyn,
-                       std::string condname
-                       );
+    explicit FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /*========================================================================*/
     //! @name Misc
@@ -47,7 +44,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const;
 
     //@}
 
@@ -72,11 +69,12 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// nonlinear solve
-    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void NonlinearSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
 
     /// relaxation solve
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                        double dt);
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, double dt);
     //@}
 
     /*========================================================================*/
@@ -131,14 +129,12 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
 
-  private:
-
+   private:
     /// fluid base algorithm object
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid_;
     Teuchos::RCP<ADAPTER::Fluid> fluidadapter_;
-
   };
 
-}
+}  // namespace ADAPTER
 
 #endif

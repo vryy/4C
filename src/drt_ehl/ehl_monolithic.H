@@ -28,7 +28,7 @@
 /*----------------------------------------------------------------------*
  |                                                          wirtz 01/16 |
  *----------------------------------------------------------------------*/
-  // forward declarations
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
@@ -36,7 +36,7 @@ namespace LINALG
 
   class BlockSparseMatrixBase;
   class Solver;
-}
+}  // namespace LINALG
 
 namespace DRT
 {
@@ -44,7 +44,7 @@ namespace DRT
   {
     class LocsysManager;
   }
-}
+}  // namespace DRT
 
 namespace FSI
 {
@@ -53,14 +53,14 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace MORTAR
 {
   class IntCell;
   class MortarElement;
-}
+}  // namespace MORTAR
 
 namespace CONTACT
 {
@@ -91,15 +91,10 @@ namespace EHL
   //!  \date 01/16
   class Monolithic : public Base
   {
-
-  public:
-
-    explicit Monolithic(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& lubricationparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string lubrication_disname);
+   public:
+    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string lubrication_disname);
 
     //! virtual destructor to support polymorph destruction
     virtual ~Monolithic();
@@ -141,10 +136,7 @@ namespace EHL
     void ApplyDBC();
 
     //! composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
-    {
-      return systemmatrix_;
-    }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! solve linear EHL system
     void LinearSolve();
@@ -154,35 +146,31 @@ namespace EHL
 
     //! Evaluate lubrication-mechanical system matrix
     void ApplyLubricationCouplMatrix(
-        Teuchos::RCP<LINALG::SparseMatrix> matheight,  //!< lubrication matrix associated with linearization wrt height
-        Teuchos::RCP<LINALG::SparseMatrix> matvel     //!< lubrication matrix associated with linearization wrt velocities
+        Teuchos::RCP<LINALG::SparseMatrix>
+            matheight,  //!< lubrication matrix associated with linearization wrt height
+        Teuchos::RCP<LINALG::SparseMatrix>
+            matvel  //!< lubrication matrix associated with linearization wrt velocities
     );
 
     void LinPressureForceDisp(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd,
-        Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd, Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
     void LinPoiseuilleForceDisp(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd,
-        Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd, Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
     void LinCouetteForceDisp(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd,
-        Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd, Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
 
     void LinPressureForcePres(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp,
-        Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp, Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
     void LinPoiseuilleForcePres(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp,
-        Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp, Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
     void LinCouetteForcePres(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp,
-        Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
+        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp, Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
-      Teuchos::RCP<Epetra_Vector> stepinc //!< increment between time step n and n+1
-      );
+        Teuchos::RCP<Epetra_Vector> stepinc  //!< increment between time step n and n+1
+    );
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -200,24 +188,21 @@ namespace EHL
 
     //! contains text to PrintNewtonIter
     //! \author lw (originally in STR) \date 12/07
-    void PrintNewtonIterText(
-      FILE* ofile  //!< output file handle
-      );
+    void PrintNewtonIterText(FILE* ofile  //!< output file handle
+    );
 
     //! contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader(
-      FILE* ofile  //!< output file handle
-      );
+    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
+    );
 
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
 
     //! Determine norm of force residual
-    double CalculateVectorNorm(
-      const enum INPAR::EHL::VectorNorm norm,  //!< norm to use
-      const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
-      );
+    double CalculateVectorNorm(const enum INPAR::EHL::VectorNorm norm,  //!< norm to use
+        const Teuchos::RCP<Epetra_Vector> vect                          //!< the vector of interest
+    );
 
     //@}
 
@@ -226,13 +211,9 @@ namespace EHL
 
     //! undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-      LINALG::BlockSparseMatrixBase& mat,
-      Epetra_Vector& x,
-      Epetra_Vector& b
-      );
+        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
-  protected:
-
+   protected:
     //! @name Time loop building blocks
 
     //! start a new time step
@@ -252,11 +233,8 @@ namespace EHL
       \param sx (o) structural vector (e.g. displacements)
       \param lx (o) lubrication vector (e.g. pressures)
       */
-    virtual void ExtractFieldVectors(
-      Teuchos::RCP<Epetra_Vector> x,
-      Teuchos::RCP<Epetra_Vector>& sx,
-      Teuchos::RCP<Epetra_Vector>& lx
-      );
+    virtual void ExtractFieldVectors(Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector>& sx,
+        Teuchos::RCP<Epetra_Vector>& lx);
 
     //! @name Access methods for subclasses
 
@@ -269,7 +247,7 @@ namespace EHL
      defines the number of blocks, their maps and the block order. The block
      maps must be row maps by themselves and must not contain identical GIDs.
     */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
@@ -286,8 +264,8 @@ namespace EHL
     //! @name General purpose algorithm members
     //@{
 
-    bool solveradapttol_;  //!< adapt solver tolerance
-    double solveradaptolbetter_;  //!< tolerance to which is adpated ????
+    bool solveradapttol_;                  //!< adapt solver tolerance
+    double solveradaptolbetter_;           //!< tolerance to which is adpated ????
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
 
     //@}
@@ -295,9 +273,9 @@ namespace EHL
     //! @name Printing and output
     //@{
 
-    bool printiter_;  //!< print intermediate iterations during solution
+    bool printiter_;     //!< print intermediate iterations during solution
     bool printerrfile_;  //!< print infos to error file #errfile_
-    FILE* errfile_;  //!< error file handle
+    FILE* errfile_;      //!< error file handle
 
     //@}
 
@@ -308,20 +286,18 @@ namespace EHL
     //! enum for STR time integartion
     enum INPAR::STR::DynamicType strmethodname_;
 
-  private:
-
-    const Teuchos::ParameterList& ehldyn_;  //!< EHL dynamic parameter list
+   private:
+    const Teuchos::ParameterList& ehldyn_;      //!< EHL dynamic parameter list
     const Teuchos::ParameterList& ehldynmono_;  //!< monolithic EHL dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(
-      Epetra_Vector& f,  //!< vector of length of all dofs
-      Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
-      Teuchos::RCP<const Epetra_Vector> lv  //!< vector containing only lubrication dofs
-      );
+    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Epetra_Vector> lv   //!< vector containing only lubrication dofs
+    );
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
@@ -337,47 +313,49 @@ namespace EHL
     enum INPAR::EHL::NlnSolTech soltech_;  //!< kind of iteration technique or
                                            //!< nonlinear solution technique
 
-    enum INPAR::EHL::ConvNorm normtypeinc_;  //!< convergence check for increments
-    enum INPAR::EHL::ConvNorm normtyperhs_;  //!< convergence check for residual forces
-    enum INPAR::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
+    enum INPAR::EHL::ConvNorm normtypeinc_;     //!< convergence check for increments
+    enum INPAR::EHL::ConvNorm normtyperhs_;     //!< convergence check for residual forces
+    enum INPAR::STR::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
     enum INPAR::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
     enum INPAR::LUBRICATION::ConvNorm normtypeprei_;  //!< convergence check for residual pressures
-    enum INPAR::LUBRICATION::ConvNorm normtypelubricationrhs_;  //!< convergence check for residual lubrication forces
+    enum INPAR::LUBRICATION::ConvNorm
+        normtypelubricationrhs_;  //!< convergence check for residual lubrication forces
 
     enum INPAR::EHL::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
 
-    enum INPAR::EHL::VectorNorm iternorm_;  //!< vector norm to check EHL values with
+    enum INPAR::EHL::VectorNorm iternorm_;     //!< vector norm to check EHL values with
     enum INPAR::EHL::VectorNorm iternormstr_;  //!< vector norm to check structural values with
-    enum INPAR::EHL::VectorNorm iternormlubrication_;  //!< vector norm to check lubrication values with
+    enum INPAR::EHL::VectorNorm
+        iternormlubrication_;  //!< vector norm to check lubrication values with
 
-    double tolinc_;  //!< tolerance for increment
-    double tolrhs_;  //!< tolerance for rhs
-    double toldisi_;  //!< tolerance for displacement increments
-    double tolstrrhs_;  //!< tolerance for structural rhs
-    double tolprei_;  //!< tolerance for pressure increments
+    double tolinc_;             //!< tolerance for increment
+    double tolrhs_;             //!< tolerance for rhs
+    double toldisi_;            //!< tolerance for displacement increments
+    double tolstrrhs_;          //!< tolerance for structural rhs
+    double tolprei_;            //!< tolerance for pressure increments
     double tollubricationrhs_;  //!< tolerance for lubrication rhs
 
-    double normrhs_;  //!< norm of residual forces
-    double normrhsiter0_; //!< norm of residual force of 1st iteration
-    double norminc_;  //!< norm of residual unknowns
-    double norminciter0_;  //!< norm of residual unknowns of 1st iteration
-    double normdisi_;  //!< norm of residual displacements
-    double normdisiiter0_;  //!< norm of residual displacements of 1st iteration
-    double normstrrhs_;  //!< norm of structural residual forces
-    double normstrrhsiter0_;  //!< norm of structural residual forces of 1st iteration
-    double normprei_;  //!< norm of residual pressures
-    double normpreiiter0_;  //!< norm of residual pressures of 1st iteration
-    double normlubricationrhs_;  //!< norm of lubrication residual forces
+    double normrhs_;                  //!< norm of residual forces
+    double normrhsiter0_;             //!< norm of residual force of 1st iteration
+    double norminc_;                  //!< norm of residual unknowns
+    double norminciter0_;             //!< norm of residual unknowns of 1st iteration
+    double normdisi_;                 //!< norm of residual displacements
+    double normdisiiter0_;            //!< norm of residual displacements of 1st iteration
+    double normstrrhs_;               //!< norm of structural residual forces
+    double normstrrhsiter0_;          //!< norm of structural residual forces of 1st iteration
+    double normprei_;                 //!< norm of residual pressures
+    double normpreiiter0_;            //!< norm of residual pressures of 1st iteration
+    double normlubricationrhs_;       //!< norm of lubrication residual forces
     double normlubricationrhsiter0_;  //!< norm of lubrication residual forces of 1st iteration
 
-    int iter_;  //!< iteration step
+    int iter_;     //!< iteration step
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iteration
 
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
-    Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
-    double dtsolve_; //!< linear solver time
+    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;           //!< linear solver time
     //@}
 
     //! @name Various global forces
@@ -392,110 +370,115 @@ namespace EHL
 
     //! @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;  //!< sum of absolute values of the rows of the structural block
-    Teuchos::RCP<Epetra_Vector> scolsum_;  //!< sum of absolute values of the column of the structural block
-    Teuchos::RCP<Epetra_Vector> lrowsum_;  //!< sum of absolute values of the rows of the lubrication block
-    Teuchos::RCP<Epetra_Vector> lcolsum_;  //!< sum of absolute values of the column of the lubrication block
+    Teuchos::RCP<Epetra_Vector>
+        srowsum_;  //!< sum of absolute values of the rows of the structural block
+    Teuchos::RCP<Epetra_Vector>
+        scolsum_;  //!< sum of absolute values of the column of the structural block
+    Teuchos::RCP<Epetra_Vector>
+        lrowsum_;  //!< sum of absolute values of the rows of the lubrication block
+    Teuchos::RCP<Epetra_Vector>
+        lcolsum_;  //!< sum of absolute values of the column of the lubrication block
 
     //@}
 
-  }; // Monolithic
+  };  // Monolithic
 
 
-//  class MortarCellInterface : public DRT::SingletonDestruction
-//  {
-//    public:
-//
-//    //! evaluate single mortar integration cell of particular slave-side and master-side discretization types
-//    virtual void Evaluate(
-//        Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-//        Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-//        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
-//        Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
-//        Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
-//        const DRT::Discretization&           idiscret,          //!< interface discretization
-//        const Teuchos::ParameterList&        params,            //!< parameter list
-//        DRT::Element&               slaveelement,      //!< slave-side mortar element
-//        DRT::Element&               masterelement,     //!< master-side mortar element
-//        MORTAR::IntCell&                     cell,              //!< mortar integration cell
-//        DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
-//        DRT::Element::LocationArray&         la_master          //!< master-side location array
-//        )=0;
-//
-//    protected:
-//
-//      //! protected constructor for singletons
-//      MortarCellInterface(){};
-//
-//      //! protected destructor for singletons
-//      virtual ~MortarCellInterface(){return;};
-//  };
-//
-//  template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
-//  class MortarCellCalc : public MortarCellInterface
-//  {
-//    public:
-//
-//      //! singleton access method
-//      static MortarCellCalc<distypeS,distypeM>* Instance(
-//          bool create = true);
-//
-//      //! singleton destruction
-//      virtual void Done();
-//
-//      //! evaluate single mortar integration cell of particular slave-side and master-side discretization types
-//      virtual void Evaluate(
-//          Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-//          Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-//          Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
-//          Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
-//          Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
-//          const DRT::Discretization&           idiscret,          //!< interface discretization
-//          const Teuchos::ParameterList&        params,            //!< parameter list
-//          DRT::Element&               slaveelement,      //!< slave-side mortar element
-//          DRT::Element&               masterelement,     //!< master-side mortar element
-//          MORTAR::IntCell&                     cell,              //!< mortar integration cell
-//          DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
-//          DRT::Element::LocationArray&         la_master          //!< master-side location array
-//          );
-//
-//    protected:
-//
-//      //! protected constructor for singletons
-//      MortarCellCalc(){};
-//
-//  }; // class MortarCellCalc
-//
-//  class MortarCellFactory
-//  {
-//    public:
-//
-//      //! constructor
-//      MortarCellFactory(){return;};
-//
-//      //! destructor
-//      virtual ~MortarCellFactory(){return;};
-//
-//      //! provide instance of mortar cell evaluation class of particular slave-side discretization type
-//      static MortarCellInterface* MortarCellCalc(
-//          const DRT::Element&        slaveelement,    //!< slave-side mortar element
-//          const DRT::Element&        masterelement   //!< master-side mortar element
-//          );
-//
-//    private:
-//
-//      //! provide instance of mortar cell evaluation class of particular slave-side and master-side discretization types
-//      template<DRT::Element::DiscretizationType distypeS>
-//      static MortarCellInterface* MortarCellCalc(
-//          const DRT::Element&        masterelement        //!< master-side mortar element
-//          );
-//
-//      //! provide specific instance of mortar cell evaluation class
-//      template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
-//      static MortarCellInterface* MortarCellCalc();
-//
-//  }; // class MortarCellFactory
-} // namespace EHL
+  //  class MortarCellInterface : public DRT::SingletonDestruction
+  //  {
+  //    public:
+  //
+  //    //! evaluate single mortar integration cell of particular slave-side and master-side
+  //    discretization types virtual void Evaluate(
+  //        Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
+  //        Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+  //        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
+  //        Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
+  //        Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
+  //        const DRT::Discretization&           idiscret,          //!< interface discretization
+  //        const Teuchos::ParameterList&        params,            //!< parameter list
+  //        DRT::Element&               slaveelement,      //!< slave-side mortar element
+  //        DRT::Element&               masterelement,     //!< master-side mortar element
+  //        MORTAR::IntCell&                     cell,              //!< mortar integration cell
+  //        DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
+  //        DRT::Element::LocationArray&         la_master          //!< master-side location array
+  //        )=0;
+  //
+  //    protected:
+  //
+  //      //! protected constructor for singletons
+  //      MortarCellInterface(){};
+  //
+  //      //! protected destructor for singletons
+  //      virtual ~MortarCellInterface(){return;};
+  //  };
+  //
+  //  template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+  //  class MortarCellCalc : public MortarCellInterface
+  //  {
+  //    public:
+  //
+  //      //! singleton access method
+  //      static MortarCellCalc<distypeS,distypeM>* Instance(
+  //          bool create = true);
+  //
+  //      //! singleton destruction
+  //      virtual void Done();
+  //
+  //      //! evaluate single mortar integration cell of particular slave-side and master-side
+  //      discretization types virtual void Evaluate(
+  //          Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
+  //          Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+  //          Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
+  //          Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual
+  //          vector Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side
+  //          residual vector const DRT::Discretization&           idiscret,          //!< interface
+  //          discretization const Teuchos::ParameterList&        params,            //!< parameter
+  //          list DRT::Element&               slaveelement,      //!< slave-side mortar element
+  //          DRT::Element&               masterelement,     //!< master-side mortar element
+  //          MORTAR::IntCell&                     cell,              //!< mortar integration cell
+  //          DRT::Element::LocationArray&         la_slave,          //!< slave-side location array
+  //          DRT::Element::LocationArray&         la_master          //!< master-side location
+  //          array
+  //          );
+  //
+  //    protected:
+  //
+  //      //! protected constructor for singletons
+  //      MortarCellCalc(){};
+  //
+  //  }; // class MortarCellCalc
+  //
+  //  class MortarCellFactory
+  //  {
+  //    public:
+  //
+  //      //! constructor
+  //      MortarCellFactory(){return;};
+  //
+  //      //! destructor
+  //      virtual ~MortarCellFactory(){return;};
+  //
+  //      //! provide instance of mortar cell evaluation class of particular slave-side
+  //      discretization type static MortarCellInterface* MortarCellCalc(
+  //          const DRT::Element&        slaveelement,    //!< slave-side mortar element
+  //          const DRT::Element&        masterelement   //!< master-side mortar element
+  //          );
+  //
+  //    private:
+  //
+  //      //! provide instance of mortar cell evaluation class of particular slave-side and
+  //      master-side discretization types template<DRT::Element::DiscretizationType distypeS>
+  //      static MortarCellInterface* MortarCellCalc(
+  //          const DRT::Element&        masterelement        //!< master-side mortar element
+  //          );
+  //
+  //      //! provide specific instance of mortar cell evaluation class
+  //      template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType
+  //      distypeM> static MortarCellInterface* MortarCellCalc();
+  //
+  //  }; // class MortarCellFactory
+}  // namespace EHL
 
 
 #endif /* SRC_DRT_EHL_EHL_MONOLITHIC_H_ */

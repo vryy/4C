@@ -20,25 +20,23 @@
 
 namespace INPAR
 {
-
-namespace TUTORIAL
-{
-
-/*----------------------------------------------------------------------*
- | Coupling Methods                                                     |
- *----------------------------------------------------------------------*/
-enum _TUTORIAL_TYPE_
-{
-  nonlinear_truss,
-  partitioned_fixed_point_scheme,
-  struct_ale_coupling
-};
+  namespace TUTORIAL
+  {
+    /*----------------------------------------------------------------------*
+     | Coupling Methods                                                     |
+     *----------------------------------------------------------------------*/
+    enum _TUTORIAL_TYPE_
+    {
+      nonlinear_truss,
+      partitioned_fixed_point_scheme,
+      struct_ale_coupling
+    };
 
 
-/// set the tutorial parameters
-void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    /// set the tutorial parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}// namespace TUTORIAL
-}// namespace INPAR
+  }  // namespace TUTORIAL
+}  // namespace INPAR
 /*----------------------------------------------------------------------*/
 #endif /* INPAR_TUTORIAL_H_ */

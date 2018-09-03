@@ -26,7 +26,6 @@
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Generalised-alpha time integration
@@ -44,12 +43,10 @@ namespace STR
    */
   class TimIntGenAlpha : public TimIntImpl
   {
-
     //! Zienkiewicz-Xie auxiliary scheme is friend
     friend class TimAdaZienXie;
 
-  public:
-
+   public:
     //! verify if given coefficients are in admissible range;
     //! prints also info to STDOUT
     void VerifyCoeff();
@@ -61,16 +58,14 @@ namespace STR
     //@{
 
     //! Constructor
-    TimIntGenAlpha
-    (
-      const Teuchos::ParameterList& timeparams,  //!< time params
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntGenAlpha(const Teuchos::ParameterList& timeparams,  //!< time params
+        const Teuchos::ParameterList& ioparams,               //!< ioflags
+        const Teuchos::ParameterList& sdynparams,             //!< input parameters
+        const Teuchos::ParameterList& xparams,                //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,             //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                  //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,           //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output         //!< the output
     );
 
     //! Destructor
@@ -97,12 +92,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -134,10 +126,7 @@ namespace STR
     //@{
 
     //! Return name
-    enum INPAR::STR::DynamicType MethodName() const
-    {
-      return INPAR::STR::dyna_genalpha;
-    }
+    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_genalpha; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -168,16 +157,15 @@ namespace STR
     virtual double MethodLinErrCoeffDis2() const
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1.0/6.0 - beta_ + alphaf_/2.0 - alpham_/2.0;
+      return 1.0 / 6.0 - beta_ + alphaf_ / 2.0 - alpham_ / 2.0;
     }
 
     //! 3rd order linear error coefficient of displacements
     virtual double MethodLinErrCoeffDis3() const
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1./24.
-             - beta_/2.*(1.-2*alphaf_+2.*alpham_)
-             - 1./4.*(alphaf_-alpham_)*(1.-2.*alpham_);
+      return 1. / 24. - beta_ / 2. * (1. - 2 * alphaf_ + 2. * alpham_) -
+             1. / 4. * (alphaf_ - alpham_) * (1. - 2. * alpham_);
     }
 
     //! Return linear error coefficient of velocities
@@ -193,16 +181,15 @@ namespace STR
     virtual double MethodLinErrCoeffVel1() const
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1.0/2.0 - gamma_ + alphaf_ - alpham_;
+      return 1.0 / 2.0 - gamma_ + alphaf_ - alpham_;
     }
 
     //! 2nd order linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel2() const
     {
       // at least true for am<1/2 and large enough n->infty
-      return 1./6.
-             - gamma_/2.*(1.-2*alphaf_+2.*alpham_)
-             - 1./2.*(alphaf_-alpham_)*(1.-2.*alpham_);
+      return 1. / 6. - gamma_ / 2. * (1. - 2 * alphaf_ + 2. * alpham_) -
+             1. / 2. * (alphaf_ - alpham_) * (1. - 2. * alpham_);
     }
 
     //! return time integration factor
@@ -272,16 +259,10 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
-    {
-      return fext_;
-    }
+    Teuchos::RCP<Epetra_Vector> Fext() { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
 
     //@}
 
@@ -294,17 +275,14 @@ namespace STR
     //! Build total residual vector and effective tangential stiffness
     //! matrix in case of nonlinear, rotational inertia effects
     void BuildResStiffNLMassRot(Teuchos::RCP<Epetra_Vector> fres_,
-                                Teuchos::RCP<Epetra_Vector> fextn_,
-                                Teuchos::RCP<Epetra_Vector> fintn_,
-                                Teuchos::RCP<Epetra_Vector> finertn_,
-                                Teuchos::RCP<LINALG::SparseOperator> stiff_,
-                                Teuchos::RCP<LINALG::SparseOperator> mass_);
+        Teuchos::RCP<Epetra_Vector> fextn_, Teuchos::RCP<Epetra_Vector> fintn_,
+        Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<LINALG::SparseOperator> stiff_,
+        Teuchos::RCP<LINALG::SparseOperator> mass_);
 
-  //!Check, if there are solely beam elements in the whole discretization
-  bool SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis);
+    //! Check, if there are solely beam elements in the whole discretization
+    bool SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis);
 
-  protected:
-
+   protected:
     //! equal operator is NOT wanted
     TimIntGenAlpha operator=(const TimIntGenAlpha& old);
 
@@ -335,11 +313,11 @@ namespace STR
     //! Strong numerical dissipation at \f$\rho_\infty=0.5\f$
     //! \f[ \beta=4/9, \gamma=10/12, \alpha_m=0, \alpha_f=1/3 \f]
     //@{
-    double beta_;  //!< factor (0,1/2]
-    double gamma_;  //!< factor (0,1]
-    double alphaf_;  //!< factor [0,1)
-    double alpham_;  //!< factor [-1,1)
-    double rho_inf_; //!< factor[0,1]
+    double beta_;     //!< factor (0,1/2]
+    double gamma_;    //!< factor (0,1]
+    double alphaf_;   //!< factor [0,1)
+    double alpham_;   //!< factor [-1,1)
+    double rho_inf_;  //!< factor[0,1]
     //@}
 
     //! @name Global mid-state vectors
@@ -359,15 +337,15 @@ namespace STR
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fint_;   //!< internal force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fintm_;  //!< internal mid-force
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fext_;   //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextm_;  //!< external mid-force
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertia force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> finert_;   //!< inertia force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> finertm_;  //!< inertia mid-force
     Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertia force at \f$t_{n+1}\f$
 

@@ -19,19 +19,14 @@
                           Constructor
    -------------------------------------------------------------------- */
 LINALG::LinalgProjectedOperator::LinalgProjectedOperator(
-  Teuchos::RCP<Epetra_Operator>         A      ,
-  bool                                  project,
-  Teuchos::RCP<LINALG::KrylovProjector> projector
-  ) :
-  project_(project),
-  A_      (A)      ,
-  projector_(projector)
+    Teuchos::RCP<Epetra_Operator> A, bool project, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    : project_(project), A_(A), projector_(projector)
 {
-  if (project_ && (projector==Teuchos::null))
+  if (project_ && (projector == Teuchos::null))
     dserror("Kernel projection enabled but got no projector object");
 
   return;
-} // LINALG::LinalgProjectedOperator::LinalgProjectedOperator
+}  // LINALG::LinalgProjectedOperator::LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
                            Destructor
@@ -39,28 +34,25 @@ LINALG::LinalgProjectedOperator::LinalgProjectedOperator(
 LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
 {
   return;
-} // LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
+}  // LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
                       (Modified) Apply call
    -------------------------------------------------------------------- */
-int LINALG::LinalgProjectedOperator::Apply(
-  const Epetra_MultiVector &X,
-  Epetra_MultiVector       &Y
-  ) const
+int LINALG::LinalgProjectedOperator::Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
-  int ierr=0;
+  int ierr = 0;
 
   // Apply the operator
-  ierr=A_->Apply(X,Y);
+  ierr = A_->Apply(X, Y);
 
   // if necessary, project out matrix kernel
-  if(project_)
+  if (project_)
   {
-    //int ierr2=0;
+    // int ierr2=0;
     /*ierr2 = */
     projector_->ApplyPT(Y);
   }
 
-  return(ierr);
-} // LINALG::LinalgProjectedOperator::Apply
+  return (ierr);
+}  // LINALG::LinalgProjectedOperator::Apply

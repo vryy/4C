@@ -176,7 +176,7 @@ void test_tet10_quad9_moved();
 void test_tet4_quad4_double();
 void test_tet4_tri3_double();
 void test_benedikt1();
-//void test_christoph_1();
+// void test_christoph_1();
 
 void test_ls_hex8_florian1();
 void test_ls_hex8_florian2();
@@ -208,15 +208,16 @@ void test_ls_hex8_touch();
 void test_ls_hex8_between();
 void test_ls_hex8_experiment();
 void test_ls_hex8_experiment_magnus();
-void test_ls_mesh_hex8_simple(); //Same cut with LS and mesh
-void test_ls_hex8_magnus1();  //Loss of volume-cell     (prec 24)
-void test_ls_hex8_magnus12(); //Not loss of volume cell (prec 16)
+void test_ls_mesh_hex8_simple();  // Same cut with LS and mesh
+void test_ls_hex8_magnus1();      // Loss of volume-cell     (prec 24)
+void test_ls_hex8_magnus12();     // Not loss of volume cell (prec 16)
 void test_ls_hex8_magnus2();
 void test_ls_hex8_magnus3();
 void test_ls_hex8_magnus4();
-void test_ls_hex8_magnus5();  //Qhull QbB input fail in sphere
-void test_ls_hex8_magnus6();  //Variable surftens issue with Combust -> Issue with cut in local coord
-void test_ls_hex8_magnus7();  //Problem with Global Cut with DD
+void test_ls_hex8_magnus5();  // Qhull QbB input fail in sphere
+void test_ls_hex8_magnus6();  // Variable surftens issue with Combust -> Issue with cut in local
+                              // coord
+void test_ls_hex8_magnus7();  // Problem with Global Cut with DD
 void test_ls_hex8_tes_dd_simple();
 
 
@@ -289,23 +290,23 @@ void test_hex8quad4selfcut92();
 
 void test_hex8quad4alignedEdges();
 
-typedef void ( *testfunct )();
+typedef void (*testfunct)();
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int runtests( char ** argv, const std::map<std::string, testfunct> & functable, std::string testname )
+int runtests(char** argv, const std::map<std::string, testfunct>& functable, std::string testname)
 {
   bool select_testcases = testname.find("(R)") != std::string::npos;
   int counter = 0;
-  if (select_testcases)
-    testname.erase(0,3);
+  if (select_testcases) testname.erase(0, 3);
 
-  if ( testname == "(all)" || select_testcases)
+  if (testname == "(all)" || select_testcases)
   {
     std::vector<std::string> failures;
     std::vector<std::string> msgs;
 
-    for ( std::map<std::string, testfunct>::const_iterator i=functable.begin(); i!=functable.end(); ++i )
+    for (std::map<std::string, testfunct>::const_iterator i = functable.begin();
+         i != functable.end(); ++i)
     {
       try
       {
@@ -313,27 +314,26 @@ int runtests( char ** argv, const std::map<std::string, testfunct> & functable, 
         {
           std::cout << "Testing " << i->first << " ...\n";
           counter++;
-          ( *i->second )();
+          (*i->second)();
         }
       }
-      catch ( std::runtime_error & err )
+      catch (std::runtime_error& err)
       {
         std::cout << "FAILED: " << err.what() << "\n";
-        failures.push_back( i->first );
-        msgs.push_back( err.what() );
+        failures.push_back(i->first);
+        msgs.push_back(err.what());
       }
     }
 
-    if ( failures.size() > 0 )
+    if (failures.size() > 0)
     {
       std::cout << "\n" << failures.size() << " out of " << counter << " tests failed.\n";
-      for ( std::vector<std::string>::iterator i=failures.begin(); i!=failures.end(); ++i )
+      for (std::vector<std::string>::iterator i = failures.begin(); i != failures.end(); ++i)
       {
-        std::string & txt = *i;
+        std::string& txt = *i;
         std::cout << "    " << txt;
-        for ( unsigned j=0; j<40-txt.length(); ++j )
-          std::cout << " ";
-        std::cout << "(" << msgs[i-failures.begin()] << ")"
+        for (unsigned j = 0; j < 40 - txt.length(); ++j) std::cout << " ";
+        std::cout << "(" << msgs[i - failures.begin()] << ")"
                   << "\n";
       }
     }
@@ -345,15 +345,15 @@ int runtests( char ** argv, const std::map<std::string, testfunct> & functable, 
   }
   else
   {
-    std::map<std::string, testfunct>::const_iterator i = functable.find( testname );
-    if ( i==functable.end() )
+    std::map<std::string, testfunct>::const_iterator i = functable.find(testname);
+    if (i == functable.end())
     {
       std::cerr << argv[0] << ": test '" << testname << "' not found\n";
       return 1;
     }
     else
     {
-      ( *i->second )();
+      (*i->second)();
       return 0;
     }
   }
@@ -361,31 +361,31 @@ int runtests( char ** argv, const std::map<std::string, testfunct> & functable, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SetProblemDimension( const std::map<std::string, testfunct> & functable )
+void SetProblemDimension(const std::map<std::string, testfunct>& functable)
 {
-  DRT::Problem & problem = ( *DRT::Problem::Instance() );
-  Teuchos::RCP<Teuchos::ParameterList> pptr = Teuchos::rcp( new Teuchos::ParameterList() );
-  Teuchos::ParameterList & size_params = pptr->sublist( "PROBLEM SIZE", false );
+  DRT::Problem& problem = (*DRT::Problem::Instance());
+  Teuchos::RCP<Teuchos::ParameterList> pptr = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::ParameterList& size_params = pptr->sublist("PROBLEM SIZE", false);
   int probdim = 3;
-//  for ( std::map<std::string, testfunct>::const_iterator cit=functable.begin();
-//      cit!=functable.end(); ++cit )
-//  {
-//
-//  }
-  size_params.set<int>( "DIM", probdim );
+  //  for ( std::map<std::string, testfunct>::const_iterator cit=functable.begin();
+  //      cit!=functable.end(); ++cit )
+  //  {
+  //
+  //  }
+  size_params.set<int>("DIM", probdim);
 
   // set the parameter list in the global problem
-  problem.setParameterList( pptr );
+  problem.setParameterList(pptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int main( int argc, char ** argv )
+int main(int argc, char** argv)
 {
-  MPI_Init( &argc, &argv );
-  //MPI::Init( argc, argv );
+  MPI_Init(&argc, &argv);
+  // MPI::Init( argc, argv );
 
-  //feenableexcept( FE_INVALID | FE_DIVBYZERO );
+  // feenableexcept( FE_INVALID | FE_DIVBYZERO );
 
   std::map<std::string, testfunct> functable;
 
@@ -424,13 +424,13 @@ int main( int argc, char ** argv )
 
   // Cells within cells without contact to any surface are not supported.
   //
-  //functable["hex8_hex8_inside"] = test_hex8_hex8_inside;
+  // functable["hex8_hex8_inside"] = test_hex8_hex8_inside;
 
-  //functable["hex8_quad4_schnitt"] = test_hex8_quad4_schnitt;
+  // functable["hex8_quad4_schnitt"] = test_hex8_quad4_schnitt;
   functable["hex8_quad4_touch4"] = test_hex8_quad4_touch4;
   functable["hex8_quad4_touch5"] = test_hex8_quad4_touch5;
   functable["hex8_quad4_touch6"] = test_hex8_quad4_touch6;
-  //functable["hex8_quad4_touch7"] = test_hex8_quad4_touch7;
+  // functable["hex8_quad4_touch7"] = test_hex8_quad4_touch7;
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
   functable["position2d"] = test_position2d;
 
@@ -493,7 +493,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_alex8"] = test_hex8_quad4_alex8;
   functable["tet4_quad4_alex9"] = test_tet4_quad4_alex9;
   functable["tet4_quad4_alex10"] = test_tet4_quad4_alex10;
-  //functable["tet4_quad4_alex11"] = test_tet4_quad4_alex11;
+  // functable["tet4_quad4_alex11"] = test_tet4_quad4_alex11;
   functable["hex8_quad4_alex12"] = test_hex8_quad4_alex12;
   functable["hex8_quad4_alex13"] = test_hex8_quad4_alex13;
   functable["hex8_quad4_alex14"] = test_hex8_quad4_alex14;
@@ -574,13 +574,14 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_shadan3"] = test_hex8_quad4_shadan3;
   // Switched this cut-test to direct divergence. It is failing some times...
   //   Specifically when all cut-tests are run....
-  //functable["hex8_quad4_shadan4"] = test_hex8_quad4_shadan4; // switch off this testcase for the moment. failing as a result of commit 22818. We need a closer look into that!
+  // functable["hex8_quad4_shadan4"] = test_hex8_quad4_shadan4; // switch off this testcase for the
+  // moment. failing as a result of commit 22818. We need a closer look into that!
   functable["hex8_quad4_shadan5"] = test_hex8_quad4_shadan5;
   functable["shadan6"] = test_shadan6;
-  //functable["hex8_tri3_ursula1"] = test_hex8_tri3_ursula1;
+  // functable["hex8_tri3_ursula1"] = test_hex8_tri3_ursula1;
   functable["hex8_quad4_mesh_edgecut"] = test_hex8_quad4_mesh_edgecut;
   functable["hex8_quad4_mesh_edgecut2"] = test_hex8_quad4_mesh_edgecut2;
-  //functable["hex8_quad4_mesh_inner"] = test_hex8_quad4_mesh_inner;
+  // functable["hex8_quad4_mesh_inner"] = test_hex8_quad4_mesh_inner;
   functable["hex8_quad4_mesh_many"] = test_hex8_quad4_mesh_many;
   functable["hex27_quad9_simple"] = test_hex27_quad9_simple;
   functable["hex20_quad9_simple"] = test_hex20_quad9_simple;
@@ -591,10 +592,12 @@ int main( int argc, char ** argv )
 #ifdef LOCAL
   functable["tet4_tri3_double"] = test_tet4_tri3_double;
 #else
-  std::cout << "functable[tet4_tri3_double] = test_tet4_tri3_double; RUNS INTO DSERROR IN GLOBAL CONFIGURATION!" << std::endl;
+  std::cout << "functable[tet4_tri3_double] = test_tet4_tri3_double; RUNS INTO DSERROR IN GLOBAL "
+               "CONFIGURATION!"
+            << std::endl;
 #endif
   functable["benedikt1"] = test_benedikt1;
-  //functable["test_christoph_1"] = test_christoph_1;
+  // functable["test_christoph_1"] = test_christoph_1;
 
   functable["ls_hex8_florian1"] = test_ls_hex8_florian1;
   functable["ls_hex8_florian2"] = test_ls_hex8_florian2;
@@ -618,7 +621,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
-  //functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
+  // functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
   functable["ls_hex8_simple5"] = test_ls_hex8_simple5;
   functable["ls_hex8_simple6"] = test_ls_hex8_simple6;
   functable["ls_hex8_simple7"] = test_ls_hex8_simple7;
@@ -634,7 +637,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_magnus4"] = test_ls_hex8_magnus4;
   functable["ls_hex8_magnus5"] = test_ls_hex8_magnus5;
   functable["ls_hex8_magnus6"] = test_ls_hex8_magnus6;
-  functable["ls_hex8_magnus7"] = test_ls_hex8_magnus7; //Issues in Global Cut for DD
+  functable["ls_hex8_magnus7"] = test_ls_hex8_magnus7;  // Issues in Global Cut for DD
   functable["ls_hex8_tes_dd_simple"] = test_ls_hex8_tes_dd_simple;
 
   functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
@@ -662,37 +665,38 @@ int main( int argc, char ** argv )
   functable["fluidfluid"] = test_fluidfluid;
   functable["fluidfluid2"] = test_fluidfluid2;
 
-  Teuchos::CommandLineProcessor clp( false );
+  Teuchos::CommandLineProcessor clp(false);
 
   std::string indent = "\t\t\t\t\t";
   std::stringstream doc;
   doc << "Available tests:\n"
       << indent << "(all)\n"
-      << indent << "put '(R)' in front of parts of a testname to test all matching cut_tests (e.g. (R)sc)!\n";
-  for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
+      << indent
+      << "put '(R)' in front of parts of a testname to test all matching cut_tests (e.g. (R)sc)!\n";
+  for (std::map<std::string, testfunct>::iterator i = functable.begin(); i != functable.end(); ++i)
   {
-    const std::string & name = i->first;
+    const std::string& name = i->first;
     doc << indent << name << "\n";
   }
 
   std::string testname = "(all)";
-  clp.setOption( "test", &testname, doc.str().c_str() );
+  clp.setOption("test", &testname, doc.str().c_str());
 
-  switch ( clp.parse( argc, argv ) )
+  switch (clp.parse(argc, argv))
   {
-  case Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL:
-    break;
-  case Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED:
-    return 0;
-  case Teuchos::CommandLineProcessor::PARSE_UNRECOGNIZED_OPTION:
-  default:
-    std::cerr << argv[0] << ": unrecognized option\n";
-    MPI_Finalize();
-    return 1;
+    case Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL:
+      break;
+    case Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED:
+      return 0;
+    case Teuchos::CommandLineProcessor::PARSE_UNRECOGNIZED_OPTION:
+    default:
+      std::cerr << argv[0] << ": unrecognized option\n";
+      MPI_Finalize();
+      return 1;
   }
 
-  SetProblemDimension( functable );
-  int result = runtests( argv, functable, testname );
+  SetProblemDimension(functable);
+  int result = runtests(argv, functable, testname);
   DRT::UTILS::GaussPointCache::Instance().Done();
   DRT::Problem::Done();
   MPI_Finalize();

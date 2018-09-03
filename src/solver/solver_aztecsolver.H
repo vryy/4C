@@ -20,9 +20,9 @@ Created on: Jul 4, 2011
 #include <MueLu_Level_fwd.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #include "solver_krylovsolver.H"
 
@@ -41,42 +41,34 @@ namespace LINALG
     /// kryolv subspace linear solvers (aztec) with right-side preconditioning
     class AztecSolver : public KrylovSolver
     {
-      public:
-
-      AztecSolver( const Epetra_Comm & comm, Teuchos::ParameterList & params, FILE * outfile );
+     public:
+      AztecSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
       virtual ~AztecSolver();
 
-      virtual void Setup(
-        Teuchos::RCP<Epetra_Operator>     matrix             ,
-        Teuchos::RCP<Epetra_MultiVector>       x             ,
-        Teuchos::RCP<Epetra_MultiVector>       b             ,
-        bool                             refactor            ,
-        bool                             reset               ,
-        Teuchos::RCP<LINALG::KrylovProjector> projector
-        );
+      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+          Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
+          Teuchos::RCP<LINALG::KrylovProjector> projector);
 
       virtual int Solve();
 
       //! return number of iterations
       int getNumIters() const { return numiters_; };
 
-      private:
-
+     private:
       //! the Krylov projector
       Teuchos::RCP<LINALG::KrylovProjector> projector_;
       //! an aztec maxiter status test
-      Teuchos::RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
+      Teuchos::RCP<AztecOO_StatusTestMaxIters> aztest_maxiter_;
       //! an aztec projected residual 2-norm convergence test
-      Teuchos::RCP<AztecOO_StatusTestProjResNorm>    aztest_norm2_;
+      Teuchos::RCP<AztecOO_StatusTestProjResNorm> aztest_norm2_;
       //! a test combination (for norm2 and maxiter)
-      Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo_;
+      Teuchos::RCP<AztecOO_StatusTestCombo> aztest_combo_;
       //! number of iterations
       int numiters_;
-
     };
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_AZTECSOLVER_H_ */

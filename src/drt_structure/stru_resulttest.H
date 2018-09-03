@@ -46,7 +46,7 @@ namespace STR
 */
 class StruResultTest : public DRT::ResultTest
 {
-public:
+ public:
   //! Constructor for time integrators of general kind
   //! \author bborn \date 06/08
   StruResultTest(STR::TimInt& tintegrator);
@@ -58,8 +58,7 @@ public:
   //!                             "accx", "accy", "accz"
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-private:
-
+ private:
   //! our discretisation
   Teuchos::RCP<DRT::Discretization> strudisc_;
   // our solution

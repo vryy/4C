@@ -24,19 +24,20 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& comm,
-                                                            const Teuchos::ParameterList& timeparams)
-  : ConstrMonolithic(comm,timeparams)
+FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : ConstrMonolithic(comm, timeparams)
 {
   // ---------------------------------------------------------------------------
   // FSI specific check of Dirichlet boundary conditions
   // ---------------------------------------------------------------------------
   // Create intersection of slave DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface
-  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
   intersectionmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(FluidField()->Interface()->FSICondMap());
-  Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+  Teuchos::RCP<Epetra_Map> intersectionmap =
+      LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   // Check whether the intersection is empty
   if (intersectionmap->NumGlobalElements() != 0)
@@ -49,25 +50,54 @@ FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& c
     // do not cause a conflict.
 
     std::stringstream errormsg;
-    errormsg  << "  +---------------------------------------------------------------------------------------------+" << std::endl
-              << "  |                DIRICHLET BOUNDARY CONDITIONS ON SLAVE SIDE OF FSI INTERFACE                 |" << std::endl
-              << "  +---------------------------------------------------------------------------------------------+" << std::endl
-              << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet boundary conditions.|" << std::endl
-              << "  |                                                                                             |" << std::endl
-              << "  | This is a fluid split scheme. Hence, master and slave field are chosen as follows:          |" << std::endl
-              << "  |     MASTER  = STRUCTURE                                                                     |" << std::endl
-              << "  |     SLAVE   = FLUID                                                                         |" << std::endl
-              << "  |                                                                                             |" << std::endl
-              << "  | Dirichlet boundary conditions were detected on slave interface degrees of freedom. Please   |" << std::endl
-              << "  | remove Dirichlet boundary conditions from the slave side of the FSI interface.              |" << std::endl
-              << "  | Only the master side of the FSI interface is allowed to carry Dirichlet boundary conditions.|" << std::endl
-              << "  +---------------------------------------------------------------------------------------------+" << std::endl;
+    errormsg << "  "
+                "+---------------------------------------------------------------------------------"
+                "------------+"
+             << std::endl
+             << "  |                DIRICHLET BOUNDARY CONDITIONS ON SLAVE SIDE OF FSI INTERFACE   "
+                "              |"
+             << std::endl
+             << "  "
+                "+---------------------------------------------------------------------------------"
+                "------------+"
+             << std::endl
+             << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet "
+                "boundary conditions.|"
+             << std::endl
+             << "  |                                                                               "
+                "              |"
+             << std::endl
+             << "  | This is a fluid split scheme. Hence, master and slave field are chosen as "
+                "follows:          |"
+             << std::endl
+             << "  |     MASTER  = STRUCTURE                                                       "
+                "              |"
+             << std::endl
+             << "  |     SLAVE   = FLUID                                                           "
+                "              |"
+             << std::endl
+             << "  |                                                                               "
+                "              |"
+             << std::endl
+             << "  | Dirichlet boundary conditions were detected on slave interface degrees of "
+                "freedom. Please   |"
+             << std::endl
+             << "  | remove Dirichlet boundary conditions from the slave side of the FSI "
+                "interface.              |"
+             << std::endl
+             << "  | Only the master side of the FSI interface is allowed to carry Dirichlet "
+                "boundary conditions.|"
+             << std::endl
+             << "  "
+                "+---------------------------------------------------------------------------------"
+                "------------+"
+             << std::endl;
 
     std::cout << errormsg.str();
   }
   // ---------------------------------------------------------------------------
 
-  sconT_ = Teuchos::rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(),81,false,true));
+  sconT_ = Teuchos::rcp(new LINALG::SparseMatrix(*conman_->GetConstraintMap(), 81, false, true));
 
   fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
@@ -102,13 +132,13 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystem()
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithicFluidSplit::CreateCombinedDofRowMap()
 {
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(StructureField()->DofRowMap());
   vecSpaces.push_back(FluidField()->DofRowMap());
   vecSpaces.push_back(AleField()->Interface()->OtherMap());
   vecSpaces.push_back(conman_->GetConstraintMap());
 
-  if (vecSpaces[0]->NumGlobalElements()==0)
+  if (vecSpaces[0]->NumGlobalElements() == 0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
 
   SetDofRowMaps(vecSpaces);
@@ -122,15 +152,11 @@ void FSI::ConstrMonolithicFluidSplit::SetupRHSResidual(Epetra_Vector& f)
 {
   const double scale = FluidField()->ResidualScaling();
 
-  SetupVector(f,
-    StructureField()->RHS(),
-    FluidField()->RHS(),
-    AleField()->RHS(),
-    conman_->GetError(),
-    scale);
+  SetupVector(f, StructureField()->RHS(), FluidField()->RHS(), AleField()->RHS(),
+      conman_->GetError(), scale);
 
   // add additional ale residual
-  Extractor().AddVector(*aleresidual_,2,f);
+  Extractor().AddVector(*aleresidual_, 2, f);
 
   return;
 }
@@ -150,29 +176,29 @@ void FSI::ConstrMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
 {
   Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blockf = FluidField()->BlockSystemMatrix();
 
-  const LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
-  const LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
+  const LINALG::SparseMatrix& fig = blockf->Matrix(0, 1);
+  const LINALG::SparseMatrix& fgg = blockf->Matrix(1, 1);
 
   Teuchos::RCP<const Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
   const double timescale = FluidField()->TimeScaling();
-  const double scale     = FluidField()->ResidualScaling();
+  const double scale = FluidField()->ResidualScaling();
 
   Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
 
-  fig.Apply(*fveln,*rhs);
-  rhs->Scale(timescale*Dt());
+  fig.Apply(*fveln, *rhs);
+  rhs->Scale(timescale * Dt());
 
   rhs = FluidField()->Interface()->InsertOtherVector(rhs);
-  Extractor().AddVector(*rhs,1,f);
+  Extractor().AddVector(*rhs, 1, f);
 
   rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
 
-  fgg.Apply(*fveln,*rhs);
-  rhs->Scale(scale*timescale*Dt());
+  fgg.Apply(*fveln, *rhs);
+  rhs->Scale(scale * timescale * Dt());
 
   rhs = FluidToStruct(rhs);
   rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
-  Extractor().AddVector(*rhs,0,f);
+  Extractor().AddVector(*rhs, 0, f);
 
   return;
 }
@@ -195,31 +221,30 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   /*----------------------------------------------------------------------*/
 
-  double scale     = FluidField()->ResidualScaling();
+  double scale = FluidField()->ResidualScaling();
   double timescale = FluidField()->TimeScaling();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField()->BlockSystemMatrix();
 
 
-  LINALG::SparseMatrix& fii = blockf->Matrix(0,0);
-  LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
-  LINALG::SparseMatrix& fgi = blockf->Matrix(1,0);
-  LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
+  LINALG::SparseMatrix& fii = blockf->Matrix(0, 0);
+  LINALG::SparseMatrix& fig = blockf->Matrix(0, 1);
+  LINALG::SparseMatrix& fgi = blockf->Matrix(1, 0);
+  LINALG::SparseMatrix& fgg = blockf->Matrix(1, 1);
   /*----------------------------------------------------------------------*/
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-  if (a==Teuchos::null)
-    dserror("expect ale block matrix");
+  if (a == Teuchos::null) dserror("expect ale block matrix");
 
-  LINALG::SparseMatrix& aii = a->Matrix(0,0);
-  LINALG::SparseMatrix& aig = a->Matrix(0,1);
+  LINALG::SparseMatrix& aii = a->Matrix(0, 0);
+  LINALG::SparseMatrix& aig = a->Matrix(0, 1);
   /*----------------------------------------------------------------------*/
   // structure part
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
-  //const std::string fname = "cfsstructmatrix.mtl";
-  //LINALG::PrintMatrixInMatlabFormat(fname,*(s->EpetraMatrix()));
+  // const std::string fname = "cfsstructmatrix.mtl";
+  // LINALG::PrintMatrixInMatlabFormat(fname,*(s->EpetraMatrix()));
 
 
   /*----------------------------------------------------------------------*/
@@ -227,119 +252,80 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   Teuchos::RCP<LINALG::SparseOperator> tmp = conman_->GetConstrMatrix();
   LINALG::SparseMatrix scon = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmp));
 
-  scon.Complete(*conman_->GetConstraintMap(),s->RangeMap());
+  scon.Complete(*conman_->GetConstraintMap(), s->RangeMap());
 
-  mat.Assign(0,3,LINALG::View,scon);
+  mat.Assign(0, 3, LINALG::View, scon);
 
   /*----------------------------------------------------------------------*/
   // fluid part
 
-//    // uncomplete because the fluid interface can have more connections than the
+  //    // uncomplete because the fluid interface can have more connections than the
   // structural one. (Tet elements in fluid can cause this.) We should do
-//   this just once...
+  //   this just once...
   s->UnComplete();
 
 
-  (*fggtransform_)(fgg,
-                   scale*timescale,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   *s,
-                   true,
-                   true);
+  (*fggtransform_)(fgg, scale * timescale, ADAPTER::CouplingSlaveConverter(coupsf),
+      ADAPTER::CouplingSlaveConverter(coupsf), *s, true, true);
 
-  mat.Assign(0,0,LINALG::View,*s);
+  mat.Assign(0, 0, LINALG::View, *s);
 
-  (*fgitransform_)(fgi,
-                   scale,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   mat.Matrix(0,1));
+  (*fgitransform_)(fgi, scale, ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 1));
 
-  (*figtransform_)(blockf->FullRowMap(),
-                   blockf->FullColMap(),
-                   fig,
-                   timescale,
-                   ADAPTER::CouplingSlaveConverter(coupsf),
-                   mat.Matrix(1,0));
+  (*figtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fig, timescale,
+      ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0));
 
-  mat.Matrix(1,1).Add(fii,false,1.,0.0);
+  mat.Matrix(1, 1).Add(fii, false, 1., 0.0);
   Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*FluidField()->Interface()->FSICondMap());
-  mat.Matrix(1,1).Add(*eye,false,1.,1.0);
+  mat.Matrix(1, 1).Add(*eye, false, 1., 1.0);
 
-  (*aigtransform_)(a->FullRowMap(),
-                   a->FullColMap(),
-                   aig,
-                   1.,
-                   ADAPTER::CouplingSlaveConverter(coupsa),
-                   mat.Matrix(2,0));
-  mat.Assign(2,2,LINALG::View,aii);
+  (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
+      ADAPTER::CouplingSlaveConverter(coupsa), mat.Matrix(2, 0));
+  mat.Assign(2, 2, LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
-  if (mmm!=Teuchos::null)
+  if (mmm != Teuchos::null)
   {
-    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
+    LINALG::SparseMatrix& fmii = mmm->Matrix(0, 0);
+    LINALG::SparseMatrix& fmgi = mmm->Matrix(1, 0);
 
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+    LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
+    LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
 
     // reuse transform objects to add shape derivative matrices to structural blocks
 
-    (*figtransform_)(blockf->FullRowMap(),
-                     blockf->FullColMap(),
-                     fmig,
-                     1.,
-                     ADAPTER::CouplingSlaveConverter(coupsf),
-                     mat.Matrix(1,0),
-                     false,
-                     true);
+    (*figtransform_)(blockf->FullRowMap(), blockf->FullColMap(), fmig, 1.,
+        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(1, 0), false, true);
 
-    (*fggtransform_)(fmgg,
-                     scale,
-                     ADAPTER::CouplingSlaveConverter(coupsf),
-                     ADAPTER::CouplingSlaveConverter(coupsf),
-                     mat.Matrix(0,0),
-                     false,
-                     true);
+    (*fggtransform_)(fmgg, scale, ADAPTER::CouplingSlaveConverter(coupsf),
+        ADAPTER::CouplingSlaveConverter(coupsf), mat.Matrix(0, 0), false, true);
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
-    (*fmiitransform_)(mmm->FullRowMap(),
-                      mmm->FullColMap(),
-                      fmii,
-                      1.,
-                      ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(1,2),
-                      false);
+    (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
+        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(1, 2), false);
 
-    (*fmgitransform_)(fmgi,
-                      scale,
-                      ADAPTER::CouplingSlaveConverter(coupsf),
-                      ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(0,2),
-                      false,
-                      false);
+    (*fmgitransform_)(fmgi, scale, ADAPTER::CouplingSlaveConverter(coupsf),
+        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 2), false, false);
   }
   /*----------------------------------------------------------------------*/
   // constraint part -> structure
 
   scon = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmp));
 
-  sconT_->Add(scon,true,1.0,0.0);
-  sconT_->Complete(scon.RangeMap(),scon.DomainMap());
-  mat.Assign(3,0,LINALG::View,*sconT_);
+  sconT_->Add(scon, true, 1.0, 0.0);
+  sconT_->Complete(scon.RangeMap(), scon.DomainMap());
+  mat.Assign(3, 0, LINALG::View, *sconT_);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
 
   // Finally, take care of Dirichlet boundary conditions
-  mat.ApplyDirichlet(*(dbcmaps_->CondMap()),true);
-
-
+  mat.ApplyDirichlet(*(dbcmaps_->CondMap()), true);
 }
 
 
@@ -349,25 +335,19 @@ void FSI::ConstrMonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> i
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
 
-  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap()),true));
+  Teuchos::RCP<Epetra_Vector> ConstraintInitialGuess =
+      Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap()), true));
 
-  SetupVector(*ig,
-              StructureField()->InitialGuess(),
-              FluidField()->InitialGuess(),
-              AleField()->InitialGuess(),
-              ConstraintInitialGuess,
-              0.0);
+  SetupVector(*ig, StructureField()->InitialGuess(), FluidField()->InitialGuess(),
+      AleField()->InitialGuess(), ConstraintInitialGuess, 0.0);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
-                                                    Teuchos::RCP<const Epetra_Vector> sv,
-                                                    Teuchos::RCP<const Epetra_Vector> fv,
-                                                    Teuchos::RCP<const Epetra_Vector> av,
-                                                    Teuchos::RCP<const Epetra_Vector> cv,
-                                                    double fluidscale)
+void FSI::ConstrMonolithicFluidSplit::SetupVector(Epetra_Vector& f,
+    Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv,
+    Teuchos::RCP<const Epetra_Vector> av, Teuchos::RCP<const Epetra_Vector> cv, double fluidscale)
 {
   // extract the inner and boundary dofs of all three fields
 
@@ -375,34 +355,34 @@ void FSI::ConstrMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   fov = FluidField()->Interface()->InsertOtherVector(fov);
   Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
-  if (fabs(fluidscale)>=1.0E-10)
+  if (fabs(fluidscale) >= 1.0E-10)
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> fcv = FluidField()->Interface()->ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(fcv));
+    Teuchos::RCP<Epetra_Vector> modsv =
+        StructureField()->Interface()->InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, fluidscale);
 
-    Extractor().InsertVector(*modsv,0,f);
+    Extractor().InsertVector(*modsv, 0, f);
   }
   else
   {
-    Extractor().InsertVector(*sv,0,f);
+    Extractor().InsertVector(*sv, 0, f);
   }
 
-  Extractor().InsertVector(*fov,1,f);
-  Extractor().InsertVector(*aov,2,f);
+  Extractor().InsertVector(*fov, 1, f);
+  Extractor().InsertVector(*aov, 2, f);
   Epetra_Vector modcv = *cv;
   modcv.Scale(-1.0);
-  Extractor().InsertVector(modcv,3,f);
+  Extractor().InsertVector(modcv, 3, f);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                                        Teuchos::RCP<const Epetra_Vector>& sx,
-                                                        Teuchos::RCP<const Epetra_Vector>& fx,
-                                                        Teuchos::RCP<const Epetra_Vector>& ax)
+    Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
+    Teuchos::RCP<const Epetra_Vector>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors");
 
@@ -410,12 +390,12 @@ void FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // structure vector and append it to the fluid and ale vector. (With the
   // right translation.)
 
-  sx = Extractor().ExtractVector(x,0);
+  sx = Extractor().ExtractVector(x, 0);
   Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
   // process fluid unknowns
 
-  Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
+  Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x, 1);
   fox = FluidField()->Interface()->ExtractOtherVector(fox);
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
@@ -427,7 +407,7 @@ void FSI::ConstrMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 
   // process ale unknowns
 
-  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
+  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x, 2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
   Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
   AleField()->Interface()->InsertVector(acx, 1, a);

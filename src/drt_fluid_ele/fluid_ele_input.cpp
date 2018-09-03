@@ -18,13 +18,12 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Fluid::ReadElement(const std::string& eletype,
-                                        const std::string& distype,
-                                        DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Fluid::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
   // set discretization type (setOptimalgaussrule is pushed into element
@@ -32,16 +31,15 @@ bool DRT::ELEMENTS::Fluid::ReadElement(const std::string& eletype,
   SetDisType(DRT::StringToDistype(distype));
 
   std::string na;
-  linedef->ExtractString("NA",na);
-  if (na=="ale" or na=="ALE" or na=="Ale")
+  linedef->ExtractString("NA", na);
+  if (na == "ale" or na == "ALE" or na == "Ale")
   {
     is_ale_ = true;
   }
-  else if (na=="euler" or na=="EULER" or na=="Euler")
+  else if (na == "euler" or na == "EULER" or na == "Euler")
     is_ale_ = false;
   else
     dserror("Reading of fluid element failed: Euler/Ale");
 
   return true;
 }
-

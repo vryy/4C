@@ -28,24 +28,22 @@
  *----------------------------------------------------------------------*/
 namespace PASI
 {
-
-namespace UTILS
-{
-
-//! modification of time parameter list
-void ChangeTimeParameter(
-    const Epetra_Comm& comm,                    //! local epetra communicator
-    const Teuchos::ParameterList& pasi_params,  //! input parameters for particle structure interaction
-    Teuchos::ParameterList& particle_params,    //! input parameters for particle dynamics
-    Teuchos::ParameterList& struct_params       //! input parameters for structural dynamics
+  namespace UTILS
+  {
+    //! modification of time parameter list
+    void ChangeTimeParameter(const Epetra_Comm& comm,  //! local epetra communicator
+        const Teuchos::ParameterList&
+            pasi_params,  //! input parameters for particle structure interaction
+        Teuchos::ParameterList& particle_params,  //! input parameters for particle dynamics
+        Teuchos::ParameterList& struct_params     //! input parameters for structural dynamics
     );
 
-//! prints the particle structure interaction logo on the screen
-void Logo();
+    //! prints the particle structure interaction logo on the screen
+    void Logo();
 
-} // namespace UTILS
+  }  // namespace UTILS
 
-} // namespace PASI
+}  // namespace PASI
 
 /*----------------------------------------------------------------------*/
-#endif // PASI_UTILS_H
+#endif  // PASI_UTILS_H

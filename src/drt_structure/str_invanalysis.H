@@ -31,7 +31,6 @@
 /* Structural Dynamics */
 namespace STR
 {
-
   /*====================================================================*/
   //! Inverse analysis of structures
   //!
@@ -41,4 +40,4 @@ namespace STR
 }  // namespace STR
 
 /*----------------------------------------------------------------------*/
-#endif  /* #ifndef STRUDYN_DIRECT_H */
+#endif /* #ifndef STRUDYN_DIRECT_H */

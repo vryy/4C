@@ -23,29 +23,24 @@
 // deactivate for ascii output. Only do this for debugging.
 //#define BIN_VTK_OUT
 
-PostVtkWriter::PostVtkWriter(PostField* field,
-                     const std::string &filename)
-:
-    PostWriterBase(field, filename),
-    currentPhase_(INIT),
-    time_ (std::numeric_limits<double>::min()),
-    timestep_ (0),
-    cycle_ (std::numeric_limits<int>::max())
+PostVtkWriter::PostVtkWriter(PostField *field, const std::string &filename)
+    : PostWriterBase(field, filename),
+      currentPhase_(INIT),
+      time_(std::numeric_limits<double>::min()),
+      timestep_(0),
+      cycle_(std::numeric_limits<int>::max())
 {
-  if(field->problem()->outputtype() == "bin")
-    write_binary_output_ = true; ///< write binary output
+  if (field->problem()->outputtype() == "bin")
+    write_binary_output_ = true;  ///< write binary output
   else
     write_binary_output_ = false;
-
 }
 
 
 
-void
-PostVtkWriter::WriteVtkHeader ()
+void PostVtkWriter::WriteVtkHeader()
 {
-  if (!currentout_)
-    dserror("Invalid output stream");
+  if (!currentout_) dserror("Invalid output stream");
 
   // TODO: might need BigEndian on some systems
   const std::string byteorder = "LittleEndian";
@@ -61,26 +56,26 @@ PostVtkWriter::WriteVtkHeader ()
   currentout_ << this->WriterOpeningTag() << "\n";
 
   // Print output time and cycle
-  if (time_ != std::numeric_limits<double>::min() ||
-      cycle_ != std::numeric_limits<int>::max()) {
+  if (time_ != std::numeric_limits<double>::min() || cycle_ != std::numeric_limits<int>::max())
+  {
     currentout_ << "<FieldData>\n";
 
     if (time_ != std::numeric_limits<double>::min())
-      currentout_ << "<DataArray type=\"Float32\" Name=\"TIME\" NumberOfTuples=\"1\" format=\"ascii\">"
-      << time_
-      << "</DataArray>\n";
+      currentout_
+          << "<DataArray type=\"Float32\" Name=\"TIME\" NumberOfTuples=\"1\" format=\"ascii\">"
+          << time_ << "</DataArray>\n";
     if (cycle_ != std::numeric_limits<int>::max())
-      currentout_ << "<DataArray type=\"Float32\" Name=\"CYCLE\" NumberOfTuples=\"1\" format=\"ascii\">"
-      << cycle_
-      << "</DataArray>\n";
+      currentout_
+          << "<DataArray type=\"Float32\" Name=\"CYCLE\" NumberOfTuples=\"1\" format=\"ascii\">"
+          << cycle_ << "</DataArray>\n";
 
     currentout_ << "</FieldData>\n";
   }
 
   // Also start master file on processor 0
-  if (myrank_ == 0) {
-    if (!currentmasterout_)
-      dserror("Invalid output stream");
+  if (myrank_ == 0)
+  {
+    if (!currentmasterout_) dserror("Invalid output stream");
 
     currentmasterout_ << "<?xml version=\"1.0\" ?> \n";
     currentmasterout_ << "<!-- \n";
@@ -97,26 +92,31 @@ PostVtkWriter::WriteVtkHeader ()
 
 
 
-void
-PostVtkWriter::WriteVtkFooter()
+void PostVtkWriter::WriteVtkFooter()
 {
-  if (!currentout_)
-    dserror("Invalid output stream");
+  if (!currentout_) dserror("Invalid output stream");
 
   // end the scalar fields
-  if (currentPhase_ == POINTS) {
+  if (currentPhase_ == POINTS)
+  {
     currentout_ << "  </PointData>\n";
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_ << "    </PPointData>\n";
     }
     currentPhase_ = FINAL;
-  } else if (currentPhase_ == CELLS) {
+  }
+  else if (currentPhase_ == CELLS)
+  {
     currentout_ << "  </CellData>\n";
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_ << "    </PCellData>\n";
     }
     currentPhase_ = FINAL;
-  } else {
+  }
+  else
+  {
     dserror("No data was written or writer was already in final phase.");
   }
 
@@ -129,12 +129,11 @@ PostVtkWriter::WriteVtkFooter()
 
   // Also start master file on processor 0
   typedef std::vector<std::string> pptags_type;
-  const pptags_type& ppiecetags = this->WriterPPieceTags();
-  if (myrank_ == 0) {
-    if (!currentmasterout_)
-      dserror("Invalid output stream");
-    if (numproc_ != ppiecetags.size())
-      dserror("Incorrect number of Pieces.");
+  const pptags_type &ppiecetags = this->WriterPPieceTags();
+  if (myrank_ == 0)
+  {
+    if (!currentmasterout_) dserror("Invalid output stream");
+    if (numproc_ != ppiecetags.size()) dserror("Incorrect number of Pieces.");
 
     for (pptags_type::const_iterator it = ppiecetags.begin(); it != ppiecetags.end(); ++it)
       currentmasterout_ << "    " << *it << "\n";
@@ -148,20 +147,15 @@ PostVtkWriter::WriteVtkFooter()
 
 
 
-void
-PostVtkWriter::WriteSpecialField (
-      SpecialFieldInterface &special,
-      PostResult& result,   ///< result group in the control file
-      const ResultType  restype,
-      const std::string &groupname,
-      const std::vector<std::string> &fieldnames,
-      const std::string &outinfo)
+void PostVtkWriter::WriteSpecialField(SpecialFieldInterface &special,
+    PostResult &result,  ///< result group in the control file
+    const ResultType restype, const std::string &groupname,
+    const std::vector<std::string> &fieldnames, const std::string &outinfo)
 {
   // Vtk writes everything into the same file, so create to each output the
   // pointer to the same output writer
-  std::vector<Teuchos::RCP<std::ofstream> > files(fieldnames.size());
-  for (unsigned int i=0; i<fieldnames.size(); ++i)
-    files[i] = Teuchos::rcp(&currentout_, false);
+  std::vector<Teuchos::RCP<std::ofstream>> files(fieldnames.size());
+  for (unsigned int i = 0; i < fieldnames.size(); ++i) files[i] = Teuchos::rcp(&currentout_, false);
 
   bool foundit = false;
   PostResult activeresult(result.field());
@@ -174,15 +168,13 @@ PostVtkWriter::WriteSpecialField (
     }
   }
   // should always find the correct result
-  if (!foundit)
-    dserror("Internal error when trying to identify output type %s",
-            groupname.c_str());
+  if (!foundit) dserror("Internal error when trying to identify output type %s", groupname.c_str());
 
   // jump to the correct location in the data vector. Some fields might only
   // be stored once, so need to catch that case as well
   bool once = false;
-  for (int i=0; i<timestep_; ++i)
-    if ( not activeresult.next_result(groupname) )
+  for (int i = 0; i < timestep_; ++i)
+    if (not activeresult.next_result(groupname))
     {
       once = true;
       break;
@@ -193,22 +185,18 @@ PostVtkWriter::WriteSpecialField (
     activeresult.next_result(groupname);
   }
 
-  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
-  special(files,activeresult,resultfilepos,groupname,fieldnames);
+  std::map<std::string, std::vector<std::ofstream::pos_type>> resultfilepos;
+  special(files, activeresult, resultfilepos, groupname, fieldnames);
 }
 
 
 
-void
-PostVtkWriter::WriteSolutionVector (const std::vector<double> &solution,
-                                const int ncomponents,
-                                const std::string &name,
-                                std::ofstream &file) const
+void PostVtkWriter::WriteSolutionVector(const std::vector<double> &solution, const int ncomponents,
+    const std::string &name, std::ofstream &file) const
 {
   file << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
-  if (ncomponents > 1)
-    file << " NumberOfComponents=\"" << ncomponents << "\"";
-  if(write_binary_output_)
+  if (ncomponents > 1) file << " NumberOfComponents=\"" << ncomponents << "\"";
+  if (write_binary_output_)
   {
     file << " format=\"binary\">\n";
     LIBB64::writeCompressedBlock(solution, file);
@@ -216,12 +204,11 @@ PostVtkWriter::WriteSolutionVector (const std::vector<double> &solution,
   else
   {
     file << " format=\"ascii\">\n";
-    int counter=1;
+    int counter = 1;
     for (std::vector<double>::const_iterator it = solution.begin(); it != solution.end(); ++it)
     {
       file << std::setprecision(15) << std::scientific << *it << " ";
-      if (counter%ncomponents==0)
-        file << '\n';
+      if (counter % ncomponents == 0) file << '\n';
       counter++;
     }
     file << std::resetiosflags(std::ios::scientific);
@@ -229,24 +216,19 @@ PostVtkWriter::WriteSolutionVector (const std::vector<double> &solution,
 
   file << "    </DataArray>\n";
 
-  std::ofstream & masterfile = const_cast<std::ofstream&>(currentmasterout_);
-  if (myrank_ == 0) {
+  std::ofstream &masterfile = const_cast<std::ofstream &>(currentmasterout_);
+  if (myrank_ == 0)
+  {
     masterfile << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"";
-    if (ncomponents > 1)
-      masterfile << " NumberOfComponents=\"" << ncomponents << "\"";
+    if (ncomponents > 1) masterfile << " NumberOfComponents=\"" << ncomponents << "\"";
     masterfile << " format=\"ascii\"/>\n";
   }
   return;
 }
 
 
-void
-PostVtkWriter::WriteResult(const std::string groupname,
-                       const std::string name,
-                       const ResultType restype,
-                       const int numdf,
-                       const int from,
-                       const bool fillzeros)
+void PostVtkWriter::WriteResult(const std::string groupname, const std::string name,
+    const ResultType restype, const int numdf, const int from, const bool fillzeros)
 {
   Teuchos::RCP<PostResult> result = Teuchos::rcp(new PostResult(field_));
   // only write results which exist in the first result step
@@ -263,8 +245,8 @@ PostVtkWriter::WriteResult(const std::string groupname,
   // jump to the correct location in the data vector. Some fields might only
   // be stored once, so need to catch that case as well
   bool once = false;
-  for (int i=0; i<timestep_; ++i)
-    if ( not result->next_result(groupname) )
+  for (int i = 0; i < timestep_; ++i)
+    if (not result->next_result(groupname))
     {
       once = true;
       break;
@@ -277,48 +259,48 @@ PostVtkWriter::WriteResult(const std::string groupname,
     result->next_result(groupname);
   }
 
-  if ( not (field_->problem()->SpatialApproximation()=="Polynomial" or
-            field_->problem()->SpatialApproximation()=="Meshfree" or
-            field_->problem()->SpatialApproximation()=="HDG" or
-            field_->problem()->SpatialApproximation()=="Nurbs"))
-    dserror("Only polynomial or meshfree or Nurbs approximations can be written with the VTK filter");
+  if (not(field_->problem()->SpatialApproximation() == "Polynomial" or
+          field_->problem()->SpatialApproximation() == "Meshfree" or
+          field_->problem()->SpatialApproximation() == "HDG" or
+          field_->problem()->SpatialApproximation() == "Nurbs"))
+    dserror(
+        "Only polynomial or meshfree or Nurbs approximations can be written with the VTK filter");
 
   // need dummy structure that is required for the generic writer interface
   // but not needed by the vtk writer.
-  std::map<std::string, std::vector<std::ofstream::pos_type> > dummy;
+  std::map<std::string, std::vector<std::ofstream::pos_type>> dummy;
 
   switch (restype)
-    {
+  {
     case dofbased:
-      {
-        const Teuchos::RCP<Epetra_Vector> data = result->read_result(groupname);
-        this->WriteDofResultStep(currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
-        break;
-      }
-    case nodebased:
-      {
-        const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
-        this->WriteNodalResultStep(currentout_, data, dummy, groupname, name, numdf);
-        break;
-      }
-    case elementbased:
-      {
-        const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
-        this->WriteElementResultStep(currentout_, data, dummy, groupname, name, numdf, from);
-        break;
-      }
-    default:
-      {
-        dserror("Result type not yet implemented");
-        break;
-      }
+    {
+      const Teuchos::RCP<Epetra_Vector> data = result->read_result(groupname);
+      this->WriteDofResultStep(currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
+      break;
     }
+    case nodebased:
+    {
+      const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
+      this->WriteNodalResultStep(currentout_, data, dummy, groupname, name, numdf);
+      break;
+    }
+    case elementbased:
+    {
+      const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
+      this->WriteElementResultStep(currentout_, data, dummy, groupname, name, numdf, from);
+      break;
+    }
+    default:
+    {
+      dserror("Result type not yet implemented");
+      break;
+    }
+  }
 }
 
 
 
-void
-PostVtkWriter::WriteFiles(PostFilterBase &filter)
+void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 {
   PostResult result = PostResult(field_);
 
@@ -326,13 +308,13 @@ PostVtkWriter::WriteFiles(PostFilterBase &filter)
   const std::vector<double> soltime = result.get_result_times(field_->name());
   ntdigits_ = LIBB64::ndigits(soltime.size());
   npdigits_ = LIBB64::ndigits(field_->discretization()->Comm().NumProc());
-  std::vector<std::pair<double, std::string> > filenames;
+  std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";
   boost::filesystem::create_directories(dirname);
 
-  for (timestep_=0; timestep_<(int)soltime.size(); ++timestep_) {
-
+  for (timestep_ = 0; timestep_ < (int)soltime.size(); ++timestep_)
+  {
     this->WriterPrepTimestep();
 
     {
@@ -342,16 +324,19 @@ PostVtkWriter::WriteFiles(PostFilterBase &filter)
     }
 
     time_ = soltime[timestep_];
-    filenames.push_back(std::pair<double,std::string>(time_, filenamebase_+this->WriterPSuffix()));
+    filenames.push_back(
+        std::pair<double, std::string>(time_, filenamebase_ + this->WriterPSuffix()));
 
     {
       std::ostringstream tmpstream;
-      tmpstream << dirname << "/" << filenamebase_ << "-" << std::setfill('0') << std::setw(npdigits_) << myrank_ << this->WriterSuffix();
+      tmpstream << dirname << "/" << filenamebase_ << "-" << std::setfill('0')
+                << std::setw(npdigits_) << myrank_ << this->WriterSuffix();
       currentout_.close();
       currentout_.open(tmpstream.str().c_str());
     }
 
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_.close();
       currentmasterout_.open((dirname + "/" + filenamebase_ + this->WriterPSuffix()).c_str());
     }
@@ -370,8 +355,7 @@ PostVtkWriter::WriteFiles(PostFilterBase &filter)
 
 
 
-void
-PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
+void PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 {
   std::vector<int> solstep;
   std::vector<double> soltime;
@@ -382,21 +366,25 @@ PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 
   unsigned int ntdigits = LIBB64::ndigits(soltime.size());
   unsigned int npdigits = LIBB64::ndigits(field_->discretization()->Comm().NumProc());
-  std::vector<std::pair<double, std::string> > filenames;
+  std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";
   boost::filesystem::create_directories(dirname);
 
-  for (timestep_=0; timestep_<(int)soltime.size(); ++timestep_) {
-    filenamebase_ = field_->name() + "-" + LIBB64::int2string(timestep_,ntdigits);
+  for (timestep_ = 0; timestep_ < (int)soltime.size(); ++timestep_)
+  {
+    filenamebase_ = field_->name() + "-" + LIBB64::int2string(timestep_, ntdigits);
     time_ = soltime[timestep_];
-    filenames.push_back(std::pair<double,std::string>(time_, filenamebase_+this->WriterPSuffix()));
+    filenames.push_back(
+        std::pair<double, std::string>(time_, filenamebase_ + this->WriterPSuffix()));
 
     currentout_.close();
-    currentout_.open((dirname + "/" + filenamebase_ + "-" +
-        LIBB64::int2string(myrank_,npdigits) + this->WriterSuffix()).c_str());
+    currentout_.open((dirname + "/" + filenamebase_ + "-" + LIBB64::int2string(myrank_, npdigits) +
+                      this->WriterSuffix())
+                         .c_str());
 
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_.close();
       currentmasterout_.open((dirname + "/" + filenamebase_ + this->WriterPSuffix()).c_str());
     }
@@ -419,12 +407,12 @@ PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 
 
 
-void
-PostVtkWriter::WriteVtkMasterFile(const std::vector<std::pair<double, std::string> > &filenames,
-                              const std::string &dirname) const
+void PostVtkWriter::WriteVtkMasterFile(
+    const std::vector<std::pair<double, std::string>> &filenames, const std::string &dirname) const
 {
   // finally, write a single masterfile
-  if (myrank_ == 0) {
+  if (myrank_ == 0)
+  {
     size_t pos = dirname.find_last_of("/");
     if (pos == dirname.npos)
       pos = 0ul;
@@ -439,20 +427,17 @@ PostVtkWriter::WriteVtkMasterFile(const std::vector<std::pair<double, std::strin
     masterfile << "<!--\n";
     masterfile << "-->\n";
 
-    masterfile
-        << "<VTKFile type=\"Collection\" version=\"0.1\" ByteOrder=\"LittleEndian\">\n";
+    masterfile << "<VTKFile type=\"Collection\" version=\"0.1\" ByteOrder=\"LittleEndian\">\n";
     masterfile << "  <Collection>\n";
 
     for (unsigned int i = 0; i < filenames.size(); ++i)
       masterfile << "    <DataSet timestep=\"" << filenames[i].first
                  << "\" group=\"\" part=\"0\" file=\"" << relative_dirname << "/"
-                 << filenames[i].second
-                 << "\"/>\n";
+                 << filenames[i].second << "\"/>\n";
 
     masterfile << "  </Collection>\n";
     masterfile << "</VTKFile>\n";
 
     masterfile.flush();
   }
-
 }

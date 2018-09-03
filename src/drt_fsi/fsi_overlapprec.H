@@ -30,7 +30,7 @@ namespace ADAPTER
   class AleFsiWrapper;
   class Fluid;
   class FSIStructureWrapper;
-}
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -38,7 +38,7 @@ namespace FSI
   {
     class MonolithicDebugWriter;
   }
-}
+}  // namespace FSI
 
 namespace LINALG
 {
@@ -47,57 +47,40 @@ namespace LINALG
 
 namespace FSI
 {
-
   /// Base class for all FSI block preconditioning matrices
-  class BlockPreconditioningMatrix : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
+  class BlockPreconditioningMatrix
+      : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
   {
-  public:
-
+   public:
     BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
-                               const LINALG::MultiMapExtractor& maps,
-                               ::ADAPTER::FSIStructureWrapper& structure,
-                               ::ADAPTER::Fluid& fluid,
-                               ::ADAPTER::AleFsiWrapper& ale,
-                               int symmetric,
-                               double omega=1.0,
-                               int iterations=1,
-                               double somega=1.0,
-                               int siterations=0,
-                               double fomega=1.0,
-                               int fiterations=0,
-                               double aomega=1.0,
-                               int aiterations=0,
-                               FILE* err=NULL);
+        const LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
+        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, int symmetric, double omega = 1.0,
+        int iterations = 1, double somega = 1.0, int siterations = 0, double fomega = 1.0,
+        int fiterations = 0, double aomega = 1.0, int aiterations = 0, FILE* err = NULL);
 
     /** \name Mathematical functions */
     //@{
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     //@}
 
     /// setup of block preconditioners
     virtual void SetupPreconditioner();
 
-  protected:
-
+   protected:
     /// (symmetric) Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const = 0;
+    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
 
     /// merge block matrix for direct solve
-    void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    void MergeSolve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
     static void LocalBlockRichardson(Teuchos::RCP<LINALG::Preconditioner> solver,
-                                     const LINALG::SparseMatrix& innerOp,
-                                     Teuchos::RCP<Epetra_Vector> x,
-                                     Teuchos::RCP<Epetra_Vector> y,
-                                     Teuchos::RCP<Epetra_Vector> tmpx,
-                                     int iterations,
-                                     double omega,
-                                     FILE* err,
-                                     const Epetra_Comm& comm);
+        const LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
+        Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx, int iterations,
+        double omega, FILE* err, const Epetra_Comm& comm);
 
     /** \name Field solver objects */
     //@{
@@ -147,25 +130,14 @@ namespace FSI
    */
   class OverlappingBlockMatrix : public BlockPreconditioningMatrix
   {
-  public:
-
+   public:
     /// construction
     OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
-                           const LINALG::MultiMapExtractor& maps,
-                           ::ADAPTER::FSIStructureWrapper& structure,
-                           ::ADAPTER::Fluid& fluid,
-                           ::ADAPTER::AleFsiWrapper& ale,
-                           bool structuresplit,
-                           int symmetric,
-                           double omega=1.0,
-                           int iterations=1,
-                           double somega=1.0,
-                           int siterations=0,
-                           double fomega=1.0,
-                           int fiterations=0,
-                           double aomega=1.0,
-                           int aiterations=0,
-                           FILE* err=NULL);
+        const LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
+        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
+        double omega = 1.0, int iterations = 1, double somega = 1.0, int siterations = 0,
+        double fomega = 1.0, int fiterations = 0, double aomega = 1.0, int aiterations = 0,
+        FILE* err = NULL);
 
     /** \name Attribute access functions */
     //@{
@@ -178,10 +150,9 @@ namespace FSI
     /// setup of block preconditioners
     virtual void SetupPreconditioner();
 
-  protected:
-
+   protected:
     /// symmetric Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;
@@ -189,8 +160,7 @@ namespace FSI
     ::ADAPTER::FSIStructureWrapper& structure_;
     ::ADAPTER::Fluid& fluid_;
     ::ADAPTER::AleFsiWrapper& ale_;
-
   };
-}
+}  // namespace FSI
 
 #endif

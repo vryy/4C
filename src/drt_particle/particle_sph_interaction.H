@@ -14,12 +14,14 @@
 
 /*
  References:
- Antoci2007: Numerical simulation of fluid–structure interaction by SPH, doi: 10.1016/j.compstruc.2007.01.002.
- Monaghan2005: Smoothed particle hydrodynamics, doi:10.1088/0034-4885/68/8/R01.
- Espanol2003: Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705.
- Akinci2013: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
- Adami2012: A generalized wall boundary condition for smoothed particle hydrodynamics, http://dx.doi.org/10.1016/j.jcp.2012.05.005
- Adami2013: A transport-velocity formulation for smoothed particle hydrodynamics, http://dx.doi.org/10.1016/j.jcp.2013.01.043
+ Antoci2007: Numerical simulation of fluid–structure interaction by SPH,
+ doi: 10.1016/j.compstruc.2007.01.002. Monaghan2005: Smoothed particle hydrodynamics,
+ doi:10.1088/0034-4885/68/8/R01. Espanol2003: Smoothed dissipative particle dynamics,
+ DOI: 10.1103/PhysRevE.67.026705. Akinci2013:
+ http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
+ Adami2012: A generalized wall boundary condition for smoothed particle hydrodynamics,
+ http://dx.doi.org/10.1016/j.jcp.2012.05.005 Adami2013: A transport-velocity formulation for
+ smoothed particle hydrodynamics, http://dx.doi.org/10.1016/j.jcp.2013.01.043
 */
 
 #ifndef PARTICLE_SPH_INTERACTION_H_
@@ -44,12 +46,13 @@ namespace PARTICLE
   class EquationOfState_Base;
 
   /// struct to store wallSPH data for faster access
-  struct WallSPHData {
+  struct WallSPHData
+  {
     double density_;
     double mass_;
     double pressure_;
   };
-}
+}  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
@@ -64,21 +67,17 @@ namespace PARTICLE
    */
   class ParticleSPHInteractionHandler
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    ParticleSPHInteractionHandler(
-      Teuchos::RCP<DRT::Discretization> discret,
-      Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
-      const Teuchos::ParameterList& particledynparams,
-      bool norender=false);
+    ParticleSPHInteractionHandler(Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+        const Teuchos::ParameterList& particledynparams, bool norender = false);
 
     //! Destructor
-    virtual ~ParticleSPHInteractionHandler(){ ; }
+    virtual ~ParticleSPHInteractionHandler() { ; }
 
     //@}
 
@@ -86,46 +85,35 @@ namespace PARTICLE
     //@{
 
     //! set up the object for the interaction computations
-    virtual void Init(
-        Teuchos::RCP<const Epetra_Vector> disn,
-        Teuchos::RCP<const Epetra_Vector> veln,
-        Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> density0);
+    virtual void Init(Teuchos::RCP<const Epetra_Vector> disn,
+        Teuchos::RCP<const Epetra_Vector> veln, Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> mass, Teuchos::RCP<const Epetra_Vector> density0);
 
     //! set up the ColParticles
     virtual void InitColParticles();
 
     //! set density & mass at the very beginning
-    void InitDensityAndMass(
-        const double particle_volume,
-        const Teuchos::RCP<Epetra_Vector> density,
-        const Teuchos::RCP<Epetra_Vector> mass,
-        const Teuchos::RCP<Epetra_Vector> disn,
+    void InitDensityAndMass(const double particle_volume, const Teuchos::RCP<Epetra_Vector> density,
+        const Teuchos::RCP<Epetra_Vector> mass, const Teuchos::RCP<Epetra_Vector> disn,
         const Teuchos::RCP<Epetra_Vector> radiusn);
 
     //! accelerations, modified pressures and velocities for boundary particles
     virtual void InitBoundaryData(
-        Teuchos::RCP<const Epetra_Vector> accn,
-        const LINALG::Matrix<3,1>& g);
+        Teuchos::RCP<const Epetra_Vector> accn, const LINALG::Matrix<3, 1>& g);
 
     //! add to the neighbour maps the current neighbours
     virtual void AddNewNeighbours();
 
     //! set state vector in ColParticles
     virtual void SetStateVector(
-        Teuchos::RCP<const Epetra_Vector> stateVector,
-        const PARTICLE::StateVectorType svt);
+        Teuchos::RCP<const Epetra_Vector> stateVector, const PARTICLE::StateVectorType svt);
 
     //! clear content, keep memory
     virtual void Clear();
 
     //! Apply coordinate shift in case of periodic boundary conditions
-    virtual void ShiftPeriodicBoundaryPair(
-        const LINALG::Matrix<3,1>& dis_i,
-        LINALG::Matrix<3,1>& dis_j,
-        const double& radius_1,
-        const double& radius_2);
+    virtual void ShiftPeriodicBoundaryPair(const LINALG::Matrix<3, 1>& dis_i,
+        LINALG::Matrix<3, 1>& dis_j, const double& radius_1, const double& radius_2);
 
     //@}
 
@@ -133,62 +121,48 @@ namespace PARTICLE
     //@{
 
     /// compute the density part of the particle vs particle interactions
-    virtual void Inter_pvp_densityDot(
-        const Teuchos::RCP<Epetra_Vector> densityDotn);
+    virtual void Inter_pvp_densityDot(const Teuchos::RCP<Epetra_Vector> densityDotn);
 
     /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_pvp_acc(
-        const Teuchos::RCP<Epetra_Vector> accn,
+    virtual void Inter_pvp_acc(const Teuchos::RCP<Epetra_Vector> accn,
         const Teuchos::RCP<Epetra_Vector> trvl_acc = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null,
-        const double time = -1.0);
+        const Teuchos::RCP<Epetra_Vector> acc_A = Teuchos::null, const double time = -1.0);
 
     /// compute surface tension interaction according to continuum model by Adami et al. 2010
-    virtual void Inter_fspvp_Adami_1(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> curvature,
-        double time);
+    virtual void Inter_fspvp_Adami_1(const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> curvature, double time);
 
-    /// compute surface tension interaction according to continuum model by Adami et al. 2010 (modified version)
-    virtual void Inter_fspvp_Adami_2(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        const Teuchos::RCP<Epetra_Vector> curvature,
-        double time);
+    /// compute surface tension interaction according to continuum model by Adami et al. 2010
+    /// (modified version)
+    virtual void Inter_fspvp_Adami_2(const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> curvature, double time);
 
     /// alternative model to enforce the static contact angle
-    void Inter_fspvp_Adami_ContactAngleVar2(
-        const Teuchos::RCP<Epetra_Vector> accn,
-        double time);
+    void Inter_fspvp_Adami_ContactAngleVar2(const Teuchos::RCP<Epetra_Vector> accn, double time);
 
     /// Get the correct surface tension coefficient
     double GetSurfaceTension(PARTICLE::StateVectorType interaction_type);
 
     /// Get the correct color field gradient
-    LINALG::Matrix<3,1> GetCFG(
-        const ParticleSPH& particle,
-        const PARTICLE::StateVectorType interaction_type);
+    LINALG::Matrix<3, 1> GetCFG(
+        const ParticleSPH& particle, const PARTICLE::StateVectorType interaction_type);
 
-    ///Computes Gradient of divergence operator for vector v - pvp
-    virtual void Inter_pvp_Laplace_x(
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij,
-        const LINALG::Matrix<3,1>& x_ij,
-        LINALG::Matrix<3,1>& Laplace_x_ij);
+    /// Computes Gradient of divergence operator for vector v - pvp
+    virtual void Inter_pvp_Laplace_x(const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij, const LINALG::Matrix<3, 1>& x_ij,
+        LINALG::Matrix<3, 1>& Laplace_x_ij);
 
     /// Computes Laplace operator for vector v - pvp
-    virtual void Inter_pvp_GradDiv_x(
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij,
-        const LINALG::Matrix<3,1>& x_ij,
-        LINALG::Matrix<3,1>& GradDiv_x_ij);
+    virtual void Inter_pvp_GradDiv_x(const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij, const LINALG::Matrix<3, 1>& x_ij,
+        LINALG::Matrix<3, 1>& GradDiv_x_ij);
 
     //! Compute pressure for the entire vector
     virtual void Density2Pressure(
-        const Teuchos::RCP<const Epetra_Vector> density,
-        Teuchos::RCP<Epetra_Vector> &pressure);
+        const Teuchos::RCP<const Epetra_Vector> density, Teuchos::RCP<Epetra_Vector>& pressure);
 
     //! Determine internal energy
-    virtual void DetermineIntEnergy(double &intenergy);
+    virtual void DetermineIntEnergy(double& intenergy);
 
     //@}
 
@@ -196,35 +170,28 @@ namespace PARTICLE
     //@{
 
     /// compute \sum m * W (usually the density)
-    virtual void MF_mW(
-        const Teuchos::RCP<Epetra_Vector> mW,
+    virtual void MF_mW(const Teuchos::RCP<Epetra_Vector> mW,
         const Teuchos::RCP<Epetra_Vector> unity_vec = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> unity_vec_grad = Teuchos::null,
         const Teuchos::RCP<Epetra_Vector> phaseColor = Teuchos::null);
 
     /// Prescribe normal vector of particles close to the triple point
-    void SetTriplePointNormal(
-        const Teuchos::RCP<Epetra_Vector> CFG_F2S);
+    void SetTriplePointNormal(const Teuchos::RCP<Epetra_Vector> CFG_F2S);
 
     /// compute smoothed color field gradients according to Hu et al. 2006
-    void MF_SmoothedCFG(
-        const Teuchos::RCP<Epetra_Vector> CFG_FF,
-        const Teuchos::RCP<Epetra_Vector> CFG_F1S,
-        const Teuchos::RCP<Epetra_Vector> CFG_F2S,
+    void MF_SmoothedCFG(const Teuchos::RCP<Epetra_Vector> CFG_FF,
+        const Teuchos::RCP<Epetra_Vector> CFG_F1S, const Teuchos::RCP<Epetra_Vector> CFG_F2S,
         const Teuchos::RCP<Epetra_Vector> distWall);
 
     /// extrapolate CFG to triple point particles
-    void ExtrapolateTriplePointCFG(
-        const Teuchos::RCP<Epetra_Vector> CFG_FF);
+    void ExtrapolateTriplePointCFG(const Teuchos::RCP<Epetra_Vector> CFG_FF);
 
     /// re-initialize density in case of free-surface flow - mesh free sense
-    virtual void MF_ReInitDensity(
-        const Teuchos::RCP<Epetra_Vector> density,
+    virtual void MF_ReInitDensity(const Teuchos::RCP<Epetra_Vector> density,
         const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType);
 
     /// initialize free surface particles
-    virtual void InitFreeSurfaceParticles(
-        const Teuchos::RCP<Epetra_Vector> fspType);
+    virtual void InitFreeSurfaceParticles(const Teuchos::RCP<Epetra_Vector> fspType);
 
     //@}
 
@@ -233,42 +200,35 @@ namespace PARTICLE
 
     /// Get min / max pressure etc.
     void GetExtremeValues(
-        double& min_pvp_dist,
-        double& min_pvw_dist,
-        double& min_pressure,
-        double& max_pressure)
+        double& min_pvp_dist, double& min_pvw_dist, double& min_pressure, double& max_pressure)
     {
-      min_pvp_dist=min_pvp_dist_;
-      min_pvw_dist=min_pvw_dist_;
-      min_pressure=min_pressure_;
-      max_pressure=max_pressure_;
+      min_pvp_dist = min_pvp_dist_;
+      min_pvw_dist = min_pvw_dist_;
+      min_pressure = min_pressure_;
+      max_pressure = max_pressure_;
     }
 
     /// Determine coefficients required for viscous forces
-    void ViscousCoefficients(const double viscosity, const double bulkViscosity, double& convectionCoeff, double& diffusionCoeff);
+    void ViscousCoefficients(const double viscosity, const double bulkViscosity,
+        double& convectionCoeff, double& diffusionCoeff);
 
     //@}
 
-  protected:
-
+   protected:
     //! @name AddNewNeighbours - these functions are collected in AddNewNeighbours for faster search
     //@{
 
     //! set the neighbours - particles
     virtual void AddNewNeighbours_p(
-        ParticleSPH& particle_i,
-        const std::list<DRT::Node*>& neighboursLinf_p);
+        ParticleSPH& particle_i, const std::list<DRT::Node*>& neighboursLinf_p);
 
     //! set the neighbours - boundary particles
     virtual void AddNewNeighbours_bp(
-        const ParticleSPH& particle_i,
-        const std::list<DRT::Node*>& neighboursLinf_p);
+        const ParticleSPH& particle_i, const std::list<DRT::Node*>& neighboursLinf_p);
 
     //! set the neighbours - free-surface particles
-    virtual void AddNewNeighbours_fsp(
-        const ParticleSPH& particle_i,
-        const std::list<DRT::Node*>& neighboursLinf_p,
-        const bool mark_fs_indirect=false);
+    virtual void AddNewNeighbours_fsp(const ParticleSPH& particle_i,
+        const std::list<DRT::Node*>& neighboursLinf_p, const bool mark_fs_indirect = false);
 
     //@}
 
@@ -276,78 +236,45 @@ namespace PARTICLE
     //@{
 
     //! construct the specific coefficient
-    virtual double Inter_generalCoeff_ij(
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual double Inter_generalCoeff_ij(const ParticleSPH& particle_i,
+        const ParticleSPH& particle_j, const InterDataPvP& interData_ij);
 
     //! evaluate pressure
-    virtual void Inter_pressure(
-        LINALG::Matrix<3,1>* accn_ij,
-        const double& generalCoeff_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual void Inter_pressure(LINALG::Matrix<3, 1>* accn_ij, const double& generalCoeff_ij,
+        const ParticleSPH& particle_i, const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij);
 
     //! evaluate background pressure
-    virtual void Inter_backgroundPressure(
-        LINALG::Matrix<3,1>* trvl_accn_ij,
-        const double& generalCoeff_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual void Inter_backgroundPressure(LINALG::Matrix<3, 1>* trvl_accn_ij,
+        const double& generalCoeff_ij, const ParticleSPH& particle_i, const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij);
 
     //! evaluate xsph contribution
-    virtual void Inter_xsph(
-        LINALG::Matrix<3,1>* trvl_accn_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual void Inter_xsph(LINALG::Matrix<3, 1>* trvl_accn_ij, const ParticleSPH& particle_i,
+        const ParticleSPH& particle_j, const InterDataPvP& interData_ij);
 
     //! evaluate additional term divA due to transport velocity
-    virtual void Inter_transportVelocity_divA(
-        LINALG::Matrix<3,1>* accn_ij,
-        LINALG::Matrix<3,1>* accn_ij_A,
-        const double& generalCoeff_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual void Inter_transportVelocity_divA(LINALG::Matrix<3, 1>* accn_ij,
+        LINALG::Matrix<3, 1>* accn_ij_A, const double& generalCoeff_ij,
+        const ParticleSPH& particle_i, const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij);
 
     //! evaluate laminar viscosity
-    virtual void Inter_laminarViscosity(
-        LINALG::Matrix<3,1>* accn_ij,
-        const double& generalCoeff_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual void Inter_laminarViscosity(LINALG::Matrix<3, 1>* accn_ij,
+        const double& generalCoeff_ij, const ParticleSPH& particle_i, const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij);
 
     //! evaluate artificial viscosity
-    virtual void Inter_artificialViscosity(
-        LINALG::Matrix<3,1>* accn_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij
-        );
+    virtual void Inter_artificialViscosity(LINALG::Matrix<3, 1>* accn_ij,
+        const ParticleSPH& particle_i, const ParticleSPH& particle_j,
+        const InterDataPvP& interData_ij);
 
     //! evaluate surface tension
-    virtual void Inter_surfaceTension(
-        LINALG::Matrix<3,1>* accn_ij,
-        const ParticleSPH& particle_i,
-        const ParticleSPH& particle_j,
-        const InterDataPvP& interData_ij,
-        const double& time
-        );
+    virtual void Inter_surfaceTension(LINALG::Matrix<3, 1>* accn_ij, const ParticleSPH& particle_i,
+        const ParticleSPH& particle_j, const InterDataPvP& interData_ij, const double& time);
 
     //! return surface tension time fac
-    virtual double SurfTensionTimeFac(
-        const double& time
-    );
+    virtual double SurfTensionTimeFac(const double& time);
 
     //@}
 
@@ -372,7 +299,7 @@ namespace PARTICLE
     std::vector<ParticleSPH> colParticles_;
 
     /// neighbours - particles
-    std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
+    std::vector<boost::unordered_map<int, InterDataPvP>> neighbours_p_;
 
     /// weight function handler
     Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
@@ -381,7 +308,7 @@ namespace PARTICLE
     std::vector<const MAT::PAR::ExtParticleMat*> extParticleMat_;
 
     /// vector of pointers to equation of state for each particle material parameters
-    std::vector<Teuchos::RCP<PARTICLE::EquationOfState_Base> > equationOfStateHandler_;
+    std::vector<Teuchos::RCP<PARTICLE::EquationOfState_Base>> equationOfStateHandler_;
 
     /// particle interaction variant
     const bool interactionVariant2_;
@@ -396,16 +323,16 @@ namespace PARTICLE
     WallSPHData wallSPHData_;
 
     /// neighbours - boundary particles
-    std::map<int,std::map<int, InterDataPvP> > neighbours_bp_;
+    std::map<int, std::map<int, InterDataPvP>> neighbours_bp_;
 
     /// neighbours - free surface particles
-    std::map<int,std::map<int, InterDataPvP> > neighbours_fsp_;
+    std::map<int, std::map<int, InterDataPvP>> neighbours_fsp_;
 
     /// standard map that contains pointers to all boundary particles of column map
-    std::map<int,ParticleSPH* > boundaryparticles_;
+    std::map<int, ParticleSPH*> boundaryparticles_;
 
     /// standard map that contains pointers to all free-surface particles of column map
-    std::map<int,ParticleSPH* > freesurfaceparticles_;
+    std::map<int, ParticleSPH*> freesurfaceparticles_;
 
     /// number of space dimensions required for weight function definition
     const INPAR::PARTICLE::WeightFunctionDim WF_DIM_;

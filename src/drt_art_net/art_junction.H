@@ -65,14 +65,12 @@ namespace ART
       friend class ArtNetExplicitTimeInt;
 
 
-    public:
+     public:
       /*!
       \brief Standard Constructor
       */
-      ArtJunctionWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
-                          IO::DiscretizationWriter& output,
-                          Teuchos::ParameterList & params,
-                          double dta);
+      ArtJunctionWrapper(Teuchos::RCP<DRT::Discretization> actdis, IO::DiscretizationWriter &output,
+          Teuchos::ParameterList &params, double dta);
 
       /*!
       \brief Destructor
@@ -83,39 +81,39 @@ namespace ART
       /*!
       \brief Wrapper for ArtJunctionBc::UpdateResidual
      */
-      void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
+      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
 
       /*!
       \brief Standard solver
       */
-      int Solve(Teuchos::ParameterList & params);
+      int Solve(Teuchos::ParameterList &params);
 
       /*!
       \brief Standard solver
       */
-      void ApplyBC(Teuchos::ParameterList & params);
+      void ApplyBC(Teuchos::ParameterList &params);
 
 
 
-    private:
+     private:
       /*!
       \brief all single junction conditions
      */
-      std::map<const int, Teuchos::RCP<class ArtJunctionBc> > ajunmap_;
+      std::map<const int, Teuchos::RCP<class ArtJunctionBc>> ajunmap_;
 
       /*!
       \brief all parameters connected to junctions
       */
       //      Teuchos::RCP<map<const int, Teuchos::RCP<JunctionNodeParams> > >  nodalParams_;
-      //map<const int, Teuchos::RCP<Teuchos::ParameterList> >  nodalParams_;
+      // map<const int, Teuchos::RCP<Teuchos::ParameterList> >  nodalParams_;
 
       //! 1d artery discretization
-      Teuchos::RCP<DRT::Discretization>      discret_;
+      Teuchos::RCP<DRT::Discretization> discret_;
 
       //! the output writer
-      IO::DiscretizationWriter&     output_;
+      IO::DiscretizationWriter &output_;
 
-    }; // class ArtJunctionWrapper
+    };  // class ArtJunctionWrapper
 
 
 
@@ -132,18 +130,13 @@ namespace ART
     {
       friend class ArtJunctionWrapper;
 
-    public:
-
+     public:
       /*!
       \brief Standard Constructor
      */
-      ArtJunctionBc( Teuchos::RCP<DRT::Discretization>  actdis,
-                     IO::DiscretizationWriter& output,
-                     std::vector<DRT::Condition*> conds,
-                     std::vector<int> IOart_flag,
-                     double dta,
-                     int condid,
-                     int numcond);
+      ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis, IO::DiscretizationWriter &output,
+          std::vector<DRT::Condition *> conds, std::vector<int> IOart_flag, double dta, int condid,
+          int numcond);
 
       /*!
       \brief Empty Constructor
@@ -153,116 +146,94 @@ namespace ART
       /*!
       \brief Destructor
       */
-      virtual ~ArtJunctionBc(){}
+      virtual ~ArtJunctionBc() {}
 
-    protected:
-
+     protected:
       /*!
       \Apply the boundary condition to the elements
       */
-      void ApplyBc( double time,
-                    double dta,
-                    int condid);
+      void ApplyBc(double time, double dta, int condid);
 
       /*!
       \Solve the boundary condition to the elements
       */
-      int Solve(Teuchos::ParameterList & params);
+      int Solve(Teuchos::ParameterList &params);
 
 
       /*!
       \Evaluate the Jacobian matrix to solve the nonlinear problem
       */
-      void Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobian,
-                          std::vector<double> &A,
-                          std::vector<double> &Q,
-                          std::vector<double> &W,
-                          std::vector<double> &Ao,
-                          std::vector<double> &rho,
-                          std::vector<double> &beta,
-                          std::vector<double> &Pext);
+      void Jacobian_Eval(Epetra_SerialDenseMatrix &Jacobian, std::vector<double> &A,
+          std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
+          std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void Residual_Eval( Epetra_SerialDenseVector & f,
-                          std::vector<double> &A,
-                          std::vector<double> &Q,
-                          std::vector<double> &W,
-                          std::vector<double> &Ao,
-                          std::vector<double> &rho,
-                          std::vector<double> &beta,
-                          std::vector<double> &Pext);
+      void Residual_Eval(Epetra_SerialDenseVector &f, std::vector<double> &A,
+          std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
+          std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
-      void Residual_Eval( Epetra_SerialDenseMatrix & f,
-                          std::vector<double> &A,
-                          std::vector<double> &Q,
-                          std::vector<double> &W,
-                          std::vector<double> &Ao,
-                          std::vector<double> &rho,
-                          std::vector<double> &beta,
-                          std::vector<double> &Pext);
+      void Residual_Eval(Epetra_SerialDenseMatrix &f, std::vector<double> &A,
+          std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
+          std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void Update_Result( Epetra_SerialDenseVector & xn,
-                          Epetra_SerialDenseVector & dx);
+      void Update_Result(Epetra_SerialDenseVector &xn, Epetra_SerialDenseVector &dx);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      double twoNorm    ( Epetra_SerialDenseVector & x);
+      double twoNorm(Epetra_SerialDenseVector &x);
 
 
 
       /*!
       \Update the Residual
       */
-      void UpdateResidual( Teuchos::RCP<Epetra_Vector> residual );
+      void UpdateResidual(Teuchos::RCP<Epetra_Vector> residual);
 
 
-    protected:
+     protected:
+      Teuchos::RCP<Epetra_Vector> junctionbc_;
 
-      Teuchos::RCP<Epetra_Vector>            junctionbc_;
-
-    private:
-
+     private:
       //! ID of present condition
-      int                           condid_;
+      int condid_;
 
       //! vector associated to the pressure head loss constant
-      std::vector<double>                Kr;
+      std::vector<double> Kr;
 
       //! time step size
-      double                        dta_;
+      double dta_;
 
       //! the processor ID from the communicator
-      int                           myrank_;
+      int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<DRT::Discretization>      discret_;
+      Teuchos::RCP<DRT::Discretization> discret_;
 
       //! the output writer
-      IO::DiscretizationWriter&     output_;
+      IO::DiscretizationWriter &output_;
 
       //! the vector defining whethe an element is inlet or outlet
-      std::vector<int>              IOart_flag_;
+      std::vector<int> IOart_flag_;
 
       //! Size of the nonlinear problem matrix
-      int                           ProbSize_;
+      int ProbSize_;
 
       //! vector of nodes connected to the junction
-      std::vector<int>              nodes_;
+      std::vector<int> nodes_;
 
       //! An epetra wrapper for Dense matrix solver
-      Epetra_SerialDenseSolver      solver_;
+      Epetra_SerialDenseSolver solver_;
 
 
     };  // class ArtJunctionBc
 
-  }
-}
+  }  // namespace UTILS
+}  // namespace ART
 
 #endif /* ART_JUNCION_H_ */
-

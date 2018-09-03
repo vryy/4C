@@ -20,4 +20,3 @@ int ADAPTER::StructureLocaWrapper::Integrate()
   // call the run() routine of the LOCA stepper object...
   return structure_->Integrate();
 }
-

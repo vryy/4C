@@ -22,10 +22,8 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   namespace TWOPHASE
   {
-
     /// type of surface tension approximation
     enum SurfaceTensionApprox
     {
@@ -46,7 +44,7 @@ namespace INPAR
     /// type of surface tension approximation
     enum SmoothGradPhi
     {
-      //smooth_grad_phi_none,
+      // smooth_grad_phi_none,
       smooth_grad_phi_meanvalue,
       smooth_grad_phi_l2_projection,
       smooth_grad_phi_superconvergent_patch_recovery_3D,
@@ -75,4 +73,3 @@ namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_TWOPHASE_H
-

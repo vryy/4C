@@ -24,67 +24,61 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
-
-/*!
-\brief A set of degrees of freedom
-
-\author
-*/
-class IndependentDofSet: virtual public DofSet
-{
-public:
+  class Discretization;
 
   /*!
-  \brief Standard Constructor
+  \brief A set of degrees of freedom
 
-
-  <pre>
-
-  create a dofset that is independent of the other dofsets
-
-  </pre>
-
-  \return void
-
+  \author
   */
-  IndependentDofSet(bool ignoreminnodegid = false);
-
-  /*!
-  \brief Copy constructor
-
-  */
-  IndependentDofSet(const IndependentDofSet& old);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~IndependentDofSet();
-
-  /// create a copy of this object
-  virtual Teuchos::RCP<DofSet> Clone()
+  class IndependentDofSet : virtual public DofSet
   {
-    return Teuchos::rcp(new IndependentDofSet(*this));
-  }
+   public:
+    /*!
+    \brief Standard Constructor
 
-  /// Add Dof Set to list #static_dofsets_
-  virtual void AddDofSettoList();
 
-protected:
+    <pre>
 
-  /// get first number to be used as Dof GID in AssignDegreesOfFreedom
-  virtual int GetFirstGIDNumberToBeUsed(const Discretization& dis) const;
+    create a dofset that is independent of the other dofsets
 
-  /// get minimal node GID to be used in AssignDegreesOfFreedom
-  virtual int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const;
+    </pre>
 
-  bool ignoreminnodegid_;   //< bool whether minnodegid is taken from the discretization or ignored
+    \return void
 
-private:
+    */
+    IndependentDofSet(bool ignoreminnodegid = false);
 
-};
+    /*!
+    \brief Copy constructor
 
-}
+    */
+    IndependentDofSet(const IndependentDofSet& old);
+
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~IndependentDofSet();
+
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new IndependentDofSet(*this)); }
+
+    /// Add Dof Set to list #static_dofsets_
+    virtual void AddDofSettoList();
+
+   protected:
+    /// get first number to be used as Dof GID in AssignDegreesOfFreedom
+    virtual int GetFirstGIDNumberToBeUsed(const Discretization& dis) const;
+
+    /// get minimal node GID to be used in AssignDegreesOfFreedom
+    virtual int GetMinimalNodeGIDIfRelevant(const Discretization& dis) const;
+
+    bool ignoreminnodegid_;  //< bool whether minnodegid is taken from the discretization or ignored
+
+   private:
+  };
+
+}  // namespace DRT
 
 #endif  // #ifndef DOFSET_INDEPENDENT_H

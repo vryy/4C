@@ -10,13 +10,12 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
-  : FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
-    comm_(comm)
+    : FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(), "FSICoupling"),
+      comm_(comm)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(IO::cout, fsidyn);
+  if (comm_.MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, fsidyn);
 
   step_ = 0;
   time_ = 0.;
@@ -28,9 +27,7 @@ FSI::FluidAleAlgorithm::FluidAleAlgorithm(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidAleAlgorithm::~FluidAleAlgorithm()
-{
-}
+FSI::FluidAleAlgorithm::~FluidAleAlgorithm() {}
 
 
 /*----------------------------------------------------------------------*/
@@ -52,7 +49,6 @@ void FSI::FluidAleAlgorithm::ReadRestart(int step)
 {
   time_ = MBFluidField()->ReadRestart(step);
   step_ = step;
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -62,12 +58,11 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
   step_ += 1;
   time_ += dt_;
 
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
     std::cout << "\n"
-              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-              << "     DT = " << std::scientific << dt_
-              << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
-              << "\n\n";
+              << "TIME:  " << std::scientific << time_ << "/" << std::scientific << maxtime_
+              << "     DT = " << std::scientific << dt_ << "     STEP = " YELLOW_LIGHT
+              << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_ << "\n\n";
 
   MBFluidField()->PrepareTimeStep();
 }
@@ -75,24 +70,14 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Solve()
-{
-  MBFluidField()->NonlinearSolve();
-}
+void FSI::FluidAleAlgorithm::Solve() { MBFluidField()->NonlinearSolve(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Update()
-{
-  MBFluidField()->Update();
-}
+void FSI::FluidAleAlgorithm::Update() { MBFluidField()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Output()
-{
-  MBFluidField()->Output();
-}
-
+void FSI::FluidAleAlgorithm::Output() { MBFluidField()->Output(); }

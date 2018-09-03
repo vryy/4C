@@ -33,68 +33,37 @@
  */
 class MonWriter
 {
-public:
-
+ public:
   //! constructor
-  MonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    );
+  MonWriter(PostProblem& problem, std::string& infieldtype, int node);
 
   //! destructor
-  virtual ~MonWriter()
-  {}
+  virtual ~MonWriter() {}
 
   //! write something
-  virtual void WriteMonFile(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    );
+  virtual void WriteMonFile(PostProblem& problem, std::string& infieldtype, int node);
 
   //! write something : stress a point
   void WriteMonStressFile(
-    PostProblem& problem,
-    std::string& infieldtype,
-    std::string stresstype,
-    int node
-    );
+      PostProblem& problem, std::string& infieldtype, std::string stresstype, int node);
 
   //! write something : strain a point
   void WriteMonStrainFile(
-    PostProblem& problem,
-    std::string& infieldtype,
-    std::string straintype,
-    int node
-    );
+      PostProblem& problem, std::string& infieldtype, std::string straintype, int node);
 
   //! write something : strain a point
   void WriteMonPlStrainFile(
-    PostProblem& problem,
-    std::string& infieldtype,
-    std::string straintype,
-    int node
-    );
+      PostProblem& problem, std::string& infieldtype, std::string straintype, int node);
 
   //! write something : heatflux a point
   void WriteMonHeatfluxFile(
-    PostProblem& problem,
-    std::string& infieldtype,
-    std::string heatfluxtype,
-    int node
-    );
+      PostProblem& problem, std::string& infieldtype, std::string heatfluxtype, int node);
 
   //! write something : temperature gradient a point
   void WriteMonTempgradFile(
-    PostProblem& problem,
-    std::string& infieldtype,
-    std::string tempgradtype,
-    int node
-    );
+      PostProblem& problem, std::string& infieldtype, std::string tempgradtype, int node);
 
-protected:
-
+ protected:
   virtual PostField* GetFieldPtr(PostProblem& problem) = 0;
 
   virtual void CheckInfieldType(std::string& infieldtype) = 0;
@@ -106,88 +75,50 @@ protected:
   virtual void WriteTableHead(std::ofstream& outfile, int dim) = 0;
 
   virtual void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    ) = 0;
+      std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) = 0;
 
-  void WriteMonStrFile(
-    const std::string& filename,
-    PostProblem& problem,
-    std::string& infieldtype,
-    const std::string strname,
-    const std::string strtype,
-    std::vector<std::string> groupnames,
-    int node
-    );
+  void WriteMonStrFile(const std::string& filename, PostProblem& problem, std::string& infieldtype,
+      const std::string strname, const std::string strtype, std::vector<std::string> groupnames,
+      int node);
 
   virtual void WriteStrTableHead(
-    std::ofstream& outfile,
-    const std::string strname,
-    const std::string strtype,
-    const int dim
-    )
+      std::ofstream& outfile, const std::string strname, const std::string strtype, const int dim)
   {
     dserror("Not impl.");
   }
 
-  virtual void WriteStrResults(
-    std::ofstream& outfile,
-    PostProblem& problem,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim,
-    std::string strtype,
-    std::string groupname,
-    const int node)
+  virtual void WriteStrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+      std::vector<int>& gdof, int dim, std::string strtype, std::string groupname, const int node)
   {
     dserror("Not impl.");
   }
 
-  void WriteMonThrFile(
-    const std::string& filename,
-    PostProblem& problem,
-    std::string& infieldtype,
-    const std::string thrname,
-    const std::string thrtype,
-    std::vector<std::string> groupnames,
-    int node
-    );
+  void WriteMonThrFile(const std::string& filename, PostProblem& problem, std::string& infieldtype,
+      const std::string thrname, const std::string thrtype, std::vector<std::string> groupnames,
+      int node);
 
   virtual void WriteThrTableHead(
-    std::ofstream& outfile,
-    const std::string thrname,
-    const std::string thrtype,
-    const int dim
-    )
+      std::ofstream& outfile, const std::string thrname, const std::string thrtype, const int dim)
   {
     dserror("Not impl.");
   }
 
-  virtual void WriteThrResults(
-    std::ofstream& outfile,
-    PostProblem& problem,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim,
-    std::string thrtype,
-    std::string groupname,
-    const int node)
+  virtual void WriteThrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+      std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname, const int node)
   {
     dserror("Not impl.");
   }
 
-  const int myrank_; //! local processor id
-  bool nodeowner_;   //! only true if proc owns the node
+  const int myrank_;  //! local processor id
+  bool nodeowner_;    //! only true if proc owns the node
 
-private:
+ private:
   // undesired copy constructor
   MonWriter(const MonWriter& old);
   // undesired = operator
-  MonWriter& operator= (const MonWriter& old);
+  MonWriter& operator=(const MonWriter& old);
 
-}; // end of class MonWriter
+};  // end of class MonWriter
 
 
 
@@ -196,26 +127,21 @@ private:
 /*----------------------------------------------------------------------*/
 class FieldMonWriter : public MonWriter
 {
-public:
+ public:
   //! constructor
-  FieldMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : MonWriter(problem,infieldtype,node)
-  {}
+  FieldMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : MonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~FieldMonWriter()
-  {}
+  virtual ~FieldMonWriter() {}
 
-protected:
-
+ protected:
   virtual PostField* GetFieldPtr(PostProblem& problem);
 
-private:
-}; // end of class FieldMonWriter
+ private:
+};  // end of class FieldMonWriter
 
 
 
@@ -224,21 +150,17 @@ private:
 /*----------------------------------------------------------------------*/
 class FluidMonWriter : public FieldMonWriter
 {
-public:
+ public:
   //! constructor
-  FluidMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node)
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
+  FluidMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~FluidMonWriter()
-  {}
+  virtual ~FluidMonWriter() {}
 
-protected:
-
+ protected:
   virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
@@ -248,14 +170,10 @@ protected:
   void WriteTableHead(std::ofstream& outfile, int dim);
 
   virtual void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+      std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
-private:
-}; // end of class FluidMonWriter
+ private:
+};  // end of class FluidMonWriter
 
 
 /*----------------------------------------------------------------------*/
@@ -263,21 +181,17 @@ private:
 /*----------------------------------------------------------------------*/
 class RedAirwayMonWriter : public FieldMonWriter
 {
-public:
+ public:
   //! constructor
-  RedAirwayMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node)
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
+  RedAirwayMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~RedAirwayMonWriter()
-  {}
+  virtual ~RedAirwayMonWriter() {}
 
-protected:
-
+ protected:
   virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
@@ -287,14 +201,10 @@ protected:
   void WriteTableHead(std::ofstream& outfile, int dim);
 
   virtual void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+      std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
-private:
-}; // end of class RedAirwayMonWriter
+ private:
+};  // end of class RedAirwayMonWriter
 
 
 /*----------------------------------------------------------------------*/
@@ -302,22 +212,17 @@ private:
 /*----------------------------------------------------------------------*/
 class StructMonWriter : public FieldMonWriter
 {
-public:
+ public:
   //! constructor
-  StructMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
+  StructMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~StructMonWriter()
-  {}
+  virtual ~StructMonWriter() {}
 
-protected:
-
+ protected:
   virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
@@ -326,43 +231,19 @@ protected:
 
   void WriteTableHead(std::ofstream& outfile, int dim);
 
-  void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+  void WriteResult(std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
   virtual void WriteStrTableHead(
-    std::ofstream& outfile,
-    const std::string strname,
-    const std::string strtype,
-    const int dim
-    );
+      std::ofstream& outfile, const std::string strname, const std::string strtype, const int dim);
 
-  virtual void WriteStrResults(
-    std::ofstream& outfile,
-    PostProblem& problem,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim,
-    std::string strtype,
-    std::string groupname,
-    const int node
-    );
+  virtual void WriteStrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+      std::vector<int>& gdof, int dim, std::string strtype, std::string groupname, const int node);
 
-  void WriteStrResult(
-    std::ofstream& file,
-    PostField*& field,
-    PostResult& result,
-    const std::string groupname,
-    const std::string name,
-    const int numdf,
-    const int node
-    ) const;
+  void WriteStrResult(std::ofstream& file, PostField*& field, PostResult& result,
+      const std::string groupname, const std::string name, const int numdf, const int node) const;
 
-private:
-}; // end of class StructMonWriter
+ private:
+};  // end of class StructMonWriter
 
 
 
@@ -371,22 +252,17 @@ private:
 /*----------------------------------------------------------------------*/
 class AleMonWriter : public FieldMonWriter
 {
-public:
+ public:
   //! constructor
-  AleMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
+  AleMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~AleMonWriter()
-  {}
+  virtual ~AleMonWriter() {}
 
-protected:
-
+ protected:
   virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
@@ -395,15 +271,10 @@ protected:
 
   void WriteTableHead(std::ofstream& outfile, int dim);
 
-  void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+  void WriteResult(std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
-private:
-}; // end of class AleMonWriter
+ private:
+};  // end of class AleMonWriter
 
 
 /*----------------------------------------------------------------------*/
@@ -411,22 +282,17 @@ private:
 /*----------------------------------------------------------------------*/
 class ScatraMonWriter : public FieldMonWriter
 {
-public:
+ public:
   //! constructor
-  ScatraMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
+  ScatraMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~ScatraMonWriter()
-  {}
+  virtual ~ScatraMonWriter() {}
 
-protected:
-
+ protected:
   virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
@@ -437,15 +303,10 @@ protected:
 
   PostField* GetFieldPtr(PostProblem& problem);
 
-  void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+  void WriteResult(std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
-private:
-}; // end of class ScatraMonWriter
+ private:
+};  // end of class ScatraMonWriter
 
 
 /*----------------------------------------------------------------------*/
@@ -453,22 +314,17 @@ private:
 /*----------------------------------------------------------------------*/
 class ThermoMonWriter : public FieldMonWriter
 {
-public:
+ public:
   //! constructor
-  ThermoMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : FieldMonWriter(problem,infieldtype,node)
-  {}
+  ThermoMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FieldMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~ThermoMonWriter()
-  {}
+  virtual ~ThermoMonWriter() {}
 
-protected:
-
+ protected:
   virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
@@ -477,43 +333,19 @@ protected:
 
   void WriteTableHead(std::ofstream& outfile, int dim);
 
-  void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+  void WriteResult(std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
   virtual void WriteThrTableHead(
-    std::ofstream& outfile,
-    const std::string thrname,
-    const std::string thrtype,
-    const int dim
-    );
+      std::ofstream& outfile, const std::string thrname, const std::string thrtype, const int dim);
 
-  virtual void WriteThrResults(
-    std::ofstream& outfile,
-    PostProblem& problem,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim,
-    std::string thrtype,
-    std::string groupname,
-    const int node
-    );
+  virtual void WriteThrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
+      std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname, const int node);
 
-  void WriteThrResult(
-    std::ofstream& file,
-    PostField*& field,
-    PostResult& result,
-    const std::string groupname,
-    const std::string name,
-    const int dim,
-    const int node
-    ) const;
+  void WriteThrResult(std::ofstream& file, PostField*& field, PostResult& result,
+      const std::string groupname, const std::string name, const int dim, const int node) const;
 
-private:
-}; // end of class ThermoMonWriter
+ private:
+};  // end of class ThermoMonWriter
 
 
 
@@ -522,22 +354,17 @@ private:
 /*----------------------------------------------------------------------*/
 class FsiFluidMonWriter : public FluidMonWriter
 {
-public:
+ public:
   //! constructor
-  FsiFluidMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : FluidMonWriter(problem,infieldtype,node)
-  {}
+  FsiFluidMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : FluidMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~FsiFluidMonWriter()
-  {}
+  virtual ~FsiFluidMonWriter() {}
 
-protected:
-
+ protected:
   void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
@@ -546,15 +373,10 @@ protected:
 
   void WriteTableHead(std::ofstream& outfile, int dim);
 
-  void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+  void WriteResult(std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
-private:
-}; // end of class FsiFluidMonWriter
+ private:
+};  // end of class FsiFluidMonWriter
 
 
 
@@ -563,22 +385,17 @@ private:
 /*----------------------------------------------------------------------*/
 class FsiStructMonWriter : public StructMonWriter
 {
-public:
+ public:
   //! constructor
-  FsiStructMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : StructMonWriter(problem,infieldtype,node)
-  {}
+  FsiStructMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : StructMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~FsiStructMonWriter()
-  {}
+  virtual ~FsiStructMonWriter() {}
 
-protected:
-
+ protected:
   void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
@@ -587,15 +404,10 @@ protected:
 
   void WriteTableHead(std::ofstream& outfile, int dim);
 
-  void WriteResult(
-    std::ofstream& outfile,
-    PostResult& result,
-    std::vector<int>& gdof,
-    int dim
-    );
+  void WriteResult(std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
-private:
-}; // end of class FsiStructMonWriter
+ private:
+};  // end of class FsiStructMonWriter
 
 
 
@@ -604,31 +416,25 @@ private:
 /*----------------------------------------------------------------------*/
 class FsiAleMonWriter : public AleMonWriter
 {
-public:
+ public:
   //! constructor
-  FsiAleMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : AleMonWriter(problem,infieldtype,node)
-  {}
+  FsiAleMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : AleMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~FsiAleMonWriter()
-  {}
+  virtual ~FsiAleMonWriter() {}
 
-protected:
-
+ protected:
   void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
   void WriteHeader(std::ofstream& outfile);
 
-private:
-}; // end of class FsiAleMonWriter
-
+ private:
+};  // end of class FsiAleMonWriter
 
 
 
@@ -637,30 +443,25 @@ private:
 /*----------------------------------------------------------------------*/
 class TsiStructMonWriter : public StructMonWriter
 {
-public:
+ public:
   //! constructor
-  TsiStructMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : StructMonWriter(problem,infieldtype,node)
-  {}
+  TsiStructMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : StructMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~TsiStructMonWriter()
-  {}
+  virtual ~TsiStructMonWriter() {}
 
-protected:
-
+ protected:
   void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
   void WriteHeader(std::ofstream& outfile);
 
-private:
-}; // end of class TsiStructMonWriter
+ private:
+};  // end of class TsiStructMonWriter
 
 
 /*----------------------------------------------------------------------*/
@@ -668,33 +469,27 @@ private:
 /*----------------------------------------------------------------------*/
 class TsiThermoMonWriter : public ThermoMonWriter
 {
-public:
+ public:
   //! constructor
-  TsiThermoMonWriter(
-    PostProblem& problem,
-    std::string& infieldtype,
-    int node
-    )
-    : ThermoMonWriter(problem,infieldtype,node)
-  {}
+  TsiThermoMonWriter(PostProblem& problem, std::string& infieldtype, int node)
+      : ThermoMonWriter(problem, infieldtype, node)
+  {
+  }
 
   //! destructor
-  virtual ~TsiThermoMonWriter()
-  {}
+  virtual ~TsiThermoMonWriter() {}
 
-protected:
-
+ protected:
   void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
   void WriteHeader(std::ofstream& outfile);
 
-private:
-}; // end of class TsiThermoMonWriter
+ private:
+};  // end of class TsiThermoMonWriter
 
 
 
-
-#endif  /*POST_DRT_MONITOR_H_*/
+#endif /*POST_DRT_MONITOR_H_*/
 /*! @} (documentation module close)*/

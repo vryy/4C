@@ -23,7 +23,7 @@ namespace DRT
 {
   class ResultTest;
   class Discretization;
-}
+}  // namespace DRT
 
 namespace POROFLUIDMULTIPHASE
 {
@@ -36,29 +36,26 @@ namespace Teuchos
 }
 
 // Algorithm adapter classes for use in multi-field problems
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /// basic multiphase porous flow adapter
   class PoroFluidMultiphaseWrapper : public PoroFluidMultiphase
   {
-  public:
-
+   public:
     /// constructor
-    explicit PoroFluidMultiphaseWrapper(
-        Teuchos::RCP<PoroFluidMultiphase> porofluid
-        );
+    explicit PoroFluidMultiphaseWrapper(Teuchos::RCP<PoroFluidMultiphase> porofluid);
 
     /// virtual destructor to support polymorph destruction
     virtual ~PoroFluidMultiphaseWrapper(){};
 
     /// initialization
-    void Init(
-        const bool                      isale,                ///< ALE flag
-        const int                       nds_disp,             ///< number of dofset associated with displacements
-        const int                       nds_vel,              ///< number of dofset associated with fluid velocities
-        const int                       nds_solidpressure,    ///< number of dofset associated with solid pressure
-        const int                       ndsporofluid_scatra   ///< number of dofset associated with scalar on fluid discretization
-        );
+    void Init(const bool isale,        ///< ALE flag
+        const int nds_disp,            ///< number of dofset associated with displacements
+        const int nds_vel,             ///< number of dofset associated with fluid velocities
+        const int nds_solidpressure,   ///< number of dofset associated with solid pressure
+        const int ndsporofluid_scatra  ///< number of dofset associated with scalar on fluid
+                                       ///< discretization
+    );
 
     /// create result test for multiphase porous fluid field
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -67,7 +64,7 @@ namespace ADAPTER {
     void ReadRestart(int restart);
 
     /// access dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds=0) const;
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds = 0) const;
 
     /// access dof row map
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
@@ -79,28 +76,19 @@ namespace ADAPTER {
     Teuchos::RCP<DRT::Discretization> Discretization() const;
 
     //! apply moving mesh data
-    void ApplyMeshMovement(
-      Teuchos::RCP<const Epetra_Vector> dispnp //!< displacement vector
+    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
     );
 
     //! set state on discretization
-    void SetState(
-       unsigned nds,
-       const std::string& name,
-       Teuchos::RCP<const Epetra_Vector> state
-    );
+    void SetState(unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector>   vel                       //!< velocity vector
-     );
+    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
+    );
 
     //! set solution of scatra problem
-    void SetScatraSolution(
-      unsigned nds,
-      Teuchos::RCP<const Epetra_Vector>   scalars
-     );
+    void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars);
 
     //! return primary field at time n+1
     Teuchos::RCP<const Epetra_Vector> Phinp() const;
@@ -166,10 +154,10 @@ namespace ADAPTER {
     virtual void Evaluate();
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
-    virtual void AssembleFluidStructCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs);
+    virtual void AssembleFluidStructCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_fs);
 
     // Assemble Off-Diagonal Fluid-Scatra Coupling matrix
-    virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_pfs);
+    virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_pfs);
 
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
@@ -177,14 +165,13 @@ namespace ADAPTER {
     // return arterial network time integrator
     virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt();
 
-  private:
-
+   private:
     /// multiphase porous flow time integrator
     Teuchos::RCP<PoroFluidMultiphase> porofluid_;
 
-  }; // class PoroFluidMultiphaseWrapper
+  };  // class PoroFluidMultiphaseWrapper
 
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 
 

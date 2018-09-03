@@ -26,12 +26,10 @@
 /*----------------------------------------------------------------------*
  | standard constructor                                     rauch 12/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::MatListBondReacs::MatListBondReacs(
-    Teuchos::RCP<MAT::PAR::Material> matdata
-)
-: MatList(matdata),
-  MatListReactions(matdata)
-{}
+MAT::PAR::MatListBondReacs::MatListBondReacs(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : MatList(matdata), MatListReactions(matdata)
+{
+}
 
 
 Teuchos::RCP<MAT::Material> MAT::PAR::MatListBondReacs::CreateMaterial()
@@ -43,7 +41,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatListBondReacs::CreateMaterial()
 MAT::MatListBondReacsType MAT::MatListBondReacsType::instance_;
 
 
-DRT::ParObject* MAT::MatListBondReacsType::Create( const std::vector<char> & data )
+DRT::ParObject* MAT::MatListBondReacsType::Create(const std::vector<char>& data)
 {
   MAT::MatListBondReacs* MatListBondReacs = new MAT::MatListBondReacs();
   MatListBondReacs->Unpack(data);
@@ -54,21 +52,14 @@ DRT::ParObject* MAT::MatListBondReacsType::Create( const std::vector<char> & dat
 /*----------------------------------------------------------------------*
  | construct empty material object                          rauch 12/16 |
  *----------------------------------------------------------------------*/
-MAT::MatListBondReacs::MatListBondReacs()
-: MatList(),
-  MatListReactions(),
-  paramsbondreac_(NULL)
-{
-}
+MAT::MatListBondReacs::MatListBondReacs() : MatList(), MatListReactions(), paramsbondreac_(NULL) {}
 
 
 /*----------------------------------------------------------------------*
  | construct the material object given material paramete    rauch 12/16 |
  *----------------------------------------------------------------------*/
 MAT::MatListBondReacs::MatListBondReacs(MAT::PAR::MatListBondReacs* params)
-: MatList(params),
-  MatListReactions(params),
-  paramsbondreac_(params)
+    : MatList(params), MatListReactions(params), paramsbondreac_(params)
 {
   // setup of material map
   if (paramsbondreac_->local_)
@@ -83,17 +74,16 @@ MAT::MatListBondReacs::MatListBondReacs(MAT::PAR::MatListBondReacs* params)
  *----------------------------------------------------------------------*/
 void MAT::MatListBondReacs::Initialize()
 {
-
-  if(paramsbondreac_!=NULL)
+  if (paramsbondreac_ != NULL)
   {
     std::vector<int>::const_iterator m;
-    for (m=paramsbondreac_->ReacIds()->begin(); m!=paramsbondreac_->ReacIds()->end(); ++m)
+    for (m = paramsbondreac_->ReacIds()->begin(); m != paramsbondreac_->ReacIds()->end(); ++m)
     {
       const int reacid = *m;
       Teuchos::RCP<MAT::Material> mat = MaterialById(reacid);
       if (mat == Teuchos::null) dserror("Failed to allocate this material");
       Teuchos::RCP<MAT::ScatraBondReacMat> reacmat =
-          Teuchos::rcp_dynamic_cast<MAT::ScatraBondReacMat>(mat,true);
+          Teuchos::rcp_dynamic_cast<MAT::ScatraBondReacMat>(mat, true);
       reacmat->Initialize();
     }
   }
@@ -116,18 +106,19 @@ void MAT::MatListBondReacs::Clear()
  *----------------------------------------------------------------------*/
 void MAT::MatListBondReacs::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
 
   // matid
   int matid = -1;
-  if (paramsbondreac_ != NULL) matid = paramsbondreac_->Id();  // in case we are in post-process mode
+  if (paramsbondreac_ != NULL)
+    matid = paramsbondreac_->Id();  // in case we are in post-process mode
 
-  AddtoPack(data,matid);
+  AddtoPack(data, matid);
 
   // Pack base class material
   MAT::MatListReactions::Pack(data);
@@ -145,60 +136,58 @@ void MAT::MatListBondReacs::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // matid and recover paramsreac_
   int matid(-1);
-  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, matid);
   paramsbondreac_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        //Note: We need to do a dynamic_cast here since Bonds, Reaction, and Bond-reaction are in a diamond inheritance structure
+        // Note: We need to do a dynamic_cast here since Bonds, Reaction, and Bond-reaction are in a
+        // diamond inheritance structure
         paramsbondreac_ = dynamic_cast<MAT::PAR::MatListBondReacs*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+            MaterialType());
     }
 
   // extract base class material
   std::vector<char> basedata(0);
-  MAT::MatList::ExtractfromPack(position,data,basedata);
+  MAT::MatList::ExtractfromPack(position, data, basedata);
   MAT::MatListReactions::Unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
 /*----------------------------------------------------------------------*
  | calculate body force term                                rauch 12/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListBondReacs::CalcReaBodyForceTerm(
-    const int k,
-    const std::vector<double>& phinp,
-    const std::vector<double>& phin,
-    const double violation,
-    const double porosity,
-    const double* gpcoord,
-    const double scale
-) const
+double MAT::MatListBondReacs::CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+    const std::vector<double>& phin, const double violation, const double porosity,
+    const double* gpcoord, const double scale) const
 {
-  double bodyforcetermK=0.0;
+  double bodyforcetermK = 0.0;
 
-  for (int condnum = 0;condnum < NumReac();condnum++)
+  for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
+    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat =
+        Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, phin, violation, porosity, scale, gpcoord);
+    bodyforcetermK +=
+        reacmat->CalcReaBodyForceTerm(k, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return bodyforcetermK;
@@ -208,24 +197,18 @@ double MAT::MatListBondReacs::CalcReaBodyForceTerm(
 /*----------------------------------------------------------------------*
  | calculate body force term derivative                     rauch 12/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
-    const int k,
-    std::vector<double>& derivs,
-    const std::vector<double>& phinp,
-    const std::vector<double>& phin,
-    const double violation,
-    const double porosity,
-    const double* gpcoord,
-    const double scale
-) const
+void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+    const std::vector<double>& phinp, const std::vector<double>& phin, const double violation,
+    const double porosity, const double* gpcoord, const double scale) const
 {
-
-  for (int condnum = 0;condnum < NumReac();condnum++)
+  for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
+    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat =
+        Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, phin, violation, porosity, scale, gpcoord);
+    reacmat->CalcReaBodyForceDerivMatrix(
+        k, derivs, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return;
@@ -235,25 +218,20 @@ void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
 /*----------------------------------------------------------------------*
  | calculate body force term                                rauch 12/16 |
  *----------------------------------------------------------------------*/
-double MAT::MatListBondReacs::CalcReaBodyForceTerm(
-    const int k,
-    const std::vector<double>& phinp,
-    const std::vector<double>& phin,
-    const std::vector<std::pair<std::string,double> >& constants,
-    const double violation,
-    const double porosity,
-    const double* gpcoord,
-    const double scale
-) const
+double MAT::MatListBondReacs::CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+    const std::vector<double>& phin, const std::vector<std::pair<std::string, double>>& constants,
+    const double violation, const double porosity, const double* gpcoord, const double scale) const
 {
-  double bodyforcetermK=0.0;
+  double bodyforcetermK = 0.0;
 
-  for (int condnum = 0;condnum < NumReac();condnum++)
+  for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
+    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat =
+        Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, phin, violation, porosity, scale, gpcoord);
+    bodyforcetermK +=
+        reacmat->CalcReaBodyForceTerm(k, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return bodyforcetermK;
@@ -263,25 +241,19 @@ double MAT::MatListBondReacs::CalcReaBodyForceTerm(
 /*----------------------------------------------------------------------*
  | calculate body force term derivative                     rauch 12/16 |
  *----------------------------------------------------------------------*/
-void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
-    const int k,
-    std::vector<double>& derivs,
-    const std::vector<double>& phinp,
-    const std::vector<double>& phin,
-    const std::vector<std::pair<std::string,double> >& constants,
-    const double violation,
-    const double porosity,
-    const double* gpcoord,
-    const double scale
-) const
+void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+    const std::vector<double>& phinp, const std::vector<double>& phin,
+    const std::vector<std::pair<std::string, double>>& constants, const double violation,
+    const double porosity, const double* gpcoord, const double scale) const
 {
-
-  for (int condnum = 0;condnum < NumReac();condnum++)
+  for (int condnum = 0; condnum < NumReac(); condnum++)
   {
     const int reacid = ReacID(condnum);
-    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
+    const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat =
+        Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, phin, violation, porosity, scale, gpcoord);
+    reacmat->CalcReaBodyForceDerivMatrix(
+        k, derivs, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return;

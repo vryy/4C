@@ -38,13 +38,9 @@ Created on: Jul 13, 2011
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::StratimikosSolver::StratimikosSolver( const Epetra_Comm & comm,
-                                            Teuchos::ParameterList & params,
-                                            FILE * outfile )
-  : comm_( comm ),
-    params_( params ),
-    outfile_( outfile ),
-    ncall_( 0 )
+LINALG::SOLVER::StratimikosSolver::StratimikosSolver(
+    const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile)
+    : comm_(comm), params_(params), outfile_(outfile), ncall_(0)
 {
 }
 
@@ -59,12 +55,9 @@ LINALG::SOLVER::StratimikosSolver::~StratimikosSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::StratimikosSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
-                                               Teuchos::RCP<Epetra_MultiVector> x,
-                                               Teuchos::RCP<Epetra_MultiVector> b,
-                                               bool refactor,
-                                               bool reset,
-                                               Teuchos::RCP<LINALG::KrylovProjector> projector)
+void LINALG::SOLVER::StratimikosSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
+    bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   if (!Params().isSublist("Stratimikos Parameters"))
     dserror("Do not have stratimikos parameter list");
@@ -72,25 +65,25 @@ void LINALG::SOLVER::StratimikosSolver::Setup( Teuchos::RCP<Epetra_Operator> mat
   x_ = x;
   b_ = b;
   A_ = matrix;
-
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 int LINALG::SOLVER::StratimikosSolver::Solve()
 {
-  Teuchos::RCP<Teuchos::ParameterList> stratimikoslist = Teuchos::rcp(new Teuchos::ParameterList(Params().sublist("Stratimikos Parameters")));
-      //Teuchos::rcp(&(Params().sublist("Stratimikos Parameters")));
+  Teuchos::RCP<Teuchos::ParameterList> stratimikoslist =
+      Teuchos::rcp(new Teuchos::ParameterList(Params().sublist("Stratimikos Parameters")));
+  // Teuchos::rcp(&(Params().sublist("Stratimikos Parameters")));
   std::cout << "Stratimikos List from dat file" << std::endl;
   std::cout << *stratimikoslist << std::endl << std::endl;
 
 
-  //std::string xmlfile = stratimikoslist.get<std::string>("xml file");
+  // std::string xmlfile = stratimikoslist.get<std::string>("xml file");
 
-  //Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder("stratimikos_KLU.xml");
+  // Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder("stratimikos_KLU.xml");
   Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder;
   linearSolverBuilder.setParameterList(stratimikoslist);
-  //Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder(xmlfile);
+  // Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder(xmlfile);
   linearSolverBuilder.readParameters(&std::cout);
   std::cout << *(linearSolverBuilder.getParameterList()) << std::endl;
 
@@ -98,33 +91,37 @@ int LINALG::SOLVER::StratimikosSolver::Solve()
   Teuchos::RCP<Epetra_CrsMatrix> epetra_A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
 
   // create a dummy one-column Thyra::VectorSpaceBase
-  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal> > TeuchosComm = COMM_UTILS::toTeuchosComm<Teuchos::Ordinal>(A_->Comm());
+  Teuchos::RCP<const Teuchos::Comm<Teuchos::Ordinal>> TeuchosComm =
+      COMM_UTILS::toTeuchosComm<Teuchos::Ordinal>(A_->Comm());
 
-  Teuchos::RCP<Thyra::DefaultSpmdVectorSpaceFactory<double> > dummyDomainSpaceFac = Teuchos::rcp(new Thyra::DefaultSpmdVectorSpaceFactory<double>(TeuchosComm));
+  Teuchos::RCP<Thyra::DefaultSpmdVectorSpaceFactory<double>> dummyDomainSpaceFac =
+      Teuchos::rcp(new Thyra::DefaultSpmdVectorSpaceFactory<double>(TeuchosComm));
 
-  Teuchos::RCP<const Thyra::VectorSpaceBase<double> > dummyDomainSpace = dummyDomainSpaceFac->createVecSpc(x_->NumVectors());
+  Teuchos::RCP<const Thyra::VectorSpaceBase<double>> dummyDomainSpace =
+      dummyDomainSpaceFac->createVecSpc(x_->NumVectors());
 
   // wrap Epetra -> Thyra
-  Teuchos::RCP<const Thyra::LinearOpBase<double> > A = Thyra::epetraLinearOp( epetra_A );
-  Teuchos::RCP<Thyra::MultiVectorBase<double> > x = Thyra::create_MultiVector( x_, A->domain(), dummyDomainSpace);
-  Teuchos::RCP<const Thyra::MultiVectorBase<double> > b = Thyra::create_MultiVector( b_, A->range(), dummyDomainSpace);
+  Teuchos::RCP<const Thyra::LinearOpBase<double>> A = Thyra::epetraLinearOp(epetra_A);
+  Teuchos::RCP<Thyra::MultiVectorBase<double>> x =
+      Thyra::create_MultiVector(x_, A->domain(), dummyDomainSpace);
+  Teuchos::RCP<const Thyra::MultiVectorBase<double>> b =
+      Thyra::create_MultiVector(b_, A->range(), dummyDomainSpace);
 
   // Create a linear solver factory given information read from the
   // parameter list.
-  Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > lowsFactory =
-    linearSolverBuilder.createLinearSolveStrategy("");
+  Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double>> lowsFactory =
+      linearSolverBuilder.createLinearSolveStrategy("");
 
   // Setup output stream and the verbosity level
-  //lowsFactory->setOStream(&out);
-  //lowsFactory->setVerbLevel(Teuchos::VERB_LOW);
+  // lowsFactory->setOStream(&out);
+  // lowsFactory->setVerbLevel(Teuchos::VERB_LOW);
 
   // Create a linear solver based on the forward operator A
-  Teuchos::RCP<Thyra::LinearOpWithSolveBase<double> > lows =
-    Thyra::linearOpWithSolve(*lowsFactory, A);
+  Teuchos::RCP<Thyra::LinearOpWithSolveBase<double>> lows =
+      Thyra::linearOpWithSolve(*lowsFactory, A);
 
   // Solve the linear system (note: the initial guess in 'x' is critical)
-  Thyra::SolveStatus<double> status =
-       Thyra::solve<double>(*lows, Thyra::NOTRANS, *b, x.ptr());
+  Thyra::SolveStatus<double> status = Thyra::solve<double>(*lows, Thyra::NOTRANS, *b, x.ptr());
   std::cout << "\nSolve status:\n" << status << std::endl;
 
 
@@ -151,7 +148,8 @@ int LINALG::SOLVER::StratimikosSolver::Solve()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-int LINALG::SOLVER::StratimikosSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
+int LINALG::SOLVER::StratimikosSolver::ApplyInverse(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y)
 {
   dserror("ApplyInverse not implemented for StratimikosSolver");
   return -1;

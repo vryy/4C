@@ -40,83 +40,80 @@
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&               dis,
-                                            Teuchos::ParameterList&               p,
-                                            Teuchos::RCP<LINALG::SparseOperator>  systemmatrix1,
-                                            Teuchos::RCP<LINALG::SparseOperator>  systemmatrix2,
-                                            Teuchos::RCP<Epetra_Vector>           systemvector1,
-                                            Teuchos::RCP<Epetra_Vector>           systemvector2,
-                                            Teuchos::RCP<Epetra_Vector>           systemvector3)
+void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
+    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p,"action");
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p, "action");
 
-  switch(action)
+  switch (action)
   {
-  case SCATRA::set_general_scatra_parameter:
-  {
-    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    case SCATRA::set_general_scatra_parameter:
+    {
+      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
-    break;
-  }
+      break;
+    }
 
-  case SCATRA::set_turbulence_scatra_parameter:
-  {
-    ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
+    case SCATRA::set_turbulence_scatra_parameter:
+    {
+      ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
 
-    break;
-  }
+      break;
+    }
 
-  case SCATRA::set_time_parameter:
-  {
-    ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
+    case SCATRA::set_time_parameter:
+    {
+      ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
 
-    break;
-  }
+      break;
+    }
 
-  case SCATRA::set_mean_Cai:
-  {
-    ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
+    case SCATRA::set_mean_Cai:
+    {
+      ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
 
-    break;
-  }
+      break;
+    }
 
-  case SCATRA::set_lsreinit_scatra_parameter:
-  {
-    // set general parameters first
-    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    case SCATRA::set_lsreinit_scatra_parameter:
+    {
+      // set general parameters first
+      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
-    // set additional, problem-dependent parameters
-    ScaTraEleParameterLsReinit::Instance(dis.Name())->SetParameters(p);
+      // set additional, problem-dependent parameters
+      ScaTraEleParameterLsReinit::Instance(dis.Name())->SetParameters(p);
 
-    break;
-  }
+      break;
+    }
 
-  case SCATRA::set_elch_scatra_parameter:
-  {
-    // set general parameters first
-    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    case SCATRA::set_elch_scatra_parameter:
+    {
+      // set general parameters first
+      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
-    // set additional, problem-dependent parameters
-    ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+      // set additional, problem-dependent parameters
+      ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
 
-    break;
-  }
+      break;
+    }
 
-  case SCATRA::set_diffcond_scatra_parameter:
-  {
-    // set general parameters first
-    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    case SCATRA::set_diffcond_scatra_parameter:
+    {
+      // set general parameters first
+      ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
-    // set additional, problem-dependent parameters
-    ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
-    ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetParameters(p);
+      // set additional, problem-dependent parameters
+      ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+      ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetParameters(p);
 
-    break;
-  }
+      break;
+    }
 
-  default:
-    // do nothing in all other cases
-    break;
+    default:
+      // do nothing in all other cases
+      break;
   }
 
   return;
@@ -125,15 +122,10 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Transport::Evaluate(
-    Teuchos::ParameterList&   params,
-    DRT::Discretization&      discretization,
-    std::vector<int>&         lm,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   dserror("not implemented. Use the Evaluate() method with Location Array instead!");
   return -1;
@@ -142,15 +134,10 @@ int DRT::ELEMENTS::Transport::Evaluate(
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Transport::Evaluate(
-    Teuchos::ParameterList&   params,
-    DRT::Discretization&      discretization,
-    LocationArray&            la,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -158,98 +145,92 @@ int DRT::ELEMENTS::Transport::Evaluate(
   int numscal = numdofpernode;
 
   // perform additional operations specific to implementation type
-  switch(impltype_)
+  switch (impltype_)
   {
-  case INPAR::SCATRA::impltype_elch_diffcond:
-  case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
-  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
-  case INPAR::SCATRA::impltype_elch_electrode:
-  case INPAR::SCATRA::impltype_elch_electrode_growth:
-  case INPAR::SCATRA::impltype_elch_electrode_thermo:
-  case INPAR::SCATRA::impltype_elch_NP:
-  {
-    // adapt number of transported scalars for electrochemistry problems
-    numscal -= 1;
-
-    // get the material of the first element
-    // we assume here, that the material is equal for all elements in this discretization
-    Teuchos::RCP<MAT::Material> material = Material();
-    if (material->MaterialType() == INPAR::MAT::m_elchmat)
+    case INPAR::SCATRA::impltype_elch_diffcond:
+    case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
+    case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+    case INPAR::SCATRA::impltype_elch_electrode:
+    case INPAR::SCATRA::impltype_elch_electrode_growth:
+    case INPAR::SCATRA::impltype_elch_electrode_thermo:
+    case INPAR::SCATRA::impltype_elch_NP:
     {
-      const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+      // adapt number of transported scalars for electrochemistry problems
+      numscal -= 1;
 
-      numscal = actmat->NumScal();
+      // get the material of the first element
+      // we assume here, that the material is equal for all elements in this discretization
+      Teuchos::RCP<MAT::Material> material = Material();
+      if (material->MaterialType() == INPAR::MAT::m_elchmat)
+      {
+        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+
+        numscal = actmat->NumScal();
+      }
+
+      break;
+    }
+    case INPAR::SCATRA::impltype_variational_diffusion:
+    {
+      if (numdofpernode %
+          2)  // Checks the number of degrees of freedom is multiple of 2 (since each species
+              // contributes with a concentration and chemical potential field)
+        dserror("Number of degrees of freedom must be pair!");
+      numscal = numdofpernode / 2;
+
+      break;
+    }
+    case INPAR::SCATRA::impltype_levelset:
+    case INPAR::SCATRA::impltype_lsreinit:
+    {
+      // decide whether reinitialization is active or not
+      if (not params.get<bool>("solve reinit eq", false))
+        impltype_ = INPAR::SCATRA::impltype_levelset;
+      else
+        impltype_ = INPAR::SCATRA::impltype_lsreinit;
+
+      break;
     }
 
-    break;
-  }
-  case INPAR::SCATRA::impltype_variational_diffusion:
-  {
-    if (numdofpernode % 2)  // Checks the number of degrees of freedom is multiple of 2 (since each species contributes with a concentration and chemical potential field)
-      dserror("Number of degrees of freedom must be pair!");
-    numscal = numdofpernode/2;
+    case INPAR::SCATRA::impltype_std:
+    case INPAR::SCATRA::impltype_thermo_elch_electrode:
+    case INPAR::SCATRA::impltype_thermo_elch_diffcond:
+    case INPAR::SCATRA::impltype_advreac:
+    case INPAR::SCATRA::impltype_refconcreac:
+    case INPAR::SCATRA::impltype_chemo:
+    case INPAR::SCATRA::impltype_chemoreac:
+    case INPAR::SCATRA::impltype_aniso:
+    case INPAR::SCATRA::impltype_cardiac_monodomain:
+    case INPAR::SCATRA::impltype_loma:
+    case INPAR::SCATRA::impltype_poro:
+    case INPAR::SCATRA::impltype_pororeac:
+    case INPAR::SCATRA::impltype_pororeacECM:
+    case INPAR::SCATRA::impltype_bondreac:
+    case INPAR::SCATRA::impltype_multipororeac:
+    case INPAR::SCATRA::impltype_one_d_artery:
+      // do nothing in these cases
+      break;
 
-    break;
-  }
-  case INPAR::SCATRA::impltype_levelset:
-  case INPAR::SCATRA::impltype_lsreinit:
-  {
-    // decide whether reinitialization is active or not
-    if(not params.get<bool>("solve reinit eq",false))
-      impltype_ = INPAR::SCATRA::impltype_levelset;
-    else
-      impltype_ = INPAR::SCATRA::impltype_lsreinit;
-
-    break;
-  }
-
-  case INPAR::SCATRA::impltype_std:
-  case INPAR::SCATRA::impltype_thermo_elch_electrode:
-  case INPAR::SCATRA::impltype_thermo_elch_diffcond:
-  case INPAR::SCATRA::impltype_advreac:
-  case INPAR::SCATRA::impltype_refconcreac:
-  case INPAR::SCATRA::impltype_chemo:
-  case INPAR::SCATRA::impltype_chemoreac:
-  case INPAR::SCATRA::impltype_aniso:
-  case INPAR::SCATRA::impltype_cardiac_monodomain:
-  case INPAR::SCATRA::impltype_loma:
-  case INPAR::SCATRA::impltype_poro:
-  case INPAR::SCATRA::impltype_pororeac:
-  case INPAR::SCATRA::impltype_pororeacECM:
-  case INPAR::SCATRA::impltype_bondreac:
-  case INPAR::SCATRA::impltype_multipororeac:
-  case INPAR::SCATRA::impltype_one_d_artery:
-    // do nothing in these cases
-    break;
-
-  default:
-  {
-    // other implementation types are invalid
-    dserror("Invalid implementation type!");
-    break;
-  }
+    default:
+    {
+      // other implementation types are invalid
+      dserror("Invalid implementation type!");
+      break;
+    }
   }
 
   // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
-  switch(action)
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
     case SCATRA::calc_rhs:
     {
-      return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->Evaluate(
-              this,
-              params,
-              discretization,
-              la,
-              elemat1,
-              elemat2,
-              elevec1,
-              elevec2,
-              elevec3
-              );
+      return ScaTraFactory::ProvideImpl(
+          Shape(), impltype_, numdofpernode, numscal, discretization.Name())
+          ->Evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
 
@@ -258,24 +239,17 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_scatra_mono_odblock_scatrathermo:
     case SCATRA::calc_scatra_mono_odblock_thermoscatra:
     {
-      return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateOD(
-              this,
-              params,
-              discretization,
-              la,
-              elemat1,
-              elemat2,
-              elevec1,
-              elevec2,
-              elevec3
-              );
+      return ScaTraFactory::ProvideImpl(
+          Shape(), impltype_, numdofpernode, numscal, discretization.Name())
+          ->EvaluateOD(
+              this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
 
     case SCATRA::check_scatra_element_parameter:
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
-    case SCATRA:: integrate_weighted_scalar:
+    case SCATRA::integrate_weighted_scalar:
     case SCATRA::calc_flux_domain:
     case SCATRA::calc_total_and_mean_scalars:
     case SCATRA::calc_mean_scalar_time_derivatives:
@@ -320,16 +294,10 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::transform_real_to_reference_point:
     case SCATRA::evaluate_field_in_point:
     {
-      return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
-               this,
-               params,
-               discretization,
-               la,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3);
+      return ScaTraFactory::ProvideImpl(
+          Shape(), impltype_, numdofpernode, numscal, discretization.Name())
+          ->EvaluateService(
+              this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case SCATRA::set_general_scatra_parameter:
@@ -347,10 +315,10 @@ int DRT::ELEMENTS::Transport::Evaluate(
       dserror("Unknown type of action '%i' for ScaTra", action);
       break;
     }
-  } // switch(action)
+  }  // switch(action)
 
   return 0;
-} // DRT::ELEMENTS::Transport::Evaluate
+}  // DRT::ELEMENTS::Transport::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -361,13 +329,8 @@ int DRT::ELEMENTS::Transport::Evaluate(
  |  in the element. We need it there for the stabilization terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization&      discretization,
-    DRT::Condition&           condition,
-    std::vector<int>&         lm,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
-
-

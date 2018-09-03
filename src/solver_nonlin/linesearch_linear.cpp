@@ -30,20 +30,20 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::LineSearchLinear::LineSearchLinear()
- : NLNSOL::LineSearchBase()
-{
-  return;
-}
+NLNSOL::LineSearchLinear::LineSearchLinear() : NLNSOL::LineSearchBase() { return; }
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::LineSearchLinear::Setup()
 {
-  dserror("This algorithm is considered as deprecated. Please check carefully"
+  dserror(
+      "This algorithm is considered as deprecated. Please check carefully"
       "before using it.");
 
   // make sure that Init() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
 
   // SetupLineSearch() has been called
   SetIsSetup();
@@ -52,17 +52,22 @@ void NLNSOL::LineSearchLinear::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam,
-    bool& suffdecr) const
+void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam, bool& suffdecr) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchLinear::ComputeLSParam");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::LineSearchLinear::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // make sure that Init() and Setup() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // compute lsparam without caring for sufficient decrease
   ComputeLSParam(lsparam);
@@ -73,8 +78,7 @@ void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam,
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
 
   // check for sufficient decrease
-  Teuchos::RCP<Epetra_MultiVector> fnew =
-      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> fnew = Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
   ComputeF(*xnew, *fnew);
   double fnorm2 = 0.0;
   ConvergenceCheck(*fnew, fnorm2);
@@ -87,20 +91,26 @@ void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam,
 void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchLinear::ComputeLSParam");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::LineSearchLinear::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // make sure that Init() and Setup() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   double nominator = 0.0;
   double denominator = 0.0;
 
-  Teuchos::RCP<Epetra_MultiVector> xnew = // new trial solution
+  Teuchos::RCP<Epetra_MultiVector> xnew =  // new trial solution
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
-  Teuchos::RCP<Epetra_MultiVector> fnew = // residual at trial solution
+  Teuchos::RCP<Epetra_MultiVector> fnew =  // residual at trial solution
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
 
   // compute nominator

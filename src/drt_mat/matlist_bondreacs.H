@@ -27,167 +27,149 @@
 
 namespace MAT
 {
+  namespace PAR
+  {
+    /*----------------------------------------------------------------------*/
+    /// material parameters for list of materials
+    class MatListBondReacs : public MatListReactions
+    {
+     public:
+      /// standard constructor
+      MatListBondReacs(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-namespace PAR
-{
-/*----------------------------------------------------------------------*/
-/// material parameters for list of materials
-class MatListBondReacs : public MatListReactions
-{
-public:
+      /// destructor
+      virtual ~MatListBondReacs() { ; }
 
-  /// standard constructor
-  MatListBondReacs(
-      Teuchos::RCP<MAT::PAR::Material> matdata
-  );
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-  /// destructor
-  virtual ~MatListBondReacs() { ; }
+    };  // class MatListBondReacs
 
-  /// create material instance of matching type with my parameters
-  virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+  }  // namespace PAR
 
-};  // class MatListBondReacs
+  class MatListBondReacsType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MatListBondReacsType"; }
 
-}  // namespace PAR
+    static MatListBondReacsType& Instance() { return instance_; };
 
-class MatListBondReacsType : public DRT::ParObjectType
-{
-public:
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  std::string Name() const { return "MatListBondReacsType"; }
+   private:
+    static MatListBondReacsType instance_;
+  };
 
-  static MatListBondReacsType & Instance() { return instance_; };
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for a list of materials
+  class MatListBondReacs : public MatListReactions
+  {
+   public:
+    /// construct empty material object
+    MatListBondReacs();
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+    /// construct the material object given material parameters
+    explicit MatListBondReacs(MAT::PAR::MatListBondReacs* params);
 
-private:
+    //! @name Packing and Unpacking
 
-  static MatListBondReacsType instance_;
-};
+    /*!
+        \brief Return unique ParObject id
 
-/*----------------------------------------------------------------------*/
-/// Wrapper for a list of materials
-class MatListBondReacs : public MatListReactions
-{
-public:
+        every class implementing ParObject needs a unique id defined at the
+        top of drt_parobject.H (this file) and should return it in this method.
+     */
+    virtual int UniqueParObjectId() const
+    {
+      return MatListBondReacsType::Instance().UniqueParObjectId();
+    }
 
-  /// construct empty material object
-  MatListBondReacs();
+    /*!
+        \brief Pack this class so it can be communicated
 
-  /// construct the material object given material parameters
-  explicit MatListBondReacs(MAT::PAR::MatListBondReacs* params);
+        Resizes the vector data and stores all information of a class in it.
+        The first information to be stored in data has to be the
+        unique parobject id delivered by UniqueParObjectId() which will then
+        identify the exact class on the receiving processor.
 
-  //! @name Packing and Unpacking
+        \param data (in/out): char vector to store class information
+     */
+    virtual void Pack(DRT::PackBuffer& data) const;
 
-  /*!
-      \brief Return unique ParObject id
+    /*!
+        \brief Unpack data from a char vector into this class
 
-      every class implementing ParObject needs a unique id defined at the
-      top of drt_parobject.H (this file) and should return it in this method.
-   */
-  virtual int UniqueParObjectId() const { return MatListBondReacsType::Instance().UniqueParObjectId(); }
+        The vector data contains all information to rebuild the
+        exact copy of an instance of a class on a different processor.
+        The first entry in data has to be an integer which is the unique
+        parobject id defined at the top of this file and delivered by
+        UniqueParObjectId().
 
-  /*!
-      \brief Pack this class so it can be communicated
+        \param data (in) : vector storing all data to be unpacked into this
+        instance.
+     */
+    virtual void Unpack(const std::vector<char>& data);
 
-      Resizes the vector data and stores all information of a class in it.
-      The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
-      identify the exact class on the receiving processor.
+    //@}
 
-      \param data (in/out): char vector to store class information
-   */
-  virtual void Pack(DRT::PackBuffer& data) const;
+    /// initialize
+    virtual void Initialize();
 
-  /*!
-      \brief Unpack data from a char vector into this class
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_matlist_bondreacs;
+    }
 
-      The vector data contains all information to rebuild the
-      exact copy of an instance of a class on a different processor.
-      The first entry in data has to be an integer which is the unique
-      parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new MatListBondReacs(*this));
+    }
 
-      \param data (in) : vector storing all data to be unpacked into this
-      instance.
-   */
-  virtual void Unpack(const std::vector<char>& data);
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::MatListBondReacs* Parameter() const { return paramsbondreac_; }
 
-  //@}
+    /// advanced reaction terms
+    double CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+        const std::vector<double>& phin, const double violation, const double porosity,
+        const double* gpcoord,  //!< Gauss-point coordinates
+        const double scale = 1.0) const;
 
-  /// initialize
-  virtual void Initialize();
+    /// calculate advanced reaction term derivatives
+    void CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+        const std::vector<double>& phinp, const std::vector<double>& phin, const double violation,
+        const double porosity,
+        const double* gpcoord,  //!< Gauss-point coordinates
+        const double scale = 1.0) const;
 
-  /// material type
-  virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_bondreacs; }
+    /// advanced reaction terms
+    double CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+        const std::vector<double>& phin,
+        const std::vector<std::pair<std::string, double>>& constants, const double violation,
+        const double porosity,
+        const double* gpcoord,  //!< Gauss-point coordinates
+        const double scale = 1.0) const;
 
-  /// return copy of this material object
-  virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListBondReacs( *this ) ); }
-
-  /// Return quick accessible material parameter data
-  virtual MAT::PAR::MatListBondReacs* Parameter() const {return paramsbondreac_;}
-
-  ///advanced reaction terms
-  double CalcReaBodyForceTerm(
-      const int k,
-      const std::vector<double>& phinp,
-      const std::vector<double>& phin,
-      const double violation,
-      const double porosity,
-      const double* gpcoord,      //!< Gauss-point coordinates
-      const double scale = 1.0
-  ) const;
-
-  /// calculate advanced reaction term derivatives
-  void CalcReaBodyForceDerivMatrix(
-      const int k,
-      std::vector<double>& derivs,
-      const std::vector<double>& phinp,
-      const std::vector<double>& phin,
-      const double violation,
-      const double porosity,
-      const double* gpcoord,      //!< Gauss-point coordinates
-      const double scale = 1.0
-  ) const;
-
-  ///advanced reaction terms
-  double CalcReaBodyForceTerm(
-      const int k,
-      const std::vector<double>& phinp,
-      const std::vector<double>& phin,
-      const std::vector<std::pair<std::string,double> >& constants,
-      const double violation,
-      const double porosity,
-      const double* gpcoord,      //!< Gauss-point coordinates
-      const double scale = 1.0
-  ) const;
-
-  /// calculate advanced reaction term derivatives
-  void CalcReaBodyForceDerivMatrix(
-      const int k,
-      std::vector<double>& derivs,
-      const std::vector<double>& phinp,
-      const std::vector<double>& phin,
-      const std::vector<std::pair<std::string,double> >& constants,
-      const double violation,
-      const double porosity,
-      const double* gpcoord,      //!< Gauss-point coordinates
-      const double scale = 1.0
-  ) const;
+    /// calculate advanced reaction term derivatives
+    void CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+        const std::vector<double>& phinp, const std::vector<double>& phin,
+        const std::vector<std::pair<std::string, double>>& constants, const double violation,
+        const double porosity,
+        const double* gpcoord,  //!< Gauss-point coordinates
+        const double scale = 1.0) const;
 
 
-private:
+   private:
+    /// clear everything
+    void Clear();
 
-  /// clear everything
-  void Clear();
+    /// my material parameters
+    MAT::PAR::MatListBondReacs* paramsbondreac_;
 
-  /// my material parameters
-  MAT::PAR::MatListBondReacs* paramsbondreac_;
+  };  // class MatListBondReacs
 
-}; // class MatListBondReacs
-
-} // namespace MAT
+}  // namespace MAT
 
 
 #endif /* MATLIST_BONDREACS_H_ */

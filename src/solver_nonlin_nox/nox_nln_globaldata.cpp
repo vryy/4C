@@ -15,7 +15,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "nox_nln_globaldata.H"   // class definition
+#include "nox_nln_globaldata.H"  // class definition
 #include "nox_nln_meritfunction_factory.H"
 #include "nox_nln_solver_prepostop_generic.H"
 #include "nox_nln_linearsystem.H"
@@ -38,8 +38,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    Teuchos::ParameterList& noxParams,
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -48,8 +47,8 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
     const Teuchos::RCP<NOX::Epetra::Scaling>& iScale)
-    : comm_(Teuchos::rcp(&comm,false)),
-      nlnparams_(Teuchos::rcp(&noxParams,false)),
+    : comm_(Teuchos::rcp(&comm, false)),
+      nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(type),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
@@ -60,7 +59,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
       iScale_(iScale),
       mrtFctPtr_(Teuchos::null),
       prePostOpPtr_(Teuchos::null),
-      isConstrained_(type!=opt_unconstrained)
+      isConstrained_(type != opt_unconstrained)
 {
   CheckInput();
   // do some setup things
@@ -69,24 +68,22 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    Teuchos::ParameterList& noxParams,
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const OptimizationProblemType& type,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac, const OptimizationProblemType& type,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
-    : comm_(Teuchos::rcp(&comm,false)),
-      nlnparams_(Teuchos::rcp(&noxParams,false)),
+    : comm_(Teuchos::rcp(&comm, false)),
+      nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(type),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
       iJacPtr_(iJac),
-      iPrecPtr_(Teuchos::null),     // no pre-conditioner
+      iPrecPtr_(Teuchos::null),  // no pre-conditioner
       iConstr_(iConstr),
       mrtFctPtr_(Teuchos::null),
       prePostOpPtr_(Teuchos::null),
-      isConstrained_(type!=opt_unconstrained)
+      isConstrained_(type != opt_unconstrained)
 {
   CheckInput();
   // do some setup things
@@ -95,14 +92,13 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    Teuchos::ParameterList& noxParams,
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
-    : comm_(Teuchos::rcp(&comm,false)),
-      nlnparams_(Teuchos::rcp(&noxParams,false)),
+    : comm_(Teuchos::rcp(&comm, false)),
+      nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(opt_unconstrained),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
@@ -119,18 +115,17 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    Teuchos::ParameterList& noxParams,
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
     const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac)
-    : comm_(Teuchos::rcp(&comm,false)),
-      nlnparams_(Teuchos::rcp(&noxParams,false)),
+    : comm_(Teuchos::rcp(&comm, false)),
+      nlnparams_(Teuchos::rcp(&noxParams, false)),
       optType_(opt_unconstrained),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
       iJacPtr_(iJac),
-      iPrecPtr_(Teuchos::null),     // no pre-conditioner
+      iPrecPtr_(Teuchos::null),  // no pre-conditioner
       mrtFctPtr_(Teuchos::null),
       prePostOpPtr_(Teuchos::null),
       isConstrained_(false)
@@ -145,11 +140,10 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 void NOX::NLN::GlobalData::CheckInput() const
 {
   // short input check
-  if (linSolvers_.size()==0)
-    dserror("The linear solver map has the size 0! Required size > 0.");
+  if (linSolvers_.size() == 0) dserror("The linear solver map has the size 0! Required size > 0.");
 
-  typedef std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >::const_iterator CI;
-  for (CI iter=linSolvers_.begin(); iter!=linSolvers_.end(); ++iter)
+  typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>::const_iterator CI;
+  for (CI iter = linSolvers_.begin(); iter != linSolvers_.end(); ++iter)
     if (iter->second.is_null())
     {
       std::ostringstream msg;
@@ -165,7 +159,7 @@ void NOX::NLN::GlobalData::CheckInput() const
 void NOX::NLN::GlobalData::Setup()
 {
   // set the nonlinear optimzation problem type
-  nlnparams_->set("Optimization Problem Type",optType_);
+  nlnparams_->set("Optimization Problem Type", optType_);
 
   // set printing parameters
   SetPrintingParameters();
@@ -186,7 +180,7 @@ void NOX::NLN::GlobalData::Setup()
  *----------------------------------------------------------------------------*/
 void NOX::NLN::GlobalData::SetPrintingParameters()
 {
-  NOX::NLN::AUX::SetPrintingParameters(*nlnparams_,*comm_);
+  NOX::NLN::AUX::SetPrintingParameters(*nlnparams_, *comm_);
 
   return;
 }
@@ -206,11 +200,9 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
   /* If we do a full newton method, we don't need a merit function and can
    * skip the following */
   const std::string& nlnsolver_name = nlnparams_->get<std::string>("Nonlinear Solver");
-  const std::string& ls_method_name = nlnparams_->sublist("Line Search").
-      get<std::string>("Method");
-  if (((nlnsolver_name == "Line Search Based") or
-       (nlnsolver_name == "Pseudo Transient")) and
-       (ls_method_name != "Full Step"))
+  const std::string& ls_method_name = nlnparams_->sublist("Line Search").get<std::string>("Method");
+  if (((nlnsolver_name == "Line Search Based") or (nlnsolver_name == "Pseudo Transient")) and
+      (ls_method_name != "Full Step"))
   {
     // Pure reading access to the unfinished nox_nln_globaldata class
     mrtFctPtr_ = NOX::NLN::MeritFunction::BuildMeritFunction(*this);
@@ -218,14 +210,14 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
 
   // If the mrtFctPtr is Teuchos::null the default "Sum of Squares" NOX internal
   // merit function is used.
-  if ( not mrtFctPtr_.is_null() )
-    solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic> >
-      ("User Defined Merit Function",mrtFctPtr_);
+  if (not mrtFctPtr_.is_null())
+    solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic>>(
+        "User Defined Merit Function", mrtFctPtr_);
 
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */
   prePostOpPtr_ = Teuchos::rcp(new NOX::NLN::Solver::PrePostOp::Generic());
-  NOX::NLN::AUX::AddToPrePostOpVector( solverOptionsList, prePostOpPtr_ );
+  NOX::NLN::AUX::AddToPrePostOpVector(solverOptionsList, prePostOpPtr_);
 
   return;
 }
@@ -234,15 +226,16 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
  *----------------------------------------------------------------------------*/
 void NOX::NLN::GlobalData::SetStatusTestParameters()
 {
-  Teuchos::ParameterList& statusTestParams = nlnparams_->sublist("Status Test",true);
+  Teuchos::ParameterList& statusTestParams = nlnparams_->sublist("Status Test", true);
 
   // check if the status test was already set via the dat-file
   if (statusTestParams.isSublist("Outer Status Test") and
-      statusTestParams.sublist("Outer Status Test").numParams()!=0)
+      statusTestParams.sublist("Outer Status Test").numParams() != 0)
     return;
 
   // initialize the sublist "Outer Status Test". This one has to be specified.
-  Teuchos::ParameterList& outerStatusTestParams = statusTestParams.sublist("Outer Status Test",false);
+  Teuchos::ParameterList& outerStatusTestParams =
+      statusTestParams.sublist("Outer Status Test", false);
 
   Teuchos::ParameterList xmlParams;
   std::string xmlfilename = statusTestParams.get<std::string>("XML File");
@@ -259,14 +252,15 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
     }
     catch (std::runtime_error& e)
     {
-      dserror("The \"Status Test\"->\"XML File\" was not found! "
+      dserror(
+          "The \"Status Test\"->\"XML File\" was not found! "
           "Please check the path in your input file! \n"
-          "CURRENT PATH = %s",xmlfilename.c_str());
+          "CURRENT PATH = %s",
+          xmlfilename.c_str());
     }
   }
   else
-    dserror("The file name '%s' is not a valid XML file name.",
-        xmlfilename.c_str());
+    dserror("The file name '%s' is not a valid XML file name.", xmlfilename.c_str());
 
   // copy the "Outer Status Test" into the nox parameter list
   if (not xmlParams.isSublist("Outer Status Test"))
@@ -278,7 +272,8 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
    * list is necessary. We check it during the nox_nln_linesearch_factory call. */
   if (xmlParams.isSublist("Inner Status Test"))
   {
-    Teuchos::ParameterList& innerStatusTestParams = statusTestParams.sublist("Inner Status Test",false);
+    Teuchos::ParameterList& innerStatusTestParams =
+        statusTestParams.sublist("Inner Status Test", false);
     // copy the "Inner Status Test" into the nox parameter list
     if (xmlParams.sublist("Inner Status Test").numParams())
       innerStatusTestParams = xmlParams.sublist("Inner Status Test");
@@ -294,8 +289,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
  *----------------------------------------------------------------------------*/
 const NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
 {
-  if (noxUtils_.is_null())
-    dserror("noxUtils_ was not initialized!");
+  if (noxUtils_.is_null()) dserror("noxUtils_ was not initialized!");
 
   return *noxUtils_;
 }
@@ -304,8 +298,7 @@ const NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
  *----------------------------------------------------------------------------*/
 const Teuchos::RCP<NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
 {
-  if (noxUtils_.is_null())
-    dserror("noxUtils_ was not initialized!");
+  if (noxUtils_.is_null()) dserror("noxUtils_ was not initialized!");
 
   return noxUtils_;
 }
@@ -314,8 +307,7 @@ const Teuchos::RCP<NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
  *----------------------------------------------------------------------------*/
 const Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList() const
 {
-  if (nlnparams_.is_null())
-    dserror("nlnparams_ was not initialized!");
+  if (nlnparams_.is_null()) dserror("nlnparams_ was not initialized!");
 
   return *nlnparams_;
 }
@@ -324,19 +316,16 @@ const Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList() const
  *----------------------------------------------------------------------------*/
 Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList()
 {
-  if (nlnparams_.is_null())
-    dserror("nlnparams_ was not initialized!");
+  if (nlnparams_.is_null()) dserror("nlnparams_ was not initialized!");
 
   return *nlnparams_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<Teuchos::ParameterList>&
-    NOX::NLN::GlobalData::GetNlnParameterListPtr()
+const Teuchos::RCP<Teuchos::ParameterList>& NOX::NLN::GlobalData::GetNlnParameterListPtr()
 {
-  if (nlnparams_.is_null())
-    dserror("nlnparams_ was not initialized!");
+  if (nlnparams_.is_null()) dserror("nlnparams_ was not initialized!");
 
   return nlnparams_;
 }
@@ -345,8 +334,7 @@ const Teuchos::RCP<Teuchos::ParameterList>&
  *----------------------------------------------------------------------------*/
 const Epetra_Comm& NOX::NLN::GlobalData::GetComm() const
 {
-  if (comm_.is_null())
-    dserror("comm_ was not initialized!");
+  if (comm_.is_null()) dserror("comm_ was not initialized!");
 
   return *comm_;
 }
@@ -360,29 +348,25 @@ const NOX::NLN::LinearSystem::SolverMap& NOX::NLN::GlobalData::GetLinSolvers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Required>
-    NOX::NLN::GlobalData::GetRequiredInterface()
+const Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
 {
-  if (iReqPtr_.is_null())
-    dserror("Required interface pointer iReqPtr_ was not initialized!");
+  if (iReqPtr_.is_null()) dserror("Required interface pointer iReqPtr_ was not initialized!");
 
   return iReqPtr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>
-    NOX::NLN::GlobalData::GetJacobianInterface()
+const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
 {
-  if (iJacPtr_.is_null())
-    dserror("Jacobian interface pointer iJacPtr_ was not initialized!");
+  if (iJacPtr_.is_null()) dserror("Jacobian interface pointer iJacPtr_ was not initialized!");
 
   return iJacPtr_;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
-    NOX::NLN::GlobalData::GetPreconditionerInterface()
+NOX::NLN::GlobalData::GetPreconditionerInterface()
 {
   /* We explicitly allow a return value of Teuchos::NULL, because the
    * preconditioner interface is in many cases optional */
@@ -391,32 +375,25 @@ const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::NLN::CONSTRAINT::ReqInterfaceMap&
-    NOX::NLN::GlobalData::GetConstraintInterfaces()
+const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::GlobalData::GetConstraintInterfaces()
 {
-  if (iConstr_.size()==0)
-    dserror("The constraint interface map is empty!");
+  if (iConstr_.size() == 0) dserror("The constraint interface map is empty!");
 
   return iConstr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::NLN::CONSTRAINT::PrecInterfaceMap&
-    NOX::NLN::GlobalData::GetConstraintPrecInterfaces()
+const NOX::NLN::CONSTRAINT::PrecInterfaceMap& NOX::NLN::GlobalData::GetConstraintPrecInterfaces()
 {
-  if (iConstrPrec_.size()==0)
-    dserror("The constraint preconditioner interface map is empty!");
+  if (iConstrPrec_.size() == 0) dserror("The constraint preconditioner interface map is empty!");
 
   return iConstrPrec_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const bool& NOX::NLN::GlobalData::GetIsConstrained() const
-{
-  return isConstrained_;
-}
+const bool& NOX::NLN::GlobalData::GetIsConstrained() const { return isConstrained_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

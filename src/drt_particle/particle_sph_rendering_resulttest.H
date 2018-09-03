@@ -31,19 +31,19 @@
 namespace DRT
 {
   class Discretization;
-} // namespace DRT
+}  // namespace DRT
 
 namespace PARTICLE
 {
   class Rendering;
-} // namespace PARTICLE
+}  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*
  | SPH rendering result test class                         sfuchs 06/17 |
  *----------------------------------------------------------------------*/
 class ParticleSPHRenderingResultTest : public DRT::ResultTest
 {
-public:
+ public:
   //! Constructor for particle time integrators of general kind
   ParticleSPHRenderingResultTest(PARTICLE::Rendering& rendering);
 
@@ -54,28 +54,26 @@ public:
   //!                             "accx", "accy", "accz",
   //!                             "density", "pressure"
   virtual void TestNode(
-      DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-      int&                          nerr,        //!< number of failed result tests
-      int&                          test_count   ///< number of result tests
-      );
+      DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+      int& nerr,                        //!< number of failed result tests
+      int& test_count                   ///< number of result tests
+  );
 
-private:
-
+ private:
   //! rendering discretisation
   Teuchos::RCP<const DRT::Discretization> discret_;
 
   //! rendering solution vectors
-  Teuchos::RCP<const Epetra_Vector> vel_; //! rendering velocity
+  Teuchos::RCP<const Epetra_Vector> vel_;  //! rendering velocity
 
-  Teuchos::RCP<const Epetra_Vector> acc_; //! rendering acceleration
+  Teuchos::RCP<const Epetra_Vector> acc_;  //! rendering acceleration
 
-  Teuchos::RCP<const Epetra_Vector> velmod_; //! rendering modified velocity
+  Teuchos::RCP<const Epetra_Vector> velmod_;  //! rendering modified velocity
 
-  Teuchos::RCP<const Epetra_Vector> density_; //! rendering density
+  Teuchos::RCP<const Epetra_Vector> density_;  //! rendering density
 
-  Teuchos::RCP<const Epetra_Vector> pressure_; //! rendering pressure
-
+  Teuchos::RCP<const Epetra_Vector> pressure_;  //! rendering pressure
 };
 
 /*----------------------------------------------------------------------*/
-#endif // PARTICLESPHRENDERINGRESULTTEST_H
+#endif  // PARTICLESPHRENDERINGRESULTTEST_H

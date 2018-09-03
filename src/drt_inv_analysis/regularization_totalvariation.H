@@ -24,7 +24,6 @@
 namespace INVANA
 
 {
-
   /*! \class RegularizationTotalVariation
   \brief A class for regularization on a vector 'theta' of parameters based on total variation
 
@@ -67,9 +66,7 @@ namespace INVANA
  */
   class RegularizationTotalVariation : public RegularizationBase
   {
-
-  public:
-
+   public:
     //! constructor
     RegularizationTotalVariation();
 
@@ -83,19 +80,19 @@ namespace INVANA
     //@{
 
     //! Evaluate value of the regularization functional
-    virtual void Evaluate(const Epetra_MultiVector& theta, /// [in] vector to be regularized
-        double* value /// [out] functional value
-        );
+    virtual void Evaluate(const Epetra_MultiVector& theta,  /// [in] vector to be regularized
+        double* value                                       /// [out] functional value
+    );
 
     //! Evaluate gradient of the regularization functional
-    virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
-        Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
-        );
+    virtual void EvaluateGradient(
+        const Epetra_MultiVector& theta,           /// [in] vector to be regularized
+        Teuchos::RCP<Epetra_MultiVector> gradient  /// [out] directional derivative wrt. theta
+    );
 
     //@}
 
-  private:
-
+   private:
     //! differentiation epsilon
     double eps_;
 
@@ -107,10 +104,9 @@ namespace INVANA
      *
      */
     Teuchos::RCP<Epetra_CrsMatrix> adjacency_;
-
   };
 
-}
+}  // namespace INVANA
 
 /*----------------------------------------------------------------------*/
 #endif

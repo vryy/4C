@@ -22,10 +22,9 @@ namespace POROELAST
 {
   class PoroScatraPart1WC : public PoroScatraPart
   {
-  public:
-    explicit PoroScatraPart1WC(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams):
-        PoroScatraPart(comm,timeparams){};
+   public:
+    explicit PoroScatraPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+        : PoroScatraPart(comm, timeparams){};
 
     //! solve one time step of porous media problem
     void DoPoroStep();
@@ -40,15 +39,14 @@ namespace POROELAST
 
     //! write output print to screen
     void Output();
-
   };
 
   class PoroScatraPart1WCPoroToScatra : public PoroScatraPart1WC
   {
-  public:
+   public:
     //! constructor
-    explicit PoroScatraPart1WCPoroToScatra(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+    explicit PoroScatraPart1WCPoroToScatra(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
     virtual ~PoroScatraPart1WCPoroToScatra(){};
@@ -64,15 +62,14 @@ namespace POROELAST
 
     //! read and set fields needed for restart
     void ReadRestart(int restart);
-
   };
 
   class PoroScatraPart1WCScatraToPoro : public PoroScatraPart1WC
   {
-  public:
+   public:
     //! constructor
-    explicit PoroScatraPart1WCScatraToPoro(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+    explicit PoroScatraPart1WCScatraToPoro(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
     virtual ~PoroScatraPart1WCScatraToPoro(){};
@@ -88,9 +85,8 @@ namespace POROELAST
 
     //! read and set fields needed for restart
     void ReadRestart(int restart);
-
   };
-}
+}  // namespace POROELAST
 
 
 #endif /* PORO_SCATRA_PART_1WC_H_ */

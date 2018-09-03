@@ -2,7 +2,8 @@
 
 \file turbulence_hit_initial_scalar_field.H
 
-\brief routines to initialize homogeneous isotropic turbulence simulations with passive scalar transport
+\brief routines to initialize homogeneous isotropic turbulence simulations with passive scalar
+transport
 
 \level 2
 
@@ -24,7 +25,7 @@
 
 #include "../drt_inpar/inpar_scatra.H"
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -32,41 +33,36 @@ namespace DRT
 
 namespace SCATRA
 {
+  // forward declarations
+  class ScaTraTimIntImpl;
 
-// forward declarations
-class ScaTraTimIntImpl;
-
-// inital condition for homogeneous isotropic turbulence
-// based on the Comte-Bellot - Corrsion experiment
-class HomIsoTurbInitialScalarField
-{
-  public:
-
+  // inital condition for homogeneous isotropic turbulence
+  // based on the Comte-Bellot - Corrsion experiment
+  class HomIsoTurbInitialScalarField
+  {
+   public:
     //! constructor
-    HomIsoTurbInitialScalarField(ScaTraTimIntImpl& timeint,
-                                 const INPAR::SCATRA::InitialField initfield);
+    HomIsoTurbInitialScalarField(
+        ScaTraTimIntImpl& timeint, const INPAR::SCATRA::InitialField initfield);
 
     //! destructor
-    ~HomIsoTurbInitialScalarField(){return;};
+    ~HomIsoTurbInitialScalarField() { return; };
 
     //! calculate initial field
     void CalculateInitialField();
 
-  protected:
-
+   protected:
     //! sort criterium for double values up to a tolerance of 10-9
     class LineSortCriterion
     {
-      public:
-        bool operator() (const double& p1,
-                         const double& p2) const { return (p1 < p2 - 1E-9);}
+     public:
+      bool operator()(const double& p1, const double& p2) const { return (p1 < p2 - 1E-9); }
 
-      protected:
-      private:
+     protected:
+     private:
     };
 
-  private:
-
+   private:
     //! estimate energy form given scalar variance spectrum (function for E_phi)
     double CalculateEnergyFromSpectrum(double k);
 
@@ -84,10 +80,9 @@ class HomIsoTurbInitialScalarField
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double> > coordinates_;
+    Teuchos::RCP<std::vector<double>> coordinates_;
+  };
 
-};
-
-} // end FLUID
+}  // namespace SCATRA
 
 #endif

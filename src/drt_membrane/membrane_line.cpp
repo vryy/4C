@@ -41,38 +41,34 @@ DRT::ELEMENTS::Membrane_line3Type& DRT::ELEMENTS::Membrane_line3Type::Instance()
  |  constructor (public)                                   fbraeu 06/16 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner,
-                                                   int nnode, const int* nodeids,
-                                                   DRT::Node** nodes,
-                                                   DRT::ELEMENTS::Membrane<distype>* parent,
-                                                   const int lline) :
-DRT::FaceElement(id,owner),
-intpointsline_(DRT::UTILS::intrule_line_2point)
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::ELEMENTS::Membrane<distype>* parent, const int lline)
+    : DRT::FaceElement(id, owner), intpointsline_(DRT::UTILS::intrule_line_2point)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lline);
-  switch(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
+  SetParentMasterElement(parent, lline);
+  switch (DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
   {
-  case line2:
-  {
-    DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_2point;
-    // get gauss integration points
-    intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+    case line2:
+    {
+      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_2point;
+      // get gauss integration points
+      intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+      break;
+    }
+    case line3:
+    {
+      DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_3point;
+      // get gauss integration points
+      intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+      break;
+    }
     break;
-  }
-  case line3:
-  {
-    DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_3point;
-    // get gauss integration points
-    intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
-    break;
-  }
-  break;
-  default:
+    default:
       dserror("shape type unknown!\n");
-  break;
+      break;
   }
   return;
 }
@@ -80,10 +76,9 @@ intpointsline_(DRT::UTILS::intrule_line_2point)
 /*----------------------------------------------------------------------*
  |  copy-constructor (public)                              fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(const DRT::ELEMENTS::MembraneLine<distype>& old) :
-DRT::FaceElement(old),
-intpointsline_(old.intpointsline_)
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(const DRT::ELEMENTS::MembraneLine<distype>& old)
+    : DRT::FaceElement(old), intpointsline_(old.intpointsline_)
 {
   return;
 }
@@ -92,10 +87,11 @@ intpointsline_(old.intpointsline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::MembraneLine<distype>::Clone() const
 {
-  DRT::ELEMENTS::MembraneLine<distype>* newelement = new DRT::ELEMENTS::MembraneLine<distype>(*this);
+  DRT::ELEMENTS::MembraneLine<distype>* newelement =
+      new DRT::ELEMENTS::MembraneLine<distype>(*this);
   return newelement;
 }
 
@@ -103,7 +99,7 @@ DRT::Element* DRT::ELEMENTS::MembraneLine<distype>::Clone() const
  |                                                             (public) |
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 DRT::Element::DiscretizationType DRT::ELEMENTS::MembraneLine<distype>::Shape() const
 {
   return DRT::UTILS::DisTypeToFaceShapeType<distype>::shape;
@@ -113,7 +109,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::MembraneLine<distype>::Shape() c
  |  Pack data                                                  (public) |
  |                                                             fb 09/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MembraneLine<distype>::Pack(DRT::PackBuffer& data) const
 {
   dserror("this membrane line element does not support communication");
@@ -125,7 +121,7 @@ void DRT::ELEMENTS::MembraneLine<distype>::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                        fbraeu 06/165 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MembraneLine<distype>::Unpack(const std::vector<char>& data)
 {
   dserror("this membrane line element does not support communication");
@@ -135,7 +131,7 @@ void DRT::ELEMENTS::MembraneLine<distype>::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  destructor (public)                                     fbraeu 06/16|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MembraneLine<distype>::~MembraneLine()
 {
   return;
@@ -145,11 +141,12 @@ DRT::ELEMENTS::MembraneLine<distype>::~MembraneLine()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             fbraeu 06/16|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
 {
   os << "MembraneLine ";
-  os<<" Discretization type: "<<DRT::DistypeToString(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape).c_str();
+  os << " Discretization type: "
+     << DRT::DistypeToString(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape).c_str();
   Element::Print(os);
   return;
 }

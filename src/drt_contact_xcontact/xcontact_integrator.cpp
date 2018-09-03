@@ -27,53 +27,44 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         unsigned dim,
-         unsigned numNodeEle>
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned dim,
+    unsigned numNodeEle>
 XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::Integrator(
-    Teuchos::ParameterList& params,
-    const Epetra_Comm& comm)
+    Teuchos::ParameterList& params, const Epetra_Comm& comm)
     : CONTACT::CoIntegrator(params, eletype, comm),
-      is_const_normal_(DRT::INPUT::IntegralValue<bool>(
-          params.sublist("XCONTACT",true), "CONST_CPP_NORMAL")),
+      is_const_normal_(
+          DRT::INPUT::IntegralValue<bool>(params.sublist("XCONTACT", true), "CONST_CPP_NORMAL")),
       is_l2_var_jacobi_(true),
-      is_h1_(DRT::INPUT::IntegralValue<bool>(
-          params.sublist("XCONTACT",true), "H1_DUALITY_PAIRING"))
+      is_h1_(
+          DRT::INPUT::IntegralValue<bool>(params.sublist("XCONTACT", true), "H1_DUALITY_PAIRING"))
 {
   // empty
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         unsigned dim,
-         unsigned numNodeEle>
-Teuchos::RCP<const XCONTACT::GenericEvaluator<probdim,eletype,dim,numNodeEle> >
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned dim,
+    unsigned numNodeEle>
+Teuchos::RCP<const XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>>
 XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::BuildEvaluator(
-    const CONTACT::ParamsInterface & cparams) const
+    const CONTACT::ParamsInterface& cparams) const
 {
-  Teuchos::RCP<const XCONTACT::GenericEvaluator<probdim,eletype> > xevaluator =
-      Teuchos::null;
+  Teuchos::RCP<const XCONTACT::GenericEvaluator<probdim, eletype>> xevaluator = Teuchos::null;
 
   switch (cparams.GetActionType())
   {
     case MORTAR::eval_force:
     {
-      xevaluator = Teuchos::rcp(
-          new const XCONTACT::ForceEvaluator<probdim,eletype>());
+      xevaluator = Teuchos::rcp(new const XCONTACT::ForceEvaluator<probdim, eletype>());
       break;
     }
     case MORTAR::eval_force_stiff:
     {
-      xevaluator = Teuchos::rcp(
-          new const XCONTACT::ForceTangentEvaluator<probdim,eletype>());
+      xevaluator = Teuchos::rcp(new const XCONTACT::ForceTangentEvaluator<probdim, eletype>());
       break;
     }
     case MORTAR::eval_weighted_gap:
-      xevaluator = Teuchos::rcp(
-          new const XCONTACT::GapEvaluator<probdim,eletype>());
+      xevaluator = Teuchos::rcp(new const XCONTACT::GapEvaluator<probdim, eletype>());
       break;
     default:
     {
@@ -88,14 +79,10 @@ XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::BuildEvaluator(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         unsigned dim,
-         unsigned numNodeEle>
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned dim,
+    unsigned numNodeEle>
 void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2D(
-    MORTAR::MortarElement& sele,
-    std::vector<MORTAR::MortarElement*> meles,
-    bool *boundary_ele,
+    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // ==========================================================================
@@ -114,22 +101,24 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
   for (unsigned me = 0; me < meles.size(); ++me)
   {
     if (!sele.IsSlave() or meles[me]->IsSlave())
-      dserror("XContact integrator: Integration called on wrong type of mortar "
+      dserror(
+          "XContact integrator: Integration called on wrong type of mortar "
           "element pair.");
   }
 
-//  // Check numerical integration type
-//  INPAR::MORTAR::IntType inttype =
-//      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
-//  if (inttype != INPAR::MORTAR::inttype_elements)
-//  {
-//    dserror("XContact integrator: Only element based integration implemented yet. "
-//        "Use INTTYPE Elements.");
-//  }
+  //  // Check numerical integration type
+  //  INPAR::MORTAR::IntType inttype =
+  //      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_, "INTTYPE");
+  //  if (inttype != INPAR::MORTAR::inttype_elements)
+  //  {
+  //    dserror("XContact integrator: Only element based integration implemented yet. "
+  //        "Use INTTYPE Elements.");
+  //  }
 
   // Check constant normal on master side
   if (not IsConstantNormal())
-    dserror("XContact integrator: Variation and linearization of non-constant "
+    dserror(
+        "XContact integrator: Variation and linearization of non-constant "
         "closest point normal on master side not implemented yet.\n"
         "In case of constant normal on master side use CONST_CPP_NORMAL Yes.");
 
@@ -139,7 +128,7 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
 
 
   // Get the desired evaluator based on the given MORTAR::ActionType
-  Teuchos::RCP<const XCONTACT::GenericEvaluator<probdim,eletype,dim,numNodeEle> > xevaluator =
+  Teuchos::RCP<const XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>> xevaluator =
       BuildEvaluator(*cparams_ptr);
 
   // --------------------------------------------------------------------------
@@ -189,7 +178,7 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
 
     // Get spatial coorinates of the slave element nodes
     LINALG::Matrix<probdim, numNodeEle> sxyze;
-    SpatialCoordinates(sele,sxyze);
+    SpatialCoordinates(sele, sxyze);
     // Evaluate coordinates of spatial point and shape functions
     LINALG::Matrix<probdim, 1> sx(true);
     SpatialPoint<probdim, eletype>(sxyze, sxi, sval, sx);
@@ -216,8 +205,8 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
     GradSpatialPoint<probdim, eletype>(sg, sgc, sx_sx);
 
     // Get nodal Lagrange multipliers
-    LINALG::Matrix<1,numNodeEle> lme;
-    NodalLMValues(sele,lme);
+    LINALG::Matrix<1, numNodeEle> lme;
+    NodalLMValues(sele, lme);
     // Evaluate Lagrange multiplier in normal direction and shape functions
     // (defined on slave element)
     double lm = 0.0;
@@ -258,7 +247,7 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
       LINALG::Matrix<probdim, 1> mx(true);
 
       // Initialize covariant basis vectors
-      LINALG::Matrix<dim,probdim> mg(true);
+      LINALG::Matrix<dim, probdim> mg(true);
 
       // Initialize unit normal and length of non-unit normal
       LINALG::Matrix<probdim, 1> mn(true);
@@ -266,8 +255,7 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
       /* Project Gauss point on slave element onto master element via closest
        * point projection */
       double binv = 0.0;
-      xevaluator->ClosestPointProjection(sx, sg, *meles[me], mxi, mval, mderiv,
-          mx, mg, binv);
+      xevaluator->ClosestPointProjection(sx, sg, *meles[me], mxi, mval, mderiv, mx, mg, binv);
 
       // Check if projected Gauss point is on master element
       if (mxi(0) >= -1.0 && mxi(0) <= 1.0)
@@ -288,9 +276,8 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
         // --------------------------------------------------------------------
         // Add contribution of Gauss point
         // --------------------------------------------------------------------
-        xevaluator->Evaluate(sele, *meles[me], sval, mval, lmval, sderiv, mderiv,
-            lmderiv, sxi, mxi, sx, mx, sx_sx, mg, mn, gN, gN_sxi, lm, lm_sxi, sj,
-            sjinv, sjc, binv, wgt,*this);
+        xevaluator->Evaluate(sele, *meles[me], sval, mval, lmval, sderiv, mderiv, lmderiv, sxi, mxi,
+            sx, mx, sx_sx, mg, mn, gN, gN_sxi, lm, lm_sxi, sj, sjinv, sjc, binv, wgt, *this);
 
         // Output Gauss point data
         const bool output = true;
@@ -308,20 +295,13 @@ void XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>::IntegrateDerivEle2
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         unsigned dim,
-         unsigned numNodeEle>
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned dim,
+    unsigned numNodeEle>
 void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPointProjection(
-    const LINALG::Matrix<probdim, 1>& sx,
-    const LINALG::Matrix<dim, probdim>& sg,
-    MORTAR::MortarElement& mele,
-    LINALG::Matrix<dim, 1>& mxi,
-    LINALG::Matrix<1, numNodeEle>& mval,
-    LINALG::Matrix<dim, numNodeEle>& mderiv,
-    LINALG::Matrix<probdim, 1>& mx,
-    LINALG::Matrix<dim, probdim>& mg,
-    double& binv) const
+    const LINALG::Matrix<probdim, 1>& sx, const LINALG::Matrix<dim, probdim>& sg,
+    MORTAR::MortarElement& mele, LINALG::Matrix<dim, 1>& mxi, LINALG::Matrix<1, numNodeEle>& mval,
+    LINALG::Matrix<dim, numNodeEle>& mderiv, LINALG::Matrix<probdim, 1>& mx,
+    LINALG::Matrix<dim, probdim>& mg, double& binv) const
 {
   // TODO: Extend 2D closest point projection to 3D
   if (probdim != 2)
@@ -346,7 +326,7 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPoint
 
   // Get spatial coordinates of the master element nodes
   LINALG::Matrix<probdim, numNodeEle> mxyze;
-  SpatialCoordinates(mele,mxyze);
+  SpatialCoordinates(mele, mxyze);
 
   // Iterate until solution found or maximal number of iterations reached
   for (int iter = 0; iter < MORTARMAXITER; ++iter)
@@ -362,7 +342,7 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPoint
     CovariantBasisVectors<probdim, eletype>(mxyze, mxi, mderiv, mg);
 
     // Compute parametric derivatives of covariant basis vectors
-    LINALG::TMatrix<LINALG::Matrix<probdim, 1>, dim, 1 > mg_xi(true);
+    LINALG::TMatrix<LINALG::Matrix<probdim, 1>, dim, 1> mg_xi(true);
     ParDerivMetrics<probdim, eletype>(mxyze, mxi, mg_xi);
 
 
@@ -374,7 +354,7 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPoint
     f = 0.0;
     for (unsigned i = 0; i < probdim; ++i)
     {
-      f += mg(0,i) * (sx(i) - mx(i));
+      f += mg(0, i) * (sx(i) - mx(i));
     }
 
     // Evaluate derivative of projection condition with respect to parameter coordinate of master
@@ -382,7 +362,7 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPoint
     double f_mxi1 = 0.0;
     for (unsigned i = 0; i < probdim; ++i)
     {
-      f_mxi1 += -mg(0,i) * mg(0,i) + (sx(i) - mx(i)) * mg_xi(0)(i, 0);
+      f_mxi1 += -mg(0, i) * mg(0, i) + (sx(i) - mx(i)) * mg_xi(0)(i, 0);
     }
 
     // Check for singularity of Jacobi matrix
@@ -426,16 +406,11 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::ClosestPoint
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         unsigned dim,
-         unsigned numNodeEle>
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned dim,
+    unsigned numNodeEle>
 void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::NormalGapCPP(
-    const LINALG::Matrix<probdim, 1>& sx,
-    const LINALG::Matrix<probdim, 1>& mx,
-    const LINALG::Matrix<probdim, 1>& mn,
-    const LINALG::Matrix<dim,probdim>& sg,
-    double& gN,
+    const LINALG::Matrix<probdim, 1>& sx, const LINALG::Matrix<probdim, 1>& mx,
+    const LINALG::Matrix<probdim, 1>& mn, const LINALG::Matrix<dim, probdim>& sg, double& gN,
     LINALG::Matrix<1, dim>& gN_sxi) const
 {
   // Compute gap in normal direction
@@ -449,44 +424,27 @@ void XCONTACT::GenericEvaluator<probdim, eletype, dim, numNodeEle>::NormalGapCPP
   {
     for (unsigned i = 0; i < probdim; ++i)
     {
-      gN_sxi(a) += mn(i) * sg(a,i);
+      gN_sxi(a) += mn(i) * sg(a, i);
     }
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         bool wgap_only,
-         unsigned dim,
-         unsigned numNodeEle>
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, bool wgap_only, unsigned dim,
+    unsigned numNodeEle>
 void XCONTACT::ForceEvaluator<probdim, eletype, wgap_only, dim, numNodeEle>::Evaluate(
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    const LINALG::Matrix<1, numNodeEle>& sval,
-    const LINALG::Matrix<1, numNodeEle>& mval,
-    const LINALG::Matrix<1, numNodeEle>& lmval,
-    const LINALG::Matrix<dim, numNodeEle>& sderiv,
-    const LINALG::Matrix<dim, numNodeEle>& mderiv,
-    const LINALG::Matrix<dim, numNodeEle>& lmderiv,
-    const LINALG::Matrix<dim, 1>& sxi,
-    const LINALG::Matrix<dim, 1>& mxi,
-    const LINALG::Matrix<probdim, 1>& sx,
-    const LINALG::Matrix<probdim, 1>& mx,
-    const LINALG::Matrix<probdim, probdim>& sx_sx,
-    const LINALG::Matrix<dim, probdim>& mg,
-    const LINALG::Matrix<probdim, 1>& mn,
-    const double& gN,
-    const LINALG::Matrix<1, dim>& gN_sxi,
-    const double& lm,
-    const LINALG::Matrix<1, dim>& lm_sxi,
-    const double& sj,
-    const double& sjinv,
-    const double& sjc,
-    const double& binv,
-    const double& wgt,
-    const XCONTACT::Integrator<probdim,eletype,dim,numNodeEle> & integrator) const
+    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    const LINALG::Matrix<1, numNodeEle>& sval, const LINALG::Matrix<1, numNodeEle>& mval,
+    const LINALG::Matrix<1, numNodeEle>& lmval, const LINALG::Matrix<dim, numNodeEle>& sderiv,
+    const LINALG::Matrix<dim, numNodeEle>& mderiv, const LINALG::Matrix<dim, numNodeEle>& lmderiv,
+    const LINALG::Matrix<dim, 1>& sxi, const LINALG::Matrix<dim, 1>& mxi,
+    const LINALG::Matrix<probdim, 1>& sx, const LINALG::Matrix<probdim, 1>& mx,
+    const LINALG::Matrix<probdim, probdim>& sx_sx, const LINALG::Matrix<dim, probdim>& mg,
+    const LINALG::Matrix<probdim, 1>& mn, const double& gN, const LINALG::Matrix<1, dim>& gN_sxi,
+    const double& lm, const LINALG::Matrix<1, dim>& lm_sxi, const double& sj, const double& sjinv,
+    const double& sjc, const double& binv, const double& wgt,
+    const XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>& integrator) const
 {
   // Get slave element nodes
   DRT::Node** snodes = sele.Nodes();
@@ -520,49 +478,33 @@ void XCONTACT::ForceEvaluator<probdim, eletype, wgap_only, dim, numNodeEle>::Eva
       }
 
       lmnode->AddWcLm(val);
-    } // not wgap_only
+    }  // not wgap_only
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<unsigned probdim,
-         DRT::Element::DiscretizationType eletype,
-         unsigned dim,
-         unsigned numNodeEle>
+template <unsigned probdim, DRT::Element::DiscretizationType eletype, unsigned dim,
+    unsigned numNodeEle>
 void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluate(
-    MORTAR::MortarElement & sele,
-    MORTAR::MortarElement & mele,
-    const LINALG::Matrix<1, numNodeEle> & sval,
-    const LINALG::Matrix<1, numNodeEle> & mval,
-    const LINALG::Matrix<1, numNodeEle> & lmval,
-    const LINALG::Matrix<dim, numNodeEle> & sderiv,
-    const LINALG::Matrix<dim, numNodeEle> & mderiv,
-    const LINALG::Matrix<dim, numNodeEle> & lmderiv,
-    const LINALG::Matrix<dim, 1> & sxi,
-    const LINALG::Matrix<dim, 1> & mxi,
-    const LINALG::Matrix<probdim, 1> & sx,
-    const LINALG::Matrix<probdim, 1> & mx,
-    const LINALG::Matrix<probdim, probdim> & sx_sx,
-    const LINALG::Matrix<dim, probdim> & mg,
-    const LINALG::Matrix<probdim, 1> & mn,
-    const double & gN,
-    const LINALG::Matrix<1, dim> & gN_sxi,
-    const double& lm,
-    const LINALG::Matrix<1, dim> & lm_sxi,
-    const double & sj,
-    const double & sjinv,
-    const double & sjc,
-    const double & binv,
-    const double & wgt,
-    const XCONTACT::Integrator<probdim,eletype,dim,numNodeEle> & integrator) const
+    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    const LINALG::Matrix<1, numNodeEle>& sval, const LINALG::Matrix<1, numNodeEle>& mval,
+    const LINALG::Matrix<1, numNodeEle>& lmval, const LINALG::Matrix<dim, numNodeEle>& sderiv,
+    const LINALG::Matrix<dim, numNodeEle>& mderiv, const LINALG::Matrix<dim, numNodeEle>& lmderiv,
+    const LINALG::Matrix<dim, 1>& sxi, const LINALG::Matrix<dim, 1>& mxi,
+    const LINALG::Matrix<probdim, 1>& sx, const LINALG::Matrix<probdim, 1>& mx,
+    const LINALG::Matrix<probdim, probdim>& sx_sx, const LINALG::Matrix<dim, probdim>& mg,
+    const LINALG::Matrix<probdim, 1>& mn, const double& gN, const LINALG::Matrix<1, dim>& gN_sxi,
+    const double& lm, const LINALG::Matrix<1, dim>& lm_sxi, const double& sj, const double& sjinv,
+    const double& sjc, const double& binv, const double& wgt,
+    const XCONTACT::Integrator<probdim, eletype, dim, numNodeEle>& integrator) const
 {
   // ==========================================================================
   // Add contribution of Gauss point to constraint residual
   // ==========================================================================
-  XCONTACT::ForceEvaluator<probdim,eletype>::Evaluate(
-      sele,mele,sval,mval,lmval,sderiv,mderiv,lmderiv,sxi,mxi,sx,mx,sx_sx,mg,mn,
-      gN,gN_sxi,lm,lm_sxi,sj,sjinv,sjc,binv,wgt,integrator);
+  XCONTACT::ForceEvaluator<probdim, eletype>::Evaluate(sele, mele, sval, mval, lmval, sderiv,
+      mderiv, lmderiv, sxi, mxi, sx, mx, sx_sx, mg, mn, gN, gN_sxi, lm, lm_sxi, sj, sjinv, sjc,
+      binv, wgt, integrator);
 
   // ==========================================================================
   // Define slave and master element quantities
@@ -632,7 +574,7 @@ void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluat
 
   GEN::pairedvector<int, double> sj_su(sndof);
   double sxi_tmp[2] = {sxi(0), 0.0};
-  sele.DerivJacobian(sxi_tmp, sj_su); // TODO
+  sele.DerivJacobian(sxi_tmp, sj_su);  // TODO
 
 
   // --------------------------------------------------------------------------
@@ -718,8 +660,8 @@ void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluat
   // --------------------------------------------------------------------------
 
   // TODO: Nested pairedvector instead of nested map
-  std::map<int, std::map<int, double> > gN_uu;
-  std::map<int, std::map<int, double> > gN_sxi1_uu;
+  std::map<int, std::map<int, double>> gN_uu;
+  std::map<int, std::map<int, double>> gN_sxi1_uu;
 
   for (unsigned k = 0; k < integrator.MaNumNodeEle(); ++k)
   {
@@ -738,15 +680,16 @@ void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluat
   }
 
   // TODO: Test
-//  typedef std::map<int, std::map<int, double> >::const_iterator CIMM;
-//  for (CIMM p = gN_uu.begin(); p != gN_uu.end(); ++p)
-//  {
-//    for (CIM q = gN_uu[p->first].begin(); q != gN_uu[p->first].end(); ++q)
-//    {
-//      std::cout << p->first << "  " << q->first << "  " << gN_uu[p->first][q->first] << std::endl;
-//    }
-//  }
-//  dserror("test");
+  //  typedef std::map<int, std::map<int, double> >::const_iterator CIMM;
+  //  for (CIMM p = gN_uu.begin(); p != gN_uu.end(); ++p)
+  //  {
+  //    for (CIM q = gN_uu[p->first].begin(); q != gN_uu[p->first].end(); ++q)
+  //    {
+  //      std::cout << p->first << "  " << q->first << "  " << gN_uu[p->first][q->first] <<
+  //      std::endl;
+  //    }
+  //  }
+  //  dserror("test");
 
 
   // --------------------------------------------------------------------------
@@ -754,8 +697,8 @@ void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluat
   // --------------------------------------------------------------------------
 
   // TODO: Nested pairedvector instead of nested map
-  std::map<int, std::map<int, double> > sj_susu;
-  std::map<int, std::map<int, double> > sjinv_susu;
+  std::map<int, std::map<int, double>> sj_susu;
+  std::map<int, std::map<int, double>> sjinv_susu;
 
   for (unsigned k = 0; k < integrator.SlNumNodeEle(); ++k)
   {
@@ -895,7 +838,6 @@ void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluat
         for (CI p = sj_su.begin(); p != sj_su.end(); ++p)
         {
           Wc_su_u[p->first] += val * p->second;
-
         }
 
         if (integrator.IsL2VarJacobi())
@@ -985,7 +927,7 @@ void XCONTACT::ForceTangentEvaluator<probdim, eletype, dim, numNodeEle>::Evaluat
         if (integrator.IsH1())
         {
           // (H1-1) Linearization of variation of paramatric derivative of gap
-          val = lmderiv(0, s) * sjinv  * sjc * wgt;
+          val = lmderiv(0, s) * sjinv * sjc * wgt;
           for (CIM p = gN_sxi1_uu[mDofId].begin(); p != gN_sxi1_uu[mDofId].end(); ++p)
           {
             Wc_mu_u[p->first] += val * p->second;

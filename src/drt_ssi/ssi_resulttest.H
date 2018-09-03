@@ -45,45 +45,41 @@ namespace SSI
   */
   class SSIResultTest : public DRT::ResultTest
   {
-    public:
+   public:
+    //! constructor
+    SSIResultTest(const Teuchos::RCP<const SSI::SSI_Base>
+            ssi_base  //!< time integrator for scalar-structure interaction
+    );
 
-      //! constructor
-      SSIResultTest(
-          const Teuchos::RCP<const SSI::SSI_Base>   ssi_base   //!< time integrator for scalar-structure interaction
-          );
+    //! test quantity associated with a particular node
+    void TestNode(
+        DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+        int& nerr,                        //!< number of failed result tests
+        int& test_count                   //!< number of result tests
+    );
 
-      //! test quantity associated with a particular node
-      void TestNode(
-          DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-          int&                          nerr,        //!< number of failed result tests
-          int&                          test_count   //!< number of result tests
-          );
+    //! test special quantity not associated with a particular element or node
+    void TestSpecial(
+        DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+        int& nerr,                        //!< number of failed result tests
+        int& test_count                   //!< number of result tests
+    );
 
-      //! test special quantity not associated with a particular element or node
-      void TestSpecial(
-          DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-          int&                          nerr,        //!< number of failed result tests
-          int&                          test_count   //!< number of result tests
-          );
+   private:
+    //! get nodal result to be tested
+    double ResultNode(const std::string quantity,  //!< name of quantity to be tested
+        DRT::Node* node                            //!< node carrying the result to be tested
+        ) const;
 
-    private:
+    //! get special result to be tested
+    double ResultSpecial(const std::string& quantity  //!< name of quantity to be tested
+        ) const;
 
-      //! get nodal result to be tested
-      double ResultNode(
-          const std::string   quantity,   //!< name of quantity to be tested
-          DRT::Node*          node        //!< node carrying the result to be tested
-          ) const;
+    //! return time integrator for monolithic scalar-structure interaction
+    const SSI::SSI_Mono& SSI_Mono() const;
 
-      //! get special result to be tested
-      double ResultSpecial(
-          const std::string&   quantity   //!< name of quantity to be tested
-          ) const;
-
-      //! return time integrator for monolithic scalar-structure interaction
-      const SSI::SSI_Mono& SSI_Mono() const;
-
-      //! time integrator for scalar-structure interaction
-      const Teuchos::RCP<const SSI::SSI_Base> ssi_base_;
+    //! time integrator for scalar-structure interaction
+    const Teuchos::RCP<const SSI::SSI_Base> ssi_base_;
   };
-}
+}  // namespace SSI
 #endif

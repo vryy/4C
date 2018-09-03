@@ -16,28 +16,30 @@
 
 #include "str_predict_generic.H"
 
-namespace STR {
-namespace PREDICT {
-  class ConstDisVelAccPress : public Generic
+namespace STR
+{
+  namespace PREDICT
   {
-  public:
-    //! constructor
-    ConstDisVelAccPress();
+    class ConstDisVelAccPress : public Generic
+    {
+     public:
+      //! constructor
+      ConstDisVelAccPress();
 
-    //! destructor
-    virtual ~ConstDisVelAccPress() {};
+      //! destructor
+      virtual ~ConstDisVelAccPress(){};
 
-    //! setup class specific stuff
-    virtual void Setup();
+      //! setup class specific stuff
+      virtual void Setup();
 
-    //! do the class specific predictor step
-    virtual void Compute(NOX::Abstract::Group& grp);
+      //! do the class specific predictor step
+      virtual void Compute(NOX::Abstract::Group& grp);
 
-  private:
-    Teuchos::RCP<STR::PREDICT::Generic> tangdis_ptr_;
-  };  // class ConstDisVelAccPress
-} // namespace PREDICT
-} // namespace STR
+     private:
+      Teuchos::RCP<STR::PREDICT::Generic> tangdis_ptr_;
+    };  // class ConstDisVelAccPress
+  }     // namespace PREDICT
+}  // namespace STR
 
 
 #endif /* STR_PREDICT_CONSTDIS_H_ */

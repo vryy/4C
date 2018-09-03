@@ -49,7 +49,6 @@ namespace IO
 /* belongs to structure namespace */
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Time step size adaptivity with general STR::TimInt scheme
@@ -57,32 +56,30 @@ namespace STR
    * \author bborn
    * \date 10/07
    */
-  template <typename T> class TimAdaJoint : public TimAda
+  template <typename T>
+  class TimAdaJoint : public TimAda
   {
-
-  public:
-
+   public:
     //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
-    enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda
-    (
-      const enum INPAR::STR::DynamicType term  //!< input enum term
-    ) const
+    enum INPAR::STR::TimAdaKind MapNameTimIntToTimAda(
+        const enum INPAR::STR::DynamicType term  //!< input enum term
+        ) const
     {
       switch (term)
       {
-      case INPAR::STR::dyna_ab2 :
-        return INPAR::STR::timada_kind_ab2;
-        break;
-      case INPAR::STR::dyna_expleuler :
-        return INPAR::STR::timada_kind_expleuler;
-        break;
-      case INPAR::STR::dyna_centrdiff :
-        return INPAR::STR::timada_kind_centraldiff;
-        break;
-      default :
-        dserror("Cannot handle requested time integrator");
-        return INPAR::STR::timada_kind_none;
-        break;
+        case INPAR::STR::dyna_ab2:
+          return INPAR::STR::timada_kind_ab2;
+          break;
+        case INPAR::STR::dyna_expleuler:
+          return INPAR::STR::timada_kind_expleuler;
+          break;
+        case INPAR::STR::dyna_centrdiff:
+          return INPAR::STR::timada_kind_centraldiff;
+          break;
+        default:
+          dserror("Cannot handle requested time integrator");
+          return INPAR::STR::timada_kind_none;
+          break;
       }
     }
 
@@ -90,31 +87,21 @@ namespace STR
     //@{
 
     //! Full-fledged constructor
-    TimAdaJoint
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& timeparams,//!< TIS input parameters
-      const Teuchos::ParameterList& sdyn,      //!< structural dynamic
-      const Teuchos::ParameterList& xparams,   //!< extra flags
-      const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-      Teuchos::RCP<TimInt>& sti  //!< marching time integrator
-    )
-    : TimAda
-      (
-        timeparams,
-        adaparams,
-        sti
-      ),
-      ada_(ada_vague),
-      sta_(Teuchos::null)
+    TimAdaJoint(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& timeparams,        //!< TIS input parameters
+        const Teuchos::ParameterList& sdyn,              //!< structural dynamic
+        const Teuchos::ParameterList& xparams,           //!< extra flags
+        const Teuchos::ParameterList& adaparams,         //!< adaptive input flags
+        Teuchos::RCP<TimInt>& sti                        //!< marching time integrator
+        )
+        : TimAda(timeparams, adaparams, sti), ada_(ada_vague), sta_(Teuchos::null)
     {
       // allocate auxiliary integrator
-      sta_ = Teuchos::rcp(new T(timeparams, ioparams, sdyn, xparams,
-                                sti->Discretization(),
-                                sti->Solver(),
-                                Teuchos::null, // no contact solver
-                                sti->DiscWriter()));
-      sta_->Init(timeparams,sdyn,xparams,sti->Discretization(),sti->Solver());
+      sta_ = Teuchos::rcp(
+          new T(timeparams, ioparams, sdyn, xparams, sti->Discretization(), sti->Solver(),
+              Teuchos::null,  // no contact solver
+              sti->DiscWriter()));
+      sta_->Init(timeparams, sdyn, xparams, sti->Discretization(), sti->Solver());
 
       // check explicitness
       if (sta_->MethodImplicit())
@@ -150,8 +137,8 @@ namespace STR
       // for the marching time integrator, we must postpone Merge() and ResizeMStep()
       // to a later point. They can now be found in the new Init() function below,
       // which is called at the beginning of Integrate(). [popp 01/2017]
-      //sta_->Merge(*sti);
-      //sta_->ResizeMStep();
+      // sta_->Merge(*sti);
+      // sta_->ResizeMStep();
 
       return;
     }
@@ -165,10 +152,10 @@ namespace STR
     //@{
 
     /*! Finalize the class initialization
-    * Merge() and ResizeMStep() need to be called after(!) both Init()
-    * and Setup() have been called on both the marching time integrator
-    * and the auxiliary time integrator (popp 01/2017).
-    */
+     * Merge() and ResizeMStep() need to be called after(!) both Init()
+     * and Setup() have been called on both the marching time integrator
+     * and the auxiliary time integrator (popp 01/2017).
+     */
     void Init(Teuchos::RCP<TimInt>& sti)
     {
       // merge
@@ -214,39 +201,23 @@ namespace STR
     }
 
     //! Provide local order of accuracy of displacements
-    int MethodOrderOfAccuracyDis() const
-    {
-      return sta_->MethodOrderOfAccuracyDis();
-    }
+    int MethodOrderOfAccuracyDis() const { return sta_->MethodOrderOfAccuracyDis(); }
 
     //! Provide local order of accuracy of velocities
-    int MethodOrderOfAccuracyVel() const
-    {
-      return sta_->MethodOrderOfAccuracyVel();
-    }
+    int MethodOrderOfAccuracyVel() const { return sta_->MethodOrderOfAccuracyVel(); }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const
-    {
-      return sta_->MethodLinErrCoeffDis();
-    }
+    double MethodLinErrCoeffDis() const { return sta_->MethodLinErrCoeffDis(); }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const
-    {
-      return sta_->MethodLinErrCoeffVel();
-    }
+    double MethodLinErrCoeffVel() const { return sta_->MethodLinErrCoeffVel(); }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis() const
-    {
-      return ada_;
-    }
+    enum AdaEnum MethodAdaptDis() const { return ada_; }
 
     //@}
 
-  protected:
-
+   protected:
     //! not wanted: = operator
     TimAdaJoint operator=(const TimAdaJoint& old);
 
@@ -258,7 +229,6 @@ namespace STR
 
     //! The auxiliary integrator
     Teuchos::RCP<T> sta_;
-
   };
 
 }  // namespace STR

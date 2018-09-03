@@ -45,13 +45,13 @@ namespace NLNSOL
   {
     class AMGHierarchy;
     class NlnLevel;
-  } // namespace FAS
-} // namespace NLNSOL
+  }  // namespace FAS
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------*/
 /* definition of classes */
@@ -93,8 +93,7 @@ namespace NLNSOL
    */
   class NlnOperatorFas : public NlnOperatorBase
   {
-  public:
-
+   public:
     //! @name Construction
     //@{
 
@@ -102,7 +101,7 @@ namespace NLNSOL
     NlnOperatorFas();
 
     //! Destructor
-    virtual ~NlnOperatorFas(){}
+    virtual ~NlnOperatorFas() {}
 
     //@}
 
@@ -150,9 +149,10 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& f_do_not_use, ///< residual (do not use, just due to inheritance)
-      Epetra_MultiVector& x ///< solution
-      ) const;
+    virtual int ApplyInverse(
+        const Epetra_MultiVector& f_do_not_use,  ///< residual (do not use, just due to inheritance)
+        Epetra_MultiVector& x                    ///< solution
+        ) const;
 
     //@}
 
@@ -167,41 +167,39 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! Compute step length, i.e. line search parameter
-    virtual void ComputeStepLength(const Epetra_MultiVector& x, ///< current solution
-      const Epetra_MultiVector& f, ///< residual at current solution
-      const Epetra_MultiVector& inc, ///< search direction
-      const double fnorm2, ///< current L2-norm of residual
-      double& lsparam, ///< line search parameter (to be determined)
-      bool& suffdecr ///< achieved sufficient decrease? (to be determined)
-      ) const { dserror("There is no line search in FAS."); return; }
+    virtual void ComputeStepLength(const Epetra_MultiVector& x,  ///< current solution
+        const Epetra_MultiVector& f,                             ///< residual at current solution
+        const Epetra_MultiVector& inc,                           ///< search direction
+        const double fnorm2,                                     ///< current L2-norm of residual
+        double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr    ///< achieved sufficient decrease? (to be determined)
+        ) const
+    {
+      dserror("There is no line search in FAS.");
+      return;
+    }
 
     //! @name Multigrid cycles
     //@{
 
     //! Entry to all kind of multigrid cycles
-    virtual int Cycle(
-        Teuchos::RCP<Epetra_MultiVector> xbar ///< solution from finer level
+    virtual int Cycle(Teuchos::RCP<Epetra_MultiVector> xbar  ///< solution from finer level
         ) const;
 
     //! V-Cycle (recursive definition)
-    virtual int VCycle(
-        Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
-        const int level ///< level ID
+    virtual int VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,  ///< solution from finer level
+        const int level                                        ///< level ID
         ) const;
 
     //! V-Cycle with 2 levels (explicit definition)
-    virtual int VCycleTwoLevel(
-        Teuchos::RCP<Epetra_MultiVector> x ///< solution on level 0
+    virtual int VCycleTwoLevel(Teuchos::RCP<Epetra_MultiVector> x  ///< solution on level 0
         ) const;
 
     //! V-Cycle with 3 levels (explicit definition)
-    virtual int VCycleThreeLevel(
-        Teuchos::RCP<Epetra_MultiVector> x ///< solution on level 0
+    virtual int VCycleThreeLevel(Teuchos::RCP<Epetra_MultiVector> x  ///< solution on level 0
         ) const;
 
     //! W-Cycle // ToDo (mayr) implement W-Cycle
@@ -213,21 +211,18 @@ namespace NLNSOL
     //@{
 
     //! Do the presmoothing
-    virtual int PreSmoothing(
-        Epetra_MultiVector& x, ///< solution from finer level
-        const int level ///< level ID
+    virtual int PreSmoothing(Epetra_MultiVector& x,  ///< solution from finer level
+        const int level                              ///< level ID
         ) const;
 
     //! Do the postsmoothing
-    virtual int PostSmoothing(
-        Epetra_MultiVector& x, ///< solution from finer level
-        const int level ///< level ID
+    virtual int PostSmoothing(Epetra_MultiVector& x,  ///< solution from finer level
+        const int level                               ///< level ID
         ) const;
 
     //! Do the coarse level solve
-    virtual int CoarseLevelSolve(
-        Epetra_MultiVector& x, ///< solution from finer level
-        const int level ///< level ID
+    virtual int CoarseLevelSolve(Epetra_MultiVector& x,  ///< solution from finer level
+        const int level                                  ///< level ID
         ) const;
 
     //@}
@@ -241,7 +236,7 @@ namespace NLNSOL
     //! Type of multigrid cycle
     INPAR::NLNSOL::FAS::CycleType cycletype_;
 
-  }; // class NlnOperatorFas
-} // namespace NLNSOL
+  };  // class NlnOperatorFas
+}  // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_FAS_H */

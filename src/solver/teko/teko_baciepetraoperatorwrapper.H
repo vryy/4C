@@ -22,71 +22,68 @@
 
 namespace LINALG
 {
-
-
   namespace SOLVER
   {
     namespace TEKO
     {
       class Teko_BACIMappingStrategy : public Teko::Epetra::MappingStrategy
       {
-        public:
-        Teko_BACIMappingStrategy(const LINALG::MultiMapExtractor& rangemaps, const LINALG::MultiMapExtractor& domainmaps);
+       public:
+        Teko_BACIMappingStrategy(const LINALG::MultiMapExtractor& rangemaps,
+            const LINALG::MultiMapExtractor& domainmaps);
 
         /** Virtual function defined in MappingStrategy.  This copies
-          * an Epetra_MultiVector into a Thyra::MultiVectorBase with
-          * blocking handled by the strides defined in the constructor.
-          *
-          * \param[in]     epetra_X  source Epetra_MultiVector
-          * \param[in,out]     thyra_X   destination Thyra::MultiVectorBase
-          */
+         * an Epetra_MultiVector into a Thyra::MultiVectorBase with
+         * blocking handled by the strides defined in the constructor.
+         *
+         * \param[in]     epetra_X  source Epetra_MultiVector
+         * \param[in,out]     thyra_X   destination Thyra::MultiVectorBase
+         */
         virtual void copyEpetraIntoThyra(const Epetra_MultiVector& epetra_X,
-                                         const Teuchos::Ptr<Thyra::MultiVectorBase<double> > & thyra_X) const;
+            const Teuchos::Ptr<Thyra::MultiVectorBase<double>>& thyra_X) const;
 
         /** Virtual function defined in MappingStrategy.  This copies
-          * an Epetra_MultiVector into a Thyra::MultiVectorBase with
-          * blocking handled by the strides defined in the constructor.
-          *
-          * \param[in]     thyra_Y  source Thyra::MultiVectorBase
-          * \param[in,out]     epetra_Y destination Epetra_MultiVector
-          */
-        virtual void copyThyraIntoEpetra(const Teuchos::RCP<const Thyra::MultiVectorBase<double> > & thyra_Y,
-                                         Epetra_MultiVector& epetra_Y) const;
+         * an Epetra_MultiVector into a Thyra::MultiVectorBase with
+         * blocking handled by the strides defined in the constructor.
+         *
+         * \param[in]     thyra_Y  source Thyra::MultiVectorBase
+         * \param[in,out]     epetra_Y destination Epetra_MultiVector
+         */
+        virtual void copyThyraIntoEpetra(
+            const Teuchos::RCP<const Thyra::MultiVectorBase<double>>& thyra_Y,
+            Epetra_MultiVector& epetra_Y) const;
 
         /** \brief Domain map for this strategy */
-        const Teuchos::RCP<const Epetra_Map> domainMap() const
-        { return domainmaps_.FullMap(); };
+        const Teuchos::RCP<const Epetra_Map> domainMap() const { return domainmaps_.FullMap(); };
 
         /** \brief Range map for this strategy */
-        const Teuchos::RCP<const Epetra_Map> rangeMap() const
-        { return rangemaps_.FullMap(); };
+        const Teuchos::RCP<const Epetra_Map> rangeMap() const { return rangemaps_.FullMap(); };
 
         /** \brief Identifier string */
-        std::string toString() const
-        { return std::string("Teko_BACIMappingStrategy"); }
+        std::string toString() const { return std::string("Teko_BACIMappingStrategy"); }
 
-        private:
-          const LINALG::MultiMapExtractor rangemaps_;
-          const LINALG::MultiMapExtractor domainmaps_;
+       private:
+        const LINALG::MultiMapExtractor rangemaps_;
+        const LINALG::MultiMapExtractor domainmaps_;
       };
 
       class Teko_BACIEpetraOperatorWrapper : public Teko::Epetra::EpetraOperatorWrapper
       {
-        public:
+       public:
         Teko_BACIEpetraOperatorWrapper(const Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat);
-        virtual ~Teko_BACIEpetraOperatorWrapper() {;};
+        virtual ~Teko_BACIEpetraOperatorWrapper() { ; };
 
         void BuildBlockedOperator();
 
         Teuchos::RCP<const Thyra::EpetraLinearOp> GetThyraBlock(int r, int c);
 
-        private:
+       private:
         Teuchos::RCP<Teko_BACIMappingStrategy> mappingStrategy_;
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_;
       };
     } /* namespace TEKO */
   }   /* namespace SOLVER */
-}     /* namespace LINALG */
+} /* namespace LINALG */
 
 
 

@@ -16,26 +16,23 @@ namespace NOX
 {
   namespace FSI
   {
-
     /// NOX Newton direction with adaptive linear solver tolerance
     class Newton : public NOX::Direction::Newton
     {
-    public:
+     public:
       Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
 
       // derived
-      virtual bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
-                         Teuchos::ParameterList& params);
+      virtual bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
       // derived
       virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-                           const NOX::Solver::Generic& solver);
+          const NOX::Solver::Generic& solver);
 
       void Residual(double current, double desired);
 
-    private:
-
+     private:
       /// Printing Utilities
       Teuchos::RCP<NOX::Utils> utils_;
 
@@ -60,7 +57,7 @@ namespace NOX
       std::vector<double> cresiduals_;
       std::vector<double> dresiduals_;
     };
-  }
-}
+  }  // namespace FSI
+}  // namespace NOX
 
 #endif

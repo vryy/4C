@@ -22,11 +22,8 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: ScatraReactionMat(matdata),
-  reacscale_(matdata->GetDouble("REACSCALE"))
+MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : ScatraReactionMat(matdata), reacscale_(matdata->GetDouble("REACSCALE"))
 {
 }
 
@@ -38,7 +35,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatPoroECM::CreateMaterial()
 
 MAT::ScatraMatPoroECMType MAT::ScatraMatPoroECMType::instance_;
 
-DRT::ParObject* MAT::ScatraMatPoroECMType::Create( const std::vector<char> & data )
+DRT::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatPoroECM* scatra_mat = new MAT::ScatraMatPoroECM();
   scatra_mat->Unpack(data);
@@ -48,19 +45,13 @@ DRT::ParObject* MAT::ScatraMatPoroECMType::Create( const std::vector<char> & dat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatPoroECM::ScatraMatPoroECM()
-  : params_(NULL),
-    reaccoeff_(0.0)
-{
-}
+MAT::ScatraMatPoroECM::ScatraMatPoroECM() : params_(NULL), reaccoeff_(0.0) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ScatraMatPoroECM::ScatraMatPoroECM(MAT::PAR::ScatraMatPoroECM* params)
-  :   ScatraReactionMat(params),
-      params_(params),
-      reaccoeff_(0.0)
+    : ScatraReactionMat(params), params_(params), reaccoeff_(0.0)
 {
 }
 
@@ -77,16 +68,14 @@ void MAT::ScatraMatPoroECM::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL)
-    matid = params_->Id(); // in case we are in post-process mode
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // reaccoeff_
-  AddtoPack(data,reaccoeff_);
+  AddtoPack(data, reaccoeff_);
 
   // add base class material
   ScatraReactionMat::Pack(data);
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -97,38 +86,38 @@ void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId())
-    dserror("wrong instance type data");
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // matid
   int matid;
-  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, matid);
   params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatPoroECM*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+            MaterialType());
     }
 
   // reaccoeff_
-  ExtractfromPack(position,data,reaccoeff_);
+  ExtractfromPack(position, data, reaccoeff_);
 
   // extract base class material
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   ScatraReactionMat::Unpack(basedata);
-
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ScatraMatPoroECM::ComputeReacCoeff(double chempot)
 {
-  reaccoeff_ = params_->reaccoeff_*exp( params_->reacscale_*chempot);
+  reaccoeff_ = params_->reaccoeff_ * exp(params_->reacscale_ * chempot);
   return;
 }

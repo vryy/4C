@@ -25,103 +25,93 @@
 
 namespace DRT
 {
-class Condition;
-class Discretization;
+  class Condition;
+  class Discretization;
 
-namespace ELEMENTS
-{
-  class ScaTraHDGBoundary;
+  namespace ELEMENTS
+  {
+    class ScaTraHDGBoundary;
 
-//! Interface base class for ScaTraHDGBoundaryImpl
-/*!
-  This class exists to provide a common interface for all template
-  versions of ScaTraHDGBoundaryImpl. The only function
-  this class actually defines is Impl, which returns a pointer to
-  the appropriate version of ScaTraHDGBoundaryImpl.
- */
-class ScaTraHDGBoundaryImplInterface : DRT::SingletonDestruction
-{
+    //! Interface base class for ScaTraHDGBoundaryImpl
+    /*!
+      This class exists to provide a common interface for all template
+      versions of ScaTraHDGBoundaryImpl. The only function
+      this class actually defines is Impl, which returns a pointer to
+      the appropriate version of ScaTraHDGBoundaryImpl.
+     */
+    class ScaTraHDGBoundaryImplInterface : DRT::SingletonDestruction
+    {
+     public:
+      //! Empty constructor
+      ScaTraHDGBoundaryImplInterface() {}
+      //! Empty destructor
+      virtual ~ScaTraHDGBoundaryImplInterface() {}
 
-public:
-  //! Empty constructor
-  ScaTraHDGBoundaryImplInterface() {}
-  //! Empty destructor
-  virtual ~ScaTraHDGBoundaryImplInterface() {}
+      //! Evaluate a Neumann boundary condition
+      /*!
+        This class does not provide a definition for this function, it
+        must be defined in ScaTraHDGBoundaryImpl.
+       */
+      virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra) = 0;
 
-  //! Evaluate a Neumann boundary condition
-  /*!
-    This class does not provide a definition for this function, it
-    must be defined in ScaTraHDGBoundaryImpl.
-   */
-  virtual int EvaluateNeumann(
-      DRT::ELEMENTS::ScaTraHDGBoundary*   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      DRT::Element::LocationArray&        la,
-      Epetra_SerialDenseMatrix&           elemat1_epetra,
-      Epetra_SerialDenseVector&           elevec1_epetra
-      ) = 0;
+      //! Internal implementation class for ScaTraHDGBoundary elements
+      static ScaTraHDGBoundaryImplInterface* Impl(const DRT::Element* ele);
 
-  //! Internal implementation class for ScaTraHDGBoundary elements
-  static ScaTraHDGBoundaryImplInterface* Impl(const DRT::Element* ele);
-
-}; // class ScaTraHDGBoundaryImplInterface
+    };  // class ScaTraHDGBoundaryImplInterface
 
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraHDGBoundaryImpl: public ScaTraHDGBoundaryImplInterface
-{
+    template <DRT::Element::DiscretizationType distype>
+    class ScaTraHDGBoundaryImpl : public ScaTraHDGBoundaryImplInterface
+    {
+     public:
+      //! Singleton access method
+      static ScaTraHDGBoundaryImpl<distype>* Instance(bool create = true);
 
-public:
+      //! called upon destruction
+      virtual void Done();
 
-  //! Singleton access method
-  static ScaTraHDGBoundaryImpl<distype> * Instance(bool create=true);
+      //! Constructor
+      ScaTraHDGBoundaryImpl();
 
-  //! called upon destruction
-  virtual void Done();
+      //! number of element nodes
+      static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  //! Constructor
-  ScaTraHDGBoundaryImpl();
+      //! number of space dimensions of the ScaTraHDGBoundary element
+      static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  //! number of element nodes
-  static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      //! number of space dimensions of the parent element
+      static const int nsd_ = bdrynsd_ + 1;
 
-  //! number of space dimensions of the ScaTraHDGBoundary element
-  static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      //! Evaluate a Neumann boundary condition
+      virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra);
 
-  //! number of space dimensions of the parent element
-  static const int nsd_ = bdrynsd_+1;
+     private:
+      //! node coordinates for boundary element
+      LINALG::Matrix<nsd_, bdrynen_> xyze_;
+      //! coordinates of current integration point in reference coordinates
+      LINALG::Matrix<bdrynsd_, 1> xsi_;
+      //! array for shape functions for boundary element
+      LINALG::Matrix<bdrynen_, 1> funct_;
+      //! array for shape function derivatives for boundary element
+      LINALG::Matrix<bdrynsd_, bdrynen_> deriv_;
+      //! normal vector pointing out of the domain
+      LINALG::Matrix<nsd_, 1> unitnormal_;
+      //! velocity vector at integration point
+      LINALG::Matrix<nsd_, 1> velint_;
+      //! infinitesimal area element drs
+      double drs_;
+      //! integration factor
+      double fac_;
 
-  //! Evaluate a Neumann boundary condition
-  virtual int EvaluateNeumann(
-      DRT::ELEMENTS::ScaTraHDGBoundary*   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      DRT::Element::LocationArray&        la,
-      Epetra_SerialDenseMatrix&           elemat1_epetra,
-      Epetra_SerialDenseVector&           elevec1_epetra);
+    };  // class ScaTraHDGBoundaryImpl
 
-private:
-  //! node coordinates for boundary element
-  LINALG::Matrix<nsd_,bdrynen_> xyze_;
-  //! coordinates of current integration point in reference coordinates
-  LINALG::Matrix<bdrynsd_,1> xsi_;
-  //! array for shape functions for boundary element
-  LINALG::Matrix<bdrynen_,1> funct_;
-  //! array for shape function derivatives for boundary element
-  LINALG::Matrix<bdrynsd_,bdrynen_> deriv_;
-  //! normal vector pointing out of the domain
-  LINALG::Matrix<nsd_,1> unitnormal_;
-  //! velocity vector at integration point
-  LINALG::Matrix<nsd_,1> velint_;
-  //! infinitesimal area element drs
-  double drs_;
-  //! integration factor
-  double fac_;
-
-}; // class ScaTraHDGBoundaryImpl
-
-} // namespace ELEMENTS
-} // namespace DRT
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif /* SCATRA_ELE_HDG_BOUNDARY_CALC_H */

@@ -20,45 +20,44 @@
 // forward declaration
 namespace LINALG
 {
-class SparseMatrix;
-class BlockSparseMatrixBase;
-}
-namespace DRT {
-class Discretization;
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
+}  // namespace LINALG
+namespace DRT
+{
+  class Discretization;
 }
 
 namespace MORTAR
 {
-class MultiFieldCoupling
-{
-  public:
-  /// c-tor
-  MultiFieldCoupling(){};
+  class MultiFieldCoupling
+  {
+   public:
+    /// c-tor
+    MultiFieldCoupling(){};
 
-  /// d-tor
-  ~MultiFieldCoupling(){};
+    /// d-tor
+    ~MultiFieldCoupling(){};
 
-  /// add a new discretization to perform coupling on
-  void PushBackCoupling(
-      const Teuchos::RCP<DRT::Discretization>&   dis,      ///< discretization
-      const int nodeset,                                   ///< nodeset to couple
-      const std::vector<int> dofs_to_couple                ///< dofs to couple
-      );
+    /// add a new discretization to perform coupling on
+    void PushBackCoupling(const Teuchos::RCP<DRT::Discretization>& dis,  ///< discretization
+        const int nodeset,                                               ///< nodeset to couple
+        const std::vector<int> dofs_to_couple                            ///< dofs to couple
+    );
 
-  /// Perform condensation in all blocks of the matrix
-  void CondenseMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat);
+    /// Perform condensation in all blocks of the matrix
+    void CondenseMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat);
 
-  /// Perform condensation in the right-hand side
-  void CondenseRhs(Teuchos::RCP<Epetra_Vector>& mat);
+    /// Perform condensation in the right-hand side
+    void CondenseRhs(Teuchos::RCP<Epetra_Vector>& mat);
 
-  /// recover condensed primal slave-sided dofs
-  void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);
+    /// recover condensed primal slave-sided dofs
+    void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);
 
-  private:
-  std::vector<Teuchos::RCP<LINALG::SparseMatrix> > p_;
-};
-}
-
+   private:
+    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> p_;
+  };
+}  // namespace MORTAR
 
 
 

@@ -23,26 +23,15 @@
 /*----------------------------------------------------------------------*
  | constructor                                               dano 08/09 |
  *----------------------------------------------------------------------*/
-THR::TimIntStatics::TimIntStatics(
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& tdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-  )
-: TimIntImpl(
-    ioparams,
-    tdynparams,
-    xparams,
-    actdis,
-    solver,
-    output
-    ),
-  fint_(Teuchos::null),
-  fintn_(Teuchos::null),
-  fext_(Teuchos::null),
-  fextn_(Teuchos::null)
+THR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
+    const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
+      fint_(Teuchos::null),
+      fintn_(Teuchos::null),
+      fext_(Teuchos::null),
+      fextn_(Teuchos::null)
 {
   // info to user
   if (myrank_ == 0)
@@ -57,8 +46,7 @@ THR::TimIntStatics::TimIntStatics(
   //! internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
-                         fint_, tang_);
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
   //! external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! external force vector F_{n+1} at new time
@@ -148,7 +136,7 @@ double THR::TimIntStatics::CalcRefNormTemperature()
   //! points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-    charnormtemp = THR::AUX::CalculateVectorNorm(iternorm_, (*temp_)(0));
+  charnormtemp = THR::AUX::CalculateVectorNorm(iternorm_, (*temp_)(0));
 
   //! rise your hat
   return charnormtemp;
@@ -252,8 +240,7 @@ void THR::TimIntStatics::UpdateStepElement()
   // action for elements
   p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 }  // UpdateStepElement()
 
@@ -272,9 +259,7 @@ void THR::TimIntStatics::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::WriteRestartForce(
-  Teuchos::RCP<IO::DiscretizationWriter> output
-  )
+void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // do nothing
   return;
@@ -285,22 +270,21 @@ void THR::TimIntStatics::WriteRestartForce(
 /*----------------------------------------------------------------------*
  | evaluate the internal force and the tangent               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ApplyForceTangInternal(
-  const double time,  //!< evaluation time
-  const double dt,  //!< step size
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-  )
+void THR::TimIntStatics::ApplyForceTangInternal(const double time,  //!< evaluation time
+    const double dt,                                                //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                         //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                        //!< residual temperatures
+    Teuchos::RCP<Epetra_Vector> fint,                               //!< internal force
+    Teuchos::RCP<LINALG::SparseMatrix> tang                         //!< tangent matrix
+)
 {
   //! create the parameters for the discretization
   Teuchos::ParameterList p;
   //! set parameters
-  p.set<double>("timefac",1.);
+  p.set<double>("timefac", 1.);
 
   //! call the base function
-  TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
+  TimInt::ApplyForceTangInternal(p, time, dt, temp, tempi, fint, tang);
   //! finish
   return;
 
@@ -310,20 +294,19 @@ void THR::TimIntStatics::ApplyForceTangInternal(
 /*----------------------------------------------------------------------*
  | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ApplyForceInternal(
-  const double time,  //!< evaluation time
-  const double dt,  //!< step size
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-  const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-  Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-  )
+void THR::TimIntStatics::ApplyForceInternal(const double time,  //!< evaluation time
+    const double dt,                                            //!< step size
+    const Teuchos::RCP<Epetra_Vector> temp,                     //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,                    //!< incremental temperatures
+    Teuchos::RCP<Epetra_Vector> fint                            //!< internal force
+)
 {
   //! create the parameters for the discretization
   Teuchos::ParameterList p;
   //! set parameters
   // ...
   //! call the base function
-  TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
+  TimInt::ApplyForceInternal(p, time, dt, temp, tempi, fint);
   //! finish
   return;
 
@@ -333,20 +316,19 @@ void THR::TimIntStatics::ApplyForceInternal(
 /*----------------------------------------------------------------------*
  | evaluate the convective boundary condition                dano 01/11 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ApplyForceExternalConv(
-  const double time,  //!< evaluation time
-  const Teuchos::RCP<Epetra_Vector> tempn,  //!< old temperature state T_n
-  const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
-  Teuchos::RCP<Epetra_Vector> fext,  //!< external force
-  Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-  )
+void THR::TimIntStatics::ApplyForceExternalConv(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> tempn,                        //!< old temperature state T_n
+    const Teuchos::RCP<Epetra_Vector> temp,                         //!< temperature state T_n+1
+    Teuchos::RCP<Epetra_Vector> fext,                               //!< external force
+    Teuchos::RCP<LINALG::SparseMatrix> tang                         //!< tangent matrix
+)
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // set parameters
   // ...
   // call the base function
-  TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
+  TimInt::ApplyForceExternalConv(p, time, tempn, temp, fext, tang);
   // finish
   return;
 

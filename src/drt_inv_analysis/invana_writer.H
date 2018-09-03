@@ -40,8 +40,7 @@ namespace INVANA
    */
   class InvanaWriter
   {
-  public:
-
+   public:
     //! @name Construction/destruction
     //@{
 
@@ -49,7 +48,7 @@ namespace INVANA
     InvanaWriter();
 
     //! Destructor
-    virtual ~InvanaWriter(){}
+    virtual ~InvanaWriter() {}
 
     //@}
 
@@ -70,41 +69,40 @@ namespace INVANA
     //@{
 
     //! Write a new step
-    virtual void WriteNewStep(const int step, /// [in] new step to be written
-        const double time /// [in] time for this step
-        );
+    virtual void WriteNewStep(const int step,  /// [in] new step to be written
+        const double time                      /// [in] time for this step
+    );
 
     //! Write named int
-    virtual void WriteNamedInt(const std::string name, /// [in] an name for the int
-        const int aint ///[int] integer to write
-        );
+    virtual void WriteNamedInt(const std::string name,  /// [in] an name for the int
+        const int aint                                  ///[int] integer to write
+    );
 
     //! Write named int
-    virtual void WriteNamedDouble(const std::string name, /// [in] an name for the d
-        const double adouble ///[int] double to write
-        );
+    virtual void WriteNamedDouble(const std::string name,  /// [in] an name for the d
+        const double adouble                               ///[int] double to write
+    );
 
     //! Write named vector
-    virtual void WriteNamedVector(const std::string name, ///< [in] a name for the vector
-        Teuchos::RCP<const Epetra_MultiVector> vector, ///< [in] the vector to write
-        IO::VectorType type = IO::elementvector ///<[in] vector type
+    virtual void WriteNamedVector(const std::string name,  ///< [in] a name for the vector
+        Teuchos::RCP<const Epetra_MultiVector> vector,     ///< [in] the vector to write
+        IO::VectorType type = IO::elementvector            ///<[in] vector type
         ) const;
 
     //! Write named vectors (each vector in MV with a number)
-    virtual void WriteNamedVectors(const std::string name, ///< [in] a name for the vector
-        Teuchos::RCP<const Epetra_MultiVector> vector, ///< [in] the vector to write
-        IO::VectorType type = IO::elementvector ///<[in] vector type
+    virtual void WriteNamedVectors(const std::string name,  ///< [in] a name for the vector
+        Teuchos::RCP<const Epetra_MultiVector> vector,      ///< [in] the vector to write
+        IO::VectorType type = IO::elementvector             ///<[in] vector type
         ) const;
 
     //! Write mesh
     virtual void WriteMesh(int step, double time);
 
-  private:
-
+   private:
     //! output writer
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
-  }; // class InvanaWriter
-} // namespace INVANA
+  };  // class InvanaWriter
+}  // namespace INVANA
 
 #endif /* INVANA_WRITER_H */

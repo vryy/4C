@@ -23,7 +23,6 @@
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Central differences: 2nd order accurate,
@@ -47,23 +46,19 @@ namespace STR
    */
   class TimIntCentrDiff : public TimIntExpl
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntCentrDiff
-    (
-      const Teuchos::ParameterList& timeparams,  //!< time params
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,     //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output   //!< the output
+    TimIntCentrDiff(const Teuchos::ParameterList& timeparams,  //!< time params
+        const Teuchos::ParameterList& ioparams,                //!< ioflags
+        const Teuchos::ParameterList& sdynparams,              //!< input parameters
+        const Teuchos::ParameterList& xparams,                 //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,              //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                   //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,            //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output          //!< the output
     );
 
     //! Empty constructor
@@ -96,12 +91,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -149,10 +141,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum INPAR::STR::DynamicType MethodName() const
-    {
-      return INPAR::STR::dyna_centrdiff;
-    }
+    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_centrdiff; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -171,7 +160,7 @@ namespace STR
      *  e \approx \frac{1}{6}\Delta t_n^3 \dddot{d_n} + HOT(\Delta t_n^4)
      *  \f]
      */
-    virtual double MethodLinErrCoeffDis() const { return 1./6.; }
+    virtual double MethodLinErrCoeffDis() const { return 1. / 6.; }
 
     /*! Return linear error coefficient of velocities
      *
@@ -180,7 +169,7 @@ namespace STR
      *  e \approx -\frac{1}{12}\Delta t_n^3 d_n^{(4)} + HOT(\Delta t_n^4)
      *  \f]
      */
-    virtual double MethodLinErrCoeffVel() const { return -1./12.; }
+    virtual double MethodLinErrCoeffVel() const { return -1. / 12.; }
 
     //@}
 
@@ -188,10 +177,7 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> Fext() { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
     Teuchos::RCP<Epetra_Vector> FextNew()
@@ -209,22 +195,21 @@ namespace STR
     //@}
 
 
-  protected:
-
+   protected:
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
-    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force
-                                         //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force
-                                         //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fviscn_; //!< Rayleigh viscous forces
-                                         //!< \f$C \cdot V_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fcmtn_;  //!< contact or meshtying forces
-                                         //!< \f$F_{cmt;n+1}\f$
-    Teuchos::RCP<Epetra_Vector> frimpn_; //!< time derivative of
-                                         //!< linear momentum
-                                         //!< (temporal rate of impulse)
-                                         //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fextn_;   //!< external force
+                                          //!< \f$F_{int;n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fintn_;   //!< internal force
+                                          //!< \f$F_{int;n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fviscn_;  //!< Rayleigh viscous forces
+                                          //!< \f$C \cdot V_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fcmtn_;   //!< contact or meshtying forces
+                                          //!< \f$F_{cmt;n+1}\f$
+    Teuchos::RCP<Epetra_Vector> frimpn_;  //!< time derivative of
+                                          //!< linear momentum
+                                          //!< (temporal rate of impulse)
+                                          //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
     //@}
 
   };  // class TimIntCentrDiff

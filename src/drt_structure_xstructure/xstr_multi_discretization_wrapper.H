@@ -22,16 +22,20 @@
 #include "../drt_xfem/xfem_enum_lists.H"
 #include "../drt_io/io.H"
 
-namespace IO {
+namespace IO
+{
   class DiscretizationWriter;
-} // namespace IO
-namespace XFEM {
+}  // namespace IO
+namespace XFEM
+{
   class MultiFieldMapExtractor;
-} // namespace XFEM
-namespace XSTR {
-namespace IO {
-  class MultiDiscretizationWriter;
-} // namespace IO
+}  // namespace XFEM
+namespace XSTR
+{
+  namespace IO
+  {
+    class MultiDiscretizationWriter;
+  }  // namespace IO
 
   /** \brief Implementation of a multi discretization wrapper for eXtended structural
    *  problems
@@ -47,33 +51,36 @@ namespace IO {
    *  \author hiermeier \date 10/16 */
   class MultiDiscretizationWrapper : public DRT::DiscretizationInterface
   {
-  public:
-    typedef std::map<enum XFEM::FieldName, Teuchos::RCP<DRT::DiscretizationInterface> > XDisMap;
-    typedef std::pair<enum XFEM::FieldName, Teuchos::RCP<DRT::DiscretizationInterface> > XDisPair;
-    typedef std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface> > cXDisPair;
+   public:
+    typedef std::map<enum XFEM::FieldName, Teuchos::RCP<DRT::DiscretizationInterface>> XDisMap;
+    typedef std::pair<enum XFEM::FieldName, Teuchos::RCP<DRT::DiscretizationInterface>> XDisPair;
+    typedef std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface>>
+        cXDisPair;
 
-  private:
-    typedef std::vector<Teuchos::RCP<DRT::DiscretizationInterface> > XDisVec;
-    typedef std::vector<Teuchos::RCP<const DRT::DiscretizationInterface> > cXDisVec;
+   private:
+    typedef std::vector<Teuchos::RCP<DRT::DiscretizationInterface>> XDisVec;
+    typedef std::vector<Teuchos::RCP<const DRT::DiscretizationInterface>> cXDisVec;
 
-    typedef std::map<enum XFEM::FieldName, std::vector<Teuchos::RCP<LINALG::SparseOperator> > > XSysMatMap;
-    typedef std::pair<enum XFEM::FieldName, std::vector<Teuchos::RCP<LINALG::SparseOperator> > > XSysMatPair;
+    typedef std::map<enum XFEM::FieldName, std::vector<Teuchos::RCP<LINALG::SparseOperator>>>
+        XSysMatMap;
+    typedef std::pair<enum XFEM::FieldName, std::vector<Teuchos::RCP<LINALG::SparseOperator>>>
+        XSysMatPair;
 
-  public:
+   public:
     /// Overriding base class overloaded functions
     using DiscretizationInterface::Dof;
-    using DiscretizationInterface::NumDof;
-    using DiscretizationInterface::SetState;
-    using DiscretizationInterface::GetState;
     using DiscretizationInterface::EvaluateCondition;
     using DiscretizationInterface::EvaluateNeumann;
+    using DiscretizationInterface::GetState;
+    using DiscretizationInterface::NumDof;
+    using DiscretizationInterface::SetState;
 
-  public:
+   public:
     /// constructor
     MultiDiscretizationWrapper();
 
     /// destructor
-    virtual ~MultiDiscretizationWrapper() {};
+    virtual ~MultiDiscretizationWrapper(){};
 
     /** \brief Initialize class member variables
      *
@@ -82,10 +89,9 @@ namespace IO {
      *  \param max_num_reserved_dofs_per_node (in): Maximum number of dofs per enriched node
      *
      *  \author hiermeier \date 10/16 */
-    void Init(
-        const std::string& name,
+    void Init(const std::string& name,
         const Teuchos::RCP<DRT::DiscretizationInterface>& discret_ptr,
-        const int & max_num_reserved_dofs_per_node);
+        const int& max_num_reserved_dofs_per_node);
 
     /** \brief Initialize class member variables
      *
@@ -94,10 +100,8 @@ namespace IO {
      *  \param max_num_reserved_dofs_per_node (in): Maximum number of dofs per enriched node
      *
      *  \author hiermeier \date 10/16 */
-    void Init(
-        const std::string& name,
-        const XDisVec& discret_vec,
-        const int & max_num_reserved_dofs_per_node);
+    void Init(const std::string& name, const XDisVec& discret_vec,
+        const int& max_num_reserved_dofs_per_node);
 
     /** \brief Setup class new class member variables
      *
@@ -119,27 +123,19 @@ namespace IO {
      *  \author hiermeier \date 10/16 */
     void AddDiscretization(const Teuchos::RCP<DRT::DiscretizationInterface>& discret_ptr)
     {
-      AddDiscretization(discret_ptr,true);
+      AddDiscretization(discret_ptr, true);
     }
-    void AddDiscretization(const Teuchos::RCP<DRT::DiscretizationInterface>& discret_ptr,
-        const bool & check_insertion);
+    void AddDiscretization(
+        const Teuchos::RCP<DRT::DiscretizationInterface>& discret_ptr, const bool& check_insertion);
 
-    void ExtractVector(
-        const Epetra_MultiVector & full,
-        enum XFEM::FieldName field,
-        Epetra_MultiVector & partial,
-        enum ::IO::VectorType vt = ::IO::dofvector) const;
+    void ExtractVector(const Epetra_MultiVector& full, enum XFEM::FieldName field,
+        Epetra_MultiVector& partial, enum ::IO::VectorType vt = ::IO::dofvector) const;
 
-    void InsertVector(const Epetra_MultiVector & partial,
-        enum XFEM::FieldName field,
-        Epetra_MultiVector & full,
-        enum ::IO::VectorType vt = ::IO::dofvector) const;
+    void InsertVector(const Epetra_MultiVector& partial, enum XFEM::FieldName field,
+        Epetra_MultiVector& full, enum ::IO::VectorType vt = ::IO::dofvector) const;
 
-    void AddVector(const Epetra_MultiVector & partial,
-        enum XFEM::FieldName field,
-        Epetra_MultiVector & full,
-        double scale,
-        enum ::IO::VectorType vt = ::IO::dofvector) const;
+    void AddVector(const Epetra_MultiVector& partial, enum XFEM::FieldName field,
+        Epetra_MultiVector& full, double scale, enum ::IO::VectorType vt = ::IO::dofvector) const;
 
     /** \brief Access all the wrapped discretizations as std::map
      *
@@ -153,12 +149,12 @@ namespace IO {
     /** \brief Access one of the wrapped discretizations (as reference)
      *
      *  \author hiermeier \date 10/16 */
-    const DRT::DiscretizationInterface& Discret( enum XFEM::FieldName field ) const
+    const DRT::DiscretizationInterface& Discret(enum XFEM::FieldName field) const
     {
       CheckInit();
       return *(GetDiscretPtr(field));
     }
-    DRT::DiscretizationInterface& Discret( enum XFEM::FieldName field )
+    DRT::DiscretizationInterface& Discret(enum XFEM::FieldName field)
     {
       CheckInit();
       return *(GetDiscretPtr(field));
@@ -203,7 +199,7 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual Teuchos::RCP< ::IO::DiscretizationWriter> Writer() const;
+    virtual Teuchos::RCP<::IO::DiscretizationWriter> Writer() const;
 
     /** \brief Get flag indicating whether FillComplete() has been called [derived]
      *
@@ -214,10 +210,9 @@ namespace IO {
     {
       bool is_filled = true;
       XDisMap::const_iterator cit;
-      for (cit=discret_map_.begin();cit!=discret_map_.end();++cit)
+      for (cit = discret_map_.begin(); cit != discret_map_.end(); ++cit)
       {
-        if (not cit->second->Filled())
-          is_filled = false;
+        if (not cit->second->Filled()) is_filled = false;
       }
       return (is_filled and isfilled_);
     }
@@ -249,18 +244,14 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual int FillComplete(bool assigndegreesoffreedom=true,
-                             bool initelements = true,
-                             bool doboundaryconditions = true)
+    virtual int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
+        bool doboundaryconditions = true)
     {
-      return FillComplete(assigndegreesoffreedom,initelements,
-          doboundaryconditions,true,true);
+      return FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions, true, true);
     }
-    virtual int FillComplete(bool assigndegreesoffreedom =true,
-                     bool initelements = true,
-                     bool doboundaryconditions = true,
-                     bool buildsystemmaps = true,
-                     bool setupmapextractor = true);
+    virtual int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
+        bool doboundaryconditions = true, bool buildsystemmaps = true,
+        bool setupmapextractor = true);
 
     /** \brief Get map associated with the distribution of the ownership of nodes [derived]
      *
@@ -333,7 +324,7 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual const Epetra_Map* DofRowMap(unsigned nds=0) const;
+    virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const;
 
     /** \brief True if degrees of freedom where assigned [derived]
      *
@@ -361,7 +352,7 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual int NumStandardDof(const unsigned & dofset_id, const DRT::Node* node) const;
+    virtual int NumStandardDof(const unsigned& dofset_id, const DRT::Node* node) const;
 
     /** \brief Get the gid of all dofs of a node. [derived]
      *
@@ -389,18 +380,17 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void Dof(std::vector<int>& dof, const DRT::Node* node ,
-        unsigned dofset_id, unsigned nodaldofset_id, const DRT::Element* element = NULL) const;
+    virtual void Dof(std::vector<int>& dof, const DRT::Node* node, unsigned dofset_id,
+        unsigned nodaldofset_id, const DRT::Element* element = NULL) const;
 
     /** \brief Get all conditions with a certain name [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void GetCondition(const std::string& name,
-        std::vector<DRT::Condition*>& out) const;
-    virtual void GetCondition(const std::string& name,
-        std::vector<Teuchos::RCP<DRT::Condition> >& out) const;
+    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
+    virtual void GetCondition(
+        const std::string& name, std::vector<Teuchos::RCP<DRT::Condition>>& out) const;
 
     /** \brief Get a condition with a certain name [derived]
      *
@@ -423,33 +413,29 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void SetState(unsigned nds,const std::string& name,
-        Teuchos::RCP<const Epetra_Vector> state);
+    virtual void SetState(
+        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
 
     /** \brief Get a reference to a data vector [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual Teuchos::RCP<const Epetra_Vector> GetState(
-        unsigned nds,
-        const std::string& name) const;
+    virtual Teuchos::RCP<const Epetra_Vector> GetState(unsigned nds, const std::string& name) const;
 
     /** \brief Clear solution state references [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void ClearState(bool clearalldofsets=false);
+    virtual void ClearState(bool clearalldofsets = false);
 
     /** \brief Evaluate Neumann boundary conditions [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void EvaluateNeumann(
-        Teuchos::ParameterList& params,
-        Epetra_Vector&          full_systemvector,
+    virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& full_systemvector,
         LINALG::SparseOperator* full_systemmatrix = NULL);
 
     /** \brief Call elements to evaluate [derived]
@@ -457,144 +443,134 @@ namespace IO {
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void Evaluate(
-        Teuchos::ParameterList&        params,
+    virtual void Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector>    systemvector1,
-        Teuchos::RCP<Epetra_Vector>    systemvector2,
-        Teuchos::RCP<Epetra_Vector>    systemvector3);
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /** \brief Evaluate Dirichlet boundary conditions [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-    virtual void EvaluateDirichlet(
-        Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector> systemvector,
-        Teuchos::RCP<Epetra_Vector> systemvectord,
-        Teuchos::RCP<Epetra_Vector> systemvectordd,
-        Teuchos::RCP<Epetra_Vector> toggle,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
+    virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
+        Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
+        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_Vector> toggle,
+        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null);
 
     /** \brief Evaluate a specific condition [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-     virtual void EvaluateCondition(
-         Teuchos::ParameterList& params,
-         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-         Teuchos::RCP<Epetra_Vector> systemvector1,
-         Teuchos::RCP<Epetra_Vector> systemvector2,
-         Teuchos::RCP<Epetra_Vector> systemvector3,
-         const std::string& condstring,
-         const int condid=-1);
+    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
+        const int condid = -1);
 
     /** \brief Assemble scalar quantities across elements [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-     virtual void EvaluateScalars(
-         Teuchos::ParameterList& params,
-         Teuchos::RCP<Epetra_SerialDenseVector> scalars
-       );
+    virtual void EvaluateScalars(
+        Teuchos::ParameterList& params, Teuchos::RCP<Epetra_SerialDenseVector> scalars);
 
     /** \brief Compute the nullspace of the discretization [derived]
      *
      *  \note See the base class for more information.
      *
      *  \author hiermeier \date 10/16 */
-     virtual void ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solveparams,
-                                              bool recompute = false);
+    virtual void ComputeNullSpaceIfNecessary(
+        Teuchos::ParameterList& solveparams, bool recompute = false);
 
-  protected:
+   protected:
+    inline bool IsInit() const { return isinit_; };
 
-     inline bool IsInit() const { return isinit_; };
+    inline bool IsSetup() const { return issetup_; };
 
-     inline bool IsSetup() const { return issetup_; };
+    inline void CheckInitSetup() const
+    {
+      if (not IsInit() or not IsSetup())
+        dserror("Call XSTR::MultiDiscretizationWrapper::Init() and Setup() first!");
+    };
 
-     inline void CheckInitSetup() const
-     {
-       if (not IsInit() or not IsSetup())
-         dserror("Call XSTR::MultiDiscretizationWrapper::Init() and Setup() first!");
-     };
+    inline void CheckInit() const
+    {
+      if (not IsInit())
+        dserror("XSTR::MultiDiscretizationWrapper::Init() has not been called, yet!");
+    };
 
-     inline void CheckInit() const
-     {
-       if (not IsInit())
-         dserror("XSTR::MultiDiscretizationWrapper::Init() has not been called, yet!");
-     };
+    bool IsXFEM(enum XFEM::FieldName field) const;
 
-     bool IsXFEM(enum XFEM::FieldName field) const;
+    void CreateNewMap(const std::vector<int>& my_entries, Teuchos::RCP<Epetra_Map>& new_map) const;
 
-     void CreateNewMap( const std::vector<int> & my_entries, Teuchos::RCP<Epetra_Map> & new_map ) const;
+   private:
+    void Reset();
 
-  private:
-     void Reset();
+    void BuildMergedNodes();
 
-     void BuildMergedNodes();
+    void BuildMergedNodeRowMap();
 
-     void BuildMergedNodeRowMap();
+    void BuildMergedNodeRowPtr();
 
-     void BuildMergedNodeRowPtr();
+    void BuildMergedElements();
 
-     void BuildMergedElements();
+    void BuildMergedElementRowMap();
 
-     void BuildMergedElementRowMap();
+    void BuildMergedElementRowPtr();
 
-     void BuildMergedElementRowPtr();
+    const Teuchos::RCP<LINALG::SparseOperator>& XFieldSysMat(
+        enum XFEM::FieldName field, unsigned mat_id);
 
-     const Teuchos::RCP<LINALG::SparseOperator>& XFieldSysMat(
-         enum XFEM::FieldName field,
-         unsigned mat_id);
+    inline const Teuchos::RCP<DRT::DiscretizationInterface>& GetDiscretPtr(
+        enum XFEM::FieldName field) const
+    {
+      XDisMap::const_iterator cit = discret_map_.find(field);
+      if (cit == discret_map_.end())
+        dserror(
+            "The given field name \"%s\" could not be found in the wrapped "
+            "discretization map!",
+            XFEM::FieldName2String(field).c_str());
 
-     inline const Teuchos::RCP<DRT::DiscretizationInterface>& GetDiscretPtr(
-         enum XFEM::FieldName field ) const
-     {
-       XDisMap::const_iterator cit = discret_map_.find(field);
-       if (cit==discret_map_.end())
-         dserror("The given field name \"%s\" could not be found in the wrapped "
-             "discretization map!",XFEM::FieldName2String(field).c_str());
+      return cit->second;
+    }
 
-       return cit->second;
-     }
+   protected:
+    bool isinit_;
 
-  protected:
-     bool isinit_;
+    bool issetup_;
 
-     bool issetup_;
+    bool isfilled_;
 
-     bool isfilled_;
+    std::string name_;
 
-     std::string name_;
+    int max_num_reserved_dofs_per_node_;
 
-     int max_num_reserved_dofs_per_node_;
+    XDisMap discret_map_;
 
-     XDisMap discret_map_;
+    XSysMatMap partial_system_matrices_;
 
-     XSysMatMap partial_system_matrices_;
+    Teuchos::RCP<XFEM::MultiFieldMapExtractor> map_extractor_;
 
-     Teuchos::RCP<XFEM::MultiFieldMapExtractor> map_extractor_;
+    Teuchos::RCP<XSTR::IO::MultiDiscretizationWriter> writers_wrapper_;
 
-     Teuchos::RCP<XSTR::IO::MultiDiscretizationWriter> writers_wrapper_;
+    std::map<int, Teuchos::RCP<DRT::Node>> merged_node_;
 
-     std::map<int, Teuchos::RCP<DRT::Node> > merged_node_;
+    Teuchos::RCP<const Epetra_Map> merged_node_row_map_;
 
-     Teuchos::RCP<const Epetra_Map> merged_node_row_map_;
+    std::vector<DRT::Node*> merged_node_row_ptr_;
 
-     std::vector<DRT::Node*> merged_node_row_ptr_;
+    std::map<int, Teuchos::RCP<DRT::Element>> merged_element_;
 
-     std::map<int, Teuchos::RCP<DRT::Element> > merged_element_;
+    Teuchos::RCP<Epetra_Map> merged_ele_row_map_;
 
-     Teuchos::RCP<Epetra_Map> merged_ele_row_map_;
-
-     std::vector<DRT::Element*> merged_element_row_ptr_;
+    std::vector<DRT::Element*> merged_element_row_ptr_;
   };  // class MultiDiscretizationWrapper
-} // namespace XSTR
+}  // namespace XSTR
 
 
 

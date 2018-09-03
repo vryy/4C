@@ -42,25 +42,26 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim> * DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::Instance(
-  const int numdofpernode,
-  const int numscal,
-  const std::string& disname,
-  const ScaTraEleCalcAniso* delete_me )
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(const int numdofpernode,
+    const int numscal, const std::string& disname, const ScaTraEleCalcAniso* delete_me)
 {
-  static std::map<std::string,ScaTraEleCalcAniso<distype,probdim>* >  instances;
+  static std::map<std::string, ScaTraEleCalcAniso<distype, probdim>*> instances;
 
-  if(delete_me == NULL)
+  if (delete_me == NULL)
   {
-    if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcAniso<distype,probdim>(numdofpernode,numscal,disname);
+    if (instances.find(disname) == instances.end())
+      instances[disname] =
+          new ScaTraEleCalcAniso<distype, probdim>(numdofpernode, numscal, disname);
   }
 
   else
   {
-    for( typename std::map<std::string,ScaTraEleCalcAniso<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-      if ( i->second == delete_me )
+    for (typename std::map<std::string, ScaTraEleCalcAniso<distype, probdim>*>::iterator i =
+             instances.begin();
+         i != instances.end(); ++i)
+      if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
@@ -75,20 +76,21 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim> * DRT::ELEMENTS::ScaTraEleCal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::Done()
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance( 0, 0, "", this );
+  Instance(0, 0, "", this);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(const int numdofpernode,const int numscal,const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal,disname)
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
+    const int numdofpernode, const int numscal, const std::string& disname)
+    : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
   // get diffusion manager for anisotropic diffusivity / diffusivities (in case of systems)
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<my::nsd_>(my::numscal_));
@@ -99,20 +101,21 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(const int
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::Materials(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               k,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,         //!< fluid viscosity
-  const int                               iquad         //!< id of current gauss point
-  )
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
+    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
+    const int k,                                       //!< id of current scalar
+    double& densn,                                     //!< density at t_(n)
+    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                    //!< density at t_(n+alpha_M)
+    double& visc,                                      //!< fluid viscosity
+    const int iquad                                    //!< id of current gauss point
+)
 {
   if (material->MaterialType() == INPAR::MAT::m_scatra_aniso)
-    MatScaTraAniso(material,k,densn,densnp,densam,visc,iquad);
-  else dserror("Material type is not supported");
+    MatScaTraAniso(material, k, densn, densnp, densam, visc, iquad);
+  else
+    dserror("Material type is not supported");
 
   return;
 }
@@ -121,56 +124,51 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::Materials(
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          ehrl 11/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::MatScaTraAniso(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               k,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,     //!< fluid viscosity
-  const int                               iquad   //!< id of current gauss point (default = -1)
-  )
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
+    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
+    const int k,                                       //!< id of current scalar
+    double& densn,                                     //!< density at t_(n)
+    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                    //!< density at t_(n+alpha_M)
+    double& visc,                                      //!< fluid viscosity
+    const int iquad                                    //!< id of current gauss point (default = -1)
+)
 {
   int geleid = -1;
-  if(DRT::Problem::Instance()->ProblemType()==prb_acou)
-    geleid = my::eid_;
+  if (DRT::Problem::Instance()->ProblemType() == prb_acou) geleid = my::eid_;
 
-  const Teuchos::RCP<const MAT::ScatraMatAniso>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
+  const Teuchos::RCP<const MAT::ScatraMatAniso>& actmat =
+      Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
 
   // get constant diffusivity
-  LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
-  LINALG::Matrix<3,1> diff = actmat->Diffusivity(geleid);
+  LINALG::Matrix<my::nsd_, my::nsd_> difftensor(true);
+  LINALG::Matrix<3, 1> diff = actmat->Diffusivity(geleid);
 
-  for (unsigned i=0; i<my::nsd_; i++)
-    difftensor(i,i) = diff(i);
+  for (unsigned i = 0; i < my::nsd_; i++) difftensor(i, i) = diff(i);
 
-  DiffManager()->SetAnisotropicDiff(difftensor,k);
+  DiffManager()->SetAnisotropicDiff(difftensor, k);
 
   return;
-} // ScaTraEleCalcAniso<distype>::MatScaTra
+}  // ScaTraEleCalcAniso<distype>::MatScaTra
 
 
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::CalcRHSDiff(
-  Epetra_SerialDenseVector&                erhs,
-  const int                                k,
-  const double                             rhsfac
-  )
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
+    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
 {
-  const LINALG::Matrix<my::nsd_,1>&        gradphi = my::scatravarmanager_->GradPhi(k);
+  const LINALG::Matrix<my::nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
-  for (unsigned vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
-    const int fvi = vi*my::numdofpernode_+k;
+    const int fvi = vi * my::numdofpernode_ + k;
 
     double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf,DiffManager()->GetAnisotropicDiff(k), gradphi,vi);
-    erhs[fvi] -= rhsfac*laplawf;
+    GetLaplacianWeakFormRHS(laplawf, DiffManager()->GetAnisotropicDiff(k), gradphi, vi);
+    erhs[fvi] -= rhsfac * laplawf;
   }
 
   return;
@@ -179,23 +177,20 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::CalcRHSDiff(
 /*------------------------------------------------------------------- *
  |  calculation of diffusive element matrix                ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::CalcMatDiff(
-  Epetra_SerialDenseMatrix&                emat,
-  const int                                k,
-  const double                             timefacfac
-  )
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
+    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
-  for (unsigned vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
-    const int fvi = vi*my::numdofpernode_+k;
+    const int fvi = vi * my::numdofpernode_ + k;
 
-    for (unsigned ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui = 0; ui < my::nen_; ++ui)
     {
-      const int fui = ui*my::numdofpernode_+k;
+      const int fui = ui * my::numdofpernode_ + k;
       double laplawf(0.0);
-      GetLaplacianWeakForm(laplawf,DiffManager()->GetAnisotropicDiff(k),ui,vi);
-      emat(fvi,fui) += timefacfac*laplawf;
+      GetLaplacianWeakForm(laplawf, DiffManager()->GetAnisotropicDiff(k), ui, vi);
+      emat(fvi, fui) += timefacfac * laplawf;
     }
   }
   return;
@@ -205,27 +200,27 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::CalcMatDiff(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2,1>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line3,1>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri6,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad9,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs9,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad4, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex8,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex27,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet4,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet10,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::pyramid5,3>;
-//template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex8, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::tet10, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::pyramid5, 3>;
+// template class DRT::ELEMENTS::ScaTraEleCalcAniso<DRT::Element::nurbs27>;

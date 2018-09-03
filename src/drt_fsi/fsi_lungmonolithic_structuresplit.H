@@ -31,9 +31,9 @@ namespace FSI
    */
   class LungMonolithicStructureSplit : public LungMonolithic
   {
-  public:
-    explicit LungMonolithicStructureSplit(const Epetra_Comm& comm,
-                                          const Teuchos::ParameterList& timeparams);
+   public:
+    explicit LungMonolithicStructureSplit(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
     <pre>
@@ -52,8 +52,7 @@ namespace FSI
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
-  protected:
-
+   protected:
     /// extract the three field vectors from a given composed vector
     /*!
       We are dealing with NOX here, so we get absolute values. x is the sum of
@@ -65,20 +64,18 @@ namespace FSI
       \param ax (o) ale displacements
     */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                     Teuchos::RCP<const Epetra_Vector>& sx,
-                                     Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax);
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
+        Teuchos::RCP<const Epetra_Vector>& ax);
 
     /// build block vector from field vectors
-    virtual void SetupVector(Epetra_Vector &f,
-                             Teuchos::RCP<const Epetra_Vector> sv,         ///< structure vector
-                             Teuchos::RCP<const Epetra_Vector> fv,         ///< fluid vector
-                             Teuchos::RCP<const Epetra_Vector> av,         ///< ale vector
-                             Teuchos::RCP<const Epetra_Vector> cv,         ///< constraint vector
-                             double fluidscale);                           ///< scaling
+    virtual void SetupVector(Epetra_Vector& f,
+        Teuchos::RCP<const Epetra_Vector> sv,  ///< structure vector
+        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid vector
+        Teuchos::RCP<const Epetra_Vector> av,  ///< ale vector
+        Teuchos::RCP<const Epetra_Vector> cv,  ///< constraint vector
+        double fluidscale);                    ///< scaling
 
-  private:
-
+   private:
     /*! \brief Create the combined DOF row map for the FSI problem
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
@@ -97,7 +94,7 @@ namespace FSI
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void SetupDBCMapExtractor(){ dserror("Not implemented, yet."); }
+    virtual void SetupDBCMapExtractor() { dserror("Not implemented, yet."); }
 
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f);
@@ -130,9 +127,6 @@ namespace FSI
     UTILS::MatrixLogicalSplitAndTransform csigtransform_;
     UTILS::MatrixColTransform caiGtransform_;
   };
-}
+}  // namespace FSI
 
 #endif
-
-
-

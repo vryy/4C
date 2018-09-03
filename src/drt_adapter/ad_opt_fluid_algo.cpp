@@ -20,13 +20,11 @@ Maintainer: Martin Winklmaier
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidTopOptCouplingAlgorithm::FluidTopOptCouplingAlgorithm(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& prbdyn
-    )
-:  FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false),
-   TopOptBaseAlgorithm(prbdyn,"opti"),
-   TopOptFluidAdjointAlgorithm(prbdyn),
-   params_(prbdyn)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& prbdyn)
+    : FluidBaseAlgorithm(prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false),
+      TopOptBaseAlgorithm(prbdyn, "opti"),
+      TopOptFluidAdjointAlgorithm(prbdyn),
+      params_(prbdyn)
 {
   return;
 }
@@ -34,9 +32,7 @@ ADAPTER::FluidTopOptCouplingAlgorithm::FluidTopOptCouplingAlgorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidTopOptCouplingAlgorithm::~FluidTopOptCouplingAlgorithm()
-{
-}
+ADAPTER::FluidTopOptCouplingAlgorithm::~FluidTopOptCouplingAlgorithm() {}
 
 
 /*----------------------------------------------------------------------*/

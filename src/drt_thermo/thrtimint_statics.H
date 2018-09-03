@@ -46,21 +46,18 @@ namespace THR
    */
   class TimIntStatics : public TimIntImpl
   {
-
-  public:
-
+   public:
     //! @name Construction
     //@{
 
     //! Constructor
-    TimIntStatics(
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& tdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-      );
+    TimIntStatics(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& tdynparams,          //!< input parameters
+        const Teuchos::ParameterList& xparams,             //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,               //!< the solver
+        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
+    );
 
     //! Destructor
     // ....
@@ -75,10 +72,7 @@ namespace THR
     //@{
 
     //! Return name
-    enum INPAR::THR::DynamicType MethodName() const
-    {
-      return INPAR::THR::dyna_statics;
-    }
+    enum INPAR::THR::DynamicType MethodName() const { return INPAR::THR::dyna_statics; }
 
     //! Provide number of steps, a single-step method returns 1
     int MethodSteps() { return 1; }
@@ -103,40 +97,37 @@ namespace THR
     void PredictConstTempConsistRate();
 
     //! Evaluate ordinary internal force, its tangent at state
-    void ApplyForceTangInternal(
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-      const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-      );
+    void ApplyForceTangInternal(const double time,  //!< evaluation time
+        const double dt,                            //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,     //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,    //!< residual temperatures
+        Teuchos::RCP<Epetra_Vector> fint,           //!< internal force
+        Teuchos::RCP<LINALG::SparseMatrix> tang     //!< tangent matrix
+    );
 
     //! Evaluate ordinary internal force
-    void ApplyForceInternal(
-      const double time,  //!< evaluation time
-      const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
-      const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-      Teuchos::RCP<Epetra_Vector> fint  //!< internal force
-      );
+    void ApplyForceInternal(const double time,    //!< evaluation time
+        const double dt,                          //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
+        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+    );
 
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
-    void ApplyForceExternalConv(
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> tempn,  //!< temperature state T_n
-      const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
-      Teuchos::RCP<Epetra_Vector> fext,  //!< internal force
-      Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-      );
+    void ApplyForceExternalConv(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> tempn,    //!< temperature state T_n
+        const Teuchos::RCP<Epetra_Vector> temp,     //!< temperature state T_n+1
+        Teuchos::RCP<Epetra_Vector> fext,           //!< internal force
+        Teuchos::RCP<LINALG::SparseMatrix> tang     //!< tangent matrix
+    );
 
     //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
-    //void EvaluateForceTangResidualRelax();
+    // void EvaluateForceTangResidualRelax();
 
     //! Determine characteristic norm for temperatures
     //! \author lw (originally)
@@ -182,21 +173,14 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
-    {
-      return fext_;
-    }
+    Teuchos::RCP<Epetra_Vector> Fext() { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
 
     //@}
 
-  protected:
-
+   protected:
     //! equal operator is hidden
     TimIntStatics operator=(const TimIntStatics& old);
 
@@ -206,10 +190,10 @@ namespace THR
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fint_;   //!< internal force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fext_;   //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
     //@}
 

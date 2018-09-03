@@ -32,42 +32,39 @@ namespace DRT
 }
 
 
-namespace ADAPTER {
-
-class StructureRedAirway : public StructureWrapper
+namespace ADAPTER
 {
-public:
+  class StructureRedAirway : public StructureWrapper
+  {
+   public:
+    /// Constructor
+    StructureRedAirway(Teuchos::RCP<Structure> stru);
 
-  /// Constructor
-  StructureRedAirway(Teuchos::RCP<Structure> stru);
+    /// set pressure calculated from reduced-d airway tree
+    void SetPressure(Teuchos::RCP<Epetra_Vector> couppres);
 
-  /// set pressure calculated from reduced-d airway tree
-  void SetPressure(Teuchos::RCP<Epetra_Vector> couppres);
+    /// calculate outlet fluxes for reduced-d airway tree
+    void CalcFlux(
+        Teuchos::RCP<Epetra_Vector> coupflux, Teuchos::RCP<Epetra_Vector> coupvol, double dt);
 
-  /// calculate outlet fluxes for reduced-d airway tree
-  void CalcFlux(Teuchos::RCP<Epetra_Vector> coupflux,
-		Teuchos::RCP<Epetra_Vector> coupvol,
-		double dt);
+    /// calculate volume
+    void CalcVol(std::map<int, double>& V);
 
-  /// calculate volume
-  void CalcVol(std::map<int,double>& V);
+    /// calculate initial volume
+    void InitVol();
 
-  /// calculate initial volume
-  void InitVol();
+    virtual void Update();
 
-  virtual void Update();
+   private:
+    /// map between coupling ID and conditions on structure
+    std::map<int, DRT::Condition*> coupcond_;
 
-private:
+    /// map of coupling IDs
+    Teuchos::RCP<Epetra_Map> coupmap_;
 
-  /// map between coupling ID and conditions on structure
-  std::map<int,DRT::Condition*> coupcond_;
+    std::map<int, double> Vn_;
+    std::map<int, double> Vnp_;
+  };
 
-  /// map of coupling IDs
-  Teuchos::RCP<Epetra_Map> coupmap_;
-
-  std::map<int,double> Vn_;
-  std::map<int,double> Vnp_;
-};
-
-}
+}  // namespace ADAPTER
 #endif

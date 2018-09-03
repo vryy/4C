@@ -16,19 +16,21 @@
 
 #include "str_impl_statics.H"
 
-namespace STR {
-namespace IMPLICIT {
-  class PreStress : public Statics
+namespace STR
+{
+  namespace IMPLICIT
   {
-  public:
-    //! constructor
-    PreStress() {};
+    class PreStress : public Statics
+    {
+     public:
+      //! constructor
+      PreStress(){};
 
-    //! destructor
-    virtual ~PreStress() {};
-  };
-} // namespace IMPLICIT
-} // namespace STR
+      //! destructor
+      virtual ~PreStress(){};
+    };
+  }  // namespace IMPLICIT
+}  // namespace STR
 
 
 #endif /* STR_IMPL_PRESTRESS_H_ */

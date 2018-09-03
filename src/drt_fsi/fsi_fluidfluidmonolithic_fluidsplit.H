@@ -25,7 +25,7 @@ namespace ADAPTER
 {
   class FluidFluidFSI;
   class AleXFFsiWrapper;
-}
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -40,11 +40,10 @@ namespace FSI
   {
     friend class FSI::FSIResultTest;
 
-  public:
-
+   public:
     /// constructor
-    explicit FluidFluidMonolithicFluidSplit(const Epetra_Comm& comm,
-                                            const Teuchos::ParameterList& timeparams);
+    explicit FluidFluidMonolithicFluidSplit(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// update subsequent fields, recover the Lagrange multiplier and relax the ALE-mesh
     virtual void Update();
@@ -58,13 +57,12 @@ namespace FSI
     /// read restart data (requires distinguation between fluid discretizations)
     virtual void ReadRestart(int step);
 
-  private:
-
+   private:
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField(){ return fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return fluid_; }
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField(){ return ale_; }
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }
 
     /// setup of extractor for merged Dirichlet maps
     void SetupDBCMapExtractor();
@@ -75,8 +73,7 @@ namespace FSI
 
     /// type-cast pointer to problem-specific ALE-wrapper
     Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
-
   };
-}
+}  // namespace FSI
 
 #endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_H_ */

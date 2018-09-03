@@ -90,7 +90,7 @@ INT next_symbol(MAP_NODE_ITERATOR* iterator);
 
 DOUBLE result_map_find_key(MAP* map, CHAR* key);
 
-DOUBLE result_map_read_key(MAP* map,CHAR* key);
+DOUBLE result_map_read_key(MAP* map, CHAR* key);
 
 MAP_NODE* iterator_get_node(MAP_ITERATOR* iterator);
 INT iterator_find_symbol(MAP_ITERATOR* iterator, char* name);

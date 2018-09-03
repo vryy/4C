@@ -17,29 +17,34 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace ADAPTER {
+}  // namespace Teuchos
+namespace ADAPTER
+{
   class StructureBaseAlgorithmNew;
-namespace STR {
-  class Factory
+  namespace STR
   {
-  public:
-    //! constructor
-    Factory();
+    class Factory
+    {
+     public:
+      //! constructor
+      Factory();
 
-    //! destructor
-    virtual ~Factory() {};
+      //! destructor
+      virtual ~Factory(){};
 
-    //! Build the structural adapter object
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(const Teuchos::ParameterList& sdyn) const;
-  };  // class Factory
+      //! Build the structural adapter object
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
+          const Teuchos::ParameterList& sdyn) const;
+    };  // class Factory
 
-  // non-member function
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(const Teuchos::ParameterList& sdyn);
-} // namespace STR
-} // namespace ADAPTER
+    // non-member function
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> BuildStructureAlgorithm(
+        const Teuchos::ParameterList& sdyn);
+  }  // namespace STR
+}  // namespace ADAPTER
 
 
 #endif /* SRC_DRT_ADAPTER_AD_STR_FACTORY_H_ */

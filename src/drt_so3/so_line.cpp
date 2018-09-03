@@ -23,9 +23,9 @@ DRT::ELEMENTS::StructuralLineType& DRT::ELEMENTS::StructuralLineType::Instance()
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralLineType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralLineType::Create(const int id, const int owner)
 {
-  //return Teuchos::rcp( new StructuralLine( id, owner ) );
+  // return Teuchos::rcp( new StructuralLine( id, owner ) );
   return Teuchos::null;
 }
 
@@ -33,26 +33,23 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralLineType::Create( const int 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner,
-                                              int nnode, const int* nodeids,
-                                              DRT::Node** nodes,
-                                              DRT::Element* parent,
-                                              const int lline) :
-DRT::FaceElement(id,owner)
+DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::Element* parent, const int lline)
+    : DRT::FaceElement(id, owner)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lline);
+  SetParentMasterElement(parent, lline);
   // type of gaussian integration
-  switch(Shape())
+  switch (Shape())
   {
-  case line2:
-    gaussrule_ = DRT::UTILS::intrule_line_2point;
-  break;
-  case line3:
-    gaussrule_ = DRT::UTILS::intrule_line_3point;
-  break;
-  default:
+    case line2:
+      gaussrule_ = DRT::UTILS::intrule_line_2point;
+      break;
+    case line3:
+      gaussrule_ = DRT::UTILS::intrule_line_3point;
+      break;
+    default:
       dserror("shape type unknown!\n");
   }
   return;
@@ -61,9 +58,8 @@ DRT::FaceElement(id,owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old) :
-DRT::FaceElement(old),
-gaussrule_(old.gaussrule_)
+DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old)
+    : DRT::FaceElement(old), gaussrule_(old.gaussrule_)
 {
   return;
 }
@@ -84,10 +80,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::StructuralLine::Shape() const
 {
   switch (NumNode())
   {
-  case 2: return line2;
-  case 3: return line3;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
+    case 2:
+      return line2;
+    case 3:
+      return line3;
+    default:
+      dserror("unexpected number of nodes %d", NumNode());
   }
   return dis_none;
 }
@@ -120,8 +118,3 @@ void DRT::ELEMENTS::StructuralLine::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-
-
-
-

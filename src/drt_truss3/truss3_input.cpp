@@ -17,26 +17,24 @@ Maintainer: Dhrubajyoti Mukherjee
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Truss3::ReadElement(const std::string& eletype,
-                                        const std::string& distype,
-                                        DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Truss3::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  linedef->ExtractDouble("CROSS",crosssec_);
+  linedef->ExtractDouble("CROSS", crosssec_);
 
   std::string buffer;
-  linedef->ExtractString("KINEM",buffer);
+  linedef->ExtractString("KINEM", buffer);
 
   // geometrically non-linear with Total Lagrangean approach
-  if (buffer=="totlag")
-    kintype_ = tr3_totlag;
+  if (buffer == "totlag") kintype_ = tr3_totlag;
 
   // geometrically non-linear approach with engineering strains
-  else if (buffer=="engstr")
+  else if (buffer == "engstr")
     kintype_ = tr3_engstrain;
 
   else

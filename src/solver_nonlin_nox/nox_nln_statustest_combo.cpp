@@ -17,46 +17,34 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo::Combo(
-    ComboType t,
-    const NOX::Utils* u) :
-  NOX::StatusTest::Combo(t,u)
+NOX::NLN::StatusTest::Combo::Combo(ComboType t, const NOX::Utils* u) : NOX::StatusTest::Combo(t, u)
 {
-  if (u != NULL)
-    utils_ = *u;
+  if (u != NULL) utils_ = *u;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo::Combo(
-    ComboType t,
-    const Teuchos::RCP<Generic>& a,
-    const NOX::Utils* u) :
-  NOX::StatusTest::Combo(t,a,u)
+NOX::NLN::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a, const NOX::Utils* u)
+    : NOX::StatusTest::Combo(t, a, u)
 {
-  if (u != NULL)
-    utils_ = *u;
+  if (u != NULL) utils_ = *u;
   // fill ghost vector
   tests_.push_back(a);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Combo::Combo(
-    ComboType t,
-    const Teuchos::RCP<Generic>& a,
-    const Teuchos::RCP<Generic>& b,
-    const NOX::Utils* u) :
-  NOX::StatusTest::Combo(t,a,b,u)
+NOX::NLN::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
+    const Teuchos::RCP<Generic>& b, const NOX::Utils* u)
+    : NOX::StatusTest::Combo(t, a, b, u)
 {
-  if (u != NULL)
-    utils_ = *u;
+  if (u != NULL) utils_ = *u;
 
   // fill ghost vector
   tests_.push_back(a);
   // Be careful, because the test b was already added to
   // the base class tests vector during the construction call!
-  this->addStatusTest(b,true);
+  this->addStatusTest(b, true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -64,7 +52,7 @@ NOX::NLN::StatusTest::Combo::Combo(
 NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
     const Teuchos::RCP<NOX::StatusTest::Generic>& a)
 {
-  return addStatusTest(a,false);
+  return addStatusTest(a, false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -76,8 +64,7 @@ NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
   {
     tests_.push_back(a);
     // add the test to the test-vector of the base class
-    if (not init)
-      NOX::StatusTest::Combo::addStatusTest(a);
+    if (not init) NOX::StatusTest::Combo::addStatusTest(a);
   }
   else
   {
@@ -98,18 +85,16 @@ NOX::NLN::StatusTest::Combo& NOX::NLN::StatusTest::Combo::addStatusTest(
 bool NOX::NLN::StatusTest::Combo::isSafe(NOX::StatusTest::Generic& a)
 {
   // Are we trying to add "this" to "this"? This would result in an infinite recursion.
-  if (&a == this)
-    return false;
+  if (&a == this) return false;
 
   // Recursively test that we're not adding something that's already
   // in the list because that can also lead to infinite recursions.
-  for (std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >::iterator i = tests_.begin(); i != tests_.end(); ++i)
+  for (std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>::iterator i = tests_.begin();
+       i != tests_.end(); ++i)
   {
-
     NOX::NLN::StatusTest::Combo* ptr = dynamic_cast<NOX::NLN::StatusTest::Combo*>(i->get());
     if (ptr != NULL)
-      if (!ptr->isSafe(a))
-        return false;
+      if (!ptr->isSafe(a)) return false;
   }
 
   // call base version
@@ -118,9 +103,8 @@ bool NOX::NLN::StatusTest::Combo::isSafe(NOX::StatusTest::Generic& a)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >&
-    NOX::NLN::StatusTest::Combo::GetTestVector() const
+const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>&
+NOX::NLN::StatusTest::Combo::GetTestVector() const
 {
   return tests_;
 }
-

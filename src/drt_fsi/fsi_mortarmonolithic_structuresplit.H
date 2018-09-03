@@ -22,9 +22,9 @@ namespace ADAPTER
 {
   class Coupling;
   class CouplingMortar;
-}
+}  // namespace ADAPTER
 
-namespace  LINALG
+namespace LINALG
 {
   class BlockSparseMatrixBase;
 }
@@ -37,12 +37,11 @@ namespace FSI
   {
     class MatrixColTransform;
     class SlideAleUtils;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace FSI
 {
-
   /// monolithic FSI algorithm with overlapping non-matching interface equations
   /*!
 
@@ -62,12 +61,11 @@ namespace FSI
    */
   class MortarMonolithicStructureSplit : public BlockMonolithic
   {
-
     friend class FSI::FSIResultTest;
 
-  public:
-    explicit MortarMonolithicStructureSplit(const Epetra_Comm& comm,
-                                            const Teuchos::ParameterList& timeparams);
+   public:
+    explicit MortarMonolithicStructureSplit(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 
@@ -85,8 +83,12 @@ namespace FSI
     //! Create #lambda_ and #lambdaold_
     virtual void SetLambda();
 
-    //!Set #notsetup_ = true after redistribution
-    virtual void SetNotSetup() { notsetup_ = true; return; }
+    //! Set #notsetup_ = true after redistribution
+    virtual void SetNotSetup()
+    {
+      notsetup_ = true;
+      return;
+    }
 
     //! @name Apply current field state to system
 
@@ -101,23 +103,21 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(
-        LINALG::BlockSparseMatrixBase& mat, ///< Jacobian matrix
-        Epetra_Vector& b ///< right hand side
-        );
+    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& b                                          ///< right hand side
+    );
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, ///< Jacobian matrix
-        Epetra_Vector& x, ///< solution vector
-        Epetra_Vector& b ///< right hand side
-        );
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& x,                                             ///< solution vector
+        Epetra_Vector& b                                              ///< right hand side
+    );
 
     //@}
 
     /// read restart
-    virtual void ReadRestart(int step ///< step where we resatart from
-        );
+    virtual void ReadRestart(int step  ///< step where we resatart from
+    );
 
     /*! \brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
      *
@@ -134,9 +134,9 @@ namespace FSI
      *  might be produced at the interface. It can be computed as
      *  \f[
      *  \Delta E_\Gamma^{n\rightarrow n+1}
-     *  = \left((a-b)\lambda^n + (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right)
-     *  \f]
-     *  with the time interpolation factors a and b.
+     *  = \left((a-b)\lambda^n +
+     * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
+     * interpolation factors a and b.
      *
      *  \author mayr.mt \date 05/2014
      */
@@ -146,13 +146,15 @@ namespace FSI
      *
      *  Constraint equation:
      *
-     *  \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
+     *  \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta
+     * \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
      *
      *  with interface time integration factor
-     *  \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
+     *  \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text
+     * {if }1^{st}\text{ order}\end{cases}\f$
      *
-     *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
-     *  condensed nonlinear system of equations. We expect really small violation norms.
+     *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving
+     * the condensed nonlinear system of equations. We expect really small violation norms.
      *
      *  \author mayr.mt \date 10/2012
      */
@@ -164,8 +166,8 @@ namespace FSI
      *
      *  \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
      *
-     *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
-     *  condensed nonlinear system of equations. We expect really small violation norms.
+     *  Do this check only for safety reasons. Basically, the constraint is satisfied due to solving
+     * the condensed nonlinear system of equations. We expect really small violation norms.
      *
      *  \author mayr.mt \date 10/2012
      */
@@ -205,18 +207,13 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(
-        std::map<int,int>* nodeOwner,
-        std::map<int,std::list<int> >* inverseNodeOwner,
-        std::map<int, DRT::Node*>* structurenodesPtr,
-        std::map<int, DRT::Node*>* fluidgnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain
-        );
+    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+        std::map<int, std::list<int>>* inverseNodeOwner,
+        std::map<int, DRT::Node*>* structurenodesPtr, std::map<int, DRT::Node*>* fluidgnodesPtr,
+        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
+        const INPAR::FSI::Redistribute domain);
 
-  protected:
-
+   protected:
     /// create the composed system matrix
     void CreateSystemMatrix();
 
@@ -228,10 +225,10 @@ namespace FSI
     virtual void OutputLambda();
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo>
-    CreateStatusTest(Teuchos::ParameterList& nlParams, ///< parameter list
-        Teuchos::RCP<NOX::Epetra::Group> grp ///< the NOX group
-        );
+    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams,     ///< parameter list
+        Teuchos::RCP<NOX::Epetra::Group> grp  ///< the NOX group
+    );
 
     /*! \brief Extract the three field vectors from a given composed vector
      *
@@ -247,14 +244,13 @@ namespace FSI
      *  \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
      */
     virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x, ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector>& sx, ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector>& fx, ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax ///< ale displacements
+        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
     );
 
-  private:
-
+   private:
     /*! \brief Create the combined DOF row map for the FSI problem
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
@@ -290,24 +286,24 @@ namespace FSI
      *  the inner portion of the slave vectors. Then, we just put them together.
      *  As usual, the ordering is: structure --  fluid -- ALE
      */
-    void CombineFieldVectors(
-          Epetra_Vector &v, ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv, ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv, ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av, ///< ale DOFs
-          bool fullvectors ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+    void CombineFieldVectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+        Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
+        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
+                          ///< (false)
     );
 
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP< ::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP< ::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<::ADAPTER::CouplingMortar> coupsfm_;
 
-    ///communicator
+    /// communicator
     const Epetra_Comm& comm_;
 
     /// @name Matrix block transform objects
@@ -334,17 +330,19 @@ namespace FSI
 
     /// @name Some quantities to recover the Lagrange multiplier at the end of each time step
 
-    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
-    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
+    //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! Lagrange multiplier of previous time step
     Teuchos::RCP<Epetra_Vector> lambdaold_;
 
-    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX
+    //! iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddiinc_;
 
-    //! interface fluid velocity increment \f$\Delta(\Delta u_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! interface fluid velocity increment \f$\Delta(\Delta u_{\Gamma,i+1}^{n+1})\f$ at current NOX
+    //! iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> duginc_;
 
     //! inner displacement solution of the structure at previous NOX iteration
@@ -382,14 +380,13 @@ namespace FSI
     /// ale movement relative to structure (none, slide_curr, slide_ref)
     INPAR::FSI::SlideALEProj aleproj_;
 
-    bool notsetup_; ///< indicates if Setup has not been called yet
+    bool notsetup_;  ///< indicates if Setup has not been called yet
 
-    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_; ///< Sliding Ale helper class
+    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
 
-    Teuchos::RCP<Epetra_Vector> iprojdispinc_; ///<displacement of fluid side of the interface
-    Teuchos::RCP<Epetra_Vector> iprojdisp_; ///<displacement of fluid side of the interface
-
+    Teuchos::RCP<Epetra_Vector> iprojdispinc_;  ///< displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdisp_;     ///< displacement of fluid side of the interface
   };
-}
+}  // namespace FSI
 
 #endif

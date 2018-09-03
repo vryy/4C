@@ -17,15 +17,14 @@
 
 namespace DRT
 {
+  /// create map of problem name and problem type enum
+  std::map<std::string, PROBLEM_TYP> StringToProblemTypeMap();
 
-/// create map of problem name and problem type enum
-std::map<std::string,PROBLEM_TYP> StringToProblemTypeMap();
-
-/// return problem type enum for a given problem name
-PROBLEM_TYP StringToProblemType(std::string name);
+  /// return problem type enum for a given problem name
+  PROBLEM_TYP StringToProblemType(std::string name);
 
 
-} // namespace DRT
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_PROBLEMTYPE_H

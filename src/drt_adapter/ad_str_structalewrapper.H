@@ -28,28 +28,26 @@ namespace STR
   {
     class StructAle;
     class Generic;
-  } // MODELEVALUATOR
-} // STR
+  }  // namespace MODELEVALUATOR
+}  // namespace STR
 
 
 namespace ADAPTER
 {
+  /// forward declaration
+  class StructureNew;
 
-/// forward declaration
-class StructureNew;
-
-/*! \brief Wrapper for structural time integration in case of Struct-Ale.
- *
- *  This wrapper is constructed in case Struct-Ale is required. Struct-Ale is
- *  needed, e.g. in \ref SSI_Part2WC_PROTRUSIONFORMATION , \ref WEAR::Algorithm ,
- *  and biofilm.
- *
- * \date 12/2016
- * \author rauch (rauch@lnm.mw.tum.de)          */
+  /*! \brief Wrapper for structural time integration in case of Struct-Ale.
+   *
+   *  This wrapper is constructed in case Struct-Ale is required. Struct-Ale is
+   *  needed, e.g. in \ref SSI_Part2WC_PROTRUSIONFORMATION , \ref WEAR::Algorithm ,
+   *  and biofilm.
+   *
+   * \date 12/2016
+   * \author rauch (rauch@lnm.mw.tum.de)          */
   class StructAleWrapper : public StructureWrapper
   {
-  public:
-
+   public:
     /// constructor
     explicit StructAleWrapper(Teuchos::RCP<Structure> structure);
 
@@ -62,22 +60,22 @@ class StructureNew;
     /// update the material displacements
     void UpdateMaterialDisplacements(Teuchos::RCP<Epetra_Vector> dispmat);
 
-  protected:
+   protected:
+    Teuchos::RCP<::STR::MODELEVALUATOR::StructAle> GetStructAleModelEvaluatorPtr()
+    {
+      return Teuchos::rcp_dynamic_cast<::STR::MODELEVALUATOR::StructAle>(
+          struct_ale_model_evaluator_);
+    };
 
-    Teuchos::RCP< ::STR::MODELEVALUATOR::StructAle> GetStructAleModelEvaluatorPtr()
-        {return Teuchos::rcp_dynamic_cast< ::STR::MODELEVALUATOR::StructAle>(
-            struct_ale_model_evaluator_);};
-
-  private:
-
+   private:
     /// adapter for new structural time integration
     Teuchos::RCP<ADAPTER::StructureNew> structure_;
 
     /// structural model evaluator object
-    Teuchos::RCP< ::STR::MODELEVALUATOR::Generic> struct_ale_model_evaluator_;
+    Teuchos::RCP<::STR::MODELEVALUATOR::Generic> struct_ale_model_evaluator_;
 
-  }; // class StructAleWrapper
-} // namespace ADAPTER
+  };  // class StructAleWrapper
+}  // namespace ADAPTER
 
 
 #endif /* STRUCT_ALE_STRUCTURE_WRAPPER_H */

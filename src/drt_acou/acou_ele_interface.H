@@ -37,49 +37,42 @@ namespace DRT
 {
   class Discretization;
 
-namespace ELEMENTS
-{
-  class Acou;
-
-  class AcouEleInterface : public DRT::SingletonDestruction
+  namespace ELEMENTS
   {
-  public:
-    /// Empty Constructor
-    AcouEleInterface() {}
+    class Acou;
 
-    /// Evaluate the element
-    /*!
-      This class does not provide a definition for this function; it
-      must be defined in AcouEleCalc.
-     */
-    virtual int Evaluate(DRT::ELEMENTS::Acou*          ele,
-                         DRT::Discretization &         discretization,
-                         const std::vector<int> &      lm,
-                         Teuchos::ParameterList&       params,
-                         Teuchos::RCP<MAT::Material> & mat,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra,
-                         bool                          offdiag = false) = 0;
+    class AcouEleInterface : public DRT::SingletonDestruction
+    {
+     public:
+      /// Empty Constructor
+      AcouEleInterface() {}
 
-    /// Integrate shape function
-    /*!
-      This class does not provide a definition for this function; it
-      must be defined in AcouEleCalc.
-     */
-    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Acou*      ele,
-                                       DRT::Discretization&      discretization,
-                                       const std::vector<int>&   lm            ,
-                                       Epetra_SerialDenseVector& elevec1) = 0;
+      /// Evaluate the element
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in AcouEleCalc.
+       */
+      virtual int Evaluate(DRT::ELEMENTS::Acou* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::ParameterList& params,
+          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          bool offdiag = false) = 0;
 
-  };
+      /// Integrate shape function
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in AcouEleCalc.
+       */
+      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Acou* ele,
+          DRT::Discretization& discretization, const std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1) = 0;
+    };
 
 
-} // namespace ELEMENTS
+  }  // namespace ELEMENTS
 
-} // namespace DRT
+}  // namespace DRT
 
 
 #endif /* ACOU_ELE_INTERFACE_H */

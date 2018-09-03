@@ -43,12 +43,11 @@ namespace IO
 
 namespace PATSPEC
 {
+  void PatientSpecificGeometry(
+      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Teuchos::ParameterList> params);
 
-  void PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
-                         Teuchos::RCP<Teuchos::ParameterList> params);
-
-  void ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization> dis,
-                                   Teuchos::RCP<Teuchos::ParameterList> params);
+  void ComputeEleNormalizedLumenDistance(
+      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Teuchos::ParameterList> params);
 
   void ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis);
 
@@ -58,26 +57,20 @@ namespace PATSPEC
 
   std::vector<double> GetCenterline(std::string filename);
 
-  void ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Teuchos::ParameterList> params);
+  void ComputeEleStrength(
+      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Teuchos::ParameterList> params);
 
-  void GetILTDistance(const int eleid,
-                      Teuchos::ParameterList& params,
-                      DRT::Discretization& dis);
+  void GetILTDistance(const int eleid, Teuchos::ParameterList& params, DRT::Discretization& dis);
 
-  void GetLocalRadius(const int eleid,
-                      Teuchos::ParameterList& params,
-                      DRT::Discretization& dis);
+  void GetLocalRadius(const int eleid, Teuchos::ParameterList& params, DRT::Discretization& dis);
 
-  void GetInnerRadius(const int eleid,
-                      Teuchos::ParameterList& params,
-                      DRT::Discretization& dis);
+  void GetInnerRadius(const int eleid, Teuchos::ParameterList& params, DRT::Discretization& dis);
 
   void PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
-         Teuchos::RCP<DRT::Discretization> discret_,
-         Teuchos::RCP<Teuchos::ParameterList> params);
+      Teuchos::RCP<DRT::Discretization> discret_, Teuchos::RCP<Teuchos::ParameterList> params);
 
   double ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis);
 
 
-}
+}  // namespace PATSPEC
 #endif /* PATSPEC_H */

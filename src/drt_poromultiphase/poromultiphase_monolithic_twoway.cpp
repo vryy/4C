@@ -36,75 +36,56 @@
  | constructor                                          kremheller 03/17 |
  *----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    PoroMultiPhaseMonolithic(comm, globaltimeparams),
-    directsolve_(true),
-    ittolinc_(0.0),
-    ittolres_(0.0),
-    itmax_(0),
-    itmin_(1),
-    itnum_(0),
-    solveradaptolbetter_(0.0),
-    solveradapttol_(false),
-    blockrowdofmap_(Teuchos::null),
-    equilibration_(INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_none),
-    invrowsums_(Teuchos::null),
-    tolinc_(0.0),
-    tolfres_(0.0),
-    tolinc_struct_(0.0),
-    tolfres_struct_(0.0),
-    tolinc_fluid_(0.0),
-    tolfres_fluid_(0.0),
-    normrhs_(0.0),
-    norminc_(0.0),
-    normrhsfluid_(0.0),
-    normincfluid_(0.0),
-    normrhsstruct_(0.0),
-    normincstruct_(0.0),
-    vectornormfres_(INPAR::POROMULTIPHASE::norm_undefined),
-    vectornorminc_(INPAR::POROMULTIPHASE::norm_undefined),
-    timernewton_(comm),
-    dtsolve_(0.0),
-    dtele_(0.0),
-    fdcheck_(INPAR::POROMULTIPHASE::FDCheck::fdcheck_none)
+    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : PoroMultiPhaseMonolithic(comm, globaltimeparams),
+      directsolve_(true),
+      ittolinc_(0.0),
+      ittolres_(0.0),
+      itmax_(0),
+      itmin_(1),
+      itnum_(0),
+      solveradaptolbetter_(0.0),
+      solveradapttol_(false),
+      blockrowdofmap_(Teuchos::null),
+      equilibration_(INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_none),
+      invrowsums_(Teuchos::null),
+      tolinc_(0.0),
+      tolfres_(0.0),
+      tolinc_struct_(0.0),
+      tolfres_struct_(0.0),
+      tolinc_fluid_(0.0),
+      tolfres_fluid_(0.0),
+      normrhs_(0.0),
+      norminc_(0.0),
+      normrhsfluid_(0.0),
+      normincfluid_(0.0),
+      normrhsstruct_(0.0),
+      normincstruct_(0.0),
+      vectornormfres_(INPAR::POROMULTIPHASE::norm_undefined),
+      vectornorminc_(INPAR::POROMULTIPHASE::norm_undefined),
+      timernewton_(comm),
+      dtsolve_(0.0),
+      dtele_(0.0),
+      fdcheck_(INPAR::POROMULTIPHASE::FDCheck::fdcheck_none)
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | initialization                                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& algoparams,
-    const Teuchos::ParameterList& structparams,
-    const Teuchos::ParameterList& fluidparams,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
-    int ndsporofluid_scatra)
+    const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
+    const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
+    const std::string& struct_disname, const std::string& fluid_disname, bool isale, int nds_disp,
+    int nds_vel, int nds_solidpressure, int ndsporofluid_scatra)
 {
-  //call base class
-  POROMULTIPHASE::PoroMultiPhaseMonolithic::Init(
-      globaltimeparams,
-      algoparams,
-      structparams,
-      fluidparams,
-      struct_disname,
-      fluid_disname,
-      isale,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure,
+  // call base class
+  POROMULTIPHASE::PoroMultiPhaseMonolithic::Init(globaltimeparams, algoparams, structparams,
+      fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
       ndsporofluid_scatra);
 
   // inform user that structure field will not be solved but displacements will just be set to zero
-  if(not solve_structure_)
-    PrintStructureDisabledInfo();
+  if (not solve_structure_) PrintStructureDisabledInfo();
 
   // Get the parameters for the ConvergenceCheck
   itmax_ = algoparams.get<int>("ITEMAX");
@@ -129,16 +110,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
       locsysman_ = StructureField()->LocsysManager();
     }
     else
-      locsysman_=Teuchos::null;
+      locsysman_ = Teuchos::null;
   }
 
-  fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::FDCheck>(algoparams.sublist("MONOLITHIC"),"FDCHECK");
+  fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::FDCheck>(
+      algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
-  equilibration_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::EquilibrationMethods>(algoparams.sublist("MONOLITHIC"),"EQUILIBRATION");
+  equilibration_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::EquilibrationMethods>(
+      algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
-  solveradapttol_= (DRT::INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
-
+  solveradapttol_ =
+      (DRT::INPUT::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
 }
 
 /*----------------------------------------------------------------------*
@@ -158,20 +141,17 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
   // -------------------------------------------------------------
 
   // initialize Poromultiphase-elasticity-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(
-      new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *Extractor(), *Extractor(), 81, false, true));
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      *Extractor(), *Extractor(), 81, false, true));
 
   // Initialize rhs
   rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  k_sf_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(StructDofRowMap()), 81, true, true));
-  k_fs_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(FluidDofRowMap()), 81, true, true));
+  k_sf_ = Teuchos::rcp(new LINALG::SparseMatrix(*(StructDofRowMap()), 81, true, true));
+  k_fs_ = Teuchos::rcp(new LINALG::SparseMatrix(*(FluidDofRowMap()), 81, true, true));
 
   // perform initialization associated with equilibration of global system of equations
-  switch(equilibration_)
+  switch (equilibration_)
   {
     case INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_none:
     {
@@ -183,7 +163,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
     case INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_rows_maindiag:
     {
       // initialize vector for row sums of global system matrix if necessary
-      invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),false));
+      invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), false));
       break;
     }
 
@@ -202,19 +182,16 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupMaps()
 {
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
   vecSpaces.push_back(StructDofRowMap());
 
   vecSpaces.push_back(FluidDofRowMap());
 
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No fluid equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
 
-    // full Poromultiphase-elasticity-map
+  // full Poromultiphase-elasticity-map
   fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
@@ -228,7 +205,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupMaps()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::TimeStep()
 {
-
   // Prepare stuff
   SetupNewton();
   PrintHeader();
@@ -237,7 +213,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::TimeStep()
   Evaluate(iterinc_);
 
   // Newton-Loop
-  while ( (not Converged() and itnum_ < itmax_) or (itnum_ < itmin_) )
+  while ((not Converged() and itnum_ < itmax_) or (itnum_ < itmin_))
   {
     // increment number of iteration
     itnum_++;
@@ -249,14 +225,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::TimeStep()
     // Build Convergence Norms
     BuildConvergenceNorms();
 
-    if(not Converged())
+    if (not Converged())
     {
       // Evaluate
       Evaluate(iterinc_);
 
       // perform FD Check of monolithic system matrix
-      if(fdcheck_ == INPAR::POROMULTIPHASE::fdcheck_global)
-        PoroFDCheck();
+      if (fdcheck_ == INPAR::POROMULTIPHASE::fdcheck_global) PoroFDCheck();
     }
     else
     {
@@ -283,12 +258,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::TimeStep()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildCombinedDBCMap()
 {
   // get structure and fluid dbc maps
-  const Teuchos::RCP<const Epetra_Map> scondmap =
-      StructureField()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> fcondmap =
-      FluidField()->GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map> fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
   // merge them
-  combinedDBCMap_= LINALG::MergeMap(scondmap, fcondmap, false);
+  combinedDBCMap_ = LINALG::MergeMap(scondmap, fcondmap, false);
 
   return;
 }
@@ -311,7 +284,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   Teuchos::RCP<const Epetra_Vector> fx;
   ExtractFieldVectors(x, sx, fx);
 
-  Evaluate(sx,fx,itnum_==0);
+  Evaluate(sx, fx, itnum_ == 0);
 
   // *********** time measurement ***********
   dtele_ = timernewton_.WallTime() - dtcpu;
@@ -323,34 +296,33 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
  | Evaluate (build global Matrix and RHS, public --> allows access      |
  | from outside --> monolithic scatra-coupling)        kremheller 06/17 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> sx,
-    Teuchos::RCP<const Epetra_Vector> fx,
-    const bool firstcall)
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const Epetra_Vector> sx,
+    Teuchos::RCP<const Epetra_Vector> fx, const bool firstcall)
 {
   // (1) Update fluid Field and reconstruct pressures and saturations
   FluidField()->UpdateIter(fx);
 
-  if(solve_structure_)
+  if (solve_structure_)
   {
     // (2) set fluid solution in structure field
-    StructureField()->Discretization()->SetState(1,"porofluid",FluidField()->Phinp());
+    StructureField()->Discretization()->SetState(1, "porofluid", FluidField()->Phinp());
 
     // (3) evaluate structure
-    if (firstcall) // first call (iterinc_ = 0) --> sx = 0
+    if (firstcall)  // first call (iterinc_ = 0) --> sx = 0
       StructureField()->Evaluate();
-    else //(this call will also update displacements and velocities)
+    else  //(this call will also update displacements and velocities)
       StructureField()->Evaluate(sx);
 
     // (4) Set structure solution on fluid field
-    SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   }
   else
   {
     // (4) Set structure solution on fluid field
-    SetStructSolution(struct_zeros_,struct_zeros_);
+    SetStructSolution(struct_zeros_, struct_zeros_);
     StructureField()->SystemMatrix()->Zero();
-    StructureField()->SystemMatrix()->Complete(StructureField()->SystemMatrix()->RangeMap(),StructureField()->SystemMatrix()->RangeMap());
+    StructureField()->SystemMatrix()->Complete(
+        StructureField()->SystemMatrix()->RangeMap(), StructureField()->SystemMatrix()->RangeMap());
   }
 
   // (5) Evaluate the fluid
@@ -372,9 +344,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(
 /*----------------------------------------------------------------------*
  | setup system matrix of poromultiphase-elasticity   kremheller 03/17  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
+    LINALG::BlockSparseMatrixBase& mat)
 {
-  //TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupSystemMatrix");
+  // TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupSystemMatrix");
 
   // pure structural part k_ss ((ndim*n_nodes)x(ndim*n_nodes))
 
@@ -385,8 +358,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
-  if(k_ss==Teuchos::null)
-    dserror("structure system matrix null pointer!");
+  if (k_ss == Teuchos::null) dserror("structure system matrix null pointer!");
 
   // Copy from TSI
   if (locsysman_ != Teuchos::null)
@@ -397,14 +369,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
     k_ss->ApplyDirichletWithTrafo(
-            locsysman_->Trafo(),
-            *StructureField()->GetDBCMapExtractor()->CondMap(),
-            true
-            );
+        locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), true);
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
-    k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),true);
+    k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(), true);
 
   /*----------------------------------------------------------------------*/
   // structural part k_sf ((ndim*n_nodes)x(n_phases*n_nodes))
@@ -413,7 +382,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
 
-  //Epetra_Time timerstrcoupl(Comm());
+  // Epetra_Time timerstrcoupl(Comm());
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
 
@@ -436,9 +405,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
 
   // to apply Multiply in LocSys, k_st has to be FillCompleted
   k_sf->Complete(
-      FluidField()->SystemMatrix()->RangeMap(),
-      StructureField()->SystemMatrix()->RangeMap()
-         );
+      FluidField()->SystemMatrix()->RangeMap(), StructureField()->SystemMatrix()->RangeMap());
 
   if (locsysman_ != Teuchos::null)
   {
@@ -448,14 +415,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
     k_sf->ApplyDirichletWithTrafo(
-            locsysman_->Trafo(),
-            *StructureField()->GetDBCMapExtractor()->CondMap(),
-            false
-            );
+        locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), false);
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
-    k_sf->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
+    k_sf->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(), false);
 
   /*----------------------------------------------------------------------*/
   // pure fluid part k_ff ( (n_phases*n_nodes)x(n_phases*n_nodes) )
@@ -468,8 +432,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
   // NOTE: DBC's have already been applied within Evaluate (PrepareSystemForNewtonSolve())
   Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
 
-  if(k_ff==Teuchos::null)
-    dserror("fluid system matrix null pointer!");
+  if (k_ff == Teuchos::null) dserror("fluid system matrix null pointer!");
 
   /*----------------------------------------------------------------------*/
   // fluid part k_fs ( (n_phases*n_nodes)x(ndim*n_nodes) )
@@ -482,10 +445,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
   ApplyFluidCouplMatrix(k_fs);
 
   // apply DBC's also on off-diagonal fluid-structure coupling block
-  k_fs->ApplyDirichlet(*FluidField()->GetDBCMapExtractor()->CondMap(),false);
+  k_fs->ApplyDirichlet(*FluidField()->GetDBCMapExtractor()->CondMap(), false);
 
   // uncomplete matrix block (appears to be required in certain cases (locsys+iterative solver))
-  if(solve_structure_)
+  if (solve_structure_)
   {
     k_ss->UnComplete();
     k_sf->UnComplete();
@@ -515,45 +478,46 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(LINALG::B
     dserror("exit");
   }
 
-} // SetupSystemMatrix
+}  // SetupSystemMatrix
 
 /*----------------------------------------------------------------------*
  | get fluid structure-coupling sparse matrix           kremheller 03/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::FluidStructCouplingMatrix()
+Teuchos::RCP<LINALG::SparseMatrix>
+POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::FluidStructCouplingMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_fs_);
-  if(sparse==Teuchos::null)
-    dserror("cast to LINALG::SparseMatrix failed!");
+  Teuchos::RCP<LINALG::SparseMatrix> sparse =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_fs_);
+  if (sparse == Teuchos::null) dserror("cast to LINALG::SparseMatrix failed!");
 
   return sparse;
-} // FluidStructCouplingMatrix()
+}  // FluidStructCouplingMatrix()
 
 /*----------------------------------------------------------------------*
  | get structure fluid-coupling sparse matrix           kremheller 03/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::StructFluidCouplingMatrix()
+Teuchos::RCP<LINALG::SparseMatrix>
+POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::StructFluidCouplingMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf_);
-  if(sparse==Teuchos::null)
-    dserror("cast to LINALG::SparseMatrix failed!");
+  Teuchos::RCP<LINALG::SparseMatrix> sparse =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf_);
+  if (sparse == Teuchos::null) dserror("cast to LINALG::SparseMatrix failed!");
 
   return sparse;
-} // FluidStructCouplingMatrix()
+}  // FluidStructCouplingMatrix()
 
 /*----------------------------------------------------------------------*
  | evaluate fluid-structural system matrix at state    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyFluidCouplMatrix(
-    Teuchos::RCP< LINALG::SparseOperator> k_fs //!< off-diagonal tangent matrix term
-  )
+    Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< off-diagonal tangent matrix term
+)
 {
-
-  //reset
+  // reset
   k_fs->Zero();
-  if(solve_structure_)
-    FluidField()->AssembleFluidStructCouplingMat(k_fs);
-  k_fs->Complete(StructureField()->SystemMatrix()->RangeMap(), FluidField()->SystemMatrix()->RangeMap());
+  if (solve_structure_) FluidField()->AssembleFluidStructCouplingMat(k_fs);
+  k_fs->Complete(
+      StructureField()->SystemMatrix()->RangeMap(), FluidField()->SystemMatrix()->RangeMap());
 
   return;
 }
@@ -571,16 +535,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::UpdateFieldsAfterConvergenc
   UpdateFieldsAfterConvergence(sx, fx);
 
   return;
-
 }
 
 /*-----------------------------------------------------------------------------*
  | update fields after convergence as phi_i+1=phi_i+iterinc   kremheller 07/17 |
  *-----------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::UpdateFieldsAfterConvergence(
-    Teuchos::RCP<const Epetra_Vector>& sx,
-    Teuchos::RCP<const Epetra_Vector>& fx
-    )
+    Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx)
 {
   // (1) Update fluid Field and reconstruct pressures and saturations
   FluidField()->UpdateIter(fx);
@@ -590,63 +551,57 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::UpdateFieldsAfterConvergenc
   StructureField()->Evaluate(sx);
 
   // (4) Set structure solution on fluid field
-  SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
  | evaluate structural-fluid system matrix at state    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyStrCouplMatrix(
-    Teuchos::RCP< LINALG::SparseOperator> k_sf //!< off-diagonal tangent matrix term
-  )
+    Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< off-diagonal tangent matrix term
+)
 {
   k_sf->Zero();
 
-  if(solve_structure_)
+  if (solve_structure_)
   {
-
     // create the parameters for the discretization
     Teuchos::ParameterList sparams;
 
     //! pointer to the model evaluator data container
-    Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> params = Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
+    Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> params =
+        Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
 
     // set parameters needed for element evalutation
     params->SetActionType(DRT::ELEMENTS::struct_poro_calc_fluidcoupling);
     params->SetTotalTime(Time());
     params->SetDeltaTime(Dt());
-    //std::cout << Dt() << std::endl;
+    // std::cout << Dt() << std::endl;
 
-    sparams.set< Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface",params);
+    sparams.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", params);
 
     StructureField()->Discretization()->ClearState();
-    StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
-    StructureField()->Discretization()->SetState(0,"velocity",StructureField()->Velnp());
-    StructureField()->Discretization()->SetState(1,"porofluid",FluidField()->Phinp());
+    StructureField()->Discretization()->SetState(0, "displacement", StructureField()->Dispnp());
+    StructureField()->Discretization()->SetState(0, "velocity", StructureField()->Velnp());
+    StructureField()->Discretization()->SetState(1, "porofluid", FluidField()->Phinp());
 
     // build specific assemble strategy for mechanical-fluid system matrix
     // from the point of view of StructureField:
     // structdofset = 0, fluiddofset = 1
-    DRT::AssembleStrategy structuralstrategy(
-        0,               // structdofset for row
-        1,               // fluiddofset for column
-        k_sf,            // mechanical-fluid coupling matrix
-        Teuchos::null ,
-        Teuchos::null ,
-        Teuchos::null,
-        Teuchos::null
-    );
+    DRT::AssembleStrategy structuralstrategy(0,  // structdofset for row
+        1,                                       // fluiddofset for column
+        k_sf,                                    // mechanical-fluid coupling matrix
+        Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
     // evaluate the mechanical-fluid system matrix on the structural element
-    StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
+    StructureField()->Discretization()->Evaluate(sparams, structuralstrategy);
 
     StructureField()->Discretization()->ClearState();
 
-    //scale with time integration factor
-    k_sf->Scale(1.0-StructureField()->TimIntParam());
+    // scale with time integration factor
+    k_sf->Scale(1.0 - StructureField()->TimIntParam());
   }
 
   return;
@@ -659,27 +614,27 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
   //  solver
   // create a linear solver
   // get dynamic section of poroelasticity
-  const Teuchos::ParameterList& poromultdyn = DRT::Problem::Instance()->PoroMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& poromultdyn =
+      DRT::Problem::Instance()->PoroMultiPhaseDynamicParams();
   // get the solver number used for linear poroelasticity solver
   const int linsolvernumber = poromultdyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for poromultiphaseflow. Please set LINEAR_SOLVER in POROMULTIPHASE DYNAMIC to a valid number!");
+    dserror(
+        "no linear solver defined for poromultiphaseflow. Please set LINEAR_SOLVER in "
+        "POROMULTIPHASE DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
-    DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-    solverparams, "SOLVER");
+      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+  const int solvertype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (   solvertype == INPAR::SOLVER::umfpack
-                  or solvertype == INPAR::SOLVER::superlu
-                  or solvertype == INPAR::SOLVER::amesos_klu_nonsym);
+  directsolve_ = (solvertype == INPAR::SOLVER::umfpack or solvertype == INPAR::SOLVER::superlu or
+                  solvertype == INPAR::SOLVER::amesos_klu_nonsym);
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new LINALG::Solver( solverparams,
-                                      Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle())
-                 );
+    solver_ = Teuchos::rcp(
+        new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   }
   else
     CreateLinearSolver(solverparams, solvertype);
@@ -696,49 +651,38 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
  | Create linear (iterative) solver                  kremheller 08/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
-    const Teuchos::ParameterList& solverparams,
-    const int                     solvertype
-    )
+    const Teuchos::ParameterList& solverparams, const int solvertype)
 {
-
-  if (solvertype != INPAR::SOLVER::aztec_msr &&
-      solvertype != INPAR::SOLVER::belos)
+  if (solvertype != INPAR::SOLVER::aztec_msr && solvertype != INPAR::SOLVER::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    std::cout << " Note: the BGS2x2 preconditioner now "                  << std::endl;
-    std::cout << " uses the structural solver and fluid solver blocks"  << std::endl;
-    std::cout << " for building the internal inverses"                    << std::endl;
-    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << std::endl;
-    std::cout << " in the dat files!"                                     << std::endl;
+    std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
+    std::cout << " uses the structural solver and fluid solver blocks" << std::endl;
+    std::cout << " for building the internal inverses" << std::endl;
+    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
+    std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
-  const int azprectype
-    = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
-        solverparams,
-        "AZPREC"
-        );
+  const int azprectype =
+      DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
     case INPAR::SOLVER::azprec_AMGnxn:
-      {
-        // no plausibility checks here
-        // if you forget to declare an xml file you will get an error message anyway
-      }
-      break;
+    {
+      // no plausibility checks here
+      // if you forget to declare an xml file you will get an error message anyway
+    }
+    break;
     default:
       dserror("AMGnxn preconditioner expected");
       break;
   }
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(
-                         solverparams,
-                         Comm(),
-                         DRT::Problem::Instance()->ErrorFile()->Handle()
-                         )
-                     );
+  solver_ = Teuchos::rcp(
+      new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // build the null spaces of the single blocks
   BuildBlockNullSpaces(solver_);
@@ -748,17 +692,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
  | build null spaces associated with blocks of global system matrix kremheller 08/17 |
  *-----------------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
-    Teuchos::RCP<LINALG::Solver>& solver
-)
+    Teuchos::RCP<LINALG::Solver>& solver)
 {
-  // equip smoother for structure matrix block with empty parameter sublists to trigger null space computation
+  // equip smoother for structure matrix block with empty parameter sublists to trigger null space
+  // computation
   Teuchos::ParameterList& blocksmootherparams = solver->Params().sublist("Inverse1");
   blocksmootherparams.sublist("Aztec Parameters");
   blocksmootherparams.sublist("MueLu Parameters");
 
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
 
-  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space computation
+  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
+  // computation
   Teuchos::ParameterList& blocksmootherparams2 = solver->Params().sublist("Inverse2");
   blocksmootherparams2.sublist("Aztec Parameters");
   blocksmootherparams2.sublist("MueLu Parameters");
@@ -773,7 +718,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupNewton()
 {
-
   // initialise equilibrium loop and norms
   itnum_ = 0;
   normrhs_ = 0.0;
@@ -790,14 +734,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupNewton()
   tolfres_fluid_ = 0.0;
 
   // incremental solution vector with length of all dofs
-  if(iterinc_==Teuchos::null) iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
-  else iterinc_->PutScalar(0.0);
+  if (iterinc_ == Teuchos::null)
+    iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  else
+    iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  if(zeros_==Teuchos::null) zeros_ = LINALG::CreateVector(*DofRowMap(), true);
-  else zeros_->PutScalar(0.0);
+  if (zeros_ == Teuchos::null)
+    zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  else
+    zeros_->PutScalar(0.0);
 
-  //AitkenReset();
+  // AitkenReset();
 
   return;
 }
@@ -807,19 +755,21 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupNewton()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PrintHeader()
 {
-
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
-    if(!solve_structure_)
-      PrintStructureDisabledInfo();
-    std::cout<<"+------------------------------------------------------------------------------------------+" << std::endl;
-    std::cout<<"| MONOLITHIC POROMULTIPHASE SOLVER                                                         |" << std::endl;
-    std::cout<<"| STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
-        << std::setw(5) << std::setprecision(4) << std::scientific << NStep() << ", Time: "
-        << std::setw(11) << std::setprecision(4) << std::scientific << Time() << "/"
-        << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime() << ", Dt: "
-        << std::setw(11) << std::setprecision(4) << std::scientific << Dt() <<
-        "                        |"<< std::endl;
+    if (!solve_structure_) PrintStructureDisabledInfo();
+    std::cout << "+--------------------------------------------------------------------------------"
+                 "----------+"
+              << std::endl;
+    std::cout << "| MONOLITHIC POROMULTIPHASE SOLVER                                               "
+                 "          |"
+              << std::endl;
+    std::cout << "| STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
+              << "/" << std::setw(5) << std::setprecision(4) << std::scientific << NStep()
+              << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
+              << "/" << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime()
+              << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
+              << "                        |" << std::endl;
   }
 }
 
@@ -834,7 +784,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildConvergenceNorms()
   Teuchos::RCP<const Epetra_Vector> rhs_f;
 
   // get structure and fluid RHS
-  ExtractFieldVectors(rhs_,rhs_s,rhs_f);
+  ExtractFieldVectors(rhs_, rhs_s, rhs_f);
 
   // build also norms for fluid and structure
   normrhsstruct_ = UTILS::CalculateVectorNorm(vectornormfres_, rhs_s);
@@ -848,7 +798,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildConvergenceNorms()
   Teuchos::RCP<const Epetra_Vector> iterincf;
 
   // get structure and fluid increment
-  ExtractFieldVectors(iterinc_,iterincs,iterincf);
+  ExtractFieldVectors(iterinc_, iterincs, iterincf);
 
   // build also norms for fluid and structure
   normincstruct_ = UTILS::CalculateVectorNorm(vectornorminc_, iterincs);
@@ -862,14 +812,14 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildConvergenceNorms()
   double totalnorm = UTILS::CalculateVectorNorm(vectornorminc_, sol_vec);
 
   // take care of very small norms
-  if(dispnorm < 1.0e-6) dispnorm = 1.0;
-  if(fluidnorm < 1.0e-6) fluidnorm = 1.0;
-  if(totalnorm < 1.0e-6) totalnorm = 1.0;
+  if (dispnorm < 1.0e-6) dispnorm = 1.0;
+  if (fluidnorm < 1.0e-6) fluidnorm = 1.0;
+  if (totalnorm < 1.0e-6) totalnorm = 1.0;
 
   // build relative increment norm
-  normincstruct_/=dispnorm;
-  normincfluid_/=fluidnorm;
-  norminc_/=totalnorm;
+  normincstruct_ /= dispnorm;
+  normincfluid_ /= fluidnorm;
+  norminc_ /= totalnorm;
 
 
   return;
@@ -880,19 +830,25 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildConvergenceNorms()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonOutput()
 {
-
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   {
-    if(itnum_==1)
-      printf("+--------------+----------------+------------------+--------------------+------------------+\n");
-    printf("|-  step/max  -|-  total-inc   -|-  fluid-inc     -|-  disp-inc        -|-  norm-rhs      -| (ts =%10.3E,",
+    if (itnum_ == 1)
+      printf(
+          "+--------------+----------------+------------------+--------------------+---------------"
+          "---+\n");
+    printf(
+        "|-  step/max  -|-  total-inc   -|-  fluid-inc     -|-  disp-inc        -|-  norm-rhs      "
+        "-| (ts =%10.3E,",
         dtsolve_);
     printf("\n");
-    printf("|   %3d/%3d    |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |  te =%10.3E)",
-         itnum_,itmax_,norminc_,normincfluid_,normincstruct_,normrhs_,dtele_);
+    printf(
+        "|   %3d/%3d    |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |  te =%10.3E)",
+        itnum_, itmax_, norminc_, normincfluid_, normincstruct_, normrhs_, dtele_);
     printf("\n");
-    printf("+--------------+----------------+------------------+--------------------+------------------+\n");
+    printf(
+        "+--------------+----------------+------------------+--------------------+-----------------"
+        "-+\n");
   }
 
   return;
@@ -903,36 +859,52 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonOutput()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
 {
-
   // build the maximum value of the residuals and increments
-  const double maxinc = std::max(norminc_,std::max(normincfluid_,normincstruct_));
-  const double maxres = std::max(normrhs_,std::max(normrhsfluid_,normrhsstruct_));
+  const double maxinc = std::max(norminc_, std::max(normincfluid_, normincstruct_));
+  const double maxres = std::max(normrhs_, std::max(normrhsfluid_, normrhsstruct_));
 
   // print the incremental based convergence check to the screen
-  if(Converged()) //norminc_ < ittol_ && normrhs_ < ittol_ && normincfluid_ < ittol_ && normincstruct_ < ittol_
+  if (Converged())  // norminc_ < ittol_ && normrhs_ < ittol_ && normincfluid_ < ittol_ &&
+                    // normincstruct_ < ittol_
   {
-    if (Comm().MyPID()==0 )
+    if (Comm().MyPID() == 0)
     {
-      printf("|  Monolithic iteration loop converged after iteration %3d/%3d !                           |\n", itnum_,itmax_);
-      printf("|  Quantity           [norm]:                 TOL                                          |\n");
-      printf("|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                    |\n",
-          VectorNormString(vectornorminc_).c_str(),maxinc, ittolinc_);
-      printf("|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                    |\n",
-          VectorNormString(vectornormfres_).c_str(),maxres, ittolres_);
-      printf("+--------------+----------------+------------------+--------------------+------------------+\n");
+      printf(
+          "|  Monolithic iteration loop converged after iteration %3d/%3d !                        "
+          "   |\n",
+          itnum_, itmax_);
+      printf(
+          "|  Quantity           [norm]:                 TOL                                       "
+          "   |\n");
+      printf(
+          "|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                    |\n",
+          VectorNormString(vectornorminc_).c_str(), maxinc, ittolinc_);
+      printf(
+          "|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                    |\n",
+          VectorNormString(vectornormfres_).c_str(), maxres, ittolres_);
+      printf(
+          "+--------------+----------------+------------------+--------------------+---------------"
+          "---+\n");
       printf("\n");
     }
   }
   else
   {
-    if ((Comm().MyPID()==0) )
+    if ((Comm().MyPID() == 0))
     {
-      printf("|     >>>>>> not converged in %3d steps!                                                   |\n", itmax_);
-      printf("|  Max. rel. increment [%3s]:  %10.3E    %10.3E                                    |\n",
-          VectorNormString(vectornorminc_).c_str(),maxinc, ittolinc_);
-      printf("|  Maximum    residual [%3s]:  %10.3E    %10.3E                                    |\n",
-          VectorNormString(vectornormfres_).c_str(),maxres, ittolres_);
-      printf("+--------------+----------------+------------------+--------------------+------------------+\n");
+      printf(
+          "|     >>>>>> not converged in %3d steps!                                                "
+          "   |\n",
+          itmax_);
+      printf(
+          "|  Max. rel. increment [%3s]:  %10.3E    %10.3E                                    |\n",
+          VectorNormString(vectornorminc_).c_str(), maxinc, ittolinc_);
+      printf(
+          "|  Maximum    residual [%3s]:  %10.3E    %10.3E                                    |\n",
+          VectorNormString(vectornormfres_).c_str(), maxres, ittolres_);
+      printf(
+          "+--------------+----------------+------------------+--------------------+---------------"
+          "---+\n");
       printf("\n");
       printf("\n");
     }
@@ -948,9 +920,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
  *----------------------------------------------------------------------*/
 bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Converged()
 {
-
-  return (norminc_ < ittolinc_ && normincfluid_ < ittolinc_ && normincstruct_ < ittolinc_
-      && normrhs_ < ittolres_ && normrhsstruct_ < ittolres_ && normrhsfluid_ < ittolres_);
+  return (norminc_ < ittolinc_ && normincfluid_ < ittolinc_ && normincstruct_ < ittolinc_ &&
+          normrhs_ < ittolres_ && normrhsstruct_ < ittolres_ && normrhsfluid_ < ittolres_);
 }
 
 /*----------------------------------------------------------------------*
@@ -966,7 +937,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
 
   if (solveradapttol_ and (itnum_ > 1))
   {
-    double worst = std::max(normrhs_,norminc_);
+    double worst = std::max(normrhs_, norminc_);
     double wanted = tolfres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
@@ -975,28 +946,20 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
   // equilibrate global system of equations if necessary
   EquilibrateSystem();
 
-  if(directsolve_)
+  if (directsolve_)
   {
     // merge blockmatrix to SparseMatrix
     Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     // standard solver call
-    // system is ready to solve since Dirichlet Boundary conditions have been applied in SetupSystemMatrix
-    // or Evaluate
-    solver_->Solve( sparse->EpetraOperator(),
-                    iterinc_, rhs_,
-                    true,
-                    itnum_==1
-                    );
+    // system is ready to solve since Dirichlet Boundary conditions have been applied in
+    // SetupSystemMatrix or Evaluate
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
   }
   else
   {
     // standard solver call
-    solver_->Solve( systemmatrix_->EpetraOperator(),
-                    iterinc_, rhs_,
-                    true,
-                    itnum_==1
-                    );
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, itnum_ == 1);
   }
 
   // *********** time measurement ***********
@@ -1012,7 +975,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::LinearSolve()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateSystem()
 {
-  switch(equilibration_)
+  switch (equilibration_)
   {
     case INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_none:
     {
@@ -1023,43 +986,44 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateSystem()
     case INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_rows_full:
     case INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_rows_maindiag:
     {
-
       // perform row equilibration
-      for(int i=0; i<systemmatrix_->Rows(); ++i)
+      for (int i = 0; i < systemmatrix_->Rows(); ++i)
       {
         // initialize vector for inverse row sums
-        const Teuchos::RCP<Epetra_Vector> invrowsums(Teuchos::rcp(new Epetra_Vector(systemmatrix_->Matrix(i,i).RowMap())));
+        const Teuchos::RCP<Epetra_Vector> invrowsums(
+            Teuchos::rcp(new Epetra_Vector(systemmatrix_->Matrix(i, i).RowMap())));
 
         // compute inverse row sums of current main diagonal matrix block
-        if(equilibration_ == INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_rows_maindiag)
-          ComputeInvRowSums(systemmatrix_->Matrix(i,i),invrowsums);
+        if (equilibration_ ==
+            INPAR::POROMULTIPHASE::EquilibrationMethods::equilibration_rows_maindiag)
+          ComputeInvRowSums(systemmatrix_->Matrix(i, i), invrowsums);
 
         // compute inverse row sums of current row block of global system matrix
         else
         {
           // loop over all column blocks of global system matrix
-          for(int j=0; j<systemmatrix_->Cols(); ++j)
+          for (int j = 0; j < systemmatrix_->Cols(); ++j)
           {
             // extract current block of global system matrix
-            const LINALG::SparseMatrix& matrix = systemmatrix_->Matrix(i,j);
+            const LINALG::SparseMatrix& matrix = systemmatrix_->Matrix(i, j);
 
             // loop over all rows of current matrix block
-            for(int irow=0; irow<matrix.RowMap().NumMyElements(); ++irow)
+            for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
             {
               // determine length of current matrix row
               const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
 
-              if(length > 0)
+              if (length > 0)
               {
                 // extract current matrix row from matrix block
                 int numentries(0);
-                std::vector<double> values(length,0.);
-                if(matrix.EpetraMatrix()->ExtractMyRowCopy(irow,length,numentries,&values[0]))
-                  dserror("Cannot extract matrix row with local ID %d from matrix block!",irow);
+                std::vector<double> values(length, 0.);
+                if (matrix.EpetraMatrix()->ExtractMyRowCopy(irow, length, numentries, &values[0]))
+                  dserror("Cannot extract matrix row with local ID %d from matrix block!", irow);
 
                 // compute and store current row sum
                 double rowsum(0.);
-                for(int ientry=0; ientry<numentries; ++ientry)
+                for (int ientry = 0; ientry < numentries; ++ientry)
                   rowsum += std::abs(values[ientry]);
                 (*invrowsums)[irow] += rowsum;
               }
@@ -1067,21 +1031,20 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateSystem()
           }
 
           // invert row sums
-          if(invrowsums->Reciprocal(*invrowsums))
-            dserror("Vector could not be inverted!");
+          if (invrowsums->Reciprocal(*invrowsums)) dserror("Vector could not be inverted!");
         }
 
         // perform row equilibration of matrix blocks in current row block of global system matrix
-        for(int j=0; j<systemmatrix_->Cols(); ++j)
-          EquilibrateMatrixRows(systemmatrix_->Matrix(i,j),invrowsums);
+        for (int j = 0; j < systemmatrix_->Cols(); ++j)
+          EquilibrateMatrixRows(systemmatrix_->Matrix(i, j), invrowsums);
 
         // insert inverse row sums of current main diagonal matrix block into global vector
-        Extractor()->InsertVector(invrowsums,i,invrowsums_);
+        Extractor()->InsertVector(invrowsums, i, invrowsums_);
       }
 
       // perform equilibration of global residual vector
-      if(rhs_->Multiply(1.,*invrowsums_,*rhs_,0.))
-         dserror("Equilibration of global residual vector failed!");
+      if (rhs_->Multiply(1., *invrowsums_, *rhs_, 0.))
+        dserror("Equilibration of global residual vector failed!");
 
       break;
     }
@@ -1101,31 +1064,32 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateSystem()
  | (copy from sti_algorithm.cpp)                                                  |
  *--------------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ComputeInvRowSums(
-    const LINALG::SparseMatrix&          matrix,      //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+    const LINALG::SparseMatrix& matrix,  //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&
+        invrowsums  //!< inverse sums of absolute values of row entries in matrix
     ) const
 {
   // compute inverse row sums of matrix
-  if(matrix.EpetraMatrix()->InvRowSums(*invrowsums))
+  if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
     dserror("Inverse row sums of matrix could not be successfully computed!");
 
   return;
-} // POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ComputeInvRowSums
+}  // POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ComputeInvRowSums
 
 /*----------------------------------------------------------------------*
  | equilibrate matrix rows                             kremheller 08/17 |
  | (copy from sti_algorithm.cpp)                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateMatrixRows(
-    LINALG::SparseMatrix&                matrix,      //!< matrix
-    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+    LINALG::SparseMatrix& matrix,  //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&
+        invrowsums  //!< sums of absolute values of row entries in matrix
     ) const
 {
-  if(matrix.LeftScale(*invrowsums))
-    dserror("Row equilibration of matrix failed!");
+  if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
 
   return;
-} // POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateMatrixRows
+}  // POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::EquilibrateMatrixRows
 
 /*----------------------------------------------------------------------*
  | get the dof row map                                 kremheller 03/17 |
@@ -1146,34 +1110,31 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupRHS()
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   SetupVector(*rhs_, str_rhs, FluidField()->RHS());
 
-} // SetupRHS()
+}  // SetupRHS()
 
 /*----------------------------------------------------------------------*
  | setup RHS (like fsimon)                             kremheller 05/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupStructurePartofRHS()
+Teuchos::RCP<Epetra_Vector>
+POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupStructurePartofRHS()
 {
   // Copy from TSI
   Teuchos::RCP<Epetra_Vector> str_rhs = struct_zeros_;
-  if(solve_structure_)
-    str_rhs = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
-  if (locsysman_!=Teuchos::null)
-    locsysman_->RotateGlobalToLocal(str_rhs);
+  if (solve_structure_) str_rhs = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
+  if (locsysman_ != Teuchos::null) locsysman_->RotateGlobalToLocal(str_rhs);
 
   return str_rhs;
-
 }
 
 /*----------------------------------------------------------------------*
  | setup vector of the structure and fluid field         kremheller 03/17|
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupVector(Epetra_Vector &f,
-                                        Teuchos::RCP<const Epetra_Vector> sv,
-                                        Teuchos::RCP<const Epetra_Vector> fv)
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupVector(
+    Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv, Teuchos::RCP<const Epetra_Vector> fv)
 {
   Extractor()->InsertVector(*sv, 0, f);
 
-    f.Scale(-1);
+  f.Scale(-1);
   Extractor()->InsertVector(*fv, 1, f);
 }
 /*----------------------------------------------------------------------*
@@ -1181,8 +1142,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupVector(Epetra_Vector &
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ExtractFieldVectors(
-    Teuchos::RCP<const Epetra_Vector> x,
-    Teuchos::RCP<const Epetra_Vector>& sx,
+    Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& sx,
     Teuchos::RCP<const Epetra_Vector>& fx)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ExtractFieldVectors");
@@ -1200,14 +1160,16 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ExtractFieldVectors(
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PrintStructureDisabledInfo()
 {
   // print out Info
-  if (Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   {
-    std::cout<<"\n";
-    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-    std::cout<<" INFO:    STRUCTURE FIELD IS NOT SOLVED; MAKE SURE YOU HAVE CONSTRAINED ALL DOFS IN YOUR STRUCTURE WITH A DBC\n";
-    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    std::cout << "\n";
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                 "++++++++++++++++++++++++++++++++\n";
+    std::cout << " INFO:    STRUCTURE FIELD IS NOT SOLVED; MAKE SURE YOU HAVE CONSTRAINED ALL DOFS "
+                 "IN YOUR STRUCTURE WITH A DBC\n";
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                 "++++++++++++++++++++++++++++++++\n";
   }
-
 }
 
 /*----------------------------------------------------------------------*
@@ -1236,30 +1198,28 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
-  abs_iterinc->Update(1.0,*iterinc_,0.0);
+  abs_iterinc->Update(1.0, *iterinc_, 0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
 
-  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
-      true));
+  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
-      true));
+  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(
-      new LINALG::SparseMatrix(sparse->EpetraMatrix(),LINALG::Copy));
+  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy =
+      Teuchos::rcp(new LINALG::SparseMatrix(sparse->EpetraMatrix(), LINALG::Copy));
 
   if (false)
   {
     std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
     std::cout << "iterinc" << std::endl << *iterinc << std::endl;
-    //std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
+    // std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
     std::cout << "disp: " << std::endl << *(StructureField()->Dispnp());
-    //std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
-    //std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
-    //std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
+    // std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
+    // std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
+    // std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
     std::cout << "gridvel struct" << std::endl << *(StructureField()->Velnp());
   }
 
@@ -1271,26 +1231,27 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
     {
       iterinc->ReplaceGlobalValue(i, 0, 0.0);
     }
-    abs_iterinc->Update(1.0, *iterinc,1.0);
+    abs_iterinc->Update(1.0, *iterinc, 1.0);
 
     if (i == spaltenr)
-      std::cout << "\n******************" << spaltenr + 1
-          << ". Spalte!!***************" << std::endl;
+      std::cout << "\n******************" << spaltenr + 1 << ". Spalte!!***************"
+                << std::endl;
 
     Evaluate(iterinc);
 
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
-    iterinc_->PutScalar(0.0); // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(sparse_copy, iterinc_, rhs_copy,
-        Teuchos::null, zeros_, *CombinedDBCMap());
+    iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(
+        sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
     Teuchos::RCP<Epetra_CrsMatrix> test_crs = sparse_copy->EpetraMatrix();
     int sparsenumentries;
     int sparselength = test_crs->NumGlobalEntries(i);
     std::vector<double> sparsevalues(sparselength);
     std::vector<int> sparseindices(sparselength);
-   // int sparseextractionstatus =
-    test_crs->ExtractGlobalRowCopy(i,sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+    // int sparseextractionstatus =
+    test_crs->ExtractGlobalRowCopy(
+        i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
 
     if (i == spaltenr)
@@ -1298,17 +1259,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
       std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << std::endl;
       std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << std::endl;
     }
-    //rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
+    // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
     rhs_copy->Update(-1.0, *rhs_old, 1.0);
     rhs_copy->Scale(-1.0 / delta);
 
     if (i == spaltenr)
     {
-      std::cout << "( rhs_disturb - rhs_old )               " << (*rhs_copy)[zeilennr]*(-1.0)*delta << std::endl;
+      std::cout << "( rhs_disturb - rhs_old )               "
+                << (*rhs_copy)[zeilennr] * (-1.0) * delta << std::endl;
       std::cout << "( rhs_disturb - rhs_old ) . (-1)/delta: " << (*rhs_copy)[zeilennr] << std::endl;
-      //LINALG::PrintMatrixInMatlabFormat("../o/mymatrix.dat",*test_crs);
-      //dserror("exit here");
-      //std::cout << sparse_copy(4,35) << std::endl;
+      // LINALG::PrintMatrixInMatlabFormat("../o/mymatrix.dat",*test_crs);
+      // dserror("exit here");
+      // std::cout << sparse_copy(4,35) << std::endl;
     }
     int* index = &i;
     for (int j = 0; j < dofs; ++j)
@@ -1318,39 +1280,35 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 
       if ((j == zeilennr) and (i == spaltenr))
       {
-        std::cout << "\n******************" << zeilennr + 1
-            << ". Zeile!!***************" << std::endl;
-        //std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
-        //std::cout << "iterinc" << std::endl << *iterinc << std::endl;
-        //std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
+        std::cout << "\n******************" << zeilennr + 1 << ". Zeile!!***************"
+                  << std::endl;
+        // std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
+        // std::cout << "iterinc" << std::endl << *iterinc << std::endl;
+        // std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
         std::cout << "disp: " << std::endl << *(StructureField()->Dispnp());
-        //std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
-        //std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
-        //std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
+        // std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
+        // std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
+        // std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
         std::cout << "gridvel struct" << std::endl << *(StructureField()->Velnp());
 
-        std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
-            << (*rhs_copy)[zeilennr] << std::endl;
+        std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): " << (*rhs_copy)[zeilennr]
+                  << std::endl;
 
-        std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value
-            << std::endl;
-        std::cout << "\n******************" << zeilennr + 1
-            << ". Zeile Ende!!***************" << std::endl;
+        std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value << std::endl;
+        std::cout << "\n******************" << zeilennr + 1 << ". Zeile Ende!!***************"
+                  << std::endl;
       }
     }
 
-    if (not CombinedDBCMap()->MyGID(i))
-      iterinc->ReplaceGlobalValue(i, 0, -delta);
+    if (not CombinedDBCMap()->MyGID(i)) iterinc->ReplaceGlobalValue(i, 0, -delta);
 
     iterinc->ReplaceGlobalValue(i - 1, 0, 0.0);
 
-    if (i != dofs - 1)
-      iterinc->ReplaceGlobalValue(i + 1, 0, delta);
+    if (i != dofs - 1) iterinc->ReplaceGlobalValue(i + 1, 0, delta);
 
     if (i == spaltenr)
-      std::cout << "\n******************" << spaltenr + 1
-          << ". Spalte Ende!!***************" << std::endl;
-
+      std::cout << "\n******************" << spaltenr + 1 << ". Spalte Ende!!***************"
+                << std::endl;
   }
 
   Evaluate(iterinc);
@@ -1358,14 +1316,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
   stiff_approx->FillComplete();
 
   Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx,LINALG::Copy));
+  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx, LINALG::Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy->EpetraMatrix();
 
-  Teuchos::RCP<Epetra_CrsMatrix> error_crs =
-      stiff_approx_sparse->EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> error_crs = stiff_approx_sparse->EpetraMatrix();
 
   error_crs->FillComplete();
   sparse_crs->FillComplete();
@@ -1381,10 +1338,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
       {
         if (not CombinedDBCMap()->MyGID(j))
         {
-
-          double stiff_approx_ij=0.0;
-          double sparse_ij=0.0;
-          double error_ij=0.0;
+          double stiff_approx_ij = 0.0;
+          double sparse_ij = 0.0;
+          double error_ij = 0.0;
 
           {
             // get error_crs entry ij
@@ -1392,13 +1348,14 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
             int errorlength = error_crs->NumGlobalEntries(i);
             std::vector<double> errorvalues(errorlength);
             std::vector<int> errorindices(errorlength);
-            //int errorextractionstatus =
-            error_crs->ExtractGlobalRowCopy(i,errorlength,errornumentries,&errorvalues[0],&errorindices[0]);
-            for(int k = 0; k < errorlength; ++k)
+            // int errorextractionstatus =
+            error_crs->ExtractGlobalRowCopy(
+                i, errorlength, errornumentries, &errorvalues[0], &errorindices[0]);
+            for (int k = 0; k < errorlength; ++k)
             {
-              if(errorindices[k] == j)
+              if (errorindices[k] == j)
               {
-                error_ij=errorvalues[k];
+                error_ij = errorvalues[k];
                 break;
               }
               else
@@ -1412,17 +1369,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
             int sparselength = sparse_crs->NumGlobalEntries(i);
             std::vector<double> sparsevalues(sparselength);
             std::vector<int> sparseindices(sparselength);
-           // int sparseextractionstatus =
-                sparse_crs->ExtractGlobalRowCopy(i,sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
-            for(int k = 0; k < sparselength; ++k)
+            // int sparseextractionstatus =
+            sparse_crs->ExtractGlobalRowCopy(
+                i, sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
+            for (int k = 0; k < sparselength; ++k)
             {
-              if(sparseindices[k] == j)
+              if (sparseindices[k] == j)
               {
-                sparse_ij=sparsevalues[k];
+                sparse_ij = sparsevalues[k];
                 break;
               }
               else
-                sparse_ij=0.0;
+                sparse_ij = 0.0;
             }
           }
 
@@ -1432,17 +1390,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
             int approxlength = stiff_approx->NumGlobalEntries(i);
             std::vector<double> approxvalues(approxlength);
             std::vector<int> approxindices(approxlength);
-           // int approxextractionstatus =
-                stiff_approx->ExtractGlobalRowCopy(i,approxlength,approxnumentries,&approxvalues[0],&approxindices[0]);
-            for(int k = 0; k < approxlength; ++k)
+            // int approxextractionstatus =
+            stiff_approx->ExtractGlobalRowCopy(
+                i, approxlength, approxnumentries, &approxvalues[0], &approxindices[0]);
+            for (int k = 0; k < approxlength; ++k)
             {
-              if(approxindices[k] == j)
+              if (approxindices[k] == j)
               {
-                stiff_approx_ij=approxvalues[k];
+                stiff_approx_ij = approxvalues[k];
                 break;
               }
               else
-                stiff_approx_ij=0.0;
+                stiff_approx_ij = 0.0;
             }
           }
 
@@ -1452,24 +1411,22 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
           else if (abs(sparse_ij) > 1e-5)
             error = error_ij / (sparse_ij);
 
-          if (abs(error) > abs(error_max))
-            error_max = abs(error);
-          if (abs(error_ij) > abs(abs_error_max))
-            abs_error_max = abs(error_ij);
+          if (abs(error) > abs(error_max)) error_max = abs(error);
+          if (abs(error_ij) > abs(abs_error_max)) abs_error_max = abs(error_ij);
 
           if ((abs(error) > 1e-4))
           {
             if ((abs(error_ij) > 1e-5))
             {
-             //if( (sparse_ij>1e-1) or (stiff_approx_ij>1e-1) )
-            {
-              std::cout << "finite difference check failed entry (" << i << "," << j
-                  << ")! stiff: " << sparse_ij << ", approx: "
-                  << stiff_approx_ij << " ,abs. error: " << error_ij
-                  << " , rel. error: " << error << std::endl;
+              // if( (sparse_ij>1e-1) or (stiff_approx_ij>1e-1) )
+              {
+                std::cout << "finite difference check failed entry (" << i << "," << j
+                          << ")! stiff: " << sparse_ij << ", approx: " << stiff_approx_ij
+                          << " ,abs. error: " << error_ij << " , rel. error: " << error
+                          << std::endl;
 
-              success = false;
-            }
+                success = false;
+              }
             }
           }
         }
@@ -1477,12 +1434,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
     }
   }
 
-  if(success)
+  if (success)
   {
-    std::cout << "finite difference check successful, max. rel. error: "
-        << error_max << "  (max. abs. error: " << abs_error_max << ")" << std::endl;
-    std::cout << "******************finite difference check done***************\n\n"
-        << std::endl;
+    std::cout << "finite difference check successful, max. rel. error: " << error_max
+              << "  (max. abs. error: " << abs_error_max << ")" << std::endl;
+    std::cout << "******************finite difference check done***************\n\n" << std::endl;
   }
   else
     dserror("PoroFDCheck failed in step: %d, iter: %d", Step(), itnum_);
@@ -1493,12 +1449,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
-POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::PoroMultiPhaseMonolithicTwoWayArteryCoupling(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    PoroMultiPhaseMonolithicTwoWay(comm, globaltimeparams)
+POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::
+    PoroMultiPhaseMonolithicTwoWayArteryCoupling(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : PoroMultiPhaseMonolithicTwoWay(comm, globaltimeparams)
 {
-
   blockrowdofmap_artporo_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
   return;
@@ -1509,8 +1464,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::PoroMultiPhaseMono
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
 {
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
 
   vecSpaces.push_back(StructDofRowMap());
 
@@ -1518,14 +1472,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
 
   vecSpaces.push_back(ArteryDofRowMap());
 
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No fluid equation. Panic.");
-  if (vecSpaces[2]->NumGlobalElements() == 0)
-    dserror("No fluid equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+  if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
 
-    // full Poromultiphase-elasticity-map
+  // full Poromultiphase-elasticity-map
   fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
@@ -1545,18 +1496,18 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldVectors(
-    Teuchos::RCP<const Epetra_Vector> x,
-    Teuchos::RCP<const Epetra_Vector>& sx,
+    Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& sx,
     Teuchos::RCP<const Epetra_Vector>& fx)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldVectors");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldVectors");
 
   // process structure unknowns of the first field
   sx = Extractor()->ExtractVector(x, 0);
 
   // process artery and porofluid unknowns
   Teuchos::RCP<const Epetra_Vector> porofluid = Extractor()->ExtractVector(x, 1);
-  Teuchos::RCP<const Epetra_Vector> artery    = Extractor()->ExtractVector(x, 2);
+  Teuchos::RCP<const Epetra_Vector> artery = Extractor()->ExtractVector(x, 2);
 
   Teuchos::RCP<Epetra_Vector> dummy = Teuchos::rcp(new Epetra_Vector(*fullmap_artporo_));
 
@@ -1572,17 +1523,17 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldV
  | setup system matrix of poromultiphase-elasticity with artery         |
  | coupling                                           kremheller 05/18  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupSystemMatrix(
+    LINALG::BlockSparseMatrixBase& mat)
 {
-
   PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(mat);
 
   // pure artery part
-  mat.Assign(2, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(1,1));
+  mat.Assign(2, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 1));
   // artery-porofluid part
-  mat.Assign(2, 1, LINALG::View, ArteryPorofluidSysmat()->Matrix(1,0));
+  mat.Assign(2, 1, LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 0));
   // porofluid-artery part
-  mat.Assign(1, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(0,1));
+  mat.Assign(1, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(0, 1));
 
   // Debug: matlab output of system matrix
   bool matlab = false;
@@ -1594,7 +1545,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupSystemMa
   }
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -1611,8 +1561,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupRHS()
   rhs_->Scale(-1.0);
 
   // insert artery part and porofluid part
-  Extractor()->InsertVector(*(blockrowdofmap_artporo_->ExtractVector(FluidField()->ArteryPorofluidRHS(), 0)), 1, *rhs_);
-  Extractor()->InsertVector(*(blockrowdofmap_artporo_->ExtractVector(FluidField()->ArteryPorofluidRHS(), 1)), 2, *rhs_);
+  Extractor()->InsertVector(
+      *(blockrowdofmap_artporo_->ExtractVector(FluidField()->ArteryPorofluidRHS(), 0)), 1, *rhs_);
+  Extractor()->InsertVector(
+      *(blockrowdofmap_artporo_->ExtractVector(FluidField()->ArteryPorofluidRHS(), 1)), 2, *rhs_);
 
   return;
 }
@@ -1622,14 +1574,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupRHS()
 /-----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildCombinedDBCMap()
 {
-
   PoroMultiPhaseMonolithicTwoWay::BuildCombinedDBCMap();
 
-  const Teuchos::RCP<const Epetra_Map> artcondmap
-  = FluidField()->ArtNetTimInt()->GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map> artcondmap =
+      FluidField()->ArtNetTimInt()->GetDBCMapExtractor()->CondMap();
 
   // merge them
-  combinedDBCMap_= LINALG::MergeMap(combinedDBCMap_, artcondmap, false);
+  combinedDBCMap_ = LINALG::MergeMap(combinedDBCMap_, artcondmap, false);
 
   return;
 }
@@ -1637,19 +1588,21 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildCombined
  | build null space for artery block of global system matrix kremheller 05/18 |
  *--------------------------------------------------------------------------- */
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBlockNullSpace(
-    Teuchos::RCP<LINALG::Solver>& solver,
-    const int&                    arteryblocknum
-)
+    Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum)
 {
-  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space computation
-  Teuchos::ParameterList& blocksmootherparams3 = solver->Params().sublist("Inverse"+std::to_string(arteryblocknum));
+  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
+  // computation
+  Teuchos::ParameterList& blocksmootherparams3 =
+      solver->Params().sublist("Inverse" + std::to_string(arteryblocknum));
   blocksmootherparams3.sublist("Aztec Parameters");
   blocksmootherparams3.sublist("MueLu Parameters");
 
   // build null space of complete discretization
   FluidField()->ArtNetTimInt()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams3);
   // fix the null space if some DOFs are condensed out
-  LINALG::Solver::FixMLNullspace("Artery",*(FluidField()->ArtNetTimInt()->Discretization()->DofRowMap(0)), *(FluidField()->ArteryDofRowMap()),blocksmootherparams3);
+  LINALG::Solver::FixMLNullspace("Artery",
+      *(FluidField()->ArtNetTimInt()->Discretization()->DofRowMap(0)),
+      *(FluidField()->ArteryDofRowMap()), blocksmootherparams3);
 
   return;
 }
@@ -1658,13 +1611,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBl
  | Create linear (iterative) solver                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::CreateLinearSolver(
-    const Teuchos::ParameterList& solverparams,
-    const int                     solvertype
-    )
+    const Teuchos::ParameterList& solverparams, const int solvertype)
 {
   PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(solverparams, solvertype);
 
   // build also the artery null space
   BuildArteryBlockNullSpace(solver_, 3);
 }
-

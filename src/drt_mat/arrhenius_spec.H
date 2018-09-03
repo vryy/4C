@@ -21,20 +21,16 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
-    /// parameters for scalar transport material according to Sutherland law with Arrhenius-type chemical kinetics (species)
+    /// parameters for scalar transport material according to Sutherland law with Arrhenius-type
+    /// chemical kinetics (species)
     class ArrheniusSpec : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ArrheniusSpec(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ArrheniusSpec(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ArrheniusSpec() { ; }
@@ -68,27 +64,25 @@ namespace MAT
 
   }  // namespace PAR
 
-class ArrheniusSpecType : public DRT::ParObjectType
-{
-public:
+  class ArrheniusSpecType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ArrheniusSpecType"; }
 
-  std::string Name() const { return "ArrheniusSpecType"; }
+    static ArrheniusSpecType& Instance() { return instance_; };
 
-  static ArrheniusSpecType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ArrheniusSpecType instance_;
-};
+   private:
+    static ArrheniusSpecType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for scalar transport material according to Sutherland law with Arrhenius-type chemical kinetics (species)
+  /// wrapper for scalar transport material according to Sutherland law with Arrhenius-type chemical
+  /// kinetics (species)
   class ArrheniusSpec : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ArrheniusSpec();
 
@@ -104,7 +98,10 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ArrheniusSpecType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return ArrheniusSpecType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -138,7 +135,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_arrhenius_spec; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ArrheniusSpec( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ArrheniusSpec(*this)); }
 
     /// compute viscosity
     double ComputeViscosity(const double temp) const;
@@ -177,13 +174,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::ArrheniusSpec* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

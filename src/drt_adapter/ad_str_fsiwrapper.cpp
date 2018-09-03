@@ -26,7 +26,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> structure)
-: StructureWrapper(structure)
+    : StructureWrapper(structure)
 {
   // set-up FSI interface
   interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
@@ -34,12 +34,12 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
     interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
   else
-    interface_->Setup(*Discretization(), *Discretization()->DofRowMap(),true); //create overlapping maps for fpsi problem
+    interface_->Setup(*Discretization(), *Discretization()->DofRowMap(),
+        true);  // create overlapping maps for fpsi problem
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  predictor_ = DRT::INPUT::IntegralValue<int>(fsipart,"PREDICTOR");
-
+  predictor_ = DRT::INPUT::IntegralValue<int>(fsipart, "PREDICTOR");
 }
 
 /*------------------------------------------------------------------------------------*
@@ -56,13 +56,14 @@ void ADAPTER::FSIStructureWrapper::RebuildInterface()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapper::UseBlockMatrix()
 {
-  StructureWrapper::UseBlockMatrix(interface_,interface_);
+  StructureWrapper::UseBlockMatrix(interface_, interface_);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
+Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> iforce)
 {
   ApplyInterfaceForces(iforce);
   FSIModelEvaluator()->SetIsRelaxationSolve(true);
@@ -81,7 +82,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   double time = 0.0;
   double pstime = -1.0;
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  INPAR::STR::PreStress pstype =
+      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = Time();
@@ -92,60 +94,60 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
 
   switch (predictor_)
   {
-  case 1:
-  {
-    // d(n)
-    // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
+    case 1:
     {
-      idis = Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(),true));
+      // d(n)
+      // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
+      if (pstype != INPAR::STR::prestress_none && time <= pstime)
+      {
+        idis = Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
+      }
+      else
+      {
+        idis = interface_->ExtractFSICondVector(Dispn());
+      }
+      break;
     }
-    else
+    case 2:
+      // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+      dserror("interface velocity v(n-1) not available");
+      break;
+    case 3:
     {
-      idis  = interface_->ExtractFSICondVector(Dispn());
+      // d(n)+dt*v(n)
+      if (pstype != INPAR::STR::prestress_none && time <= pstime)
+        dserror("only constant interface predictor useful for prestressing");
+
+      double dt = Dt();
+
+      idis = interface_->ExtractFSICondVector(Dispn());
+      Teuchos::RCP<Epetra_Vector> ivel = interface_->ExtractFSICondVector(Veln());
+
+      idis->Update(dt, *ivel, 1.0);
+      break;
     }
-    break;
-  }
-  case 2:
-    // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-    dserror("interface velocity v(n-1) not available");
-    break;
-  case 3:
-  {
-    // d(n)+dt*v(n)
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
-      dserror("only constant interface predictor useful for prestressing");
+    case 4:
+    {
+      // d(n)+dt*v(n)+0.5*dt^2*a(n)
+      if (pstype != INPAR::STR::prestress_none && time <= pstime)
+        dserror("only constant interface predictor useful for prestressing");
 
-    double dt = Dt();
+      double dt = Dt();
 
-    idis = interface_->ExtractFSICondVector(Dispn());
-    Teuchos::RCP<Epetra_Vector> ivel
-      = interface_->ExtractFSICondVector(Veln());
+      idis = interface_->ExtractFSICondVector(Dispn());
+      Teuchos::RCP<Epetra_Vector> ivel = interface_->ExtractFSICondVector(Veln());
+      Teuchos::RCP<Epetra_Vector> iacc = interface_->ExtractFSICondVector(Accn());
 
-    idis->Update(dt,* ivel, 1.0);
-    break;
-  }
-  case 4:
-  {
-    // d(n)+dt*v(n)+0.5*dt^2*a(n)
-    if (pstype != INPAR::STR::prestress_none && time <= pstime)
-      dserror("only constant interface predictor useful for prestressing");
-
-    double dt = Dt();
-
-    idis = interface_->ExtractFSICondVector(Dispn());
-    Teuchos::RCP<Epetra_Vector> ivel
-      = interface_->ExtractFSICondVector(Veln());
-    Teuchos::RCP<Epetra_Vector> iacc
-      = interface_->ExtractFSICondVector(Accn());
-
-    idis->Update(dt, *ivel, 0.5*dt*dt, *iacc, 1.0);
-    break;
-  }
-  default:
-    dserror("unknown interface displacement predictor '%s'",
-        DRT::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<std::string>("PREDICTOR").c_str());
-    break;
+      idis->Update(dt, *ivel, 0.5 * dt * dt, *iacc, 1.0);
+      break;
+    }
+    default:
+      dserror("unknown interface displacement predictor '%s'", DRT::Problem::Instance()
+                                                                   ->FSIDynamicParams()
+                                                                   .sublist("PARTITIONED SOLVER")
+                                                                   .get<std::string>("PREDICTOR")
+                                                                   .c_str());
+      break;
   }
 
   return idis;
@@ -163,7 +165,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
   double time = 0.0;
   double pstime = -1.0;
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  INPAR::STR::PreStress pstype =
+      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = TimeOld();
@@ -172,7 +175,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
   {
-    return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(),true));
+    return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
   }
   else
   {
@@ -192,7 +195,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
   double time = 0.0;
   double pstime = -1.0;
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  INPAR::STR::PreStress pstype =
+      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
   if (pstype != INPAR::STR::prestress_none)
   {
     time = Time();
@@ -204,7 +208,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
     if (Discretization()->Comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
 
-    return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(),true));
+    return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(), true));
   }
   else
   {
@@ -227,7 +231,8 @@ void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 // Apply interface forces deprecated version ! Remove as soon as possible!
-void ADAPTER::FSIStructureWrapper::ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce)
+void ADAPTER::FSIStructureWrapper::ApplyInterfaceForcesTemporaryDeprecated(
+    Teuchos::RCP<Epetra_Vector> iforce)
 {
   Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
 
@@ -238,6 +243,4 @@ void ADAPTER::FSIStructureWrapper::ApplyInterfaceForcesTemporaryDeprecated(Teuch
   PreparePartitionStep();
 
   return;
-
 }
-

@@ -94,26 +94,23 @@ void STR::NLN::SOLVER::Nonlin::Reset()
   // ---------------------------------------------------------------------------
   // create initial guess vector of predictor result as CreateCopy to avoid
   // direct access to disn_
-  noxsoln_= Teuchos::rcp(new NOX::Epetra::Vector(soln, NOX::Epetra::Vector::CreateCopy));
+  noxsoln_ = Teuchos::rcp(new NOX::Epetra::Vector(soln, NOX::Epetra::Vector::CreateCopy));
 
   // create NOX linear system to provide access to Jacobian
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linsys =
-      NoxCreateLinearSystem(*params_, *noxsoln_);
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linsys = NoxCreateLinearSystem(*params_, *noxsoln_);
 
   /* use NOX::STR::Group to enable access to time integration
    * Note: NOX::Epetra::Group would be sufficient. */
-  const Teuchos::RCP<NOX::Epetra::Interface::Required> ireq =
-        NoxInterfacePtr();
-  GroupPtr() = Teuchos::rcp(new NOX::Epetra::Group(
-      params_->sublist("Nonlinear Problem"), ireq,
-      *noxsoln_,linsys));
+  const Teuchos::RCP<NOX::Epetra::Interface::Required> ireq = NoxInterfacePtr();
+  GroupPtr() = Teuchos::rcp(
+      new NOX::Epetra::Group(params_->sublist("Nonlinear Problem"), ireq, *noxsoln_, linsys));
 
   // ---------------------------------------------------------------------------
   // Create interface to nonlinear problem
   // ---------------------------------------------------------------------------
   nlnproblem_ = Teuchos::rcp(new NLNSOL::NlnProblem());
-  nlnproblem_->Init(DataGlobalState().GetComm(),
-      params_->sublist("Nonlinear Problem"), *GroupPtr(), jac);
+  nlnproblem_->Init(
+      DataGlobalState().GetComm(), params_->sublist("Nonlinear Problem"), *GroupPtr(), jac);
   nlnproblem_->Setup();
 
   /* Evaluate once more to guarantee valid quantities inside of the
@@ -126,12 +123,11 @@ void STR::NLN::SOLVER::Nonlin::Reset()
   // ---------------------------------------------------------------------------
   // use factory to create the nonlinear operator
   NLNSOL::NlnOperatorFactory opfactory;
-  nlnoperator_ =
-      opfactory.Create(params_->sublist("Nonlinear Operator"));
+  nlnoperator_ = opfactory.Create(params_->sublist("Nonlinear Operator"));
 
   // setup
-  nlnoperator_->Init(DataGlobalState().GetComm(),
-      params_->sublist("Nonlinear Operator"), nlnproblem_);
+  nlnoperator_->Init(
+      DataGlobalState().GetComm(), params_->sublist("Nonlinear Operator"), nlnproblem_);
   nlnoperator_->Setup();
 
   return;
@@ -149,10 +145,9 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nonlin::Solve()
   // Since it is possible that the nonlinear solution fails only on some procs
   // we need to communicate the error.
   int gnonlin_error = 0;
-  DataGlobalState().GetComm().MaxAll(&lnonlin_error,&gnonlin_error,1);
+  DataGlobalState().GetComm().MaxAll(&lnonlin_error, &gnonlin_error, 1);
 
-  INPAR::STR::ConvergenceStatus status =
-      static_cast<INPAR::STR::ConvergenceStatus>(gnonlin_error);
+  INPAR::STR::ConvergenceStatus status = static_cast<INPAR::STR::ConvergenceStatus>(gnonlin_error);
 
   return status;
 }
@@ -160,7 +155,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nonlin::Solve()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem> STR::NLN::SOLVER::Nonlin::NoxCreateLinearSystem(
-    Teuchos::ParameterList& nlParams,NOX::Epetra::Vector& noxsoln)
+    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxsoln)
 {
   CheckInitSetup();
 
@@ -181,12 +176,12 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::NLN::SOLVER::Nonlin::NoxCreateLinea
    * See the STR::NLN::SOLVER::Nox::ConvertModelType2SolType routine if you
    * consider to extend the functionality.                  hiermeier 10/2015
    */
-  std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> > linsolver;
+  std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>> linsolver;
   linsolver[NOX::NLN::sol_structure] = DataSDyn().GetLinSolvers().at(INPAR::STR::model_structure);
 
   // call constructor without preconditioner and scaling object
-  linSys = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(printParams,lsParams,
-      linsolver,ireq,ijac,jac,noxsoln));
+  linSys = Teuchos::rcp(
+      new NOX::NLN::STR::LinearSystem(printParams, lsParams, linsolver, ireq, ijac, jac, noxsoln));
 
   return linSys;
 }
@@ -194,45 +189,33 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::NLN::SOLVER::Nonlin::NoxCreateLinea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> STR::NLN::SOLVER::Nonlin::
-    NoxCreatePrintParameters(const bool verbose) const
+Teuchos::RCP<Teuchos::ParameterList> STR::NLN::SOLVER::Nonlin::NoxCreatePrintParameters(
+    const bool verbose) const
 {
   CheckInit();
   // Set the printing parameters in the "Printing" sublist
-  Teuchos::RCP<Teuchos::ParameterList> printParams
-    = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> printParams = Teuchos::rcp(new Teuchos::ParameterList());
   printParams->set("MyPID", DataGlobalState().GetMyRank());
   printParams->set("Output Precision", 6);
   printParams->set("Output Processor", 0);
   if (verbose)
   {
     printParams->set("Output Information",
-                       NOX::Utils::OuterIteration
-                       + NOX::Utils::OuterIterationStatusTest
-                       + NOX::Utils::InnerIteration
-                       + NOX::Utils::LinearSolverDetails
-                       + NOX::Utils::Parameters
-                       + NOX::Utils::Details
-                       + NOX::Utils::Warning
-                       + NOX::Utils::Debug
-                       + NOX::Utils::TestDetails
-                       + NOX::Utils::Error);
+        NOX::Utils::OuterIteration + NOX::Utils::OuterIterationStatusTest +
+            NOX::Utils::InnerIteration + NOX::Utils::LinearSolverDetails + NOX::Utils::Parameters +
+            NOX::Utils::Details + NOX::Utils::Warning + NOX::Utils::Debug +
+            NOX::Utils::TestDetails + NOX::Utils::Error);
   }
   else if (ImplicitTimInt().GetDataIO().GetPrintIntermediateIterations())
   {
     printParams->set("Output Information",
-                       NOX::Utils::Error
-                       + NOX::Utils::OuterIterationStatusTest
-                       + NOX::Utils::TestDetails);
+        NOX::Utils::Error + NOX::Utils::OuterIterationStatusTest + NOX::Utils::TestDetails);
   }
   else
   {
-    printParams->set("Output Information",
-                       NOX::Utils::Error
-                       + NOX::Utils::TestDetails);
+    printParams->set("Output Information", NOX::Utils::Error + NOX::Utils::TestDetails);
   }
 
   // deliver liver
   return printParams;
 }
-

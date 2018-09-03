@@ -28,19 +28,19 @@ class Epetra_CrsMatrix;
 
 namespace INVANA
 {
+  //! Helper functions useable throughout the inverse analysis
 
-//! Helper functions useable throughout the inverse analysis
+  //! compute some norm on a vector stored in multivector format for storage reasons only
+  void MVNorm(
+      const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int anorm, double* result);
 
-//! compute some norm on a vector stored in multivector format for storage reasons only
-void MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int anorm, double* result);
+  //! compute dot product of two vectors stored in multivector format for storage reasons only
+  void MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector,
+      const Epetra_Map& uniquemap, double* result);
 
-//! compute dot product of two vectors stored in multivector format for storage reasons only
-void MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result);
-
-Teuchos::RCP<INVANA::CholFactorBase> CreateICT(
-    Teuchos::RCP<Epetra_CrsMatrix> covariance, /// [in] covariance to tbe factorized
-    const Teuchos::ParameterList& params
-    );
+  Teuchos::RCP<INVANA::CholFactorBase> CreateICT(
+      Teuchos::RCP<Epetra_CrsMatrix> covariance,  /// [in] covariance to tbe factorized
+      const Teuchos::ParameterList& params);
 
 }  // namespace INVANA
 

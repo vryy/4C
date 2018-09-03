@@ -29,67 +29,63 @@
  *----------------------------------------------------------------------*/
 namespace STR
 {
-namespace AUX
-{
-class MapExtractor;
-} // namespace AUX
-namespace MODELEVALUATOR
-{
-class PartitionedPASI;
-} // namespace MODELEVALUATOR
-} // namespace STR
+  namespace AUX
+  {
+    class MapExtractor;
+  }  // namespace AUX
+  namespace MODELEVALUATOR
+  {
+    class PartitionedPASI;
+  }  // namespace MODELEVALUATOR
+}  // namespace STR
 
 /*----------------------------------------------------------------------*
  | pasi adapter                                          sfuchs 01/2017 |
  *----------------------------------------------------------------------*/
 namespace ADAPTER
 {
-
-class PASIStructureWrapper : public StructureWrapper
-{
-
-public:
-
-  //! constructor
-  explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
-
-  //! Destructor
-  virtual ~PASIStructureWrapper(){};
-
-  //! set pointer to model evaluator
-  void SetModelEvaluatorPtr(Teuchos::RCP< ::STR::MODELEVALUATOR::PartitionedPASI> me)
+  class PASIStructureWrapper : public StructureWrapper
   {
-    pasi_model_evaluator_=me;
-    return;
-  }
+   public:
+    //! constructor
+    explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
 
-  //! communication object at the interface
-  virtual Teuchos::RCP<const ::STR::AUX::MapExtractor> Interface() const
-  {
-    return interface_;
-  }
+    //! Destructor
+    virtual ~PASIStructureWrapper(){};
 
-  //! apply particle wall force to structure interface
-  void ApplyInterfaceForce(Teuchos::RCP<Epetra_Vector> wallforce);
+    //! set pointer to model evaluator
+    void SetModelEvaluatorPtr(Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> me)
+    {
+      pasi_model_evaluator_ = me;
+      return;
+    }
 
-protected:
+    //! communication object at the interface
+    virtual Teuchos::RCP<const ::STR::AUX::MapExtractor> Interface() const { return interface_; }
 
-  //! The structural model evaluator object.
-  //! Your PASI algorithm calls methods in this adapter.
-  //! If this method is related to the structural field,
-  //! a corresponding method in the model evaluator may be
-  //! called, if necessary.
-  Teuchos::RCP< ::STR::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator_;
+    //! apply particle wall force to structure interface
+    void ApplyInterfaceForce(Teuchos::RCP<Epetra_Vector> wallforce);
 
-  //! access the pasi model evaluator
-  Teuchos::RCP< ::STR::MODELEVALUATOR::PartitionedPASI> PASIModelEvaluator(){return pasi_model_evaluator_;};
+   protected:
+    //! The structural model evaluator object.
+    //! Your PASI algorithm calls methods in this adapter.
+    //! If this method is related to the structural field,
+    //! a corresponding method in the model evaluator may be
+    //! called, if necessary.
+    Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> pasi_model_evaluator_;
 
-  //! the interface map setup for interface <-> full translation
-  Teuchos::RCP< ::STR::AUX::MapExtractor> interface_;
+    //! access the pasi model evaluator
+    Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> PASIModelEvaluator()
+    {
+      return pasi_model_evaluator_;
+    };
 
-}; // class PASIStructureWrapper : public StructureWrapper
+    //! the interface map setup for interface <-> full translation
+    Teuchos::RCP<::STR::AUX::MapExtractor> interface_;
 
-} // namespace ADAPTER
+  };  // class PASIStructureWrapper : public StructureWrapper
+
+}  // namespace ADAPTER
 
 /*----------------------------------------------------------------------*/
-#endif // PASI_STRUCTURE_WRAPPER_H
+#endif  // PASI_STRUCTURE_WRAPPER_H

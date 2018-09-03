@@ -28,7 +28,6 @@ namespace INPAR
   */
   namespace TOPOPT
   {
-
     /// type of convergence check
     enum ConvCheck
     {
@@ -137,6 +136,6 @@ namespace INPAR
     /// set the topopt parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }
-}
+  }  // namespace TOPOPT
+}  // namespace INPAR
 #endif /* INPAR_TOPOPT_H_ */

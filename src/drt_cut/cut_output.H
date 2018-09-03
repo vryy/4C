@@ -20,249 +20,270 @@
 
 #include "cut_point.H"
 
-namespace GEO {
-namespace CUT {
-
-class Element;
-class Side;
-class Node;
-class Point;
-class Line;
-class Edge;
-class Cycle;
-
-namespace OUTPUT {
-
-char GmshElementType( DRT::Element::DiscretizationType shape );
-
-/** \brief Write a Gmsh output file, which contains only the given volume cells
- *
- *  The volume cells are numbered and stored individually.
- *
- *  \author hiermeier \date 12/16 */
-void GmshVolumeCellsOnly( const plain_volumecell_set & vcells );
-
-/** \brief Write a Gmsh output file, which contains only the given facets
- *
- *  The facets are numbered and stored individually.
- *
- *  \author hiermeier \date 12/16 */
-void GmshFacetsOnly(
-    const plain_facet_set & facets,
-    Element * ele,
-    const std::string & file_affix = "" );
-inline void GmshFacetsOnly(
-    const plain_facet_set & facets,
-    Element * ele,
-    const int & file_affix = -100 )
+namespace GEO
 {
-  std::ostringstream affix;
-  if ( file_affix != -100 )
-    affix << file_affix;
-  GmshFacetsOnly( facets, ele, affix.str() );
-}
+  namespace CUT
+  {
+    class Element;
+    class Side;
+    class Node;
+    class Point;
+    class Line;
+    class Edge;
+    class Cycle;
 
-/** \brief Write a Gmsh output file, which contains only the given volume cells
- *
- *  The volume cells are numbered and stored individually.
- *
- *  \author hiermeier \date 12/16 */
-void GmshEdgesOnly( const plain_edge_set & edges );
+    namespace OUTPUT
+    {
+      char GmshElementType(DRT::Element::DiscretizationType shape);
 
-/** \brief Write Gmsh output for a cell of given discretization type
- *
- *  \param file    (out) : file to write into
- *  \param shape    (in) : discretization type of the cell
- *  \param xyze     (in) : nodal coordinates
- *  \param position (in) : position of the cell ( optional )
- *  \param value    (in) : value of the cell ( optional ). If a value is given,
- *                         it will overrule the position input.
- *
- *  \author hiermeier \date 01/17 */
-void GmshCellDump( std::ofstream & file,
-    DRT::Element::DiscretizationType shape,
-    const Epetra_SerialDenseMatrix & xyze,
-    const Point::PointPosition * position = NULL,
-    const int * value = NULL );
+      /** \brief Write a Gmsh output file, which contains only the given volume cells
+       *
+       *  The volume cells are numbered and stored individually.
+       *
+       *  \author hiermeier \date 12/16 */
+      void GmshVolumeCellsOnly(const plain_volumecell_set& vcells);
 
-/*!
-\brief Write output of background element geometry
- */
-void GmshElementDump( std::ofstream & file, Element * ele , bool to_local = false);
+      /** \brief Write a Gmsh output file, which contains only the given facets
+       *
+       *  The facets are numbered and stored individually.
+       *
+       *  \author hiermeier \date 12/16 */
+      void GmshFacetsOnly(
+          const plain_facet_set& facets, Element* ele, const std::string& file_affix = "");
+      inline void GmshFacetsOnly(
+          const plain_facet_set& facets, Element* ele, const int& file_affix = -100)
+      {
+        std::ostringstream affix;
+        if (file_affix != -100) affix << file_affix;
+        GmshFacetsOnly(facets, ele, affix.str());
+      }
 
-/*!
-\brief Write output of background element geometry
- */
-void GmshElementDump( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype , bool to_local = false, Element* ele = NULL);
+      /** \brief Write a Gmsh output file, which contains only the given volume cells
+       *
+       *  The volume cells are numbered and stored individually.
+       *
+       *  \author hiermeier \date 12/16 */
+      void GmshEdgesOnly(const plain_edge_set& edges);
 
-/*!
-\brief Write output of a side
- */
-void GmshSideDump( std::ofstream & file, const Side* s, bool to_local = false, Element* ele = NULL );
+      /** \brief Write Gmsh output for a cell of given discretization type
+       *
+       *  \param file    (out) : file to write into
+       *  \param shape    (in) : discretization type of the cell
+       *  \param xyze     (in) : nodal coordinates
+       *  \param position (in) : position of the cell ( optional )
+       *  \param value    (in) : value of the cell ( optional ). If a value is given,
+       *                         it will overrule the position input.
+       *
+       *  \author hiermeier \date 01/17 */
+      void GmshCellDump(std::ofstream& file, DRT::Element::DiscretizationType shape,
+          const Epetra_SerialDenseMatrix& xyze, const Point::PointPosition* position = NULL,
+          const int* value = NULL);
 
-/*!
-\brief Write output of a Triside
- */
-void GmshTriSideDump( std::ofstream & file, std::vector<Point*> points , bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Write output of background element geometry
+       */
+      void GmshElementDump(std::ofstream& file, Element* ele, bool to_local = false);
 
-/*!
-\brief Write output of a facet
- */
-void GmshFacetDump( std::ofstream & file, Facet* facet, const std::string& visualizationtype = "sides" , bool print_all = false, bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Write output of background element geometry
+       */
+      void GmshElementDump(std::ofstream& file, const std::vector<Node*>& nodes, char elementtype,
+          bool to_local = false, Element* ele = NULL);
 
-/*!
-\brief Write output of a volumecell
- */
-void GmshVolumecellDump( std::ofstream & file, VolumeCell* VC, const std::string& visualizationtype = "sides" , bool print_all = false, bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Write output of a side
+       */
+      void GmshSideDump(
+          std::ofstream& file, const Side* s, bool to_local = false, Element* ele = NULL);
 
-/*!
-\brief Write output of a cylce
- */
-void GmshCycleDump( std::ofstream & file, Cycle* cycle, const std::string& visualizationtype = "sides" , bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Write output of a Triside
+       */
+      void GmshTriSideDump(std::ofstream& file, std::vector<Point*> points, bool to_local = false,
+          Element* ele = NULL);
 
-/*!
-\brief Write output of the background element and all the cut sides corresponding to this element
- */
-void GmshCompleteCutElement( std::ofstream & file, Element * ele,bool to_local = false);
+      /*!
+      \brief Write output of a facet
+       */
+      void GmshFacetDump(std::ofstream& file, Facet* facet,
+          const std::string& visualizationtype = "sides", bool print_all = false,
+          bool to_local = false, Element* ele = NULL);
 
-/*!
-\brief Write output of a coord as point with idx
- */
-void GmshCoordDump( std::ofstream & file, LINALG::Matrix<3,1> coord, int idx, bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Write output of a volumecell
+       */
+      void GmshVolumecellDump(std::ofstream& file, VolumeCell* VC,
+          const std::string& visualizationtype = "sides", bool print_all = false,
+          bool to_local = false, Element* ele = NULL);
 
+      /*!
+      \brief Write output of a cylce
+       */
+      void GmshCycleDump(std::ofstream& file, Cycle* cycle,
+          const std::string& visualizationtype = "sides", bool to_local = false,
+          Element* ele = NULL);
 
-/*!
-\brief Write output of a line
- */
-void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2,
-    int idx1, int idx2, bool to_local = false, Element* ele = NULL );
+      /*!
+      \brief Write output of the background element and all the cut sides corresponding to this
+      element
+       */
+      void GmshCompleteCutElement(std::ofstream& file, Element* ele, bool to_local = false);
 
-inline void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1,
-    GEO::CUT::Point* p2 )
-{
-  GmshLineDump( file, p1, p2, p1->Id(), p2->Id(), false, NULL );
-}
-
-inline void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1,
-    GEO::CUT::Point* p2, bool to_local )
-{
-  GmshLineDump( file, p1, p2, p1->Id(), p2->Id(), to_local, NULL );
-}
-
-inline void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1,
-    GEO::CUT::Point* p2, bool to_local, Element * ele )
-{
-  GmshLineDump( file, p1, p2, p1->Id(), p2->Id(), to_local, ele );
-}
-
-void GmshLineDump( std::ofstream & file, GEO::CUT::Line *  line,
-    bool to_local = false, Element* ele = NULL);
-/*!
-\brief Write output of a edge
- */
-void GmshEdgeDump( std::ofstream & file, GEO::CUT::Edge*  edge, bool to_local = false, Element* ele = NULL);
-
-/*!
-\brief Write output of a node
- */
-void GmshNodeDump( std::ofstream & file, GEO::CUT::Node*  node, bool to_local = false, Element* ele = NULL);
-
-/*!
-\brief Write output of a point with special idx
- */
-void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point,int idx, bool to_local = false, Element* ele = NULL);
-
-/*!
-\brief Write output of a point with point position as idx
- */
-void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point, bool to_local = false, Element* ele = NULL);
-
-/*!
-\brief Write level set value on cut surface (information taken from facet).
- */
-void GmshLevelSetValueDump( std::ofstream & file, Element * ele, bool dumpnodevalues=false, bool to_local = false );
-
-/*!
-\brief Write level set gradient on cut surface (information taken from facet).
- */
-void GmshLevelSetGradientDump( std::ofstream & file, Element * ele , bool to_local = false);
-
-/*!
-\brief Write level set value on cut surface (information taken from facet).
- */
-void GmshLevelSetValueZeroSurfaceDump( std::ofstream & file, Element * ele, bool to_local = false);
-
-/*!
- * Write Level Set Gradient Orientation of Boundary-Cell Normal and LevelSet
- */
-void GmshLevelSetOrientationDump( std::ofstream & file, Element * ele , bool to_local = false);
-
-/*!
-\brief Write Eqn of plane normal for all facets (used for DirectDivergence).
-*/
-void GmshEqnPlaneNormalDump(std::ofstream & file, Element * ele, bool normalize = false , bool to_local = false);
-void GmshEqnPlaneNormalDump(std::ofstream & file, Facet * facet, bool normalize = false, bool to_local = false, Element* ele = NULL);
-/*!
-\brief Get equation of plane as implemented in DirectDivergence routine.
- */
-std::vector<double> GetEqOfPlane(std::vector<Point*> pts);
-
-/*!
-\brief Simplify output of for normal output options.
- */
-void GmshScalar(std::ofstream & file, LINALG::Matrix<3,1> coord, double scalar, bool to_local = false, Element* ele = NULL);
-void GmshVector(std::ofstream & file, LINALG::Matrix<3,1> coord, std::vector<double> vector, bool normalize=false, bool to_local = false, Element* ele = NULL);
-
-/*!
-\brief Write cuttest for this element!
-*/
-void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele, bool haslevelsetside=false);
-
-/*!
- \brief Generate filename for gmsh output with specific ending
- */
-std::string GenerateGmshOutputFilename(const std::string& filename_tail);
-
-/*!
- \brief Write new Section in Gmsh file (eventually end section from before...)
- */
-void GmshNewSection(std::ofstream & file, const std::string & section, bool first_endsection = false);
-
-/*!
- \brief End Section in Gmsh file
- */
-void GmshEndSection(std::ofstream & file, bool close_file = false);
+      /*!
+      \brief Write output of a coord as point with idx
+       */
+      void GmshCoordDump(std::ofstream& file, LINALG::Matrix<3, 1> coord, int idx,
+          bool to_local = false, Element* ele = NULL);
 
 
-//void GmshObjectDump2(std::ofstream & file, GEO::CUT::Facet* f)
-//{
-//  return;
-//};//GmshFacetDump(file,f);}
+      /*!
+      \brief Write output of a line
+       */
+      void GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, int idx1,
+          int idx2, bool to_local = false, Element* ele = NULL);
 
-/*!
- \brief Writes the whole container into a gmsh file!
- */
-//template<class T>
-//void GmshPrintContainer(std::ofstream & file, const std::string & section, std::vector<T> container)
-//{
-//  GmshNewSection(file, section);
-//  for (typename std::vector<T>::iterator t = container.begin(); t!=container.end(); ++t)
-//    //GmshObjectDump( file, (T)(*t));
-//  GmshEndSection(file);
-//}
-/*!
- \brief Write Coordinates in Gmsh file (for internal use)
- //to_local ... transform to local coordinates of the ele?
- */
-void GmshWriteCoords(std::ofstream & file, std::vector<double> coord, bool to_local = false, Element* ele = NULL);
+      inline void GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2)
+      {
+        GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, NULL);
+      }
 
-void GmshWriteCoords( std::ofstream & file, LINALG::Matrix<3,1> coord, bool to_local = false, Element* ele = NULL);
+      inline void GmshLineDump(
+          std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, bool to_local)
+      {
+        GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), to_local, NULL);
+      }
 
-void GmshWriteCoords(std::ofstream & file, Node* node, bool to_local = false, Element* ele = NULL);
+      inline void GmshLineDump(std::ofstream& file, GEO::CUT::Point* p1, GEO::CUT::Point* p2,
+          bool to_local, Element* ele)
+      {
+        GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), to_local, ele);
+      }
 
-void GmshWriteCoords(std::ofstream & file, Point* point, bool to_local = false, Element* ele = NULL);
-}
+      void GmshLineDump(
+          std::ofstream& file, GEO::CUT::Line* line, bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Write output of a edge
+       */
+      void GmshEdgeDump(
+          std::ofstream& file, GEO::CUT::Edge* edge, bool to_local = false, Element* ele = NULL);
 
-} /* namespace CUT */
+      /*!
+      \brief Write output of a node
+       */
+      void GmshNodeDump(
+          std::ofstream& file, GEO::CUT::Node* node, bool to_local = false, Element* ele = NULL);
+
+      /*!
+      \brief Write output of a point with special idx
+       */
+      void GmshPointDump(std::ofstream& file, GEO::CUT::Point* point, int idx,
+          bool to_local = false, Element* ele = NULL);
+
+      /*!
+      \brief Write output of a point with point position as idx
+       */
+      void GmshPointDump(
+          std::ofstream& file, GEO::CUT::Point* point, bool to_local = false, Element* ele = NULL);
+
+      /*!
+      \brief Write level set value on cut surface (information taken from facet).
+       */
+      void GmshLevelSetValueDump(
+          std::ofstream& file, Element* ele, bool dumpnodevalues = false, bool to_local = false);
+
+      /*!
+      \brief Write level set gradient on cut surface (information taken from facet).
+       */
+      void GmshLevelSetGradientDump(std::ofstream& file, Element* ele, bool to_local = false);
+
+      /*!
+      \brief Write level set value on cut surface (information taken from facet).
+       */
+      void GmshLevelSetValueZeroSurfaceDump(
+          std::ofstream& file, Element* ele, bool to_local = false);
+
+      /*!
+       * Write Level Set Gradient Orientation of Boundary-Cell Normal and LevelSet
+       */
+      void GmshLevelSetOrientationDump(std::ofstream& file, Element* ele, bool to_local = false);
+
+      /*!
+      \brief Write Eqn of plane normal for all facets (used for DirectDivergence).
+      */
+      void GmshEqnPlaneNormalDump(
+          std::ofstream& file, Element* ele, bool normalize = false, bool to_local = false);
+      void GmshEqnPlaneNormalDump(std::ofstream& file, Facet* facet, bool normalize = false,
+          bool to_local = false, Element* ele = NULL);
+      /*!
+      \brief Get equation of plane as implemented in DirectDivergence routine.
+       */
+      std::vector<double> GetEqOfPlane(std::vector<Point*> pts);
+
+      /*!
+      \brief Simplify output of for normal output options.
+       */
+      void GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1> coord, double scalar,
+          bool to_local = false, Element* ele = NULL);
+      void GmshVector(std::ofstream& file, LINALG::Matrix<3, 1> coord, std::vector<double> vector,
+          bool normalize = false, bool to_local = false, Element* ele = NULL);
+
+      /*!
+      \brief Write cuttest for this element!
+      */
+      void GmshElementCutTest(
+          std::ofstream& file, GEO::CUT::Element* ele, bool haslevelsetside = false);
+
+      /*!
+       \brief Generate filename for gmsh output with specific ending
+       */
+      std::string GenerateGmshOutputFilename(const std::string& filename_tail);
+
+      /*!
+       \brief Write new Section in Gmsh file (eventually end section from before...)
+       */
+      void GmshNewSection(
+          std::ofstream& file, const std::string& section, bool first_endsection = false);
+
+      /*!
+       \brief End Section in Gmsh file
+       */
+      void GmshEndSection(std::ofstream& file, bool close_file = false);
+
+
+      // void GmshObjectDump2(std::ofstream & file, GEO::CUT::Facet* f)
+      //{
+      //  return;
+      //};//GmshFacetDump(file,f);}
+
+      /*!
+       \brief Writes the whole container into a gmsh file!
+       */
+      // template<class T>
+      // void GmshPrintContainer(std::ofstream & file, const std::string & section, std::vector<T>
+      // container)
+      //{
+      //  GmshNewSection(file, section);
+      //  for (typename std::vector<T>::iterator t = container.begin(); t!=container.end(); ++t)
+      //    //GmshObjectDump( file, (T)(*t));
+      //  GmshEndSection(file);
+      //}
+      /*!
+       \brief Write Coordinates in Gmsh file (for internal use)
+       //to_local ... transform to local coordinates of the ele?
+       */
+      void GmshWriteCoords(std::ofstream& file, std::vector<double> coord, bool to_local = false,
+          Element* ele = NULL);
+
+      void GmshWriteCoords(std::ofstream& file, LINALG::Matrix<3, 1> coord, bool to_local = false,
+          Element* ele = NULL);
+
+      void GmshWriteCoords(
+          std::ofstream& file, Node* node, bool to_local = false, Element* ele = NULL);
+
+      void GmshWriteCoords(
+          std::ofstream& file, Point* point, bool to_local = false, Element* ele = NULL);
+    }  // namespace OUTPUT
+
+  } /* namespace CUT */
 } /* namespace GEO */
 #endif /* CUTOUTPUT_H_ */

@@ -33,11 +33,13 @@
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]
 ///
-/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac muscle tissue
+/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac
+/// muscle tissue
 ///
 /// <h3>References</h3>
 /// <ul>
-/// <li> [1] A Garny et. al., "One-dimensional Rabbit Sinoatrial Node Models: Benefits and Limitations", The Journal of Cardiovascular Electrophysiology 14 (2003) 121-132
+/// <li> [1] A Garny et. al., "One-dimensional Rabbit Sinoatrial Node Models: Benefits and
+/// Limitations", The Journal of Cardiovascular Electrophysiology 14 (2003) 121-132
 /// </ul>
 ///
 /// \author ljag
@@ -48,9 +50,7 @@
 class Myocard_SAN_Garny : public Myocard_General
 
 {
-
-public:
-
+ public:
   /// construct empty material object
   Myocard_SAN_Garny();
 
@@ -81,8 +81,7 @@ public:
   /// time update for this material
   void Update(const double phi, const double dt);
 
-private:
-
+ private:
   Myocard_Tools tools_;
 
   /// perturbation for numerical approximation of the derivative
@@ -95,7 +94,7 @@ private:
   std::vector<double> a_;
   std::vector<double> c_;
 
-}; // Myocard_SAN_Garny
+};  // Myocard_SAN_Garny
 
 
 #endif

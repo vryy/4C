@@ -19,51 +19,48 @@
 
 #include "contact_augmented_interface.H"
 
-namespace CONTACT {
-namespace AUG {
-namespace LAGRANGE {
-  class Interface : public ::CONTACT::AUG::Interface
+namespace CONTACT
+{
+  namespace AUG
   {
-  public:
-    /** \brief Alternative constructor
-     *
-     *  A prerequisite for this constructor is, that the passed
-     *  shared interface data object has been filled/initialized already.
-     *
-     *  \param idata_ptr (in) : filled shared augmented contact interface
-     *                          data container object
-     *
-     *  \author hiermeier \date 03/17 */
-    Interface( const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr );
+    namespace LAGRANGE
+    {
+      class Interface : public ::CONTACT::AUG::Interface
+      {
+       public:
+        /** \brief Alternative constructor
+         *
+         *  A prerequisite for this constructor is, that the passed
+         *  shared interface data object has been filled/initialized already.
+         *
+         *  \param idata_ptr (in) : filled shared augmented contact interface
+         *                          data container object
+         *
+         *  \author hiermeier \date 03/17 */
+        Interface(const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr);
 
-    /// constructor
-    Interface(
-        const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-        const int id,
-        const Epetra_Comm& comm,
-        const int dim,
-        const Teuchos::ParameterList& icontact,
-        const bool selfcontact,
-        INPAR::MORTAR::RedundantStorage redundant );
+        /// constructor
+        Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+            const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+            const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
-    /// destructor
-    virtual ~Interface() {};
+        /// destructor
+        virtual ~Interface(){};
 
-  protected:
-    /** \brief Assemble the linearization matrix contributions for the
-     *         augmentation term [derived]
-     *
-     *  This term vanishes in the standard Lagrange formulation.
-     *
-     *  \author hiermeier \date 03/17 */
-    virtual void AssembleDGGLinMatrix(
-            LINALG::SparseMatrix& dGGLinMatrix,
-            const Epetra_Vector& cnVec) const;
+       protected:
+        /** \brief Assemble the linearization matrix contributions for the
+         *         augmentation term [derived]
+         *
+         *  This term vanishes in the standard Lagrange formulation.
+         *
+         *  \author hiermeier \date 03/17 */
+        virtual void AssembleDGGLinMatrix(
+            LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
 
-  };  // class Interface
-} // namespace LAGRANGE
-} // namespace AUG
-} // namespace CONTACT
+      };  // class Interface
+    }     // namespace LAGRANGE
+  }       // namespace AUG
+}  // namespace CONTACT
 
 
 

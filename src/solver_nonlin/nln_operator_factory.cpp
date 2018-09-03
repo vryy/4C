@@ -36,16 +36,11 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::NlnOperatorFactory::NlnOperatorFactory()
-{
-  return;
-}
+NLNSOL::NlnOperatorFactory::NlnOperatorFactory() { return; }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::NlnOperatorBase>
-NLNSOL::NlnOperatorFactory::Create(
-    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
-    const std::string listname)
+Teuchos::RCP<NLNSOL::NlnOperatorBase> NLNSOL::NlnOperatorFactory::Create(
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, const std::string listname)
 {
   const std::string optype =
       config->GetParameter<std::string>(listname, "nonlinear operator: type");

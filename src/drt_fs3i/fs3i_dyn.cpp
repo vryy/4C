@@ -70,7 +70,7 @@ void fs3i_dyn()
     break;
     default:
       dserror("solution of unknown problemtyp %d requested", probtype);
-    break;
+      break;
   }
 
   fs3i->Init();
@@ -90,8 +90,6 @@ void fs3i_dyn()
 
   fs3i->TestResults(comm);
 
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
+  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
-
 }
-

@@ -43,7 +43,7 @@ namespace PARTICLE
   class Algorithm;
   class ParticleCollisionHandlerBase;
   class ParticleSPHInteractionHandler;
-}
+}  // namespace PARTICLE
 
 namespace MAT
 {
@@ -51,23 +51,21 @@ namespace MAT
   {
     class ParticleMat;
     class ExtParticleMat;
-  }
-}
+  }  // namespace PAR
+}  // namespace MAT
 
 /*----------------------------------------------------------------------*/
 //! Particle Dynamics
 namespace PARTICLE
 {
-
-   /// Front-end for particle dynamics for integrating in time.
+  /// Front-end for particle dynamics for integrating in time.
   class TimInt : public ADAPTER::Particle
   {
     // everybody needs friends!
     friend class TimIntStrategyEllipsoids;
     friend class TimIntStrategySpheres;
 
-  public:
-
+   public:
     //! @name Life
     //@{
 
@@ -75,13 +73,11 @@ namespace PARTICLE
     void Logo();
 
     //! Constructor
-    TimInt
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& particledynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimInt(const Teuchos::ParameterList& ioparams,        //!< ioflags
+        const Teuchos::ParameterList& particledynparams,  //!< input parameters
+        const Teuchos::ParameterList& xparams,            //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,         //!< current discretisation
+        Teuchos::RCP<IO::DiscretizationWriter> output     //!< the output
     );
 
     //! Destructor
@@ -97,37 +93,29 @@ namespace PARTICLE
     virtual void DetermineMassDampConsistAccel();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    virtual void ApplyDirichletBC
-    (
-      const double time,  //!< at time
-      Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
-                                        //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
-                                        //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
-                                       //!< (may be Teuchos::null)
-      bool recreatemap  //!< recreate mapextractor/toggle-vector
-                        //!< which stores the DOF IDs subjected
-                        //!< to Dirichlet BCs
-                        //!< This needs to be true if the bounded DOFs
-                        //!< have been changed.
+    virtual void ApplyDirichletBC(const double time,  //!< at time
+        Teuchos::RCP<Epetra_Vector> dis,              //!< displacements
+                                                      //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> vel,              //!< velocities
+                                                      //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> acc,              //!< accelerations
+                                                      //!< (may be Teuchos::null)
+        bool recreatemap                              //!< recreate mapextractor/toggle-vector
+                                                      //!< which stores the DOF IDs subjected
+                                                      //!< to Dirichlet BCs
+                                                      //!< This needs to be true if the bounded DOFs
+                                                      //!< have been changed.
     );
 
     //! acceleration is applied from given forces
-    virtual void ComputeAcc(
-      Teuchos::RCP<Epetra_Vector> f_contact,
-      Teuchos::RCP<Epetra_Vector> m_contact,
-      Teuchos::RCP<Epetra_Vector> acc,
-      Teuchos::RCP<Epetra_Vector> ang_acc
-      );
+    virtual void ComputeAcc(Teuchos::RCP<Epetra_Vector> f_contact,
+        Teuchos::RCP<Epetra_Vector> m_contact, Teuchos::RCP<Epetra_Vector> acc,
+        Teuchos::RCP<Epetra_Vector> ang_acc);
 
     //! determine acceleration in SPH case
     virtual void DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
-                                             Teuchos::RCP<Epetra_Vector> accmod,
-                                             Teuchos::RCP<Epetra_Vector> velConv,
-                                             Teuchos::RCP<Epetra_Vector> acc_A,
-                                             const double time,
-                                             const double dt);
+        Teuchos::RCP<Epetra_Vector> accmod, Teuchos::RCP<Epetra_Vector> velConv,
+        Teuchos::RCP<Epetra_Vector> acc_A, const double time, const double dt);
 
     //! Prepare time step
     virtual void PrepareTimeStep();
@@ -154,10 +142,16 @@ namespace PARTICLE
     virtual void UpdateStatesAfterParticleTransfer();
 
     //! particle algorithm is set from outside
-    virtual void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm) { particle_algorithm_ = algorithm; }
+    virtual void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm)
+    {
+      particle_algorithm_ = algorithm;
+    }
 
     //! set vector of particle forces on struct dis from outside
-    virtual void SetFstructure(Teuchos::RCP<Epetra_FEVector> f_structure) { f_structure_ = f_structure ; }
+    virtual void SetFstructure(Teuchos::RCP<Epetra_FEVector> f_structure)
+    {
+      f_structure_ = f_structure;
+    }
 
     //! Calculate all output quantities depending on the constitutive model
     //  (and, hence, on a potential material history)
@@ -183,17 +177,13 @@ namespace PARTICLE
     virtual void OutputStep(bool forced_writerestart = false);
 
     //! Write restart
-    virtual void OutputRestart
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    virtual void OutputRestart(bool& datawritten  //!< (in/out) read and append if
+                                                  //!< it was written at this time step
     );
     //! Output displacements, velocities and accelerations
     //! and more system vectors
-    virtual void OutputState
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    virtual void OutputState(bool& datawritten  //!< (in/out) read and append if
+                                                //!< it was written at this time step
     );
 
     //! Energy output
@@ -208,8 +198,10 @@ namespace PARTICLE
     //! Check whether energy output file is attached
     bool AttachedEnergyFile()
     {
-      if (not energyfile_.is_null()) return true;
-      else return false;
+      if (not energyfile_.is_null())
+        return true;
+      else
+        return false;
     }
 
     //! Attach file handle for energy file #energyfile_
@@ -223,7 +215,7 @@ namespace PARTICLE
     //@{
 
     //! Access dicretisation
-    virtual Teuchos::RCP<DRT::Discretization> Discretization(){ return discret_; }
+    virtual Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
     //! Access to rcp pointer to dofrowmap of discretization
     virtual const Epetra_Map* DofRowMapView();
@@ -238,28 +230,20 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Map> NodeRowMap();
 
     //! Access output object
-    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
-    {
-      return output_;
-    }
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
-    {
-      return dbcmaps_;
-    }
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
     //! Read restart values
-    virtual void ReadRestart
-    (
-      const int step //!< restart step
+    virtual void ReadRestart(const int step  //!< restart step
     );
 
     //! Read and set restart state
     virtual void ReadRestartState();
 
     //! Read-only displacements \f$D_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() { return (*dis_)(0); }
 
     //! Read-only velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
@@ -289,7 +273,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> DensityDotn() { return (*densityDot_)(0); }
 
     //! Read-only displacements \f$D_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() { return disn_; }
 
     //! Read-only velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
@@ -319,7 +303,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> DensityDotnp() { return densityDotn_; }
 
     //! Read-only radii \f$R_0\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
+    virtual Teuchos::RCP<const Epetra_Vector> Radius0() { return radius0_; }
 
     //! Read-only time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() { return radiusDot_; }
@@ -334,25 +318,26 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() { return pressure_; }
 
     //! Read-only force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_FEVector> Fstructure(){ return f_structure_; }
+    virtual Teuchos::RCP<const Epetra_FEVector> Fstructure() { return f_structure_; }
 
     //! does collision handler exist?
-    virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
+    virtual bool HaveCollHandler() { return (collhandler_ != Teuchos::null); }
 
     //! does interaction handler exist?
-    virtual bool HaveInterHandler() {return (interHandler_!=Teuchos::null); }
+    virtual bool HaveInterHandler() { return (interHandler_ != Teuchos::null); }
 
     //! check state vectors (debugging)
-    virtual void CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec = false);
+    virtual void CheckStateVector(
+        std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec = false);
 
     //! return kinetic energy
-    double KineticEnergy() const {return kinergy_;};
+    double KineticEnergy() const { return kinergy_; };
 
     //! return internal energy
-    double InternalEnergy() const {return intergy_;};
+    double InternalEnergy() const { return intergy_; };
 
     //! return external energy
-    double ExternalEnergy() const {return extergy_;};
+    double ExternalEnergy() const { return extergy_; };
 
     //! return maximum particle-particle or particle-wall penetration
     double MaximumPenetration() const;
@@ -365,17 +350,17 @@ namespace PARTICLE
 
 
     //! time integration strategy
-    const Teuchos::RCP<const PARTICLE::TimIntStrategyBase>& Strategy() const {return strategy_;};
+    const Teuchos::RCP<const PARTICLE::TimIntStrategyBase>& Strategy() const { return strategy_; };
     //@}
 
     //! @name Extract methods
     //@{
 
     //! Extract displacements \f$D_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return disn_; }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() { return disn_; }
 
     //! Extract velocities \f$V_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return veln_; }
 
     //! Extract accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() { return accn_; }
@@ -387,7 +372,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccmodnp() { return accmodn_; }
 
     //! Extract angular-velocities \f$angV_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngVelnp(){ return angVeln_; }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngVelnp() { return angVeln_; }
 
     //! Extract angular-accelerations \f$angA_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngAccnp() { return angAccn_; }
@@ -420,7 +405,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() { return pressure_; }
 
     //! Extract force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_FEVector> WriteAccessFstructure(){ return f_structure_; }
+    virtual Teuchos::RCP<Epetra_FEVector> WriteAccessFstructure() { return f_structure_; }
 
     //! Forces \f$F_{n}\f$ or \f$F_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessFifc() { return fifc_; }
@@ -455,7 +440,8 @@ namespace PARTICLE
     //! Get time step size \f$\Delta t_n\f$
     virtual double Dt() const { return (*dt_)[0]; }
 
-    //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to erase outdated vectors
+    //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to
+    //! erase outdated vectors
     virtual void UpdateExtActions(bool init = false);
 
     virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector);
@@ -464,8 +450,7 @@ namespace PARTICLE
 
     //@}
 
-  protected:
-
+   protected:
     //! @name General purpose algorithm members
     //@{
 
@@ -479,24 +464,37 @@ namespace PARTICLE
     virtual void DetermineBdryParticles();
 
     /* Update exporter objects if layout has changed*/
-    virtual void UpdateExportersIfNecessary(const Epetra_BlockMap& oldnodemap, const Epetra_BlockMap& olddofmap);
+    virtual void UpdateExportersIfNecessary(
+        const Epetra_BlockMap& oldnodemap, const Epetra_BlockMap& olddofmap);
 
     /* Update TimIntMStep state vector with the new map from discret_*/
-    virtual void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > &stateVector, bool trg_nodeVectorType = false);
+    virtual void UpdateStateVectorMap(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>>& stateVector,
+        bool trg_nodeVectorType = false);
 
     /* Update state vector with the new map from discret_*/
-    virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
+    virtual void UpdateStateVectorMap(
+        Teuchos::RCP<Epetra_Vector>& stateVector, bool trg_nodeVectorType = false);
 
-    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true) const;
+    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In
+    //! case, it does not write
+    virtual void WriteVector(
+        const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true) const;
 
-    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
-    virtual void WriteVector(const std::string name, Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec, const bool isdof = true) const;
+    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In
+    //! case, it does not write
+    virtual void WriteVector(const std::string name,
+        Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> vec, const bool isdof = true) const;
 
     //! smart wrapper, the update happens only when vectors exist
-    inline virtual void UpdateStateVector(const Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> >& stateVector,
+    inline virtual void UpdateStateVector(
+        const Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>>& stateVector,
         const Teuchos::RCP<Epetra_Vector>& stateVectorn)
-    { if (stateVector != Teuchos::null && stateVectorn != Teuchos::null) { stateVector->UpdateSteps(*stateVectorn); } }
+    {
+      if (stateVector != Teuchos::null && stateVectorn != Teuchos::null)
+      {
+        stateVector->UpdateSteps(*stateVectorn);
+      }
+    }
 
 
     //@}
@@ -508,77 +506,78 @@ namespace PARTICLE
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
-    int myrank_;  //!< ID of actual processor in parallel
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
-                                                  //!< containing non-overlapping
-                                                  //!< map of global DOFs on Dirichlet
-                                                  //!< boundary conditions
-    Teuchos::RCP<Epetra_Vector> dbcdofs_;         //!< vector of dirichlet bc dofs
-    Teuchos::RCP<const TimIntStrategyBase> strategy_; //!< time integration strategy
+    Teuchos::RCP<DRT::Discretization> discret_;        //!< attached discretisation
+    int myrank_;                                       //!< ID of actual processor in parallel
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;       //!< map extractor object
+                                                       //!< containing non-overlapping
+                                                       //!< map of global DOFs on Dirichlet
+                                                       //!< boundary conditions
+    Teuchos::RCP<Epetra_Vector> dbcdofs_;              //!< vector of dirichlet bc dofs
+    Teuchos::RCP<const TimIntStrategyBase> strategy_;  //!< time integration strategy
     //@}
 
     //! @name Printing and output
     //@{
     const Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    const bool printlogo_;  //!< true: enjoy your cuppa
-    const int printscreen_;  //!< print infos to standard out every n steps
-    FILE* errfile_;  //!< error file handle
-    const bool printerrfile_;  //!< print infos to error file #errfile_
-    const int writerestartevery_;  //!< write restart every given step;
-                             //!< if 0, restart is not written
-    const bool writestate_;  //!< write state on/off
-    const bool writevelacc_;  //!< write velocity and acceleration on/off
-    const int writeresultsevery_;  //!< write state/stress/strain every given step
-    const int writeenergyevery_;  //!< write system energy every given step
-    const int writerenderingevery_; //!< write SPH rendering every given step
-    const int avrgrenderingsteps_; //!< write SPH rendering every given step
-    const int writeparticlestatsevery_;  //!< write particle statistics every given step
-    Teuchos::RCP<std::ofstream> energyfile_;  //!< output file for energy
+    const bool printlogo_;                                 //!< true: enjoy your cuppa
+    const int printscreen_;                          //!< print infos to standard out every n steps
+    FILE* errfile_;                                  //!< error file handle
+    const bool printerrfile_;                        //!< print infos to error file #errfile_
+    const int writerestartevery_;                    //!< write restart every given step;
+                                                     //!< if 0, restart is not written
+    const bool writestate_;                          //!< write state on/off
+    const bool writevelacc_;                         //!< write velocity and acceleration on/off
+    const int writeresultsevery_;                    //!< write state/stress/strain every given step
+    const int writeenergyevery_;                     //!< write system energy every given step
+    const int writerenderingevery_;                  //!< write SPH rendering every given step
+    const int avrgrenderingsteps_;                   //!< write SPH rendering every given step
+    const int writeparticlestatsevery_;              //!< write particle statistics every given step
+    Teuchos::RCP<std::ofstream> energyfile_;         //!< output file for energy
     Teuchos::RCP<std::ofstream> particlestatsfile_;  //!< output file for particle statistics
-    bool writeorientation_;  //!< write orientation of particle on/off
+    bool writeorientation_;                          //!< write orientation of particle on/off
 
-    double kinergy_; //!< kinetic energy
-    double intergy_; //!< internal energy
-    double extergy_; //!< external energy
-    LINALG::Matrix<3,1> linmomentum_; //!< linear momentum
+    double kinergy_;                    //!< kinetic energy
+    double intergy_;                    //!< internal energy
+    double extergy_;                    //!< external energy
+    LINALG::Matrix<3, 1> linmomentum_;  //!< linear momentum
     //@}
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP<TIMINT::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
-    double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
-    double timemax_;  //!< final time \f$t_\text{fin}\f$
-    int stepmax_;  //!< final step \f$N\f$
-    int step_;  //!< time step index \f$n\f$
-    int stepn_;  //!< time step index \f$n+1\f$
-    int restart_;  //!< restart step
+    Teuchos::RCP<TIMINT::TimIntMStep<double>> time_;  //!< time \f$t_{n}\f$ of last converged step
+    double timen_;                                    //!< target time \f$t_{n+1}\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<double>> dt_;    //!< time step size \f$\Delta t\f$
+    double timemax_;                                  //!< final time \f$t_\text{fin}\f$
+    int stepmax_;                                     //!< final step \f$N\f$
+    int step_;                                        //!< time step index \f$n\f$
+    int stepn_;                                       //!< time step index \f$n+1\f$
+    int restart_;                                     //!< restart step
     //@}
 
     //! @name Global state vectors
     //@{
 
     //! Displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > dis_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> dis_;
     //! Velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> vel_;
     //! Accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> acc_;
     //! Modified velocities \f${Vm}_{n}, Vm_{n-1}, ...\f$ resembling particle convection velocities
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > velmod_;
-    //! Modified accelerations \f${Am}_{n}, Am_{n-1}, ...\f$ allowing to distinguish physical velocities and particle convection velocities
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > accmod_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> velmod_;
+    //! Modified accelerations \f${Am}_{n}, Am_{n-1}, ...\f$ allowing to distinguish physical
+    //! velocities and particle convection velocities
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> accmod_;
     //! Angular-velocities \f${angV}_{n}, angV_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angVel_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> angVel_;
     //! Angular-accelerations \f${angA}_{n}, angA_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > angAcc_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> angAcc_;
     //! Radii \f$R_{n}, R_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > radius_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> radius_;
     //! Densities \f$\rho_{n}, \rho_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > density_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> density_;
     //! Time derivative of densities \f$\dot{\rho}_{n}, \dot{\rho}_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > densityDot_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> densityDot_;
 
     //! Displacements \f${D}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
@@ -588,7 +587,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> accn_;
     //! Modified velocities \f${Vm}_{n+1}\f$ resembling particle convection velocities
     Teuchos::RCP<Epetra_Vector> velmodn_;
-    //! Modified accelerations \f${Am}_{n+1}\f$ allowing to distinguish physical velocities and particle convection velocities
+    //! Modified accelerations \f${Am}_{n+1}\f$ allowing to distinguish physical velocities and
+    //! particle convection velocities
     Teuchos::RCP<Epetra_Vector> accmodn_;
     //! Angular-velocities \f${angV}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> angVeln_;
@@ -684,10 +684,9 @@ namespace PARTICLE
     Teuchos::RCP<PARTICLE::ParticleSPHInteractionHandler> interHandler_;
 
     //@}
-
   };
 
-}  // namespace STR
+}  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRTIMINT_H

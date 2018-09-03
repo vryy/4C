@@ -19,44 +19,51 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace ADAPTER {
+}  // namespace Teuchos
+namespace ADAPTER
+{
   class StructureBaseAlgorithmNew;
-} // namespace ADAPTER
-namespace STR {
+}  // namespace ADAPTER
+namespace STR
+{
   class Integrator;
   class Dbc;
-namespace TIMINT {
-  class BaseDataSDyn;
-} // namespace TIMINT
+  namespace TIMINT
+  {
+    class BaseDataSDyn;
+  }  // namespace TIMINT
 
   /*! \brief Factory to build the desired implicit/explicit integrator
    *
    *  \author Michael Hiermeier */
   class Factory
   {
-  public:
+   public:
     //! constructor
     Factory();
 
     //! destructor
-    virtual ~Factory() {};
+    virtual ~Factory(){};
 
     //! build the internal integrator
     Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
 
     //! build the desired  dirichlet boundary condition object
     Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
-  protected:
+
+   protected:
     //! build the implicit integrator
-    Teuchos::RCP<STR::Integrator> BuildImplicitIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<STR::Integrator> BuildImplicitIntegrator(
+        const STR::TIMINT::BaseDataSDyn& datasdyn) const;
 
     //! build the explicit integrator
-    Teuchos::RCP<STR::Integrator> BuildExplicitIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<STR::Integrator> BuildExplicitIntegrator(
+        const STR::TIMINT::BaseDataSDyn& datasdyn) const;
 
-  }; // class Factory
+  };  // class Factory
 
   /*! Non-member function, which relates to the STR::Factory
    *  Please call this method from outside! */
@@ -65,7 +72,7 @@ namespace TIMINT {
   /*! Non-member function, which relates to the STR::Factory class
    *  Please call this method from outside! */
   Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn);
-} // namespace STR
+}  // namespace STR
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_FACTORY_H_ */

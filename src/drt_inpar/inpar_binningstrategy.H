@@ -18,23 +18,23 @@
 
 namespace INPAR
 {
+  /// Input parameters for Meshfree
+  namespace BINSTRATEGY
+  {
+    //! type of gap function/projection
+    enum writebins
+    {
+      none,
+      rows,
+      cols
+    };
 
-/// Input parameters for Meshfree
-namespace BINSTRATEGY
-{
-  //! type of gap function/projection
-  enum writebins {
-    none,
-    rows,
-    cols
-  };
+    /// set the meshfree parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  /// set the meshfree parameters
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  }  // namespace BINSTRATEGY
 
-}
-
-}
+}  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif

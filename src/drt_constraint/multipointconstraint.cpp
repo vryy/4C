@@ -24,16 +24,8 @@
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
-        const std::string& conditionname,
-        int& minID,
-        int& maxID)
-: UTILS::Constraint
-  (
-    discr,
-    conditionname,
-    minID,
-    maxID
-  )
+    const std::string& conditionname, int& minID, int& maxID)
+    : UTILS::Constraint(discr, conditionname, minID, maxID)
 {
   return;
 }
@@ -41,34 +33,28 @@ UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
-        const std::string& conditionname)
-: UTILS::Constraint
-  (
-    discr,
-    conditionname
-  )
+UTILS::MPConstraint::MPConstraint(
+    Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname)
+    : UTILS::Constraint(discr, conditionname)
 {
   return;
 }
 
 /// Set state of the underlying constraint discretization
-void UTILS::MPConstraint::SetConstrState
-(
-  const std::string& state,  ///< name of state to set
-  Teuchos::RCP<const Epetra_Vector> V  ///< values to set
+void UTILS::MPConstraint::SetConstrState(const std::string& state,  ///< name of state to set
+    Teuchos::RCP<const Epetra_Vector> V                             ///< values to set
 )
 {
-  if (constrtype_!=none)
+  if (constrtype_ != none)
   {
-    std::map<int,Teuchos::RCP<DRT::Discretization> >::iterator discrit;
-    for(discrit=constraintdis_.begin();discrit!=constraintdis_.end();++discrit)
+    std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discrit;
+    for (discrit = constraintdis_.begin(); discrit != constraintdis_.end(); ++discrit)
     {
-      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discrit->second)->DofColMap(),false);
-      LINALG::Export(*V,*tmp);
+      Teuchos::RCP<Epetra_Vector> tmp =
+          LINALG::CreateVector(*(discrit->second)->DofColMap(), false);
+      LINALG::Export(*V, *tmp);
       (discrit->second)->ClearState();
-      (discrit->second)->SetState(state,tmp);
+      (discrit->second)->SetState(state, tmp);
     }
   }
 }
-

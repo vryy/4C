@@ -14,7 +14,7 @@
 
 
 #include "../post_drt_common/post_writer_base.H"
-#include "../drt_io/vtk_writer_base.H" // LIBB64
+#include "../drt_io/vtk_writer_base.H"  // LIBB64
 
 #include <string>
 #include <map>
@@ -37,7 +37,7 @@ namespace DRT
 {
   class Discretization;
   class Node;
-}
+}  // namespace DRT
 
 /*
  \brief Base class for VTK output generation
@@ -47,21 +47,20 @@ namespace DRT
 */
 class PostVtkWriter : public PostWriterBase
 {
-public:
+ public:
   //! constructor. Initializes the writer to a certain field.
-  PostVtkWriter(PostField* field, const std::string &name);
+  PostVtkWriter(PostField* field, const std::string& name);
 
   //! destructor
   virtual ~PostVtkWriter() {}
 
   //! write the whole thing
-  virtual void WriteFiles(PostFilterBase &filter);
+  virtual void WriteFiles(PostFilterBase& filter);
 
   //! write the whole thing for changing geometries
-  virtual void WriteFilesChangingGeom(PostFilterBase &filter);
+  virtual void WriteFilesChangingGeom(PostFilterBase& filter);
 
-protected:
-
+ protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const = 0;
 
@@ -84,37 +83,22 @@ protected:
   virtual const std::string& WriterSuffix() const = 0;
 
   //! Write a single result step
-  virtual void WriteDofResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_Vector>&                            data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf,
-      const int                                                     from,
-      const bool                                                    fillzeros
-      ) = 0;
+  virtual void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from,
+      const bool fillzeros) = 0;
 
   //! Write a single result step
-  virtual void WriteNodalResultStep(
-      std::ofstream&                                                file,
-      const Teuchos::RCP<Epetra_MultiVector>&                       data,
-      std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-      const std::string&                                            groupname,
-      const std::string&                                            name,
-      const int                                                     numdf
-      ) = 0;
+  virtual void WriteNodalResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf) = 0;
 
   //! Write a single result step
-  virtual void WriteElementResultStep(
-     std::ofstream&                                                file,
-     const Teuchos::RCP<Epetra_MultiVector>&                       data,
-     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
-     const std::string&                                            groupname,
-     const std::string&                                            name,
-     const int                                                     numdf,
-     const int                                                     from
-     ) = 0;
+  virtual void WriteElementResultStep(std::ofstream& file,
+      const Teuchos::RCP<Epetra_MultiVector>& data,
+      std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
+      const std::string& groupname, const std::string& name, const int numdf, const int from) = 0;
 
   //! write the geometry of one time step
   virtual void WriteGeo() = 0;
@@ -130,25 +114,24 @@ protected:
    specify which part.
    */
   virtual void WriteResult(
-      const std::string groupname,        ///< name of the result group in the control file
-      const std::string name,             ///< name of the result to be written
-      const ResultType  restype,          ///< type of the result to be written (nodal-/element-based)
-      const int         numdf,            ///< number of dofs per node to this result
-      const int         from = 0,         ///< start position of values in nodes
-      const bool        fillzeros = false ///< zeros are filled to vtk file when no data is available
-      );
+      const std::string groupname,  ///< name of the result group in the control file
+      const std::string name,       ///< name of the result to be written
+      const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
+      const int numdf,              ///< number of dofs per node to this result
+      const int from = 0,           ///< start position of values in nodes
+      const bool fillzeros = false  ///< zeros are filled to vtk file when no data is available
+  );
 
 
-  virtual void WriteResultOneTimeStep(
-      PostResult&       result,    ///< result group in the control file
-      const std::string groupname, ///< name of the result group in the control file
-      const std::string name,      ///< name of the result to be written
-      const ResultType  restype,   ///< type of the result to be written (nodal-/element-based)
-      const int         numdf,     ///< number of dofs per node to this result
-      bool              firststep, ///< bool whether this is the first time step
-      bool              laststep,  ///< bool whether this is the last time step
-      const int         from = 0   ///< start position of values in nodes
-      )
+  virtual void WriteResultOneTimeStep(PostResult& result,  ///< result group in the control file
+      const std::string groupname,  ///< name of the result group in the control file
+      const std::string name,       ///< name of the result to be written
+      const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
+      const int numdf,              ///< number of dofs per node to this result
+      bool firststep,               ///< bool whether this is the first time step
+      bool laststep,                ///< bool whether this is the last time step
+      const int from = 0            ///< start position of values in nodes
+  )
   {
     dserror("Not yet implemented");
   }
@@ -164,43 +147,40 @@ protected:
    \author kronbichler
    \date 04/14
    */
-  virtual void WriteSpecialField (
-      SpecialFieldInterface&          special,
-      PostResult&                     result,   ///< result group in the control file
-      const ResultType                restype,
-      const std::string&              groupname,
-      const std::vector<std::string>& fieldnames,
-      const std::string&              outinfo
-      );
+  virtual void WriteSpecialField(SpecialFieldInterface& special,
+      PostResult& result,  ///< result group in the control file
+      const ResultType restype, const std::string& groupname,
+      const std::vector<std::string>& fieldnames, const std::string& outinfo);
 
 
   //! write the solution data collected in the given vector
-  virtual void WriteSolutionVector (
-      const std::vector<double>& solution,
-      const int                  ncomponents,
-      const std::string&         name,
-      std::ofstream&             file
-      ) const;
+  virtual void WriteSolutionVector(const std::vector<double>& solution, const int ncomponents,
+      const std::string& name, std::ofstream& file) const;
 
   //! write prologue of the VTK file
-  virtual void WriteVtkHeader ();
+  virtual void WriteVtkHeader();
 
   //! write epilogue of the VTK file
-  virtual void WriteVtkFooter ();
+  virtual void WriteVtkFooter();
 
   //! write a master file for VTK that collects links to all time steps
-  virtual void WriteVtkMasterFile (
-      const std::vector<std::pair<double, std::string> >& filenames,
-      const std::string&                                  dirname
-      ) const;
+  virtual void WriteVtkMasterFile(const std::vector<std::pair<double, std::string>>& filenames,
+      const std::string& dirname) const;
 
-  //! writes debug output as long as this filter is incomplete (TODO MK: should go away at some point)
-  virtual void CurrentlyNotImplemented () const
+  //! writes debug output as long as this filter is incomplete (TODO MK: should go away at some
+  //! point)
+  virtual void CurrentlyNotImplemented() const
   {
     dserror("Functionality currently not implemented");
   }
 
-  enum Phase {INIT, POINTS, CELLS, FINAL};
+  enum Phase
+  {
+    INIT,
+    POINTS,
+    CELLS,
+    FINAL
+  };
 
   Phase currentPhase_;
 

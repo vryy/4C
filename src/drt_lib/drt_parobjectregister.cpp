@@ -178,9 +178,8 @@ std::string DRT::ParObjectList()
 {
   std::stringstream s;
 
-  s << DRT::ContainerType::Instance().Name() << " "
-    << DRT::ConditionObjectType::Instance().Name() << " "
-    << DRT::NodeType::Instance().Name() << " "
+  s << DRT::ContainerType::Instance().Name() << " " << DRT::ConditionObjectType::Instance().Name()
+    << " " << DRT::NodeType::Instance().Name() << " "
     << DRT::NURBS::ControlPointType::Instance().Name() << " "
     << PARTICLE::ParticleNodeType::Instance().Name() << " "
     << IMMERSED::ImmersedNodeType::Instance().Name() << " "
@@ -232,8 +231,9 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::NStetType::Instance().Name() << " "
     << DRT::ELEMENTS::NStet5Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance().Name() << " "
-    << DRT::ELEMENTS::So_nurbs27PoroType::Instance().Name() << " "
-//    << DRT::ELEMENTS::PtetType::Instance().Name() << " "
+    << DRT::ELEMENTS::So_nurbs27PoroType::Instance().Name()
+    << " "
+    //    << DRT::ELEMENTS::PtetType::Instance().Name() << " "
     << DRT::ELEMENTS::So_hex18Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_sh18Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_sh18PlastType::Instance().Name() << " "
@@ -295,15 +295,13 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::AcouSolBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::AcouIntFaceType::Instance().Name() << " "
     << DRT::ELEMENTS::AcouSolIntFaceType::Instance().Name() << " "
-    << MAT::Cnst_1d_artType::Instance().Name() << " "
-    << MAT::AAAgasserType::Instance().Name() << " "
-    << MAT::AAAneohookeType::Instance().Name() << " "
+    << MAT::Cnst_1d_artType::Instance().Name() << " " << MAT::AAAgasserType::Instance().Name()
+    << " " << MAT::AAAneohookeType::Instance().Name() << " "
     << MAT::AAAneohooke_stoproType::Instance().Name() << " "
     << MAT::AAAraghavanvorp_damageType::Instance().Name() << " "
     << MAT::AAA_mixedeffectsType::Instance().Name() << " "
-    << MAT::ArrheniusPVType::Instance().Name() << " "
-    << MAT::ArrheniusSpecType::Instance().Name() << " "
-    << MAT::ArrheniusTempType::Instance().Name() << " "
+    << MAT::ArrheniusPVType::Instance().Name() << " " << MAT::ArrheniusSpecType::Instance().Name()
+    << " " << MAT::ArrheniusTempType::Instance().Name() << " "
     << MAT::CarreauYasudaType::Instance().Name() << " "
     << MAT::CavitationFluidType::Instance().Name() << " "
     << MAT::ConstraintMixtureType::Instance().Name() << " "
@@ -311,57 +309,44 @@ std::string DRT::ParObjectList()
     << MAT::ElastHyperType::Instance().Name() << " "
     << MAT::PlasticElastHyperType::Instance().Name() << " "
     << MAT::PlasticElastHyperVCUType::Instance().Name() << " "
-    << MAT::ViscoElastHyperType::Instance().Name() << " "
-    << MAT::FerEchPVType::Instance().Name() << " "
-    << MAT::FluidPoroType::Instance().Name() << " "
+    << MAT::ViscoElastHyperType::Instance().Name() << " " << MAT::FerEchPVType::Instance().Name()
+    << " " << MAT::FluidPoroType::Instance().Name() << " "
     << MAT::FluidPoroSinglePhaseType::Instance().Name() << " "
     << MAT::FluidPoroSingleVolFracType::Instance().Name() << " "
     << MAT::FluidPoroVolFracPressureType::Instance().Name() << " "
     << MAT::FluidPoroSingleReactionType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseReactionsType::Instance().Name() << " "
-    << MAT::FourierIsoType::Instance().Name() << " "
-    << MAT::GrowthVolumetricType::Instance().Name() << " "
-    << MAT::Membrane_ElastHyperType::Instance().Name() << " "
+    << MAT::FourierIsoType::Instance().Name() << " " << MAT::GrowthVolumetricType::Instance().Name()
+    << " " << MAT::Membrane_ElastHyperType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
-    << MAT::HerschelBulkleyType::Instance().Name() << " "
-    << MAT::IonType::Instance().Name() << " "
+    << MAT::HerschelBulkleyType::Instance().Name() << " " << MAT::IonType::Instance().Name() << " "
     << MAT::LinearDensityViscosityType::Instance().Name() << " "
-    << MAT::MatListType::Instance().Name() << " "
-    << MAT::MatListReactionsType::Instance().Name() << " "
-    << MAT::MatListChemotaxisType::Instance().Name() << " "
-    << MAT::MatListChemoReacType::Instance().Name() << " "
-    << MAT::ElchMatType::Instance().Name() << " "
-    << MAT::MicroMaterialType::Instance().Name() << " "
-    << MAT::MixFracType::Instance().Name() << " "
-    << MAT::ModPowerLawType::Instance().Name() << " "
-    << MAT::MurnaghanTaitFluidType::Instance().Name() << " "
-    << MAT::MyocardType::Instance().Name() << " "
-    << MAT::NeoHookeType::Instance().Name() << " "
-    << MAT::NewtonianFluidType::Instance().Name() << " "
-    << MAT::StructPoroType::Instance().Name() << " "
-    << MAT::StructPoroReactionType::Instance().Name() << " "
+    << MAT::MatListType::Instance().Name() << " " << MAT::MatListReactionsType::Instance().Name()
+    << " " << MAT::MatListChemotaxisType::Instance().Name() << " "
+    << MAT::MatListChemoReacType::Instance().Name() << " " << MAT::ElchMatType::Instance().Name()
+    << " " << MAT::MicroMaterialType::Instance().Name() << " "
+    << MAT::MixFracType::Instance().Name() << " " << MAT::ModPowerLawType::Instance().Name() << " "
+    << MAT::MurnaghanTaitFluidType::Instance().Name() << " " << MAT::MyocardType::Instance().Name()
+    << " " << MAT::NeoHookeType::Instance().Name() << " "
+    << MAT::NewtonianFluidType::Instance().Name() << " " << MAT::StructPoroType::Instance().Name()
+    << " " << MAT::StructPoroReactionType::Instance().Name() << " "
     << MAT::StructPoroReactionECMType::Instance().Name() << " "
-    << MAT::ScalarDepInterpType::Instance().Name() << " "
-    << MAT::ScatraMatType::Instance().Name() << " "
-    << MAT::ScatraMatPoroECMType::Instance().Name() << " "
+    << MAT::ScalarDepInterpType::Instance().Name() << " " << MAT::ScatraMatType::Instance().Name()
+    << " " << MAT::ScatraMatPoroECMType::Instance().Name() << " "
     << MAT::ScatraMatMultiPoroFluidType::Instance().Name() << " "
     << MAT::ScatraMatMultiPoroVolFracType::Instance().Name() << " "
     << MAT::StVenantKirchhoffType::Instance().Name() << " "
-    << MAT::SutherlandType::Instance().Name() << " "
-    << MAT::TempDepWaterType::Instance().Name() << " "
-    << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "
+    << MAT::SutherlandType::Instance().Name() << " " << MAT::TempDepWaterType::Instance().Name()
+    << " " << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "
     << MAT::ThermoPlasticLinElastType::Instance().Name() << " "
     << MAT::ViscoAnisotropicType::Instance().Name() << " "
-    << MAT::ViscoNeoHookeType::Instance().Name() << " "
-    << MAT::YoghurtType::Instance().Name() << " "
-    << MAT::SpringType::Instance().Name() << " "
+    << MAT::ViscoNeoHookeType::Instance().Name() << " " << MAT::YoghurtType::Instance().Name()
+    << " " << MAT::SpringType::Instance().Name() << " "
     << MAT::BeamElastHyperMaterialType::Instance().Name() << " "
-    << MAT::PlasticLinElastType::Instance().Name() << " "
-    << MAT::RobinsonType::Instance().Name() << " "
-    << MAT::DamageType::Instance().Name() << " "
-    << MAT::TopOptDensType::Instance().Name() << " "
-    << MAT::AcousticMatType::Instance().Name() << " "
+    << MAT::PlasticLinElastType::Instance().Name() << " " << MAT::RobinsonType::Instance().Name()
+    << " " << MAT::DamageType::Instance().Name() << " " << MAT::TopOptDensType::Instance().Name()
+    << " " << MAT::AcousticMatType::Instance().Name() << " "
     << MAT::AcousticSolMatType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusNeoHookeanType::Instance().Name() << " "
@@ -369,18 +354,15 @@ std::string DRT::ParObjectList()
     << MAT::Maxwell_0d_acinusDoubleExponentialType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusOgdenType::Instance().Name() << " "
     << MORTAR::MortarNodeType::Instance().Name() << " "
-    << MORTAR::MortarElementType::Instance().Name() << " "
-    << CONTACT::CoNodeType::Instance().Name() << " "
-    << CONTACT::FriNodeType::Instance().Name() << " "
-    << CONTACT::CoElementType::Instance().Name() << " "
-    << MAT::ActiveFiberType::Instance().Name() << " "
-    << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
+    << MORTAR::MortarElementType::Instance().Name() << " " << CONTACT::CoNodeType::Instance().Name()
+    << " " << CONTACT::FriNodeType::Instance().Name() << " "
+    << CONTACT::CoElementType::Instance().Name() << " " << MAT::ActiveFiberType::Instance().Name()
+    << " " << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
     << MAT::BioChemoMechanoCellPassiveFiberType::Instance().Name() << " "
     << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2PinJointedType::Instance().Name() << " "
-    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
-    ;
+    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " ";
 
   std::cout << s.str() << std::endl;
   return s.str();

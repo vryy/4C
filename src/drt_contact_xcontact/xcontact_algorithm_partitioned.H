@@ -19,38 +19,40 @@
 
 #include "../drt_contact_xcontact/xcontact_algorithm_base.H"
 
-namespace XCONTACT {
-namespace ALGORITHM {
-  class Partitioned : public Base
+namespace XCONTACT
+{
+  namespace ALGORITHM
   {
-  public:
-    /// constructor
-    Partitioned();
+    class Partitioned : public Base
+    {
+     public:
+      /// constructor
+      Partitioned();
 
-    /// destructor
-    virtual ~Partitioned() {};
+      /// destructor
+      virtual ~Partitioned(){};
 
-    /// Setup new class variables (derived)
-    virtual void Setup();
+      /// Setup new class variables (derived)
+      virtual void Setup();
 
-  protected:
-    //! Call the update routines in the different fields.
-    virtual void OuterLoop();
+     protected:
+      //! Call the update routines in the different fields.
+      virtual void OuterLoop();
 
-    //! Prepares values and variables needed in the outer iteration
-    void PrepareOuterIteration();
+      //! Prepares values and variables needed in the outer iteration
+      void PrepareOuterIteration();
 
-    //! Solve the level-set problem
-    void DoScaTraField();
+      //! Solve the level-set problem
+      void DoScaTraField();
 
-    //! Solve the structural contact problem
-    void DoStructureField();
+      //! Solve the structural contact problem
+      void DoStructureField();
 
-    //! convergence check of the partitioned outer loop
-    bool ConvergenceCheck(const int& itnum);
-  };
-} // namespace ALGORITHM
-} // namespace XCONTACT
+      //! convergence check of the partitioned outer loop
+      bool ConvergenceCheck(const int& itnum);
+    };
+  }  // namespace ALGORITHM
+}  // namespace XCONTACT
 
 
 #endif /* SRC_DRT_CONTACT_XCONTACT_XCONTACT_ALGORITHM_PARTITIONED_H_ */

@@ -28,50 +28,35 @@
 */
 class VtuWriter : public VtkWriterBase
 {
-public:
-
+ public:
   //! constructor
   VtuWriter();
 
   //! destructor
-  virtual ~VtuWriter()
-  {}
+  virtual ~VtuWriter() {}
 
   //! write the geometry defining this unstructured grid assuming contiguous points
-  void WriteGeometryUnstructuredGridContiguous(
-      const std::vector<double>& point_coordinates,
-      const std::vector<int32_t>& cell_offset,
-      const std::vector<uint8_t>& cell_types
-      );
+  void WriteGeometryUnstructuredGridContiguous(const std::vector<double>& point_coordinates,
+      const std::vector<int32_t>& cell_offset, const std::vector<uint8_t>& cell_types);
 
   //! write the geometry defining this unstructured grid
-  void WriteGeometryUnstructuredGrid(
-      const std::vector<double>& point_coordinates,
-      const std::vector<int32_t>& point_cell_connectivity,
-      const std::vector<int32_t>& cell_offset,
-      const std::vector<uint8_t>& cell_types
-      );
+  void WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
+      const std::vector<int32_t>& point_cell_connectivity, const std::vector<int32_t>& cell_offset,
+      const std::vector<uint8_t>& cell_types);
 
 
   //! write a data vector with num_component values of type T per point
   // Todo template <typename T>
-  void WritePointDataVector(
-      const std::vector<double>& data,
-      unsigned int num_components_per_point,
-      const std::string& name
-      );
+  void WritePointDataVector(const std::vector<double>& data, unsigned int num_components_per_point,
+      const std::string& name);
 
   //! write a data vector with num_component values of type T per cell
   // Todo template <typename T>
-  void WriteCellDataVector(
-      const std::vector<double>& data,
-      unsigned int num_components_per_cell,
-      const std::string& name
-      );
+  void WriteCellDataVector(const std::vector<double>& data, unsigned int num_components_per_cell,
+      const std::string& name);
 
 
-protected:
-
+ protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const;
 
@@ -89,7 +74,6 @@ protected:
 
   //! Return the file suffix including the dot for this file type
   virtual const std::string& WriterSuffix() const;
-
 };
 
 #endif

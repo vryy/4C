@@ -26,20 +26,20 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance( bool create )
+DRT::ELEMENTS::FluidEleParameterTimInt* DRT::ELEMENTS::FluidEleParameterTimInt::Instance(
+    bool create)
 {
   static FluidEleParameterTimInt* instance;
-  if ( create )
+  if (create)
   {
-    if ( instance==NULL )
+    if (instance == NULL)
     {
       instance = new FluidEleParameterTimInt();
     }
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
+    if (instance != NULL) delete instance;
     instance = NULL;
   }
   return instance;
@@ -52,45 +52,43 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+  Instance(false);
 }
 
 //----------------------------------------------------------------------*/
 // private constructor of FluidEleParameterTimInt
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
-  :
-  set_general_fluid_timeparameter_(false),
-  is_genalpha_(false),
-  is_genalpha_np_(false),
-  is_stationary_(false),
-  is_one_step_theta_(false),
-  is_cont_impl_press_impl_(false),
-  is_cont_impl_press_normal_(false),
-  ostnew_(false),
-  time_(-1.0),
-  dt_(0.0),
-  timefac_(0.0),
-  theta_(0.0),
-  omtheta_(0.0),
-  gamma_(0.0),
-  alphaF_(0.0),
-  alphaM_(0.0),
-  afgdt_(1.0),
-  timefacrhs_(1.0),
-  timefacpre_(1.0)
+    : set_general_fluid_timeparameter_(false),
+      is_genalpha_(false),
+      is_genalpha_np_(false),
+      is_stationary_(false),
+      is_one_step_theta_(false),
+      is_cont_impl_press_impl_(false),
+      is_cont_impl_press_normal_(false),
+      ostnew_(false),
+      time_(-1.0),
+      dt_(0.0),
+      timefac_(0.0),
+      theta_(0.0),
+      omtheta_(0.0),
+      gamma_(0.0),
+      alphaF_(0.0),
+      alphaM_(0.0),
+      afgdt_(1.0),
+      timefacrhs_(1.0),
+      timefacpre_(1.0)
 {
-
 }
 
 //----------------------------------------------------------------------*/
 // set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::ParameterList& params)
 {
   // second check: timealgo
   // work around to use SetTimeParameter in GenAlpha (Neumann BC)
-  if(set_general_fluid_timeparameter_ == false)
+  if (set_general_fluid_timeparameter_ == false)
   {
     set_general_fluid_timeparameter_ = true;
   }
@@ -99,33 +97,33 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::P
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
-  if (timealgo_==INPAR::FLUID::timeint_stationary)
+  if (timealgo_ == INPAR::FLUID::timeint_stationary)
   {
-    is_genalpha_    = false;
-    is_stationary_  = true;
+    is_genalpha_ = false;
+    is_stationary_ = true;
     is_genalpha_np_ = false;
-    is_one_step_theta_=false;
+    is_one_step_theta_ = false;
   }
-  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
   {
-    is_genalpha_    = true;
-    is_stationary_  = false;
+    is_genalpha_ = true;
+    is_stationary_ = false;
     is_genalpha_np_ = false;
-    is_one_step_theta_=false;
+    is_one_step_theta_ = false;
   }
-  else if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+  else if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
   {
-    is_genalpha_    = true;
-    is_stationary_  = false;
+    is_genalpha_ = true;
+    is_stationary_ = false;
     is_genalpha_np_ = true;
-    is_one_step_theta_=false;
+    is_one_step_theta_ = false;
   }
   else
   {
-    is_genalpha_    = false;
-    is_stationary_  = false;
+    is_genalpha_ = false;
+    is_stationary_ = false;
     is_genalpha_np_ = false;
-    is_one_step_theta_=true;
+    is_one_step_theta_ = true;
   }
 
 
@@ -134,7 +132,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::P
   //----------------------------------------------------------------------
 
   // get current time: n+alpha_F for generalized-alpha scheme, n+1 otherwise
-  time_ = params.get<double>("total time",-1.0);
+  time_ = params.get<double>("total time", -1.0);
 
   // set global variable timefac to zero
   timefac_ = 0.0;
@@ -142,9 +140,9 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::P
   if (not is_stationary_)
   {
     // get time-step length and time-integration parameters
-    dt_      = params.get<double>("dt",-1.0);
-    theta_   = params.get<double>("theta",-1.0);
-    omtheta_ = params.get<double>("omtheta",-1.0);
+    dt_ = params.get<double>("dt", -1.0);
+    theta_ = params.get<double>("theta", -1.0);
+    omtheta_ = params.get<double>("omtheta", -1.0);
 
     // compute timefactor for left-hand side:
     // one-step-Theta:    timefac = theta*dt
@@ -165,89 +163,88 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::P
     // NP GA | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |
     //-----------------------------------------------------------------------
 
-    timefac_ = theta_*dt_;
+    timefac_ = theta_ * dt_;
 
     // compute generalized-alpha-related values and set them appropriately
     // otherwise
     if (is_genalpha_)
     {
-      gamma_  = params.get<double>("gamma",-1.0);
-      alphaF_ = params.get<double>("alphaF",-1.0);
-      alphaM_ = params.get<double>("alphaM",-1.0);
+      gamma_ = params.get<double>("gamma", -1.0);
+      alphaF_ = params.get<double>("alphaF", -1.0);
+      alphaM_ = params.get<double>("alphaM", -1.0);
     }
     else
     {
-      gamma_  = theta_;
+      gamma_ = theta_;
       alphaF_ = 1.0;
       alphaM_ = 1.0;
     }
 
     // if not generalized-alpha: afgdt = theta * dt_ = timefac_
     // Peter's generalized alpha: timefacmat_u_ for velocity terms
-    afgdt_=alphaF_*gamma_*dt_;
+    afgdt_ = alphaF_ * gamma_ * dt_;
 
     // timeint_gen_alpha = p(n+1) (Peter's genalpha)
     if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      timefacpre_ = gamma_/alphaM_*dt_;
-      timefacrhs_ = gamma_/alphaM_*dt_;
+      timefacpre_ = gamma_ / alphaM_ * dt_;
+      timefacrhs_ = gamma_ / alphaM_ * dt_;
     }
-    else if(timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+    else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
     {
-      timefacpre_ = gamma_*alphaF_/alphaM_*dt_;
-      timefacrhs_ = gamma_/alphaM_*dt_;
+      timefacpre_ = gamma_ * alphaF_ / alphaM_ * dt_;
+      timefacrhs_ = gamma_ / alphaM_ * dt_;
     }
     else
     {
       // if not generalized-alpha: timefacmat_p_=theta * dt_ = timefac_
-      timefacpre_ = gamma_*alphaF_/alphaM_*dt_;
+      timefacpre_ = gamma_ * alphaF_ / alphaM_ * dt_;
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      timefacrhs_ = gamma_*alphaF_/alphaM_*dt_;
+      timefacrhs_ = gamma_ * alphaF_ / alphaM_ * dt_;
 
       // set flag, time integration scheme
       ostalgo_ = DRT::INPUT::get<INPAR::FLUID::OST_Cont_and_Press>(params, "ost cont and press");
-      ostnew_ = params.get<bool>("ost new",false);
+      ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)
       {
         // set time integration scheme-specific element parameters
-        if (ostalgo_==INPAR::FLUID::Cont_impl_Press_impl)
+        if (ostalgo_ == INPAR::FLUID::Cont_impl_Press_impl)
         {
-          is_cont_impl_press_impl_    = true;
-          is_cont_impl_press_normal_  = false;
+          is_cont_impl_press_impl_ = true;
+          is_cont_impl_press_normal_ = false;
         }
-        else if (ostalgo_==INPAR::FLUID::Cont_impl_Press_normal)
+        else if (ostalgo_ == INPAR::FLUID::Cont_impl_Press_normal)
         {
-          is_cont_impl_press_impl_    = false;
-          is_cont_impl_press_normal_  = true;
+          is_cont_impl_press_impl_ = false;
+          is_cont_impl_press_normal_ = true;
         }
         else
         {
-          is_cont_impl_press_impl_    = false;
-          is_cont_impl_press_normal_  = false;
+          is_cont_impl_press_impl_ = false;
+          is_cont_impl_press_normal_ = false;
         }
       }
-
     }
   }
-  else // is_stationary == true
+  else  // is_stationary == true
   {
     // set timefactor for stationary case to 1.0
     timefac_ = 1.0;
     timefacrhs_ = 1.0;
   }
 
-  if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0
-      or alphaF_ < 0.0 or alphaM_ < 0.0)
+  if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0 or alphaF_ < 0.0 or
+      alphaM_ < 0.0)
   {
-    std::cout<<"dt_: "<<dt_<<std::endl;
-    std::cout<<"theta_ "<<theta_<<std::endl;
-    std::cout<<"time_ "<<time_<<std::endl;
-    std::cout<<"omtheta_ "<<omtheta_<<std::endl;
-    std::cout<<"gamma_ "<<gamma_<<std::endl;
-    std::cout<<"alphaF_ "<<alphaF_<<std::endl;
-    std::cout<<"alphaM_ "<<alphaM_<<std::endl;
+    std::cout << "dt_: " << dt_ << std::endl;
+    std::cout << "theta_ " << theta_ << std::endl;
+    std::cout << "time_ " << time_ << std::endl;
+    std::cout << "omtheta_ " << omtheta_ << std::endl;
+    std::cout << "gamma_ " << gamma_ << std::endl;
+    std::cout << "alphaF_ " << alphaF_ << std::endl;
+    std::cout << "alphaM_ " << alphaM_ << std::endl;
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
   }
 }
@@ -257,7 +254,8 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::P
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameterTimInt::PrintFluidTimeParameter()
 {
-  std::cout << std::endl << "|-----------------------------------------------------------" << std::endl;
+  std::cout << std::endl
+            << "|-----------------------------------------------------------" << std::endl;
   std::cout << "|  Fluid Element Time parameter: " << std::endl;
   std::cout << "|-------------------------------------------------------------------" << std::endl;
   //! time parameters set?
@@ -288,6 +286,6 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::PrintFluidTimeParameter()
   std::cout << "|    time factor rhs:        " << timefacrhs_ << std::endl;
   //! time integration factor for the left hand side (pressure)
   std::cout << "|    time factor mat_p:      " << timefacpre_ << std::endl;
-  std::cout << std::endl << "|-----------------------------------------------------------" << std::endl;
+  std::cout << std::endl
+            << "|-----------------------------------------------------------" << std::endl;
 }
-

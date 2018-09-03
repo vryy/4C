@@ -42,7 +42,8 @@ void particle_drt()
     {
       const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
       /// algorithm is created
-      Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm,params));
+      Teuchos::RCP<PARTICLE::Algorithm> particlesimulation =
+          Teuchos::rcp(new PARTICLE::Algorithm(comm, params));
 
       /// init particle simulation
       particlesimulation->Init(false);
@@ -71,7 +72,8 @@ void particle_drt()
       problem->GetDis("fluid")->FillComplete();
 
       /// algorithm is created
-      Teuchos::RCP<CAVITATION::Algorithm> cavitation = Teuchos::rcp(new CAVITATION::Algorithm(comm,params));
+      Teuchos::RCP<CAVITATION::Algorithm> cavitation =
+          Teuchos::rcp(new CAVITATION::Algorithm(comm, params));
 
       /// init cavitation simulation
       cavitation->InitCavitation();
@@ -95,12 +97,11 @@ void particle_drt()
     break;
     default:
       dserror("solution of unknown problemtyp %d requested", probtype);
-    break;
+      break;
   }
 
-  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
+  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 
   return;
-
 }

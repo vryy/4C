@@ -21,7 +21,7 @@
 #include "scatra_ele_action.H"
 #include "scatra_ele.H"
 
-#include "../drt_lib/drt_globalproblem.H" // for curves and functions
+#include "../drt_lib/drt_globalproblem.H"  // for curves and functions
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -31,25 +31,25 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype> * DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname,
-    const ScaTraEleBoundaryCalcStd* delete_me )
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>*
+DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(const int numdofpernode,
+    const int numscal, const std::string& disname, const ScaTraEleBoundaryCalcStd* delete_me)
 {
-  static std::map<std::string,ScaTraEleBoundaryCalcStd<distype>* >  instances;
+  static std::map<std::string, ScaTraEleBoundaryCalcStd<distype>*> instances;
 
-  if(delete_me == NULL)
+  if (delete_me == NULL)
   {
-    if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleBoundaryCalcStd<distype>(numdofpernode,numscal,disname);
+    if (instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleBoundaryCalcStd<distype>(numdofpernode, numscal, disname);
   }
 
   else
   {
-    for( typename std::map<std::string,ScaTraEleBoundaryCalcStd<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-      if ( i->second == delete_me )
+    for (typename std::map<std::string, ScaTraEleBoundaryCalcStd<distype>*>::iterator i =
+             instances.begin();
+         i != instances.end(); ++i)
+      if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
@@ -67,15 +67,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( 0, 0, "", this );
+  Instance(0, 0, "", this);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal, const std::string& disname)
-  : my::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::ScaTraEleBoundaryCalcStd(
+    const int numdofpernode, const int numscal, const std::string& disname)
+    : my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname)
 {
   return;
 }

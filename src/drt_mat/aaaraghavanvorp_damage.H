@@ -10,8 +10,9 @@ The material is a special case of a generalised pover law neo-Hookean material
 with a damage model inside relative only to the isochoric part.
 
 the input line should read
-///  MAT 1 MAT_Raghavan_Damage BULK 1.044E7 ALPHA 6.86E-2 BETA 188.1E5 INDAMSTR 1,25654 A 0.3 B 121 DENS 1.0
-MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0.206141 EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
+///  MAT 1 MAT_Raghavan_Damage BULK 1.044E7 ALPHA 6.86E-2 BETA 188.1E5 INDAMSTR 1,25654 A 0.3 B 121
+DENS 1.0 MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0.206141
+EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 
 <pre>
 Maintainer: Giacomo Marini
@@ -29,20 +30,15 @@ date: 26/05/2009
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
     class AAAraghavanvorp_damage : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      AAAraghavanvorp_damage(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      AAAraghavanvorp_damage(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~AAAraghavanvorp_damage() { ; }
@@ -50,16 +46,16 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      const double bulk_;       /// Bulk's modulus (Volumetric)
-      const double alpha_;      /// 1st parameter, alpha (Isochoric)
-      const double beta_;       /// 2nd parameter, beta (Isochoric)
+      const double bulk_;   /// Bulk's modulus (Volumetric)
+      const double alpha_;  /// 1st parameter, alpha (Isochoric)
+      const double beta_;   /// 2nd parameter, beta (Isochoric)
 
       /// damage parameters
 
-      const double eqstrmin_;   /// equivalent strain initial damage
-      const double a_;          /// 1st parameter, a
-      const double b_;          /// 2nd parameter, b
-      const double density_;    /// mass density
+      const double eqstrmin_;  /// equivalent strain initial damage
+      const double a_;         /// 1st parameter, a
+      const double b_;         /// 2nd parameter, b
+      const double density_;   /// mass density
 
       //@}
 
@@ -70,28 +66,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class AAAraghavanvorp_damageType : public DRT::ParObjectType
-{
-public:
+  class AAAraghavanvorp_damageType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "AAAraghavanvorp_damageType"; }
 
-  std::string Name() const { return "AAAraghavanvorp_damageType"; }
+    static AAAraghavanvorp_damageType& Instance() { return instance_; };
 
-  static AAAraghavanvorp_damageType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static AAAraghavanvorp_damageType instance_;
-};
+   private:
+    static AAAraghavanvorp_damageType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material with damage according Simo approach explained in Holzapfel (p298)
   class AAAraghavanvorp_damage : public So3Material
   {
-
-  public:
-
+   public:
     // empty constructor
     AAAraghavanvorp_damage();
 
@@ -106,7 +98,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return AAAraghavanvorp_damageType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return AAAraghavanvorp_damageType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -142,25 +137,35 @@ private:
     virtual double Density() const { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const {
-    dserror("");
-    return (6.0*params_->bulk_*params_->alpha_)/(3.0*params_->bulk_-2*params_->alpha_); }
+    double ShearMod() const
+    {
+      dserror("");
+      return (6.0 * params_->bulk_ * params_->alpha_) /
+             (3.0 * params_->bulk_ - 2 * params_->alpha_);
+    }
 
     /// Check if history variables are already initialized
 
-    bool Initialized() const
-      {return isinit_&&(histgcurr_!=Teuchos::null);}
+    bool Initialized() const { return isinit_ && (histgcurr_ != Teuchos::null); }
 
     // material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaraghavanvorp_damage; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_aaaraghavanvorp_damage;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-    dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAraghavanvorp_damage( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new AAAraghavanvorp_damage(*this));
+    }
 
     /// Initialize internal stress variables
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -168,44 +173,46 @@ private:
     /// Update internal stress variables
     virtual void Update();
 
-    void StressTensTransfSPKtoCauchy(LINALG::Matrix<NUM_STRESS_3D,1>& f,      ///< deformation gradient tensor
-                                     const double detf,                       ///< determinant of deformation gradient tensor
-                                     LINALG::Matrix<NUM_STRESS_3D,1>& pktwo,  ///< 2nd PK-stress
-                                     LINALG::Matrix<NUM_STRESS_3D,1>& cstress ///< Cauchy-stress
-                                    );
+    void StressTensTransfSPKtoCauchy(
+        LINALG::Matrix<NUM_STRESS_3D, 1>& f,       ///< deformation gradient tensor
+        const double detf,                         ///< determinant of deformation gradient tensor
+        LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
+        LINALG::Matrix<NUM_STRESS_3D, 1>& cstress  ///< Cauchy-stress
+    );
 
-    void StressTensTransfCauchytoSPK(LINALG::Matrix<NUM_STRESS_3D,1>& invf,    ///< deformation gradient tensor
-                                     const double detf,                        ///< determinant of deformation gradient tensor
-                                     LINALG::Matrix<NUM_STRESS_3D,1>& cstress, ///< Cauchy-stress
-                                     LINALG::Matrix<NUM_STRESS_3D,1>& pktwo    ///< 2nd PK-stress
-                                    );
+    void StressTensTransfCauchytoSPK(
+        LINALG::Matrix<NUM_STRESS_3D, 1>& invf,     ///< deformation gradient tensor
+        const double detf,                          ///< determinant of deformation gradient tensor
+        LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
+        LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo     ///< 2nd PK-stress
+    );
 
     // THE material routine
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
-                          Teuchos::ParameterList& params,      ///< parameter list for communication
-                          LINALG::Matrix<NUM_STRESS_3D,1>* stress,          ///< 2nd PK-stress
-                          LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,           ///< material stiffness matrix
-                          const int eleGID);
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,    ///< green lagrange strain
+        Teuchos::ParameterList& params,                      ///< parameter list for communication
+        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
    private:
-
     /// my material parameters
     MAT::PAR::AAAraghavanvorp_damage* params_;
-   // damage history parameter g
-   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histgcurr_; ///< current damage parameter
-   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histglast_; ///< damage of last converged state
+    // damage history parameter g
+    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>> histgcurr_;  ///< current damage parameter
+    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>> histglast_;  ///< damage of last converged state
 
-   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histeqstrmaxcurr_; ///< current damage parameter
-   Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > histeqstrmaxlast_; ///< damage of last converged state
-   Teuchos::RCP<double > elstrength_; ///< strength of the element
+    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>>
+        histeqstrmaxcurr_;  ///< current damage parameter
+    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>>
+        histeqstrmaxlast_;             ///< damage of last converged state
+    Teuchos::RCP<double> elstrength_;  ///< strength of the element
 
-   bool isinit_;  ///< indicates if material is initialized by calling the #Initialized routine
-
+    bool isinit_;  ///< indicates if material is initialized by calling the #Initialized routine
   };
-}
+}  // namespace MAT
 
 #endif  // AAARAGHAVANVORP_DAMAGE_H

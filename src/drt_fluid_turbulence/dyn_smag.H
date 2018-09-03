@@ -60,187 +60,171 @@ References are
 
 namespace FLD
 {
-class Boxfilter;
+  class Boxfilter;
 
-class DynSmagFilter
-{
+  class DynSmagFilter
+  {
+   public:
+    /*!
+    \brief Standard Constructor (public)
 
-public:
+    */
+    DynSmagFilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params);
 
-  /*!
-  \brief Standard Constructor (public)
+    /*!
+    \brief Destructor
 
-  */
-  DynSmagFilter(
-    Teuchos::RCP<DRT::Discretization>     actdis,
-    Teuchos::ParameterList&               params);
+    */
+    virtual ~DynSmagFilter();
 
-  /*!
-  \brief Destructor
+    void AddScatra(Teuchos::RCP<DRT::Discretization> scatradis);
 
-  */
-  virtual ~DynSmagFilter();
+    /*!
+    \brief Perform box filter operation, compare filtered quantities
+    to solution to get an estimate for Cs (using clpping), average
+    over element layers in turbulent channel flows.
 
-  void AddScatra(
-    Teuchos::RCP<DRT::Discretization>     scatradis
-  );
+    This method initialises element quantities (standard case) or
+    provides information for the element via the parameter list
+    (in plane averaging for channel flow)
 
-  /*!
-  \brief Perform box filter operation, compare filtered quantities
-  to solution to get an estimate for Cs (using clpping), average
-  over element layers in turbulent channel flows.
+    \param solution     (in) velocity field to filter and to
+                             determine Cs from
+    \param dirichtoggle (in) information on dirichlet dofs to be
+                             able to exclude boundary nodes from
+                             filtering
 
-  This method initialises element quantities (standard case) or
-  provides information for the element via the parameter list
-  (in plane averaging for channel flow)
+    */
+    void ApplyFilterForDynamicComputationOfCs(const Teuchos::RCP<const Epetra_Vector> velocity,
+        const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
 
-  \param solution     (in) velocity field to filter and to
-                           determine Cs from
-  \param dirichtoggle (in) information on dirichlet dofs to be
-                           able to exclude boundary nodes from
-                           filtering
-
-  */
-  void ApplyFilterForDynamicComputationOfCs(
-    const Teuchos::RCP<const Epetra_Vector>             velocity,
-    const Teuchos::RCP<const Epetra_Vector>             scalar,
-    const double                                        thermpress,
-    const Teuchos::RCP<const Epetra_Vector>             dirichtoggle
-    );
-
-  void ApplyFilterForDynamicComputationOfPrt(
-    const Teuchos::RCP<const Epetra_Vector>             scalar,
-    const double                                        thermpress,
-    const Teuchos::RCP<const Epetra_Vector>             dirichtoggle,
-    Teuchos::ParameterList&                             extraparams,
-    const int                                           ndsvel
-    );
+    void ApplyFilterForDynamicComputationOfPrt(const Teuchos::RCP<const Epetra_Vector> scalar,
+        const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+        Teuchos::ParameterList& extraparams, const int ndsvel);
 
 
-  /*!
-  \brief Output of averaged velocity vector for paraview IO
+    /*!
+    \brief Output of averaged velocity vector for paraview IO
 
-  \param outvec  (in/out) vector in dofrowmap-format to use for
-                          output of averaged solution
+    \param outvec  (in/out) vector in dofrowmap-format to use for
+                            output of averaged solution
 
 
-  */
+    */
 
 
 
+   private:
+    /*!
+    \brief perform box filtering in five steps
+
+    1) Integrate element Heaviside functions against the quantities
+       which are filtered. Add the result to the nodevectors
+       (we get a contribution for every node of the element)
+       This is an element call!
+    2) send/add values from slaves to masters
+    3) zero out dirichlet nodes
+    4) do normalization by division by the patchvolume
+       (Heaviside function -> box filter function)
+    5) Communication part: Export filtered quantities from row to
+       column map
+
+       \param velocity     (i) the velocity defining the
+                               unfiltered quantities
+       \param dirichtoggle (i) specifying which nodes have to be
+                               set to zero
+
+    */
+
+    /// provide access to the box filter
+    Teuchos::RCP<FLD::Boxfilter> Boxfilter();
+    /*!
+    \brief Compute Cs using the filtered quantities.
+    This is an element call!
+
+    For a turbulent channel flow, the averaging of the Smagorinsky
+    constant is done in here.
+    */
+    void DynSmagComputeCs();
+
+    /*!
+    \brief Compute Prt using the filtered quantities.
+    This is an element call!
+
+    For a turbulent channel flow, the averaging of the turbulent
+    Prandtl number is done in here.
+    */
+    void DynSmagComputePrt(Teuchos::ParameterList& extraparams, int& numele_layer);
 
 
-private:
-  /*!
-  \brief perform box filtering in five steps
+    //! @name input arguments of the constructor
+    //
 
-  1) Integrate element Heaviside functions against the quantities
-     which are filtered. Add the result to the nodevectors
-     (we get a contribution for every node of the element)
-     This is an element call!
-  2) send/add values from slaves to masters
-  3) zero out dirichlet nodes
-  4) do normalization by division by the patchvolume
-     (Heaviside function -> box filter function)
-  5) Communication part: Export filtered quantities from row to
-     column map
+    // Boxfilter
+    Teuchos::RCP<FLD::Boxfilter> Boxf_;
+    Teuchos::RCP<FLD::Boxfilter> Boxfsc_;
 
-     \param velocity     (i) the velocity defining the
-                             unfiltered quantities
-     \param dirichtoggle (i) specifying which nodes have to be
-                             set to zero
+    //! the discretization
+    Teuchos::RCP<DRT::Discretization> discret_;
+    //! parameterlist including time params, stabilization params and turbulence sublist
+    Teuchos::ParameterList& params_;
+    //! flag for physical type of fluid flow
+    INPAR::FLUID::PhysicalType physicaltype_;
+    //@}
 
-  */
+    //! @name control parameters
+    bool homdir_;
+    std::string special_flow_homdir_;
+    bool apply_dynamic_smagorinsky_;
+    bool calc_Ci_;
+    //@}
 
-  /// provide access to the box filter
-  Teuchos::RCP<FLD::Boxfilter> Boxfilter();
-  /*!
-  \brief Compute Cs using the filtered quantities.
-  This is an element call!
+    //! @name special scatra variables
+    //! the discretization
+    Teuchos::RCP<DRT::Discretization> scatradiscret_;
+    //@}
 
-  For a turbulent channel flow, the averaging of the Smagorinsky
-  constant is done in here.
-  */
-  void DynSmagComputeCs();
+    //! @name vectors used for filtering (for dynamic Smagorinsky model)
+    //        --------------------------
 
-  /*!
-  \brief Compute Prt using the filtered quantities.
-  This is an element call!
+    //! the filtered vel exported to column map
+    Teuchos::RCP<Epetra_MultiVector> col_filtered_vel_;
+    //! the filtered reystress exported to column map
+    Teuchos::RCP<Epetra_MultiVector> col_filtered_reynoldsstress_;
+    //! the modeled subgrid stresses exported to column map
+    Teuchos::RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress_;
+    //! the filtered velocities times rho exported to column map
+    Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_;
+    //! the filtered density exported to column map
+    Teuchos::RCP<Epetra_Vector> col_filtered_dens_;
+    //! the filtered strainrate times rho exported to column map
+    Teuchos::RCP<Epetra_Vector> col_filtered_dens_strainrate_;
+    //! the modeled fine scale velocities exported to column map
+    Teuchos::RCP<Epetra_MultiVector> col_fs_vel_;
+    //! the filtered density times temperature times velocity exported to column map (scalar)
+    Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_temp_;
+    //! the filtered density times temperature gradient times rate of strain exported to column map
+    //! (scalar)
+    Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_rateofstrain_temp_;
+    //  //! the filtered temperature gradient exported to column map (scalar)
+    //  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
+    //! the filtered temperature exported to column map (scalar)
+    Teuchos::RCP<Epetra_Vector> col_filtered_temp_;
+    //! the filtered density times temperature exported to column map (scalar)
+    Teuchos::RCP<Epetra_Vector> col_filtered_dens_temp_;
+    //@}
 
-  For a turbulent channel flow, the averaging of the turbulent
-  Prandtl number is done in here.
-  */
-  void DynSmagComputePrt(Teuchos::ParameterList& extraparams,
-                         int& numele_layer);
+    //! @name homogeneous flow specials
+    //        -------------------------------
 
+    //! the direction coordinates for the above mentioned averaging procedure
+    Teuchos::RCP<std::vector<double>> dir1coords_;
+    Teuchos::RCP<std::vector<double>> dir2coords_;
+    //@}
 
-  //! @name input arguments of the constructor
-  //
+  };  // end class DynSmagFilter
 
-  //Boxfilter
-  Teuchos::RCP<FLD::Boxfilter> Boxf_;
-  Teuchos::RCP<FLD::Boxfilter> Boxfsc_;
+}  // end namespace FLD
 
-  //! the discretization
-  Teuchos::RCP<DRT::Discretization>     discret_;
-  //! parameterlist including time params, stabilization params and turbulence sublist
-  Teuchos::ParameterList&      params_ ;
-  //! flag for physical type of fluid flow
-  INPAR::FLUID::PhysicalType   physicaltype_;
-  //@}
-
-  //! @name control parameters
-  bool                         homdir_;
-  std::string                       special_flow_homdir_;
-  bool                         apply_dynamic_smagorinsky_;
-  bool                         calc_Ci_;
-  //@}
-
-  //! @name special scatra variables
-  //! the discretization
-  Teuchos::RCP<DRT::Discretization>     scatradiscret_;
-  //@}
-
-  //! @name vectors used for filtering (for dynamic Smagorinsky model)
-  //        --------------------------
-
-  //! the filtered vel exported to column map
-  Teuchos::RCP<Epetra_MultiVector>      col_filtered_vel_;
-  //! the filtered reystress exported to column map
-  Teuchos::RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
-  //! the modeled subgrid stresses exported to column map
-  Teuchos::RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
-  //! the filtered velocities times rho exported to column map
-  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
-  //! the filtered density exported to column map
-  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_;
-  //! the filtered strainrate times rho exported to column map
-  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
-  //! the modeled fine scale velocities exported to column map
-  Teuchos::RCP<Epetra_MultiVector>      col_fs_vel_;
-  //! the filtered density times temperature times velocity exported to column map (scalar)
-  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_vel_temp_;
-  //! the filtered density times temperature gradient times rate of strain exported to column map (scalar)
-  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_rateofstrain_temp_;
-//  //! the filtered temperature gradient exported to column map (scalar)
-//  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
-  //! the filtered temperature exported to column map (scalar)
-  Teuchos::RCP<Epetra_Vector>           col_filtered_temp_;
-  //! the filtered density times temperature exported to column map (scalar)
-  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_temp_;
-  //@}
-
-  //! @name homogeneous flow specials
-  //        -------------------------------
-
-  //! the direction coordinates for the above mentioned averaging procedure
-  Teuchos::RCP<std::vector<double> >         dir1coords_;
-  Teuchos::RCP<std::vector<double> >         dir2coords_;
-  //@}
-
-}; // end class DynSmagFilter
-
-} // end namespace FLD
-
-#endif // not DYN_SMAG_H
-
+#endif  // not DYN_SMAG_H

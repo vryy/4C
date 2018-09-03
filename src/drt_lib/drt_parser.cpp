@@ -78,167 +78,156 @@ void DRT::PARSER::Lexer::Lexan()
     {
       if (isdigit(t))
       {
-  str_ = &(funct_[pos_-1]);
-  while (isdigit(t))
-  {
-    t = GetNext();
-  }
-  if ((t != '.') && (t != 'E') && (t != 'e'))
-  {
-    if (t != EOF)
-    {
-      pos_--;
-    }
-    integer_ = atoi(str_);
-    tok_ = tok_int;
-    return;
-  }
-  if (t == '.')
-  {
-    t = GetNext();
-    if (isdigit(t))
-    {
-      while (isdigit(t))
-      {
-        t = GetNext();
-      }
-    }
-    else
-    {
-      dserror("no digits after point at pos %d", pos_);
-    }
-  }
-  if ((t == 'E') || (t == 'e'))
-  {
-    t = GetNext();
-    if ((t == '-') || (t == '+'))
-    {
-      t = GetNext();
-    }
-    if (isdigit(t))
-    {
-      while (isdigit(t))
-      {
-        t = GetNext();
-      }
-    }
-    else
-    {
-      dserror("no digits after exponent at pos %d", pos_);
-    }
-  }
-  if (t != EOF)
-  {
-    pos_--;
-  }
-  real_ = strtod(str_, NULL);
-  tok_ = tok_real;
-  return;
+        str_ = &(funct_[pos_ - 1]);
+        while (isdigit(t))
+        {
+          t = GetNext();
+        }
+        if ((t != '.') && (t != 'E') && (t != 'e'))
+        {
+          if (t != EOF)
+          {
+            pos_--;
+          }
+          integer_ = atoi(str_);
+          tok_ = tok_int;
+          return;
+        }
+        if (t == '.')
+        {
+          t = GetNext();
+          if (isdigit(t))
+          {
+            while (isdigit(t))
+            {
+              t = GetNext();
+            }
+          }
+          else
+          {
+            dserror("no digits after point at pos %d", pos_);
+          }
+        }
+        if ((t == 'E') || (t == 'e'))
+        {
+          t = GetNext();
+          if ((t == '-') || (t == '+'))
+          {
+            t = GetNext();
+          }
+          if (isdigit(t))
+          {
+            while (isdigit(t))
+            {
+              t = GetNext();
+            }
+          }
+          else
+          {
+            dserror("no digits after exponent at pos %d", pos_);
+          }
+        }
+        if (t != EOF)
+        {
+          pos_--;
+        }
+        real_ = strtod(str_, NULL);
+        tok_ = tok_real;
+        return;
       }
       else if (isalpha(t) || (t == '_'))
       {
-  str_ = &(funct_[pos_-1]);
-  while (isalnum(t) || (t == '_'))
-  {
-    t = GetNext();
-  }
-  if (t != EOF)
-  {
-    pos_--;
-  }
-  tok_ = tok_name;
-  integer_ = &(funct_[pos_]) - str_;  // length of operator name, e.g. 'sin' has '3'
-  return;
+        str_ = &(funct_[pos_ - 1]);
+        while (isalnum(t) || (t == '_'))
+        {
+          t = GetNext();
+        }
+        if (t != EOF)
+        {
+          pos_--;
+        }
+        tok_ = tok_name;
+        integer_ = &(funct_[pos_]) - str_;  // length of operator name, e.g. 'sin' has '3'
+        return;
       }
       else if (t == '+')
       {
-  tok_ = tok_add;
-  return;
+        tok_ = tok_add;
+        return;
       }
       else if (t == '-')
       {
-  tok_ = tok_sub;
-  return;
+        tok_ = tok_sub;
+        return;
       }
       else if (t == '*')
       {
-  tok_ = tok_mul;
-  return;
+        tok_ = tok_mul;
+        return;
       }
       else if (t == '/')
       {
-  tok_ = tok_div;
-  return;
+        tok_ = tok_div;
+        return;
       }
       else if (t == '^')
       {
-  tok_ = tok_pow;
-  return;
+        tok_ = tok_pow;
+        return;
       }
       else if (t == '(')
       {
-  tok_ = tok_lpar;
-  return;
+        tok_ = tok_lpar;
+        return;
       }
       else if (t == ')')
       {
-  tok_ = tok_rpar;
-  return;
+        tok_ = tok_rpar;
+        return;
       }
       else if (t == ',')
       {
-  tok_ = tok_comma;
-  return;
+        tok_ = tok_comma;
+        return;
       }
       else
       {
-  if (t >= 32)
-    dserror("unexpected char '%c' at pos %d", t, pos_);
-  else
-    dserror("unexpected char '%d' at pos %d", t, pos_);
-  tok_ = tok_none;
-  return;
+        if (t >= 32)
+          dserror("unexpected char '%c' at pos %d", t, pos_);
+        else
+          dserror("unexpected char '%d' at pos %d", t, pos_);
+        tok_ = tok_none;
+        return;
       }
     }
   }
 }
 
 // list of all valid operators
-const std::string DRT::PARSER::Lexer::operator_list_[] =
-    {
-        "+", "-","*","/","^",".",","
-    };
+const std::string DRT::PARSER::Lexer::operator_list_[] = {"+", "-", "*", "/", "^", ".", ","};
 // number of all valid operators
 const std::size_t DRT::PARSER::Lexer::operator_list_size_ =
-    sizeof(DRT::PARSER::Lexer::operator_list_)/sizeof(std::string);
+    sizeof(DRT::PARSER::Lexer::operator_list_) / sizeof(std::string);
 
 // list of all valid function names
-const std::string DRT::PARSER::Lexer::function_list_[] =
-    {
-       "acos","asin","atan","cos","sin","tan","cosh","sinh","tanh","exp","log","log10","sqrt","ceil","heaviside",
-       "fabs","floor","atan2"
-    };
+const std::string DRT::PARSER::Lexer::function_list_[] = {"acos", "asin", "atan", "cos", "sin",
+    "tan", "cosh", "sinh", "tanh", "exp", "log", "log10", "sqrt", "ceil", "heaviside", "fabs",
+    "floor", "atan2"};
 // number of all valid function names
 const std::size_t DRT::PARSER::Lexer::function_list_size_ =
-    sizeof(DRT::PARSER::Lexer::function_list_)/sizeof(std::string);
+    sizeof(DRT::PARSER::Lexer::function_list_) / sizeof(std::string);
 
 // list of all valid brackets
-const std::string DRT::PARSER::Lexer::bracket_list_[] =
-    {
-        "(", ")"
-    };
+const std::string DRT::PARSER::Lexer::bracket_list_[] = {"(", ")"};
 // number of all valid brackets
 const std::size_t DRT::PARSER::Lexer::bracket_list_size_ =
-    sizeof(DRT::PARSER::Lexer::bracket_list_)/sizeof(std::string);
+    sizeof(DRT::PARSER::Lexer::bracket_list_) / sizeof(std::string);
 
 // list of all reserved 'words'
-const std::string DRT::PARSER::Lexer::reserved_words_list_[] =
-    {
-        "pi","e","E","\t","\n"," "
-    };
+const std::string DRT::PARSER::Lexer::reserved_words_list_[] = {"pi", "e", "E", "\t", "\n", " "};
 // number of all reserved 'words'
 const std::size_t DRT::PARSER::Lexer::reserved_words_list_size_ =
-    sizeof(DRT::PARSER::Lexer::reserved_words_list_)/sizeof(std::string);
+    sizeof(DRT::PARSER::Lexer::reserved_words_list_) / sizeof(std::string);
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -248,9 +237,8 @@ const std::size_t DRT::PARSER::Lexer::reserved_words_list_size_ =
 */
 bool DRT::PARSER::Lexer::IsOperator(const std::string& s) const
 {
-  for(std::size_t i=0; i<operator_list_size_; i++)
-    if(operator_list_[i]==s)
-      return true;
+  for (std::size_t i = 0; i < operator_list_size_; i++)
+    if (operator_list_[i] == s) return true;
   return false;
 }
 
@@ -262,9 +250,8 @@ bool DRT::PARSER::Lexer::IsOperator(const std::string& s) const
 */
 bool DRT::PARSER::Lexer::IsFunction(const std::string& s) const
 {
-  for(std::size_t i=0; i<function_list_size_; i++)
-    if(function_list_[i]==s)
-      return true;
+  for (std::size_t i = 0; i < function_list_size_; i++)
+    if (function_list_[i] == s) return true;
   return false;
 }
 
@@ -276,9 +263,8 @@ bool DRT::PARSER::Lexer::IsFunction(const std::string& s) const
 */
 bool DRT::PARSER::Lexer::IsBracket(const std::string& s) const
 {
-  for(std::size_t i=0; i<bracket_list_size_; i++)
-    if(bracket_list_[i]==s)
-      return true;
+  for (std::size_t i = 0; i < bracket_list_size_; i++)
+    if (bracket_list_[i] == s) return true;
   return false;
 }
 
@@ -290,8 +276,7 @@ bool DRT::PARSER::Lexer::IsBracket(const std::string& s) const
 */
 bool DRT::PARSER::Lexer::IsReservedWord(const std::string& s) const
 {
-  for(std::size_t i=0; i<reserved_words_list_size_; i++)
-    if(reserved_words_list_[i]==s)
-      return true;
+  for (std::size_t i = 0; i < reserved_words_list_size_; i++)
+    if (reserved_words_list_[i] == s) return true;
   return false;
 }

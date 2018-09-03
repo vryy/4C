@@ -18,14 +18,10 @@ Maintainer: Andy Wirtz
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 08/08|
  *----------------------------------------------------------------------*/
-GEO::NearestObject::NearestObject():
-objectType_(NOTYPE_OBJECT),
-nodeId_(-1),
-lineId_(-1),
-surfId_(-1),
-label_(-1)
+GEO::NearestObject::NearestObject()
+    : objectType_(NOTYPE_OBJECT), nodeId_(-1), lineId_(-1), surfId_(-1), label_(-1)
 {
-  physcoord_ .PutScalar(0.0);
+  physcoord_.PutScalar(0.0);
   return;
 }
 
@@ -33,14 +29,13 @@ label_(-1)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       u.may 08/08|
  *----------------------------------------------------------------------*/
-GEO::NearestObject::NearestObject(
-    const GEO::NearestObject& old) :
-objectType_(old.objectType_),
-nodeId_(old.nodeId_),
-lineId_(old.lineId_),
-surfId_(old.surfId_),
-label_(old.label_),
-physcoord_(old.physcoord_)
+GEO::NearestObject::NearestObject(const GEO::NearestObject& old)
+    : objectType_(old.objectType_),
+      nodeId_(old.nodeId_),
+      lineId_(old.lineId_),
+      surfId_(old.surfId_),
+      label_(old.label_),
+      physcoord_(old.physcoord_)
 {
   return;
 }
@@ -67,13 +62,12 @@ GEO::NearestObject& GEO::NearestObject::operator=(const GEO::NearestObject& old)
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::clear()
 {
-
   objectType_ = NOTYPE_OBJECT;
-  nodeId_=-1;
-  lineId_=-1;
-  surfId_=-1;
-  label_=-1;
-  physcoord_ .PutScalar(0.0);
+  nodeId_ = -1;
+  lineId_ = -1;
+  surfId_ = -1;
+  label_ = -1;
+  physcoord_.PutScalar(0.0);
   return;
 }
 
@@ -82,9 +76,7 @@ void GEO::NearestObject::clear()
  |  set node object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setNodeObjectType(
-      const int nodeId,
-      const int label,
-      const LINALG::Matrix<3,1>& physcoord)
+    const int nodeId, const int label, const LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = NODE_OBJECT;
   nodeId_ = nodeId;
@@ -101,10 +93,7 @@ void GEO::NearestObject::setNodeObjectType(
  |  set line object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setLineObjectType(
-      const int lineId,
-      const int surfId,
-      const int label,
-      const LINALG::Matrix<3,1>& physcoord)
+    const int lineId, const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = LINE_OBJECT;
   lineId_ = lineId;
@@ -114,7 +103,6 @@ void GEO::NearestObject::setLineObjectType(
 
   // reset unused variables
   nodeId_ = -1;
-
 }
 
 
@@ -122,9 +110,7 @@ void GEO::NearestObject::setLineObjectType(
  |  set surface object type                                  u.may 08/08|
  *----------------------------------------------------------------------*/
 void GEO::NearestObject::setSurfaceObjectType(
-      const int surfId,
-      const int label,
-      const LINALG::Matrix<3,1>& physcoord)
+    const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = SURFACE_OBJECT;
   surfId_ = surfId;
@@ -135,4 +121,3 @@ void GEO::NearestObject::setSurfaceObjectType(
   nodeId_ = -1;
   lineId_ = -1;
 }
-

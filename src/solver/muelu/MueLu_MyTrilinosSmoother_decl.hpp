@@ -26,33 +26,37 @@
 #include "MueLu_IfpackSmoother_fwd.hpp"
 #include "MueLu_Ifpack2Smoother_fwd.hpp"
 
-// Note: TrilinosSmoother is a SmootherPrototype that cannot be turned into a smoother using Setup().
+// Note: TrilinosSmoother is a SmootherPrototype that cannot be turned into a smoother using
+// Setup().
 //       When this prototype is cloned using Copy(), the clone is an Ifpack or an Ifpack2 smoother.
 //       The clone can be used as a smoother after calling Setup().
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class TrilinosSmoother
-    @brief Class that encapsulates external library smoothers. Autoselection of Ifpack or Ifpack2 according to the underlying linear algebra library.
+    @brief Class that encapsulates external library smoothers. Autoselection of Ifpack or Ifpack2
+    according to the underlying linear algebra library.
   */
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  class MyTrilinosSmoother : public SmootherPrototype<Scalar,LocalOrdinal,GlobalOrdinal,Node>
+  class MyTrilinosSmoother : public SmootherPrototype<Scalar, LocalOrdinal, GlobalOrdinal, Node>
   {
 #undef MUELU_MYTRILINOSSMOOTHER_SHORT
 #include "MueLu_UseShortNames.hpp"
 
-  public:
-
+   public:
     //! @name Constructors / destructors
     //@{
 
     //! @brief Constructor
-    MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type = "", Teuchos::ParameterList const & paramList = Teuchos::ParameterList(), LO const &overlap=0, Teuchos::RCP<const FactoryBase> AFact = Teuchos::null);
+    MyTrilinosSmoother(std::string const &mapName, const Teuchos::RCP<const FactoryBase> &mapFact,
+        std::string const &type = "",
+        Teuchos::ParameterList const &paramList = Teuchos::ParameterList(), LO const &overlap = 0,
+        Teuchos::RCP<const FactoryBase> AFact = Teuchos::null);
 
     //! Destructor
-    virtual ~MyTrilinosSmoother() { }
+    virtual ~MyTrilinosSmoother() {}
 
     //@}
 
@@ -66,12 +70,13 @@ namespace MueLu {
     //! @name Setup and Apply methods.
     //@{
 
-    //! TrilinosSmoother cannot be turned into a smoother using Setup(). Setup() always returns a RuntimeError exception.
+    //! TrilinosSmoother cannot be turned into a smoother using Setup(). Setup() always returns a
+    //! RuntimeError exception.
     void Setup(Level &currentLevel);
 
     //! TrilinosSmoother cannot be applied. Apply() always returns a RuntimeError exception.
-    void Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero=false) const;
-    //void Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero=false) const;
+    void Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero = false) const;
+    // void Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero=false) const;
 
     //@}
 
@@ -86,14 +91,13 @@ namespace MueLu {
     std::string description() const;
 
     //! Print the object with some verbosity level to an FancyOStream object.
-    //using MueLu::Describable::describe; // overloading, not hiding
-    //void describe(Teuchos::FancyOStream &out, const VerbLevel verbLevel = Default) const {
+    // using MueLu::Describable::describe; // overloading, not hiding
+    // void describe(Teuchos::FancyOStream &out, const VerbLevel verbLevel = Default) const {
     void print(Teuchos::FancyOStream &out, const VerbLevel verbLevel = Default) const;
 
     //@}
 
-  private:
-
+   private:
     //! variable name for projected map
     std::string mapName_;
 
@@ -120,13 +124,13 @@ namespace MueLu {
     //
 
     //! Smoother
-    Teuchos::RCP<SmootherPrototype> s_; // TrilinosSmoother object
+    Teuchos::RCP<SmootherPrototype> s_;  // TrilinosSmoother object
 
-  }; // class MyTrilinosSmoother
+  };  // class MyTrilinosSmoother
 
-} // namespace MueLu
+}  // namespace MueLu
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #define MUELU_MYTRILINOSSMOOTHER_SHORT
 #endif /* MUELU_MYTRILINOSSMOOTHER_DECL_HPP_ */

@@ -20,56 +20,56 @@
 #include "nox_nln_globaldata.H"
 
 // Forward declarations
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
 }
-namespace NOX {
+namespace NOX
+{
   class Utils;
-namespace MeritFunction {
-  class Generic;
-} // namespace MeritFunction
-namespace NLN {
-namespace MeritFunction {
-
-  class Factory
+  namespace MeritFunction
   {
-  public:
-    //! constructor
-    Factory();
+    class Generic;
+  }  // namespace MeritFunction
+  namespace NLN
+  {
+    namespace MeritFunction
+    {
+      class Factory
+      {
+       public:
+        //! constructor
+        Factory();
 
-    //! destructor
-    virtual ~Factory() {};
+        //! destructor
+        virtual ~Factory(){};
 
-    /** \brief get a valid merit function pointer
-     *
-     *  choose between constraint and unconstraint */
-    Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction
-        ( const NOX::NLN::GlobalData& noxNlnGlobalData ) const;
+        /** \brief get a valid merit function pointer
+         *
+         *  choose between constraint and unconstraint */
+        Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction(
+            const NOX::NLN::GlobalData& noxNlnGlobalData) const;
 
-  private:
-    //! unconstraint factory
-    Teuchos::RCP<NOX::MeritFunction::Generic>
-    BuildUnconstrainedMeritFunction(
-        const std::string& mftype,
-        const NOX::NLN::GlobalData& noxNlnGlobalData ) const;
+       private:
+        //! unconstraint factory
+        Teuchos::RCP<NOX::MeritFunction::Generic> BuildUnconstrainedMeritFunction(
+            const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const;
 
-    //! constraint factory
-    Teuchos::RCP<NOX::MeritFunction::Generic>
-    BuildConstrainedMeritFunction(
-        const std::string& mftype,
-        const NOX::NLN::GlobalData& noxNlnGlobalData ) const;
+        //! constraint factory
+        Teuchos::RCP<NOX::MeritFunction::Generic> BuildConstrainedMeritFunction(
+            const std::string& mftype, const NOX::NLN::GlobalData& noxNlnGlobalData) const;
 
-  };  // class Factory
+      };  // class Factory
 
-  /*! \brief Non-member function to build a merit function object.
+      /*! \brief Non-member function to build a merit function object.
 
-  \relates NOX::NLNSOL::Constraint::MeritFunction::Factory
+      \relates NOX::NLNSOL::Constraint::MeritFunction::Factory
 
-  */
-  Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction
-      ( const NOX::NLN::GlobalData& noxNlnGlobalData );
-} // namespace MeritFunction
-} // namespace NLN
-} // namespace NOX
+      */
+      Teuchos::RCP<NOX::MeritFunction::Generic> BuildMeritFunction(
+          const NOX::NLN::GlobalData& noxNlnGlobalData);
+    }  // namespace MeritFunction
+  }    // namespace NLN
+}  // namespace NOX
 
 #endif /* NOX_NLN_MERITFUNCTION_FACTORY_H_ */

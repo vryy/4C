@@ -17,21 +17,21 @@
 #include "../drt_inpar/inpar_beampotential.H"
 
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   /*!
    *  */
   class BeamToBeamPotentialRuntimeVtkParams
   {
-  public:
+   public:
     //! constructor
     BeamToBeamPotentialRuntimeVtkParams();
 
     //! destructor
-    virtual ~BeamToBeamPotentialRuntimeVtkParams() {};
+    virtual ~BeamToBeamPotentialRuntimeVtkParams(){};
 
     //! initialize with the stuff coming from input file
-    void Init( const Teuchos::ParameterList& beam_contact_vtk_paramslist );
+    void Init(const Teuchos::ParameterList& beam_contact_vtk_paramslist);
 
     //! setup member variables
     void Setup();
@@ -41,7 +41,7 @@ namespace BEAMINTERACTION {
     bool WriteBinaryOutput() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return ( output_data_format_ == INPAR::BEAMPOTENTIAL::binary );
+      return (output_data_format_ == INPAR::BEAMPOTENTIAL::binary);
     }
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -79,14 +79,12 @@ namespace BEAMINTERACTION {
       return write_force_moment_per_elepair_;
     };
 
-  private:
+   private:
     //! returns the isinit_ flag
-    inline const bool& IsInit() const
-    { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const
-    { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! asserts the init and setup status
     void ThrowErrorIfNotInitAndSetup() const;
@@ -95,8 +93,7 @@ namespace BEAMINTERACTION {
     void ThrowErrorIfNotInit() const;
 
 
-  private:
-
+   private:
     bool isinit_;
 
     bool issetup_;
@@ -119,9 +116,8 @@ namespace BEAMINTERACTION {
 
     /// whether to write forces/moments separately for each element pair
     bool write_force_moment_per_elepair_;
-
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

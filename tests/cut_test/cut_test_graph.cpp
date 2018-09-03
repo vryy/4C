@@ -7,13 +7,9 @@
 #include "../../src/drt_cut/cut_coloredgraph.H"
 #include "cut_test_utils.H"
 
-void test_graph()
-{
-}
+void test_graph() {}
 
-void test_graph2()
-{
-}
+void test_graph2() {}
 
 void test_colored_graph()
 {

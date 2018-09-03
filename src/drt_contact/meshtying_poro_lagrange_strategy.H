@@ -19,29 +19,22 @@ Maintainer: Christoph Ager
 
 namespace CONTACT
 {
-class PoroMtLagrangeStrategy : public MtLagrangeStrategy
-{
-  public:
-
+  class PoroMtLagrangeStrategy : public MtLagrangeStrategy
+  {
+   public:
     /*!
     \brief Standard Constructor
 
     */
-    PoroMtLagrangeStrategy(
-        const Epetra_Map* DofRowMap,
-        const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-        int dim,
-        Teuchos::RCP<Epetra_Comm> comm,
-        double alphaf,
-        int maxdof);
+    PoroMtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
+        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~PoroMtLagrangeStrategy() {};
+    virtual ~PoroMtLagrangeStrategy(){};
 
     /*!
     /brief initial Poro Meshtying calculations
@@ -56,16 +49,16 @@ class PoroMtLagrangeStrategy : public MtLagrangeStrategy
     /*!
     \brief Recovery method
     This method recovers the Langrangemultiplier correctly for the fluid-structure coupling
-    matrix block. Complete Recovery only correct if the structural part is recovered elsewhere additionally.
-    This is not needed for solving the problem in pure elast-poroelast
-    meshtying cases. It is needed for postprocessing though.*/
+    matrix block. Complete Recovery only correct if the structural part is recovered elsewhere
+    additionally. This is not needed for solving the problem in pure elast-poroelast meshtying
+    cases. It is needed for postprocessing though.*/
 
     void RecoverCouplingMatrixPartofLMP(Teuchos::RCP<Epetra_Vector> veli);
 
-    Teuchos::RCP<LINALG::SparseMatrix> cs_;  //slave matrix block row (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
 
-    Teuchos::RCP<Epetra_Map> fvelrow_; //fluid row map (needed for splitting)
+    Teuchos::RCP<Epetra_Map> fvelrow_;  // fluid row map (needed for splitting)
 
-}; // class POROLagrangeStrategy
-} // namespace CONTACT
+  };  // class POROLagrangeStrategy
+}  // namespace CONTACT
 #endif  // #ifndef CONTACT_PORO_LAGRANGE_STRATEGY_H

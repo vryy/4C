@@ -20,23 +20,18 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::LAGRANGE::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr )
-    : ::CONTACT::AUG::Interface( idata_ptr )
+    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
+    : ::CONTACT::AUG::Interface(idata_ptr)
 {
   /* do nothing */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::LAGRANGE::Interface::Interface(
-    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    const int id,
-    const Epetra_Comm& comm,
-    const int dim,
-    const Teuchos::ParameterList& icontact,
-    const bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant )
-    : ::CONTACT::AUG::Interface(idata_ptr,id,comm,dim,icontact,selfcontact,redundant)
+CONTACT::AUG::LAGRANGE::Interface::Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+    const int id, const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+    const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+    : ::CONTACT::AUG::Interface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant)
 {
   /* left blank, nothing to do here */
 }
@@ -44,8 +39,7 @@ CONTACT::AUG::LAGRANGE::Interface::Interface(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::LAGRANGE::Interface::AssembleDGGLinMatrix(
-    LINALG::SparseMatrix& dGGSlLinMatrix,
-    const Epetra_Vector& cnVec) const
+    LINALG::SparseMatrix& dGGSlLinMatrix, const Epetra_Vector& cnVec) const
 {
   /* do nothing */
 }

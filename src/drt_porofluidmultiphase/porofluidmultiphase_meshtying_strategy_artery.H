@@ -25,16 +25,12 @@ namespace POROMULTIPHASESCATRA
 
 namespace POROFLUIDMULTIPHASE
 {
-class MeshtyingStrategyArtery : public MeshtyingStrategyBase
-{
-  public:
-
+  class MeshtyingStrategyArtery : public MeshtyingStrategyBase
+  {
+   public:
     //! constructor
-    explicit MeshtyingStrategyArtery(
-        POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint,
-        const Teuchos::ParameterList&           probparams,
-        const Teuchos::ParameterList&           poroparams
-        );
+    explicit MeshtyingStrategyArtery(POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint,
+        const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams);
 
     //! destructor
     virtual ~MeshtyingStrategyArtery();
@@ -52,20 +48,13 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     virtual void Output();
 
     //! solve linear system of equations
-    virtual void LinearSolve(
-        Teuchos::RCP<LINALG::Solver>         solver,
-        Teuchos::RCP<LINALG::SparseOperator> sysmat,
-        Teuchos::RCP<Epetra_Vector>          increment,
-        Teuchos::RCP<Epetra_Vector>          residual
-        );
+    virtual void LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+        Teuchos::RCP<Epetra_Vector> residual);
 
     //! calculate norms for convergence checks
-    virtual void CalculateNorms(
-        double& preresnorm,
-        double& incprenorm,
-        double& prenorm,
-        const Teuchos::RCP<const Epetra_Vector> increment
-        );
+    virtual void CalculateNorms(double& preresnorm, double& incprenorm, double& prenorm,
+        const Teuchos::RCP<const Epetra_Vector> increment);
 
     //! create the field test
     virtual void CreateFieldTest();
@@ -77,13 +66,11 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     virtual void Evaluate();
 
     //! extract increments and update mesh tying
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(const Teuchos::RCP<const Epetra_Vector> inc);
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
+        const Teuchos::RCP<const Epetra_Vector> inc);
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt()
-    {
-      return artnettimint_;
-    }
+    virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() { return artnettimint_; }
 
     //! access dof row map
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
@@ -92,21 +79,19 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     virtual Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const;
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase>  ArteryPorofluidSysmat() const;
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
 
     //! get global (combined) increment of coupled problem
-    virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(const Teuchos::RCP<const Epetra_Vector> inc) const;
+    virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
+        const Teuchos::RCP<const Epetra_Vector> inc) const;
 
     // check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(
-        Teuchos::RCP<const Epetra_Vector>      vec_cont
-        ) const;
+    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const;
 
     //! apply the mesh movement
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const;
 
-  protected:
-
+   protected:
     //! artery time integration
     Teuchos::RCP<ADAPTER::ArtNet> artnettimint_;
 
@@ -127,10 +112,9 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
 
     //! global solution at time n+1
     Teuchos::RCP<Epetra_Vector> comb_phinp_;
+  };
 
-};
-
-}
+}  // namespace POROFLUIDMULTIPHASE
 
 
 

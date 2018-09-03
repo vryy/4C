@@ -41,49 +41,39 @@ void PrintFunctionDatHeader()
 
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
 {
-
   DRT::INPUT::LineDefinition onecomponentexpr;
-  onecomponentexpr
-  .AddNamedString("FUNCTION")
-  ;
+  onecomponentexpr.AddNamedString("FUNCTION");
 
   DRT::INPUT::LineDefinition componentexpr;
-  componentexpr
-  .AddNamedInt("COMPONENT")
-  .AddNamedString("FUNCTION")
-  ;
+  componentexpr.AddNamedInt("COMPONENT").AddNamedString("FUNCTION");
 
   DRT::INPUT::LineDefinition variableexpr;
-  variableexpr
-  .AddNamedInt("VARIABLE")
-  .AddNamedString("NAME")
-  .AddNamedString("TYPE")
-  .AddOptionalNamedString("DESCRIPTION")
-  .AddOptionalNamedInt("NUMPOINTS")
-  .AddOptionalNamedString("BYNUM")
-  .AddOptionalNamedDoubleVector("TIMERANGE",2)
-  .AddOptionalNamedDoubleVector("TIMES","NUMPOINTS")
-  .AddOptionalNamedDoubleVector("VALUES","NUMPOINTS")
-  .AddOptionalNamedString("PERIODIC")
-  .AddOptionalNamedDouble("T1")
-  .AddOptionalNamedDouble("T2")
-  ;
+  variableexpr.AddNamedInt("VARIABLE")
+      .AddNamedString("NAME")
+      .AddNamedString("TYPE")
+      .AddOptionalNamedString("DESCRIPTION")
+      .AddOptionalNamedInt("NUMPOINTS")
+      .AddOptionalNamedString("BYNUM")
+      .AddOptionalNamedDoubleVector("TIMERANGE", 2)
+      .AddOptionalNamedDoubleVector("TIMES", "NUMPOINTS")
+      .AddOptionalNamedDoubleVector("VALUES", "NUMPOINTS")
+      .AddOptionalNamedString("PERIODIC")
+      .AddOptionalNamedDouble("T1")
+      .AddOptionalNamedDouble("T2");
 
   DRT::INPUT::LineDefinition variableexprmulti;
-  variableexprmulti
-  .AddNamedInt("VARIABLE")
-  .AddNamedString("NAME")
-  .AddNamedString("TYPE")
-  .AddOptionalNamedInt("NUMPOINTS")
-  .AddOptionalNamedString("BYNUM")
-  .AddOptionalNamedDoubleVector("TIMERANGE",2)
-  .AddOptionalNamedDoubleVector("TIMES","NUMPOINTS")
-  .AddOptionalNamedDoubleVector("VALUES","NUMPOINTS")
-  .AddOptionalNamedStringVector("DESCRIPTION","NUMPOINTS") // only NUMPOINTS-1 are taken
-  .AddOptionalNamedString("PERIODIC")
-  .AddOptionalNamedDouble("T1")
-  .AddOptionalNamedDouble("T2")
-  ;
+  variableexprmulti.AddNamedInt("VARIABLE")
+      .AddNamedString("NAME")
+      .AddNamedString("TYPE")
+      .AddOptionalNamedInt("NUMPOINTS")
+      .AddOptionalNamedString("BYNUM")
+      .AddOptionalNamedDoubleVector("TIMERANGE", 2)
+      .AddOptionalNamedDoubleVector("TIMES", "NUMPOINTS")
+      .AddOptionalNamedDoubleVector("VALUES", "NUMPOINTS")
+      .AddOptionalNamedStringVector("DESCRIPTION", "NUMPOINTS")  // only NUMPOINTS-1 are taken
+      .AddOptionalNamedString("PERIODIC")
+      .AddOptionalNamedDouble("T1")
+      .AddOptionalNamedDouble("T2");
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("FUNCT"));
   lines->Add(onecomponentexpr);
@@ -93,216 +83,138 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
   // Old function +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   DRT::INPUT::LineDefinition componentvarfunct;
-  componentvarfunct
-    .AddNamedInt("COMPONENT")
-    .AddNamedString("VARFUNCTION")
-    .AddOptionalNamedInt("NUMCONSTANTS")
-    .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
-    ;
+  componentvarfunct.AddNamedInt("COMPONENT")
+      .AddNamedString("VARFUNCTION")
+      .AddOptionalNamedInt("NUMCONSTANTS")
+      .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
 
   DRT::INPUT::LineDefinition varfunct;
-  varfunct
-    .AddNamedString("VARFUNCTION")
-    .AddOptionalNamedInt("NUMCONSTANTS")
-    .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
-    ;
+  varfunct.AddNamedString("VARFUNCTION")
+      .AddOptionalNamedInt("NUMCONSTANTS")
+      .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
 
   DRT::INPUT::LineDefinition linelin;
-  linelin
-  .AddNamedDoubleVector("LINE_LIN",8)
-  ;
+  linelin.AddNamedDoubleVector("LINE_LIN", 8);
 
   DRT::INPUT::LineDefinition radiuslin;
-  radiuslin
-  .AddNamedDoubleVector("RADIUS_LIN",8)
-  ;
+  radiuslin.AddNamedDoubleVector("RADIUS_LIN", 8);
 
   DRT::INPUT::LineDefinition radiusquad;
-  radiusquad
-  .AddNamedDoubleVector("RADIUS_QUAD",6)
-  ;
+  radiusquad.AddNamedDoubleVector("RADIUS_QUAD", 6);
 
   DRT::INPUT::LineDefinition beltrami;
-  beltrami
-  .AddTag("BELTRAMI")
-  .AddNamedDouble("c1")
-  ;
+  beltrami.AddTag("BELTRAMI").AddNamedDouble("c1");
 
   DRT::INPUT::LineDefinition channelweaklycompressible;
-  channelweaklycompressible
-  .AddTag("CHANNELWEAKLYCOMPRESSIBLE")
-  ;
+  channelweaklycompressible.AddTag("CHANNELWEAKLYCOMPRESSIBLE");
 
   DRT::INPUT::LineDefinition correctiontermchannelweaklycompressible;
-  correctiontermchannelweaklycompressible
-  .AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE")
-  ;
+  correctiontermchannelweaklycompressible.AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE");
 
   DRT::INPUT::LineDefinition channelweaklycompressiblefourier3;
-  channelweaklycompressiblefourier3
-  .AddTag("CHANNELWEAKLYCOMPRESSIBLEFOURIER3")
-  ;
+  channelweaklycompressiblefourier3.AddTag("CHANNELWEAKLYCOMPRESSIBLEFOURIER3");
 
   DRT::INPUT::LineDefinition correctiontermchannelweaklycompressiblefourier3;
-  correctiontermchannelweaklycompressiblefourier3
-  .AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3")
-  ;
+  correctiontermchannelweaklycompressiblefourier3.AddTag(
+      "CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3");
 
   DRT::INPUT::LineDefinition bodyforcechannelweaklycompressiblefourier3;
-  bodyforcechannelweaklycompressiblefourier3
-  .AddTag("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3")
-  ;
+  bodyforcechannelweaklycompressiblefourier3.AddTag("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3");
 
   DRT::INPUT::LineDefinition kimmoin;
-  kimmoin
-  .AddTag("KIM-MOIN")
-  ;
+  kimmoin.AddTag("KIM-MOIN");
 
   DRT::INPUT::LineDefinition bochevup;
-  bochevup
-  .AddTag("BOCHEV-UP")
-  ;
+  bochevup.AddTag("BOCHEV-UP");
 
   DRT::INPUT::LineDefinition bochevrhs;
-  bochevrhs
-  .AddTag("BOCHEV-RHS")
-  ;
+  bochevrhs.AddTag("BOCHEV-RHS");
 
   DRT::INPUT::LineDefinition beltramiup;
-  beltramiup
-  .AddTag("BELTRAMI-UP")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  ;
+  beltramiup.AddTag("BELTRAMI-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
 
   DRT::INPUT::LineDefinition beltramigradu;
-  beltramigradu
-  .AddTag("BELTRAMI-GRADU")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  ;
+  beltramigradu.AddTag("BELTRAMI-GRADU").AddNamedInt("MAT").AddNamedInt("ISSTAT");
 
   DRT::INPUT::LineDefinition beltramirhs;
-  beltramirhs
-  .AddTag("BELTRAMI-RHS")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  .AddNamedInt("ISSTOKES")
-  ;
+  beltramirhs.AddTag("BELTRAMI-RHS")
+      .AddNamedInt("MAT")
+      .AddNamedInt("ISSTAT")
+      .AddNamedInt("ISSTOKES");
 
   DRT::INPUT::LineDefinition kimmoinup;
-  kimmoinup
-  .AddTag("KIMMOIN-UP")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  ;
+  kimmoinup.AddTag("KIMMOIN-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
 
   DRT::INPUT::LineDefinition kimmoingradu;
-  kimmoingradu
-  .AddTag("KIMMOIN-GRADU")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  ;
+  kimmoingradu.AddTag("KIMMOIN-GRADU").AddNamedInt("MAT").AddNamedInt("ISSTAT");
 
   DRT::INPUT::LineDefinition kimmoinrhs;
-  kimmoinrhs
-  .AddTag("KIMMOIN-RHS")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  .AddNamedInt("ISSTOKES")
-  ;
+  kimmoinrhs.AddTag("KIMMOIN-RHS").AddNamedInt("MAT").AddNamedInt("ISSTAT").AddNamedInt("ISSTOKES");
 
   DRT::INPUT::LineDefinition kimmoinstress;
-  kimmoinstress
-  .AddTag("KIMMOIN-STRESS")
-  .AddNamedInt("MAT")
-  .AddNamedInt("ISSTAT")
-  .AddNamedDouble("AMPLITUDE")
-  ;
+  kimmoinstress.AddTag("KIMMOIN-STRESS")
+      .AddNamedInt("MAT")
+      .AddNamedInt("ISSTAT")
+      .AddNamedDouble("AMPLITUDE");
 
   DRT::INPUT::LineDefinition turbboulayer;
-  turbboulayer
-  .AddTag("TURBBOULAYER")
-  ;
+  turbboulayer.AddTag("TURBBOULAYER");
 
   DRT::INPUT::LineDefinition turbboulayerbfs;
-  turbboulayerbfs
-  .AddTag("TURBBOULAYER-BFS")
-  ;
+  turbboulayerbfs.AddTag("TURBBOULAYER-BFS");
 
   DRT::INPUT::LineDefinition turbboulayeroracles;
-  turbboulayeroracles
-  .AddTag("TURBBOULAYERORACLES")
-  ;
+  turbboulayeroracles.AddTag("TURBBOULAYERORACLES");
 
   DRT::INPUT::LineDefinition jefferyhamel;
-  jefferyhamel
-  .AddTag("JEFFERY-HAMEL")
-  ;
+  jefferyhamel.AddTag("JEFFERY-HAMEL");
 
   DRT::INPUT::LineDefinition womersley;
-  womersley
-  .AddTag("WOMERSLEY")
-  .AddNamedInt("Local")
-  .AddNamedInt("MAT")
-  .AddNamedInt("CURVE")
-  .AddNamedString("FSI")
-  ;
+  womersley.AddTag("WOMERSLEY")
+      .AddNamedInt("Local")
+      .AddNamedInt("MAT")
+      .AddNamedInt("CURVE")
+      .AddNamedString("FSI");
 
   DRT::INPUT::LineDefinition localwomersley;
-  localwomersley
-  .AddTag("WOMERSLEY")
-  .AddNamedInt("Local")
-  .AddNamedDouble("Radius")
-  .AddNamedInt("MAT")
-  .AddNamedInt("CURVE")
-  ;
+  localwomersley.AddTag("WOMERSLEY")
+      .AddNamedInt("Local")
+      .AddNamedDouble("Radius")
+      .AddNamedInt("MAT")
+      .AddNamedInt("CURVE");
 
   DRT::INPUT::LineDefinition cylinder3d;
-  cylinder3d
-  .AddNamedDouble("CYLINDER_3D")
-  ;
+  cylinder3d.AddNamedDouble("CYLINDER_3D");
 
   DRT::INPUT::LineDefinition controlledrotation;
-  controlledrotation
-  .AddTag("CONTROLLEDROTATION")
-  .AddNamedString("FILE")
-  .AddNamedString("TYPE")
-  .AddNamedDoubleVector("ORIGIN",3)
-  ;
+  controlledrotation.AddTag("CONTROLLEDROTATION")
+      .AddNamedString("FILE")
+      .AddNamedString("TYPE")
+      .AddNamedDoubleVector("ORIGIN", 3);
 
   DRT::INPUT::LineDefinition accelerationprofile;
-  accelerationprofile
-  .AddTag("ACCELERATIONPROFILE")
-  .AddNamedString("FILE")
-  ;
+  accelerationprofile.AddTag("ACCELERATIONPROFILE").AddNamedString("FILE");
 
   DRT::INPUT::LineDefinition ramptovalue;
-  ramptovalue
-  .AddTag("RAMPTOVALUE")
-  .AddNamedDouble("VALUE")
-  .AddNamedDouble("STARTTIME")
-  .AddNamedDouble("DURATION")
-  .AddNamedString("TYPE")
-  ;
+  ramptovalue.AddTag("RAMPTOVALUE")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("STARTTIME")
+      .AddNamedDouble("DURATION")
+      .AddNamedString("TYPE");
 
   DRT::INPUT::LineDefinition nodenormal;
-  nodenormal
-  .AddTag("NODENORMAL")
-  .AddNamedString("GEOMETRY")
-  .AddNamedDoubleVector("ORIGIN",3)
-  .AddNamedDouble("RADIUS")
-  .AddNamedDouble("CYLINDERHEIGHT")
-  .AddNamedDoubleVector("ORIENTATION",3)
-  .AddNamedDouble("CASSINIA")
-  ;
+  nodenormal.AddTag("NODENORMAL")
+      .AddNamedString("GEOMETRY")
+      .AddNamedDoubleVector("ORIGIN", 3)
+      .AddNamedDouble("RADIUS")
+      .AddNamedDouble("CYLINDERHEIGHT")
+      .AddNamedDoubleVector("ORIENTATION", 3)
+      .AddNamedDouble("CASSINIA");
 
   DRT::INPUT::LineDefinition poromultiphasescatra_funct;
-  poromultiphasescatra_funct
-    .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
-    .AddOptionalNamedInt("NUMPARAMS")
-    .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS","NUMPARAMS")
-    ;
+  poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
+      .AddOptionalNamedInt("NUMPARAMS")
+      .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
 
   lines->Add(componentvarfunct);
   lines->Add(varfunct);
@@ -348,7 +260,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
 void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
-
   functions_.clear();
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = ValidFunctionLines();
@@ -356,9 +267,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
   // test for as many functions as there are
   for (int i = 1;; ++i)
   {
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> > functions = lines->Read(reader, i);
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions = lines->Read(reader, i);
 
-    if (functions.size()==0)
+    if (functions.size() == 0)
       break;
 
     else
@@ -369,7 +280,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       if (function->HaveNamed("BELTRAMI"))
       {
         double c1;
-        function->ExtractDouble("c1",c1);
+        function->ExtractDouble("c1", c1);
 
         functions_.push_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
       }
@@ -379,7 +290,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
+        functions_.push_back(
+            Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
       }
       else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
       {
@@ -387,11 +299,13 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function()));
+        functions_.push_back(
+            Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
+        functions_.push_back(
+            Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {
@@ -410,9 +324,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         // read material
         int mat_id = -1;
 
-        function->ExtractInt("MAT",mat_id);
+        function->ExtractInt("MAT", mat_id);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
         functions_.push_back(Teuchos::rcp(new FLD::BeltramiUP(mat_id)));
       }
@@ -421,9 +335,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         // read material
         int mat_id = -1;
 
-        function->ExtractInt("MAT",mat_id);
+        function->ExtractInt("MAT", mat_id);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
 
         functions_.push_back(Teuchos::rcp(new FLD::BeltramiGradU(mat_id)));
       }
@@ -431,12 +345,12 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       {
         // read material
         int mat_id = -1;
-        int is_stokes     = 0;
+        int is_stokes = 0;
 
-        function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTOKES",is_stokes);
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractInt("ISSTOKES", is_stokes);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
 
         functions_.push_back(Teuchos::rcp(new FLD::BeltramiRHS(mat_id, (bool)is_stokes)));
       }
@@ -446,10 +360,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         int mat_id = -1;
         int is_stationary = 0;
 
-        function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractInt("ISSTAT", is_stationary);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
         functions_.push_back(Teuchos::rcp(new FLD::KimMoinUP(mat_id, (bool)is_stationary)));
       }
@@ -459,10 +373,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         int mat_id = -1;
         int is_stationary = 0;
 
-        function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractInt("ISSTAT", is_stationary);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
 
         functions_.push_back(Teuchos::rcp(new FLD::KimMoinGradU(mat_id, (bool)is_stationary)));
       }
@@ -471,15 +385,16 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         // read material
         int mat_id = -1;
         int is_stationary = 0;
-        int is_stokes     = 0;
+        int is_stokes = 0;
 
-        function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
-        function->ExtractInt("ISSTOKES",is_stokes);
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractInt("ISSTAT", is_stationary);
+        function->ExtractInt("ISSTOKES", is_stokes);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
 
-        functions_.push_back(Teuchos::rcp(new FLD::KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
+        functions_.push_back(
+            Teuchos::rcp(new FLD::KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
       }
       else if (function->HaveNamed("KIMMOIN-STRESS"))
       {
@@ -488,13 +403,14 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         int is_stationary = 0;
         double amplitude = 1.0;
 
-        function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
-        function->ExtractDouble("AMPLITUDE",amplitude);
+        function->ExtractInt("MAT", mat_id);
+        function->ExtractInt("ISSTAT", is_stationary);
+        function->ExtractDouble("AMPLITUDE", amplitude);
 
-        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
-        functions_.push_back(Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary,amplitude)));
+        functions_.push_back(
+            Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary, amplitude)));
       }
       else if (function->HaveNamed("TURBBOULAYER"))
       {
@@ -571,57 +487,51 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
       {
         std::vector<double> origin;
-        function->ExtractDoubleVector("ORIGIN",origin);
+        function->ExtractDoubleVector("ORIGIN", origin);
 
         double radius;
-        function->ExtractDouble("RADIUS",radius);
+        function->ExtractDouble("RADIUS", radius);
 
         std::vector<double> direction;
-        function->ExtractDoubleVector("DIRECTION",direction);
+        function->ExtractDoubleVector("DIRECTION", direction);
 
         double distance;
-        function->ExtractDouble("DISTANCE",distance);
+        function->ExtractDouble("DISTANCE", distance);
 
         double maxspeed;
-        function->ExtractDouble("MAXSPEED",maxspeed);
+        function->ExtractDouble("MAXSPEED", maxspeed);
 
-        functions_.push_back(Teuchos::rcp(new MovingLevelSetCylinder( &origin, radius, &direction, distance, maxspeed)));
+        functions_.push_back(Teuchos::rcp(
+            new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed)));
       }
       else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
       {
         double radius_i;
-        function->ExtractDouble("RADIUS_I",radius_i);
+        function->ExtractDouble("RADIUS_I", radius_i);
         double radius_o;
-        function->ExtractDouble("RADIUS_O",radius_o);
+        function->ExtractDouble("RADIUS_O", radius_o);
 
         double vel_theta_i;
-        function->ExtractDouble("VEL_THETA_I",vel_theta_i);
+        function->ExtractDouble("VEL_THETA_I", vel_theta_i);
         double vel_theta_o;
-        function->ExtractDouble("VEL_THETA_O",vel_theta_o);
+        function->ExtractDouble("VEL_THETA_O", vel_theta_o);
 
         double sliplength_i;
-        function->ExtractDouble("SLIPLENGTH_I",sliplength_i);
+        function->ExtractDouble("SLIPLENGTH_I", sliplength_i);
         double sliplength_o;
-        function->ExtractDouble("SLIPLENGTH_O",sliplength_o);
+        function->ExtractDouble("SLIPLENGTH_O", sliplength_o);
 
         double traction_theta_i;
-        function->ExtractDouble("TRACTION_THETA_I",traction_theta_i);
+        function->ExtractDouble("TRACTION_THETA_I", traction_theta_i);
         double traction_theta_o;
-        function->ExtractDouble("TRACTION_THETA_O",traction_theta_o);
+        function->ExtractDouble("TRACTION_THETA_O", traction_theta_o);
 
         double viscosity;
-        function->ExtractDouble("VISCOSITY",viscosity);
+        function->ExtractDouble("VISCOSITY", viscosity);
 
-        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i,
-            radius_o,
-            vel_theta_i,
-            vel_theta_o,
-            sliplength_i,
-            sliplength_o,
-            traction_theta_i,
-            traction_theta_o,
-            viscosity)));
-
+        functions_.push_back(
+            Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
+                sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity)));
       }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {
@@ -632,9 +542,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractString("TYPE", type);
 
         std::vector<double> origin;
-        function->ExtractDoubleVector("ORIGIN",origin);
+        function->ExtractDoubleVector("ORIGIN", origin);
 
-        functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type, origin[0], origin[1], origin[2])));
+        functions_.push_back(Teuchos::rcp(
+            new ControlledRotationFunction(fileName, type, origin[0], origin[1], origin[2])));
       }
       else if (function->HaveNamed("ACCELERATIONPROFILE"))
       {
@@ -648,34 +559,34 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         Teuchos::RCP<VariableExprFunction> vecfunc = Teuchos::rcp(new VariableExprFunction());
 
         std::string component;
-        function->ExtractString("VARFUNCTION",component);
+        function->ExtractString("VARFUNCTION", component);
 
-        std::vector<std::pair<std::string,double> > constants;
+        std::vector<std::pair<std::string, double>> constants;
         if (function->HaveNamed("CONSTANTS"))
-          function->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
+          function->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
 
-        vecfunc->AddExpr(component,constants);
+        vecfunc->AddExpr(component, constants);
         functions_.push_back(vecfunc);
       }
       else if (function->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
       {
         std::string type;
-        function->ExtractString("POROMULTIPHASESCATRA_FUNCTION",type);
+        function->ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
 
-        std::vector<std::pair<std::string,double> > params;
+        std::vector<std::pair<std::string, double>> params;
         if (function->HaveNamed("PARAMS"))
-          function->ExtractPairOfStringAndDoubleVector("PARAMS",params);
+          function->ExtractPairOfStringAndDoubleVector("PARAMS", params);
 
         Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction> vecfunc = Teuchos::null;
-        if(type == "TUMOR_GROWTH_LAW_HEAVISIDE")
+        if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside(params));
-        else if(type == "NECROSIS_LAW_HEAVISIDE")
+        else if (type == "NECROSIS_LAW_HEAVISIDE")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside(params));
-        else if(type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
+        else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside(params));
-        else if(type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
+        else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
-        else if(type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
+        else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
         else
           dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
@@ -698,11 +609,11 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         // evaluate the maximum component and the number of variables
         int maxcomp = 0;
         int maxvar = -1;
-        for (unsigned int n=0; n<functions.size(); ++n)
+        for (unsigned int n = 0; n < functions.size(); ++n)
         {
           Teuchos::RCP<DRT::INPUT::LineDefinition> functnumcompvar = functions[n];
-          functnumcompvar->ExtractInt("COMPONENT",maxcomp);
-          functnumcompvar->ExtractInt("VARIABLE",maxvar);
+          functnumcompvar->ExtractInt("COMPONENT", maxcomp);
+          functnumcompvar->ExtractInt("VARIABLE", maxvar);
         }
 
         // evaluate the number of rows used for the definition of the variables
@@ -710,7 +621,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         numrowsvar = functions.size() - maxcomp - 1;
 
         // define a vector of strings
-        std::vector<std::string> functstring(maxcomp+1);
+        std::vector<std::string> functstring(maxcomp + 1);
 
         // read each row where the components of the i-th function are defined
         for (int n = 0; n <= maxcomp; ++n)
@@ -720,19 +631,19 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
           // check the validity of the n-th component
           int compid = 0;
-          functcomp->ExtractInt("COMPONENT",compid);
-          if (compid!=n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
+          functcomp->ExtractInt("COMPONENT", compid);
+          if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
 
           // read the expression of the n-th component of the i-th function
-          functcomp->ExtractString("FUNCTION",functstring[n]);
+          functcomp->ExtractString("FUNCTION", functstring[n]);
         }
 
         // define the structure functvarvector
-        std::vector<std::vector<Teuchos::RCP<FunctionVariable> > > functvarvector;
+        std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> functvarvector;
 
         // define the structure functvar
-        std::vector<Teuchos::RCP<FunctionVariable> > functvar;
+        std::vector<Teuchos::RCP<FunctionVariable>> functvar;
 
         // define the structure vardef
         Teuchos::RCP<FunctionVariable> vardef;
@@ -741,14 +652,14 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         int varidold = -1;
 
         // read each row where the variables of the i-th function are defined
-        for (int j = 1;j <= numrowsvar; ++j)
+        for (int j = 1; j <= numrowsvar; ++j)
         {
           // update the current row
-          Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions[maxcomp+j];
+          Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions[maxcomp + j];
 
           // read the number of the variable
           int varid;
-          timevar->ExtractInt("VARIABLE",varid);
+          timevar->ExtractInt("VARIABLE", varid);
 
           // evaluate the number of the definition for the variable
           if (varid == varidold)
@@ -765,19 +676,19 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
           // read the name of the variable
           std::string varname;
-          timevar->ExtractString("NAME",varname);
+          timevar->ExtractString("NAME", varname);
 
           // read the type of the variable
           std::string vartype;
-          timevar->ExtractString("TYPE",vartype);
+          timevar->ExtractString("TYPE", vartype);
 
           // read periodicity data
           struct periodicstruct periodicdata;
           periodicdata.periodic = timevar->FindString("PERIODIC");
           if (periodicdata.periodic)
           {
-            timevar->ExtractDouble("T1",periodicdata.t1);
-            timevar->ExtractDouble("T2",periodicdata.t2);
+            timevar->ExtractDouble("T1", periodicdata.t1);
+            timevar->ExtractDouble("T2", periodicdata.t2);
           }
           else
           {
@@ -786,27 +697,27 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           }
 
           // distinguish the type of the variable
-          if (vartype=="expression")
+          if (vartype == "expression")
           {
             std::string description;
-            timevar->ExtractString("DESCRIPTION",description);
-            vardef = Teuchos::rcp(new ParsedFunctionVariable(varname,description));
+            timevar->ExtractString("DESCRIPTION", description);
+            vardef = Teuchos::rcp(new ParsedFunctionVariable(varname, description));
           }
-          else if(vartype=="linearinterpolation")
+          else if (vartype == "linearinterpolation")
           {
             // read the number of points
             int numpoints;
-            timevar->ExtractInt("NUMPOINTS",numpoints);
+            timevar->ExtractInt("NUMPOINTS", numpoints);
 
             // read times
             std::vector<double> times;
             bool bynum = timevar->FindString("BYNUM");
 
-            if (bynum) // times defined by number of points
+            if (bynum)  // times defined by number of points
             {
               // read the time range
               std::vector<double> timerange;
-              timevar->ExtractDoubleVector("TIMERANGE",timerange);
+              timevar->ExtractDoubleVector("TIMERANGE", timerange);
 
               // get initial and final time
               double t_initial = timerange[0];
@@ -816,9 +727,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
               times.push_back(t_initial);
               int n = 0;
               double dt = (t_final - t_initial) / (numpoints - 1);
-              while(times[n] + dt <= t_final+1.0e-14)
+              while (times[n] + dt <= t_final + 1.0e-14)
               {
-                if (times[n] + 2*dt <= t_final+1.0e-14)
+                if (times[n] + 2 * dt <= t_final + 1.0e-14)
                 {
                   times.push_back(times[n] + dt);
                 }
@@ -829,39 +740,39 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
                 ++n;
               }
             }
-            else // times defined by vector
+            else  // times defined by vector
             {
-              timevar->ExtractDoubleVector("TIMES",times);
+              timevar->ExtractDoubleVector("TIMES", times);
             }
 
             // check if the times are in ascending order
-            for (unsigned int k=1; k<times.size(); ++k)
+            for (unsigned int k = 1; k < times.size(); ++k)
             {
-              if (times[k] <= times[k-1])
-                dserror("the TIMES must be in ascending order");
+              if (times[k] <= times[k - 1]) dserror("the TIMES must be in ascending order");
             }
 
             // read values
             std::vector<double> values;
-            timevar->ExtractDoubleVector("VALUES",values);
+            timevar->ExtractDoubleVector("VALUES", values);
 
-            vardef = Teuchos::rcp(new LinearInterpolationVariable(varname,times,values,periodicdata));
+            vardef =
+                Teuchos::rcp(new LinearInterpolationVariable(varname, times, values, periodicdata));
           }
-          else if(vartype=="multifunction")
+          else if (vartype == "multifunction")
           {
             // read the number of points
             int numpoints;
-            timevar->ExtractInt("NUMPOINTS",numpoints);
+            timevar->ExtractInt("NUMPOINTS", numpoints);
 
             // read times
             std::vector<double> times;
             bool bynum = timevar->FindString("BYNUM");
 
-            if (bynum) // times defined by number of points
+            if (bynum)  // times defined by number of points
             {
               // read the time range
               std::vector<double> timerange;
-              timevar->ExtractDoubleVector("TIMERANGE",timerange);
+              timevar->ExtractDoubleVector("TIMERANGE", timerange);
 
               // get initial and final time
               double t_initial = timerange[0];
@@ -871,9 +782,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
               times.push_back(t_initial);
               int n = 0;
               double dt = (t_final - t_initial) / (numpoints - 1);
-              while(times[n] + dt <= t_final+1.0e-14)
+              while (times[n] + dt <= t_final + 1.0e-14)
               {
-                if (times[n] + 2*dt <= t_final+1.0e-14)
+                if (times[n] + 2 * dt <= t_final + 1.0e-14)
                 {
                   times.push_back(times[n] + dt);
                 }
@@ -884,44 +795,45 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
                 ++n;
               }
             }
-            else // times defined by vector
+            else  // times defined by vector
             {
-              timevar->ExtractDoubleVector("TIMES",times);
+              timevar->ExtractDoubleVector("TIMES", times);
             }
 
             // check if the times are in ascending order
-            for (unsigned int k=1; k<times.size(); ++k)
+            for (unsigned int k = 1; k < times.size(); ++k)
             {
-              if (times[k] <= times[k-1])
-                dserror("the TIMES must be in ascending order");
+              if (times[k] <= times[k - 1]) dserror("the TIMES must be in ascending order");
             }
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
-            timevar->ExtractStringVector("DESCRIPTION",description_vec);
+            timevar->ExtractStringVector("DESCRIPTION", description_vec);
 
             // check if the number of times = number of descriptions + 1
             int numtimes = times.size();
             int numdescriptions = description_vec.size();
-            if (numtimes!=numdescriptions+1) dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+            if (numtimes != numdescriptions + 1)
+              dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
-            vardef = Teuchos::rcp(new MultiFunctionVariable(varname,times,description_vec,periodicdata));
+            vardef = Teuchos::rcp(
+                new MultiFunctionVariable(varname, times, description_vec, periodicdata));
           }
-          else if(vartype=="fourierinterpolation")
+          else if (vartype == "fourierinterpolation")
           {
             // read the number of points
             int numpoints;
-            timevar->ExtractInt("NUMPOINTS",numpoints);
+            timevar->ExtractInt("NUMPOINTS", numpoints);
 
             // read times
             std::vector<double> times;
             bool bynum = timevar->FindString("BYNUM");
 
-            if (bynum) // times defined by number of points
+            if (bynum)  // times defined by number of points
             {
               // read the time range
               std::vector<double> timerange;
-              timevar->ExtractDoubleVector("TIMERANGE",timerange);
+              timevar->ExtractDoubleVector("TIMERANGE", timerange);
 
               // get initial and final time
               double t_initial = timerange[0];
@@ -931,9 +843,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
               times.push_back(t_initial);
               int n = 0;
               double dt = (t_final - t_initial) / (numpoints - 1);
-              while(times[n] + dt <= t_final+1.0e-14)
+              while (times[n] + dt <= t_final + 1.0e-14)
               {
-                if (times[n] + 2*dt <= t_final+1.0e-14)
+                if (times[n] + 2 * dt <= t_final + 1.0e-14)
                 {
                   times.push_back(times[n] + dt);
                 }
@@ -944,23 +856,23 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
                 ++n;
               }
             }
-            else // times defined by vector
+            else  // times defined by vector
             {
-              timevar->ExtractDoubleVector("TIMES",times);
+              timevar->ExtractDoubleVector("TIMES", times);
             }
 
             // check if the times are in ascending order
-            for (unsigned int k=1; k<times.size(); ++k)
+            for (unsigned int k = 1; k < times.size(); ++k)
             {
-              if (times[k] <= times[k-1])
-                dserror("the TIMES must be in ascending order");
+              if (times[k] <= times[k - 1]) dserror("the TIMES must be in ascending order");
             }
 
             // read values
             std::vector<double> values;
-            timevar->ExtractDoubleVector("VALUES",values);
+            timevar->ExtractDoubleVector("VALUES", values);
 
-            vardef = Teuchos::rcp(new FourierInterpolationVariable(varname,times,values,periodicdata));
+            vardef = Teuchos::rcp(
+                new FourierInterpolationVariable(varname, times, values, periodicdata));
           }
           else
           {
@@ -985,9 +897,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         }
 
         // add the expressions to the function vector
-        for (int n = 0;n <= maxcomp; ++n)
+        for (int n = 0; n <= maxcomp; ++n)
         {
-          vecfunc->AddExpr(functstring[n],functvarvector);
+          vecfunc->AddExpr(functstring[n], functvarvector);
         }
 
         functions_.push_back(vecfunc);
@@ -1000,8 +912,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(int num)
 {
   // ensure that desired function is available (prevents segmentation fault)
-  if (functions_.size()< (unsigned int)(num+1) || num<0)
-    dserror("function %d not available",num+1);
+  if (functions_.size() < (unsigned int)(num + 1) || num < 0)
+    dserror("function %d not available", num + 1);
 
   return *(functions_[num]);
 }
@@ -1017,32 +929,33 @@ DRT::UTILS::ExprFunction::ExprFunction()
 }
 
 
-DRT::UTILS::ExprFunction::~ExprFunction()
-{
-}
+DRT::UTILS::ExprFunction::~ExprFunction() {}
 
 
-void DRT::UTILS::ExprFunction::AddExpr(std::string buf,std::vector<std::vector<Teuchos::RCP<FunctionVariable> > > variables)
+void DRT::UTILS::ExprFunction::AddExpr(
+    std::string buf, std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables)
 {
   variables_ = variables;
 
-  Teuchos::RCP< DRT::PARSER::Parser<double> > parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
-  parser->AddVariable("x",0);
-  parser->AddVariable("y",0);
-  parser->AddVariable("z",0);
-  parser->AddVariable("t",0);
+  Teuchos::RCP<DRT::PARSER::Parser<double>> parser =
+      Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  parser->AddVariable("x", 0);
+  parser->AddVariable("y", 0);
+  parser->AddVariable("z", 0);
+  parser->AddVariable("t", 0);
 
-  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > parserdd = Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf));
-  parserdd->AddVariable("x",0);
-  parserdd->AddVariable("y",0);
-  parserdd->AddVariable("z",0);
-  parserdd->AddVariable("t",0);
+  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>> parserdd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(buf));
+  parserdd->AddVariable("x", 0);
+  parserdd->AddVariable("y", 0);
+  parserdd->AddVariable("z", 0);
+  parserdd->AddVariable("t", 0);
 
   // add variables from the defined VARIABLES
-  for(unsigned int i=0; i<variables.size(); ++i)
+  for (unsigned int i = 0; i < variables.size(); ++i)
   {
-    parser->AddVariable(variables_[i][0]->Name(),0);
-    parserdd->AddVariable(variables_[i][0]->Name(),0);
+    parser->AddVariable(variables_[i][0]->Name(), 0);
+    parserdd->AddVariable(variables_[i][0]->Name(), 0);
   }
 
   // save parsers
@@ -1058,8 +971,7 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,std::vector<std::vector<T
 double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, double t)
 {
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
 
   double index_mod = index;
 
@@ -1069,18 +981,15 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   }
 
   // set spatial variables
-  if(dim_>0)
-    expr_[index_mod]->SetValue("x",x[0]);
-  if(dim_>1)
-    expr_[index_mod]->SetValue("y",x[1]);
-  if(dim_>2)
-    expr_[index_mod]->SetValue("z",x[2]);
+  if (dim_ > 0) expr_[index_mod]->SetValue("x", x[0]);
+  if (dim_ > 1) expr_[index_mod]->SetValue("y", x[1]);
+  if (dim_ > 2) expr_[index_mod]->SetValue("z", x[2]);
 
   // set temporal variable
-  expr_[index_mod]->SetValue("t",t);
+  expr_[index_mod]->SetValue("t", t);
 
   // set the values of the variables at time t
-  for (unsigned int i = 0; i<variables_.size(); ++i)
+  for (unsigned int i = 0; i < variables_.size(); ++i)
   {
     // find the right definition of the variable according to the hierarchy
     unsigned int n = 0;
@@ -1089,7 +998,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
     {
       if (n == variables_[i].size())
       {
-        dserror("the VARIABLE %d is not defined at time %f", i,t);
+        dserror("the VARIABLE %d is not defined at time %f", i, t);
       }
       else
       {
@@ -1101,7 +1010,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
       }
     }
 
-    expr_[index_mod]->SetValue(variables_[i][0]->Name(),variables_[i][n]->Value(t));
+    expr_[index_mod]->SetValue(variables_[i][0]->Name(), variables_[i][n]->Value(t));
   }
 
   // evaluation of F = F ( x, y, z, t, v1, ..., vn )
@@ -1110,15 +1019,10 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
 
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
-    const int index,
-    const double* x,
-    const double t
-    )
+    const int index, const double* x, const double t)
 {
-
   // parse expression if not already parsed
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
 
   double index_mod = index;
 
@@ -1128,22 +1032,22 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   }
 
   // define Fad object for evaluation
-  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> >  FAD;
+  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double>> FAD;
 
   // define FAD variables
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  FAD xfad(4+variables_.size(), 0, x[0]);
-  FAD yfad(4+variables_.size(), 1, x[1]);
-  FAD zfad(4+variables_.size(), 2, x[2]);
-  FAD tfad(4+variables_.size(), 3, t);
+  FAD xfad(4 + variables_.size(), 0, x[0]);
+  FAD yfad(4 + variables_.size(), 1, x[1]);
+  FAD zfad(4 + variables_.size(), 2, x[2]);
+  FAD tfad(4 + variables_.size(), 3, t);
 
-  xfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 3, t);
+  xfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 0, x[0]);
+  yfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 1, x[1]);
+  zfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 2, x[2]);
+  tfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 3, t);
 
   std::vector<FAD> fadvectvars(variables_.size());
-  for(unsigned int i=0; i<variables_.size(); ++i)
+  for (unsigned int i = 0; i < variables_.size(); ++i)
   {
     // find the right definition of the variable according to the hierarchy
     unsigned int n = 0;
@@ -1163,53 +1067,56 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
         ++n;
       }
     }
-    fadvectvars[i] = FAD(4+variables_.size(), 4+i, variables_[i][n]->Value(t));
-    fadvectvars[i].val() = Sacado::Fad::DFad<double>(4+variables_.size(), 4+i, variables_[i][n]->Value(t));
+    fadvectvars[i] = FAD(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
+    fadvectvars[i].val() =
+        Sacado::Fad::DFad<double>(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
   }
   FAD fdfad;
 
   // set spatial variables
-  switch(dim_)
+  switch (dim_)
   {
-  case 3:
-  {
-    exprdd_[index_mod]->SetValue("x",xfad);
-    exprdd_[index_mod]->SetValue("y",yfad);
-    exprdd_[index_mod]->SetValue("z",zfad);
-    break;
-  }
-  case 2:
-  {
-    exprdd_[index_mod]->SetValue("x",xfad);
-    exprdd_[index_mod]->SetValue("y",yfad);
-    exprdd_[index_mod]->SetValue("z",0);
-    break;
-  }
-  case 1:
-  {
-    exprdd_[index_mod]->SetValue("x",xfad);
-    exprdd_[index_mod]->SetValue("y",0);
-    exprdd_[index_mod]->SetValue("z",0);
-    break;
-  }
-  default: dserror("Problem dimension has to be 1, 2, or 3."); break;
+    case 3:
+    {
+      exprdd_[index_mod]->SetValue("x", xfad);
+      exprdd_[index_mod]->SetValue("y", yfad);
+      exprdd_[index_mod]->SetValue("z", zfad);
+      break;
+    }
+    case 2:
+    {
+      exprdd_[index_mod]->SetValue("x", xfad);
+      exprdd_[index_mod]->SetValue("y", yfad);
+      exprdd_[index_mod]->SetValue("z", 0);
+      break;
+    }
+    case 1:
+    {
+      exprdd_[index_mod]->SetValue("x", xfad);
+      exprdd_[index_mod]->SetValue("y", 0);
+      exprdd_[index_mod]->SetValue("z", 0);
+      break;
+    }
+    default:
+      dserror("Problem dimension has to be 1, 2, or 3.");
+      break;
   }
 
   // set temporal variable
-  exprdd_[index_mod]->SetValue("t",tfad);
+  exprdd_[index_mod]->SetValue("t", tfad);
 
   // set the values of the variables at time t
-  for(unsigned int i=0; i<variables_.size(); ++i)
+  for (unsigned int i = 0; i < variables_.size(); ++i)
   {
-    exprdd_[index_mod]->SetValue(variables_[i][0]->Name(),fadvectvars[i]);
+    exprdd_[index_mod]->SetValue(variables_[i][0]->Name(), fadvectvars[i]);
   }
 
   // evaluation of derivatives
   fdfad = exprdd_[index_mod]->Evaluate();
 
   // result vector
-  std::vector<double> res(3,0.0);
-  for(unsigned int d=0; d<3; ++d)
+  std::vector<double> res(3, 0.0);
+  for (unsigned int d = 0; d < 3; ++d)
   {
     res[d] = fdfad.dx(d).val();
   }
@@ -1220,21 +1127,16 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
 
 
 std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
-    const int index,
-    const double* x,
-    const double t,
-    const unsigned deg
-)
+    const int index, const double* x, const double t, const unsigned deg)
 {
   // resulting vector holding
-  std::vector<double> res(deg+1);
+  std::vector<double> res(deg + 1);
 
   // add the value at time t
-  res[0] = Evaluate(index,x,t);
+  res[0] = Evaluate(index, x, t);
 
   // parse expression if not already parsed
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
 
   double index_mod = index;
   if (expr_.size() == 1)
@@ -1243,22 +1145,22 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
   }
 
   // define Fad object for evaluation
-  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> >  FAD;
+  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double>> FAD;
 
   // define FAD variables
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  FAD xfad(4+variables_.size(), 0, x[0]);
-  FAD yfad(4+variables_.size(), 1, x[1]);
-  FAD zfad(4+variables_.size(), 2, x[2]);
-  FAD tfad(4+variables_.size(), 3, t);
+  FAD xfad(4 + variables_.size(), 0, x[0]);
+  FAD yfad(4 + variables_.size(), 1, x[1]);
+  FAD zfad(4 + variables_.size(), 2, x[2]);
+  FAD tfad(4 + variables_.size(), 3, t);
 
-  xfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(4+variables_.size(), 3, t);
+  xfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 0, x[0]);
+  yfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 1, x[1]);
+  zfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 2, x[2]);
+  tfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 3, t);
 
   std::vector<FAD> fadvectvars(variables_.size());
-  for(unsigned int i=0; i<variables_.size(); ++i)
+  for (unsigned int i = 0; i < variables_.size(); ++i)
   {
     // find the right definition of the variable according to the hierarchy
     unsigned int n = 0;
@@ -1278,45 +1180,48 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
         ++n;
       }
     }
-    fadvectvars[i] = FAD(4+variables_.size(), 4+i, variables_[i][n]->Value(t));
-    fadvectvars[i].val() = Sacado::Fad::DFad<double>(4+variables_.size(), 4+i, variables_[i][n]->Value(t));
+    fadvectvars[i] = FAD(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
+    fadvectvars[i].val() =
+        Sacado::Fad::DFad<double>(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
   }
   FAD fdfad;
 
   // set spatial variables
-  switch(dim_)
+  switch (dim_)
   {
-  case 3:
-  {
-    exprdd_[index_mod]->SetValue("x",xfad);
-    exprdd_[index_mod]->SetValue("y",yfad);
-    exprdd_[index_mod]->SetValue("z",zfad);
-    break;
-  }
-  case 2:
-  {
-    exprdd_[index_mod]->SetValue("x",xfad);
-    exprdd_[index_mod]->SetValue("y",yfad);
-    exprdd_[index_mod]->SetValue("z",0);
-    break;
-  }
-  case 1:
-  {
-    exprdd_[index_mod]->SetValue("x",xfad);
-    exprdd_[index_mod]->SetValue("y",0);
-    exprdd_[index_mod]->SetValue("z",0);
-    break;
-  }
-  default: dserror("Problem dimension has to be 1, 2, or 3."); break;
+    case 3:
+    {
+      exprdd_[index_mod]->SetValue("x", xfad);
+      exprdd_[index_mod]->SetValue("y", yfad);
+      exprdd_[index_mod]->SetValue("z", zfad);
+      break;
+    }
+    case 2:
+    {
+      exprdd_[index_mod]->SetValue("x", xfad);
+      exprdd_[index_mod]->SetValue("y", yfad);
+      exprdd_[index_mod]->SetValue("z", 0);
+      break;
+    }
+    case 1:
+    {
+      exprdd_[index_mod]->SetValue("x", xfad);
+      exprdd_[index_mod]->SetValue("y", 0);
+      exprdd_[index_mod]->SetValue("z", 0);
+      break;
+    }
+    default:
+      dserror("Problem dimension has to be 1, 2, or 3.");
+      break;
   }
 
   // set temporal variable
-  exprdd_[index_mod]->SetValue("t",tfad);
+  exprdd_[index_mod]->SetValue("t", tfad);
 
   // set the values of the variables at time t
-  for(unsigned int i=0; i<variables_.size(); ++i)
+  for (unsigned int i = 0; i < variables_.size(); ++i)
   {
-    exprdd_[index_mod]->SetValue(variables_[i][0]->Name(),fadvectvars[i]);
+    exprdd_[index_mod]->SetValue(variables_[i][0]->Name(), fadvectvars[i]);
   }
 
   // add the 1st time derivative at time t
@@ -1328,7 +1233,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
     double fdfad_dt = fdfad.dx(3).val();
-    for(unsigned int i=0; i<variables_.size(); ++i)
+    for (unsigned int i = 0; i < variables_.size(); ++i)
     {
       // find the right definition of the variable according to the hierarchy
       unsigned int n = 0;
@@ -1345,24 +1250,25 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
           ++n;
         }
       }
-      fdfad_dt += fdfad.dx(4+i).val() * variables_[i][n]->TimeDerivativeValue(t);
+      fdfad_dt += fdfad.dx(4 + i).val() * variables_[i][n]->TimeDerivativeValue(t);
     }
 
-    res[1]=fdfad_dt;
+    res[1] = fdfad_dt;
   }
 
   // add the 2nd time derivative at time t
   if (deg >= 2)
   {
     // evaluation of d^2F/dt^2 applying the chain rule:
-    //d^2F/dt^2 = d(dF*/dt)/dt + sum_i{
-    //                                [d(dF*/dt)/dvi + d(dF/dvi)/dt + sum_j[d(dF/dvi)/dvj * dvj/dt]] * dvi/dt +
+    // d^2F/dt^2 = d(dF*/dt)/dt + sum_i{
+    //                                [d(dF*/dt)/dvi + d(dF/dvi)/dt + sum_j[d(dF/dvi)/dvj * dvj/dt]]
+    //                                * dvi/dt +
     //                                 + dF/dvi * d^2vi/dt^2
     //                                }
     double fdfad_dt2 = fdfad.dx(3).dx(3);
     std::vector<double> fdfad_dt2_term(variables_.size());
 
-    for(unsigned int i=0; i<variables_.size(); ++i)
+    for (unsigned int i = 0; i < variables_.size(); ++i)
     {
       fdfad_dt2_term[i] = 0;
       // find the right definition of the variable according to the hierarchy
@@ -1380,9 +1286,9 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
           ++n;
         }
       }
-      fdfad_dt2_term[i] += fdfad.dx(3).dx(4+i);
-      fdfad_dt2_term[i] += fdfad.dx(4+i).dx(3);
-      for(unsigned int j=0; j<variables_.size(); ++j)
+      fdfad_dt2_term[i] += fdfad.dx(3).dx(4 + i);
+      fdfad_dt2_term[i] += fdfad.dx(4 + i).dx(3);
+      for (unsigned int j = 0; j < variables_.size(); ++j)
       {
         // find the right definition of the variable according to the hierarchy
         unsigned int m = 0;
@@ -1399,14 +1305,14 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
             ++m;
           }
         }
-        fdfad_dt2_term[i] += fdfad.dx(4+i).dx(4+j) * variables_[j][m]->TimeDerivativeValue(t);
+        fdfad_dt2_term[i] += fdfad.dx(4 + i).dx(4 + j) * variables_[j][m]->TimeDerivativeValue(t);
       }
       fdfad_dt2_term[i] *= variables_[i][n]->TimeDerivativeValue(t);
-      fdfad_dt2_term[i] += fdfad.dx(4+i).val() * variables_[i][n]->TimeDerivativeValue(t,2);
+      fdfad_dt2_term[i] += fdfad.dx(4 + i).val() * variables_[i][n]->TimeDerivativeValue(t, 2);
       fdfad_dt2 += fdfad_dt2_term[i];
     }
 
-    res[2]=fdfad_dt2;
+    res[2] = fdfad_dt2;
   }
 
   // error for higher derivatives
@@ -1419,91 +1325,84 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
 }
 
 
-bool DRT::UTILS::ExprFunction::IsVariable(const int index,const std::string& varname) const
+bool DRT::UTILS::ExprFunction::IsVariable(const int index, const std::string& varname) const
 {
-  if(index>(int)expr_.size()-1 || index<0)
+  if (index > (int)expr_.size() - 1 || index < 0)
     dserror("Tried to add a variable to a function in a not available dimension.");
 
   return expr_[index]->IsVariable(varname);
 }
 
 
-void DRT::UTILS::ExprFunction::AddVariable(const int index,const std::string& varname,double varvalue)
+void DRT::UTILS::ExprFunction::AddVariable(
+    const int index, const std::string& varname, double varvalue)
 {
-  if(index>(int)expr_.size()-1 || index<0)
+  if (index > (int)expr_.size() - 1 || index < 0)
     dserror("Tried to add a variable to a function in a not available dimension.");
-  if(isparsed_)
-    dserror("Function has already been parsed! Variables can no longer be added!");
+  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
 
-  expr_[index]->AddVariable(varname,varvalue);
-  exprdd_[index]->AddVariable(varname,varvalue);
+  expr_[index]->AddVariable(varname, varvalue);
+  exprdd_[index]->AddVariable(varname, varvalue);
 }
 
 
 void DRT::UTILS::ExprFunction::ParseExpressions()
 {
   // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > >::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > >::iterator itdd;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>::
+      iterator itdd;
 
   // loop over expressions and parse them
-  for( it=expr_.begin() ; it!=expr_.end() ; it++)
-    (*it)->ParseFunction();
+  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
 
   // loop over expressions for derivatives and parse them
-  for( itdd=exprdd_.begin() ; itdd!=exprdd_.end() ; itdd++)
-    (*itdd)->ParseFunction();
+  for (itdd = exprdd_.begin(); itdd != exprdd_.end(); itdd++) (*itdd)->ParseFunction();
 
   isparsed_ = true;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::VariableExprFunction::VariableExprFunction():
-    isparsed_(false)
-{
-}
+DRT::UTILS::VariableExprFunction::VariableExprFunction() : isparsed_(false) {}
 
 
-DRT::UTILS::VariableExprFunction::~VariableExprFunction()
-{
-}
+DRT::UTILS::VariableExprFunction::~VariableExprFunction() {}
 
 
 void DRT::UTILS::VariableExprFunction::AddExpr(
-    std::string buf,
-    std::vector<std::pair<std::string,double> > constants
-  )
+    std::string buf, std::vector<std::pair<std::string, double>> constants)
 {
   // do the almost same as the expression function (base class) but do not yet parse!
 
   // build the parser for the function evaluation
-  Teuchos::RCP< DRT::PARSER::Parser<double> > parser = Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
+  Teuchos::RCP<DRT::PARSER::Parser<double>> parser =
+      Teuchos::rcp(new DRT::PARSER::Parser<double>(buf));
 
   // build the parser for the function derivative evaluation
-  Teuchos::RCP< DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > parserd =
-      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double> >(buf));
+  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>> parserd =
+      Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
 
   // add constants
-  for(std::vector<std::pair<std::string,double> >::iterator it=constants.begin();it!=constants.end();it++)
-    parser->AddVariable(it->first,it->second);
-  for(std::vector<std::pair<std::string,double> >::iterator it=constants.begin();it!=constants.end();it++)
-    parserd->AddVariable(it->first,it->second);
+  for (std::vector<std::pair<std::string, double>>::iterator it = constants.begin();
+       it != constants.end(); it++)
+    parser->AddVariable(it->first, it->second);
+  for (std::vector<std::pair<std::string, double>>::iterator it = constants.begin();
+       it != constants.end(); it++)
+    parserd->AddVariable(it->first, it->second);
 
   // save the parsers
   expr_.push_back(parser);
   exprd_.push_back(parserd);
 
-  isparsed_=false;
+  isparsed_ = false;
 
   return;
 }
 
 
-bool DRT::UTILS::VariableExprFunction::IsVariable(
-    int index,
-    const std::string& varname) const
+bool DRT::UTILS::VariableExprFunction::IsVariable(int index, const std::string& varname) const
 {
-  if(index>(int)expr_.size()-1 || index<0)
+  if (index > (int)expr_.size() - 1 || index < 0)
     dserror("Tried to add a variable to a function in a not available dimension.");
 
   return expr_[index]->IsVariable(varname);
@@ -1511,70 +1410,59 @@ bool DRT::UTILS::VariableExprFunction::IsVariable(
 
 
 void DRT::UTILS::VariableExprFunction::AddVariable(
-    int index,
-    const std::string& varname,
-    double varvalue)
+    int index, const std::string& varname, double varvalue)
 {
-  if(index>(int)expr_.size()-1 || index<0)
+  if (index > (int)expr_.size() - 1 || index < 0)
     dserror("Tried to add a variable to a function in a not available dimension.");
-  if(isparsed_)
-    dserror("Function has already been parsed! Variables can no longer be added!");
+  if (isparsed_) dserror("Function has already been parsed! Variables can no longer be added!");
 
-  expr_[index]->AddVariable(varname,varvalue);
-  exprd_[index]->AddVariable(varname,varvalue);
-
+  expr_[index]->AddVariable(varname, varvalue);
+  exprd_[index]->AddVariable(varname, varvalue);
 }
 
 
 void DRT::UTILS::VariableExprFunction::ParseExpressions()
 {
   // define iterators
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > >::iterator it;
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double> > > >::iterator itd;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>>::iterator it;
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<double>>>>::iterator itd;
 
   // loop over expressions and parse them
-  for( it=expr_.begin() ; it!=expr_.end() ; it++)
-    (*it)->ParseFunction();
+  for (it = expr_.begin(); it != expr_.end(); it++) (*it)->ParseFunction();
   // loop over expressions for derivatives and parse them
-  for( itd=exprd_.begin() ; itd!=exprd_.end() ; itd++)
-    (*itd)->ParseFunction();
+  for (itd = exprd_.begin(); itd != exprd_.end(); itd++) (*itd)->ParseFunction();
 
-  isparsed_=true;
+  isparsed_ = true;
 }
 
 
 double DRT::UTILS::VariableExprFunction::Evaluate(
-    const int index,
-    const std::vector<std::pair<std::string,double> >& variables)
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
   // set the values of the variables
-  std::vector<std::pair<std::string,double> >::const_iterator it;
-  for( it=variables.begin() ; it!=variables.end() ; it++)
-    expr_[index]->SetValue(it->first,it->second);
+  std::vector<std::pair<std::string, double>>::const_iterator it;
+  for (it = variables.begin(); it != variables.end(); it++)
+    expr_[index]->SetValue(it->first, it->second);
 
   // evaluate the function and return the result
   return expr_[index]->Evaluate();
 }
 
 
-double DRT::UTILS::VariableExprFunction::Evaluate(
-    const int index,
-    const std::vector<std::pair<std::string,double> >& variables,
-    const std::vector<std::pair<std::string,double> >& constants)
+double DRT::UTILS::VariableExprFunction::Evaluate(const int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
 {
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
   // set the values of the variables
-  std::vector<std::pair<std::string,double> >::const_iterator it;
-  for( it=variables.begin() ; it!=variables.end() ; it++)
-    expr_[index]->SetValue(it->first,it->second);
+  std::vector<std::pair<std::string, double>>::const_iterator it;
+  for (it = variables.begin(); it != variables.end(); it++)
+    expr_[index]->SetValue(it->first, it->second);
   // set the values of the constants
-  for( it=constants.begin() ; it!=constants.end() ; it++)
+  for (it = constants.begin(); it != constants.end(); it++)
   {
-    if( expr_[index]->IsVariable(it->first) )
-      expr_[index]->SetValue(it->first,it->second);
+    if (expr_[index]->IsVariable(it->first)) expr_[index]->SetValue(it->first, it->second);
   }
 
   // evaluate the function and return the result
@@ -1583,15 +1471,13 @@ double DRT::UTILS::VariableExprFunction::Evaluate(
 
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
-    const int index,
-    const std::vector<std::pair<std::string,double> >& variables)
+    const int index, const std::vector<std::pair<std::string, double>>& variables)
 {
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
 
   // Fad object for evaluation
   // sacado data type replaces "double"
-  typedef Sacado::Fad::DFad<double>  FAD;
+  typedef Sacado::Fad::DFad<double> FAD;
 
   // number of variables
   int numvariables = variables.size();
@@ -1600,14 +1486,14 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
   int counter = 0;
 
   // set the values of the variables
-  std::vector<std::pair<std::string,double> >::const_iterator it;
-  for( it=variables.begin() ; it!=variables.end() ; it++)
+  std::vector<std::pair<std::string, double>>::const_iterator it;
+  for (it = variables.begin(); it != variables.end(); it++)
   {
     // for 1st order derivatives
     FAD varfad(numvariables, counter, it->second);
     // set the value in expression
-    exprd_[index]->SetValue(it->first,varfad);
-    //update counter
+    exprd_[index]->SetValue(it->first, varfad);
+    // update counter
     counter++;
   }
 
@@ -1618,24 +1504,21 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
   std::vector<double> res(numvariables);
 
   // fill the result vector
-  for(int i=0;i<numvariables;i++)
-    res[i]=fdfad.dx(i);
+  for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
 
   return res;
 }
 
 
-std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
-    int index,
-    const std::vector<std::pair<std::string,double> >& variables,
-    const std::vector<std::pair<std::string,double> >& constants)
+std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int index,
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants)
 {
-  if(not isparsed_)
-    ParseExpressions();
+  if (not isparsed_) ParseExpressions();
 
   // Fad object for evaluation
   // sacado data type replaces "double"
-  typedef Sacado::Fad::DFad<double>  FAD;
+  typedef Sacado::Fad::DFad<double> FAD;
 
   // number of variables
   int numvariables = variables.size();
@@ -1644,23 +1527,23 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
   int counter = 0;
 
   // set the values of the variables
-  std::vector<std::pair<std::string,double> >::const_iterator it;
-  for( it=variables.begin() ; it!=variables.end() ; it++)
+  std::vector<std::pair<std::string, double>>::const_iterator it;
+  for (it = variables.begin(); it != variables.end(); it++)
   {
     // for 1st order derivatives
     FAD varfad(numvariables, counter, it->second);
     // set the value in expression
-    exprd_[index]->SetValue(it->first,varfad);
-    //update counter
+    exprd_[index]->SetValue(it->first, varfad);
+    // update counter
     counter++;
   }
 
   // set the values of the constants
-  for( it=constants.begin() ; it!=constants.end() ; it++)
+  for (it = constants.begin(); it != constants.end(); it++)
   {
-    if( exprd_[index]->IsVariable(it->first) )
+    if (exprd_[index]->IsVariable(it->first))
       // set the value in expression
-      exprd_[index]->SetValue(it->first,it->second);
+      exprd_[index]->SetValue(it->first, it->second);
   }
 
   // evaluate the expression
@@ -1670,61 +1553,53 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
   std::vector<double> res(numvariables);
 
   // fill the result vector
-  for(int i=0;i<numvariables;i++)
-    res[i]=fdfad.dx(i);
+  for (int i = 0; i < numvariables; i++) res[i] = fdfad.dx(i);
 
   return res;
 }
 
 
-double DRT::UTILS::VariableExprFunction::Evaluate(
-    const int index,
-    const double* x,
-    const double t
-)
+double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double* x, const double t)
 {
-  std::vector<std::pair<std::string,double> > variables;
+  std::vector<std::pair<std::string, double>> variables;
   variables.reserve(dim_);
 
-  switch(dim_)
+  switch (dim_)
   {
-  case 3:
-  {
-    variables.push_back(std::pair<std::string,double>("x",x[0])); //-x_[index]
-    variables.push_back(std::pair<std::string,double>("y",x[1])); //-y_[index]
-    variables.push_back(std::pair<std::string,double>("z",x[2])); //-z_[index]
-  }
-  case 2:
-  {
-    variables.push_back(std::pair<std::string,double>("x",x[0])); //-x_[index]
-    variables.push_back(std::pair<std::string,double>("y",x[1])); //-y_[index]
-  }
-  case 1:
-  {
-    variables.push_back(std::pair<std::string,double>("x",x[0])); //-x_[index]
-  }
+    case 3:
+    {
+      variables.push_back(std::pair<std::string, double>("x", x[0]));  //-x_[index]
+      variables.push_back(std::pair<std::string, double>("y", x[1]));  //-y_[index]
+      variables.push_back(std::pair<std::string, double>("z", x[2]));  //-z_[index]
+    }
+    case 2:
+    {
+      variables.push_back(std::pair<std::string, double>("x", x[0]));  //-x_[index]
+      variables.push_back(std::pair<std::string, double>("y", x[1]));  //-y_[index]
+    }
+    case 1:
+    {
+      variables.push_back(std::pair<std::string, double>("x", x[0]));  //-x_[index]
+    }
   }
 
-  variables.push_back(std::pair<std::string,double>("t",t));
+  variables.push_back(std::pair<std::string, double>("t", t));
 
-  return Evaluate(index,variables);
+  return Evaluate(index, variables);
 }
 
 
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
-    int                  index,
-    const double*        x,
-    const double         t
-    )
+    int index, const double* x, const double t)
 {
-  std::vector<std::pair<std::string,double> > variables(4);
+  std::vector<std::pair<std::string, double>> variables(4);
 
-  variables[0] = std::pair<std::string,double>("x",x[0]);
-  variables[1] = std::pair<std::string,double>("y",x[1]);
-  variables[2] = std::pair<std::string,double>("z",x[2]);
-  variables[3] = std::pair<std::string,double>("t",t);
+  variables[0] = std::pair<std::string, double>("x", x[0]);
+  variables[1] = std::pair<std::string, double>("y", x[1]);
+  variables[2] = std::pair<std::string, double>("z", x[2]);
+  variables[3] = std::pair<std::string, double>("t", t);
 
-  return EvaluateDerivative(index,variables);
+  return EvaluateDerivative(index, variables);
 }
 
 
@@ -1732,113 +1607,132 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
  | Constructor of ControlledRotation                         hahn 04/13 |
  *----------------------------------------------------------------------*/
 DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(
-    std::string fileName, std::string type, double origin_x,
-    double origin_y, double origin_z) :
-Function(), NUMMANEUVERCELLS_(4)
+    std::string fileName, std::string type, double origin_x, double origin_y, double origin_z)
+    : Function(), NUMMANEUVERCELLS_(4)
 {
-    // Initialize variables
-    // *****************************************************************************
+  // Initialize variables
+  // *****************************************************************************
 
-    // Initialize condition type
-    if (type == "STRUCTURE") {    // structure
-        type_ = 1;
-    } else if (type == "FLUID") { // fluid
-        type_ = 2;
-    } else {
-        dserror("When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or 'FLUID'");
-    }
+  // Initialize condition type
+  if (type == "STRUCTURE")
+  {  // structure
+    type_ = 1;
+  }
+  else if (type == "FLUID")
+  {  // fluid
+    type_ = 2;
+  }
+  else
+  {
+    dserror(
+        "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
+        "'FLUID'");
+  }
 
-    // Initialize origin, about which the rotation is performed
-    origin_(0,0) = origin_x;
-    origin_(1,0) = origin_y;
-    origin_(2,0) = origin_z;
+  // Initialize origin, about which the rotation is performed
+  origin_(0, 0) = origin_x;
+  origin_(1, 0) = origin_y;
+  origin_(2, 0) = origin_z;
 
-    // Initialize time of previous time step (at t-deltaT)
-    timeOld_ = 0.0;
+  // Initialize time of previous time step (at t-deltaT)
+  timeOld_ = 0.0;
 
-    // Initialize previous angular acceleration (at t-deltaT)
-    omegaDotOld_B_(0,0) = 0.0;
-    omegaDotOld_B_(1,0) = 0.0;
-    omegaDotOld_B_(2,0) = 0.0;
+  // Initialize previous angular acceleration (at t-deltaT)
+  omegaDotOld_B_(0, 0) = 0.0;
+  omegaDotOld_B_(1, 0) = 0.0;
+  omegaDotOld_B_(2, 0) = 0.0;
 
-    // Current angular rate (at t)
-    omega_B_(0,0) = 0.0;
-    omega_B_(1,0) = 0.0;
-    omega_B_(2,0) = 0.0;
+  // Current angular rate (at t)
+  omega_B_(0, 0) = 0.0;
+  omega_B_(1, 0) = 0.0;
+  omega_B_(2, 0) = 0.0;
 
-    // Initialize satellite's current attitude trafo matrix from B- to I-system (at t)
-    satAtt_dcm_IB_(0,0) = 1.0; satAtt_dcm_IB_(0,1) = 0.0; satAtt_dcm_IB_(0,2) = 0.0;
-    satAtt_dcm_IB_(1,0) = 0.0; satAtt_dcm_IB_(1,1) = 1.0; satAtt_dcm_IB_(1,2) = 0.0;
-    satAtt_dcm_IB_(2,0) = 0.0; satAtt_dcm_IB_(2,1) = 0.0; satAtt_dcm_IB_(2,2) = 1.0;
+  // Initialize satellite's current attitude trafo matrix from B- to I-system (at t)
+  satAtt_dcm_IB_(0, 0) = 1.0;
+  satAtt_dcm_IB_(0, 1) = 0.0;
+  satAtt_dcm_IB_(0, 2) = 0.0;
+  satAtt_dcm_IB_(1, 0) = 0.0;
+  satAtt_dcm_IB_(1, 1) = 1.0;
+  satAtt_dcm_IB_(1, 2) = 0.0;
+  satAtt_dcm_IB_(2, 0) = 0.0;
+  satAtt_dcm_IB_(2, 1) = 0.0;
+  satAtt_dcm_IB_(2, 2) = 1.0;
 
-    // Initialize satellite's current attitude quaternion from B- to I-system (at t)
-    satAtt_q_IB_(0,0) = 0.0;
-    satAtt_q_IB_(1,0) = 0.0;
-    satAtt_q_IB_(2,0) = 0.0;
-    satAtt_q_IB_(3,0) = 1.0;
+  // Initialize satellite's current attitude quaternion from B- to I-system (at t)
+  satAtt_q_IB_(0, 0) = 0.0;
+  satAtt_q_IB_(1, 0) = 0.0;
+  satAtt_q_IB_(2, 0) = 0.0;
+  satAtt_q_IB_(3, 0) = 1.0;
 
-    // Initialize maneuvers
-    maneuvers_.clear();
+  // Initialize maneuvers
+  maneuvers_.clear();
 
-    // Read maneuver file and fill maneuvers variable
-    // *****************************************************************************
+  // Read maneuver file and fill maneuvers variable
+  // *****************************************************************************
 
-    std::string line;
-    std::stringstream lineStream;
-    std::string cell;
+  std::string line;
+  std::stringstream lineStream;
+  std::string cell;
 
-    // Open file
-    std::ifstream file (fileName.c_str());
-    if (!file.is_open()) {
-        dserror("Unable to open file: %s", fileName.c_str());
-    }
+  // Open file
+  std::ifstream file(fileName.c_str());
+  if (!file.is_open())
+  {
+    dserror("Unable to open file: %s", fileName.c_str());
+  }
 
-    // Loop through all lines
-    while (getline (file,line)) {
-        if (!line.empty()) {
-            // Clear local variables
-            lineStream.clear();
-            cell.clear();
+  // Loop through all lines
+  while (getline(file, line))
+  {
+    if (!line.empty())
+    {
+      // Clear local variables
+      lineStream.clear();
+      cell.clear();
 
-            // Obtain all numManeuverCells=4 values from current line (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
-            lineStream << line;
-            for (int i=0; i<NUMMANEUVERCELLS_; i++) {
-                // Obtain i-th cell from current line
-                getline(lineStream, cell, ' ');
+      // Obtain all numManeuverCells=4 values from current line (t, omegaDot_x_B, omegaDot_y_B,
+      // omegaDot_z_B)
+      lineStream << line;
+      for (int i = 0; i < NUMMANEUVERCELLS_; i++)
+      {
+        // Obtain i-th cell from current line
+        getline(lineStream, cell, ' ');
 
-                // If empty cell, than either empty line or one cell in the line
-                // missing, anyhow an error.
-                if (cell.empty()) {
-                    dserror("Error during reading of file: %s", fileName.c_str());
-                }
-
-                // Convert input cell from string to double
-                double cellDouble = (double)strtod(cell.c_str(), NULL);
-
-                // Add cell to maneuvers vector
-                maneuvers_.push_back(cellDouble);
-            }
+        // If empty cell, than either empty line or one cell in the line
+        // missing, anyhow an error.
+        if (cell.empty())
+        {
+          dserror("Error during reading of file: %s", fileName.c_str());
         }
+
+        // Convert input cell from string to double
+        double cellDouble = (double)strtod(cell.c_str(), NULL);
+
+        // Add cell to maneuvers vector
+        maneuvers_.push_back(cellDouble);
+      }
     }
+  }
 
-    // Close file
-    file.close();
+  // Close file
+  file.close();
 
-    // Determine number of maneuvers
-    numManeuvers_ = (int)(maneuvers_.size()) / (int)NUMMANEUVERCELLS_;
+  // Determine number of maneuvers
+  numManeuvers_ = (int)(maneuvers_.size()) / (int)NUMMANEUVERCELLS_;
 
-    // Output maneuver list
-    printf("\n=================================================================================\n");
-    printf("ControlledRotation - %s\n", type.c_str());
-    printf("---------------------------------------------------------------------------------\n");
-    printf("The following %d maneuvers have been loaded from file %s:\n", numManeuvers_, fileName.c_str());
-    for (int i=0; i<numManeuvers_; i++) {
-        printf("Time: %e  OmegaDot_B: %e, %e, %e \n",
-                maneuvers_[i*NUMMANEUVERCELLS_+0], maneuvers_[i*NUMMANEUVERCELLS_+1],
-                maneuvers_[i*NUMMANEUVERCELLS_+2], maneuvers_[i*NUMMANEUVERCELLS_+3]);
-    }
-    printf("=================================================================================\n\n");
-
+  // Output maneuver list
+  printf("\n=================================================================================\n");
+  printf("ControlledRotation - %s\n", type.c_str());
+  printf("---------------------------------------------------------------------------------\n");
+  printf("The following %d maneuvers have been loaded from file %s:\n", numManeuvers_,
+      fileName.c_str());
+  for (int i = 0; i < numManeuvers_; i++)
+  {
+    printf("Time: %e  OmegaDot_B: %e, %e, %e \n", maneuvers_[i * NUMMANEUVERCELLS_ + 0],
+        maneuvers_[i * NUMMANEUVERCELLS_ + 1], maneuvers_[i * NUMMANEUVERCELLS_ + 2],
+        maneuvers_[i * NUMMANEUVERCELLS_ + 3]);
+  }
+  printf("=================================================================================\n\n");
 }
 
 /*----------------------------------------------------------------------*
@@ -1846,263 +1740,300 @@ Function(), NUMMANEUVERCELLS_(4)
  | displacement and for fluids the current velocity of the respective   |
  | node for the given index.                                 hahn 04/13 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::ControlledRotationFunction::Evaluate(const int index,
-    const double* xp, double t)
+double DRT::UTILS::ControlledRotationFunction::Evaluate(const int index, const double* xp, double t)
 {
-    // Check, if a restart has been performed
-    // *****************************************************************************
-    const int step = DRT::Problem::Instance()->Restart();
-    if ((step > 0) && (timeOld_ == 0.0)) {
-      dserror("When using the function CONTROLLEDROTATION, the restart functionality cannot be used!");
+  // Check, if a restart has been performed
+  // *****************************************************************************
+  const int step = DRT::Problem::Instance()->Restart();
+  if ((step > 0) && (timeOld_ == 0.0))
+  {
+    dserror(
+        "When using the function CONTROLLEDROTATION, the restart functionality cannot be used!");
+  }
+
+  // If new time step, apply angular acceleration (if desired) and determine
+  // new attitude satAtt_dcm_IB_
+  // *****************************************************************************
+  // Determine time difference
+  double deltaT = t - timeOld_;
+
+  if (deltaT > 1e-12)
+  {  // new time step
+
+    // Determine current angular acceleration (at t)
+    // -----------------------------------------------------------------------------
+    LINALG::Matrix<3, 1> omegaDot_B;
+    omegaDot_B(0, 0) = 0.0;
+    omegaDot_B(1, 0) = 0.0;
+    omegaDot_B(2, 0) = 0.0;
+
+    for (int i = 0; i < numManeuvers_; i++)
+    {
+      if (t >= maneuvers_[i * NUMMANEUVERCELLS_ + 0])
+      {
+        omegaDot_B(0, 0) = maneuvers_[i * NUMMANEUVERCELLS_ + 1];
+        omegaDot_B(1, 0) = maneuvers_[i * NUMMANEUVERCELLS_ + 2];
+        omegaDot_B(2, 0) = maneuvers_[i * NUMMANEUVERCELLS_ + 3];
+      }
     }
 
-    // If new time step, apply angular acceleration (if desired) and determine
-    // new attitude satAtt_dcm_IB_
-    // *****************************************************************************
-    // Determine time difference
-    double deltaT = t - timeOld_;
+    // Calculate current angular rate (at t) by integration
+    // of angular acceleration (trapezoidal rule):
+    // omega_(t) = deltaT * (omegaDotOld + omegaDot) / 2 + omega_(t-deltaT)
+    // -----------------------------------------------------------------------------
+    LINALG::Matrix<3, 1> deltaOmega;
+    deltaOmega.Update(omegaDotOld_B_, omegaDot_B);  // 1) deltaOmega <- omegaDotOld_ + omegaDot
+    deltaOmega.Scale(deltaT / 2.0);                 // 2) deltaOmega <- deltaOmega * deltaT / 2.0
+    omega_B_ += deltaOmega;                         // 3) omega_ <- omega_ + deltaOmega
 
-    if (deltaT > 1e-12) { // new time step
+    /* // Debugging output
+       cout << "omegaDot: "; omegaDot_B.Print(cout); // Print omegaDot_B
+       cout << "omega:    "; omega_B_.Print(cout);   // Print omega_B_
+    */
 
-        // Determine current angular acceleration (at t)
-        // -----------------------------------------------------------------------------
-        LINALG::Matrix<3,1> omegaDot_B;
-        omegaDot_B(0,0) = 0.0;
-        omegaDot_B(1,0) = 0.0;
-        omegaDot_B(2,0) = 0.0;
+    omegaDotOld_B_ = omegaDot_B;  // Set omegaDotOld_B_ for next time step
 
-        for (int i=0; i<numManeuvers_; i++) {
-            if (t >= maneuvers_[i*NUMMANEUVERCELLS_+0]) {
-                omegaDot_B(0,0) = maneuvers_[i*NUMMANEUVERCELLS_+1];
-                omegaDot_B(1,0) = maneuvers_[i*NUMMANEUVERCELLS_+2];
-                omegaDot_B(2,0) = maneuvers_[i*NUMMANEUVERCELLS_+3];
-            }
-        }
+    // Calculate new attitude quaternion satAtt_q_IB_ [Wertz, p. 511f]
+    // -----------------------------------------------------------------------------
+    LINALG::Matrix<4, 4> mOmega;  // Skew-symmetric matrix containing angular velocity components
+    mOmega(0, 0) = 0.0;
+    mOmega(0, 1) = omega_B_(2, 0);
+    mOmega(0, 2) = -omega_B_(1, 0);
+    mOmega(0, 3) = omega_B_(0, 0);
+    mOmega(1, 0) = -omega_B_(2, 0);
+    mOmega(1, 1) = 0.0;
+    mOmega(1, 2) = omega_B_(0, 0);
+    mOmega(1, 3) = omega_B_(1, 0);
+    mOmega(2, 0) = omega_B_(1, 0);
+    mOmega(2, 1) = -omega_B_(0, 0);
+    mOmega(2, 2) = 0.0;
+    mOmega(2, 3) = omega_B_(2, 0);
+    mOmega(3, 0) = -omega_B_(0, 0);
+    mOmega(3, 1) = -omega_B_(1, 0);
+    mOmega(3, 2) = -omega_B_(2, 0);
+    mOmega(3, 3) = 0.0;
 
-        // Calculate current angular rate (at t) by integration
-        // of angular acceleration (trapezoidal rule):
-        // omega_(t) = deltaT * (omegaDotOld + omegaDot) / 2 + omega_(t-deltaT)
-        // -----------------------------------------------------------------------------
-        LINALG::Matrix<3,1> deltaOmega;
-        deltaOmega.Update(omegaDotOld_B_, omegaDot_B); // 1) deltaOmega <- omegaDotOld_ + omegaDot
-        deltaOmega.Scale(deltaT/2.0);                  // 2) deltaOmega <- deltaOmega * deltaT / 2.0
-        omega_B_ += deltaOmega;                        // 3) omega_ <- omega_ + deltaOmega
+    mOmega.Scale(deltaT / 2.0);
+    mOmega(0, 0) = 1.0;
+    mOmega(1, 1) = 1.0;
+    mOmega(2, 2) = 1.0;
+    mOmega(3, 3) = 1.0;
 
-        /* // Debugging output
-           cout << "omegaDot: "; omegaDot_B.Print(cout); // Print omegaDot_B
-           cout << "omega:    "; omega_B_.Print(cout);   // Print omega_B_
-        */
+    LINALG::Matrix<4, 1> satAtt_q_IB_TMP(true);
+    satAtt_q_IB_TMP.Multiply(mOmega, satAtt_q_IB_);
+    satAtt_q_IB_ = satAtt_q_IB_TMP;
 
-        omegaDotOld_B_ = omegaDot_B; // Set omegaDotOld_B_ for next time step
+    satAtt_q_IB_.Scale(1 / satAtt_q_IB_.Norm2());  // Normalize attitude quaternion
 
-        // Calculate new attitude quaternion satAtt_q_IB_ [Wertz, p. 511f]
-        // -----------------------------------------------------------------------------
-        LINALG::Matrix<4,4> mOmega; // Skew-symmetric matrix containing angular velocity components
-        mOmega(0,0) =  0.0;           mOmega(0,1) =  omega_B_(2,0); mOmega(0,2) = -omega_B_(1,0); mOmega(0,3) = omega_B_(0,0);
-        mOmega(1,0) = -omega_B_(2,0); mOmega(1,1) =  0.0;           mOmega(1,2) =  omega_B_(0,0); mOmega(1,3) = omega_B_(1,0);
-        mOmega(2,0) =  omega_B_(1,0); mOmega(2,1) = -omega_B_(0,0); mOmega(2,2) =  0.0;           mOmega(2,3) = omega_B_(2,0);
-        mOmega(3,0) = -omega_B_(0,0); mOmega(3,1) = -omega_B_(1,0); mOmega(3,2) = -omega_B_(2,0); mOmega(3,3) = 0.0;
+    // Create transformation matrix satAtt_dcm_IB_ [Wertz, (E-8)]
+    // -----------------------------------------------------------------------------
+    const double q1 = satAtt_q_IB_(0, 0);
+    const double q2 = satAtt_q_IB_(1, 0);
+    const double q3 = satAtt_q_IB_(2, 0);
+    const double q4 = satAtt_q_IB_(3, 0);
 
-        mOmega.Scale(deltaT/2.0);
-        mOmega(0,0) = 1.0;
-        mOmega(1,1) = 1.0;
-        mOmega(2,2) = 1.0;
-        mOmega(3,3) = 1.0;
+    satAtt_dcm_IB_(0, 0) = q1 * q1 - q2 * q2 - q3 * q3 + q4 * q4;
+    satAtt_dcm_IB_(0, 1) = 2.0 * (q1 * q2 - q3 * q4);
+    satAtt_dcm_IB_(0, 2) = 2.0 * (q1 * q3 + q2 * q4);
+    satAtt_dcm_IB_(1, 0) = 2.0 * (q1 * q2 + q3 * q4);
+    satAtt_dcm_IB_(1, 1) = -q1 * q1 + q2 * q2 - q3 * q3 + q4 * q4;
+    satAtt_dcm_IB_(1, 2) = 2.0 * (q2 * q3 - q1 * q4);
+    satAtt_dcm_IB_(2, 0) = 2.0 * (q1 * q3 - q2 * q4);
+    satAtt_dcm_IB_(2, 1) = 2.0 * (q2 * q3 + q1 * q4);
+    satAtt_dcm_IB_(2, 2) = -q1 * q1 - q2 * q2 + q3 * q3 + q4 * q4;
 
-        LINALG::Matrix<4,1> satAtt_q_IB_TMP(true);
-        satAtt_q_IB_TMP.Multiply(mOmega, satAtt_q_IB_);
-        satAtt_q_IB_ = satAtt_q_IB_TMP;
+    // Update time of last time step
+    // -----------------------------------------------------------------------------
+    timeOld_ = t;
+  }
 
-        satAtt_q_IB_.Scale(1/satAtt_q_IB_.Norm2()); // Normalize attitude quaternion
+  // Obtain the current node position in the inertial system
+  // *****************************************************************************
+  // NOTE: 1) Here it is assumed that the difference between the mesh system and the
+  //          body system is just given by a constant displacement named origin_.
+  //          Hence the variable origin_ specifies the point, given in the mesh
+  //          system, about which is being rotated.
+  //       2) The inertial system used here has position and attitude of the body
+  //          system at initial time. Thus it is deviating from the ECI system J2000
+  //          at most by a constant displacement that is due to the satellite position
+  //          at initial time and a constant rotation that is due to the satellite's
+  //          attitude at initial time. Due to Galilei-invariance this shouldn't be
+  //          a problem and it can easily be converted to the J2000 system.
 
-        // Create transformation matrix satAtt_dcm_IB_ [Wertz, (E-8)]
-        // -----------------------------------------------------------------------------
-        const double q1 = satAtt_q_IB_(0,0);
-        const double q2 = satAtt_q_IB_(1,0);
-        const double q3 = satAtt_q_IB_(2,0);
-        const double q4 = satAtt_q_IB_(3,0);
+  // Node reference position, given in the body system
+  LINALG::Matrix<3, 1> nodeReferencePos_B;
+  nodeReferencePos_B(0, 0) = xp[0] - origin_(0, 0);
+  nodeReferencePos_B(1, 0) = xp[1] - origin_(1, 0);
+  nodeReferencePos_B(2, 0) = xp[2] - origin_(2, 0);
 
-        satAtt_dcm_IB_(0,0) = q1*q1-q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(0,1) = 2.0*(q1*q2-q3*q4);        satAtt_dcm_IB_(0,2) = 2.0*(q1*q3+q2*q4);
-        satAtt_dcm_IB_(1,0) = 2.0*(q1*q2+q3*q4);       satAtt_dcm_IB_(1,1) = -q1*q1+q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(1,2) = 2.0*(q2*q3-q1*q4);
-        satAtt_dcm_IB_(2,0) = 2.0*(q1*q3-q2*q4);       satAtt_dcm_IB_(2,1) = 2.0*(q2*q3+q1*q4);        satAtt_dcm_IB_(2,2) = -q1*q1-q2*q2+q3*q3+q4*q4;
+  // Node position, given in the inertial system
+  LINALG::Matrix<3, 1> nodePos_I;
+  nodePos_I.Multiply(satAtt_dcm_IB_, nodeReferencePos_B);
 
-        // Update time of last time step
-        // -----------------------------------------------------------------------------
-        timeOld_ = t;
-    }
+  // Calculate and return the displacement/velocity of the node for the given index
+  // *****************************************************************************
 
-    // Obtain the current node position in the inertial system
-    // *****************************************************************************
-    // NOTE: 1) Here it is assumed that the difference between the mesh system and the
-    //          body system is just given by a constant displacement named origin_.
-    //          Hence the variable origin_ specifies the point, given in the mesh
-    //          system, about which is being rotated.
-    //       2) The inertial system used here has position and attitude of the body
-    //          system at initial time. Thus it is deviating from the ECI system J2000
-    //          at most by a constant displacement that is due to the satellite position
-    //          at initial time and a constant rotation that is due to the satellite's
-    //          attitude at initial time. Due to Galilei-invariance this shouldn't be
-    //          a problem and it can easily be converted to the J2000 system.
+  if (t <= 0)
+  {
+    // Return zero displacement/translational velocity of the node for the given index
+    return 0.0;
+  }
 
-    // Node reference position, given in the body system
-    LINALG::Matrix<3,1> nodeReferencePos_B;
-    nodeReferencePos_B(0,0) = xp[0] - origin_(0,0);
-    nodeReferencePos_B(1,0) = xp[1] - origin_(1,0);
-    nodeReferencePos_B(2,0) = xp[2] - origin_(2,0);
+  // Displacement of the node for the given index
+  const double dispNodePos_I = nodePos_I(index, 0) - nodeReferencePos_B(index, 0);
 
-    // Node position, given in the inertial system
-    LINALG::Matrix<3,1> nodePos_I;
-    nodePos_I.Multiply(satAtt_dcm_IB_, nodeReferencePos_B);
+  if (type_ == 1)
+  {  // structure
 
-    // Calculate and return the displacement/velocity of the node for the given index
-    // *****************************************************************************
+    // Return the displacement of the node for the given index
+    return dispNodePos_I;
+  }
+  else if (type_ == 2)
+  {  // fluid
 
-    if (t<=0) {
-        // Return zero displacement/translational velocity of the node for the given index
-        return 0.0;
-    }
+    // Node velocity, given in the inertial system: v = omega x r
+    double nodeVel_I[3];
+    nodeVel_I[0] = omega_B_(1, 0) * nodePos_I(2, 0) - omega_B_(2, 0) * nodePos_I(1, 0);
+    nodeVel_I[1] = omega_B_(2, 0) * nodePos_I(0, 0) - omega_B_(0, 0) * nodePos_I(2, 0);
+    nodeVel_I[2] = omega_B_(0, 0) * nodePos_I(1, 0) - omega_B_(1, 0) * nodePos_I(0, 0);
 
-    // Displacement of the node for the given index
-    const double dispNodePos_I = nodePos_I(index,0) - nodeReferencePos_B(index,0);
-
-    if (type_ == 1) { // structure
-
-        // Return the displacement of the node for the given index
-        return dispNodePos_I;
-
-    } else if (type_ == 2) { // fluid
-
-        // Node velocity, given in the inertial system: v = omega x r
-        double nodeVel_I[3];
-        nodeVel_I[0] = omega_B_(1,0) * nodePos_I(2,0) - omega_B_(2,0) * nodePos_I(1,0);
-        nodeVel_I[1] = omega_B_(2,0) * nodePos_I(0,0) - omega_B_(0,0) * nodePos_I(2,0);
-        nodeVel_I[2] = omega_B_(0,0) * nodePos_I(1,0) - omega_B_(1,0) * nodePos_I(0,0);
-
-        // Return the translational velocity of the node for the given index
-        return (nodeVel_I[index]);
-
-    } else {
-        dserror("When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or 'FLUID'");
-        return 0.0;
-    }
+    // Return the translational velocity of the node for the given index
+    return (nodeVel_I[index]);
+  }
+  else
+  {
+    dserror(
+        "When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or "
+        "'FLUID'");
+    return 0.0;
+  }
 }
 
 /*----------------------------------------------------------------------*
  | Constructor of AccelerationProfile                        hahn 09/13 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::AccelerationProfileFunction::AccelerationProfileFunction(std::string fileName) :
-Function(), NUMACCELERATIONCELLS_(4)
+DRT::UTILS::AccelerationProfileFunction::AccelerationProfileFunction(std::string fileName)
+    : Function(), NUMACCELERATIONCELLS_(4)
 {
-    // Initialize variables
-    // *****************************************************************************
+  // Initialize variables
+  // *****************************************************************************
 
-    // Initialize time of previous time step (at t-deltaT)
-    timeOld_ = 0.0;
+  // Initialize time of previous time step (at t-deltaT)
+  timeOld_ = 0.0;
 
-    // Initialize accelerations
-    accelerations_.clear();
+  // Initialize accelerations
+  accelerations_.clear();
 
-    // Initialize current acceleration (at t)
-    acc_B_(0,0) = 0.0;
-    acc_B_(1,0) = 0.0;
-    acc_B_(2,0) = 0.0;
+  // Initialize current acceleration (at t)
+  acc_B_(0, 0) = 0.0;
+  acc_B_(1, 0) = 0.0;
+  acc_B_(2, 0) = 0.0;
 
-    // Read acceleration profile file and fill acceleration variable
-    // *****************************************************************************
+  // Read acceleration profile file and fill acceleration variable
+  // *****************************************************************************
 
-    std::string line;
-    std::stringstream lineStream;
-    std::string cell;
+  std::string line;
+  std::stringstream lineStream;
+  std::string cell;
 
-    // Open file
-    std::ifstream file (fileName.c_str());
-    if (!file.is_open()) {
-        dserror("Unable to open file: %s", fileName.c_str());
-    }
+  // Open file
+  std::ifstream file(fileName.c_str());
+  if (!file.is_open())
+  {
+    dserror("Unable to open file: %s", fileName.c_str());
+  }
 
-    // Loop through all lines
-    while (getline (file,line)) {
-        if (!line.empty()) {
-            // Clear local variables
-            lineStream.clear();
-            cell.clear();
+  // Loop through all lines
+  while (getline(file, line))
+  {
+    if (!line.empty())
+    {
+      // Clear local variables
+      lineStream.clear();
+      cell.clear();
 
-            // Obtain all numAccelerationCells=4 values from current line (t, acc_x_B, acc_y_B, acc_z_B)
-            lineStream << line;
-            for (int i=0; i<NUMACCELERATIONCELLS_; i++) {
-                // Obtain i-th cell from current line
-                getline(lineStream, cell, ' ');
+      // Obtain all numAccelerationCells=4 values from current line (t, acc_x_B, acc_y_B, acc_z_B)
+      lineStream << line;
+      for (int i = 0; i < NUMACCELERATIONCELLS_; i++)
+      {
+        // Obtain i-th cell from current line
+        getline(lineStream, cell, ' ');
 
-                // If empty cell, than either empty line or one cell in the line
-                // missing, anyhow an error.
-                if (cell.empty()) {
-                    dserror("Error during reading of file: %s", fileName.c_str());
-                }
-
-                // Convert input cell from string to double
-                double cellDouble = (double)strtod(cell.c_str(), NULL);
-
-                // Add cell to acceleration vector
-                accelerations_.push_back(cellDouble);
-            }
+        // If empty cell, than either empty line or one cell in the line
+        // missing, anyhow an error.
+        if (cell.empty())
+        {
+          dserror("Error during reading of file: %s", fileName.c_str());
         }
+
+        // Convert input cell from string to double
+        double cellDouble = (double)strtod(cell.c_str(), NULL);
+
+        // Add cell to acceleration vector
+        accelerations_.push_back(cellDouble);
+      }
     }
+  }
 
-    // Close file
-    file.close();
+  // Close file
+  file.close();
 
-    // Determine number of accelerations
-    numAccelerations_ = (int)(accelerations_.size()) / (int)NUMACCELERATIONCELLS_;
+  // Determine number of accelerations
+  numAccelerations_ = (int)(accelerations_.size()) / (int)NUMACCELERATIONCELLS_;
 
-    // Output acceleration list
-    printf("\n=================================================================================\n");
-    printf("AccelerationProfile\n");
-    printf("---------------------------------------\n");
-    printf("The following %d acceleration rows have been loaded from file %s:\n", numAccelerations_, fileName.c_str());
-    for (int i=0; i<numAccelerations_; i++) {
-        printf("Time: %e  acc_B: %e, %e, %e \n",
-                accelerations_[i*NUMACCELERATIONCELLS_+0], accelerations_[i*NUMACCELERATIONCELLS_+1],
-                accelerations_[i*NUMACCELERATIONCELLS_+2], accelerations_[i*NUMACCELERATIONCELLS_+3]);
-    }
-    printf("=================================================================================\n\n");
-
+  // Output acceleration list
+  printf("\n=================================================================================\n");
+  printf("AccelerationProfile\n");
+  printf("---------------------------------------\n");
+  printf("The following %d acceleration rows have been loaded from file %s:\n", numAccelerations_,
+      fileName.c_str());
+  for (int i = 0; i < numAccelerations_; i++)
+  {
+    printf("Time: %e  acc_B: %e, %e, %e \n", accelerations_[i * NUMACCELERATIONCELLS_ + 0],
+        accelerations_[i * NUMACCELERATIONCELLS_ + 1],
+        accelerations_[i * NUMACCELERATIONCELLS_ + 2],
+        accelerations_[i * NUMACCELERATIONCELLS_ + 3]);
+  }
+  printf("=================================================================================\n\n");
 }
 
 /*---------------------------------------------------------------------*
  | Evaluate AccelerationProfile and return the respective acceleration |
  | of the node for the given index.                         hahn 09/13 |
  *---------------------------------------------------------------------*/
-double DRT::UTILS::AccelerationProfileFunction::Evaluate(const int index,
-    const double* xp, double t)
+double DRT::UTILS::AccelerationProfileFunction::Evaluate(
+    const int index, const double* xp, double t)
 {
-    // Determine time difference
-    double deltaT = t - timeOld_;
+  // Determine time difference
+  double deltaT = t - timeOld_;
 
-    // If new time step, determine current acceleration
-    // *****************************************************************************
-    if (deltaT > 1e-9) { // new time step
+  // If new time step, determine current acceleration
+  // *****************************************************************************
+  if (deltaT > 1e-9)
+  {  // new time step
 
-        // Determine current acceleration (at t)
-        // -------------------------------------------------------------------------
-        acc_B_(0,0) = 0.0;
-        acc_B_(1,0) = 0.0;
-        acc_B_(2,0) = 0.0;
+    // Determine current acceleration (at t)
+    // -------------------------------------------------------------------------
+    acc_B_(0, 0) = 0.0;
+    acc_B_(1, 0) = 0.0;
+    acc_B_(2, 0) = 0.0;
 
-        for (int i=0; i<numAccelerations_; i++) {
-            if (t >= accelerations_[i*NUMACCELERATIONCELLS_+0]) {
-                acc_B_(0,0) = accelerations_[i*NUMACCELERATIONCELLS_+1];
-                acc_B_(1,0) = accelerations_[i*NUMACCELERATIONCELLS_+2];
-                acc_B_(2,0) = accelerations_[i*NUMACCELERATIONCELLS_+3];
-            }
-        }
-
-        // Update time of last time step
-        // -------------------------------------------------------------------------
-        timeOld_ = t;
+    for (int i = 0; i < numAccelerations_; i++)
+    {
+      if (t >= accelerations_[i * NUMACCELERATIONCELLS_ + 0])
+      {
+        acc_B_(0, 0) = accelerations_[i * NUMACCELERATIONCELLS_ + 1];
+        acc_B_(1, 0) = accelerations_[i * NUMACCELERATIONCELLS_ + 2];
+        acc_B_(2, 0) = accelerations_[i * NUMACCELERATIONCELLS_ + 3];
+      }
     }
 
-    // Return the acceleration of the node for the given index
-    // *****************************************************************************
-    return acc_B_(index,0);
-}
+    // Update time of last time step
+    // -------------------------------------------------------------------------
+    timeOld_ = t;
+  }
 
+  // Return the acceleration of the node for the given index
+  // *****************************************************************************
+  return acc_B_(index, 0);
+}

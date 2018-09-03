@@ -23,19 +23,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
     class ElchMat : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ElchMat(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ElchMat() { ; }
@@ -47,14 +43,14 @@ namespace MAT
       //@{
 
       /// provide ids of the individual phase
-      const std::vector<int>& PhaseIds() const {return phaseids_;}
+      const std::vector<int>& PhaseIds() const { return phaseids_; }
 
       /// provide access to phases by its ID
       Teuchos::RCP<MAT::Material> PhaseById(const int id) const
       {
         if (not local_)
         {
-          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+          std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
 
           if (m == mat_.end())
           {
@@ -85,10 +81,9 @@ namespace MAT
       /// flag for individual materials or only one at global scope
       bool local_;
 
-    private:
-
+     private:
       /// map to materials (only used for local_==true)
-      std::map<int,Teuchos::RCP<MAT::Material> > mat_;
+      std::map<int, Teuchos::RCP<MAT::Material>> mat_;
 
       //@}
 
@@ -96,27 +91,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class ElchMatType : public DRT::ParObjectType
-{
-public:
+  class ElchMatType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ElchMatType"; }
 
-  std::string Name() const { return "ElchMatType"; }
+    static ElchMatType& Instance() { return instance_; };
 
-  static ElchMatType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ElchMatType instance_;
-};
+   private:
+    static ElchMatType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
   class ElchMat : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ElchMat();
 
@@ -165,21 +157,19 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_elchmat; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElchMat( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ElchMat(*this)); }
 
     // return number of Dof used for this problem type
-    int NumDOF() const {return params_->numdof_;}
+    int NumDOF() const { return params_->numdof_; }
 
     // return number of scalars used for this problem type
-    int NumScal() const {return params_->numscal_;}
+    int NumScal() const { return params_->numscal_; }
 
     /// number of materials
     int NumPhase() const { return params_->numphase_; }
 
     /// material ID by Index
-    int PhaseID(
-      const unsigned index
-    ) const
+    int PhaseID(const unsigned index) const
     {
       if ((int)index < params_->numphase_)
         return params_->phaseids_.at(index);
@@ -195,24 +185,23 @@ private:
     {
       if (params_->local_)
       {
-      std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
-      if (m == mat_.end())
-      {
-        dserror("Material %d could not be found", id);
-        return Teuchos::null;
+        std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
+        if (m == mat_.end())
+        {
+          dserror("Material %d could not be found", id);
+          return Teuchos::null;
+        }
+        else
+          return m->second;
       }
-      else
-        return m->second;
-      }
-      else // material is global (stored in material parameters)
+      else  // material is global (stored in material parameters)
         return params_->PhaseById(id);
-     }
+    }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// setup of material map
     void SetupMatMap();
 
@@ -223,11 +212,9 @@ private:
     MAT::PAR::ElchMat* params_;
 
     /// map to materials
-    std::map<int,Teuchos::RCP<MAT::Material> > mat_;
-
+    std::map<int, Teuchos::RCP<MAT::Material>> mat_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-
