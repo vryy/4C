@@ -44,7 +44,7 @@ TIMESTEP                        0.1
 RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
-BASETOL                         1e-09
+BASETOL                         1e-11
 ITEMAX                          15
 LINEARBLOCKSOLVER               PreconditionedKrylov
 SHAPEDERIVATIVES                yes

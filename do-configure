@@ -126,14 +126,21 @@ fi
 # set valid folder for baci build
 BUILD_FOLDER=$BUILD_FOLDER_SAFE
 
+# Print source and build folder locations to screen
+echo "Source and build directory:"
+echo "-- Path to source code:    " $BACI_HOME
+echo "-- Path to build directory:" $BUILD_FOLDER
+
 # remove CMakeCache.txt
 rm -f CMakeCache.txt
 
 # read in configuration
 if [[ -f $CONFIGURATION_FILE ]]; then
+  echo "Configuration file:" $CONFIGURATION_FILE
   . $CONFIGURATION_FILE
 else
   echo "No configuration file given! This is fatal!"
+  echo ""
   echo "Please provide a suitable configuration file via the command line argument --config="
   echo "A bunch of supported configuration files can be found in <BACI-dir>/buildconfig/."
   exit
@@ -211,6 +218,7 @@ $CMAKE_COMMAND \
     -D QHULL_LIBRARY_DIR:FILEPATH=$LIB_INSTALL_DIR \
     -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D MPI_DIR:FILEPATH=$MPIDIR \
+    -D MPI_RUN:FILEPATH=$MPIRUN \
     -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
     -D BLA_VENDOR:STRING=$BLA_VENDORSTRING \
     -D BLAS_LIBRARIES:FILEPATH=$BLAS_LIBS \

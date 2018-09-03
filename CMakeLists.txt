@@ -149,9 +149,9 @@ find_package(Qhull REQUIRED)
 if (QHULL_FOUND)
   include_directories(${QHULL_INCLUDE_DIRS})
   link_directories(${QHULL_LIBRARY_DIRS})
-  #MESSAGE("QHULL includes: ${QHULL_INCLUDE_DIRS}")
-  #MESSAGE("QHULL library: ${QHULL_LIBRARY}")
-  #MESSAGE("QHULL libraries: ${QHULL_LIBRARIES}")
+  MESSAGE("QHULL includes: ${QHULL_INCLUDE_DIRS}")
+  MESSAGE("QHULL library: ${QHULL_LIBRARY}")
+  MESSAGE("QHULL libraries: ${QHULL_LIBRARIES}")
   set(LIBRARIES
     ${LIBRARIES}
     ${QHULL_LIBRARIES}
@@ -2906,7 +2906,7 @@ add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES}
     -Wl,--start-group ${FILTER_LIBRARIES} -Wl,--end-group
 )
-add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
+add_test(NAME run_cut_test COMMAND ${MPI_RUN} $<TARGET_FILE:cut_test>)
 
 include (TestingFramework.cmake)
 include (UnittestingFramework.cmake)
