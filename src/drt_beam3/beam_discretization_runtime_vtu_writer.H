@@ -176,8 +176,12 @@ public:
   void AppendElementOrientationParamater(
       Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector);
 
-  void AppendPeriodicBoxCrossSectionStressResultants(
-      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+  /** \brief append sum of all element (node 0) internal energy cut in direction cut_dim
+   *
+   *  \author eichinger
+   *  \date 08/17 */
+  void AppendRVECrosssectionForces(
+      Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector );
 
   /** \brief append current internal energy of the elements to output data
    *
@@ -229,7 +233,7 @@ private:
   Teuchos::RCP<const GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
 
   //! number of points for each element ( in case of periodic boundary conditions
-  //! not equal to BEAMSVTUVISUALSUBSEGMENTS + 1)
+  //! not equal to 1)
   std::vector<int> num_cells_per_element_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data

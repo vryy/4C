@@ -102,6 +102,11 @@ namespace BEAMS
     setStringToIntegralParameter<int>("ORIENTATION_PARAMETER","No",
         "write element filament numbers",
         yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+    // write crossection forces of periodic RVE
+    setStringToIntegralParameter<int>( "RVE_CROSSSECTION_FORCES", "No",
+        " get sum of all internal forces of  ",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
   }
 
 }

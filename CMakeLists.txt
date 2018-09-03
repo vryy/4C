@@ -797,6 +797,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_fsi.cpp
   src/drt_inpar/inpar_immersed.cpp
   src/drt_inpar/inpar_invanalysis.cpp
+  src/drt_inpar/inpar_IO_monitor_structure_dbc.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.cpp

@@ -50,6 +50,9 @@ namespace BEAMINTERACTION {
     //! setup member variables
     void Setup();
 
+    //! reset time step in case structure time is adapted during simulation time
+    void ResetTimeStep( double structure_delta_time );
+
     //! returns the isinit_ flag
     inline const bool& IsInit() const
     { return isinit_; };
@@ -87,7 +90,7 @@ namespace BEAMINTERACTION {
       return deltatime_;
     };
 
-    /// time step for stochastic events concerning crosslinking
+    /// contraction rate of cell (integrin linker) in [μm/s]
     double ContractionRate( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
     {
       CheckInitSetup();
@@ -153,6 +156,7 @@ namespace BEAMINTERACTION {
 
     /// time step for stochastic events concerning integrins, e.g. catch-slip-bond behavior
     double deltatime_;
+    bool own_deltatime_;
     /// contraction rate of cell (integrin linker) in [μm/s]
     std::map< INPAR::BEAMINTERACTION::CrosslinkerType, double > contractionrate_;
     /// crosslinker material

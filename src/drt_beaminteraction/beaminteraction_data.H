@@ -407,6 +407,77 @@ namespace DATA
 
   };
 
+  struct BspotLinkerData
+  {
+
+    //! constructor
+    BspotLinkerData();
+
+    //! destructor
+    virtual ~BspotLinkerData() {};
+
+    //!@name data access functions
+    //! @{
+
+    int GetEleGid1() const { return elegid_1_; };
+    int GetEleGid2() const { return elegid_2_; };
+
+    int GetLocBspotId1() const { return locbspot_1_; };
+    int GetLocBspotId2() const { return locbspot_2_; };
+
+    int GetType() const { return type_; };
+
+    int GetMatId() const { return mat_id_; };
+
+    int GetNumberOfBonds1() const { return number_of_bonds_1_; };
+    int GetNumberOfBonds2() const { return number_of_bonds_2_; };
+
+    void SetEleGid1( int elegid ) { elegid_1_ = elegid; };
+    void SetEleGid2( int elegid ) { elegid_2_ = elegid; };
+
+    void SetLocBspotId1( int locbspot ) { locbspot_1_ = locbspot; };
+    void SetLocBspotId2( int locbspot ) { locbspot_2_ = locbspot; };
+
+    void SetType( int type ) { type_ = type; };
+
+    void SetMatId( int mat_id ) { mat_id_ = mat_id; };
+
+    void SetNumberOfBonds1( int number_of_bonds ) { number_of_bonds_1_ = number_of_bonds; };
+    void SetNumberOfBonds2( int number_of_bonds ) { number_of_bonds_2_ = number_of_bonds; };
+
+    bool SameAs (BspotLinkerData bspotlinker );
+
+    //! @}
+
+  private:
+
+    //!@name member variables
+    //! @{
+
+    /// element ids
+    int elegid_1_;
+    int elegid_2_;
+
+    /// binding spot local ids
+    int locbspot_1_;
+    int locbspot_2_;
+
+    /// crosslinker type
+    int type_;
+
+    /// crosslinker mat id
+    int mat_id_;
+
+    /// number of bonds
+    int number_of_bonds_1_;
+    int number_of_bonds_2_;
+
+    /// element
+
+    //! @}
+
+  };
+
   /// create respective data container from char vector
   template< typename T >
   T * CreateDataContainer( std::vector<char> const & data )

@@ -295,7 +295,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp);
+    UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 
 
   // vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
@@ -2738,7 +2738,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp);
+    UnShiftNodePosition( disp, *BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 
 
   // total position state of element

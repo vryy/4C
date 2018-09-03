@@ -497,7 +497,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
+  // in case time step is same as structure time step, update it
+  spherebeamlinking_params_ptr_->ResetTimeStep( (*GState().GetDeltaTime())[0] );
+
 }
 
 /*-------------------------------------------------------------------------------*
@@ -509,6 +511,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteRestart(
   CheckInitSetup();
 
   // as bonds are stored in rigid sphere element, nothing to do here
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::PreReadRestart()
+{
+  // empty
 }
 
 /*-------------------------------------------------------------------------------*
@@ -741,9 +750,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::FindAndStoreNeighbor
 
   // loop over all sphere elements
   int unsigned const numrowsphereeles = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
+  std::vector< int > rand_row_sphere = BEAMINTERACTION::UTILS::Permutation( numrowsphereeles );
+
   for( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
   {
-    int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(rowele_i);
+    int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(rand_row_sphere[rowele_i]);
     DRT::Element* currsphere = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
@@ -808,10 +819,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
     spherepos(dim) = sphere->Nodes()[0]->X()[dim] + sphereeledisp[dim];
 
   // loop over all neighboring elements
-  for ( auto const & eiter : neighbors )
+  std::vector< int > rand_ele = BEAMINTERACTION::UTILS::Permutation( neighbors.size() );
+  for ( auto const & eiter : rand_ele )
   {
     DRT::ELEMENTS::Beam3Base const * beamele =
-        dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(eiter);
+        dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(neighbors[eiter]);
 
 #ifdef DEBUG
     if ( sphere == NULL or beamele == NULL )
@@ -827,11 +839,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
 
     // loop over binding spots of neighboring element
     unsigned int numbspots = beamele->GetNumberOfBindingSpots( spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType() );
+    std::vector< int > rand_bsp = BEAMINTERACTION::UTILS::Permutation( numbspots );
     for ( unsigned int bspot_i = 0; bspot_i < numbspots; ++bspot_i )
     {
       // build unique linker id from elegid and local binding spot id
-      std::pair< int, int > bspotpair = std::make_pair( beamele->Id(), bspot_i );
+      std::pair< int, int > bspotpair = std::make_pair( beamele->Id(), rand_bsp[bspot_i] );
       int bpspotgid = BEAMINTERACTION::UTILS::CantorPairing( bspotpair);
+
+      // criterion: has sphere reached maximum number of admissible bonds?
+      if ( ( sphere->GetNumberOfBonds() + numnewbondsthisstep ) ==
+             spherebeamlinking_params_ptr_->MaxNumLinkerPerType()[0] )
+        continue;
 
       // criterion: probability check for integrin collagen binding
       if ( spherebeamlinking_params_ptr_->GetLinkerMaterial()->KOn() > -1e-08 )
@@ -841,11 +859,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
         if ( DRT::Problem::Instance()->Random()->Uni() > plink )
           continue;
       }
-
-      // criterion: has sphere reached maximum number of admissible bonds?
-      if ( ( sphere->GetNumberOfBonds() + numnewbondsthisstep ) ==
-             spherebeamlinking_params_ptr_->MaxNumLinkerPerType()[0] )
-        continue;
 
 #ifdef DEBUG
       // todo: do only in debug mode as soon tested enough
@@ -869,11 +882,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
       // get current position at binding spot xi
       bspotpos.Clear();
       beamele->GetPosOfBindingSpot( bspotpos, beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
-          bspot_i, PeriodicBoundingBox() );
+          rand_bsp[bspot_i], PeriodicBoundingBox() );
 
-      double const linkdistmin = spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLength()
+      double linkdistmin = spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLength()
                                  - spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLengthTolerance();
-      double const linkdistmax = spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLength()
+
+      // exclude links inside sphere
+      linkdistmin = ( linkdistmin > sphere->Radius() ) ? linkdistmin : sphere->Radius();
+
+      double linkdistmax = spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLength()
                                  + spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingLengthTolerance();
 
 
@@ -889,7 +906,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
       // get current triad at binding spot xi
       bspottriad.Clear();
       beamele->GetTriadOfBindingSpot( bspottriad, beameledisp, spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(),
-          bspot_i );
+          rand_bsp[bspot_i] );
 
       // note: we use first base vector instead of tangent vector here
       LINALG::Matrix< 3, 1> curr_bindingspot_beam_tangent(true);
@@ -1024,9 +1041,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBond
 
   // sphere loop
   int unsigned const numrowsphereeles = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
+  std::vector< int > rand_row_sphere = BEAMINTERACTION::UTILS::Permutation( numrowsphereeles );
   for ( unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i )
   {
-    int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(rowele_i);
+    int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(rand_row_sphere[rowele_i]);
     DRT::ELEMENTS::Rigidsphere * sphere =
         dynamic_cast< DRT::ELEMENTS::Rigidsphere* >( Discret().gElement( elegid ) );
 
@@ -1113,7 +1131,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CalcForceDependentCa
   else
   {
     p_unbind = 1.0;
-    std::cout << "WARNING: You have some very high forces acting on your integrins. Are you "
+    std::cout << "WARNING: You have very high forces (" << f << ") acting on your integrins. Are you "
         "sure this is what you want? " << std::endl;
   }
 
@@ -1169,46 +1187,3 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
     }
   }
 }
-
-///*-------------------------------------------------------------------------------*
-// *-------------------------------------------------------------------------------*/
-//void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateCellsPositionRandomly()
-//{
-//  CheckInit();
-//
-//  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
-//  int const numcells = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
-//  std::vector<double> randpos;
-//  DRT::Problem::Instance()->Random()->Uni( randpos, 3 * numcells );
-//
-//  //todo: this is of course not nice, this needs to be done somewhere else
-//  for( int i = 0; i < numcells; ++i )
-//  {
-//    DRT::Element* eleptr = Discret().gElement(EleTypeMapExtractorPtr()->SphereMap()->GID(i) );
-//
-//    std::vector<int> dofnode  = Discret().Dof(eleptr->Nodes()[0]);
-//
-//    // random position of cell inside box
-//    static std::vector< std::vector< double > > Xnew(numcells, std::vector< double >(3) );
-//    if( GState().GetStepN() % 20 == 0 and GState().GetStepN() != 0)
-//    {
-//      for ( int dim = 0; dim < 3; ++dim )
-//      {
-//        double edgelength = 5.5;
-//        double min = 0.5;
-//        Xnew[i][dim] = min + ( edgelength * randpos[ i + dim ] );
-//      }
-//    }
-//
-//    // loop over all dofs
-//    for( int dim = 0; dim < 3; ++dim )
-//    {
-//      int doflid = BeamInteractionDataStatePtr()->GetMutableDisNp()->Map().LID(dofnode[dim]);
-//      (*BeamInteractionDataStatePtr()->GetMutableDisNp() )[doflid] = Xnew[i][dim] - eleptr->Nodes()[0]->X()[dim];
-//    }
-// /*   int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(i);
-//    DiscretPtr()->gElement(elegid)->Nodes()[0]->SetPos(Xnew);*/
-//   }
-//}
-
-

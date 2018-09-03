@@ -71,7 +71,9 @@ void PARTICLE::TimIntStrategySpheres::ComputeAngularAcceleration(
   {
     const double invinertia = 1./(*timint_->inertia_)[i];
     for(int dim=0; dim<3; ++dim)
+    {
       angacc[i*3+dim] = invinertia*m_contact[i*3+dim];
+    }
   }
 
   return;

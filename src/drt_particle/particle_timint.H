@@ -645,7 +645,6 @@ namespace PARTICLE
     /// global number of boundary particles over all processors
     int global_num_boundaryparticles_;
 
-
     //@}
 
     //! @name Global state vector transfer helpers

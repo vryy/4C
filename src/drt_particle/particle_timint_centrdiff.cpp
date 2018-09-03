@@ -112,7 +112,9 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
 
     collhandler_->Init(disn_, veln_, angVeln_, Radiusn(), orient_, mass_);
 
-    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, f_structure_);
+    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, f_structure_, stepn_);
+
+
 
     //Get extreme values of gap etc.
     GetExtremeValues();
@@ -167,12 +169,12 @@ void PARTICLE::TimIntCentrDiff::GetExtremeValues()
       std::cout << "*** Alltime maximum relative (to rad) penetration between two particles = " << g_alltimemax_particle_rel << std::endl;
       std::cout << "*** Alltime maximum relative (to rad) penetration between a particle and a wall = " << g_alltimemax_wall_rel << std::endl;
 
-      std::ofstream penetrationoutput;
-      penetrationoutput.open ("penetrationoutput.csv", std::ofstream::app);
-      if(particle_algorithm_->Step()<2)
-        penetrationoutput << "timestep,g_max_particle,g_max_particle_rel,g_max_wall,g_max_wall_rel,yield_max_rel,g_alltimemax_particle,g_alltimemax_particle_rel,g_alltimemax_wall,g_alltimemax_wall_rel,yield_alltimemax_rel" << std::endl;
-      penetrationoutput << particle_algorithm_->Step() <<"," << g_max_particle << "," << g_max_particle_rel <<"," << g_max_wall << "," << g_max_wall_rel << "," << yield_max_rel <<"," << g_alltimemax_particle << "," << g_alltimemax_particle_rel <<"," << g_alltimemax_wall << "," << g_alltimemax_wall_rel << "," << yield_alltimemax_rel << std::endl;
-      penetrationoutput.close();
+//      std::ofstream penetrationoutput;
+//      penetrationoutput.open ("penetrationoutput.csv", std::ofstream::app);
+//      if(particle_algorithm_->Step()<2)
+//        penetrationoutput << "timestep,g_max_particle,g_max_particle_rel,g_max_wall,g_max_wall_rel,yield_max_rel,g_alltimemax_particle,g_alltimemax_particle_rel,g_alltimemax_wall,g_alltimemax_wall_rel,yield_alltimemax_rel" << std::endl;
+//      penetrationoutput << particle_algorithm_->Step() <<"," << g_max_particle << "," << g_max_particle_rel <<"," << g_max_wall << "," << g_max_wall_rel << "," << yield_max_rel <<"," << g_alltimemax_particle << "," << g_alltimemax_particle_rel <<"," << g_alltimemax_wall << "," << g_alltimemax_wall_rel << "," << yield_alltimemax_rel << std::endl;
+//      penetrationoutput.close();
     }
   }
 #endif

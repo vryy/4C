@@ -249,6 +249,30 @@ public:
     dserror("not implemented");
   }
 
+  /** \brief Get spatial cross-section stress resultants
+   *
+   *  \author eichinger
+   *  \date 05/17 */
+  virtual inline void GetSpatialForcesAtAllGPs(
+      std::vector<double>& spatial_axial_force_GPs,
+      std::vector<double>& spatial_shear_force_2_GPs,
+      std::vector<double>& spatial_shear_force_3_GPs) const
+  {
+    dserror("not implemented");
+  }
+
+  /** \brief Get spatial cross-section stress resultants
+   *
+   *  \author eichinger
+   *  \date 05/17 */
+  virtual inline void GetSpatialMomentsAtAllGPs(
+      std::vector<double>& spatial_torque_GPs,
+      std::vector<double>& spatial_bending_moment_2_GPs,
+      std::vector<double>& spatial_bending_moment_3_GPs) const
+  {
+    dserror("not implemented");
+  }
+
   /** \brief Get material cross-section stress resultants
    *
    *  \author grill
@@ -351,9 +375,15 @@ public:
   virtual double GetKineticEnergy() const = 0;
 
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  virtual bool UnShiftNodePosition(
-      std::vector<double>&       disp, //!<element disp vector
+  virtual void UnShiftNodePosition(
+      std::vector<double> & disp, //!<element disp vector
       GEO::MESHFREE::BoundingBox const & periodic_boundingbox) const;
+
+  //! get directions in which element might be cut by a periodic boundary
+  virtual void GetDirectionsOfShifts(
+      std::vector< double > & disp,
+      GEO::MESHFREE::BoundingBox const & periodic_boundingbox,
+      std::vector< bool > & shift_in_dim ) const;
 
   /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
    *
@@ -468,9 +498,6 @@ protected:
                            const LINALG::TMatrix<T,ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                            LINALG::TMatrix<T,ndim,1>&       velbackground,  //!< velocity of background fluid
                            LINALG::TMatrix<T,ndim,ndim>&    velbackgroundgrad) const; //!<gradient of velocity of background fluid
-
-  //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  virtual bool UnShiftNodePosition(std::vector<double>& disp) const;
 
 public:
 

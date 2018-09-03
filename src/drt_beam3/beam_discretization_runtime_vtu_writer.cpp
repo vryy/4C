@@ -150,6 +150,8 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   cell_offsets.clear();
   cell_offsets.reserve(num_beam_row_elements);
 
+  std::vector< bool > dummy_shift_in_dim( 3, false);
+
   // loop over my elements and collect the geometry/grid data
   unsigned int pointcounter = 0;
 
@@ -164,7 +166,6 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
     if ( beamele == NULL )
       dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
-
     std::vector<double> beamelement_displacement_vector;
 
     if ( use_absolute_positions_ )
@@ -175,7 +176,7 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(
             *discretization_, ele, displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector );
       }
-      // this is needed is enough in case your input file does not contain shifted/cut elements
+      // this is needed in case your input file does not contain shifted/cut elements
       else
       {
         BEAMINTERACTION::UTILS::GetCurrentElementDis(
@@ -204,11 +205,15 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
       LINALG::Matrix<3,1> unshift_interpolated_position = interpolated_position;
 
+      // check if an element is cut by a periodic boundary
+      bool shift = false;
+      if ( periodic_boundingbox_ != Teuchos::null )
+        shift = periodic_boundingbox_->CheckIfShiftBetweenPoints( unshift_interpolated_position,
+          interpolated_position_priorpoint, dummy_shift_in_dim );
+
       // if there is a shift between two consecutive points, double that point and create new cell
       // not for first and last point
-      if ( ipoint != 0 and periodic_boundingbox_ != Teuchos::null
-          and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint )
-          and ipoint != BEAMSVTUVISUALSUBSEGMENTS )
+      if ( ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS and shift )
       {
         for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
           point_coordinates.push_back( unshift_interpolated_position(idim) );
@@ -1386,29 +1391,45 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void
-BeamDiscretizationRuntimeVtuWriter::AppendPeriodicBoxCrossSectionStressResultants(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+BeamDiscretizationRuntimeVtuWriter::AppendRVECrosssectionForces(
+    Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector )
 {
+  //NOTE: so far force in node 0 is written
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
 
+  // storage for spatial stress resultants at all GPs of all my row elements
+  std::vector<double> sum_spatial_force_rve_crosssection_xdir;
+  std::vector<double> sum_spatial_force_rve_crosssection_ydir;
+  std::vector<double> sum_spatial_force_rve_crosssection_zdir;
+  sum_spatial_force_rve_crosssection_xdir.reserve( num_beam_row_elements );
+  sum_spatial_force_rve_crosssection_ydir.reserve( num_beam_row_elements );
+  sum_spatial_force_rve_crosssection_zdir.reserve( num_beam_row_elements );
+  std::vector<double> spatial_x_force_GPs_current_element;
+  std::vector<double> spatial_y_force_2_GPs_current_element;
+  std::vector<double> spatial_z_force_3_GPs_current_element;
 
-  // storage for material stress resultants at all GPs of all my row elements
-  std::vector<double> spatial_force_crossection;
-  spatial_force_crossection.reserve( num_beam_row_elements );
+  std::vector<int> nodedofs;
+  std::vector< std::vector<double> > fint_sum( 3, std::vector<double>( 3, 0.0 ) );
+  std::vector< double > beamelement_displacement_vector;
+  std::vector< double > beamelement_shift_displacement_vector;
+  LINALG::Matrix< 3, 1 > pos_node_1(true);
+  LINALG::Matrix< 3, 1 > pos_node_2(true);
 
-  std::vector<double> sum_force( 3, 0.0 );
+  // create pseudo planes through center of RVE (like this it also works if
+  // your box is not periodic, i.e. you do not have cut element on the box edges)
+  LINALG::Matrix< 3, 2 > box( true );
+  if ( periodic_boundingbox_ != Teuchos::null )
+  {
+    for ( unsigned dim = 0; dim < 3; ++dim )
+    {
+      box( dim, 0 ) = periodic_boundingbox_->Box()( dim, 0 );
+      box( dim, 1 ) = periodic_boundingbox_->Box()( dim, 0 ) + 0.5 * periodic_boundingbox_->EdgeLength(dim);
+    }
+  }
 
-  // storage for material stress resultants at all GPs of current element
-  std::vector<double> spatial_axial_force_GPs_current_element;
-  std::vector<double> spatial_shear_force_2_GPs_current_element;
-  std::vector<double> spatial_shear_force_3_GPs_current_element;
-
-  std::vector<double> spatial_torque_GPs_current_element;
-  std::vector<double> spatial_bending_moment_2_GPs_current_element;
-  std::vector<double> spatial_bending_moment_3_GPs_current_element;
-
+  LINALG::Matrix< 3, 1 > xi_intersect(true);
 
   // loop over all my elements and build force sum of myrank's cut element
   for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
@@ -1418,66 +1439,57 @@ BeamDiscretizationRuntimeVtuWriter::AppendPeriodicBoxCrossSectionStressResultant
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    // Todo safety check for now, may be removed when better tested
-    if ( beamele == NULL )
-      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+                *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector );
+    BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( *discretization_, ele,
+        displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector );
 
-    // check if element is cut by periodic boundary
-    if ( num_cells_per_element_[ibeamele] == 1 )
-      continue;
+    beamele->GetPosAtXi( pos_node_1, -1.0, beamelement_displacement_vector );
+    beamele->GetPosAtXi( pos_node_2, 1.0, beamelement_displacement_vector );
+    periodic_boundingbox_->GetXiOfIntersection3D( pos_node_1, pos_node_2, xi_intersect, box );
 
-    spatial_axial_force_GPs_current_element.clear();
-    spatial_shear_force_2_GPs_current_element.clear();
-    spatial_shear_force_3_GPs_current_element.clear();
+    // todo: change from just using first gauss point to linear inter-/extrapolation
+    // between two closest gauss points
 
-    spatial_torque_GPs_current_element.clear();
-    spatial_bending_moment_2_GPs_current_element.clear();
-    spatial_bending_moment_3_GPs_current_element.clear();
+    spatial_x_force_GPs_current_element.clear();
+    spatial_y_force_2_GPs_current_element.clear();
+    spatial_z_force_3_GPs_current_element.clear();
 
+    for ( int dir = 0; dir < 3; ++dir )
+    {
+      if ( xi_intersect(dir) > 1.0 )
+        continue;
 
-    // get GP stress values from previous element evaluation call
-    beamele->GetSpatialStressResultantsAtAllGPs(
-        spatial_axial_force_GPs_current_element,
-        spatial_shear_force_2_GPs_current_element,
-        spatial_shear_force_3_GPs_current_element,
-        spatial_torque_GPs_current_element,
-        spatial_bending_moment_2_GPs_current_element,
-        spatial_bending_moment_3_GPs_current_element);
+      beamele->GetSpatialForcesAtAllGPs( spatial_x_force_GPs_current_element,
+          spatial_y_force_2_GPs_current_element, spatial_z_force_3_GPs_current_element );
 
-    //fixme: for now, always take first gausspoint, better: take nearest gp to cross section
-    sum_force[0] += spatial_axial_force_GPs_current_element[0];
-    sum_force[1] += spatial_shear_force_2_GPs_current_element[0];
-    sum_force[2] += spatial_shear_force_3_GPs_current_element[0];
-
+      fint_sum[dir][0] += spatial_x_force_GPs_current_element[0];
+      fint_sum[dir][1] += spatial_y_force_2_GPs_current_element[0];
+      fint_sum[dir][2] += spatial_z_force_3_GPs_current_element[0];
+    }
   }
 
-  std::vector<double> global_sum( 3, 0.0 );
-  discretization_->Comm().SumAll(sum_force.data(), global_sum.data(), 3);
+  std::vector< std::vector<double> > global_sum( 3, std::vector<double>( 3, 0.0 ) );
+  for ( int dir = 0; dir < 3; ++dir )
+    discretization_->Comm().SumAll( fint_sum[dir].data(), global_sum[dir].data(), 3 );
 
   // loop over all my elements and build force sum of myrank's cut element
   for ( unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele )
-  {
-//    const DRT::Element* ele = discretization_->lRowElement( local_row_indices_beam_elements_[ibeamele] );
-//
-//    // cast to beam element
-//    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-//
-//    // Todo safety check for now, may be removed when better tested
-//    if ( beamele == NULL )
-//      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
-
     for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
       for ( int dim = 0; dim < 3; ++dim )
-        spatial_force_crossection.push_back( global_sum[dim] );
-
-  }
+      {
+        sum_spatial_force_rve_crosssection_xdir.push_back( global_sum[0][dim] );
+        sum_spatial_force_rve_crosssection_ydir.push_back( global_sum[1][dim] );
+        sum_spatial_force_rve_crosssection_zdir.push_back( global_sum[2][dim] );
+      }
 
   // append the solution vectors to the visualization data of the vtu writer object
-  runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      spatial_force_crossection,
-      3,
-      "spatial_crossection_force" );
-
+  runtime_vtuwriter_->AppendVisualizationCellDataVector( sum_spatial_force_rve_crosssection_xdir, 3,
+      "sum_spatial_force_rve_crosssection_xdir" );
+  runtime_vtuwriter_->AppendVisualizationCellDataVector( sum_spatial_force_rve_crosssection_ydir, 3,
+      "sum_spatial_force_rve_crosssection_ydir" );
+  runtime_vtuwriter_->AppendVisualizationCellDataVector( sum_spatial_force_rve_crosssection_zdir, 3,
+      "sum_spatial_force_rve_crosssection_zdir" );
 }
 
 /*-----------------------------------------------------------------------------------------------*

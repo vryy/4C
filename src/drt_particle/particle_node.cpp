@@ -48,7 +48,9 @@ is_bdry_particle_(false)
 PARTICLE::ParticleNode::ParticleNode(const PARTICLE::ParticleNode& old) :
 DRT::Node(old),
 history_particle_(old.history_particle_),
+history_particle_adhesion_(old.history_particle_adhesion_),
 history_wall_(old.history_wall_),
+history_wall_adhesion_(old.history_wall_adhesion_),
 is_bdry_particle_(old.is_bdry_particle_)
 {
 
@@ -93,12 +95,27 @@ void PARTICLE::ParticleNode::Print(std::ostream& os) const
     os << i->first << "  ";
   }
 
+  if(history_particle_adhesion_.size())
+    os << "in adhesive interaction with particles (Id): ";
+  for(std::map<int, Adhesion>::const_iterator i=history_particle_adhesion_.begin(); i!=history_particle_adhesion_.end(); ++i)
+  {
+    os << i->first << "  ";
+  }
+
   if(history_particle_.size())
     os << "in contact with walls (Id): ";
   for(std::map<int, Collision>::const_iterator i=history_particle_.begin(); i!=history_particle_.end(); ++i)
   {
     os << i->first << "  ";
   }
+
+  if(history_particle_adhesion_.size())
+    os << "in adhesive interaction with walls (Id): ";
+  for(std::map<int, Adhesion>::const_iterator i=history_particle_adhesion_.begin(); i!=history_particle_adhesion_.end(); ++i)
+  {
+    os << i->first << "  ";
+  }
+
 
   if(is_bdry_particle_)
     os << "is a boundary particle!";
@@ -128,7 +145,20 @@ void PARTICLE::ParticleNode::Pack(DRT::PackBuffer& data) const
     // one collision event with another particle
     AddtoPack(data,i->first);
     AddtoPack(data,i->second.stick);
+    AddtoPack(data,i->second.stick_roll);
     AddtoPack(data,i->second.g_t,3*sizeof(double));
+    AddtoPack(data,i->second.g_r,3*sizeof(double));
+  }
+
+  // add size of history_particle_adhesion
+  AddtoPack(data,(int)history_particle_adhesion_.size());
+  for(std::map<int, Adhesion>::const_iterator i=history_particle_adhesion_.begin(); i!=history_particle_adhesion_.end(); ++i)
+  {
+    // one collision event with another particle
+    AddtoPack(data,i->first);
+    AddtoPack(data,i->second.adhesion);
+    AddtoPack(data,i->second.surface_energy);
+    AddtoPack(data,i->second.normal_adhesion_force);
   }
 
   // add size of history_wall_
@@ -138,7 +168,20 @@ void PARTICLE::ParticleNode::Pack(DRT::PackBuffer& data) const
     // one collision event with a wall element
     AddtoPack(data,i->first);
     AddtoPack(data,i->second.stick);
+    AddtoPack(data,i->second.stick_roll);
     AddtoPack(data,i->second.g_t,3*sizeof(double));
+    AddtoPack(data,i->second.g_r,3*sizeof(double));
+  }
+
+  // add size of history_wall_adhesion_
+  AddtoPack(data, (int)history_wall_adhesion_.size());
+  for(std::map<int, Adhesion>::const_iterator i=history_wall_adhesion_.begin(); i!=history_wall_adhesion_.end(); ++i)
+  {
+    // one collision event with a wall element
+    AddtoPack(data,i->first);
+    AddtoPack(data,i->second.adhesion);
+    AddtoPack(data,i->second.surface_energy);
+    AddtoPack(data,i->second.normal_adhesion_force);
   }
 
   // add flag boundary particle
@@ -176,9 +219,29 @@ void PARTICLE::ParticleNode::Unpack(const std::vector<char>& data)
     ExtractfromPack(position,data,collid);
     // coll.stick
     coll.stick = ExtractInt(position,data);
+    coll.stick_roll = ExtractInt(position,data);
     // coll.g_t
     ExtractfromPack(position,data,coll.g_t,3*sizeof(double));
+    ExtractfromPack(position,data,coll.g_r,3*sizeof(double));
     history_particle_[collid] = coll;
+  }
+
+  // extract size of history_particle_adhesion_
+  int num_particle_adhesions;
+  ExtractfromPack(position,data,num_particle_adhesions);
+  for(int i=0; i<num_particle_adhesions; ++i)
+  {
+    // one adhesion event with another particle
+    Adhesion adhes;
+    // adhesion id
+    int adhesid = -1;
+    ExtractfromPack(position,data,adhesid);
+    // adhes.adhesion
+    adhes.adhesion = ExtractInt(position,data);
+    //adhes.surface_energy
+    ExtractfromPack(position,data,adhes.surface_energy);
+    ExtractfromPack(position,data,adhes.normal_adhesion_force);
+    history_particle_adhesion_[adhesid] = adhes;
   }
 
   // extract size of history_wall_
@@ -193,9 +256,29 @@ void PARTICLE::ParticleNode::Unpack(const std::vector<char>& data)
     ExtractfromPack(position,data,collid);
     // coll.stick
     coll.stick = ExtractInt(position,data);
-    // coll.g_t
+    coll.stick_roll = ExtractInt(position,data);
+    //coll.g_t
     ExtractfromPack(position,data,coll.g_t,3*sizeof(double));
+    ExtractfromPack(position,data,coll.g_r,3*sizeof(double));
     history_wall_[collid] = coll;
+  }
+
+  // extract size of history_wall_adhesion_
+  int num_wall_adhesions;
+  ExtractfromPack(position,data,num_wall_adhesions);
+  for(int i=0; i<num_wall_adhesions; ++i)
+  {
+    // one adhesion event with a wall element
+    Adhesion adhes;
+    // adhesion id
+    int adhesid = -1;
+    ExtractfromPack(position,data,adhesid);
+    // adhes.adhesion
+    adhes.adhesion = ExtractInt(position,data);
+    // adhes.surface_energy
+    ExtractfromPack(position,data,adhes.surface_energy);
+    ExtractfromPack(position,data,adhes.normal_adhesion_force);
+    history_wall_adhesion_[adhesid] = adhes;
   }
 
   // extract flag boundary particle

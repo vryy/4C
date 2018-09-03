@@ -54,6 +54,7 @@
 
 //*********************************DEM********************************************************************************************************************************************
 #define PARTICLE_BINNINGCONST 5                     //Constant required for binning strategy
+//#define PARTICLE_NOTIMESTEPDSERROR                  //Only throw warning (no dserror), if yield strength criterion is violated!
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

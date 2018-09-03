@@ -122,16 +122,13 @@ Run
 
 ```bash
 cd <someBaseDir>/<buildDir>
-<someBaseDir>/<sourceDir>/do-configure | tee config$(date +%y%m%d%H%M%N).log
+<someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-configuration-file.config> | tee config$(date +%y%m%d%H%M%N).log
 ```
 
 > **Note:**  When you see `command |& tee something$(date +%y%m%d%H%M%N).log`, that is just a means of running a command and sending the output both to the screen and to a timestamped log file.  This is by no means necessary, but if you run into problems, having these timestamped log files can be quite useful in debugging what's gone wrong.
 
-A specific build configuration file can be passed to the configure script via the command line argument `--config`, reading
-```bash
-<someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-config-file>
-``` 
-A bunch of supported build configuration files are located in `<someBaseDir>/<sourceDir>/buildconfig/`.
+A build configuration file needs to be passed to the configure script via the command line argument `--config`, as indicated above.
+Configuration files for a bunch of supported system environments are located in `<someBaseDir>/<sourceDir>/buildconfig/`.
 
 #### Build
 

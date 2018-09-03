@@ -41,7 +41,11 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::ParameterList& crosslinking = beaminteraction.sublist("CROSSLINKING",false,"");
 
   // remove this some day
-  setStringToIntegralParameter<int>("CROSSLINKER","No", "Crosslinker in problem", yesnotuple,yesnovalue,&crosslinking);
+  setStringToIntegralParameter<int>("CROSSLINKER","No", "Crosslinker in problem", yesnotuple, yesnovalue, &crosslinking );
+
+  // bounding box for initial random crosslinker position
+  setNumericStringParameter("INIT_LINKER_BOUNDINGBOX","1e12 1e12 1e12 1e12 1e12 1e12",
+                            "Linker are initially set randomly within this bounding box", &crosslinking );
 
   // time step for stochastic events concerning crosslinking
   DoubleParameter("TIMESTEP",-1.0, "time step for stochastic events concerning crosslinking (e.g. diffusion, p_link, p_unlink) ", &crosslinking);

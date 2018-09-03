@@ -143,6 +143,7 @@ namespace PARTICLE
     /// return maximum occurring relative stress
     virtual double GetAllTimeMaxYieldStressRel() {return yield_alltimemax_rel_; }
 
+
     //@}
 
   protected:
@@ -152,6 +153,9 @@ namespace PARTICLE
 
     /// normal contact model
     const INPAR::PARTICLE::NormalContact normal_contact_;
+
+    /// rolling contact model
+    const INPAR::PARTICLE::RollingContact rolling_contact_;
 
     /// adhesion law governing normal contact of particles
     const INPAR::PARTICLE::NormalAdhesion normal_adhesion_;
@@ -189,7 +193,10 @@ namespace PARTICLE
     double k_tang_;
     /// tangential contact stiffness (particle-wall)
     double k_tang_wall_;
-
+    /// rolling stiffness (particle-wall)
+    double k_roll_wall_;
+    /// rolling stiffness (inter-particle)
+    double k_roll_;
     /// tangential to normal stiffness ratio (inter-particle)
     double kappa_;
     /// tangential to normal stiffness ratio (particle-wall)
@@ -203,17 +210,22 @@ namespace PARTICLE
     double d_normal_wall_;
     /// damping parameter tangential contact (particle-wall)
     double d_tang_wall_;
+    /// damping parameter rolling contact (particle-wall)
+    double d_roll_wall_;
+    /// damping parameter rolling contact (inter-particle)
+    double d_roll_;
 
     /// frictional coefficient (inter-particle)
     const double mu_;
     /// frictional coefficient (particle-wall)
     const double mu_wall_;
+    /// rolling frictional coefficient (particle-wall)
+    const double mu_roll_wall_;
+    /// rolling frictional coefficient (inter-particle)
+    const double mu_roll_;
 
     // tension cutoff
     const bool tension_cutoff_;
-
-    // rolling resistance
-    double rolling_resistance_;
 
     // parameter for regularization of damping contact force
     double damp_reg_fac_;
@@ -262,8 +274,24 @@ namespace PARTICLE
     const double adhesion_max_disp_;
     /// surface energy density for the calculation of the pull-out force
     const double adhesion_surface_energy_;
+    const double adhesion_surface_energy_factor_;
+    double adhesion_surface_energy_wall_;
+    double adhesion_surface_energy_wall_factor_;
     /// surface energy density for the calculation of the pull-out force
     const int adhesion_maxwalleleID_;
+    const int adhesion_minwalleleID_;
+    /// surface energy distribution
+    const INPAR::PARTICLE::AdhesionSurfaceEnergyDistribution adhesion_surface_energy_distribution_;
+    /// standard deviation of adhesion surface energy
+    const double adhesion_surface_energy_distribution_sigma_;
+    /// surface energy distribution limited by multiple of standard deviation
+    const double adhesion_surface_energy_cutoff_factor_;
+    /// contact force where maximum pullout force is achieved
+    const double adhesion_max_contact_pressure_;
+    double adhesion_max_contact_pressure_wall_;
+    bool adhesion_variant_max_contact_force_;
+    /// shift van-der-Waals-curve to g = 0
+    int adhesion_vdW_curve_shift_;
 
     //! write system energy every given step
     const int writeenergyevery_;
@@ -337,7 +365,8 @@ namespace PARTICLE
       const bool                           havepbc,                 //!< flag indicating periodic boundaries
       const double                         dt,                      //!< time step size
       const Teuchos::RCP<Epetra_Vector>&   f_contact,               //!< global force vector
-      const Teuchos::RCP<Epetra_Vector>&   m_contact                //!< global moment vector
+      const Teuchos::RCP<Epetra_Vector>&   m_contact,               //!< global moment vector
+      int timestep
       );
 
   /// calculate contact with neighboring walls
@@ -362,6 +391,7 @@ namespace PARTICLE
     const double radius_j,
     const double v_rel_normal,
     const double m_eff,
+    PARTICLE::Adhesion &currentAdhe,
     double& totalnormalforce,
     double& normalcontactforce,
     const int owner_i,
@@ -381,6 +411,27 @@ namespace PARTICLE
     const int owner_i,
     const int owner_j
     );
+
+  /// calculate tangential contact force
+  virtual void CalculateRollingContactForce(
+    const double normalcontactforce,
+    const LINALG::Matrix<3,1>& normal,
+    LINALG::Matrix<3,1>& tangentrollingforce,
+    PARTICLE::Collision &currentColl,
+    const LINALG::Matrix<3,1>& v_roll,
+    const double m_eff,
+    const double dt,
+    const int owner_i,
+    const int owner_j
+    );
+
+  /// calculate gap at which vdW-curve intersects linear ramp
+  virtual void CalculateIntersectionGap(
+      double a,
+      double b,
+      double c,
+      double d,
+      double& gap_intersect);
 
   /// calculate virtual quasi-force for rolling resistance
   virtual void CalculateVirtualRollingForce(
@@ -439,6 +490,28 @@ namespace PARTICLE
       const LINALG::Matrix<3,1>&   v_C,     //!< velocity of contact point C on wall element
       const ParticleCollData&      data     //!< particle collision data
       ) const;
+
+  /// compute rolling velocity in contact point between two particles
+  void ComputeRollingVelocity(
+      LINALG::Matrix<3,1>&         v_roll,   //!< rolling velocity between two particles
+      const LINALG::Matrix<3,1>&   normal,   //!< contact normal
+      const LINALG::Matrix<3,1>&   r_iC,     //!< vector from center of particle i to contact point C
+      const LINALG::Matrix<3,1>&   r_jC,     //!< vector from center of particle j to contact point C
+      const ParticleCollData&      data_i,   //!< collision data for particle i
+      const ParticleCollData&      data_j    //!< collision data for particle j
+      ) const;
+
+  /// compute rolling velocity in contact point between particle and wall element
+  void ComputeRollingVelocity(
+      LINALG::Matrix<3,1>&         v_roll,   //!< rolling velocity between two particles
+      const LINALG::Matrix<3,1>&   r_C,     //!< vector from center of particle to contact point C
+      const ParticleCollData&      data   //!< collision data for particle
+      ) const;
+
+  void ComputeAdhesionSurfaceEnergyDistribution(
+      PARTICLE::Adhesion &currentAdhe,
+      bool iswallele
+  ) const;
 
   //! gather *.csv files with normal particle-particle and particle-wall contact forces across all processors
   void GatherNormalContactForcesToFile() const;

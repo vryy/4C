@@ -44,6 +44,7 @@ TRIAD_VISUALIZATIONPOINT        Yes
 STRAINS_GAUSSPOINT              Yes
 MATERIAL_FORCES_GAUSSPOINT      Yes
 BEAMFILAMENTCONDITION           Yes
+RVE_CROSSSECTION_FORCES         Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard

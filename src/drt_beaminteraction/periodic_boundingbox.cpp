@@ -37,7 +37,8 @@ GEO::MESHFREE::BoundingBox::BoundingBox()
     disn_row_ ( Teuchos::null ),
     disn_col_ ( Teuchos::null ),
     empty_( true ),
-    havepbc_( false ),
+    haveperiodicbc_( false ),
+    havedirichletbc_( false ),
     box_( true ),
     vtu_writer_ptr_( Teuchos::null )
 {
@@ -89,11 +90,11 @@ void GEO::MESHFREE::BoundingBox::Init()
         pbconoff_[dim] = true;
 
         // set global flag
-        havepbc_ = true;
+        haveperiodicbc_ = true;
       }
 
       // edge length of box
-      edgelength_[dim] = box_(dim,1) - box_(dim,0);
+      edgelength_[dim] = box_( dim, 1 ) - box_( dim, 0 );
     }
     else
     {
@@ -103,6 +104,33 @@ void GEO::MESHFREE::BoundingBox::Init()
   }
 
   // todo
+  havedirichletbc_ = false;
+  empty_ = false;
+  isinit_ = true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::Init( LINALG::Matrix< 3, 2 > const & box,
+    std::vector< bool> const & pbconoff )
+{
+  issetup_ = false;
+
+  // get bounding box specified in the input file
+  box_ = box;
+
+  // loop over all spatial directions
+  for( unsigned int dim = 0; dim < 3; ++dim )
+  {
+    pbconoff_[dim] = pbconoff[dim];
+    if ( pbconoff_[dim] )
+      haveperiodicbc_ = true;
+
+    // edge length of box
+    edgelength_[dim] = box_( dim, 1 ) - box_( dim, 0 );
+  }
+
+  havedirichletbc_ = false;
   empty_ = false;
   isinit_ = true;
 }
@@ -111,10 +139,13 @@ void GEO::MESHFREE::BoundingBox::Init()
  *----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::Setup()
 {
-  CheckInit();
+  ThrowIfNotInit();
 
   // initialize bounding box discretization
   SetupBoundingBoxDiscretization();
+
+  if ( boxdiscret_->GetCondition("Dirichlet") != NULL )
+    havedirichletbc_ = true;
 
   // displacement vector in row and col format
   disn_row_ = LINALG::CreateVector( *boxdiscret_->DofRowMap(), true );
@@ -190,14 +221,14 @@ void GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix< 3, 1 >& d,
+bool GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix< 3, 1 > & d,
     LINALG::Matrix< 3, 1 > const X ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
 
   bool shifted = false;
 
-  if ( not havepbc_ )
+  if ( not haveperiodicbc_ )
     return shifted;
 
   // x = X + d
@@ -224,49 +255,163 @@ bool GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix< 3, 1 >& d,
 /*----------------------------------------------------------------------------*
  * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::UnShift3D( LINALG::Matrix<3,1>& d,
-    LINALG::Matrix<3,1> const& ref, LINALG::Matrix<3,1> const X ) const
+void
+GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(
+    LINALG::Matrix< 3, 1 > const & x1,
+    LINALG::Matrix< 3, 1 > const & x2,
+    LINALG::Matrix< 3, 1 > & xi ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
+  GetXiOfIntersection3D( x1, x2, xi, box_ );
+}
+/*----------------------------------------------------------------------------*
+ * (public)                                                                   |
+ *----------------------------------------------------------------------------*/
+void
+GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(
+    LINALG::Matrix< 3, 1 > const & x1,
+    LINALG::Matrix< 3, 1 > const & x2,
+    LINALG::Matrix< 3, 1 > & xi,
+    LINALG::Matrix< 3, 2 > const & box) const
+{
+  ThrowIfNotInit();
 
-  bool unshifted = false;
+  // set default values
+  for ( unsigned int dim = 0; dim < 3; ++dim ) xi(dim) = 2.0;
 
-  if ( not havepbc_ )
-    return unshifted;
+  LINALG::Matrix< 3, 1 > x1_ud( true ), x2_ud(true);
+  TransformFromGlobalToUndeformedBoundingBoxSystem( x1, x1_ud );
+  TransformFromGlobalToUndeformedBoundingBoxSystem( x2, x2_ud );
+
+  // check which points resides within in which direction
+  std::vector< bool > x1_within_in_dir( 3, true ), x2_within_in_dir( 3, true );
+  Within( box, x1_ud, x1_within_in_dir );
+  Within( box, x2_ud, x2_within_in_dir);
+
+  for ( unsigned int dim = 0; dim < 3; ++dim )
+  {
+    bool x1_in = x1_within_in_dir[dim];
+    bool x2_in = x2_within_in_dir[dim];
+
+    // no intersection in case both are in or both are out
+    if ( ( x1_in or not x2_in) and ( x2_in or not x1_in ) )
+      continue;
+
+    // x1 out
+    if ( x2_in )
+    {
+      if ( x1_ud(dim) < box_min( box, dim ) )
+      {
+        xi(dim) = ( 2.0 * box_min( box, dim ) - ( x2_ud(dim) + x1_ud(dim) ) ) / ( x2_ud(dim) - x1_ud(dim) );
+      }
+      else if ( x1_ud(dim) > box_max( box, dim ) )
+      {
+        xi(dim) = ( 2.0 * box_max( box, dim ) - ( x2_ud(dim) + x1_ud(dim) ) ) / ( x1_ud(dim) - x2_ud(dim) );
+      }
+      else
+      {
+        dserror("Your true/false logic is wrong." );
+      }
+    }
+    else if ( x1_in )
+    {
+      if ( x2_ud(dim) < box_min( box, dim ) )
+      {
+        xi(dim) = ( 2.0 * box_min( box, dim ) - ( x2_ud(dim) + x1_ud(dim) ) ) / ( x1_ud(dim) - x2_ud(dim) );
+      }
+      else if ( x2_ud(dim) > box_max( box, dim ) )
+      {
+        xi(dim) = ( 2.0 * box_max( box, dim ) - ( x2_ud(dim) + x1_ud(dim) ) ) / ( x2_ud(dim) - x1_ud(dim) );
+      }
+      else
+      {
+        dserror("Your true/false logic is wrong." );
+      }
+    }
+    else
+    {
+      dserror("Your true/false logic is wrong." );
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ * (public)                                                                   |
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::UnShift3D( LINALG::Matrix< 3, 1 > & d,
+    LINALG::Matrix< 3, 1 > const & ref, LINALG::Matrix< 3, 1 > const X ) const
+{
+  ThrowIfNotInit();
+
+  if ( not haveperiodicbc_ )
+    return;
 
   // x = X + d
   LINALG::Matrix< 3, 1 > x(X);
   x.Update( 1.0, d, 1.0 );
-
-//  std::cout << " before "<< std::endl;
-//  x.Print(std::cout);
 
   LINALG::Matrix< 3, 1 > x_ud( true ), ref_ud( true );
   TransformFromGlobalToUndeformedBoundingBoxSystem( x, x_ud );
   TransformFromGlobalToUndeformedBoundingBoxSystem( ref, ref_ud );
 
   for ( int dim = 0; dim < 3 ; ++dim )
-    if ( UnShift1D( dim, x_ud(dim), ref_ud(dim) ) ) unshifted = true;
+    UnShift1D( dim, x_ud(dim), ref_ud(dim) );
 
   x.Clear();
   d.Clear();
   TransformFromUndeformedBoundingBoxSystemToGlobal( x_ud, x );
 
-//  std::cout << " after "<< std::endl;
-//  x.Print(std::cout);
+  // d = x - X
+  d.Update( 1.0, x, -1.0, X );
+}
+
+/*----------------------------------------------------------------------------*
+ * (public)                                                                   |
+ *----------------------------------------------------------------------------*/
+bool GEO::MESHFREE::BoundingBox::CheckIfShiftBetweenPoints(
+    LINALG::Matrix< 3, 1 > & d,
+    LINALG::Matrix< 3, 1 > const & ref,
+    std::vector< bool > & shift_in_dim,
+    LINALG::Matrix< 3, 1 > const X ) const
+{
+  ThrowIfNotInit();
+
+  shift_in_dim.clear();
+  shift_in_dim.resize(3);
+
+  if ( not haveperiodicbc_ )
+  {
+    shift_in_dim = std::vector< bool >( 3, false );
+    return false;
+  }
+
+  // x = X + d
+  LINALG::Matrix< 3, 1 > x(X);
+  x.Update( 1.0, d, 1.0 );
+
+  LINALG::Matrix< 3, 1 > x_ud( true ), ref_ud( true );
+  TransformFromGlobalToUndeformedBoundingBoxSystem( x, x_ud );
+  TransformFromGlobalToUndeformedBoundingBoxSystem( ref, ref_ud );
+
+  for ( int dim = 0; dim < 3 ; ++dim )
+    shift_in_dim[dim] = UnShift1D( dim, x_ud(dim), ref_ud(dim) );
+
+  x.Clear();
+  d.Clear();
+  TransformFromUndeformedBoundingBoxSystemToGlobal( x_ud, x );
 
   // d = x - X
   d.Update( 1.0, x, -1.0, X );
 
-  return unshifted;
+  return ( shift_in_dim[0] or shift_in_dim[1] or shift_in_dim[2] );
 }
 
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Shift1D( int dim, double& d, double const& X ) const
+bool GEO::MESHFREE::BoundingBox::Shift1D( int dim, double & d, double const & X ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
 
   bool shifted = false;
 
@@ -275,12 +420,12 @@ bool GEO::MESHFREE::BoundingBox::Shift1D( int dim, double& d, double const& X ) 
 
   double x = d + X;
 
-  if ( x < min(dim) )
+  if ( x < box_min( dim ) )
   {
     shifted = true;
     d += edgelength_[dim] * std::ceil( std::abs( ( x - box_(dim,0) ) / edgelength_[dim] ) );
   }
-  else if ( x > max(dim) )
+  else if ( x > box_max( dim ) )
   {
     shifted = true;
     d -= edgelength_[dim] * std::ceil( std::abs( ( x - box_(dim,1) ) / edgelength_[dim] ) );
@@ -292,10 +437,10 @@ bool GEO::MESHFREE::BoundingBox::Shift1D( int dim, double& d, double const& X ) 
 /*----------------------------------------------------------------------------*
  * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
-    double const& ref, double const& X ) const
+bool GEO::MESHFREE::BoundingBox::UnShift1D( int dim, double & d,
+    double const & ref, double const & X ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
 
   bool unshifted = false;
 
@@ -320,9 +465,18 @@ bool GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::RandomPosWithin( LINALG::Matrix< 3, 1 >& randpos ) const
+bool GEO::MESHFREE::BoundingBox::InBetween( double smin,
+    double smax, double omin, double omax ) const
 {
-  CheckInitSetup();
+  double tol = GEO::TOL7;
+  return ( ( omax > smin - tol ) and ( smax > omin - tol ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::RandomPosWithin( LINALG::Matrix< 3, 1 > & randpos ) const
+{
+  ThrowIfNotInit();
 
   DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
   std::vector<double> randuni;
@@ -330,7 +484,7 @@ void GEO::MESHFREE::BoundingBox::RandomPosWithin( LINALG::Matrix< 3, 1 >& randpo
 
   LINALG::Matrix< 3, 1 > randpos_ud(true);
   for ( int dim = 0; dim < 3; ++dim )
-    randpos_ud(dim) = min(dim) + ( edgelength_[dim] * randuni[dim] );
+    randpos_ud(dim) = box_min( dim ) + ( edgelength_[dim] * randuni[dim] );
 
   TransformFromUndeformedBoundingBoxSystemToGlobal( randpos_ud, randpos );
 }
@@ -360,31 +514,64 @@ void GEO::MESHFREE::BoundingBox::AddPoint( const double * x )
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within( const BoundingBox & b, double norm ) const
+bool GEO::MESHFREE::BoundingBox::Within( BoundingBox const & b ) const
 {
   dserror("Check before use.");
   if ( empty_ )
     return true;
-  return ( InBetween( norm, minx(), maxx(), b.minx(), b.maxx() ) and
-           InBetween( norm, miny(), maxy(), b.miny(), b.maxy() ) and
-           InBetween( norm, minz(), maxz(), b.minz(), b.maxz() ) );
+  return ( InBetween( box_min( 0 ), box_max( 0 ), b.box_min( 0 ), b.box_max( 0 ) ) and
+           InBetween( box_min( 1 ), box_max( 1 ), b.box_min( 1 ), b.box_max( 1 ) ) and
+           InBetween( box_min( 2 ), box_max( 2 ), b.box_min( 2 ), b.box_max( 2 ) ) );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within( const double * x, double norm ) const
+bool GEO::MESHFREE::BoundingBox::Within( const double * x,
+    std::vector<bool> & within_in_dir ) const
 {
-  dserror("Check before use.");
-  if ( empty_ )
-    return true;
-  return ( InBetween( norm, minx(), maxx(), x[0], x[0] ) and
-           InBetween( norm, miny(), maxy(), x[1], x[1] ) and
-           InBetween( norm, minz(), maxz(), x[2], x[2] ) );
+  ThrowIfNotInit();
+
+  within_in_dir.resize(3);
+  within_in_dir[0] = InBetween( box_min( 0 ), box_max( 0 ), x[0], x[0] );
+  within_in_dir[1] = InBetween( box_min( 1 ), box_max( 1 ), x[1], x[1] );
+  within_in_dir[2] = InBetween( box_min( 2 ), box_max( 2 ), x[2], x[2] );
+
+  return ( within_in_dir[0] and within_in_dir[1] and within_in_dir[2] );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz, double norm ) const
+bool GEO::MESHFREE::BoundingBox::Within( LINALG::Matrix< 3, 1 > const & x,
+    std::vector< bool > & within_in_dir ) const
+{
+  ThrowIfNotInit();
+
+  within_in_dir.resize(3);
+  within_in_dir[0] = InBetween( box_min( 0 ), box_max( 0 ), x(0), x(0) );
+  within_in_dir[1] = InBetween( box_min( 1 ), box_max( 1 ), x(1), x(1) );
+  within_in_dir[2] = InBetween( box_min( 2 ), box_max( 2 ), x(2), x(2) );
+
+  return ( within_in_dir[0] and within_in_dir[1] and within_in_dir[2] );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::MESHFREE::BoundingBox::Within( LINALG::Matrix< 3, 2 > const & box,
+    LINALG::Matrix< 3, 1 > const & x, std::vector< bool > & within_in_dir ) const
+{
+  ThrowIfNotInit();
+
+  within_in_dir.resize(3);
+  within_in_dir[0] = InBetween( box_min( box, 0 ), box_max( box, 0 ), x(0), x(0) );
+  within_in_dir[1] = InBetween( box_min( box, 1 ), box_max( box, 1 ), x(1), x(1) );
+  within_in_dir[2] = InBetween( box_min( box, 2 ), box_max( box, 2 ), x(2), x(2) );
+
+  return ( within_in_dir[0] and within_in_dir[1] and within_in_dir[2] );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::MESHFREE::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz) const
 {
   dserror("Check before use.");
   BoundingBox bb;
@@ -393,7 +580,7 @@ bool GEO::MESHFREE::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz, d
   {
     bb.AddPoint( &xyz( 0, i ) );
   }
-  return Within( bb, norm );
+  return Within( bb );
 }
 
 /*----------------------------------------------------------------------------*
@@ -421,7 +608,7 @@ void GEO::MESHFREE::BoundingBox::Print()
  *----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::ApplyDirichlet( double timen )
 {
-  CheckInitSetup();
+  ThrowIfNotInitOrSetup();
 
   Teuchos::ParameterList p;
   p.set( "total time", timen );
@@ -465,7 +652,7 @@ void GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
  *----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::RuntimeOutputStepState( double timen, int stepn ) const
 {
-  CheckInitSetup();
+  ThrowIfNotInitOrSetup();
 
   if ( vtu_writer_ptr_ == Teuchos::null )
     return;
@@ -528,9 +715,9 @@ void GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition( int i, double
   else if ( i == 3 or i == 7 )
     --i;
 
-  x[0] = ( ( i & 1 ) == 1 ) ? maxx() : minx();
-  x[1] = ( ( i & 2 ) == 2 ) ? maxy() : miny();
-  x[2] = ( ( i & 4 ) == 4 ) ? maxz() : minz();
+  x[0] = ( ( i & 1 ) == 1 ) ? box_max( 0 ) : box_min( 0 );
+  x[1] = ( ( i & 2 ) == 2 ) ? box_max( 1 ) : box_min( 1 );
+  x[2] = ( ( i & 4 ) == 4 ) ? box_max( 2 ) : box_min( 2 );
 }
 
 /*----------------------------------------------------------------------------*
@@ -544,9 +731,9 @@ LINALG::Matrix< 3, 1 > GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosit
     --i;
 
   LINALG::Matrix< 3, 1 > x(true);
-  x(0) = ( ( i & 1 ) == 1 ) ? maxx() : minx();
-  x(1) = ( ( i & 2 ) == 2 ) ? maxy() : miny();
-  x(2) = ( ( i & 4 ) == 4 ) ? maxz() : minz();
+  x(0) = ( ( i & 1 ) == 1 ) ? box_max( 0 ) : box_min( 0 );
+  x(1) = ( ( i & 2 ) == 2 ) ? box_max( 1 ) : box_min( 1 );
+  x(2) = ( ( i & 4 ) == 4 ) ? box_max( 2 ) : box_min( 2 );
 
   return x;
 }
@@ -554,10 +741,17 @@ LINALG::Matrix< 3, 1 > GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosit
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
-    LINALG::Matrix<3,1> const& xi,
-    LINALG::Matrix<3,1>&       x ) const
+    LINALG::Matrix< 3, 1 > const & xi,
+    LINALG::Matrix< 3, 1 > &       x ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
+
+  // nothing to do in case periodic bounding is not deforming
+  if ( not havedirichletbc_ )
+  {
+    x = xi;
+    return;
+  }
 
   // reset globcoord variable
   x.Clear();
@@ -581,10 +775,10 @@ void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGloba
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
-    double const* xi,
-    double *      x ) const
+    double const * xi,
+    double *       x ) const
 {
-  CheckInitSetup();
+  ThrowIfNotInitOrSetup();
 
   DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
   if ( !mynodes )
@@ -613,10 +807,18 @@ void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGloba
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
-    LINALG::Matrix< 3, 1 > const& x,
-    LINALG::Matrix< 3, 1 >&       xi) const
+    LINALG::Matrix< 3, 1 > const & x,
+    LINALG::Matrix< 3, 1 > &       xi ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
+
+  // nothing to do in case periodic bounding is not deforming
+  if ( not havedirichletbc_ )
+  {
+    xi = x;
+    return true;
+  }
+
   // initialize variables
   int const numnode = 8;
   int const ndim   = 3;
@@ -712,10 +914,10 @@ bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSyste
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
-    double const* x,
-    double*       xi) const
+    double const * x,
+    double *       xi) const
 {
-  CheckInit();
+  ThrowIfNotInit();
   static LINALG::Matrix< 3, 1 > x_m(true), xi_m(true);
   for ( int dim = 0; dim < 3; ++dim )
     x_m(dim) = x[dim];
@@ -733,12 +935,12 @@ bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSyste
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal(
-    LINALG::Matrix< 8, 1 >& funct, ///< to be filled with shape function values
-    double                  r,
-    double                  s,
-    double                  t ) const
+    LINALG::Matrix< 8, 1 > & funct, ///< to be filled with shape function values
+    double                   r,
+    double                   s,
+    double                   t ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
   // safety check
 #ifdef DEBUG
   for ( int dim = 0; dim < 3; ++dim )
@@ -749,12 +951,12 @@ void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBo
   const double Q = 1.0 / ( edgelength_[0] * edgelength_[1] * edgelength_[2] );
 
 
-  const double rp = r - minx();
-  const double rm = maxx() - r;
-  const double sp = s - miny();
-  const double sm = maxy() - s;
-  const double tp = t - minz();
-  const double tm = maxz() - t;
+  const double rp = r - box_min( 0 );
+  const double rm = box_max( 0 ) - r;
+  const double sp = s - box_min( 1 );
+  const double sm = box_max( 1 ) - s;
+  const double tp = t - box_min( 2 );
+  const double tm = box_max( 2 ) - t;
 
   funct(0) = Q * rm * sm * tm;
   funct(1) = Q * rp * sm * tm;
@@ -769,12 +971,12 @@ void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBo
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobalDeriv1(
-    LINALG::Matrix< 3, 8 >& deriv1, ///< to be filled with shape function derivative values
-    double                  r,
-    double                  s,
-    double                  t ) const
+    LINALG::Matrix< 3, 8 > & deriv1, ///< to be filled with shape function derivative values
+    double                   r,
+    double                   s,
+    double                   t ) const
 {
-  CheckInit();
+  ThrowIfNotInit();
   // safety check
 #ifdef DEBUG
   for ( int dim = 0; dim < 3; ++dim )
@@ -784,12 +986,12 @@ void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBo
 
   const double Q = 1.0 / ( edgelength_[0] * edgelength_[1] * edgelength_[2] );
 
-  const double rp = r - minx();
-  const double rm = maxx() - r;
-  const double sp = s - miny();
-  const double sm = maxy() - s;
-  const double tp = t - minz();
-  const double tm = maxz() - t;
+  const double rp = r - box_min( 0 );
+  const double rm = box_max( 0 ) - r;
+  const double sp = s - box_min( 1 );
+  const double sm = box_max( 1 ) - s;
+  const double tp = t - box_min( 2 );
+  const double tm = box_max( 2 ) - t;
 
   deriv1(0, 0) = -Q * sm * tm;
   deriv1(1, 0) = -Q * tm * rm;

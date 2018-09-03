@@ -15,6 +15,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 // forward declaration
 namespace STR {
@@ -129,6 +130,13 @@ namespace BEAMINTERACTION {
       return deltatime_;
     };
 
+    /// time step for stochastic events concerning crosslinking
+    LINALG::Matrix< 3, 2 > const & LinkerInitializationBox() const
+    {
+      CheckInitSetup();
+      return init_box_;;
+    };
+
     // distance between two binding spots on a filament
     int MaxNumberOfBondsPerFilamentBspot( INPAR::BEAMINTERACTION::CrosslinkerType linkertype ) const
     {
@@ -178,6 +186,8 @@ namespace BEAMINTERACTION {
     double kt_;
     /// time step for stochastic events concerning crosslinking
     double deltatime_;
+    /// box corners
+    LINALG::Matrix< 3, 2 > init_box_;
     /// number of crosslinker that are initially set
     std::map< int, int > maxnum_init_crosslinker_pertype_;
     /// number of crosslinkers in the simulated volume
