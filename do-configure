@@ -26,16 +26,18 @@ SHARED_LIBS=OFF
 # version, though). This can then give per-line cost information
 # using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild,build-contact-module -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
+
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--additionaltests=testfile] [--forceBuild]"
 
 eval set -- $OPTIONS
 
 while true; do
   case "$1" in
     -h|--help)
-      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--build-contact-module] [--config=configurationfile] [--additionaltests=testfile]"
+      echo $USAGEINFO
       exit 1
       ;;
     -c|--config)
@@ -80,7 +82,7 @@ done
 
 if [ $# -ne 0 ]; then
   echo "unknown option(s): $@"
-  echo "usage: do-configure [--debug] [--trilinos-debug] [--experimental] [--profiling] [--coverage] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+  echo $USAGEINFO
   exit 1
 fi
 
@@ -124,48 +126,6 @@ fi
 # set valid folder for baci build
 BUILD_FOLDER=$BUILD_FOLDER_SAFE
 
-
-##############################################################
-# detect operating system
-if [[ ! "$CONFIGURATION_FILE" ]]; then
-  if [[ -f /etc/system-release ]]; then
-    if [ "`grep 'CentOS Linux release 7.4' /etc/system-release`" ]; then
-      if [ "$HOSTNAME" = "master.service" ]; then
-        echo "Detected CentOS 7.4 (bruteforce Haswell cluster)"
-        CONFIGURATION_FILE=$BACI_HOME/buildconfig/bruteforce_Q12015_icc.config
-        echo $CONFIGURATION_FILE
-      else
-        echo "Detected CentOS 7.4 (workstation)"
-        CONFIGURATION_FILE=$BACI_HOME/buildconfig/centos74_Q12015.config
-        TRILINOSDEV=ON
-        echo $CONFIGURATION_FILE
-      fi
-    elif [ "`grep 'Fedora release 22' /etc/system-release`" ]; then
-      echo "Detected Fedora 22"
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc22_Q12015.config
-      TRILINOSDEV=ON
-      echo $CONFIGURATION_FILE
-    elif [ "`grep 'CentOS Linux release 7.1' /etc/system-release`" ]; then
-      echo "Detected CentOS 7.1 (deep thought Haswell cluster)"
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/haswell_cluster_Q12015_gcc48.config
-      echo $CONFIGURATION_FILE
-    elif [ "`grep 'CentOS release 6.2' /etc/system-release`" ]; then
-      echo "Detected CentOS 6.2 (kaiser)"
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12015_gcc48_ACML_ompi162.config
-    fi
-  elif [[ -f /etc/SuSE-release ]]; then
-    if [ "`grep 'SUSE Linux Enterprise Server' /etc/SuSE-release`" ]; then
-      echo "Detected SuSE Linux Enterprise Server (SuperMUC)"
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/supermuc_thin.config
-    fi
-  else
-    echo "unknown or unsupported OS version! This is fatal!"
-    exit
-  fi
-else
-  echo "Configuration file:" $CONFIGURATION_FILE
-fi
-
 # remove CMakeCache.txt
 rm -f CMakeCache.txt
 
@@ -173,7 +133,9 @@ rm -f CMakeCache.txt
 if [[ -f $CONFIGURATION_FILE ]]; then
   . $CONFIGURATION_FILE
 else
-  echo "no configuration file found! This is fatal!"
+  echo "No configuration file given! This is fatal!"
+  echo "Please provide a suitable configuration file via the command line argument --config="
+  echo "A bunch of supported configuration files can be found in <BACI-dir>/buildconfig/."
   exit
 fi
 
@@ -230,7 +192,7 @@ $CMAKE_COMMAND \
     -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
     -D HAVE_OpenMP:BOOL=OFF \
     -D HAVE_Kokkos:BOOL=$BUILD_MueLu \
-    -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
+    -D TRILINOS_DEV:BOOL=OFF \
     -D DEAL_II_DIR=$DEAL_II_DIR \
     -D TRAP_FE:BOOL=ON \
     -D PARMETIS:BOOL=ON \
