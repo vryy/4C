@@ -20,87 +20,51 @@
 # Author:    Jonas Nitzler
 #            Maximilian Grill
 # Date:      03.09.2018
-# Version:   1.2
+# Version:   1.3
 
 ########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
-if [ -f utilities/code_styles/clang-format ]
+if [ -f ./utilities/code_styles/clang-format ]
 then
   # set the field separator to new line
   IFS=$'\n'
 
   for line in $(git diff --cached --name-only --diff-filter=ACMR)
   do
-    # if the file is a c or cpp file
+    # check if the file is a c or cpp file
     if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
     then
-      # format the file
-      if [[ $(clang-format -style=file $(pwd)/${line}) ]]
-         then
-             uncompliant_files+="$(pwd)/${line}\n"
-         fi
+      # Check if clang would format the file
+      if [[  $(diff -u <(./utilities/code_styles/clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+      then
+        uncompliant_files+="$(pwd)/${line}\n"
+      fi
     fi
   done
 
   if [ ! -z "$uncompliant_files" ]
   then
-    echo "########################################################################"
+    printf "\n"
     printf "The following files are not clang compliant:\n"
+    printf "\n"
     echo "########################################################################"
     printf "$uncompliant_files"
-    echo "--> Please run clang-format manually for those files using: <clang-format -i -style=file path/to/file>"
     echo "########################################################################"
-   exit 1
+    printf "\n"
+    echo "--> Please run clang-format manually for those files using:"
+    echo "./utilities/code_styles/clang-format -i -style=file <path/to/file>"
+    echo "(Path above is given from <Source> directory)"
+    echo "--> Please add all formated files afterwards to the git staging area using: git add <path/to/file>"
+    printf "\n"
+    exit 1
   fi
-
 
 else
   echo "ERROR: clang-format was not found, cannot format files!"
   exit 1
 fi
+
 ### Header check ################################################
 python ./utilities/git_hooks/header-check.py || exit 1
 exit 0
 
-
-
-############### OLD VERSION--> WILL BE DELETED SOON ##############################
-
-#gitvar=$(git diff --cached --name-only --diff-filter=ACMRT -- src/ Unittests/ tests/ |
-#          grep -E ".cpp$|.h$|.cp$|.H$|.cc$|.hpp$|.hh$|.hxx$|.cxx")
-#
-## 1) give out all files that differ from the last commit under the constraint of being A : Added,  C : Copied, M : Modified, R : Renamed, T : Changed
-#
-#if [[ $? != 0 ]]; then
-#       echo "#######################################################"
-#       echo "Commit matched clang format style, no changes by clang!"
-#       echo "#######################################################"
-#
-#else
-#       echo "#################################################################"
-#       echo "Commit did not match clang-format and was automatically formated:"
-#       echo "#################################################################"
-#
-## 2) run clang - format with our modified Google style on those files
-#utilities/code_styles/clang-format -i -style=file $gitvar
-#
-## 3) Give the user a short feedback if he was compliant or not and show the differences again
-#git diff --cached --diff-filter=ACMRT -- src/ Unittests/ tests/
-#
-#fi
-
-
-########### Execute header checks ###############################################################################################################################
-#echo "################################################"
-#echo "Checking now for headers ......................."
-#echo "################################################"
-#utilities/git_hooks/header-check.py || exit 1
-
-# 4) The python script runs internally only on the diffs by design --> no need for git diff...
-# 5) Header design cannot be automated! Hence: if not compliant reject the current commit and give out error messages, accordingly (done by python script)
-
-#echo "################################################################"
-#echo "All headers were compliant with the code style! Commit accepted!"
-#echo "################################################################"
-
-#exit 0
 
