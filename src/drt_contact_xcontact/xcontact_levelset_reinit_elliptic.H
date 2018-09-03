@@ -22,160 +22,164 @@
 
 
 class Epetra_Map;
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace NOX {
-namespace Solver {
-  class Generic;
-} // namespace Solver
-namespace Abstract {
-  class Group;
-} // Abstract
-namespace StatusTest {
-  class Generic;
-} // namespace StatusTest
-namespace NLN {
-  class Problem;
-} // namespace NLN
-} // namespace NOX
-namespace DRT {
+}  // namespace Teuchos
+namespace NOX
+{
+  namespace Solver
+  {
+    class Generic;
+  }  // namespace Solver
+  namespace Abstract
+  {
+    class Group;
+  }  // namespace Abstract
+  namespace StatusTest
+  {
+    class Generic;
+  }  // namespace StatusTest
+  namespace NLN
+  {
+    class Problem;
+  }  // namespace NLN
+}  // namespace NOX
+namespace DRT
+{
   class Discretization;
 }
-namespace LINALG {
+namespace LINALG
+{
   class SparseOperator;
   class Solver;
-} // namespace LINALG
-namespace XCONTACT {
-namespace LEVELSET {
-namespace REINIT {
-  class Elliptic : public Generic,
-                   public NOX::NLN::Interface::Required,
-                   public NOX::NLN::Interface::Jacobian
+}  // namespace LINALG
+namespace XCONTACT
+{
+  namespace LEVELSET
   {
-  public:
-    /// constructor
-    Elliptic();
-
-    /// destructor
-    virtual ~Elliptic() {};
-
-    /** \brief derived setup routine
-     *
-     *  Set new member variables. */
-    virtual void Setup();
-
-  protected:
-
-    /// run before the actual solve routine starts (derived)
-    virtual void PreSolve();
-
-    /// solve the nonlinear system of equations
-    virtual void Solve( const Epetra_Vector & phinp );
-
-    /// create the nonlinear nox solver object
-    Teuchos::RCP<NOX::Solver::Generic> CreateNlnSolver( const Epetra_Vector & phinp );
-
-    Teuchos::RCP<NOX::Epetra::Vector> CreateSolutionVector(
-        const Epetra_Vector & phinp_full ) const;
-
-    void CreateJacobian( const Epetra_Map & active_dofs,
-        Teuchos::RCP<LINALG::SparseOperator> & jac );
-
-    void SetupNox( Teuchos::ParameterList & p_nox );
-    void SetNlnSolverParams( Teuchos::ParameterList & p_nox ) const;
-    void SetNlnSolverStatusTestParams( Teuchos::ParameterList & p_status ) const;
-    void SetNlnSolverPrintParams( Teuchos::ParameterList & p_print ) const;
-
-    void SetLinearSolver(
-        std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver> > & linsolver,
-        const Teuchos::RCP<LINALG::Solver> & lin_solver ) const;
-
-    /// access the reinitialization parameters
-    Teuchos::ParameterList & ReinitParams();
-
-    /// access the reinitialization parameters (read-only)
-    const Teuchos::ParameterList & ReinitParams() const;
-
-    /// access the nox parameter list
-    Teuchos::ParameterList & NoxParams();
-
-    /// access the nox parameter list (read-only)
-    const Teuchos::ParameterList & NoxParams() const;
-
-    /// access the nox solution group
-    inline NOX::Abstract::Group & Group()
+    namespace REINIT
     {
-      CheckInitSetup();
-      return * grp_ptr_;
-    }
+      class Elliptic : public Generic,
+                       public NOX::NLN::Interface::Required,
+                       public NOX::NLN::Interface::Jacobian
+      {
+       public:
+        /// constructor
+        Elliptic();
 
-    /// @name derived NOX interface routines
-    /// @{
+        /// destructor
+        virtual ~Elliptic(){};
 
-    virtual bool computeF(const Epetra_Vector& x, Epetra_Vector& F,
-        const FillType fillFlag);
+        /** \brief derived setup routine
+         *
+         *  Set new member variables. */
+        virtual void Setup();
 
-    virtual double GetPrimaryRHSNorms(
-        const Epetra_Vector& F,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
-        const bool& isScaled = false) const;
+       protected:
+        /// run before the actual solve routine starts (derived)
+        virtual void PreSolve();
 
-    virtual double GetPrimarySolutionUpdateRMS(
-        const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        const double& aTol, const double& rTol,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const bool& disable_implicit_weighting = false) const;
+        /// solve the nonlinear system of equations
+        virtual void Solve(const Epetra_Vector& phinp);
 
-    virtual double GetPrimarySolutionUpdateNorms(
-        const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
-        const bool& isScaled = false) const;
+        /// create the nonlinear nox solver object
+        Teuchos::RCP<NOX::Solver::Generic> CreateNlnSolver(const Epetra_Vector& phinp);
 
-    virtual double GetPreviousPrimarySolutionNorms(
-        const Epetra_Vector& xOld,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
-        const bool& isScaled = false) const;
+        Teuchos::RCP<NOX::Epetra::Vector> CreateSolutionVector(
+            const Epetra_Vector& phinp_full) const;
 
-    virtual double GetModelValue(
-        const Epetra_Vector& x,
-        const Epetra_Vector& F,
-        enum NOX::NLN::MeritFunction::MeritFctName mrt_func_type ) const;
+        void CreateJacobian(
+            const Epetra_Map& active_dofs, Teuchos::RCP<LINALG::SparseOperator>& jac);
 
-    virtual double CalcRefNormForce();
+        void SetupNox(Teuchos::ParameterList& p_nox);
+        void SetNlnSolverParams(Teuchos::ParameterList& p_nox) const;
+        void SetNlnSolverStatusTestParams(Teuchos::ParameterList& p_status) const;
+        void SetNlnSolverPrintParams(Teuchos::ParameterList& p_print) const;
 
-    virtual bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+        void SetLinearSolver(
+            std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linsolver,
+            const Teuchos::RCP<LINALG::Solver>& lin_solver) const;
 
-    virtual bool computeFandJacobian(const Epetra_Vector& x,
-        Epetra_Vector& F, Epetra_Operator& jac);
+        /// access the reinitialization parameters
+        Teuchos::ParameterList& ReinitParams();
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC(){return Teuchos::null;};
+        /// access the reinitialization parameters (read-only)
+        const Teuchos::ParameterList& ReinitParams() const;
 
-    /// @}
+        /// access the nox parameter list
+        Teuchos::ParameterList& NoxParams();
 
-    void SetElementParameters( Teuchos::ParameterList & eleparams );
+        /// access the nox parameter list (read-only)
+        const Teuchos::ParameterList& NoxParams() const;
 
-    void PreEvaluate( const Epetra_Vector & x );
+        /// access the nox solution group
+        inline NOX::Abstract::Group& Group()
+        {
+          CheckInitSetup();
+          return *grp_ptr_;
+        }
 
-  private:
+        /// @name derived NOX interface routines
+        /// @{
 
-    Teuchos::RCP<Teuchos::ParameterList> nox_params_;
+        virtual bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
 
-    Teuchos::RCP<NOX::NLN::Problem> nox_problem_;
+        virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,
+            const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+            const bool& isScaled = false) const;
 
-    Teuchos::RCP<NOX::Abstract::Group> grp_ptr_;
+        virtual double GetPrimarySolutionUpdateRMS(const Epetra_Vector& xNew,
+            const Epetra_Vector& xOld, const double& aTol, const double& rTol,
+            const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const bool& disable_implicit_weighting = false) const;
 
-    Teuchos::RCP<NOX::StatusTest::Generic> ostatus_;
+        virtual double GetPrimarySolutionUpdateNorms(const Epetra_Vector& xNew,
+            const Epetra_Vector& xOld, const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+            const bool& isScaled = false) const;
 
-    Teuchos::RCP<LINALG::SparseOperator> jac_;
+        virtual double GetPreviousPrimarySolutionNorms(const Epetra_Vector& xOld,
+            const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+            const bool& isScaled = false) const;
 
-  };
-}
-}
-}
+        virtual double GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
+            enum NOX::NLN::MeritFunction::MeritFctName mrt_func_type) const;
+
+        virtual double CalcRefNormForce();
+
+        virtual bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
+
+        virtual bool computeFandJacobian(
+            const Epetra_Vector& x, Epetra_Vector& F, Epetra_Operator& jac);
+
+        virtual Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC()
+        {
+          return Teuchos::null;
+        };
+
+        /// @}
+
+        void SetElementParameters(Teuchos::ParameterList& eleparams);
+
+        void PreEvaluate(const Epetra_Vector& x);
+
+       private:
+        Teuchos::RCP<Teuchos::ParameterList> nox_params_;
+
+        Teuchos::RCP<NOX::NLN::Problem> nox_problem_;
+
+        Teuchos::RCP<NOX::Abstract::Group> grp_ptr_;
+
+        Teuchos::RCP<NOX::StatusTest::Generic> ostatus_;
+
+        Teuchos::RCP<LINALG::SparseOperator> jac_;
+      };
+    }  // namespace REINIT
+  }    // namespace LEVELSET
+}  // namespace XCONTACT
 
 
 #endif /* SRC_DRT_CONTACT_XCONTACT_XCONTACT_LEVELSET_REINIT_ELLIPTIC_H_ */

@@ -18,26 +18,22 @@
 #include "../drt_contact/contact_interface.H"
 #include "../drt_xfem/xfem_enum_lists.H"
 
-namespace DRT {
+namespace DRT
+{
   class DiscretizationInterface;
-} // namespace DRT
+}  // namespace DRT
 namespace XCONTACT
 {
   class Interface : public CONTACT::CoInterface
   {
-  public:
+   public:
     //! @name Constructors and destructors and related methods
     //! @{
 
     //! Constructor
-    Interface(
-        const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-        const int id,
-        const Epetra_Comm& comm,
-        const int dim,
-        const Teuchos::ParameterList& icontact,
-        bool selfcontact,
-        INPAR::MORTAR::RedundantStorage redundant);
+    Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+        bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
     //! Destructor
     virtual ~Interface() {}
@@ -77,16 +73,10 @@ namespace XCONTACT
     }
 
     //! get the field name enumerator of the parent discretization
-    const enum XFEM::FieldName & ParentDiscretType() const
-    {
-      return parent_discret_.first;
-    }
+    const enum XFEM::FieldName& ParentDiscretType() const { return parent_discret_.first; }
 
     //! access the parent discretization of this interface
-    const DRT::DiscretizationInterface & ParentDiscret() const
-    {
-      return *parent_discret_.second;
-    }
+    const DRT::DiscretizationInterface& ParentDiscret() const { return *parent_discret_.second; }
 
     //! @}
 
@@ -106,16 +96,14 @@ namespace XCONTACT
      *
      *  \author hiermeier
      *  \date 11/16 */
-    void AssembleWeightedGap(Epetra_Vector & wgap) const;
+    void AssembleWeightedGap(Epetra_Vector& wgap) const;
 
     /*! \brief Assemble constraint residual vector and Lagrange multiplier vector
      *  in normal direction
      *
      *  \author hofer
      *  \date 08/16 */
-    void AssembleContactRHS(
-        Epetra_Vector& Wc_lm,
-        Epetra_Vector& lm) const;
+    void AssembleContactRHS(Epetra_Vector& Wc_lm, Epetra_Vector& lm) const;
 
     //! @}
 
@@ -128,17 +116,13 @@ namespace XCONTACT
      *
      *  \author hofer
      *  \date 08/16 */
-    void AssembleMortar(
-        LINALG::SparseMatrix& D,
-        LINALG::SparseMatrix& M) const;
+    void AssembleMortar(LINALG::SparseMatrix& D, LINALG::SparseMatrix& M) const;
 
     /*! \brief Assemble structural contact tangent matrix
      *
      *  \author hofer
      *  \date 08/16 */
-    void AssembleWcUU(
-        LINALG::SparseMatrix& Wc_su_u,
-        LINALG::SparseMatrix& Wc_mu_u) const;
+    void AssembleWcUU(LINALG::SparseMatrix& Wc_su_u, LINALG::SparseMatrix& Wc_mu_u) const;
 
     //! @}
 
@@ -151,15 +135,13 @@ namespace XCONTACT
      *  \date 08/16 */
     void SplitSlaveDofs();
 
-  protected:
+   protected:
     /// derived
-    void PreMortarCoupling(
-        const MORTAR::MortarElement* sele,
+    void PreMortarCoupling(const MORTAR::MortarElement* sele,
         const std::vector<MORTAR::MortarElement*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const;
     /// derived
-    void PostMortarCoupling(
-        const MORTAR::MortarElement* sele,
+    void PostMortarCoupling(const MORTAR::MortarElement* sele,
         const std::vector<MORTAR::MortarElement*> mele,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const;
 
@@ -168,7 +150,7 @@ namespace XCONTACT
 
     //! @}
 
-  protected:
+   protected:
     //! @name Member variables
     //! @{
 
@@ -179,11 +161,12 @@ namespace XCONTACT
     Teuchos::RCP<Epetra_Map> stdofrowmap_;
 
     //! Parent discretization pair
-    std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface> > parent_discret_;
+    std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface>>
+        parent_discret_;
 
     //! @}
 
-  }; // class Interface
-} // namespace XCONTACT
+  };  // class Interface
+}  // namespace XCONTACT
 
-#endif // #ifndef XCONTACT_INTERFACE_H
+#endif  // #ifndef XCONTACT_INTERFACE_H

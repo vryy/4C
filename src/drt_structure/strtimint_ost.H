@@ -19,35 +19,37 @@
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-
   /*====================================================================*/
   /*!
-   * \brief One-step-theta time integration (or Crank-Nicolson scheme or generalised trapezoidal rule)
+   * \brief One-step-theta time integration (or Crank-Nicolson scheme or generalised trapezoidal
+   * rule)
    *
    * <h3> Background </h3>
-   * One-step theta time integration is a finite difference method for 1st order ordinary differential equations (ODE) of the type
-   * \f[
-   *   F(y,\dot{y},t) = \dot{y}(t) - f(y(t),t) = 0
-   * \f]
+   * One-step theta time integration is a finite difference method for 1st order ordinary
+   * differential equations (ODE) of the type \f[ F(y,\dot{y},t) = \dot{y}(t) - f(y(t),t) = 0 \f]
    *
-   * The one-step-theta time integration method discretises this equation into the following reference formula
-   * \f[
-   *   \frac{y_{n+1} - y_n}{\Delta t}
+   * The one-step-theta time integration method discretises this equation into the following
+   * reference formula \f[ \frac{y_{n+1} - y_n}{\Delta t}
    *   - \theta f(y_{n+1},t_{n+1}) + (1-\theta) f(y_n,t_n)
    *   = 0
    * \qquad
    * \f]
-   * in which \f$\theta\in[0,1]\f$ is the key parameter. The method is implicit unless \f$\theta=0\f$, which is the forward Euler scheme. The method recovers the backward Euler method with \f$\theta=1\f$. The trapezoidal rule (TR, or average acceleration method) is obtained with \f$\theta=1/2\f$. Only the trapezoidal rule is second order accurate, all other schemes are only first order.
+   * in which \f$\theta\in[0,1]\f$ is the key parameter. The method is implicit unless
+   * \f$\theta=0\f$, which is the forward Euler scheme. The method recovers the backward Euler
+   * method with \f$\theta=1\f$. The trapezoidal rule (TR, or average acceleration method) is
+   * obtained with \f$\theta=1/2\f$. Only the trapezoidal rule is second order accurate, all other
+   * schemes are only first order.
    *
-   * This method is applied to the set of ODEs reflecting the second order degree of the governing equations in structural dynamics:
-   * \f[\left\{\begin{array}{rcl}
-   *   M \, \dot{D}(t) - M \, V(t) & = & 0
+   * This method is applied to the set of ODEs reflecting the second order degree of the governing
+   * equations in structural dynamics: \f[\left\{\begin{array}{rcl} M \, \dot{D}(t) - M \, V(t) & =
+   * & 0
    * \\
    *   M \, \dot{V}(t) + C \, V(t) + F_{int}(D,t) - F_{ext}(t) & = & 0
    * \end{array}\right.\f]
-   * in which \f$M\f$ is the global mass matrix (#mass_), \f$C\f$ a global damping matrix (in our algorithm the Rayleigh damping matrix, #damp_), \f$D(t)\f$ the displacements (#dis_), \f$V(t)\f$ the velocities (#vel_), \f$F_{int}\f$ the internal forces and \f$F_{ext}\f$ the external forces. One obtains
-   * \f[\left\{\begin{array}{rcl}
-   *   \frac{D_{n+1} - D_n}{\Delta t}
+   * in which \f$M\f$ is the global mass matrix (#mass_), \f$C\f$ a global damping matrix (in our
+   * algorithm the Rayleigh damping matrix, #damp_), \f$D(t)\f$ the displacements (#dis_),
+   * \f$V(t)\f$ the velocities (#vel_), \f$F_{int}\f$ the internal forces and \f$F_{ext}\f$ the
+   * external forces. One obtains \f[\left\{\begin{array}{rcl} \frac{D_{n+1} - D_n}{\Delta t}
    *   - \theta V_{n+1} - (1-\theta) V_n
    *   & = & 0
    * \\
@@ -65,10 +67,9 @@ namespace STR
    *   F_{ext,n+\theta}
    *   = \theta F_{ext}(t_{n+1}) + (1-\theta) F_{ext}(t_{n+1})
    * \f]
-   * These vector equations can be rewritten such that the unknown velocities \f$V_{n+1}\f$ can be suppressed or rather expressed by the unknown displacements \f$D_{n+1}\f$. The residual is achieved
-   * \f[
-   *   R_{n+\theta}(D_{n+1})
-   *   = M A_{n+\theta}(D_{n+1}) + C V_{n+\theta}(D_{n+1})
+   * These vector equations can be rewritten such that the unknown velocities \f$V_{n+1}\f$ can be
+   * suppressed or rather expressed by the unknown displacements \f$D_{n+1}\f$. The residual is
+   * achieved \f[ R_{n+\theta}(D_{n+1}) = M A_{n+\theta}(D_{n+1}) + C V_{n+\theta}(D_{n+1})
    *   + F_{int,n+\theta} - F_{ext,n+\theta}
    *   = 0
    * \f]
@@ -115,7 +116,8 @@ namespace STR
    * <h3>References</h3>
    * - [1] HR Schwarz, Numerische Mathematik, Teubner, Stuttgart, 1997.
    * - [2] TJR Hughes, The finite element method, Dover, Mineola, 1987.
-   * - [3] P Deuflhard and F Bornemann, Numerische Mathematik II: Integration gewohnlicher Differentialgleichungen, Walter de Gryter, Berlin, 1994.
+   * - [3] P Deuflhard and F Bornemann, Numerische Mathematik II: Integration gewohnlicher
+   * Differentialgleichungen, Walter de Gryter, Berlin, 1994.
    * - [4] ...
    *
    *
@@ -124,9 +126,7 @@ namespace STR
    */
   class TimIntOneStepTheta : public TimIntImpl
   {
-
-  public:
-
+   public:
     //! verify if given coefficients are in admissible range;
     //! prints also info to STDOUT
     void VerifyCoeff();
@@ -135,16 +135,14 @@ namespace STR
     //@{
 
     //! Constructor
-    TimIntOneStepTheta
-    (
-      const Teuchos::ParameterList& timeparams,  //!< time parameters
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,  //!< time parameters
+        const Teuchos::ParameterList& ioparams,                   //!< ioflags
+        const Teuchos::ParameterList& sdynparams,                 //!< input parameters
+        const Teuchos::ParameterList& xparams,                    //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,                 //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                      //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -171,12 +169,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -208,10 +203,7 @@ namespace STR
     //@{
 
     //! Return name
-    enum INPAR::STR::DynamicType MethodName() const
-    {
-      return INPAR::STR::dyna_onesteptheta;
-    }
+    enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_onesteptheta; }
 
     //! Provide number of steps, a single-step method returns 1
     virtual int MethodSteps() const { return 1; }
@@ -223,10 +215,7 @@ namespace STR
     }
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const
-    {
-      return MethodOrderOfAccuracyDis();
-    }
+    virtual int MethodOrderOfAccuracyVel() const { return MethodOrderOfAccuracyDis(); }
 
     //! Return linear error coefficient of displacements
     virtual double MethodLinErrCoeffDis() const
@@ -238,25 +227,19 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const
-    {
-      return MethodLinErrCoeffDis();
-    }
+    virtual double MethodLinErrCoeffVel() const { return MethodLinErrCoeffDis(); }
 
     //! Linear error coefficient if 1st order accurate
-    virtual double MethodLinErrCoeff1() const
-    {
-      return 1./2. - theta_;
-    }
+    virtual double MethodLinErrCoeff1() const { return 1. / 2. - theta_; }
 
     //! Linear error coefficient if 2nd order accurate
     virtual double MethodLinErrCoeff2() const
     {
-      return 1./6. - theta_/2.;  // this is -1/12
+      return 1. / 6. - theta_ / 2.;  // this is -1/12
     }
 
     //! return time integration factor
-    virtual double TimIntParam() const {return 1.0 - theta_; }
+    virtual double TimIntParam() const { return 1.0 - theta_; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
@@ -322,16 +305,10 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext()
-    {
-      return fext_;
-    }
+    Teuchos::RCP<Epetra_Vector> Fext() { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew()
-    {
-      return fextn_;
-    }
+    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
 
     //@}
 
@@ -343,8 +320,7 @@ namespace STR
 
     //@}
 
-  protected:
-
+   protected:
     //! equal operator is NOT wanted
     TimIntOneStepTheta operator=(const TimIntOneStepTheta& old);
 
@@ -373,13 +349,13 @@ namespace STR
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fint_;   //!< internal force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fext_;   //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertia force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> finert_;   //!< inertia force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> finertt_;  //!< inertia mid-force
     Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertia force at \f$t_{n+1}\f$
 

@@ -3,10 +3,10 @@
 \file scalardepinterp.H
 \brief
 This file contains a framework, which allows for the linear interpolation between two different
-strain energy functions, where the interpolation ratio come from 'outside'. For now this is supposed to
-come from the idea, that there is a scalar quantity (e.g. foam cells) which induces growth. The grown volume
-fraction thereby consists of another material (e.g. softer or stiffer material parameters or totally different
-strain energy function).
+strain energy functions, where the interpolation ratio come from 'outside'. For now this is supposed
+to come from the idea, that there is a scalar quantity (e.g. foam cells) which induces growth. The
+grown volume fraction thereby consists of another material (e.g. softer or stiffer material
+parameters or totally different strain energy function).
 
 \level 2
 
@@ -31,28 +31,23 @@ strain energy function).
 // forward declaration due to avoid header definition
 namespace MAT
 {
-
   // forward declaration
   class ScalarDepInterp;
 
   namespace PAR
   {
-
-  /*----------------------------------------------------------------------*/
-  /*! \class ScalarDepInterp
-   *  \brief Common parameters for scalar dependent interpolation between two material laws
-   *
-   *  \author thon
-   *  \date 12/2015
-   */
+    /*----------------------------------------------------------------------*/
+    /*! \class ScalarDepInterp
+     *  \brief Common parameters for scalar dependent interpolation between two material laws
+     *
+     *  \author thon
+     *  \date 12/2015
+     */
     class ScalarDepInterp : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ScalarDepInterp(
-          Teuchos::RCP<MAT::PAR::Material> matdata
-      );
+      ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ScalarDepInterp() { ; };
@@ -72,20 +67,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class ScalarDepInterpType : public DRT::ParObjectType
-{
-public:
+  class ScalarDepInterpType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ScalarDepInterpType"; }
 
-  std::string Name() const { return "ScalarDepInterpType"; }
+    static ScalarDepInterpType& Instance() { return instance_; };
 
-  static ScalarDepInterpType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ScalarDepInterpType instance_;
-};
+   private:
+    static ScalarDepInterpType instance_;
+  };
 
 
   /*----------------------------------------------------------------------*/
@@ -118,8 +111,7 @@ private:
 
   class ScalarDepInterp : public So3Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ScalarDepInterp();
 
@@ -133,7 +125,10 @@ private:
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ScalarDepInterpType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return ScalarDepInterpType::Instance().UniqueParObjectId();
+    }
 
     /// \brief Pack this class so it can be communicated
     ///
@@ -164,16 +159,22 @@ private:
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-       dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ScalarDepInterp( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new ScalarDepInterp(*this));
+    }
 
     /// number of materials
-//    virtual int NumMat() const { return params_->nummat_; }
+    //    virtual int NumMat() const { return params_->nummat_; }
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse
+    /// analysis)
     virtual void ResetAll(int numgp);
 
     /// Update
@@ -184,22 +185,23 @@ private:
 
     virtual double Density() const
     {
-      //Note: we have already check that both densities are equal in Setuo()
+      // Note: we have already check that both densities are equal in Setuo()
       return lambda_zero_mat_->Density();
     };
 
     /// provide access to material by its ID
-//     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
+    //     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const {
+    //     return params_->MaterialById(id); }
 
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
-                          const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
-                          Teuchos::ParameterList& params,     ///< Container for additional information
-                          LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat,         ///< Constitutive matrix
-                          const int eleGID                    ///< Element GID
-                          );
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,  ///< Container for additional information
+        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
+        const int eleGID                 ///< Element GID
+    );
 
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -208,19 +210,18 @@ private:
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
-    ///Reading material weights (lambda) from input file
-    void ReadLambda(DRT::INPUT::LineDefinition* linedef, std::string specifier, double &lambda);
+    /// Reading material weights (lambda) from input file
+    void ReadLambda(DRT::INPUT::LineDefinition* linedef, std::string specifier, double& lambda);
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,double& psi,const int eleGID);
+    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::ScalarDepInterp* params_;
 
@@ -235,11 +236,9 @@ private:
 
     /// interpolation parameter (0-->IDMATZEROSC,1-->IDMATUNITSC)
     std::vector<double> lambda_;
-
   };
 
 
-}
+}  // namespace MAT
 
 #endif
-

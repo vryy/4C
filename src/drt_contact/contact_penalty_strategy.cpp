@@ -32,17 +32,12 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-    int dim,
-    Teuchos::RCP<Epetra_Comm> comm,
-    double alphaf,
-    int maxdof)
-    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-        DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), DofRowMap,
+          NodeRowMap, params, dim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -55,16 +50,11 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-    int dim,
-    Teuchos::RCP<Epetra_Comm> comm,
-    double alphaf,
-    int maxdof)
-    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
+    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
@@ -85,10 +75,10 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
 
   // kappa will be the shape function integral on the slave sides
   // (1) build the nodal information
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // interface needs to be complete
-    if (!interface_[i]->Filled() && Comm().MyPID()==0)
+    if (!interface_[i]->Filled() && Comm().MyPID() == 0)
       dserror("ERROR: FillComplete() not called on interface %", i);
 
     // get out of here if not participating in interface
@@ -99,22 +89,22 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
 
     // loop over proc's slave elements of the interface for integration
     // use standard column map to include processor's ghosted elements
-    for (int j=0; j<interface_[i]->SlaveColElements()->NumMyElements(); ++j)
+    for (int j = 0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j)
     {
       int gid1 = interface_[i]->SlaveColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
       CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
       interface_[i]->IntegrateKappaPenalty(*selement);
     }
 
     // loop over all slave row nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // get nodal weighted gap
@@ -123,9 +113,9 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
 
       // store kappa as the inverse of gap
       // (this removes the scaling introduced by weighting the gap!!!)
-      cnode->CoData().Kappa() = 1.0/gap;
+      cnode->CoData().Kappa() = 1.0 / gap;
 
-      //std::cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << std::endl;
+      // std::cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << std::endl;
     }
   }
 }
@@ -151,14 +141,16 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*gmdofrowmap_, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
 
   // (re)setup global vector containing lagrange multipliers
   z_ = LINALG::CreateVector(*gsdofrowmap_, true);
 
   // (re)setup global matrix containing lagrange multiplier derivatives
-  linzmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  linzmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
 
   return;
 }
@@ -166,8 +158,8 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 /*----------------------------------------------------------------------*
  | evaluate contact and create linear system                  popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-                                                 Teuchos::RCP<Epetra_Vector>& feff)
+void CONTACT::CoPenaltyStrategy::EvaluateContact(
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
@@ -178,7 +170,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   bool isincontact = false;
   bool activesetchange = false;
 
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
     bool localisincontact = false;
     bool localactivesetchange = false;
@@ -189,12 +181,12 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     INPAR::CONTACT::SolvingStrategy soltype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if(friction_ and soltype==INPAR::CONTACT::solution_penalty)
+    if (friction_ and soltype == INPAR::CONTACT::solution_penalty)
       interface_[i]->AssembleRegTangentForcesPenalty();
 
-    if(friction_ and soltype==INPAR::CONTACT::solution_uzawa)
+    if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
       interface_[i]->AssembleRegTangentForcesUzawa();
 
     isincontact = isincontact || localisincontact;
@@ -209,15 +201,15 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   Comm().SumAll(&localcontact, &globalcontact, 1);
   Comm().SumAll(&localchange, &globalchange, 1);
 
-  if (globalcontact>=1)
+  if (globalcontact >= 1)
   {
-    isincontact_=true;
-    wasincontact_=true;
+    isincontact_ = true;
+    wasincontact_ = true;
   }
   else
-    isincontact_=false;
+    isincontact_ = false;
 
-  if( (Comm().MyPID()==0) && (globalchange>=1) )
+  if ((Comm().MyPID() == 0) && (globalchange >= 1))
     std::cout << "ACTIVE CONTACT SET HAS CHANGED..." << std::endl;
 
   // (re)setup active global Epetra_Maps
@@ -226,16 +218,16 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   // of the active nodes
   gactivenodes_ = Teuchos::null;
   gslipnodes_ = Teuchos::null;
-  gactivedofs_=Teuchos::null;
+  gactivedofs_ = Teuchos::null;
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
-  for (int i=0;i<(int)interface_.size();++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
     interface_[i]->BuildActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
-    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
   }
 
   // check if contact contributions are present,
@@ -247,7 +239,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   kteff->UnComplete();
 
   // assemble contact quantities on all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // assemble global lagrangian multiplier vector
     interface_[i]->AssembleLM(*z_);
@@ -272,27 +264,29 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   if (Dualquadslavetrafo())
   {
     // modify lindmatrix_ and dmatrix_
-    Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*invtrafo_,true,*lindmatrix_,false,false,false,true);
-    Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp1 =
+        LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp2 =
+        LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
-     dmatrix_    = temp2;
+    dmatrix_ = temp2;
   }
 
 #ifdef CONTACTFDPENALTYTRAC
   INPAR::CONTACT::FrictionType ftype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // check derivatives of penalty traction
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    if( IsInContact() )
+    if (IsInContact())
     {
-      if(ftype==INPAR::CONTACT::friction_coulomb )
+      if (ftype == INPAR::CONTACT::friction_coulomb)
       {
         std::cout << "LINZMATRIX" << *linzmatrix_ << std::endl;
         interface_[i]->FDCheckPenaltyTracFric();
       }
-      else if (ftype==INPAR::CONTACT::friction_none)
+      else if (ftype == INPAR::CONTACT::friction_none)
       {
         std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
         interface_[i]->FDCheckPenaltyTracNor();
@@ -313,13 +307,13 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   // transform if necessary
   if (ParRedist())
   {
-    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_,pgsdofrowmap_);
-    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_,pgmdofrowmap_);
+    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
   }
 
   // add to kteff
-  kteff->Add(*lindmatrix_, false, 1.0-alphaf_, 1.0);
-  kteff->Add(*linmmatrix_, false, 1.0-alphaf_, 1.0);
+  kteff->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
+  kteff->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
 
   // **********************************************************************
   // Build Contact Stiffness #2
@@ -328,19 +322,21 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   //  Kc,2= [ 0 -M(transpose) D] * deltaLM
 
   // multiply Mortar matrices D and M with LinZ
-  Teuchos::RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_,true,*linzmatrix_,false,false,false,true);
-  Teuchos::RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_,true,*linzmatrix_,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> dtilde =
+      LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<LINALG::SparseMatrix> mtilde =
+      LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (ParRedist())
   {
-    dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-    mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+    dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
+    mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
   }
 
   // add to kteff
-  kteff->Add(*dtilde, false, 1.0-alphaf_, 1.0);
-  kteff->Add(*mtilde, false, -(1.0-alphaf_), 1.0);
+  kteff->Add(*dtilde, false, 1.0 - alphaf_, 1.0);
+  kteff->Add(*mtilde, false, -(1.0 - alphaf_), 1.0);
 
   // **********************************************************************
   // Build RHS
@@ -374,7 +370,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
     dmatrix_->Multiply(true, *z_, *fcmd);
     Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*fcmd, *fcmdtemp);
-    feff->Update(-(1-alphaf_), *fcmdtemp, 1.0);
+    feff->Update(-(1 - alphaf_), *fcmdtemp, 1.0);
   }
 
   {
@@ -382,17 +378,17 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
     mmatrix_->Multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*fcmm, *fcmmtemp);
-    feff->Update(1-alphaf_, *fcmmtemp, 1.0);
+    feff->Update(1 - alphaf_, *fcmmtemp, 1.0);
   }
 
 #ifdef CONTACTFDGAP
-   // FD check of weighted gap g derivatives (non-penetr. condition)
+  // FD check of weighted gap g derivatives (non-penetr. condition)
 
   std::cout << "-- CONTACTFDGAP -----------------------------" << std::endl;
   interface_[0]->FDCheckGapDeriv();
   std::cout << "-- CONTACTFDGAP -----------------------------" << std::endl;
 
-#endif // #ifdef CONTACTFDGAP
+#endif  // #ifdef CONTACTFDGAP
 
   return;
 }
@@ -400,8 +396,8 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
 /*----------------------------------------------------------------------*
  | evaluate frictional contact and create linear system gitterle   10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-                                                  Teuchos::RCP<Epetra_Vector>& feff)
+void CONTACT::CoPenaltyStrategy::EvaluateFriction(
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // this is almost the same as in the frictionless contact
   // whereas we chose the EvaluateContact routine with
@@ -409,18 +405,18 @@ void CONTACT::CoPenaltyStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOpe
 
   // check if friction should be applied
   INPAR::CONTACT::FrictionType ftype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // coulomb friction case
-  if (ftype == INPAR::CONTACT::friction_coulomb ||
-      ftype == INPAR::CONTACT::friction_stick)
+  if (ftype == INPAR::CONTACT::friction_coulomb || ftype == INPAR::CONTACT::friction_stick)
   {
-    EvaluateContact(kteff,feff);
+    EvaluateContact(kteff, feff);
   }
   else if (ftype == INPAR::CONTACT::friction_tresca)
   {
-    dserror("Error in AbstractStrategy::Evaluate: Penalty Strategy for"
-           " Tresca friction not yet implemented");
+    dserror(
+        "Error in AbstractStrategy::Evaluate: Penalty Strategy for"
+        " Tresca friction not yet implemented");
   }
   else
     dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
@@ -434,14 +430,14 @@ void CONTACT::CoPenaltyStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOpe
 void CONTACT::CoPenaltyStrategy::ResetPenalty()
 {
   // reset penalty parameter in strategy
-  Params().set<double>("PENALTYPARAM",InitialPenalty());
-  Params().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
+  Params().set<double>("PENALTYPARAM", InitialPenalty());
+  Params().set<double>("PENALTYPARAMTAN", InitialPenaltyTan());
 
   // reset penalty parameter in all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
-    interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
+    interface_[i]->IParams().set<double>("PENALTYPARAM", InitialPenalty());
+    interface_[i]->IParams().set<double>("PENALTYPARAMTAN", InitialPenaltyTan());
   }
 
   return;
@@ -452,20 +448,19 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
  *----------------------------------------------------------------------*/
 void CONTACT::CoPenaltyStrategy::ModifyPenalty()
 {
-
   // generate random number between 0.95 and 1.05
-  double randnum = ((double) rand()/(double) RAND_MAX) * 0.1 + 0.95;
+  double randnum = ((double)rand() / (double)RAND_MAX) * 0.1 + 0.95;
   double pennew = randnum * InitialPenalty();
 
   // modify penalty parameter in strategy
-  Params().set<double>("PENALTYPARAM",pennew);
-  Params().set<double>("PENALTYPARAMTAN",pennew);
+  Params().set<double>("PENALTYPARAM", pennew);
+  Params().set<double>("PENALTYPARAMTAN", pennew);
 
   // modify penalty parameter in all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->IParams().set<double>("PENALTYPARAM",pennew);
-    interface_[i]->IParams().set<double>("PENALTYPARAMTAN",pennew);
+    interface_[i]->IParams().set<double>("PENALTYPARAM", pennew);
+    interface_[i]->IParams().set<double>("PENALTYPARAMTAN", pennew);
   }
 
   return;
@@ -474,8 +469,8 @@ void CONTACT::CoPenaltyStrategy::ModifyPenalty()
 /*----------------------------------------------------------------------*
  | intialize second, third,... Uzawa step                     popp 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-                                                 Teuchos::RCP<Epetra_Vector>& feff)
+void CONTACT::CoPenaltyStrategy::InitializeUzawa(
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // remove old stiffness terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
@@ -485,23 +480,25 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOper
   kteff->UnComplete();
 
   // remove contact stiffness #1 from kteff
-  kteff->Add(*lindmatrix_, false, -(1.0-alphaf_), 1.0);
-  kteff->Add(*linmmatrix_, false, -(1.0-alphaf_), 1.0);
+  kteff->Add(*lindmatrix_, false, -(1.0 - alphaf_), 1.0);
+  kteff->Add(*linmmatrix_, false, -(1.0 - alphaf_), 1.0);
 
   // multiply Mortar matrices D and M with LinZ
-  Teuchos::RCP<LINALG::SparseMatrix> dtilde = LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false,false,false,true);
-  Teuchos::RCP<LINALG::SparseMatrix> mtilde = LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> dtilde =
+      LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<LINALG::SparseMatrix> mtilde =
+      LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (ParRedist())
   {
-    dtilde = MORTAR::MatrixRowTransform(dtilde,pgsdofrowmap_);
-    mtilde = MORTAR::MatrixRowTransform(mtilde,pgmdofrowmap_);
+    dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
+    mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
-  kteff->Add(*dtilde, false, -(1.0-alphaf_), 1.0);
-  kteff->Add(*mtilde, false, (1.0-alphaf_), 1.0);
+  kteff->Add(*dtilde, false, -(1.0 - alphaf_), 1.0);
+  kteff->Add(*mtilde, false, (1.0 - alphaf_), 1.0);
 
   // remove old force terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
@@ -522,30 +519,32 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOper
   dmatrix_->Multiply(true, *z_, *fcmd);
   Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fcmd, *fcmdtemp);
-  feff->Update(1-alphaf_, *fcmdtemp, 1.0);
+  feff->Update(1 - alphaf_, *fcmdtemp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fcmm = LINALG::CreateVector(*gmdofrowmap_, true);
   mmatrix_->Multiply(true, *z_, *fcmm);
   Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fcmm, *fcmmtemp);
-  feff->Update(-(1-alphaf_), *fcmmtemp, 1.0);
+  feff->Update(-(1 - alphaf_), *fcmmtemp, 1.0);
 
   // reset some matrices
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*gmdofrowmap_, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
 
   // reset nodal derivZ values
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    for (int j=0;j<interface_[i]->SlaveColNodesBound()->NumMyElements();++j)
+    for (int j = 0; j < interface_[i]->SlaveColNodesBound()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveColNodesBound()->GID(i);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-      for (int k=0; k<(int)((cnode->CoData().GetDerivZ()).size()); ++k)
+      for (int k = 0; k < (int)((cnode->CoData().GetDerivZ()).size()); ++k)
         (cnode->CoData().GetDerivZ())[k].clear();
       (cnode->CoData().GetDerivZ()).resize(0);
     }
@@ -556,7 +555,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(Teuchos::RCP<LINALG::SparseOper
 
   // and finally redo Evaluate()
   Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
-  Evaluate(kteff,feff,nullvec);
+  Evaluate(kteff, feff, nullvec);
 
   // complete stiffness matrix
   kteff->Complete();
@@ -578,17 +577,17 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   double ppcurrtan = Params().get<double>("PENALTYPARAMTAN");
 
   // gactivenodes_ is undefined
-  if (gactivenodes_==Teuchos::null)
+  if (gactivenodes_ == Teuchos::null)
   {
-    constrnorm_=0;
-    constrnormtan_=0;
+    constrnorm_ = 0;
+    constrnormtan_ = 0;
   }
 
   // gactivenodes_ has no elements
-  else if (gactivenodes_->NumGlobalElements()==0)
+  else if (gactivenodes_->NumGlobalElements() == 0)
   {
-    constrnorm_=0;
-    constrnormtan_=0;
+    constrnorm_ = 0;
+    constrnormtan_ = 0;
   }
 
   // gactivenodes_ has at least one element
@@ -596,15 +595,15 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   {
     // export weighted gap vector to gactiveN-map
     Teuchos::RCP<Epetra_Vector> gact;
-    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
     {
-      gact = LINALG::CreateVector(*gactivedofs_,true);
-      LINALG::Export(*g_,*gact);
+      gact = LINALG::CreateVector(*gactivedofs_, true);
+      LINALG::Export(*g_, *gact);
     }
     else
     {
-      gact = LINALG::CreateVector(*gactivenodes_,true);
-      if (gact->GlobalLength()) LINALG::Export(*g_,*gact);
+      gact = LINALG::CreateVector(*gactivenodes_, true);
+      if (gact->GlobalLength()) LINALG::Export(*g_, *gact);
     }
 
     // compute constraint norm
@@ -613,8 +612,7 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     // Evaluate norm in tangential direction for frictional contact
     if (friction_)
     {
-      for (int i=0; i<(int)interface_.size(); ++i)
-        interface_[i]->EvaluateTangentNorm(cnormtan);
+      for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->EvaluateTangentNorm(cnormtan);
 
       cnormtan = sqrt(cnormtan);
     }
@@ -624,9 +622,9 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
     // (only for Uzawa Augmented Lagrange strategy)
     //********************************************************************
     INPAR::CONTACT::SolvingStrategy soltype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (soltype==INPAR::CONTACT::solution_uzawa)
+    if (soltype == INPAR::CONTACT::solution_uzawa)
     {
       // check convergence of cnorm and update penalty parameter
       // only do this for second, third, ... Uzawa iteration
@@ -636,14 +634,14 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         updatepenalty = true;
 
         // update penalty parameter in strategy
-        Params().set<double>("PENALTYPARAM",10*ppcurr);
+        Params().set<double>("PENALTYPARAM", 10 * ppcurr);
 
         // update penalty parameter in all interfaces
-        for (int i=0; i<(int)interface_.size(); ++i)
+        for (int i = 0; i < (int)interface_.size(); ++i)
         {
           double ippcurr = interface_[i]->IParams().get<double>("PENALTYPARAM");
           if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
-          interface_[i]->IParams().set<double>("PENALTYPARAM",10*ippcurr);
+          interface_[i]->IParams().set<double>("PENALTYPARAM", 10 * ippcurr);
         }
         // in the case of frictional contact, the tangential penalty
         // parameter is also dated up when this is done for the normal one
@@ -652,14 +650,14 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
           updatepenaltytan = true;
 
           // update penalty parameter in strategy
-          Params().set<double>("PENALTYPARAMTAN",10*ppcurrtan);
+          Params().set<double>("PENALTYPARAMTAN", 10 * ppcurrtan);
 
           // update penalty parameter in all interfaces
-          for (int i=0; i<(int)interface_.size(); ++i)
+          for (int i = 0; i < (int)interface_.size(); ++i)
           {
             double ippcurrtan = interface_[i]->IParams().get<double>("PENALTYPARAMTAN");
             if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
-            interface_[i]->IParams().set<double>("PENALTYPARAMTAN",10*ippcurrtan);
+            interface_[i]->IParams().set<double>("PENALTYPARAMTAN", 10 * ippcurrtan);
           }
         }
       }
@@ -672,16 +670,17 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   }
 
   // output to screen
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     std::cout << "********************************************\n";
     std::cout << "Normal Constraint Norm: " << cnorm << "\n";
-    if (friction_)
-      std::cout << "Tangential Constraint Norm: " << cnormtan << "\n";
+    if (friction_) std::cout << "Tangential Constraint Norm: " << cnormtan << "\n";
     if (updatepenalty)
-      std::cout << "Updated normal penalty parameter: " << ppcurr << " -> " << Params().get<double>("PENALTYPARAM") << "\n";
+      std::cout << "Updated normal penalty parameter: " << ppcurr << " -> "
+                << Params().get<double>("PENALTYPARAM") << "\n";
     if (updatepenaltytan == true && friction_)
-     std::cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> " << Params().get<double>("PENALTYPARAMTAN") << "\n";
+      std::cout << "Updated tangential penalty parameter: " << ppcurrtan << " -> "
+                << Params().get<double>("PENALTYPARAMTAN") << "\n";
     std::cout << "********************************************\n";
   }
 

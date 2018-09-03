@@ -19,25 +19,19 @@
 
 DRT::ELEMENTS::Vele3LineType DRT::ELEMENTS::Vele3LineType::instance_;
 
-DRT::ELEMENTS::Vele3LineType& DRT::ELEMENTS::Vele3LineType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::Vele3LineType& DRT::ELEMENTS::Vele3LineType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::Element* parent,
-                              const int lline) :
-DRT::FaceElement(id,owner)
+DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::Element* parent, const int lline)
+    : DRT::FaceElement(id, owner)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lline);
+  SetParentMasterElement(parent, lline);
   return;
 }
 
@@ -45,8 +39,7 @@ DRT::FaceElement(id,owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old) :
-DRT::FaceElement(old)
+DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old) : DRT::FaceElement(old)
 {
   return;
 }
@@ -71,10 +64,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Line::Shape() const
 {
   switch (NumNode())
   {
-  case 2: return line2;
-  case 3: return line3;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
+    case 2:
+      return line2;
+    case 3:
+      return line3;
+    default:
+      dserror("unexpected number of nodes %d", NumNode());
   }
   return dis_none;
 }
@@ -106,10 +101,7 @@ void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::~Vele3Line()
-{
-  return;
-}
+DRT::ELEMENTS::Vele3Line::~Vele3Line() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -121,6 +113,3 @@ void DRT::ELEMENTS::Vele3Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-
-

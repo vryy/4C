@@ -49,7 +49,7 @@
 #include "../drt_variational/var_chemdiff_dyn.H"
 #include "../drt_wear/wear_dyn.H"
 #ifdef HAVE_FFTW
-  #include "../drt_mlmc/drt_uq_dyn.H"
+#include "../drt_mlmc/drt_uq_dyn.H"
 #endif
 #include "../drt_inv_analysis/invana_cal_drt.H"
 #include "../drt_tutorial/tutorial_dyn.H"
@@ -94,7 +94,7 @@ void ntacal()
     case prb_fluid_xfem:
       fluid_xfem_drt();
       break;
-    break;
+      break;
     case prb_fluid_ale:
       fluid_ale_drt();
       break;
@@ -123,7 +123,7 @@ void ntacal()
 
     case prb_ale:
       dyn_ale_drt();
-    break;
+      break;
 
     case prb_thermo:
       thr_dyn_drt();
@@ -221,7 +221,7 @@ void ntacal()
       two_phase_dyn(restart);
       break;
     case prb_fluid_xfem_ls:
-      fluid_xfem_ls_drt(restart); //Exists in drt_two_phase_flow subfolder
+      fluid_xfem_ls_drt(restart);  // Exists in drt_two_phase_flow subfolder
       break;
 
     case prb_uq:
@@ -230,7 +230,7 @@ void ntacal()
 #else
       dserror("Uncertainty Quantification only works with FFTW ");
 #endif
-    break;
+      break;
 
     case prb_invana:
       invana_cal();
@@ -241,8 +241,8 @@ void ntacal()
       break;
 
     default:
-      dserror("solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());
+      dserror(
+          "solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());
       break;
   }
-
 }

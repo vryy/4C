@@ -41,8 +41,7 @@
 enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
     const enum INPAR::STR::VectorNorm& normtype)
 {
-  enum NOX::Abstract::Vector::NormType nox_normtype =
-      NOX::Abstract::Vector::TwoNorm;
+  enum NOX::Abstract::Vector::NormType nox_normtype = NOX::Abstract::Vector::TwoNorm;
 
   switch (normtype)
   {
@@ -61,21 +60,20 @@ enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
       dserror("Unknown conversion for the given vector norm type: \" %s \"!",
           INPAR::STR::VectorNormString(normtype).c_str());
       break;
-  } // switch case normtype
+  }  // switch case normtype
 
   return nox_normtype;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::ConvertModelType2SolType(
-    std::vector<enum NOX::NLN::SolutionType>& soltypes,
-    std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& slinsolvers,
+void STR::NLN::ConvertModelType2SolType(std::vector<enum NOX::NLN::SolutionType>& soltypes,
+    std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& slinsolvers,
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
-    const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& mlinsolvers)
+    const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>& mlinsolvers)
 {
   // initialize the vector and/or force the length to zero
-  if (soltypes.size()>0)
+  if (soltypes.size() > 0)
   {
     soltypes.clear();
     slinsolvers.clear();
@@ -86,10 +84,9 @@ void STR::NLN::ConvertModelType2SolType(
 
   // The strings of the different enums have to fit!
   std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
-  for (mt_iter=modeltypes.begin();mt_iter!=modeltypes.end();++mt_iter)
+  for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
-    const enum NOX::NLN::SolutionType soltype =
-        ConvertModelType2SolType(*mt_iter);
+    const enum NOX::NLN::SolutionType soltype = ConvertModelType2SolType(*mt_iter);
 
     soltypes.push_back(soltype);
     // copy the linsolver pointers into the new map
@@ -103,8 +100,7 @@ void STR::NLN::ConvertModelType2SolType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
-    const enum INPAR::STR::ModelType& modeltype,
-    const bool& do_check)
+    const enum INPAR::STR::ModelType& modeltype, const bool& do_check)
 {
   enum NOX::NLN::SolutionType soltype = NOX::NLN::sol_unknown;
   switch (modeltype)
@@ -133,9 +129,10 @@ enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
     default:
       // check if the corresponding enum could be found.
       if (do_check)
-          dserror("The corresponding solution-type was not found. "
-              "Given string: %s",
-              INPAR::STR::ModelTypeString(modeltype).c_str());
+        dserror(
+            "The corresponding solution-type was not found. "
+            "Given string: %s",
+            INPAR::STR::ModelTypeString(modeltype).c_str());
       break;
   }
 
@@ -145,8 +142,7 @@ enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::ModelType STR::NLN::ConvertSolType2ModelType(
-    const enum NOX::NLN::SolutionType& soltype,
-    const bool& do_check)
+    const enum NOX::NLN::SolutionType& soltype, const bool& do_check)
 {
   enum INPAR::STR::ModelType modeltype = INPAR::STR::model_vague;
   switch (soltype)
@@ -169,7 +165,8 @@ enum INPAR::STR::ModelType STR::NLN::ConvertSolType2ModelType(
     default:
       // check if the corresponding enum could be found.
       if (do_check)
-        dserror("The corresponding model-type was not found. "
+        dserror(
+            "The corresponding model-type was not found. "
             "Given string: %s",
             NOX::NLN::SolutionType2String(soltype).c_str());
       break;
@@ -181,12 +178,10 @@ enum INPAR::STR::ModelType STR::NLN::ConvertSolType2ModelType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum INPAR::STR::ModelType STR::NLN::ConvertQuantityType2ModelType(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype,
-    const bool& do_check)
+    const enum NOX::NLN::StatusTest::QuantityType& qtype, const bool& do_check)
 {
-  const NOX::NLN::SolutionType st =
-      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qtype);
-  return ConvertSolType2ModelType(st,do_check);
+  const NOX::NLN::SolutionType st = NOX::NLN::AUX::ConvertQuantityType2SolutionType(qtype);
+  return ConvertSolType2ModelType(st, do_check);
 }
 
 /*----------------------------------------------------------------------------*
@@ -195,7 +190,7 @@ enum INPAR::STR::EleTech STR::NLN::ConvertQuantityType2EleTech(
     const enum NOX::NLN::StatusTest::QuantityType& qtype)
 {
   enum INPAR::STR::EleTech eletech = INPAR::STR::eletech_pressure;
-  switch(qtype)
+  switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_pressure:
       eletech = INPAR::STR::eletech_pressure;
@@ -220,11 +215,10 @@ enum INPAR::STR::EleTech STR::NLN::ConvertQuantityType2EleTech(
 enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
     const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {
-  enum NOX::NLN::OptimizationProblemType opttype =
-      NOX::NLN::opt_unconstrained;
+  enum NOX::NLN::OptimizationProblemType opttype = NOX::NLN::opt_unconstrained;
   std::vector<enum NOX::NLN::SolutionType>::const_iterator st_iter;
 
-  for (st_iter=soltypes.begin();st_iter!=soltypes.end();++st_iter)
+  for (st_iter = soltypes.begin(); st_iter != soltypes.end(); ++st_iter)
   {
     switch (*st_iter)
     {
@@ -262,27 +256,22 @@ enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::CreateConstraintInterfaces(
-    NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr,
-    STR::Integrator& integrator,
-    const std::vector<enum NOX::NLN::SolutionType>& soltypes)
+void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr,
+    STR::Integrator& integrator, const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {
-  if (iconstr.size()>0)
-    iconstr.clear();
+  if (iconstr.size() > 0) iconstr.clear();
 
   std::vector<enum NOX::NLN::SolutionType>::const_iterator st_iter;
-  for (st_iter=soltypes.begin();st_iter!=soltypes.end();++st_iter)
+  for (st_iter = soltypes.begin(); st_iter != soltypes.end(); ++st_iter)
   {
     switch (*st_iter)
     {
       case NOX::NLN::sol_contact:
       {
-        STR::MODELEVALUATOR::Generic& model =
-            integrator.Evaluator(INPAR::STR::model_contact);
+        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_contact);
         STR::MODELEVALUATOR::Contact& contact_model =
             dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
-        iconstr[NOX::NLN::sol_contact] =
-            contact_model.StrategyPtr()->NoxInterfacePtr();
+        iconstr[NOX::NLN::sol_contact] = contact_model.StrategyPtr()->NoxInterfacePtr();
         break;
       }
       case NOX::NLN::sol_lag_pen_constraint:
@@ -291,8 +280,7 @@ void STR::NLN::CreateConstraintInterfaces(
             integrator.Evaluator(INPAR::STR::model_lag_pen_constraint);
         STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
-        iconstr[NOX::NLN::sol_lag_pen_constraint] =
-            lagpenconstraint_model.NoxInterfacePtr();
+        iconstr[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.NoxInterfacePtr();
         break;
       }
       default:
@@ -305,23 +293,19 @@ void STR::NLN::CreateConstraintInterfaces(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::CreateConstraintPreconditioner(
-    NOX::NLN::CONSTRAINT::PrecInterfaceMap& iconstr_prec,
-    STR::Integrator& integrator,
-    const std::vector<enum NOX::NLN::SolutionType>& soltypes)
+void STR::NLN::CreateConstraintPreconditioner(NOX::NLN::CONSTRAINT::PrecInterfaceMap& iconstr_prec,
+    STR::Integrator& integrator, const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {
-  if (iconstr_prec.size()>0)
-    iconstr_prec.clear();
+  if (iconstr_prec.size() > 0) iconstr_prec.clear();
 
   std::vector<enum NOX::NLN::SolutionType>::const_iterator st_iter;
-  for (st_iter=soltypes.begin();st_iter!=soltypes.end();++st_iter)
+  for (st_iter = soltypes.begin(); st_iter != soltypes.end(); ++st_iter)
   {
     switch (*st_iter)
     {
       case NOX::NLN::sol_contact:
       {
-        STR::MODELEVALUATOR::Generic& model =
-            integrator.Evaluator(INPAR::STR::model_contact);
+        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_contact);
         STR::MODELEVALUATOR::Contact& contact_model =
             dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
         /* Actually we use the underlying MORTAR::StrategyBase as Preconditioner
@@ -336,24 +320,23 @@ void STR::NLN::CreateConstraintPreconditioner(
             integrator.Evaluator(INPAR::STR::model_lag_pen_constraint);
         STR::MODELEVALUATOR::LagPenConstraint& lagpenconstraint_model =
             dynamic_cast<STR::MODELEVALUATOR::LagPenConstraint&>(model);
-        iconstr_prec[NOX::NLN::sol_lag_pen_constraint] = lagpenconstraint_model.NoxInterfacePrecPtr();
+        iconstr_prec[NOX::NLN::sol_lag_pen_constraint] =
+            lagpenconstraint_model.NoxInterfacePrecPtr();
         break;
       }
       default:
         // do nothing
         break;
-    } // switch (*st_iter)
+    }  // switch (*st_iter)
   }
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::CreateScaling(
-    Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
-    STR::TIMINT::BaseDataSDyn DataSDyn,
-    STR::TIMINT::BaseDataGlobalState GState)
+void STR::NLN::CreateScaling(Teuchos::RCP<NOX::Epetra::Scaling>& iscale,
+    STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState)
 {
-  if(DataSDyn.GetSTCAlgoType() != INPAR::STR::stc_none)
+  if (DataSDyn.GetSTCAlgoType() != INPAR::STR::stc_none)
     iscale = Teuchos::rcp(new STR::NLN::LinSystem::StcScaling(DataSDyn, GState));
 }

@@ -23,7 +23,6 @@
 /* belongs to particle namespace */
 namespace PARTICLE
 {
-
   /*====================================================================*/
   /*!
    * \brief Front-end for particle dynamics with explicit time integrators
@@ -34,27 +33,23 @@ namespace PARTICLE
    *
    * \author hammerl
    * \date 12/13
- */
+   */
   class TimIntExpl : public TimInt
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntExpl
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& particledynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntExpl(const Teuchos::ParameterList& ioparams,    //!< ioflags
+        const Teuchos::ParameterList& particledynparams,  //!< input parameters
+        const Teuchos::ParameterList& xparams,            //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,         //!< current discretisation
+        Teuchos::RCP<IO::DiscretizationWriter> output     //!< the output
     );
 
     //! Destructor
-    virtual ~TimIntExpl(){ ; }
+    virtual ~TimIntExpl() { ; }
 
     //@}
 

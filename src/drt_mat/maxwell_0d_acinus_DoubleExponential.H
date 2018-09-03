@@ -24,44 +24,40 @@ namespace MAT
     ///
     class Maxwell_0d_acinus_DoubleExponential : public Maxwell_0d_acinus
     {
-    public:
-
+     public:
       /// standard constructor
       Maxwell_0d_acinus_DoubleExponential(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Maxwell_0d_acinus_DoubleExponential() { }
+      virtual ~Maxwell_0d_acinus_DoubleExponential() {}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-  };  // class Maxwell_0d_acinus_DoubleExponential
-}  // namespace PAR
+    };  // class Maxwell_0d_acinus_DoubleExponential
+  }     // namespace PAR
 
 
-class Maxwell_0d_acinusDoubleExponentialType : public Maxwell_0d_acinusType
-{
-  public:
-
+  class Maxwell_0d_acinusDoubleExponentialType : public Maxwell_0d_acinusType
+  {
+   public:
     std::string Name() const { return "maxwell_0d_acinusDoubleExponentialType"; }
 
-    static Maxwell_0d_acinusDoubleExponentialType & Instance() { return instance_; };
+    static Maxwell_0d_acinusDoubleExponentialType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static Maxwell_0d_acinusDoubleExponentialType instance_;
   };
 
-/*----------------------------------------------------------------------*/
-/// Wrapper for Maxwell 0D acinar material
-///
-/// This object exists (several times) at every element
-class Maxwell_0d_acinus_DoubleExponential : public Maxwell_0d_acinus
-{
-  public:
-
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for Maxwell 0D acinar material
+  ///
+  /// This object exists (several times) at every element
+  class Maxwell_0d_acinus_DoubleExponential : public Maxwell_0d_acinus
+  {
+   public:
     /// construct empty material object
     Maxwell_0d_acinus_DoubleExponential();
 
@@ -76,7 +72,10 @@ class Maxwell_0d_acinus_DoubleExponential : public Maxwell_0d_acinus
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return Maxwell_0d_acinusDoubleExponentialType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return Maxwell_0d_acinusDoubleExponentialType::Instance().UniqueParObjectId();
+    }
 
 
     /*!
@@ -107,10 +106,16 @@ class Maxwell_0d_acinus_DoubleExponential : public Maxwell_0d_acinus
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_0d_maxwell_acinus_doubleexponential; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_0d_maxwell_acinus_doubleexponential;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Maxwell_0d_acinus( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new Maxwell_0d_acinus(*this));
+    }
 
     /*!
       \brief
@@ -120,32 +125,23 @@ class Maxwell_0d_acinus_DoubleExponential : public Maxwell_0d_acinus
     /*!
        \brief
      */
-    virtual void Evaluate(Epetra_SerialDenseVector& epnp,
-                          Epetra_SerialDenseVector& epn,
-                          Epetra_SerialDenseVector& epnm,
-                          Epetra_SerialDenseMatrix& sysmat,
-                          Epetra_SerialDenseVector& rhs,
-                          Teuchos::ParameterList & params,
-                          const double NumOfAcini,
-                          const double Vo,
-                          double time,
-                          double dt);
+    virtual void Evaluate(Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
+        Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
+        Epetra_SerialDenseVector& rhs, Teuchos::ParameterList& params, const double NumOfAcini,
+        const double Vo, double time, double dt);
 
-  private:
+   private:
+    double e1_01_;
+    double e1_lin1_;
+    double e1_exp1_;
+    double tau1_;
 
-     double e1_01_;
-     double e1_lin1_;
-     double e1_exp1_;
-     double tau1_;
-
-     double e1_02_;
-     double e1_lin2_;
-     double e1_exp2_;
-     double tau2_;
-
+    double e1_02_;
+    double e1_lin2_;
+    double e1_exp2_;
+    double tau2_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

@@ -24,27 +24,23 @@ namespace LINALG
   {
     class NonePreconditioner : public PreconditionerType
     {
-      public:
+     public:
+      NonePreconditioner(FILE* outfile, Teuchos::ParameterList& list);
 
-      NonePreconditioner( FILE * outfile, Teuchos::ParameterList & list );
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-          Epetra_Operator * matrix,
-          Epetra_MultiVector * x,
-          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
+      virtual Epetra_Operator* PrecOperator() const { return &*prec_; }
 
       /// linear operator used for preconditioning
       virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return prec_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "None"; }
+      virtual void Print(std::ostream& stream) { stream << "None"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "unknown"; }
 
-      private:
-
+     private:
       Teuchos::RCP<LINALG::NoneOperator> prec_;
     };
 
@@ -62,51 +58,47 @@ namespace LINALG
      */
     class DWindPreconditioner : public PreconditionerType
     {
-      public:
+     public:
+      DWindPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
+          Teuchos::ParameterList& azlist);
 
-        DWindPreconditioner( FILE * outfile,
-            Teuchos::RCP<PreconditionerType> preconditioner,
-            Teuchos::ParameterList & azlist );
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-        virtual void Setup( bool create,
-            Epetra_Operator * matrix,
-            Epetra_MultiVector * x,
-            Epetra_MultiVector * b );
+      /// undo reordering of lhs, don't care for rhs or matrix
+      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-        /// undo reordering of lhs, don't care for rhs or matrix
-        virtual void Finish( Epetra_Operator * matrix,
-            Epetra_MultiVector * x,
-            Epetra_MultiVector * b );
+      /// return the wrapped preconditioner, no work needs to be done after the
+      /// permutation is performed
+      virtual Epetra_Operator* PrecOperator() const { return preconditioner_->PrecOperator(); }
 
-        /// return the wrapped preconditioner, no work needs to be done after the
-        /// permutation is performed
-        virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
+      /// linear operator used for preconditioning
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const
+      {
+        return preconditioner_->PrecOperatorRCP();
+      }
 
-        /// linear operator used for preconditioning
-        virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return preconditioner_->PrecOperatorRCP(); }
+      virtual void Print(std::ostream& stream)
+      {
+        stream << "DWind(";
+        preconditioner_->Print(stream);
+        stream << ")";
+      }
 
-        virtual void Print( std::ostream & stream )
-        {
-          stream << "DWind(";
-          preconditioner_->Print( stream );
-          stream << ")";
-        }
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "unknown"; }
 
-        /// return name of sublist in paramterlist which contains parameters for preconditioner
-        virtual const std::string getParameterListName() const { return "unknown"; }
+     private:
+      Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
 
-      private:
+      Teuchos::ParameterList& azlist_;
 
-        Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
+      //! downwinding reindexer for downwind smoothers
+      Teuchos::RCP<LINALG::DownwindMatrix> dwind_;
 
-        Teuchos::ParameterList & azlist_;
-
-        //! downwinding reindexer for downwind smoothers
-        Teuchos::RCP<LINALG::DownwindMatrix>            dwind_;
-
-        Teuchos::RCP<Epetra_CrsMatrix>     dwA_;
-        Teuchos::RCP<Epetra_MultiVector>   dwx_;
-        Teuchos::RCP<Epetra_MultiVector>   dwb_;
+      Teuchos::RCP<Epetra_CrsMatrix> dwA_;
+      Teuchos::RCP<Epetra_MultiVector> dwx_;
+      Teuchos::RCP<Epetra_MultiVector> dwb_;
     };
 
     /// inf-norm scaling fits the preconditioner framework perfecty
@@ -116,37 +108,35 @@ namespace LINALG
      */
     class InfNormPreconditioner : public PreconditionerType
     {
-      public:
+     public:
+      InfNormPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
 
-      InfNormPreconditioner( Teuchos::RCP<PreconditionerType> preconditioner );
+      virtual Epetra_LinearProblem& LinearProblem() { return preconditioner_->LinearProblem(); }
 
-      virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-          Epetra_Operator * matrix,
-          Epetra_MultiVector * x,
-          Epetra_MultiVector * b );
+      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Finish( Epetra_Operator * matrix,
-          Epetra_MultiVector * x,
-          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
+      virtual Epetra_Operator* PrecOperator() const { return preconditioner_->PrecOperator(); }
 
       /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const  { return preconditioner_->PrecOperatorRCP(); }
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const
+      {
+        return preconditioner_->PrecOperatorRCP();
+      }
 
-      virtual void Print( std::ostream & stream )
+      virtual void Print(std::ostream& stream)
       {
         stream << "InfNorm(";
-        preconditioner_->Print( stream );
+        preconditioner_->Print(stream);
         stream << ")";
       }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "unknown"; }
 
-      private:
+     private:
       Teuchos::RCP<PreconditionerType> preconditioner_;
       Teuchos::RCP<Epetra_Vector> rowsum_;
       Teuchos::RCP<Epetra_Vector> colsum_;
@@ -159,38 +149,35 @@ namespace LINALG
      */
     class SymDiagPreconditioner : public PreconditionerType
     {
-      public:
+     public:
+      SymDiagPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
 
-      SymDiagPreconditioner( Teuchos::RCP<PreconditionerType> preconditioner );
+      virtual Epetra_LinearProblem& LinearProblem() { return preconditioner_->LinearProblem(); }
 
-      virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
+      virtual void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Setup( bool create,
-          Epetra_Operator * matrix,
-          Epetra_MultiVector * x,
-          Epetra_MultiVector * b );
+      virtual void Finish(Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
 
-      virtual void Finish( Epetra_Operator * matrix,
-          Epetra_MultiVector * x,
-          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
+      virtual Epetra_Operator* PrecOperator() const { return preconditioner_->PrecOperator(); }
 
       /// linear operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const  { return preconditioner_->PrecOperatorRCP(); }
+      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const
+      {
+        return preconditioner_->PrecOperatorRCP();
+      }
 
-      virtual void Print( std::ostream & stream )
+      virtual void Print(std::ostream& stream)
       {
         stream << "SymDiag(";
-        preconditioner_->Print( stream );
+        preconditioner_->Print(stream);
         stream << ")";
       }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
       virtual const std::string getParameterListName() const { return "unknown"; }
 
-      private:
-
+     private:
       /// embedded preconditioner
       Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
 
@@ -198,8 +185,8 @@ namespace LINALG
       Teuchos::RCP<Epetra_Vector> diag_;
     };
 
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_POINTPRECONDITIONER_H_ */

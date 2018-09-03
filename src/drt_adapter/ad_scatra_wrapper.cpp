@@ -17,18 +17,17 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ADAPTER::AdapterScatraWrapper::AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra)
-:    scatra_timint_(scatra)
+    : scatra_timint_(scatra)
 {
-  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntImpl>(scatra_timint_,true)->SetModelEvaluatroPtr(this);
+  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntImpl>(scatra_timint_, true)
+      ->SetModelEvaluatroPtr(this);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::AdapterScatraWrapper::EvaluateAdditionalSolutionDependingModels(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<Epetra_Vector>          rhs
-  )
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // do nothing so far
   return;

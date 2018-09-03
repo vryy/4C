@@ -19,81 +19,77 @@
 
 namespace POROFLUIDMULTIPHASE
 {
-class TimIntOneStepTheta : public TimIntImpl
-{
+  class TimIntOneStepTheta : public TimIntImpl
+  {
+   public:
+    /// Standard Constructor
+    TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> dis,  //!< discretization
+        const int linsolvernumber,                             //!< number of linear solver
+        const Teuchos::ParameterList& probparams,              //!< parameter list of global problem
+        const Teuchos::ParameterList& poroparams,              //!< paramter list of poro problem
+        FILE* errfile,                                         //!< error file
+        Teuchos::RCP<IO::DiscretizationWriter> output          //!< output writer
+    );
 
-public:
+    /// Destructor
+    virtual ~TimIntOneStepTheta();
 
-  /// Standard Constructor
-  TimIntOneStepTheta(
-      Teuchos::RCP<DRT::Discretization>       dis,                //!< discretization
-      const int                               linsolvernumber,    //!< number of linear solver
-      const Teuchos::ParameterList&           probparams,         //!< parameter list of global problem
-      const Teuchos::ParameterList&           poroparams,         //!< paramter list of poro problem
-      FILE*                                   errfile,            //!< error file
-      Teuchos::RCP<IO::DiscretizationWriter>  output              //!< output writer
-      );
+    /// Print information about current time step to screen (reimplementation for OST)
+    virtual void PrintTimeStepInfo();
 
-  /// Destructor
-  virtual ~TimIntOneStepTheta();
+    /// compute values at intermediate time steps (required for generalized-alpha)
+    void ComputeIntermediateValues() { return; };
 
-  /// Print information about current time step to screen (reimplementation for OST)
-  virtual void PrintTimeStepInfo();
+    ///  compute scalar time derivative
+    void ComputeTimeDerivative();
 
-  /// compute values at intermediate time steps (required for generalized-alpha)
-  void ComputeIntermediateValues(){return;};
+    /// update the solution after convergence of the nonlinear iteration.
+    /// current solution becomes old solution of next timestep.
+    virtual void Update();
 
-  ///  compute scalar time derivative
-  void ComputeTimeDerivative();
+    /// read restart data
+    void ReadRestart(const int step);
 
-  /// update the solution after convergence of the nonlinear iteration.
-  /// current solution becomes old solution of next timestep.
-  virtual void Update();
+   protected:
+    /// don't want = operator and cctor
+    TimIntOneStepTheta operator=(const TimIntOneStepTheta& old);
 
-  /// read restart data
-  void ReadRestart(const int step);
+    /// copy constructor
+    TimIntOneStepTheta(const TimIntOneStepTheta& old);
 
-protected:
+    /// set time parameter for element evaluation (called before every time step)
+    virtual void SetElementTimeStepParameter() const;
 
-  /// don't want = operator and cctor
-  TimIntOneStepTheta operator = (const TimIntOneStepTheta& old);
+    //! set time for evaluation of Neumann boundary conditions
+    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-  /// copy constructor
-  TimIntOneStepTheta (const TimIntOneStepTheta& old);
+    //! initialization procedure prior to evaluation of first time step
+    virtual void CalcInitialTimeDerivative();
 
-  /// set time parameter for element evaluation (called before every time step)
-  virtual void SetElementTimeStepParameter() const;
+    /// set part of residual vector belonging to previous time step
+    virtual void SetOldPartOfRighthandside();
 
-  //! set time for evaluation of Neumann boundary conditions
-  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    /// do explicit predictor step (-> better starting value for nonlinear solver)
+    virtual void ExplicitPredictor();
 
-  //! initialization procedure prior to evaluation of first time step
-  virtual void CalcInitialTimeDerivative();
+    /// add actual Neumann loads with time factor
+    void AddNeumannToResidual();
 
-  /// set part of residual vector belonging to previous time step
-  virtual void SetOldPartOfRighthandside();
+    /// add parameters specific for time-integration scheme
+    void AddTimeIntegrationSpecificVectors();
 
-  /// do explicit predictor step (-> better starting value for nonlinear solver)
-  virtual void ExplicitPredictor();
+    /// write additional data required for restart
+    void OutputRestart();
 
-  /// add actual Neumann loads with time factor
-  void AddNeumannToResidual();
+    /// return the right time-scaling-factor for the true residual
+    double ResidualScaling() const { return 1.0 / (dt_ * theta_); }
 
-  /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors();
+    /// time factor for one-step-theta/BDF2 time integration
+    double theta_;
 
-  /// write additional data required for restart
-  void OutputRestart();
+  };  // class TimIntOneStepTheta
 
-  /// return the right time-scaling-factor for the true residual
-  double ResidualScaling() const { return 1.0/(dt_*theta_); }
-
-  /// time factor for one-step-theta/BDF2 time integration
-  double theta_;
-
-}; // class TimIntOneStepTheta
-
-} // namespace POROFLUIDMULTIPHASE
+}  // namespace POROFLUIDMULTIPHASE
 
 
 

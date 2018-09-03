@@ -30,16 +30,13 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(
-  Teuchos::RCP<DRT::Discretization>      actdis,
-  Teuchos::RCP<LINALG::Solver>           solver,
-  Teuchos::RCP<Teuchos::ParameterList>   params,
-  Teuchos::RCP<Teuchos::ParameterList>   sctratimintparams,
-  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-  Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
-  LevelSetAlgorithm(actdis,solver,params,sctratimintparams,extraparams,output),
-  TimIntStationary(actdis,solver,sctratimintparams,extraparams,output)
+SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
+      LevelSetAlgorithm(actdis, solver, params, sctratimintparams, extraparams, output),
+      TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -51,10 +48,7 @@ SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                              rasthofer 09/13 |
 *-----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntStationary::~LevelSetTimIntStationary()
-{
-  return;
-}
+SCATRA::LevelSetTimIntStationary::~LevelSetTimIntStationary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -67,11 +61,14 @@ void SCATRA::LevelSetTimIntStationary::Init()
   TimIntStationary::Init();
   LevelSetAlgorithm::Init();
 
-  if (myrank_==0)
+  if (myrank_ == 0)
   {
-    std::cout << "\n*------------------------------------------------------------------------*" << std::endl;
-    std::cout << "|            stationary level set for coupled problems only              |" << std::endl;
-    std::cout << "*------------------------------------------------------------------------*\n" << std::endl;
+    std::cout << "\n*------------------------------------------------------------------------*"
+              << std::endl;
+    std::cout << "|            stationary level set for coupled problems only              |"
+              << std::endl;
+    std::cout << "*------------------------------------------------------------------------*\n"
+              << std::endl;
   }
 
   return;
@@ -88,11 +85,14 @@ void SCATRA::LevelSetTimIntStationary::Setup()
   TimIntStationary::Setup();
   LevelSetAlgorithm::Setup();
 
-  if (myrank_==0)
+  if (myrank_ == 0)
   {
-    std::cout << "\n*------------------------------------------------------------------------*" << std::endl;
-    std::cout << "|            stationary level set for coupled problems only              |" << std::endl;
-    std::cout << "*------------------------------------------------------------------------*\n" << std::endl;
+    std::cout << "\n*------------------------------------------------------------------------*"
+              << std::endl;
+    std::cout << "|            stationary level set for coupled problems only              |"
+              << std::endl;
+    std::cout << "*------------------------------------------------------------------------*\n"
+              << std::endl;
   }
 
   return;

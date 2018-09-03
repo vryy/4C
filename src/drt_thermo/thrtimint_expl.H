@@ -23,7 +23,6 @@
 /* belongs to thermal dynamics namespace */
 namespace THR
 {
-
   /*====================================================================*/
   /*!
    * \brief Front-end for structural dynamics
@@ -38,21 +37,17 @@ namespace THR
    */
   class TimIntExpl : public TimInt
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! constructor
-    TimIntExpl
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& tdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntExpl(const Teuchos::ParameterList& ioparams,  //!< ioflags
+        const Teuchos::ParameterList& tdynparams,       //!< input parameters
+        const Teuchos::ParameterList& xparams,          //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,       //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,            //!< the solver
+        Teuchos::RCP<IO::DiscretizationWriter> output   //!< the output
     );
 
     //! Empty constructor
@@ -124,22 +119,22 @@ namespace THR
       dserror("not needed for explicit time integration");
       return;
     }
-/*
-    //! Update configuration and time after time step
-    void UpdateStepAndTime()
-    {
-      // system state
-      UpdateStepState();
-      // update time and step
-      time_->UpdateSteps(timen_);
-      step_ = stepn_;
-      //
-      timen_ += (*dt_)[0];
-      stepn_ += 1;
-      // element update
-      UpdateStepElement();
-    }
-*/
+    /*
+        //! Update configuration and time after time step
+        void UpdateStepAndTime()
+        {
+          // system state
+          UpdateStepState();
+          // update time and step
+          time_->UpdateSteps(timen_);
+          step_ = stepn_;
+          //
+          timen_ += (*dt_)[0];
+          stepn_ += 1;
+          // element update
+          UpdateStepElement();
+        }
+    */
     //@}
 
     //! @name Output
@@ -149,9 +144,7 @@ namespace THR
     void PrintStep();
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText
-    (
-      FILE* ofile  //!< output file handle
+    void PrintStepText(FILE* ofile  //!< output file handle
     );
 
     //@}
@@ -212,10 +205,8 @@ namespace THR
 
     //@}
 
-  protected:
-
+   protected:
     // currently nothing
-
   };
 
 }  // namespace THR

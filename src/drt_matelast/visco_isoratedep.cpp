@@ -28,44 +28,32 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  n_(matdata->GetDouble("N"))
+MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), n_(matdata->GetDouble("N"))
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoRateDep::IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::IsoRateDep::IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
-  const LINALG::Matrix<3,1>& modinv,
-  LINALG::Matrix<8,1>& modmu,
-  LINALG::Matrix<33,1>& modxi,
-  LINALG::Matrix<7,1>& modrateinv,
-  Teuchos::ParameterList& params,
-  const int eleGID
-  )
+void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(const LINALG::Matrix<3, 1>& modinv,
+    LINALG::Matrix<8, 1>& modmu, LINALG::Matrix<33, 1>& modxi, LINALG::Matrix<7, 1>& modrateinv,
+    Teuchos::ParameterList& params, const int eleGID)
 {
-
-  const double n = params_ -> n_;
+  const double n = params_->n_;
 
   // get time algorithmic parameters.
   double dt = params.get<double>("delta time");
 
-  modmu(1) += 2.* n * modrateinv(1) ;
-  modmu(2) += (2.* n *(modinv(0)-3.) ) / dt;
+  modmu(1) += 2. * n * modrateinv(1);
+  modmu(2) += (2. * n * (modinv(0) - 3.)) / dt;
 
-  modxi(1) += (4.* n) / dt;
-  modxi(2) += (4.* n *(modinv(0)-3.) ) / (dt*dt);
+  modxi(1) += (4. * n) / dt;
+  modxi(2) += (4. * n * (modinv(0) - 3.)) / (dt * dt);
 
   return;
 }

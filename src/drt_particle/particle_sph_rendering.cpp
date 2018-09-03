@@ -36,19 +36,17 @@
 /*----------------------------------------------------------------------*
  | constructor                                             sfuchs 06/17 |
  *----------------------------------------------------------------------*/
-PARTICLE::Rendering::Rendering(
-    Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
+PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
     Teuchos::RCP<PARTICLE::ParticleSPHInteractionHandler> interHandler,
-    Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler
-    ) :
-    particle_algorithm_(particleAlgorithm),
-    interHandler_(interHandler),
-    weightFunctionHandler_(weightFunctionHandler),
-    vel_(Teuchos::null),
-    acc_(Teuchos::null),
-    velmod_(Teuchos::null),
-    density_(Teuchos::null),
-    pressure_(Teuchos::null)
+    Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler)
+    : particle_algorithm_(particleAlgorithm),
+      interHandler_(interHandler),
+      weightFunctionHandler_(weightFunctionHandler),
+      vel_(Teuchos::null),
+      acc_(Teuchos::null),
+      velmod_(Teuchos::null),
+      density_(Teuchos::null),
+      pressure_(Teuchos::null)
 {
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -57,19 +55,24 @@ PARTICLE::Rendering::Rendering(
   const Teuchos::ParameterList& particle_params = problem->ParticleParams();
 
   // get type of rendering
-  renderingType_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particle_params,"RENDERING");
-  renderingOutput_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingOutput>(particle_params,"RENDERING_OUTPUT");
-  renderingBdryParticle_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingBdryPart>(particle_params,"RENDERING_BDRYPARTICLE");
+  renderingType_ =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particle_params, "RENDERING");
+  renderingOutput_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingOutput>(
+      particle_params, "RENDERING_OUTPUT");
+  renderingBdryParticle_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingBdryPart>(
+      particle_params, "RENDERING_BDRYPARTICLE");
   avrgRendering_ = particle_params.get<int>("AVRG_REND_STEPS");
 
-  if ( avrgRendering_ < 1 or  particle_params.get<int>("RESEVRYREND") < 1 )
+  if (avrgRendering_ < 1 or particle_params.get<int>("RESEVRYREND") < 1)
     dserror("RESEVRYREND and AVRG_REND_STEPS have to be integer >=1!");
 
-  if ( avrgRendering_ > particle_params.get<int>("RESEVRYREND") )
+  if (avrgRendering_ > particle_params.get<int>("RESEVRYREND"))
     dserror("Averaging of rendering results just possible over a maximum of RESEVRYREND steps!");
 
-  if ( particle_params.get<int>("RESEVRYREND") % avrgRendering_ != 0 )
-    dserror("AVRG_REND_STEPS has to be a divisor of RESEVRYREND (RESEVRYREND modulo AVRG_REND_STEPS = 0)!!!");
+  if (particle_params.get<int>("RESEVRYREND") % avrgRendering_ != 0)
+    dserror(
+        "AVRG_REND_STEPS has to be a divisor of RESEVRYREND (RESEVRYREND modulo AVRG_REND_STEPS = "
+        "0)!!!");
 
   // get rendering discretization
   discret_ = problem->GetDis("rendering");
@@ -116,36 +119,39 @@ PARTICLE::Rendering::Rendering(
   pressure_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
 
   // write mesh file once
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Discret)
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLE::Discret)
   {
     Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
     output->WriteMesh(particle_algorithm_->Step(), particle_algorithm_->Time());
   }
 
   // write rendering node positions and map relating dof gids to node gids once in matlab format
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Matlab)
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLE::Matlab)
   {
-    Teuchos::RCP<Epetra_Vector> rdgNodePos = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
-    Teuchos::RCP<Epetra_Vector> rdgNodeMap = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+    Teuchos::RCP<Epetra_Vector> rdgNodePos =
+        Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+    Teuchos::RCP<Epetra_Vector> rdgNodeMap =
+        Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
 
     // loop over all rendering nodes
-    for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
+    for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       // extract node
-      DRT::Node *node = discret_->lRowNode(i);
+      DRT::Node* node = discret_->lRowNode(i);
 
       // gid of node
       std::vector<double> gid(3);
       gid[0] = gid[1] = gid[2] = node->Id() + 1;
 
       // extract global dof ids
-      std::vector<int> lm = discret_->Dof(0,node);
+      std::vector<int> lm = discret_->Dof(0, node);
 
       int err = 0;
       err = rdgNodePos->ReplaceGlobalValues(3, &(node->X())[0], &lm[0]);
       err = rdgNodeMap->ReplaceGlobalValues(3, &gid[0], &lm[0]);
-      if (err > 0)
-        dserror("Could not insert values into vector rdgNodePos: error %d",err);
+      if (err > 0) dserror("Could not insert values into vector rdgNodePos: error %d", err);
     }
 
     // output in matlab format
@@ -161,54 +167,55 @@ PARTICLE::Rendering::Rendering(
   }
 
   return;
-} // PARTICLE::Rendering::Rendering
+}  // PARTICLE::Rendering::Rendering
 
 /*----------------------------------------------------------------------*
  | update the rendering vectors                            sfuchs 06/17 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Rendering::UpdateRenderingVectors(
-    Teuchos::RCP<DRT::Discretization> pDiscret,
-    Teuchos::RCP<const Epetra_Vector> pDis,
-    Teuchos::RCP<const Epetra_Vector> pVel,
-    Teuchos::RCP<const Epetra_Vector> pAcc,
-    Teuchos::RCP<const Epetra_Vector> pVelMod,
-    Teuchos::RCP<const Epetra_Vector> pDensity,
-    Teuchos::RCP<const Epetra_Vector> pRadius,
-    Teuchos::RCP<const Epetra_Vector> pPressure,
-    Teuchos::RCP<const Epetra_Vector> pMass)
+void PARTICLE::Rendering::UpdateRenderingVectors(Teuchos::RCP<DRT::Discretization> pDiscret,
+    Teuchos::RCP<const Epetra_Vector> pDis, Teuchos::RCP<const Epetra_Vector> pVel,
+    Teuchos::RCP<const Epetra_Vector> pAcc, Teuchos::RCP<const Epetra_Vector> pVelMod,
+    Teuchos::RCP<const Epetra_Vector> pDensity, Teuchos::RCP<const Epetra_Vector> pRadius,
+    Teuchos::RCP<const Epetra_Vector> pPressure, Teuchos::RCP<const Epetra_Vector> pMass)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Rendering::UpdateStateVectors");
 
   // create the dof-based rendering vectors
-  Teuchos::RCP<Epetra_FEVector> vel = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
-  Teuchos::RCP<Epetra_FEVector> acc = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
-  Teuchos::RCP<Epetra_FEVector> velmod = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> vel =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> acc =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> velmod =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
 
   // create the node-based rendering vectors
-  Teuchos::RCP<Epetra_FEVector> density = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
-  Teuchos::RCP<Epetra_FEVector> pressure = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> density =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> pressure =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
 
   // create vector of normalization weights (dof and nodal based)
-  Teuchos::RCP<Epetra_FEVector> sumkWikDof = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
-  Teuchos::RCP<Epetra_FEVector> sumkWikNode = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> sumkWikDof =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> sumkWikNode =
+      Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
 
   // set that keeps track of the bins that have been already examined
   std::set<int> examinedbins;
 
   // loop over the particles (to check only the bins that own particles)
-  for (int rowPar_i=0; rowPar_i<pDiscret->NodeRowMap()->NumMyElements(); ++rowPar_i)
+  for (int rowPar_i = 0; rowPar_i < pDiscret->NodeRowMap()->NumMyElements(); ++rowPar_i)
   {
     // extract the particle
-    DRT::Node *currparticle = pDiscret->lRowNode(rowPar_i);
+    DRT::Node* currparticle = pDiscret->lRowNode(rowPar_i);
 
     // find the bin it belongs to
     DRT::Element* currentBin = currparticle->Elements()[0];
     const int binId = currentBin->Id();
 
     // if a bin has already been examined --> continue with next particle
-    if( examinedbins.find(binId) != examinedbins.end() )
-      continue;
-    //else: bin is examined for the first time --> new entry in examinedbins_
+    if (examinedbins.find(binId) != examinedbins.end()) continue;
+    // else: bin is examined for the first time --> new entry in examinedbins_
     examinedbins.insert(binId);
 
     // create and fill the list of neighboring rendering nodes
@@ -216,7 +223,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
 
     // extract the pointer to the particles and loop over all particles in CurrentBin
     DRT::Node** currentBinParticles = currentBin->Nodes();
-    for (int i=0; i<currentBin->NumNode(); ++i)
+    for (int i = 0; i < currentBin->NumNode(); ++i)
     {
       // determine the particle we are analyzing
       DRT::Node* particle_i = currentBinParticles[i];
@@ -225,11 +232,9 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
       if (renderingBdryParticle_ == INPAR::PARTICLE::NoBdryParticle)
       {
         PARTICLE::ParticleNode* particleNode_i = dynamic_cast<PARTICLE::ParticleNode*>(particle_i);
-        if (particleNode_i == NULL)
-          dserror("Dynamic cast to ParticleNode failed");
+        if (particleNode_i == NULL) dserror("Dynamic cast to ParticleNode failed");
 
-        if (particleNode_i->Is_bdry_particle())
-          continue;
+        if (particleNode_i->Is_bdry_particle()) continue;
       }
 
       // extract the gid
@@ -242,23 +247,21 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
       const double density_i = (*pDensity)[lidRowNode_i];
 
       // skip non-interacting boundary particles
-      if (density_i <= 0.0)
-        continue;
+      if (density_i <= 0.0) continue;
 
       const double radius_i = (*pRadius)[lidRowNode_i];
 
-      LINALG::Matrix<3,1> dis_i(true);
-      LINALG::Matrix<3,1> vel_i(true);
-      LINALG::Matrix<3,1> acc_i(true);
-      LINALG::Matrix<3,1> velmod_i(true);
-      for (int dim=0;dim<3;++dim)
+      LINALG::Matrix<3, 1> dis_i(true);
+      LINALG::Matrix<3, 1> vel_i(true);
+      LINALG::Matrix<3, 1> acc_i(true);
+      LINALG::Matrix<3, 1> velmod_i(true);
+      for (int dim = 0; dim < 3; ++dim)
       {
-        dis_i(dim) = (*pDis)[3*lidRowNode_i + dim];
-        vel_i(dim) = (*pVel)[3*lidRowNode_i + dim];
-        acc_i(dim) = (*pAcc)[3*lidRowNode_i + dim];
+        dis_i(dim) = (*pDis)[3 * lidRowNode_i + dim];
+        vel_i(dim) = (*pVel)[3 * lidRowNode_i + dim];
+        acc_i(dim) = (*pAcc)[3 * lidRowNode_i + dim];
 
-        if ( pVelMod!=Teuchos::null )
-          velmod_i(dim) = (*pVelMod)[3*lidRowNode_i + dim];
+        if (pVelMod != Teuchos::null) velmod_i(dim) = (*pVelMod)[3 * lidRowNode_i + dim];
       }
 
       const double mass_i = (*pMass)[lidRowNode_i];
@@ -269,37 +272,34 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
       std::list<DRT::Node*>::const_iterator nbrRdgNode_k;
       for (nbrRdgNode_k = nbrRdgNodes.begin(); nbrRdgNode_k != nbrRdgNodes.end(); ++nbrRdgNode_k)
       {
-        LINALG::Matrix<3,1> disNbrRdgNode_k(true);
-        for (int dim=0; dim<3; ++dim)
-          disNbrRdgNode_k(dim) = ((*nbrRdgNode_k)->X())[dim];
+        LINALG::Matrix<3, 1> disNbrRdgNode_k(true);
+        for (int dim = 0; dim < 3; ++dim) disNbrRdgNode_k(dim) = ((*nbrRdgNode_k)->X())[dim];
 
         // have periodic boundary conditions
         if (particle_algorithm_->BinStrategy()->HavePBC())
           interHandler_->ShiftPeriodicBoundaryPair(dis_i, disNbrRdgNode_k, radius_i, 0.0);
 
-        LINALG::Matrix<3,1> rRel(true);
+        LINALG::Matrix<3, 1> rRel(true);
         rRel.Update(1.0, dis_i, -1.0, disNbrRdgNode_k);
         const double rRelNorm2 = rRel.Norm2();
 
         // skip in case particles are too apart
-        if (rRelNorm2 > radius_i)
-          continue;
+        if (rRelNorm2 > radius_i) continue;
 
         // determine weight function
         const double weight_ik = weightFunctionHandler_->W(rRelNorm2, radius_i);
-        const double massOverDensityWeight_ik = massOverDensity_i*weight_ik;
+        const double massOverDensityWeight_ik = massOverDensity_i * weight_ik;
 
         // render states of particle i to rendering node k
-        LINALG::Matrix<3,1> vel_ik(vel_i);
-        LINALG::Matrix<3,1> acc_ik(acc_i);
+        LINALG::Matrix<3, 1> vel_ik(vel_i);
+        LINALG::Matrix<3, 1> acc_ik(acc_i);
         vel_ik.Scale(massOverDensityWeight_ik);
         acc_ik.Scale(massOverDensityWeight_ik);
 
-        LINALG::Matrix<3,1> velmod_ik(velmod_i);
-        if ( pVelMod!=Teuchos::null )
-          velmod_ik.Scale(massOverDensityWeight_ik);
+        LINALG::Matrix<3, 1> velmod_ik(velmod_i);
+        if (pVelMod != Teuchos::null) velmod_ik.Scale(massOverDensityWeight_ik);
 
-        double density_ik = density_i * massOverDensityWeight_ik; // = mass_i * weight_ik;
+        double density_ik = density_i * massOverDensityWeight_ik;  // = mass_i * weight_ik;
         double pressure_ik = pressure_i * massOverDensityWeight_ik;
 
         // extract the gid
@@ -314,7 +314,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
         vel->SumIntoGlobalValues(3, &lmRdgNode_k[0], &vel_ik(0));
         acc->SumIntoGlobalValues(3, &lmRdgNode_k[0], &acc_ik(0));
 
-        if ( pVelMod!=Teuchos::null )
+        if (pVelMod != Teuchos::null)
           velmod->SumIntoGlobalValues(3, &lmRdgNode_k[0], &velmod_ik(0));
 
         density->SumIntoGlobalValues(1, &gidRdgNode_k, &density_ik);
@@ -335,8 +335,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
   err += vel->GlobalAssemble(Add, true);
   err += acc->GlobalAssemble(Add, true);
 
-  if ( pVelMod!=Teuchos::null )
-    err += velmod->GlobalAssemble(Add, true);
+  if (pVelMod != Teuchos::null) err += velmod->GlobalAssemble(Add, true);
 
   err += density->GlobalAssemble(Add, true);
   err += pressure->GlobalAssemble(Add, true);
@@ -347,8 +346,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
     err += sumkWikNode->GlobalAssemble(Add, true);
   }
 
-  if (err!=0)
-    dserror("global assemble of rendering vectors failed!");
+  if (err != 0) dserror("global assemble of rendering vectors failed!");
 
   // normalize rendering vectors
   if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
@@ -359,25 +357,23 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
     vel->Multiply(1.0, *sumkWikDof, *vel, 0.0);
     acc->Multiply(1.0, *sumkWikDof, *acc, 0.0);
 
-    if ( pVelMod!=Teuchos::null )
-      velmod->Multiply(1.0, *sumkWikDof, *velmod, 0.0);
+    if (pVelMod != Teuchos::null) velmod->Multiply(1.0, *sumkWikDof, *velmod, 0.0);
 
     density->Multiply(1.0, *sumkWikNode, *density, 0.0);
     pressure->Multiply(1.0, *sumkWikNode, *pressure, 0.0);
   }
 
   // average rendering vectors over time steps
-  vel_->Update(1.0/avrgRendering_, *vel, 1.0);
-  acc_->Update(1.0/avrgRendering_, *acc, 1.0);
+  vel_->Update(1.0 / avrgRendering_, *vel, 1.0);
+  acc_->Update(1.0 / avrgRendering_, *acc, 1.0);
 
-  if ( pVelMod!=Teuchos::null )
-    velmod_->Update(1.0/avrgRendering_, *velmod, 1.0);
+  if (pVelMod != Teuchos::null) velmod_->Update(1.0 / avrgRendering_, *velmod, 1.0);
 
-  density_->Update(1.0/avrgRendering_, *density, 1.0);
-  pressure_->Update(1.0/avrgRendering_, *pressure, 1.0);
+  density_->Update(1.0 / avrgRendering_, *density, 1.0);
+  pressure_->Update(1.0 / avrgRendering_, *pressure, 1.0);
 
   return;
-} // PARTICLE::Rendering::UpdateStateVectors
+}  // PARTICLE::Rendering::UpdateStateVectors
 
 /*----------------------------------------------------------------------*
  | get neighboring rendering nodes                        sfuchs 06/17 |
@@ -392,16 +388,17 @@ std::list<DRT::Node*> PARTICLE::Rendering::GetNeighboringRenderingNodes(const in
   // find the neighboring bins and fill binIds
   std::vector<int> binIds;
   binIds.reserve(27);
-  particle_algorithm_->BinStrategy()->GetNeighborAndOwnBinIds(binId,binIds);
+  particle_algorithm_->BinStrategy()->GetNeighborAndOwnBinIds(binId, binIds);
 
   // concatenate the various rendering node lists
   for (std::vector<int>::const_iterator ii = binIds.begin(); ii != binIds.end(); ++ii)
   {
-    neighboringRenderingNodes.insert(neighboringRenderingNodes.end(), binsToRenderingNodes_[*ii].begin(), binsToRenderingNodes_[*ii].end());
+    neighboringRenderingNodes.insert(neighboringRenderingNodes.end(),
+        binsToRenderingNodes_[*ii].begin(), binsToRenderingNodes_[*ii].end());
   }
 
   return neighboringRenderingNodes;
-} // PARTICLE::Rendering::GetNeighboringRenderingNodes
+}  // PARTICLE::Rendering::GetNeighboringRenderingNodes
 
 /*----------------------------------------------------------------------*
  | output rendering state                                  sfuchs 06/17 |
@@ -415,7 +412,8 @@ void PARTICLE::Rendering::OutputState()
   const double time = particle_algorithm_->Time();
 
   // output discretization writer
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Discret)
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLE::Discret)
   {
     Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
 
@@ -432,7 +430,8 @@ void PARTICLE::Rendering::OutputState()
   }
 
   // output in matlab format
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Matlab)
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLE::Matlab)
   {
     const std::string outname(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
@@ -463,7 +462,7 @@ void PARTICLE::Rendering::OutputState()
   }
 
   return;
-} // PARTICLE::Rendering::OutputState
+}  // PARTICLE::Rendering::OutputState
 
 /*----------------------------------------------------------------------*
  | clear rendering state                                   sfuchs 06/17 |
@@ -480,7 +479,7 @@ void PARTICLE::Rendering::ClearState()
   pressure_->Scale(0.0);
 
   return;
-} // PARTICLE::Rendering::ClearState
+}  // PARTICLE::Rendering::ClearState
 
 /*----------------------------------------------------------------------*
  | create result test for rendering                        sfuchs 06/17 |
@@ -488,4 +487,4 @@ void PARTICLE::Rendering::ClearState()
 Teuchos::RCP<DRT::ResultTest> PARTICLE::Rendering::CreateFieldTest()
 {
   return Teuchos::rcp(new ParticleSPHRenderingResultTest(*this));
-} // PARTICLE::Rendering::CreateFieldTest
+}  // PARTICLE::Rendering::CreateFieldTest

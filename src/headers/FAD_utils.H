@@ -24,32 +24,26 @@ namespace FADUTILS
   /*!
   \brief Cast of FAD to double
   */
-  inline double CastToDouble(FAD a)
-  {
-    return a.val();
-  }
+  inline double CastToDouble(FAD a) { return a.val(); }
 
   /*!
   \brief Cast of double to double
   */
-  inline double CastToDouble(double a)
-  {
-    return a;
-  }
+  inline double CastToDouble(double a) { return a; }
 
   /*!
   \brief Cast of a FAD matrix to a double matrix
   */
-  template<typename type,int dim1, int dim2>
-  LINALG::TMatrix<double,dim1,dim2> CastToDouble(LINALG::TMatrix<type,dim1,dim2> a)
+  template <typename type, int dim1, int dim2>
+  LINALG::TMatrix<double, dim1, dim2> CastToDouble(LINALG::TMatrix<type, dim1, dim2> a)
   {
-    LINALG::TMatrix<double,dim1,dim2> b(true);
+    LINALG::TMatrix<double, dim1, dim2> b(true);
 
-    for (int i=0;i<dim1;i++)
+    for (int i = 0; i < dim1; i++)
     {
-      for (int j=0;j<dim2;j++)
+      for (int j = 0; j < dim2; j++)
       {
-        b(i,j)=CastToDouble(a(i,j));
+        b(i, j) = CastToDouble(a(i, j));
       }
     }
     return b;
@@ -58,7 +52,7 @@ namespace FADUTILS
   /*!
   \brief Calculate signum function of FAD or double quantity
   */
-  template<typename type>
+  template <typename type>
   type Signum(type a)
   {
     if (a >= 0.0)
@@ -70,10 +64,7 @@ namespace FADUTILS
   /*!
   \brief Calculate square root of a scalar double quantity
   */
-  inline double sqrt(double a)
-  {
-    return std::sqrt(a);
-  }
+  inline double sqrt(double a) { return std::sqrt(a); }
 
   /*!
   \brief Calculate square root of a scalar FAD quantity
@@ -85,7 +76,7 @@ namespace FADUTILS
   {
     // avoid non-differentiable point of square root function by using conditional
     /* Todo should we use a tolerance/threshold here? */
-    if ( a == 0.0 )
+    if (a == 0.0)
       return 0.0;
     else
       return std::sqrt(a);
@@ -94,24 +85,18 @@ namespace FADUTILS
   /*!
   \brief Calculate Norm of a scalar double quantity
   */
-  inline double Norm(double a)
-  {
-    return std::sqrt(a*a);
-  }
+  inline double Norm(double a) { return std::sqrt(a * a); }
 
   /*!
   \brief Calculate Norm of a scalar FAD quantity
   */
-  inline FAD Norm(FAD a)
-  {
-    return FADUTILS::sqrt(a*a);
-  }
+  inline FAD Norm(FAD a) { return FADUTILS::sqrt(a * a); }
 
   /*!
   \brief Calculate Norm of a double vector
   */
-  template<int length>
-  double VectorNorm(LINALG::TMatrix<double,length,1> v)
+  template <int length>
+  double VectorNorm(LINALG::TMatrix<double, length, 1> v)
   {
     return v.Norm2();
   }
@@ -119,13 +104,13 @@ namespace FADUTILS
   /*!
   \brief Calculate Norm of a FAD vector
   */
-  template<int length>
-  FAD VectorNorm(LINALG::TMatrix<FAD,length,1> v)
+  template <int length>
+  FAD VectorNorm(LINALG::TMatrix<FAD, length, 1> v)
   {
     FAD norm_squared = 0.0;
-    for (int i=0;i<length;i++)
+    for (int i = 0; i < length; i++)
     {
-      norm_squared+=v(i)*v(i);
+      norm_squared += v(i) * v(i);
     }
 
     return FADUTILS::sqrt(norm_squared);
@@ -133,13 +118,13 @@ namespace FADUTILS
 
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
   // Todo this function is obsolete
-  template<typename T>
-  T Norm(LINALG::TMatrix<T,3,1> v)
+  template <typename T>
+  T Norm(LINALG::TMatrix<T, 3, 1> v)
   {
     T norm_squared = 0.0;
-    for (int i=0;i<3;i++)
+    for (int i = 0; i < 3; i++)
     {
-      norm_squared+=v(i)*v(i);
+      norm_squared += v(i) * v(i);
     }
 
     return FADUTILS::sqrt(norm_squared);
@@ -149,22 +134,22 @@ namespace FADUTILS
   \brief Calculate inner product of two FAD or double vectors
   */
   // Todo this function is obsolete, use Dot of LINALG::TMatrix instead
-  template<typename type>
-  type ScalarProduct(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
+  template <typename type>
+  type ScalarProduct(LINALG::TMatrix<type, 3, 1> a, LINALG::TMatrix<type, 3, 1> b)
   {
-    return a(0)*b(0)+a(1)*b(1)+a(2)*b(2);
+    return a(0) * b(0) + a(1) * b(1) + a(2) * b(2);
   }
 
   /*!
   \brief Calculate difference of two FAD or double vectors
   */
   // Todo this function is obsolete, use Update of LINALG::TMatrix instead
-  template<typename type>
-  LINALG::TMatrix<type,3,1> DiffVector(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
+  template <typename type>
+  LINALG::TMatrix<type, 3, 1> DiffVector(
+      LINALG::TMatrix<type, 3, 1> a, LINALG::TMatrix<type, 3, 1> b)
   {
-    LINALG::TMatrix<type,3,1> c(true);
-    for (int i=0;i<3;i++)
-      c(i)=a(i)-b(i);
+    LINALG::TMatrix<type, 3, 1> c(true);
+    for (int i = 0; i < 3; i++) c(i) = a(i) - b(i);
 
     return c;
   }
@@ -173,29 +158,30 @@ namespace FADUTILS
   \brief Calculate vector product of two FAD or double vectors
   */
   // Todo this function is obsolete, use CrossProduct of LINALG::TMatrix instead
-  template<typename type>
-  LINALG::TMatrix<type,3,1> VectorProduct(LINALG::TMatrix<type,3,1> first_vector, LINALG::TMatrix<type,3,1> second_vector)
+  template <typename type>
+  LINALG::TMatrix<type, 3, 1> VectorProduct(
+      LINALG::TMatrix<type, 3, 1> first_vector, LINALG::TMatrix<type, 3, 1> second_vector)
   {
-    LINALG::TMatrix<type,3,1> result_vector;
+    LINALG::TMatrix<type, 3, 1> result_vector;
     result_vector.Clear();
-    LINALG::TMatrix<type,3,3> S_first_vector;
+    LINALG::TMatrix<type, 3, 3> S_first_vector;
     S_first_vector.Clear();
 
-    S_first_vector(0,0) = 0.0;
-    S_first_vector(0,1) = -first_vector(2);
-    S_first_vector(0,2) = first_vector(1);
-    S_first_vector(1,0) = first_vector(2);
-    S_first_vector(1,1) = 0.0;
-    S_first_vector(1,2) = -first_vector(0);
-    S_first_vector(2,0) = -first_vector(1);
-    S_first_vector(2,1) = first_vector(0);
-    S_first_vector(2,2) = 0.0;
+    S_first_vector(0, 0) = 0.0;
+    S_first_vector(0, 1) = -first_vector(2);
+    S_first_vector(0, 2) = first_vector(1);
+    S_first_vector(1, 0) = first_vector(2);
+    S_first_vector(1, 1) = 0.0;
+    S_first_vector(1, 2) = -first_vector(0);
+    S_first_vector(2, 0) = -first_vector(1);
+    S_first_vector(2, 1) = first_vector(0);
+    S_first_vector(2, 2) = 0.0;
 
     result_vector.Multiply(S_first_vector, second_vector);
 
     return result_vector;
   }
 
-}
+}  // namespace FADUTILS
 
 #endif

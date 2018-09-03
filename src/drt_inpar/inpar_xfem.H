@@ -21,16 +21,21 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; class ConditionComponent; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+    class ConditionComponent;
+  }  // namespace INPUT
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   /// Input parameters for XFEM
   namespace XFEM
   {
-
     /// which method is used to enforce the boundary condition
     enum CouplingMethod
     {
@@ -42,20 +47,25 @@ namespace INPAR
     /// how to define the average, coupling with respect to which side?
     enum AveragingStrategy
     {
-      Xfluid_Sided,     /// monolithic coupling between fluid and (fluid/structure), average w.r.t xfluid side
-      Embedded_Sided,   /// monolithic coupling between fluid and (fluid/structure), average w.r.t embedded fluid/structure side
-      Mean,             /// monolithic coupling between fluid and (fluid/structure), mean average between fluid and fluid/structure
-      Harmonic,         /// monolithic coupling between fluid and fluid, harmonic mean average between fluid and fluid
+      Xfluid_Sided,    /// monolithic coupling between fluid and (fluid/structure), average w.r.t
+                       /// xfluid side
+      Embedded_Sided,  /// monolithic coupling between fluid and (fluid/structure), average w.r.t
+                       /// embedded fluid/structure side
+      Mean,  /// monolithic coupling between fluid and (fluid/structure), mean average between fluid
+             /// and fluid/structure
+      Harmonic,  /// monolithic coupling between fluid and fluid, harmonic mean average between
+                 /// fluid and fluid
       invalid
     };
 
     /// how to define the average, coupling with respect to which side?
     enum InterfaceLaw
     {
-      noslip,     /// no slip in tangential direction
-      noslip_splitpen,     /// no slip in tangential direction with splitted normal and tangential penalty
-      slip,       /// full slip in tangential direction
-      navierslip  /// general navier boundary condition
+      noslip,           /// no slip in tangential direction
+      noslip_splitpen,  /// no slip in tangential direction with splitted normal and tangential
+                        /// penalty
+      slip,             /// full slip in tangential direction
+      navierslip        /// general navier boundary condition
     };
 
     /// L2 stress projection on whole fluid element or on partial fluid element
@@ -65,59 +75,79 @@ namespace INPAR
       Hybrid_LM_L2_Proj_part
     };
 
-    /// estimate of the scaling of the trace inequality for viscous interface stabilization (Nitsche's method)
+    /// estimate of the scaling of the trace inequality for viscous interface stabilization
+    /// (Nitsche's method)
     enum ViscStab_TraceEstimate
     {
-      ViscStab_TraceEstimate_CT_div_by_hk,  /// estimate of the trace-inequality by trace-constant divided by a characteristic element length
-      ViscStab_TraceEstimate_eigenvalue     /// estimate of the trace-inequality by solving an eigenvalue problem
+      ViscStab_TraceEstimate_CT_div_by_hk,  /// estimate of the trace-inequality by trace-constant
+                                            /// divided by a characteristic element length
+      ViscStab_TraceEstimate_eigenvalue     /// estimate of the trace-inequality by solving an
+                                            /// eigenvalue problem
     };
 
     /// definition of characteristic element length in cut elements
     enum ViscStab_hk
     {
-      ViscStab_hk_vol_equivalent,             /// volume equivalent element diameter
-      ViscStab_hk_cut_vol_div_by_cut_surf,    /// physical partial/cut volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, not useful for sliver and/or dotted cut situations)
-      ViscStab_hk_ele_vol_div_by_cut_surf,    /// full element volume divided by physical partial/cut surface measure ( used to estimate the cut-dependent inverse estimate on cut elements, however, avoids problems with sliver cuts, not useful for dotted cuts)
-      ViscStab_hk_ele_vol_div_by_ele_surf,    /// full element volume divided by surface measure ( used for uncut situations, standard weak Dirichlet boundary/coupling conditions)
-      ViscStab_hk_ele_vol_div_by_max_ele_surf /// full element volume divided by maximal element surface measure ( used to estimate the trace inequality for stretched elements in combination with ghost-penalties)
+      ViscStab_hk_vol_equivalent,           /// volume equivalent element diameter
+      ViscStab_hk_cut_vol_div_by_cut_surf,  /// physical partial/cut volume divided by physical
+                                            /// partial/cut surface measure ( used to estimate the
+                                            /// cut-dependent inverse estimate on cut elements, not
+                                            /// useful for sliver and/or dotted cut situations)
+      ViscStab_hk_ele_vol_div_by_cut_surf,  /// full element volume divided by physical partial/cut
+                                            /// surface measure ( used to estimate the cut-dependent
+                                            /// inverse estimate on cut elements, however, avoids
+                                            /// problems with sliver cuts, not useful for dotted
+                                            /// cuts)
+      ViscStab_hk_ele_vol_div_by_ele_surf,  /// full element volume divided by surface measure (
+                                            /// used for uncut situations, standard weak Dirichlet
+                                            /// boundary/coupling conditions)
+      ViscStab_hk_ele_vol_div_by_max_ele_surf  /// full element volume divided by maximal element
+                                               /// surface measure ( used to estimate the trace
+                                               /// inequality for stretched elements in combination
+                                               /// with ghost-penalties)
     };
 
     /// type of scaling for convective/inflow stabilization term
     enum ConvStabScaling
     {
-      ConvStabScaling_inflow,                 /// interface-normal velocity component in case of inflow, 0 for outflow
-      ConvStabScaling_abs_inflow,             /// absolute value of interface-normal velocity component in case of inflow, 0 for outflow
+      ConvStabScaling_inflow,      /// interface-normal velocity component in case of inflow, 0 for
+                                   /// outflow
+      ConvStabScaling_abs_inflow,  /// absolute value of interface-normal velocity component in case
+                                   /// of inflow, 0 for outflow
       ConvStabScaling_none
     };
 
     /// type of scaling for convective/inflow stabilization term (xfluid-fluid applications)
     enum XFF_ConvStabScaling
     {
-      XFF_ConvStabScaling_upwinding,         ///
+      XFF_ConvStabScaling_upwinding,  ///
       XFF_ConvStabScaling_only_averaged,
       XFF_ConvStabScaling_none
     };
 
-    /// depending on the flow regime, one can either choose the maximum from the viscous and convective
-    /// contributions to the penalty factor or just sum all of them up
+    /// depending on the flow regime, one can either choose the maximum from the viscous and
+    /// convective contributions to the penalty factor or just sum all of them up
     enum MassConservationCombination
     {
-      MassConservationCombination_max,       /// take the maximum from the viscous/convective/transient contribution of the penalty term
-      MassConservationCombination_sum        /// take the sum of all contributions to the penalty term, independent from the flow regime
+      MassConservationCombination_max,  /// take the maximum from the viscous/convective/transient
+                                        /// contribution of the penalty term
+      MassConservationCombination_sum   /// take the sum of all contributions to the penalty term,
+                                        /// independent from the flow regime
     };
 
-    /// apply additional scaling of penalty term to enforce mass conservation for convection-dominated flow
+    /// apply additional scaling of penalty term to enforce mass conservation for
+    /// convection-dominated flow
     enum MassConservationScaling
     {
-      MassConservationScaling_full,          /// apply additional penalty scaling
-      MassConservationScaling_only_visc      /// use only the viscous scaling
+      MassConservationScaling_full,      /// apply additional penalty scaling
+      MassConservationScaling_only_visc  /// use only the viscous scaling
     };
 
     /// Add interface terms from previous time step (new OST)
     enum InterfaceTermsPreviousState
     {
-      PreviousState_only_consistency,        /// evaluate only consistency terms
-      PreviousState_full                     /// evaluate consistency, adjoint consistency and penalty terms
+      PreviousState_only_consistency,  /// evaluate only consistency terms
+      PreviousState_full  /// evaluate consistency, adjoint consistency and penalty terms
     };
 
     /// xfluidfluid-fsi-monolithic approach
@@ -143,8 +173,8 @@ namespace INPAR
       //! std-DOFS:   only copying for std-dofs allowed (no semi-lagrangean algo (SL))
       //! ghost-DOFS: copy dofs or ghost-penalty reconstruction
       Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP,
-      //! std-DOFS:   copying for std-dofs preferred and semi-lagrangean algo (SL) used for large displacements
-      //! ghost-DOFS: copy dofs or ghost-penalty reconstruction
+      //! std-DOFS:   copying for std-dofs preferred and semi-lagrangean algo (SL) used for large
+      //! displacements ghost-DOFS: copy dofs or ghost-penalty reconstruction
       Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP,
       //! std-DOFS:   semi-lagrangean algo (SL) used for large displacements in the whole cut-zone
       //! ghost-DOFS: only ghost-penalty reconstruction
@@ -157,13 +187,17 @@ namespace INPAR
     /// xfluid time integration approach for single dofs
     enum XFluidTimeInt
     {
-      Xf_TimeInt_STD_by_SL,                 //! Semi-lagrangean algorithm for standard dof
-      Xf_TimeInt_STD_by_COPY_from_STD,      //! copy value for std-dof at t^(n+1) from std-dof at t^n
-      Xf_TimeInt_STD_by_COPY_from_GHOST,    //! copy value for std-dof at t^(n+1) from ghost-dof at t^n
-      Xf_TimeInt_GHOST_by_GP,               //! Ghost-penalty reconstruction for ghost dof
-      Xf_TimeInt_GHOST_by_COPY_from_STD,    //! copy value for ghost-dof at t^(n+1) from std-dof at t^n
-      Xf_TimeInt_GHOST_by_COPY_from_GHOST,  //! copy value for ghost-dof at t^(n+1) from ghost-dof at t^n
-      Xf_TimeInt_by_PROJ_from_DIS,          //! project value for std-/ghost-dof at t^(n+1) from embedded fluid mesh at t^n
+      Xf_TimeInt_STD_by_SL,               //! Semi-lagrangean algorithm for standard dof
+      Xf_TimeInt_STD_by_COPY_from_STD,    //! copy value for std-dof at t^(n+1) from std-dof at t^n
+      Xf_TimeInt_STD_by_COPY_from_GHOST,  //! copy value for std-dof at t^(n+1) from ghost-dof at
+                                          //! t^n
+      Xf_TimeInt_GHOST_by_GP,             //! Ghost-penalty reconstruction for ghost dof
+      Xf_TimeInt_GHOST_by_COPY_from_STD,  //! copy value for ghost-dof at t^(n+1) from std-dof at
+                                          //! t^n
+      Xf_TimeInt_GHOST_by_COPY_from_GHOST,  //! copy value for ghost-dof at t^(n+1) from ghost-dof
+                                            //! at t^n
+      Xf_TimeInt_by_PROJ_from_DIS,  //! project value for std-/ghost-dof at t^(n+1) from embedded
+                                    //! fluid mesh at t^n
       Xf_TimeInt_undefined
     };
 
@@ -196,7 +230,7 @@ namespace INPAR
       CouplingCond_LEVELSET_COMBUSTION
     };
 
-    //Type of surface projection for splitting of normal and tangential directions
+    // Type of surface projection for splitting of normal and tangential directions
     enum ProjToSurface
     {
       Proj_normal,
@@ -207,7 +241,7 @@ namespace INPAR
 
     enum CoupTerm
     {
-      //Row Scalings
+      // Row Scalings
       F_Con_Row,
       F_Con_n_Row,
       F_Con_t_Row,
@@ -217,10 +251,10 @@ namespace INPAR
       F_Adj_Row,
       F_Adj_n_Row,
       F_Adj_t_Row,
-      XF_Adj_Row, //specific row scalings for fluid stress slave
+      XF_Adj_Row,  // specific row scalings for fluid stress slave
       XF_Adj_n_Row,
       XF_Adj_t_Row,
-      XS_Adj_Row, //specific col scalings for structural stress slave
+      XS_Adj_Row,  // specific col scalings for structural stress slave
       XS_Adj_n_Row,
       XS_Adj_t_Row,
       F_Pen_Row,
@@ -229,14 +263,14 @@ namespace INPAR
       X_Pen_Row,
       X_Pen_n_Row,
       X_Pen_t_Row,
-      //Col Scalings
+      // Col Scalings
       F_Con_Col,
       F_Con_n_Col,
       F_Con_t_Col,
-      XF_Con_Col, //specific col scalings for fluid stress slave
+      XF_Con_Col,  // specific col scalings for fluid stress slave
       XF_Con_n_Col,
       XF_Con_t_Col,
-      XS_Con_Col, //specific col scalings for structural stress slave
+      XS_Con_Col,  // specific col scalings for structural stress slave
       XS_Con_n_Col,
       XS_Con_t_Col,
       F_Adj_Col,
@@ -257,20 +291,25 @@ namespace INPAR
       XStr_Adj_Col,
       XStr_Adj_n_Col,
       XStr_Adj_t_Col,
-      //Starting from here are some special Terms (before adding new one think if it's possible to reuse the old terms without duplicating code.)
-      F_LB_Rhs, //Laplace Belatrami Term for traction jump master fluid sided (used only for two phase flow atm)
+      // Starting from here are some special Terms (before adding new one think if it's possible to
+      // reuse the old terms without duplicating code.)
+      F_LB_Rhs,  // Laplace Belatrami Term for traction jump master fluid sided (used only for two
+                 // phase flow atm)
       X_LB_Rhs,  // ==||== slave fluid sided (used only for two phase flow atm)
-      F_TJ_Rhs, //Traction jump term with given traction jump vector master fluid sided (used only for two phase flow atm)
-      X_TJ_Rhs //Traction jump term with given traction jump vector slave fluid sided (used only for two phase flow atm)
+      F_TJ_Rhs,  // Traction jump term with given traction jump vector master fluid sided (used only
+                 // for two phase flow atm)
+      X_TJ_Rhs  // Traction jump term with given traction jump vector slave fluid sided (used only
+                // for two phase flow atm)
     };
 
     /// set the xfem parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific xfem conditions
-    void SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent> > &dirichletbundcomponents,
-                            const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent> > &neumanncomponents,
-                            std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(
+        const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent>> &dirichletbundcomponents,
+        const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent>> &neumanncomponents,
+        std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>> &condlist);
 
   }  // namespace XFEM
 

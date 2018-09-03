@@ -23,9 +23,10 @@
 /*--------------------------------------------------------------------------*
  |                                                  (public) schoeder 07/13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem)
+DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::ProvideImpl(
+    DRT::Element::DiscretizationType distype, std::string problem)
 {
-  switch(distype)
+  switch (distype)
   {
     case DRT::Element::hex8:
     {
@@ -92,7 +93,7 @@ DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::ProvideImpl(DRT::El
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
   return NULL;
@@ -101,10 +102,10 @@ DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::ProvideImpl(DRT::El
 /*--------------------------------------------------------------------------*
  |                                                  (public) schoeder 07/13 |
  *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::DefineProblemType(std::string problem)
 {
-  if (problem == "std" )
+  if (problem == "std")
     return DRT::ELEMENTS::AcouEleCalc<distype>::Instance();
   else if (problem == "sol")
     return DRT::ELEMENTS::AcouSolEleCalc<distype>::Instance();
@@ -113,4 +114,3 @@ DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::DefineProblemType(s
 
   return NULL;
 }
-

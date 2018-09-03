@@ -35,7 +35,7 @@ namespace ADAPTER
   class AleFsiWrapper;
   class StructureBio;
   class FSIStructureWrapper;
-}
+}  // namespace ADAPTER
 
 namespace ALE
 {
@@ -44,11 +44,9 @@ namespace ALE
 
 namespace FS3I
 {
-  class BiofilmFSI:  public PartFS3I_1WC
+  class BiofilmFSI : public PartFS3I_1WC
   {
-
-  public:
-
+   public:
     BiofilmFSI(const Epetra_Comm& comm);
 
     ~BiofilmFSI(){};
@@ -65,9 +63,8 @@ namespace FS3I
     void SetFSISolution();
 
     void ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idispnp_,
-                                 Teuchos::RCP<Epetra_Vector> iveln_,
-                                 Teuchos::RCP<Epetra_Vector> struidispnp_,
-                                 Teuchos::RCP<Epetra_Vector> struiveln_);
+        Teuchos::RCP<Epetra_Vector> iveln_, Teuchos::RCP<Epetra_Vector> struidispnp_,
+        Teuchos::RCP<Epetra_Vector> struiveln_);
 
     Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
 
@@ -77,7 +74,8 @@ namespace FS3I
     virtual Teuchos::RCP<Epetra_Vector> AleToStructField(Teuchos::RCP<Epetra_Vector> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToStructField(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToStructField(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// interface transform
     virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
@@ -96,15 +94,13 @@ namespace FS3I
     const Epetra_Comm& Comm() { return comm_; }
 
     void VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradis,
-                        Teuchos::RCP<Epetra_Vector> vec,
-                        Teuchos::RCP<Epetra_MultiVector> scatravec);
+        Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
 
     void StructGmshOutput();
 
     void FluidGmshOutput();
 
-  private:
-
+   private:
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
 
@@ -120,16 +116,16 @@ namespace FS3I
     /// coupling of structure and ale (whole field)
     Teuchos::RCP<ADAPTER::Coupling> coupsa_;
 
-    //Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
+    // Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
-    //Teuchos::RCP<ALE::AleBaseAlgorithm> ale_;
+    // Teuchos::RCP<ALE::AleBaseAlgorithm> ale_;
     Teuchos::RCP<ADAPTER::AleFsiWrapper> ale_;
 
-//    // total flux at the interface overall the InnerTimeloop
-//    Teuchos::RCP<Epetra_MultiVector> flux;
-//
-//    // total flux at the structure interface overall the InnerTimeloop
-//    Teuchos::RCP<Epetra_MultiVector> struflux;
+    //    // total flux at the interface overall the InnerTimeloop
+    //    Teuchos::RCP<Epetra_MultiVector> flux;
+    //
+    //    // total flux at the structure interface overall the InnerTimeloop
+    //    Teuchos::RCP<Epetra_MultiVector> struflux;
 
     Teuchos::RCP<Epetra_Vector> norminflux_;
 
@@ -158,7 +154,7 @@ namespace FS3I
     // current step
     int step_bio;
 
-    //time step size
+    // time step size
     double dt_bio;
 
     // total time of the outer loop
@@ -173,7 +169,7 @@ namespace FS3I
     // current step
     int step_fsi;
 
-    //time step size
+    // time step size
     double dt_fsi;
 
     // total time of the inner loop
@@ -214,9 +210,8 @@ namespace FS3I
 
     /// total scatra fluid displacement due to growth
     Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp;
-
   };
 
-}
+}  // namespace FS3I
 
 #endif

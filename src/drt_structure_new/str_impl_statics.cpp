@@ -43,7 +43,7 @@ void STR::IMPLICIT::Statics::Setup()
   Generic::Setup();
 
   // check for valid parameter combinations:
-  if(EvalData().GetDampingType() != INPAR::STR::damp_none)
+  if (EvalData().GetDampingType() != INPAR::STR::damp_none)
     dserror("ERROR: Damping not provided for statics time integration!");
 
   issetup_ = true;
@@ -54,64 +54,60 @@ void STR::IMPLICIT::Statics::Setup()
 void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
 {
   CheckInit();
-  if (IsPredictorState())
-    return;
+  if (IsPredictorState()) return;
 
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetMutableDisNp()->Scale(1.0,*disnp_ptr);
+  GlobalState().GetMutableDisNp()->Scale(1.0, *disnp_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x,
-    Epetra_Vector& f)
+bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 {
   CheckInitSetup();
   ResetEvalParams();
-  return ModelEval().ApplyForce(x,f,1.0);
+  return ModelEval().ApplyForce(x, f, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x,
-    LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   ResetEvalParams();
-  bool ok =  ModelEval().ApplyStiff(x,jac,1.0);
+  bool ok = ModelEval().ApplyStiff(x, jac, 1.0);
   jac.Complete();
   return ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::ApplyForceStiff(const Epetra_Vector& x,
-    Epetra_Vector& f, LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::Statics::ApplyForceStiff(
+    const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac,1.0);
+  bool ok = ModelEval().ApplyForceStiff(x, f, jac, 1.0);
   jac.Complete();
   return ok;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::AssembleForce( Epetra_Vector& f,
-    const std::vector<INPAR::STR::ModelType>* without_these_models ) const
+bool STR::IMPLICIT::Statics::AssembleForce(
+    Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
   CheckInitSetup();
-  return ModelEval().AssembleForce( 1.0, f, without_these_models );
+  return ModelEval().AssembleForce(1.0, f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::WriteRestart(
-    IO::DiscretizationWriter& iowriter,
-    const bool& forced_writerestart) const
+    IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   CheckInitSetup();
-  ModelEval().WriteRestart(iowriter,forced_writerestart);
+  ModelEval().WriteRestart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -124,20 +120,16 @@ void STR::IMPLICIT::Statics::ReadRestart(IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Statics::CalcRefNormForce(
-    const enum NOX::Abstract::Vector::NormType& type)
+double STR::IMPLICIT::Statics::CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type)
 {
   CheckInitSetup();
   // switch from Epetra_Vector to NOX::Epetra::Vector (view but read-only)
-  Teuchos::RCP<const NOX::Epetra::Vector> fintnp_nox_ptr =
-      Teuchos::rcp(new NOX::Epetra::Vector(GlobalState().GetMutableFintNp(),
-          NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const NOX::Epetra::Vector> fextnp_nox_ptr =
-        Teuchos::rcp(new NOX::Epetra::Vector(GlobalState().GetMutableFextNp(),
-            NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const NOX::Epetra::Vector> freactnp_nox_ptr =
-        Teuchos::rcp(new NOX::Epetra::Vector(GlobalState().GetMutableFreactNp(),
-            NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const NOX::Epetra::Vector> fintnp_nox_ptr = Teuchos::rcp(
+      new NOX::Epetra::Vector(GlobalState().GetMutableFintNp(), NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const NOX::Epetra::Vector> fextnp_nox_ptr = Teuchos::rcp(
+      new NOX::Epetra::Vector(GlobalState().GetMutableFextNp(), NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const NOX::Epetra::Vector> freactnp_nox_ptr = Teuchos::rcp(
+      new NOX::Epetra::Vector(GlobalState().GetMutableFreactNp(), NOX::Epetra::Vector::CreateView));
 
   // norm of the internal forces
   double fintnorm = fintnp_nox_ptr->norm(type);
@@ -165,10 +157,8 @@ double STR::IMPLICIT::Statics::GetIntParam() const
 void STR::IMPLICIT::Statics::PreUpdate()
 {
   CheckInitSetup();
-  const STR::TIMINT::Implicit* impl_ptr =
-      dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
-  if (impl_ptr == NULL)
-    return;
+  const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
+  if (impl_ptr == NULL) return;
 
   // get the time step size
   const double dt = (*GlobalState().GetDeltaTime())[0];
@@ -185,16 +175,16 @@ void STR::IMPLICIT::Statics::PreUpdate()
       // read-only access
       Teuchos::RCP<const Epetra_Vector> veln_ptr = GlobalState().GetVelN();
       // update the pseudo acceleration (statics!)
-      accnp_ptr->Update(1.0/dt,*velnp_ptr,-1.0/dt,*veln_ptr,0.0);
+      accnp_ptr->Update(1.0 / dt, *velnp_ptr, -1.0 / dt, *veln_ptr, 0.0);
     }
     // case: constant acceleration OR constant velocity
     case INPAR::STR::pred_constvel:
     {
       // read-only access
-      Teuchos::RCP<const Epetra_Vector> disn_ptr  = GlobalState().GetDisN();
+      Teuchos::RCP<const Epetra_Vector> disn_ptr = GlobalState().GetDisN();
       Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().GetDisNp();
       // update the pseudo velocity (statics!)
-      velnp_ptr->Update(1.0/dt,*disnp_ptr,-1.0/dt,*disn_ptr,0.0);
+      velnp_ptr->Update(1.0 / dt, *disnp_ptr, -1.0 / dt, *disn_ptr, 0.0);
       // ATTENTION: Break for both cases!
       break;
     }
@@ -224,13 +214,11 @@ void STR::IMPLICIT::Statics::UpdateStepElement()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::PredictConstDisConsistVelAcc(
-    Epetra_Vector& disnp,
-    Epetra_Vector& velnp,
-    Epetra_Vector& accnp) const
+    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
   // constant predictor : displacement in domain
-  disnp.Update(1.0,*GlobalState().GetDisN(),0.0);
+  disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
   // new end-point velocities, these stay zero in static calculation
   velnp.PutScalar(0.0);
   // new end-point accelerations, these stay zero in static calculation
@@ -240,26 +228,23 @@ void STR::IMPLICIT::Statics::PredictConstDisConsistVelAcc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::PredictConstVelConsistAcc(
-    Epetra_Vector& disnp,
-    Epetra_Vector& velnp,
-    Epetra_Vector& accnp) const
+    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
   // If there is not enough history information, return a fail status.
-  if (GlobalState().GetStepN()==0)
-    return false;
+  if (GlobalState().GetStepN() == 0) return false;
 
   // Displacement increment over last time step
   Teuchos::RCP<Epetra_Vector> disp_inc =
       Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
-  disp_inc->Update((*GlobalState().GetDeltaTime())[0],*GlobalState().GetVelN(),0.);
+  disp_inc->Update((*GlobalState().GetDeltaTime())[0], *GlobalState().GetVelN(), 0.);
   // apply the dbc on the auxiliary vector
   TimInt().GetDBC().ApplyDirichletToVector(disp_inc);
   // update the solution variables
-  disnp.Update(1.0,*GlobalState().GetDisN(),0.0);
-  disnp.Update(1.0,*disp_inc,1.0);
-  velnp.Update(1.0,*GlobalState().GetVelN(),0.0);
-  accnp.Update(1.0,*GlobalState().GetAccN(),0.0);
+  disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
+  disnp.Update(1.0, *disp_inc, 1.0);
+  velnp.Update(1.0, *GlobalState().GetVelN(), 0.0);
+  accnp.Update(1.0, *GlobalState().GetAccN(), 0.0);
 
   return true;
 }
@@ -267,27 +252,24 @@ bool STR::IMPLICIT::Statics::PredictConstVelConsistAcc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::PredictConstAcc(
-    Epetra_Vector& disnp,
-    Epetra_Vector& velnp,
-    Epetra_Vector& accnp) const
+    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   CheckInitSetup();
   // If there is not enough history information try a different predictor with
   // less requirements.
-  if (GlobalState().GetStepN()<2)
-    return PredictConstVelConsistAcc(disnp,velnp,accnp);
+  if (GlobalState().GetStepN() < 2) return PredictConstVelConsistAcc(disnp, velnp, accnp);
 
   // Displacement increment over last time step
   Teuchos::RCP<Epetra_Vector> disp_inc =
       Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(), true));
   const double& dt = (*GlobalState().GetDeltaTime())[0];
-  disp_inc->Update(dt,*GlobalState().GetVelN(),0.);
-  disp_inc->Update(0.5*dt*dt,*GlobalState().GetAccN(),1.0);
+  disp_inc->Update(dt, *GlobalState().GetVelN(), 0.);
+  disp_inc->Update(0.5 * dt * dt, *GlobalState().GetAccN(), 1.0);
   // apply the dbc on the auxiliary vector
   TimInt().GetDBC().ApplyDirichletToVector(disp_inc);
   // update the solution variables
   disnp.Update(1.0, *GlobalState().GetDisN(), 0.0);
-  disnp.Update(1.,*disp_inc,1.);
+  disnp.Update(1., *disp_inc, 1.);
   velnp.Update(1.0, *GlobalState().GetVelN(), 0.0);
   accnp.Update(1.0, *GlobalState().GetAccN(), 0.0);
 

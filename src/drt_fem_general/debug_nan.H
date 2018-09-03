@@ -33,7 +33,6 @@ namespace DRT
   /// namespace for debugging utilities
   namespace DEBUGGING
   {
-
     /// check for any NaN within this array
     void NaNChecker(const Epetra_SerialDenseVector& vec);
 
@@ -49,8 +48,8 @@ namespace DRT
     /// check for any NaN within this array
     void NaNChecker(const Epetra_Vector& vec);
 
-  }
-}
+  }  // namespace DEBUGGING
+}  // namespace DRT
 
 
 #endif  // #ifndef DEBUG_NAN_H

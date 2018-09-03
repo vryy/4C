@@ -20,65 +20,64 @@
 
 class Epetra_Vector;
 
-namespace XCONTACT {
-namespace LEVELSET {
-  class Algorithm;
-namespace REINIT {
-
-  class Generic
+namespace XCONTACT
+{
+  namespace LEVELSET
   {
-  public:
-    /// constructor
-    Generic();
-
-    /// destructor
-    virtual ~Generic() { };
-
-    void Init( XCONTACT::LEVELSET::Algorithm * const algorithm );
-
-    virtual void Setup() = 0;
-
-    void Compute( const Epetra_Vector & phinp );
-
-  protected:
-    /// access the calling xcontact levelset algorithm ( call-back function )
-    XCONTACT::LEVELSET::Algorithm & Algorithm();
-    const XCONTACT::LEVELSET::Algorithm & Algorithm() const;
-
-    /// run at the beginning of the nonlinear solve call
-    virtual void PreSolve() { /* do nothing in the default case */ };
-
-    virtual void Solve( const Epetra_Vector & phinp ) = 0;
-
-    /// run after the nonlinear solver stopped
-    virtual void PostSolve() { /* do nothing in the default case */ };
-
-    /// check if the Init() routine has been called
-    inline void CheckInit() const
+    class Algorithm;
+    namespace REINIT
     {
-      if ( not isinit_ )
-        dserror("Call Init() first!");
-    }
+      class Generic
+      {
+       public:
+        /// constructor
+        Generic();
 
-    /// check if the Init() and Setup() routines have been called
-    inline void CheckInitSetup() const
-    {
-      if ( not isinit_ or not issetup_ )
-        dserror("Call Init() first!");
-    }
+        /// destructor
+        virtual ~Generic(){};
 
-  protected:
+        void Init(XCONTACT::LEVELSET::Algorithm* const algorithm);
 
-    bool isinit_;
+        virtual void Setup() = 0;
 
-    bool issetup_;
+        void Compute(const Epetra_Vector& phinp);
 
-  private:
-    XCONTACT::LEVELSET::Algorithm * algorithm_;
-  };  // class Generic
-} // namespace REINIT
-} // namespace LEVELSET
-} // namespace XCONTACT
+       protected:
+        /// access the calling xcontact levelset algorithm ( call-back function )
+        XCONTACT::LEVELSET::Algorithm& Algorithm();
+        const XCONTACT::LEVELSET::Algorithm& Algorithm() const;
+
+        /// run at the beginning of the nonlinear solve call
+        virtual void PreSolve(){/* do nothing in the default case */};
+
+        virtual void Solve(const Epetra_Vector& phinp) = 0;
+
+        /// run after the nonlinear solver stopped
+        virtual void PostSolve(){/* do nothing in the default case */};
+
+        /// check if the Init() routine has been called
+        inline void CheckInit() const
+        {
+          if (not isinit_) dserror("Call Init() first!");
+        }
+
+        /// check if the Init() and Setup() routines have been called
+        inline void CheckInitSetup() const
+        {
+          if (not isinit_ or not issetup_) dserror("Call Init() first!");
+        }
+
+       protected:
+        bool isinit_;
+
+        bool issetup_;
+
+       private:
+        XCONTACT::LEVELSET::Algorithm* algorithm_;
+      };  // class Generic
+    }     // namespace REINIT
+  }       // namespace LEVELSET
+}  // namespace XCONTACT
 
 
 

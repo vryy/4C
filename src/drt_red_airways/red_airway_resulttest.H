@@ -25,42 +25,39 @@ namespace DRT
   class Discretization;
 }
 
-namespace AIRWAY{
-
-// Forward declaration
-class RedAirwayImplicitTimeInt;
-
-/*!
-  \brief red_airways specific result test class
-*/
-class RedAirwayResultTest : public DRT::ResultTest
+namespace AIRWAY
 {
-public:
+  // Forward declaration
+  class RedAirwayImplicitTimeInt;
 
   /*!
-  \brief constructor
+    \brief red_airways specific result test class
   */
-  RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
+  class RedAirwayResultTest : public DRT::ResultTest
+  {
+   public:
+    /*!
+    \brief constructor
+    */
+    RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
 
 
-  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  /*!
-    Element test routine, our version of element value tests
-  */
-      virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    /*!
+      Element test routine, our version of element value tests
+    */
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-private:
+   private:
+    /// Teuchos::RCP to scalar transport discretization
+    Teuchos::RCP<DRT::Discretization> dis_;
+    /// Teuchos::RCP to nodal solution vector
+    Teuchos::RCP<Epetra_Vector> mysol_;
+    /// Teuchos::RCP to element solution vector
+    Teuchos::RCP<Epetra_Vector> myelemsol_;
+  };
 
-  /// Teuchos::RCP to scalar transport discretization
-  Teuchos::RCP<DRT::Discretization> dis_;
-  /// Teuchos::RCP to nodal solution vector
-  Teuchos::RCP<Epetra_Vector>       mysol_;
-  /// Teuchos::RCP to element solution vector
-  Teuchos::RCP<Epetra_Vector>       myelemsol_;
-};
+}  // namespace AIRWAY
 
-} // namespace AIRWAY
-
-#endif //RED_AIRWAY_RESULTTEST_H
-
+#endif  // RED_AIRWAY_RESULTTEST_H

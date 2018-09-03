@@ -26,7 +26,7 @@ void ADAPTER::XStructureAlgorithm::SetGlobalState(
     const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn)
 {
   dataglobalstate = STR::TIMINT::BuildDataGlobalState();
-  dataglobalstate->Init(actdis_,*sdyn_,datasdyn);
+  dataglobalstate->Init(actdis_, *sdyn_, datasdyn);
 }
 
 /*----------------------------------------------------------------------------*
@@ -35,9 +35,8 @@ void ADAPTER::XStructureAlgorithm::SetTimeIntegrationStrategy(
     Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
     const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
     const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
-    const int& restart)
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate, const int& restart)
 {
   ti_strategy = STR::TIMINT::BuildStrategy(*sdyn_);
-  ti_strategy->Init(dataio,datasdyn,dataglobalstate);
+  ti_strategy->Init(dataio, datasdyn, dataglobalstate);
 }

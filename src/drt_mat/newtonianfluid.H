@@ -25,22 +25,17 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for Newtonian fluid
     ///
     /// This object exists only once for each read Newton fluid.
     class NewtonianFluid : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      NewtonianFluid(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      NewtonianFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~NewtonianFluid() { ; }
@@ -64,20 +59,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class NewtonianFluidType : public DRT::ParObjectType
-{
-public:
+  class NewtonianFluidType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "NewtonianFluidType"; }
 
-  std::string Name() const { return "NewtonianFluidType"; }
+    static NewtonianFluidType& Instance() { return instance_; };
 
-  static NewtonianFluidType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static NewtonianFluidType instance_;
-};
+   private:
+    static NewtonianFluidType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Newtonian fluid material
@@ -85,8 +78,7 @@ private:
   /// This object exists (several times) at every element
   class NewtonianFluid : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     NewtonianFluid();
 
@@ -101,7 +93,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return NewtonianFluidType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return NewtonianFluidType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -135,7 +130,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_fluid; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new NewtonianFluid( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new NewtonianFluid(*this)); }
 
     /// return viscosity
     double Viscosity() const { return params_->viscosity_; }
@@ -149,13 +144,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::NewtonianFluid* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

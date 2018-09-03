@@ -17,9 +17,8 @@ Maintainer: Andy Wirtz
 
 
 /*! entry point for the solution of Lubrication problems */
-void lubrication_dyn(
-    int restart        /* do we have to perform a restart?  */
-    );
+void lubrication_dyn(int restart /* do we have to perform a restart?  */
+);
 
 
 #endif /* SRC_DRT_LUBRICATION_LUBRICATION_DYN_H_ */

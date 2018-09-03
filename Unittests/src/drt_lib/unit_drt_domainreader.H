@@ -18,7 +18,13 @@
 
 #include "src/drt_lib/drt_discret.H"
 
-namespace DRT { namespace INPUT { class DomainReader_TestSuite; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class DomainReader_TestSuite;
+  }
+}  // namespace DRT
 
 class DRT::INPUT::DomainReader_TestSuite : public CxxTest::TestSuite
 {
@@ -27,15 +33,9 @@ class DRT::INPUT::DomainReader_TestSuite : public CxxTest::TestSuite
   DatFileReaderStub testreader_;
 
  public:
-  void setUp()
-  {
-    testdis_ = Teuchos::rcp(new Discretization("dummy",testreader_.Comm()));
-  }
+  void setUp() { testdis_ = Teuchos::rcp(new Discretization("dummy", testreader_.Comm())); }
 
-  void tearDown()
-  {
-    testdis_ = Teuchos::null;
-  }
+  void tearDown() { testdis_ = Teuchos::null; }
 
   void test_MyDis0()
   {
@@ -58,6 +58,6 @@ class DRT::INPUT::DomainReader_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-}; // class DomainReader_TestSuite
+};  // class DomainReader_TestSuite
 
-#endif // UNIT_DRT_DOMAINREADER_H_
+#endif  // UNIT_DRT_DOMAINREADER_H_

@@ -26,8 +26,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
-  : Partitioned(comm),
-    displacementcoupling_(false)
+    : Partitioned(comm), displacementcoupling_(false)
 {
   // empty constructor
 }
@@ -48,37 +47,31 @@ void FSI::DirichletNeumann::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
+void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
-  if (displacementcoupling_) // coupling variable: interface displacements
+  if (displacementcoupling_)  // coupling variable: interface displacements
   {
     const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
-    if (MyDebugWriter()!=Teuchos::null)
-      MyDebugWriter()->WriteVector("idispn",*idispn);
+    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("idispn", *idispn);
 
     const Teuchos::RCP<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
-    if (MyDebugWriter()!=Teuchos::null)
-      MyDebugWriter()->WriteVector("iforce",*iforce);
+    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("iforce", *iforce);
 
     const Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
-    if (MyDebugWriter()!=Teuchos::null)
-      MyDebugWriter()->WriteVector("idispnp",*idispnp);
+    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("idispnp", *idispnp);
 
     F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
   }
-  else // coupling variable: interface forces
+  else  // coupling variable: interface forces
   {
     const Teuchos::RCP<Epetra_Vector> iforcen = Teuchos::rcp(new Epetra_Vector(x));
-    if (MyDebugWriter()!=Teuchos::null)
-      MyDebugWriter()->WriteVector("iforcen",*iforcen);
+    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("iforcen", *iforcen);
 
     const Teuchos::RCP<Epetra_Vector> idisp = StructOp(iforcen, fillFlag);
-    if (MyDebugWriter()!=Teuchos::null)
-      MyDebugWriter()->WriteVector("idisp",*idisp);
+    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("idisp", *idisp);
 
     const Teuchos::RCP<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
-    if (MyDebugWriter()!=Teuchos::null)
-      MyDebugWriter()->WriteVector("iforcenp",*iforcenp);
+    if (MyDebugWriter() != Teuchos::null) MyDebugWriter()->WriteVector("iforcenp", *iforcenp);
 
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
   }
@@ -87,16 +80,15 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>
-FSI::DirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
-                               const FillType fillFlag)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumann::FluidOp(
+    Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
 {
-  FSI::Partitioned::FluidOp(idisp,fillFlag);
+  FSI::Partitioned::FluidOp(idisp, fillFlag);
 
-  if (fillFlag==User)
+  if (fillFlag == User)
   {
     // SD relaxation calculation
-    return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(idisp),Dt()));
+    return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(idisp), Dt()));
   }
   else
   {
@@ -107,10 +99,9 @@ FSI::DirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
 
     // A rather simple hack. We need something better!
     const int itemax = MBFluidField()->Itemax();
-    if (fillFlag==MF_Res and mfresitemax_ > 0)
-      MBFluidField()->SetItemax(mfresitemax_ + 1);
+    if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
 
-    MBFluidField()->NonlinearSolve(StructToFluid(idisp),StructToFluid(ivel));
+    MBFluidField()->NonlinearSolve(StructToFluid(idisp), StructToFluid(ivel));
 
     MBFluidField()->SetItemax(itemax);
 
@@ -121,16 +112,16 @@ FSI::DirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>
-FSI::DirichletNeumann::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
-                                const FillType fillFlag)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumann::StructOp(
+    Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
-  FSI::Partitioned::StructOp(iforce,fillFlag);
+  FSI::Partitioned::StructOp(iforce, fillFlag);
 
-  if (fillFlag==User)
+  if (fillFlag == User)
   {
     // SD relaxation calculation
-    return StructureField()->RelaxationSolve(iforce);;
+    return StructureField()->RelaxationSolve(iforce);
+    ;
   }
   else
   {
@@ -138,7 +129,8 @@ FSI::DirichletNeumann::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
     if (not use_old_structure_)
       StructureField()->ApplyInterfaceForces(iforce);
     else
-      StructureField()->ApplyInterfaceForcesTemporaryDeprecated(iforce); // todo remove this line as soon as possible!
+      StructureField()->ApplyInterfaceForcesTemporaryDeprecated(
+          iforce);  // todo remove this line as soon as possible!
     StructureField()->Solve();
     StructureField()->writeGmshStrucOutputStep();
     return StructureField()->ExtractInterfaceDispnp();
@@ -159,13 +151,11 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumann::InitialGuess()
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-    if (DRT::INPUT::IntegralValue<int>(fsipart,"PREDICTOR") != 1)
+    if (DRT::INPUT::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {
-      dserror("unknown interface force predictor '%s'",
-              fsipart.get<std::string>("PREDICTOR").c_str());
+      dserror(
+          "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
     }
     return InterfaceForce();
   }
 }
-
-

@@ -41,19 +41,20 @@
 #include <string>
 
 /*----------------------------------------------------------------------*/
-INVANA::OptimizerSMC::OptimizerSMC(const Teuchos::ParameterList& invp) :
-  OptimizerBase(invp),
-particles_(Teuchos::null),
-is_restart_(false),
-params_(invp),
-gnumparticles_(0),
-lnumparticles_(0),
-ngroups_(0),
-mygroup_(0),
-dt_(0.01),
-ti_(0.0),
-ess_red_(invp.get<double>("SMC_ESS_REDUCTION"))
-{}
+INVANA::OptimizerSMC::OptimizerSMC(const Teuchos::ParameterList& invp)
+    : OptimizerBase(invp),
+      particles_(Teuchos::null),
+      is_restart_(false),
+      params_(invp),
+      gnumparticles_(0),
+      lnumparticles_(0),
+      ngroups_(0),
+      mygroup_(0),
+      dt_(0.01),
+      ti_(0.0),
+      ess_red_(invp.get<double>("SMC_ESS_REDUCTION"))
+{
+}
 
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerSMC::Setup()
@@ -67,20 +68,20 @@ void INVANA::OptimizerSMC::Setup()
   // Since this algorithm is for massively parallel simulations
   // switch off BINIO for forward simulations.
   const Teuchos::ParameterList& ioparams = problem->IOParams();
-  if (DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_BIN"))
+  if (DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_BIN"))
     dserror("Switch off OUTPUT_BIN for stable computations.");
 
   // get some global numbers and validate
   ngroups_ = problem->GetNPGroup()->NumGroups();
   mygroup_ = problem->GetNPGroup()->GroupId();
-  gnumparticles_=params_.get<int>("NUM_PARTICLES");
+  gnumparticles_ = params_.get<int>("NUM_PARTICLES");
 
   // only allow for equally distributed particles among groups
   if (gnumparticles_ % ngroups_)
     dserror("Choose ngroups % nparticles == 0 to allow for equal distribution");
 
   // local number of particles in each group
-  lnumparticles_=(int) gnumparticles_/ngroups_;
+  lnumparticles_ = (int)gnumparticles_ / ngroups_;
 
   // setup particles
   SetupParticles();
@@ -91,29 +92,26 @@ void INVANA::OptimizerSMC::Setup()
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerSMC::SetupParticles()
 {
-
   Teuchos::RCP<CholFactorBase> prec =
-      INVANA::CreateICT(OptProb()->InitialGuess()->Covariance(),params_);
+      INVANA::CreateICT(OptProb()->InitialGuess()->Covariance(), params_);
 
   // ---- construct evaluator for particles
   // get the map estimation as mean for the prior likelihood
-  Teuchos::RCP<Epetra_Vector> mean = Teuchos::rcp(new
-      Epetra_Vector(*(*OptProb()->InitialGuess()->Mean())(0)));
+  Teuchos::RCP<Epetra_Vector> mean =
+      Teuchos::rcp(new Epetra_Vector(*(*OptProb()->InitialGuess()->Mean())(0)));
 
 #if INVANA_DEBUG_PRINTING
-  LINALG::PrintVectorInMatlabFormat("mean.mtl",*mean);
+  LINALG::PrintVectorInMatlabFormat("mean.mtl", *mean);
 #endif
 
   // construct the prior evaluator
   double covscale = Inpar().get<double>("MAP_PRIOR_SCALE");
-  Teuchos::RCP<INVANA::LogLikePrior> prior =
-      Teuchos::rcp(new INVANA::LogLikePrior());
-  prior->Init(prec,mean,covscale);
+  Teuchos::RCP<INVANA::LogLikePrior> prior = Teuchos::rcp(new INVANA::LogLikePrior());
+  prior->Init(prec, mean, covscale);
 
   // construct new mixture evaluator
-  Teuchos::RCP<INVANA::LogLikeMixture> mix =
-      Teuchos::rcp(new INVANA::LogLikeMixture(params_));
-  mix->Init(OptProb(),prior);
+  Teuchos::RCP<INVANA::LogLikeMixture> mix = Teuchos::rcp(new INVANA::LogLikeMixture(params_));
+  mix->Init(OptProb(), prior);
   // ---- end
 
   // construct particle groups
@@ -130,33 +128,31 @@ void INVANA::OptimizerSMC::Integrate()
   // preevaluate each group to adapt likelihood levels
   particles_->PreEvaluate();
 
-  if (particles_->PComm().LComm().MyPID()==0)
-    std::cout << "(Group "<< mygroup_ << ") Particles pre-evaluated" << std::endl;
+  if (particles_->PComm().LComm().MyPID() == 0)
+    std::cout << "(Group " << mygroup_ << ") Particles pre-evaluated" << std::endl;
 
   // particles must be initialized if not restarted
-  if (not is_restart_)
-    particles_->DrawInitialStates();
+  if (not is_restart_) particles_->DrawInitialStates();
 
-  if (particles_->PComm().LComm().MyPID()==0)
-    std::cout << "(Group "<< mygroup_ << ") Particles initialized" << std::endl;
+  if (particles_->PComm().LComm().MyPID() == 0)
+    std::cout << "(Group " << mygroup_ << ") Particles initialized" << std::endl;
 
   // evaluate effective sample size
   double ess = particles_->EffectiveSampleSize();
   // be tolerant to some roundoffs
-  if (ess > gnumparticles_+1)
-    dserror("Particle initialization failed! ESS>%d", gnumparticles_);
+  if (ess > gnumparticles_ + 1) dserror("Particle initialization failed! ESS>%d", gnumparticles_);
 
-  double tn = ti_+dt_; // next time step
+  double tn = ti_ + dt_;  // next time step
   bool doiter = true;
-  double resamp_thresh = 0.5*gnumparticles_;
-  while (doiter and runc_< maxiter_)
+  double resamp_thresh = 0.5 * gnumparticles_;
+  while (doiter and runc_ < maxiter_)
   {
     // get next time step and a suggestion for the next increment
-    FindStep(ti_,tn,dt_);
+    FindStep(ti_, tn, dt_);
 
     // resample
     ess = particles_->EffectiveSampleSize();
-    if ( ess<resamp_thresh )
+    if (ess < resamp_thresh)
     {
       particles_->ResampleParticles();
     }
@@ -166,22 +162,19 @@ void INVANA::OptimizerSMC::Integrate()
 
 
     // prepare next step
-    ti_=tn;
-    tn=ti_+dt_;
+    ti_ = tn;
+    tn = ti_ + dt_;
     runc_++;
 
-    PrintInfo(runc_,ti_,ess);
+    PrintInfo(runc_, ti_, ess);
 
-    if (restartevry_ and (runc_%restartevry_ == 0) and runc_)
-      WriteRestart();
+    if (restartevry_ and (runc_ % restartevry_ == 0) and runc_) WriteRestart();
 
-    if (ti_==1.0)
-      doiter = false;
-
+    if (ti_ == 1.0) doiter = false;
   }
 
   // write final state if not yet written
-  if ( (restartevry_ == 0) or (runc_%restartevry_ != 0))
+  if ((restartevry_ == 0) or (runc_ % restartevry_ != 0))
   {
     WriteRestart();
   }
@@ -196,41 +189,41 @@ void INVANA::OptimizerSMC::Integrate()
 
   // Set up vectors to hold the statistical evaluation
   Teuchos::RCP<Epetra_MultiVector> state = OptProb()->Matman()->GetRawParams();
-  Teuchos::RCP<Epetra_MultiVector> mean_smc = Teuchos::rcp(new
-      Epetra_MultiVector(state->Map(),state->NumVectors(),true));
-  Teuchos::RCP<Epetra_MultiVector> stdev_smc = Teuchos::rcp(new
-      Epetra_MultiVector(state->Map(),state->NumVectors(),true));
+  Teuchos::RCP<Epetra_MultiVector> mean_smc =
+      Teuchos::rcp(new Epetra_MultiVector(state->Map(), state->NumVectors(), true));
+  Teuchos::RCP<Epetra_MultiVector> stdev_smc =
+      Teuchos::rcp(new Epetra_MultiVector(state->Map(), state->NumVectors(), true));
 
   // Set up Particle data
-  std::map<int, Teuchos::RCP<INVANA::ParticleData> > data = Particles()->GetData();
+  std::map<int, Teuchos::RCP<INVANA::ParticleData>> data = Particles()->GetData();
   // the data to be statistically evaluated for visualization
-  std::map<int, Teuchos::RCP<INVANA::ParticleData> > sdata;
-  std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
-  for (it=data.begin(); it!=data.end(); it++)
+  std::map<int, Teuchos::RCP<INVANA::ParticleData>> sdata;
+  std::map<int, Teuchos::RCP<ParticleData>>::iterator it;
+  for (it = data.begin(); it != data.end(); it++)
   {
     sdata[it->first] = Teuchos::rcp(new INVANA::ParticleData());
     sdata[it->first]->Init(state->Map());
   }
 
-  for (int j=0; j<state->NumVectors(); j++)
+  for (int j = 0; j < state->NumVectors(); j++)
   {
-    std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
-    for (it=data.begin(); it!=data.end(); it++)
+    std::map<int, Teuchos::RCP<ParticleData>>::iterator it;
+    for (it = data.begin(); it != data.end(); it++)
     {
       OptProb()->Matman()->ReplaceParamsShallow(data[it->first]->GetState());
       state = OptProb()->Matman()->GetRawParams();
       sdata[it->first]->SetState(*(*state)(j));
     }
-    particles_->ComputeMean(sdata,*(*mean_smc)(j), *(*stdev_smc)(j));
+    particles_->ComputeMean(sdata, *(*mean_smc)(j), *(*stdev_smc)(j));
   }
   // ----------------------------------------------------------
 
 
   //
-  if (mygroup_==0)
+  if (mygroup_ == 0)
   {
-    Writer()->WriteNamedVectors("mean_smc",mean_smc);
-    Writer()->WriteNamedVectors("stdev_smc",stdev_smc);
+    Writer()->WriteNamedVectors("mean_smc", mean_smc);
+    Writer()->WriteNamedVectors("stdev_smc", stdev_smc);
   }
 
   return;
@@ -243,19 +236,19 @@ void INVANA::OptimizerSMC::FindStep(double ta, double& tb, double& dt)
 
   double incscal = ess_red_;
   int maxiter = 50;
-  double tol = 0.2*incscal*gnumparticles_;
+  double tol = 0.2 * incscal * gnumparticles_;
 
   // initialize the interval (increase tb if it is too small)
   double essa = particles_->EffectiveSampleSize();
-  double fa = incscal*essa;
+  double fa = incscal * essa;
   double essb = 0.0;
   double fb = 1.0;
   while (fb > 0)
   {
     // compute new ess at tb
-    essb = particles_->NewEffectiveSampleSize(tb,ta);
-    fb = essb - (1-incscal)*essa;
-    if (fb>0)
+    essb = particles_->NewEffectiveSampleSize(tb, ta);
+    fb = essb - (1 - incscal) * essa;
+    if (fb > 0)
     {
       dt *= 2.0;
       tb = ta + dt;
@@ -264,14 +257,16 @@ void INVANA::OptimizerSMC::FindStep(double ta, double& tb, double& dt)
     // no stepsize in [ta,1.0] can be found  that significantly
     // decreases the ess -> the 2 distributions are similar
     // enough and we are done
-    if ( tb>= 1.0 )
+    if (tb >= 1.0)
     {
       // tweak fb so that the bisection is not triggered
       // and give some information
-      fb = 0.5*tol;
-      if (particles_->PComm().GComm().MyPID()==0)
-        std::cout << " No time step in ["<< ta << ",1.0] significantly"
-            " reduces the ess; setting tn=1.0" << std::endl;
+      fb = 0.5 * tol;
+      if (particles_->PComm().GComm().MyPID() == 0)
+        std::cout << " No time step in [" << ta
+                  << ",1.0] significantly"
+                     " reduces the ess; setting tn=1.0"
+                  << std::endl;
       break;
     }
   }
@@ -282,50 +277,49 @@ void INVANA::OptimizerSMC::FindStep(double ta, double& tb, double& dt)
   double tc = tb;
   double tinit = ta;
   double fc = 0.0;
-  while ( j<maxiter and abs(val)>tol )
+  while (j < maxiter and abs(val) > tol)
   {
     // half the interval
-    tc=(ta+tb)/2;
+    tc = (ta + tb) / 2;
 
     // check ess
-    essb = particles_->NewEffectiveSampleSize(tc,tinit);
-    fc = essb - (1-incscal)*essa;
+    essb = particles_->NewEffectiveSampleSize(tc, tinit);
+    fc = essb - (1 - incscal) * essa;
 
-    if ( std::signbit(fc) == std::signbit(fa) )
-      ta=tc;
+    if (std::signbit(fc) == std::signbit(fa))
+      ta = tc;
     else
-      tb=tc;
+      tb = tc;
 
     j++;
-    val=fc;
+    val = fc;
   }
 
-  if (j==maxiter)
+  if (j == maxiter)
   {
-    if (particles_->PComm().GComm().MyPID()==0)
+    if (particles_->PComm().GComm().MyPID() == 0)
       std::cout << "  reached maxiter finding stepsize" << std::endl;
   }
 
-  if ( tc>1 )
-    tb=1.0;
+  if (tc > 1)
+    tb = 1.0;
   else
-    tb=tc;
+    tb = tc;
 
   // update weights in particles
   particles_->UpdateWeights();
 
   // give suggestion for the next increment
-  dt=tc-tinit;
+  dt = tc - tinit;
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::OptimizerSMC::PrintInfo(const int& iter, const double& t,
-    const double& ess) const
+void INVANA::OptimizerSMC::PrintInfo(const int& iter, const double& t, const double& ess) const
 {
   // let only global proc 0 do some on screen printing
-  if (particles_->PComm().GComm().MyPID()==0)
+  if (particles_->PComm().GComm().MyPID() == 0)
   {
     printf("STEP %3d   |  ", iter);
     printf("time %.3f  |  ", t);
@@ -339,7 +333,7 @@ void INVANA::OptimizerSMC::PrintInfo(const int& iter, const double& t,
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerSMC::ReadRestart(int run)
 {
-  IO::DiscretizationReader reader(OptProb()->Discret(),RestartFromFile(),run);
+  IO::DiscretizationReader reader(OptProb()->Discret(), RestartFromFile(), run);
 
   // restart from this iteration step
   runc_ = run;
@@ -355,9 +349,9 @@ void INVANA::OptimizerSMC::ReadRestart(int run)
   std::map<int, double> weights = particles_->GetWeights();
   std::string prefix = "weight";
   auto it = weights.begin();
-  for (int i=0; i<numstates; i++)
+  for (int i = 0; i < numstates; i++)
   {
-    std::string name = prefix+std::to_string(it->first);
+    std::string name = prefix + std::to_string(it->first);
     it->second = reader.ReadDouble(name);
     it++;
   }
@@ -369,12 +363,12 @@ void INVANA::OptimizerSMC::ReadRestart(int run)
   particles_->SetMCAdaptScale(mc_scale);
 
   // -------- read states
-  std::map<int, Teuchos::RCP<ParticleData> >states = particles_->GetData();
+  std::map<int, Teuchos::RCP<ParticleData>> states = particles_->GetData();
   auto jt = states.begin();
-  Teuchos::RCP<Epetra_MultiVector> pstates = Teuchos::rcp(new
-      Epetra_MultiVector((*jt->second).GetState().Map(), numstates, false));
+  Teuchos::RCP<Epetra_MultiVector> pstates =
+      Teuchos::rcp(new Epetra_MultiVector((*jt->second).GetState().Map(), numstates, false));
   reader.ReadMultiVector(pstates, "states");
-  for (int i=0; i<numstates; i++)
+  for (int i = 0; i < numstates; i++)
   {
     jt->second->SetState(*(*pstates)(i));
     jt++;
@@ -386,17 +380,17 @@ void INVANA::OptimizerSMC::ReadRestart(int run)
   std::string preprior = "prior";
   double posterior = 0.0;
   double prior = 0.0;
-  for (auto kt=states.begin(); kt!=states.end(); kt++)
+  for (auto kt = states.begin(); kt != states.end(); kt++)
   {
-    //read
-    posterior = reader.ReadDouble(prepost+std::to_string(kt->first));
-    prior = reader.ReadDouble(preprior+std::to_string(kt->first));
+    // read
+    posterior = reader.ReadDouble(prepost + std::to_string(kt->first));
+    prior = reader.ReadDouble(preprior + std::to_string(kt->first));
 
     // set
-    kt->second->SetData(posterior,prior);
+    kt->second->SetData(posterior, prior);
   }
 
-  is_restart_=true;
+  is_restart_ = true;
 
   return;
 }
@@ -405,20 +399,20 @@ void INVANA::OptimizerSMC::ReadRestart(int run)
 void INVANA::OptimizerSMC::WriteRestart()
 {
   // let only global proc 0 do some on screen printing
-  if (particles_->PComm().GComm().MyPID()==0)
+  if (particles_->PComm().GComm().MyPID() == 0)
   {
     std::cout << "Writing OptimizerSMC restart for step " << runc_ << std::endl;
   }
 
   // setup new step
-  Writer()->WriteNewStep(runc_,ti_);
+  Writer()->WriteNewStep(runc_, ti_);
 
   // write timestepping
   Writer()->WriteNamedDouble("dt", dt_);
   Writer()->WriteNamedDouble("ti", ti_);
 
   // get data to be written from the particles
-  std::map<int, Teuchos::RCP<ParticleData> >states = particles_->GetData();
+  std::map<int, Teuchos::RCP<ParticleData>> states = particles_->GetData();
   std::map<int, double> weights = particles_->GetWeights();
   unsigned int numstates = states.size();
 
@@ -427,31 +421,31 @@ void INVANA::OptimizerSMC::WriteRestart()
 
   // -------- write weights
   std::string prefix = "weight";
-  for (auto it=weights.begin(); it!=weights.end(); it++)
+  for (auto it = weights.begin(); it != weights.end(); it++)
   {
-    std::string name = prefix+std::to_string(it->first);
-    Writer()->WriteNamedDouble(name,it->second);
+    std::string name = prefix + std::to_string(it->first);
+    Writer()->WriteNamedDouble(name, it->second);
   }
   // -------- end
 
   // -------- write current MC scale
-  Writer()->WriteNamedDouble("mc_scale",particles_->GetMCAdaptScale());
+  Writer()->WriteNamedDouble("mc_scale", particles_->GetMCAdaptScale());
   // -------- end
 
   // -------- write particle data
   // set up a multivector to hold the states temporarily
   auto it = states.begin();
-  Teuchos::RCP<Epetra_MultiVector> pstates = Teuchos::rcp(new
-      Epetra_MultiVector((*it->second).GetState().Map(), numstates, false));
+  Teuchos::RCP<Epetra_MultiVector> pstates =
+      Teuchos::rcp(new Epetra_MultiVector((*it->second).GetState().Map(), numstates, false));
 
-  int k=0;
+  int k = 0;
   std::string prepost = "posterior";
   std::string preprior = "prior";
-  for (auto it=states.begin(); it!=states.end(); it++)
+  for (auto it = states.begin(); it != states.end(); it++)
   {
-    (*pstates)(k)->Scale(1.0,it->second->GetState());
-    Writer()->WriteNamedDouble(prepost+std::to_string(it->first),it->second->GetPosterior());
-    Writer()->WriteNamedDouble(preprior+std::to_string(it->first),it->second->GetPrior());
+    (*pstates)(k)->Scale(1.0, it->second->GetState());
+    Writer()->WriteNamedDouble(prepost + std::to_string(it->first), it->second->GetPosterior());
+    Writer()->WriteNamedDouble(preprior + std::to_string(it->first), it->second->GetPrior());
     k++;
   }
   // write states as multivector to save some storage

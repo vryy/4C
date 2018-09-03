@@ -15,12 +15,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamData::BeamData()
-    : isinit_(false),
-      issetup_(false),
-      beta_(-1.0),
-      gamma_(-1.0),
-      alphaf_(-1.0),
-      alpham_(-1.0)
+    : isinit_(false), issetup_(false), beta_(-1.0), gamma_(-1.0), alphaf_(-1.0), alpham_(-1.0)
 {
   // empty constructor
 }

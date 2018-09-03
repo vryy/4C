@@ -19,7 +19,6 @@
 
 namespace LINALG
 {
-
   /// Sparse matrix with fixed graph that never reallocs
   /*!
     The Dirichlet rows (if any) are already marked in the matrix graph. The
@@ -28,25 +27,22 @@ namespace LINALG
    */
   class FixedSparseMatrix : public SparseMatrixBase
   {
-  public:
-
+   public:
     /// Construct an empty matrix
-    FixedSparseMatrix( Teuchos::RCP<const Epetra_Map> dbcmap );
+    FixedSparseMatrix(Teuchos::RCP<const Epetra_Map> dbcmap);
 
     virtual const char* Label() const { return "LINALG::FixedSparseMatrix"; }
 
     /// set the (filled) graph and allocate internal epetra matrix
-    virtual void SetMatrix( Teuchos::RCP<Epetra_CrsGraph> graph );
+    virtual void SetMatrix(Teuchos::RCP<Epetra_CrsGraph> graph);
 
     virtual void Zero();
 
     virtual void Reset();
 
-    virtual void Assemble(int eid,
-                          const Epetra_SerialDenseMatrix& Aele,
-                          const std::vector<int>& lmrow,
-                          const std::vector<int>& lmrowowner,
-                          const std::vector<int>& lmcol);
+    virtual void Assemble(int eid, const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
+        const std::vector<int>& lmcol);
 
     virtual void Assemble(double val, int rgid, int cgid);
 
@@ -56,15 +52,15 @@ namespace LINALG
 
     virtual void UnComplete();
 
-    virtual void ApplyDirichlet(const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock=true);
+    virtual void ApplyDirichlet(
+        const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock = true);
 
-    virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock=true);
+    virtual void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true);
 
-  protected:
-
+   protected:
     Teuchos::RCP<const Epetra_Map> dbcmap_;
   };
 
-}
+}  // namespace LINALG
 
 #endif

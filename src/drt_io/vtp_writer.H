@@ -28,29 +28,23 @@
 */
 class VtpWriter : public VtkWriterBase
 {
-public:
-
+ public:
   //! constructor
   VtpWriter();
 
   //! destructor
-  virtual ~VtpWriter()
-  {}
+  virtual ~VtpWriter() {}
 
   //! write the geometry defining this poly data set
-  void WriteGeometryPolyData( const std::vector<double>& point_coordinates );
+  void WriteGeometryPolyData(const std::vector<double>& point_coordinates);
 
   //! write a data vector with num_component values of type T per point
   // Todo template <typename T>
-  void WritePointDataVector(
-      const std::vector<double>& data,
-      unsigned int num_components_per_point,
-      const std::string& name
-      );
+  void WritePointDataVector(const std::vector<double>& data, unsigned int num_components_per_point,
+      const std::string& name);
 
 
-protected:
-
+ protected:
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const;
 
@@ -68,7 +62,6 @@ protected:
 
   //! Return the file suffix including the dot for this file type
   virtual const std::string& WriterSuffix() const;
-
 };
 
 #endif

@@ -19,8 +19,7 @@
 
 namespace INVANA
 {
-
-class MatParManager;
+  class MatParManager;
 
 
   /*!
@@ -32,37 +31,36 @@ class MatParManager;
   have a meaning to any type of objective function.
 
   */
-class ObjectiveFunct
-{
+  class ObjectiveFunct
+  {
+   public:
+    //! standard destructor
+    virtual ~ObjectiveFunct(){};
 
-public:
+    //! evaluate value of the objective function at time "time"
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> disp, double time, double& val) = 0;
 
-  //! standard destructor
-  virtual ~ObjectiveFunct(){};
+    //! evaluate gradient of objective function w.r.t displacements/state at time "time"
+    virtual void EvaluateGradient(
+        Teuchos::RCP<Epetra_Vector> disp, double time, Teuchos::RCP<Epetra_Vector> gradient) = 0;
 
-  //! evaluate value of the objective function at time "time"
-  virtual void Evaluate(Teuchos::RCP<Epetra_Vector> disp, double time, double& val) = 0;
+    //! measured time steps
+    virtual std::vector<double> MeasuredTime() = 0;
 
-  //! evaluate gradient of objective function w.r.t displacements/state at time "time"
-  virtual void EvaluateGradient(Teuchos::RCP<Epetra_Vector> disp, double time, Teuchos::RCP<Epetra_Vector> gradient) = 0;
+    //! query for step of measurements of this time step
+    /*!
+      \param In
+      time - timestep to be found with accuracy up to 1.0e-10
+    */
+    //! returns step of corresponding measurements; otherwise returns -1
+    virtual int FindStep(double time) = 0;
 
-  //! measured time steps
-  virtual std::vector<double> MeasuredTime() = 0;
+    /*! Get scaling factor
+     *
+     */
+    virtual double GetScaleFac() = 0;
 
-  //! query for step of measurements of this time step
-  /*!
-    \param In
-    time - timestep to be found with accuracy up to 1.0e-10
-  */
-  //! returns step of corresponding measurements; otherwise returns -1
-  virtual int FindStep(double time) = 0;
-
-  /*! Get scaling factor
-   *
-   */
-  virtual double GetScaleFac() = 0;
-
-}; // class ObjectiveFunct
+  };  // class ObjectiveFunct
 }  // namespace INVANA
 
-#endif // OBJECTIVE_FUNCT_H_
+#endif  // OBJECTIVE_FUNCT_H_

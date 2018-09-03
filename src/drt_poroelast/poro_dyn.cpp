@@ -42,17 +42,17 @@ void poroelast_drt()
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // print Logo to screen
-  if (comm.MyPID()==0) POROELAST::PrintLogo();
+  if (comm.MyPID() == 0) POROELAST::PrintLogo();
 
   // setup of the discretizations, including clone strategy
   POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& poroelastdyn =
-      problem->PoroelastDynamicParams();
+  const Teuchos::ParameterList& poroelastdyn = problem->PoroelastDynamicParams();
 
   // choose algorithm depending on solution type
-  Teuchos::RCP<POROELAST::PoroBase> poroalgo = POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
+  Teuchos::RCP<POROELAST::PoroBase> poroalgo =
+      POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
 
   // read the restart information, set vectors and variables
   const int restart = problem->Restart();
@@ -71,7 +71,7 @@ void poroelast_drt()
   poroalgo->TestResults(comm);
 
   return;
-}//poroelast_drt()
+}  // poroelast_drt()
 
 /*------------------------------------------------------------------------------------------------*
  | main control routine for poro scatra problems                                   vuong 01/12 |
@@ -80,22 +80,24 @@ void poro_scatra_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  //1.- Initialization
+  // 1.- Initialization
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
-  //2.- Parameter reading
+  // 2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->PoroScatraControlParams();
 
-  POROELAST::UTILS::SetupPoroScatraDiscretizations<POROELAST::UTILS::PoroelastCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>();
+  POROELAST::UTILS::SetupPoroScatraDiscretizations<POROELAST::UTILS::PoroelastCloneStrategy,
+      POROELAST::UTILS::PoroScatraCloneStrategy>();
 
-  //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
-  Teuchos::RCP<POROELAST::PoroScatraBase> poro_scatra = POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
+  // 3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
+  Teuchos::RCP<POROELAST::PoroScatraBase> poro_scatra =
+      POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
 
-  //3.1- Read restart if needed. (Discretization called inside)
+  // 3.1- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();
   poro_scatra->ReadRestart(restart);
 
-  //4.- Run of the actual problem.
+  // 4.- Run of the actual problem.
 
   // 4.1.- Some setup needed for the poroelastic subproblem.
   poro_scatra->SetupSystem();
@@ -108,6 +110,4 @@ void poro_scatra_drt()
 
   // 5. - perform the result test
   poro_scatra->TestResults(comm);
-
 }
-

@@ -21,8 +21,7 @@ Maintainer: Andy Wirtz
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale)
-  : AleFsiWrapper(ale)
+ADAPTER::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
 {
   // create the FSI interface
   fsiinterface_ = Teuchos::rcp(new ALE::UTILS::FsiMapExtractor);
@@ -33,8 +32,7 @@ ADAPTER::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::FsiMapExtractor>
-ADAPTER::AleFsiMshtWrapper::FsiInterface() const
+Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> ADAPTER::AleFsiMshtWrapper::FsiInterface() const
 {
   return fsiinterface_;
 }

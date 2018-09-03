@@ -31,7 +31,7 @@ namespace TOPOPT
   {
     class FluidAdjointTimeInt;
   }
-}
+}  // namespace TOPOPT
 namespace ADAPTER
 {
   /// adapter for the coupling of the fluid adjoint algorithm in topology optimization
@@ -45,12 +45,9 @@ namespace ADAPTER
    */
   class TopOptFluidAdjointAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    explicit TopOptFluidAdjointAlgorithm(
-        const Teuchos::ParameterList& prbdyn
-        );
+    explicit TopOptFluidAdjointAlgorithm(const Teuchos::ParameterList& prbdyn);
 
     /// virtual desctructor
     virtual ~TopOptFluidAdjointAlgorithm();
@@ -58,20 +55,24 @@ namespace ADAPTER
     virtual void ReadRestart(int step);
 
     /// fluid adjoint field solver
-    Teuchos::RCP<TOPOPT::ADJOINT::FluidAdjointTimeInt> AdjointFluidField(){return adjointTimeInt_;}
+    Teuchos::RCP<TOPOPT::ADJOINT::FluidAdjointTimeInt> AdjointFluidField()
+    {
+      return adjointTimeInt_;
+    }
     /// return instance of fluid adjoint time integration class
-    const Teuchos::RCP<const TOPOPT::ADJOINT::FluidAdjointTimeInt> AdjointFluidField() const{return adjointTimeInt_;}
+    const Teuchos::RCP<const TOPOPT::ADJOINT::FluidAdjointTimeInt> AdjointFluidField() const
+    {
+      return adjointTimeInt_;
+    }
 
-  protected:
-
+   protected:
     /// adjoint fluid field
     Teuchos::RCP<TOPOPT::ADJOINT::FluidAdjointTimeInt> adjointTimeInt_;
 
-  private:
-
+   private:
     /// setup the adjoint fluid time integration data
     void SetupAdjointFluid(const Teuchos::ParameterList& prbdyn);
   };
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 #endif /* ADAPTER_TOPOPT_FLUID_ADJOINT_H_ */

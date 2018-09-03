@@ -29,7 +29,7 @@ namespace ADAPTER
 {
   class Coupling;
   class ScaTraBaseAlgorithm;
-}
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -40,8 +40,8 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace LINALG
 {
@@ -49,15 +49,13 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-}
+}  // namespace LINALG
 
 namespace FS3I
 {
   class FS3I_Base
   {
-
-  public:
-
+   public:
     /// constructor of base class
     FS3I_Base();
 
@@ -117,11 +115,10 @@ namespace FS3I
     void SetupCoupledScatraSystem();
 
     //! set-up of global rhs of the monolithic ScaTra problem
-    void SetupCoupledScatraVector
-    (
-      Teuchos::RCP<Epetra_Vector>  globalvec, //!< resulting global vector
-      Teuchos::RCP<const Epetra_Vector>& vec1,//!< vector in fluid ScaTra map
-      Teuchos::RCP<const Epetra_Vector>& vec2 //!< vector in solid ScaTra map
+    void SetupCoupledScatraVector(
+        Teuchos::RCP<Epetra_Vector> globalvec,    //!< resulting global vector
+        Teuchos::RCP<const Epetra_Vector>& vec1,  //!< vector in fluid ScaTra map
+        Teuchos::RCP<const Epetra_Vector>& vec2   //!< vector in solid ScaTra map
     );
 
     //! set-up of global rhs of the monolithic ScaTra problem
@@ -130,9 +127,9 @@ namespace FS3I
     //! set-up of global matrix of the monolithic ScaTra problem
     void SetupCoupledScatraMatrix();
 
-    Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1 (Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2 (Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //! linear solution of monolithic ScaTra problem
     void LinearSolveScatra();
@@ -141,24 +138,22 @@ namespace FS3I
     void ScatraIterUpdate();
 
     //! extraction of field-specific vectors from global ScaTra vector
-    void ExtractScatraFieldVectors
-    (
-      Teuchos::RCP<const Epetra_Vector>  globalvec, //!< global vector
-      Teuchos::RCP<const Epetra_Vector>& vec1,      //!< resulting vector in fluid ScaTra map
-      Teuchos::RCP<const Epetra_Vector>& vec2       //!< resulting vector in solid ScaTra map
+    void ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,  //!< global vector
+        Teuchos::RCP<const Epetra_Vector>& vec1,  //!< resulting vector in fluid ScaTra map
+        Teuchos::RCP<const Epetra_Vector>& vec2   //!< resulting vector in solid ScaTra map
     );
 
-  private:
+   private:
+    /// extracts membrane concentration in membrane (interface)
+    void ExtractMembraneConcentration(std::vector<Teuchos::RCP<Epetra_Vector>>& MeanConc) const;
 
-    ///extracts membrane concentration in membrane (interface)
-    void ExtractMembraneConcentration(std::vector<Teuchos::RCP<Epetra_Vector> >& MeanConc) const;
-
-    ///Calculation of membane concentration in the membrane between fluid-scatra and structure-scatra
+    /// Calculation of membane concentration in the membrane between fluid-scatra and
+    /// structure-scatra
     Teuchos::RCP<Epetra_Vector> CalcMembraneConcentration() const;
 
-  protected:
+   protected:
     /// vector of scatra algorithms
-    std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;
+    std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>> scatravec_;
 
     /// scatra rhs vector
     Teuchos::RCP<Epetra_Vector> scatrarhs_;
@@ -170,7 +165,7 @@ namespace FS3I
     Teuchos::RCP<LINALG::MultiMapExtractor> scatraglobalex_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
-    std::vector<Teuchos::RCP<LINALG::MultiMapExtractor> > scatrafieldexvec_;
+    std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>> scatrafieldexvec_;
 
     /// coupling of dofs at the scatra interface
     Teuchos::RCP<ADAPTER::Coupling> scatracoup_;
@@ -178,13 +173,13 @@ namespace FS3I
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
 
     /// coupling forces (in case of surface permeability)
-    std::vector<Teuchos::RCP<Epetra_Vector> > scatracoupforce_;
+    std::vector<Teuchos::RCP<Epetra_Vector>> scatracoupforce_;
 
     /// coupling matrices (in case of surface permeability)
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix> > scatracoupmat_;
+    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> scatracoupmat_;
 
     /// zero vector (needed for application of Dirichlet BC on coupling vector)
-    std::vector<Teuchos::RCP<Epetra_Vector> > scatrazeros_;
+    std::vector<Teuchos::RCP<Epetra_Vector>> scatrazeros_;
 
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
@@ -206,12 +201,11 @@ namespace FS3I
     /// current time
     double time_;
 
-    ///current step
+    /// current step
     int step_;
 
     //@}
-  private:
-
+   private:
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
@@ -221,23 +215,19 @@ namespace FS3I
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fbitransform_;
     ///@}
 
-  private:
-
+   private:
     //! flag indicating if class is setup
     bool issetup_;
 
     //! flag indicating if class is initialized
     bool isinit_;
 
-  protected:
-
+   protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup()
-    {return issetup_;};
+    bool IsSetup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit()
-    {return isinit_;};
+    bool IsInit() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup();
@@ -245,15 +235,13 @@ namespace FS3I
     //! check if \ref Init() was called
     void CheckIsInit();
 
-  public:
-
+   public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
-
+    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
   };
-}
+}  // namespace FS3I
 
 #endif

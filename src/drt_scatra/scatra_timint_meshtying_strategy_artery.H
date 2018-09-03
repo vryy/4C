@@ -27,7 +27,7 @@ namespace ADAPTER
 {
   class Coupling;
   class ArtNet;
-}
+}  // namespace ADAPTER
 namespace FSI
 {
   class Monolithic;
@@ -37,8 +37,8 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace POROMULTIPHASESCATRA
 {
@@ -47,18 +47,16 @@ namespace POROMULTIPHASESCATRA
 
 namespace SCATRA
 {
-
-class MeshtyingStrategyArtery : public MeshtyingStrategyBase
-{
-  public:
-
+  class MeshtyingStrategyArtery : public MeshtyingStrategyBase
+  {
+   public:
     //! constructor
     explicit MeshtyingStrategyArtery(
-        SCATRA::ScaTraTimIntImpl*       scatratimint   //!< scalar transport time integrator
-        );
+        SCATRA::ScaTraTimIntImpl* scatratimint  //!< scalar transport time integrator
+    );
 
     //! destructor
-    virtual ~MeshtyingStrategyArtery(){return;};
+    virtual ~MeshtyingStrategyArtery() { return; };
 
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const;
@@ -85,26 +83,24 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     void InitConvCheckStrategy();
 
     //! solve resulting linear system of equations
-    void Solve(
-        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
-        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
+    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+        const int& iteration,  //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
         ) const;
 
-    void SetupSystem(
-        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>&             residual       //!< residual vector
+    void SetupSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& residual                             //!< residual vector
         ) const;
 
     //! init the convergence check
-    void SetArteryScatraTimeIntegrator(Teuchos::RCP<SCATRA::ScaTraTimIntImpl>       artscatratimint);
+    void SetArteryScatraTimeIntegrator(Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint);
 
     //! set the artery time integrator
-    void SetArteryTimeIntegrator(Teuchos::RCP<ADAPTER::ArtNet>       arttimint);
+    void SetArteryTimeIntegrator(Teuchos::RCP<ADAPTER::ArtNet> arttimint);
 
     //! prepare a time step
     void PrepareTimeStep() const;
@@ -113,34 +109,32 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     void SetArteryPressure() const;
 
     //! apply mesh movement
-    void ApplyMeshMovement(
-        Teuchos::RCP<const Epetra_Vector> disp
-        );
+    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp);
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> CombinedSystemMatrix() {return comb_systemmatrix_;}
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> CombinedSystemMatrix()
+    {
+      return comb_systemmatrix_;
+    }
 
     //! get the combined rhs
-    Teuchos::RCP<Epetra_Vector>  CoupledRHS() const {return rhs_;}
+    Teuchos::RCP<Epetra_Vector> CoupledRHS() const { return rhs_; }
 
     //! get the combined increment
-    Teuchos::RCP<Epetra_Vector>  CombinedIncrement() const {return comb_increment_;}
+    Teuchos::RCP<Epetra_Vector> CombinedIncrement() const { return comb_increment_; }
 
     //! access to time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ArtScatraField() {return artscatratimint_;}
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ArtScatraField() { return artscatratimint_; }
 
     //! check if initial fields match
     void CheckInitialFields() const;
 
-    void UpdateArtScatraIter(
-        Teuchos::RCP<const Epetra_Vector>       combined_inc
-        );
+    void UpdateArtScatraIter(Teuchos::RCP<const Epetra_Vector> combined_inc);
 
-  private:
-
+   private:
     //! time integrators
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl>       artscatratimint_;
-    Teuchos::RCP<ADAPTER::ArtNet>                arttimint_;
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint_;
+    Teuchos::RCP<ADAPTER::ArtNet> arttimint_;
 
     //! mesh tying object
     Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
@@ -158,8 +152,8 @@ class MeshtyingStrategyArtery : public MeshtyingStrategyBase
     //! combined rhs
     Teuchos::RCP<Epetra_Vector> comb_increment_;
 
-}; // class MeshtyingStrategyArtery
+  };  // class MeshtyingStrategyArtery
 
-}// namespace SCATRA
+}  // namespace SCATRA
 
 #endif /* SRC_DRT_SCATRA_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H_ */

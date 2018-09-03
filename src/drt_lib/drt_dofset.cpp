@@ -33,14 +33,13 @@
 // Bandwidth optimization is currently not working and to prevent it from
 // generating compiler warnings, it is disabled by the following define.
 #ifdef BW_OPT
-  #undef BW_OPT
+#undef BW_OPT
 #endif
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-DRT::DofSet::DofSet()
-  : DRT::DofSetBase(), filled_(false), dspos_( 0 ), pccdofhandling_ (false)
+DRT::DofSet::DofSet() : DRT::DofSetBase(), filled_(false), dspos_(0), pccdofhandling_(false)
 {
   return;
 }
@@ -49,16 +48,13 @@ DRT::DofSet::DofSet()
 /*----------------------------------------------------------------------*
  |  dtor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-DRT::DofSet::~DofSet()
-{
-  return;
-}
+DRT::DofSet::~DofSet() { return; }
 
 
 /*----------------------------------------------------------------------*
  |  << operator                                               ukue 04/07|
  *----------------------------------------------------------------------*/
-std::ostream& operator << (std::ostream& os, const DRT::DofSet& dofset)
+std::ostream& operator<<(std::ostream& os, const DRT::DofSet& dofset)
 {
   dofset.Print(os);
   return os;
@@ -70,38 +66,34 @@ std::ostream& operator << (std::ostream& os, const DRT::DofSet& dofset)
  *----------------------------------------------------------------------*/
 void DRT::DofSet::Print(std::ostream& os) const
 {
-  for (int proc=0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
   {
     if (proc == numdfcolelements_->Comm().MyPID())
     {
-      if (numdfcolelements_->MyLength())
-        os << "-------------------------- Proc " << proc << " :\n";
-      for (int i=0; i<numdfcolelements_->MyLength(); ++i)
+      if (numdfcolelements_->MyLength()) os << "-------------------------- Proc " << proc << " :\n";
+      for (int i = 0; i < numdfcolelements_->MyLength(); ++i)
       {
         int numdf = (*numdfcolelements_)[i];
-        int idx   = (*idxcolelements_)[i];
+        int idx = (*idxcolelements_)[i];
         os << i << ": ";
-        for (int j=0; j<numdf; ++j)
-          os << (idx+j) << " ";
+        for (int j = 0; j < numdf; ++j) os << (idx + j) << " ";
         os << "\n";
       }
       os << std::endl;
     }
     numdfcolelements_->Comm().Barrier();
   }
-  for (int proc=0; proc < numdfcolnodes_->Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < numdfcolnodes_->Comm().NumProc(); ++proc)
   {
     if (proc == numdfcolnodes_->Comm().MyPID())
     {
-      if (numdfcolnodes_->MyLength())
-        os << "-------------------------- Proc " << proc << " :\n";
-      for (int i=0; i<numdfcolnodes_->MyLength(); ++i)
+      if (numdfcolnodes_->MyLength()) os << "-------------------------- Proc " << proc << " :\n";
+      for (int i = 0; i < numdfcolnodes_->MyLength(); ++i)
       {
         int numdf = (*numdfcolnodes_)[i];
-        int idx   = (*idxcolnodes_)[i];
+        int idx = (*idxcolnodes_)[i];
         os << i << ": ";
-        for (int j=0; j<numdf; ++j)
-          os << (idx+j) << " ";
+        for (int j = 0; j < numdf; ++j) os << (idx + j) << " ";
         os << "\n";
       }
       os << std::endl;
@@ -134,7 +126,8 @@ void DRT::DofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+int DRT::DofSet::AssignDegreesOfFreedom(
+    const Discretization& dis, const unsigned dspos, const int start)
 {
   if (!dis.Filled()) dserror("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
@@ -142,7 +135,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   // A definite offset is currently not supported.
   // TODO (kronbichler) find a better solution for this
-  //if (start!=0)
+  // if (start!=0)
   //  dserror("right now user specified dof offsets are not supported");
 
   dspos_ = dspos;
@@ -171,7 +164,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   // Check if we have a face discretization which supports degrees of freedom on faces
   Teuchos::RCP<const DiscretizationHDG> facedis =
-    Teuchos::rcp_dynamic_cast<const DiscretizationHDG>(Teuchos::rcp(&dis,false));
+      Teuchos::rcp_dynamic_cast<const DiscretizationHDG>(Teuchos::rcp(&dis, false));
 
   // Now this is tricky. We have to care for nodes, faces, and elements, both
   // row and column maps. In general both nodes, faces, and elements can have
@@ -205,10 +198,10 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   //////////////////////////////////////////////////////////////////
   int maxnodenumdf = 0;
   int maxelementnumdf = 0;
-  std::map<int,std::vector<int> > nodedofset;
-  std::map<int,std::vector<int> > nodeduplicatedofset;
-  std::map<int,std::vector<int> > elementdofset;
-  std::map<int,std::vector<int> > facedofset;
+  std::map<int, std::vector<int>> nodedofset;
+  std::map<int, std::vector<int>> nodeduplicatedofset;
+  std::map<int, std::vector<int>> elementdofset;
+  std::map<int, std::vector<int>> facedofset;
 
   // bandwidth optimization is implemented here and works. It though leads to
   // a totally different dof numbering (mixed between elements and nodes) and therefore
@@ -222,7 +215,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // mwgee 01/13
 #ifdef BW_OPT
   // TAW: Please do not include drt_problem.H!!!
-  //bool bw = DRT::Problem::Instance()->BandWidthOpt();
+  // bool bw = DRT::Problem::Instance()->BandWidthOpt();
   bool bw = false;
   if (bw)
   {
@@ -231,101 +224,102 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     // that do not overlap with the node gids
     const Epetra_Map& elerowmap = *dis.ElementRowMap();
     Teuchos::RCP<Epetra_IntVector> elerowgids = Teuchos::rcp(new Epetra_IntVector(elerowmap));
-    std::vector<int> ssizeelerowgids(elerowmap.Comm().NumProc(),0);
-    std::vector<int> rsizeelerowgids(elerowmap.Comm().NumProc(),0);
+    std::vector<int> ssizeelerowgids(elerowmap.Comm().NumProc(), 0);
+    std::vector<int> rsizeelerowgids(elerowmap.Comm().NumProc(), 0);
     ssizeelerowgids[elerowmap.Comm().MyPID()] = elerowmap.NumMyElements();
-    elerowmap.Comm().SumAll(&ssizeelerowgids[0],&rsizeelerowgids[0],(int)ssizeelerowgids.size());
-    for (unsigned i=0; i<rsizeelerowgids.size(); ++i)
+    elerowmap.Comm().SumAll(&ssizeelerowgids[0], &rsizeelerowgids[0], (int)ssizeelerowgids.size());
+    for (unsigned i = 0; i < rsizeelerowgids.size(); ++i)
     {
-      ssizeelerowgids[i] = maxnodegid+1;
-      for (unsigned j=0; j<i; ++j)
-        ssizeelerowgids[i] += rsizeelerowgids[j];
+      ssizeelerowgids[i] = maxnodegid + 1;
+      for (unsigned j = 0; j < i; ++j) ssizeelerowgids[i] += rsizeelerowgids[j];
     }
 
-    //if (elerowgids->Map().Comm().MyPID()==0)
+    // if (elerowgids->Map().Comm().MyPID()==0)
     //  for (unsigned i=0; i<rsizeelerowgids.size(); ++i)
-    //    printf("maxnodegid %d proc %d ssize %d rsize %d \n",maxnodegid,i,ssizeelerowgids[i],rsizeelerowgids[i]);
+    //    printf("maxnodegid %d proc %d ssize %d rsize %d
+    //    \n",maxnodegid,i,ssizeelerowgids[i],rsizeelerowgids[i]);
 
-    for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
+    for (int i = 0; i < elerowgids->Map().NumMyElements(); ++i)
       (*elerowgids)[i] = ssizeelerowgids[elerowgids->Comm().MyPID()] + i;
 
     // export elerowgids to column map elecolgids
-    Teuchos::RCP<Epetra_IntVector> elecolgids = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-    LINALG::Export(*elerowgids,*elecolgids);
+    Teuchos::RCP<Epetra_IntVector> elecolgids =
+        Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+    LINALG::Export(*elerowgids, *elecolgids);
 
     // Build a rowmap that contains node and element gids
     // Consider only elements that have dofs
-    std::vector<int> mygids(0,0);
-    for (int i=0; i<dis.NodeRowMap()->NumMyElements(); ++i)
+    std::vector<int> mygids(0, 0);
+    for (int i = 0; i < dis.NodeRowMap()->NumMyElements(); ++i)
       mygids.push_back(dis.NodeRowMap()->GID(i));
-    for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
+    for (int i = 0; i < elerowgids->Map().NumMyElements(); ++i)
     {
-      if (NumDofPerElement(*dis.lColElement(i)) != 0)
-        mygids.push_back((*elerowgids)[i]);
+      if (NumDofPerElement(*dis.lColElement(i)) != 0) mygids.push_back((*elerowgids)[i]);
     }
 
-    Epetra_Map rowmapcombo(-1,(int)mygids.size(),&mygids[0],0,dis.Comm());
+    Epetra_Map rowmapcombo(-1, (int)mygids.size(), &mygids[0], 0, dis.Comm());
 
     // Loop Nodes and Elements and build a common nodal-elemental connectivity graph
     // Consider only elementsw rthat have dofs
     Teuchos::RCP<Epetra_FECrsGraph> graphcombo =
-                        Teuchos::rcp( new Epetra_FECrsGraph(Copy,rowmapcombo,180,false));
-    for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
+        Teuchos::rcp(new Epetra_FECrsGraph(Copy, rowmapcombo, 180, false));
+    for (int i = 0; i < dis.ElementColMap()->NumMyElements(); ++i)
     {
-      const int  nnode   = dis.lColElement(i)->NumNode();
-      int*       nodeids = const_cast<int*>(dis.lColElement(i)->NodeIds());
-      for (int row=0; row<nnode; ++row)
+      const int nnode = dis.lColElement(i)->NumNode();
+      int* nodeids = const_cast<int*>(dis.lColElement(i)->NodeIds());
+      for (int row = 0; row < nnode; ++row)
       {
-//        if (!dis.NodeRowMap()->MyGID(nodeids[row])) continue; // only add into my own nodal rows
-        int err = graphcombo->InsertGlobalIndices(1,&nodeids[row],nnode,nodeids);
-        if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+        //        if (!dis.NodeRowMap()->MyGID(nodeids[row])) continue; // only add into my own
+        //        nodal rows
+        int err = graphcombo->InsertGlobalIndices(1, &nodeids[row], nnode, nodeids);
+        if (err < 0) dserror("graphcombo->InsertGlobalIndices returned err=%d", err);
       }
       // check whether this element is actually a row element
-      //if (dis.ElementRowMap()->MyGID(dis.lColElement(i)->Id()) == false) continue;
+      // if (dis.ElementRowMap()->MyGID(dis.lColElement(i)->Id()) == false) continue;
       // check whether this element has elemental dofs
       if (NumDofPerElement(*dis.lColElement(i)) == 0) continue;
       // get the pseudo gid of this element
       int lid = dis.ElementColMap()->LID(dis.lColElement(i)->Id());
-      if (lid==-1) dserror("Cannot find lid");
+      if (lid == -1) dserror("Cannot find lid");
       int pseudogid = (*elecolgids)[lid];
       // check whether this pseudogid is actually in rowmapcombo on this proc
-      //if (rowmapcombo.MyGID(pseudogid) != true) dserror("gid unknown on this proc");
+      // if (rowmapcombo.MyGID(pseudogid) != true) dserror("gid unknown on this proc");
       // the element dofs connect to itself
-      int err = graphcombo->InsertGlobalIndices(1,&pseudogid,1,&pseudogid);
-      if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+      int err = graphcombo->InsertGlobalIndices(1, &pseudogid, 1, &pseudogid);
+      if (err < 0) dserror("graphcombo->InsertGlobalIndices returned err=%d", err);
       // the element dofs connect to the nodal dofs
-      err = graphcombo->InsertGlobalIndices(1,&pseudogid,nnode,nodeids);
-      if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+      err = graphcombo->InsertGlobalIndices(1, &pseudogid, nnode, nodeids);
+      if (err < 0) dserror("graphcombo->InsertGlobalIndices returned err=%d", err);
       // the nodal dofs connect to the element dofs
-      for (int row=0; row<nnode; ++row)
+      for (int row = 0; row < nnode; ++row)
       {
-        //if (!dis.NodeRowMap()->MyGID(nodeids[row])) continue; // only add into my own nodal rows
-        int err = graphcombo->InsertGlobalIndices(1,&nodeids[row],1,&pseudogid);
-        if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+        // if (!dis.NodeRowMap()->MyGID(nodeids[row])) continue; // only add into my own nodal rows
+        int err = graphcombo->InsertGlobalIndices(1, &nodeids[row], 1, &pseudogid);
+        if (err < 0) dserror("graphcombo->InsertGlobalIndices returned err=%d", err);
       }
-    } // for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
+    }  // for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
 
     int err = graphcombo->GlobalAssemble(true);
-    if (err) dserror("graphcombo->GlobalAssemble() returned err=%d",err);
+    if (err) dserror("graphcombo->GlobalAssemble() returned err=%d", err);
     err = graphcombo->OptimizeStorage();
-    if (err) dserror("graphcombo->OptimizeStorage() returned err=%d",err);
-    //cout << *graphcombo; fflush(stdout);
+    if (err) dserror("graphcombo->OptimizeStorage() returned err=%d", err);
+    // cout << *graphcombo; fflush(stdout);
 
     Ifpack_Graph_Epetra_CrsGraph ifgraph(graphcombo);
     Ifpack_RCMReordering reorderer;
-//    Ifpack_AMDReordering reorderer;
+    //    Ifpack_AMDReordering reorderer;
     reorderer.Compute(ifgraph);
-    std::vector<int> permute(rowmapcombo.NumMyElements(),-1);
-    for (int i=0; i<rowmapcombo.NumMyElements(); ++i)
+    std::vector<int> permute(rowmapcombo.NumMyElements(), -1);
+    for (int i = 0; i < rowmapcombo.NumMyElements(); ++i)
     {
       permute[i] = rowmapcombo.GID(reorderer.Reorder(i));
-      if (permute[i]==-1) dserror("Cannot find gid for lid %d %d",i,reorderer.Reorder(i));
+      if (permute[i] == -1) dserror("Cannot find gid for lid %d %d", i, reorderer.Reorder(i));
     }
-    Epetra_IntVector permutation(::Copy,rowmapcombo,&permute[0]);
-//    cout << rowmapcombo; fflush(stdout); rowmapcombo.Comm().Barrier();
-//    fflush(stdout); rowmapcombo.Comm().Barrier(); cout << permutation; fflush(stdout);
-//    rowmapcombo.Comm().Barrier();
-//    exit(0);
+    Epetra_IntVector permutation(::Copy, rowmapcombo, &permute[0]);
+    //    cout << rowmapcombo; fflush(stdout); rowmapcombo.Comm().Barrier();
+    //    fflush(stdout); rowmapcombo.Comm().Barrier(); cout << permutation; fflush(stdout);
+    //    rowmapcombo.Comm().Barrier();
+    //    exit(0);
 
 #if 0
     for (int i=0; i<dis.Comm().NumProc(); ++i)
@@ -347,114 +341,113 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     Epetra_IntVector idxrownodes(*dis.NodeRowMap());
 
     int numrownodes = dis.NumMyRowNodes();
-    for (int i=0; i<numrownodes; ++i)
+    for (int i = 0; i < numrownodes; ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
       numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
-//    int minnodegid = dis.NodeRowMap()->MinAllGID();
+    //    int minnodegid = dis.NodeRowMap()->MinAllGID();
     const int minnodegid = permutation.MinValue();
     maxnodenumdf = numdfrownodes.MaxValue();
 
-    for (int i=0; i<numrownodes; ++i)
+    for (int i = 0; i < numrownodes; ++i)
     {
       const int gid = dis.lRowNode(i)->Id();
       const int plid = permutation.Map().LID(gid);
-      if (plid==-1) dserror("Cannot find lid for gid %d",gid);
+      if (plid == -1) dserror("Cannot find lid for gid %d", gid);
       const int permutegid = permutation[plid];
-      if (i!=plid) printf("Found an inconsistency %d vs. %d\n",i,plid);
+      if (i != plid) printf("Found an inconsistency %d vs. %d\n", i, plid);
       int numdf = numdfrownodes[i];
-//      int dof = count + ( gid-minnodegid )*maxnodenumdf;
-      int dof = count + ( permutegid-minnodegid )*maxnodenumdf;
+      //      int dof = count + ( gid-minnodegid )*maxnodenumdf;
+      int dof = count + (permutegid - minnodegid) * maxnodenumdf;
       idxrownodes[i] = dof;
-      std::vector<int> & dofs = nodedofset[gid]; // FIXME: permutegid? No!
-      if (dofs.size()) dserror("Dofs for node-gid %d have been previously assigned",permutegid);
+      std::vector<int>& dofs = nodedofset[gid];  // FIXME: permutegid? No!
+      if (dofs.size()) dserror("Dofs for node-gid %d have been previously assigned", permutegid);
       dofs.reserve(numdf);
-      if (!numdf) dserror("Node has numdf %d",numdf);
-      for ( int j=0; j<numdf; ++j ) dofs.push_back(dof+j);
+      if (!numdf) dserror("Node has numdf %d", numdf);
+      for (int j = 0; j < numdf; ++j) dofs.push_back(dof + j);
     }
     // These col vectors use the original gids
-    Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
-    err = numdfcolnodes_->Import( numdfrownodes, nodeimporter, Insert );
-    if (err) dserror( "Import using importer returned err=%d", err );
-    err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
-    if (err) dserror( "Import using importer returned err=%d", err );
+    Epetra_Import nodeimporter(numdfcolnodes_->Map(), numdfrownodes.Map());
+    err = numdfcolnodes_->Import(numdfrownodes, nodeimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
+    err = idxcolnodes_->Import(idxrownodes, nodeimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
 
-    //cout << idxrownodes;
+    // cout << idxrownodes;
 
     // do not increase the count, refer to the lowest gid in town which is nodal
-    //count = idxrownodes.MaxValue() + maxnodenumdf + 1;
+    // count = idxrownodes.MaxValue() + maxnodenumdf + 1;
 
+    //////////////////////////////////////////////////////////////////
+
+    // Now do it again for the elements
+    // These vectors use the original element gids
+    Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
+    Epetra_IntVector idxrowelements(*dis.ElementRowMap());
+
+    int numrowelements = dis.NumMyRowElements();
+    for (int i = 0; i < numrowelements; ++i)
+    {
+      DRT::Element* actele = dis.lRowElement(i);
+      // const int gid = actele->Id();
+      int numdf = NumDofPerElement(*actele);
+      numdfrowelements[i] = numdf;
+    }
+
+    // int minelementgid = dis.ElementRowMap()->MinAllGID();
+    // Since we have not increased count, we refer to the lowest gid in town
+    const int minelementgid = minnodegid;
+    maxelementnumdf = numdfrowelements.MaxValue();
+    maxelementnumdf = std::max(maxelementnumdf, maxnodenumdf);
+
+    for (int i = 0; i < numrowelements; ++i)
+    {
+      const int gid = dis.lRowElement(i)->Id();
+      const int uniquegid = (*elerowgids)[i];
+      const int lid = permutation.Map().LID(uniquegid);
+      const int permutegid = permutation[lid];
+      int numdf = numdfrowelements[i];
+      if (lid == -1 && numdf) dserror("Cannot find element lid in rowmapcombo");
+      int dof = count + (permutegid - minelementgid) * maxelementnumdf;
+      // in case the element does not have any dofs the following is wrong,
+      // but it won't matter, since numdf==0
+      idxrowelements[i] = dof;
+      //    std::vector<int> & test = nodedofset[permutegid];
+      //    if (test.size()) dserror("Dofs for ele-gid %d have been previously assigned as
+      //    nodal",permutegid);
+      std::vector<int>& dofs = elementdofset[gid];  // FIXME permutegid? No!
+      if (dofs.size()) dserror("Dofs for ele-gid %d have been previously assigned", permutegid);
+      dofs.reserve(numdf);
+      if (!numdf) dserror("Ele has numdf %d", numdf);
+      for (int j = 0; j < numdf; ++j) dofs.push_back(dof + j);
+    }
+
+    Epetra_Import elementimporter(numdfcolelements_->Map(), numdfrowelements.Map());
+    err = numdfcolelements_->Import(numdfrowelements, elementimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
+    err = idxcolelements_->Import(idxrowelements, elementimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
+
+    // cout << idxrowelements;
+  }  // if (bw)
   //////////////////////////////////////////////////////////////////
-
-  // Now do it again for the elements
-  // These vectors use the original element gids
-  Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
-  Epetra_IntVector idxrowelements(*dis.ElementRowMap());
-
-  int numrowelements = dis.NumMyRowElements();
-  for (int i=0; i<numrowelements; ++i)
-  {
-    DRT::Element* actele = dis.lRowElement(i);
-    //const int gid = actele->Id();
-    int numdf = NumDofPerElement(*actele);
-    numdfrowelements[i] = numdf;
-  }
-
-  //int minelementgid = dis.ElementRowMap()->MinAllGID();
-  // Since we have not increased count, we refer to the lowest gid in town
-  const int minelementgid = minnodegid;
-  maxelementnumdf = numdfrowelements.MaxValue();
-  maxelementnumdf = std::max(maxelementnumdf,maxnodenumdf);
-
-  for (int i=0; i<numrowelements; ++i)
-  {
-    const int gid = dis.lRowElement(i)->Id();
-    const int uniquegid = (*elerowgids)[i];
-    const int lid = permutation.Map().LID(uniquegid);
-    const int permutegid = permutation[lid];
-    int numdf = numdfrowelements[i];
-    if (lid==-1 && numdf) dserror("Cannot find element lid in rowmapcombo");
-    int dof = count + ( permutegid-minelementgid )*maxelementnumdf;
-    // in case the element does not have any dofs the following is wrong,
-    // but it won't matter, since numdf==0
-    idxrowelements[i] = dof;
-//    std::vector<int> & test = nodedofset[permutegid];
-//    if (test.size()) dserror("Dofs for ele-gid %d have been previously assigned as nodal",permutegid);
-    std::vector<int>& dofs = elementdofset[gid]; // FIXME permutegid? No!
-    if (dofs.size()) dserror("Dofs for ele-gid %d have been previously assigned",permutegid);
-    dofs.reserve(numdf);
-    if (!numdf) dserror("Ele has numdf %d",numdf);
-    for ( int j=0; j<numdf; ++j ) dofs.push_back(dof+j);
-  }
-
-  Epetra_Import elementimporter( numdfcolelements_->Map(), numdfrowelements.Map() );
-  err = numdfcolelements_->Import( numdfrowelements, elementimporter, Insert );
-  if (err) dserror( "Import using importer returned err=%d", err );
-  err = idxcolelements_->Import( idxrowelements, elementimporter, Insert );
-  if (err) dserror( "Import using importer returned err=%d", err );
-
-  //cout << idxrowelements;
-  } // if (bw)
   //////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////
-  else // don't do bandwidth optimization
-#endif /* BW_OPT */
+  else  // don't do bandwidth optimization
+#endif  /* BW_OPT */
   {
-
     // get DoF coupling conditions
     std::vector<DRT::Condition*> couplingconditions(0);
     dis.GetCondition("PointCoupling", couplingconditions);
-    if ((int)couplingconditions.size()>0)
-      pccdofhandling_=true;
+    if ((int)couplingconditions.size() > 0) pccdofhandling_ = true;
 
     // do the nodes first
     Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
     Epetra_IntVector idxrownodes(*dis.NodeRowMap());
 
     int numrownodes = dis.NumMyRowNodes();
-    for (int i=0; i<numrownodes; ++i)
+    for (int i = 0; i < numrownodes; ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
       numdfrownodes[i] = NumDofPerNode(*actnode);
@@ -462,9 +455,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
     int minnodegid = GetMinimalNodeGIDIfRelevant(dis);
     maxnodenumdf = numdfrownodes.MaxValue();
-    GetReservedMaxNumDofperNode(maxnodenumdf); //XFEM::XFEMDofSet set to const number!
+    GetReservedMaxNumDofperNode(maxnodenumdf);  // XFEM::XFEMDofSet set to const number!
 
-    for (int i=0; i<numrownodes; ++i)
+    for (int i = 0; i < numrownodes; ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
       const int gid = actnode->Id();
@@ -475,14 +468,13 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       // **********************************************************************
       // **********************************************************************
       int relevantcondid = -1;
-      if(dspos_ == 0)
+      if (dspos_ == 0)
       {
-        for (int k=0; k<(int)couplingconditions.size();++k)
+        for (int k = 0; k < (int)couplingconditions.size(); ++k)
         {
           if (couplingconditions[k]->ContainsNode(gid))
           {
-            if (relevantcondid != -1)
-              dserror("ERROR: Two coupling conditions on one node");
+            if (relevantcondid != -1) dserror("ERROR: Two coupling conditions on one node");
             relevantcondid = k;
           }
         }
@@ -490,7 +482,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
       // check for node coupling condition and slave/master status
       bool specialtreatment = false;
-      if (relevantcondid>=0)
+      if (relevantcondid >= 0)
       {
         const std::vector<int>* nodeids = couplingconditions[relevantcondid]->Nodes();
         if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
@@ -498,53 +490,56 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
         // check if all nodes in this condition are on same processor
         // (otherwise throw a dserror for now - not yet implemented)
         bool allononeproc = true;
-        for (int k=0; k<(int)(nodeids->size());++k)
+        for (int k = 0; k < (int)(nodeids->size()); ++k)
         {
           int checkgid = (*nodeids)[k];
-          if (!dis.NodeRowMap()->MyGID(checkgid))
-            allononeproc = false;
+          if (!dis.NodeRowMap()->MyGID(checkgid)) allononeproc = false;
         }
         if (!allononeproc)
-          dserror("ERRROR: Nodes in point coupling condition must all be on same processsor (for now)");
+          dserror(
+              "ERRROR: Nodes in point coupling condition must all be on same processsor (for now)");
 
         // do nothing for first (master) node in coupling condition
         // do something for second, third, ... (slave) node
-        if ((*nodeids)[0]!=gid)
+        if ((*nodeids)[0] != gid)
         {
           // critical case
           specialtreatment = true;
 
           // check total number of dofs and determine which dofs are to be coupled
           if (couplingconditions[relevantcondid]->GetInt("numdof") != numdfrownodes[i])
-            dserror("ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)", couplingconditions[relevantcondid]->GetInt("numdof"), numdfrownodes[i]);
-          const std::vector<int>* onoffcond = couplingconditions[relevantcondid]->Get<std::vector<int> >("onoff");
+            dserror("ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)",
+                couplingconditions[relevantcondid]->GetInt("numdof"), numdfrownodes[i]);
+          const std::vector<int>* onoffcond =
+              couplingconditions[relevantcondid]->Get<std::vector<int>>("onoff");
 
           // get master node of this condition
           int mgid = (*nodeids)[0];
-          std::vector<int> & mdofs = nodedofset[mgid];
-          if ((int)(mdofs.size())==0) dserror ("ERROR: Master node has not yet been initialized with DoFs");
+          std::vector<int>& mdofs = nodedofset[mgid];
+          if ((int)(mdofs.size()) == 0)
+            dserror("ERROR: Master node has not yet been initialized with DoFs");
 
           // special treatment
           int numdf = numdfrownodes[i];
-          int dof = count + ( gid-minnodegid )*maxnodenumdf;
+          int dof = count + (gid - minnodegid) * maxnodenumdf;
           idxrownodes[i] = dof;
-          std::vector<int> & dofs = nodedofset[gid];
-          std::vector<int> & duplicatedofs = nodeduplicatedofset[gid];
-          dofs.reserve( numdf );
-          duplicatedofs.reserve( numdf );
-          for ( int j=0; j<numdf; ++j )
+          std::vector<int>& dofs = nodedofset[gid];
+          std::vector<int>& duplicatedofs = nodeduplicatedofset[gid];
+          dofs.reserve(numdf);
+          duplicatedofs.reserve(numdf);
+          for (int j = 0; j < numdf; ++j)
           {
             // push back master node DoF ID if coupled
-            if ((*onoffcond)[j]==1)
+            if ((*onoffcond)[j] == 1)
             {
-              dofs.push_back( mdofs[j] );
-              duplicatedofs.push_back( 1 );
+              dofs.push_back(mdofs[j]);
+              duplicatedofs.push_back(1);
             }
             // push back new DoF ID if not coupled
             else
             {
-              dofs.push_back( dof+j );
-              duplicatedofs.push_back( 0 );
+              dofs.push_back(dof + j);
+              duplicatedofs.push_back(0);
             }
           }
         }
@@ -554,16 +549,16 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       if (!specialtreatment)
       {
         int numdf = numdfrownodes[i];
-        int dof = count + ( gid-minnodegid )*maxnodenumdf;
+        int dof = count + (gid - minnodegid) * maxnodenumdf;
         idxrownodes[i] = dof;
-        std::vector<int> & dofs = nodedofset[gid];
-        std::vector<int> & duplicatedofs = nodeduplicatedofset[gid];
-        dofs.reserve( numdf );
-        duplicatedofs.reserve( numdf );
-        for ( int j=0; j<numdf; ++j )
+        std::vector<int>& dofs = nodedofset[gid];
+        std::vector<int>& duplicatedofs = nodeduplicatedofset[gid];
+        dofs.reserve(numdf);
+        duplicatedofs.reserve(numdf);
+        for (int j = 0; j < numdf; ++j)
         {
-          dofs.push_back( dof+j );
-          duplicatedofs.push_back( 0 );
+          dofs.push_back(dof + j);
+          duplicatedofs.push_back(0);
         }
       }
       // **********************************************************************
@@ -572,13 +567,13 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       // **********************************************************************
     }
 
-    Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
-    int err = numdfcolnodes_->Import( numdfrownodes, nodeimporter, Insert );
-    if (err) dserror( "Import using importer returned err=%d", err );
-    err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
-    if (err) dserror( "Import using importer returned err=%d", err );
+    Epetra_Import nodeimporter(numdfcolnodes_->Map(), numdfrownodes.Map());
+    int err = numdfcolnodes_->Import(numdfrownodes, nodeimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
+    err = idxcolnodes_->Import(idxrownodes, nodeimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
 
-    count = maxnodenumdf>0 ? idxrownodes.MaxValue() + maxnodenumdf : 0;
+    count = maxnodenumdf > 0 ? idxrownodes.MaxValue() + maxnodenumdf : 0;
 
     //////////////////////////////////////////////////////////////////
 
@@ -590,53 +585,52 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       int numcolelements = dis.NumMyColElements();
 
       const int mypid = dis.Comm().MyPID();
-      for (int i=0; i<numcolelements; ++i)
+      for (int i = 0; i < numcolelements; ++i)
       {
         Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
         // If no faces are found, continue...
-        if (faces == NULL)
-          continue;
-        for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
-          if (faces[face]->Owner() == mypid) {
+        if (faces == NULL) continue;
+        for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
+          if (faces[face]->Owner() == mypid)
+          {
             const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
-            numdfrowfaces[mylid] = NumDofPerFace(*(dis.lColElement(i)),face);
+            numdfrowfaces[mylid] = NumDofPerFace(*(dis.lColElement(i)), face);
           }
       }
 
       int minfacegid = facedis->FaceRowMap()->MinAllGID();
       int maxfacenumdf = numdfrowfaces.MaxValue();
 
-      for (int i=0; i<numcolelements; ++i)
+      for (int i = 0; i < numcolelements; ++i)
       {
         Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
-        if (faces == NULL)
-          continue;
-        for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
+        if (faces == NULL) continue;
+        for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid)
           {
             const int gid = faces[face]->Id();
             const int mylid = facedis->FaceRowMap()->LID(gid);
             int numdf = numdfrowfaces[mylid];
-            int dof = count + ( gid-minfacegid )*maxfacenumdf;
+            int dof = count + (gid - minfacegid) * maxfacenumdf;
             idxrowfaces[mylid] = dof;
-            std::vector<int> & dofs = facedofset[gid];
+            std::vector<int>& dofs = facedofset[gid];
             // do not visit the same face more than once
             if (dofs.empty())
             {
-              dofs.reserve( numdf );
-              for ( int j=0; j<numdf; ++j )
+              dofs.reserve(numdf);
+              for (int j = 0; j < numdf; ++j)
               {
-                dofs.push_back( dof+j );
+                dofs.push_back(dof + j);
               }
             }
           }
       }
 
-      Epetra_Import faceimporter( numdfcolfaces_->Map(), numdfrowfaces.Map() );
-      err = numdfcolfaces_->Import( numdfrowfaces, faceimporter, Insert );
-      if (err) dserror( "Import using importer returned err=%d", err );
-      err = idxcolfaces_->Import( idxrowfaces, faceimporter, Insert );
-      if (err) dserror( "Import using importer returned err=%d", err );
+      Epetra_Import faceimporter(numdfcolfaces_->Map(), numdfrowfaces.Map());
+      err = numdfcolfaces_->Import(numdfrowfaces, faceimporter, Insert);
+      if (err) dserror("Import using importer returned err=%d", err);
+      err = idxcolfaces_->Import(idxrowfaces, faceimporter, Insert);
+      if (err) dserror("Import using importer returned err=%d", err);
 
       count = idxrowfaces.MaxValue() + maxfacenumdf;
     }
@@ -648,10 +642,10 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     Epetra_IntVector idxrowelements(*dis.ElementRowMap());
 
     int numrowelements = dis.NumMyRowElements();
-    for (int i=0; i<numrowelements; ++i)
+    for (int i = 0; i < numrowelements; ++i)
     {
       DRT::Element* actele = dis.lRowElement(i);
-      //const int gid = actele->Id();
+      // const int gid = actele->Id();
       int numdf = NumDofPerElement(*actele);
       numdfrowelements[i] = numdf;
     }
@@ -659,28 +653,28 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     int minelementgid = dis.ElementRowMap()->MinAllGID();
     maxelementnumdf = numdfrowelements.MaxValue();
 
-    for (int i=0; i<numrowelements; ++i)
+    for (int i = 0; i < numrowelements; ++i)
     {
       DRT::Element* actelement = dis.lRowElement(i);
       const int gid = actelement->Id();
       int numdf = numdfrowelements[i];
-      int dof = count + ( gid-minelementgid )*maxelementnumdf;
+      int dof = count + (gid - minelementgid) * maxelementnumdf;
       idxrowelements[i] = dof;
-      std::vector<int> & dofs = elementdofset[gid];
-      dofs.reserve( numdf );
-      for ( int j=0; j<numdf; ++j )
+      std::vector<int>& dofs = elementdofset[gid];
+      dofs.reserve(numdf);
+      for (int j = 0; j < numdf; ++j)
       {
-        dofs.push_back( dof+j );
+        dofs.push_back(dof + j);
       }
     }
 
-    Epetra_Import elementimporter( numdfcolelements_->Map(), numdfrowelements.Map() );
-    err = numdfcolelements_->Import( numdfrowelements, elementimporter, Insert );
-    if (err) dserror( "Import using importer returned err=%d", err );
-    err = idxcolelements_->Import( idxrowelements, elementimporter, Insert );
-    if (err) dserror( "Import using importer returned err=%d", err );
+    Epetra_Import elementimporter(numdfcolelements_->Map(), numdfrowelements.Map());
+    err = numdfcolelements_->Import(numdfrowelements, elementimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
+    err = idxcolelements_->Import(idxrowelements, elementimporter, Insert);
+    if (err) dserror("Import using importer returned err=%d", err);
 
-  } // end of else
+  }  // end of else
   /////////////////////////////////////////////////////////////////
 
   // Now finally we have everything in place to build the maps.
@@ -689,88 +683,78 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   std::vector<int> localrowdofs;
   std::vector<int> localcoldofs;
-  localrowdofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
-  localcoldofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
+  localrowdofs.reserve(numrownodes * maxnodenumdf + numrowelements * maxelementnumdf);
+  localcoldofs.reserve(numrownodes * maxnodenumdf + numrowelements * maxelementnumdf);
 
   std::vector<int> allnodelocalcoldofs;
-  allnodelocalcoldofs.reserve( numrownodes*maxnodenumdf );
+  allnodelocalcoldofs.reserve(numrownodes * maxnodenumdf);
 
-  for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
-        i!=nodedofset.end();
-        ++i )
+  for (std::map<int, std::vector<int>>::iterator i = nodedofset.begin(); i != nodedofset.end(); ++i)
   {
-    std::vector<int> & dofs = i->second;
-    std::vector<int> & duplicatedofs = nodeduplicatedofset[i->first];
+    std::vector<int>& dofs = i->second;
+    std::vector<int>& duplicatedofs = nodeduplicatedofset[i->first];
     std::vector<int> cleandofs;
-    for (unsigned j=0; j<dofs.size(); ++j)
+    for (unsigned j = 0; j < dofs.size(); ++j)
     {
-      if (duplicatedofs[j]==0) cleandofs.push_back(dofs[j]);
+      if (duplicatedofs[j] == 0) cleandofs.push_back(dofs[j]);
     }
-    std::copy( cleandofs.begin(), cleandofs.end(), std::back_inserter( localrowdofs ) );
-    //printf("Proc %d nodal gid %d ndofs %d\n",proc,i->first,(int)dofs.size());
-    //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
-    //printf("\n");
+    std::copy(cleandofs.begin(), cleandofs.end(), std::back_inserter(localrowdofs));
+    // printf("Proc %d nodal gid %d ndofs %d\n",proc,i->first,(int)dofs.size());
+    // for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
+    // printf("\n");
   }
-  for ( std::map<int,std::vector<int> >::iterator i=facedofset.begin();
-        i!=facedofset.end();
-        ++i )
+  for (std::map<int, std::vector<int>>::iterator i = facedofset.begin(); i != facedofset.end(); ++i)
   {
-    std::vector<int> & dofs = i->second;
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
-    //printf("Proc %d ele gid %d ndofs %d\n",dis.Comm().MyPID(),i->first,(int)dofs.size());
-    //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
-    //printf("\n");
+    std::vector<int>& dofs = i->second;
+    std::copy(dofs.begin(), dofs.end(), std::back_inserter(localrowdofs));
+    // printf("Proc %d ele gid %d ndofs %d\n",dis.Comm().MyPID(),i->first,(int)dofs.size());
+    // for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
+    // printf("\n");
   }
-  for ( std::map<int,std::vector<int> >::iterator i=elementdofset.begin();
-        i!=elementdofset.end();
-        ++i )
+  for (std::map<int, std::vector<int>>::iterator i = elementdofset.begin();
+       i != elementdofset.end(); ++i)
   {
-    std::vector<int> & dofs = i->second;
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
-    //printf("Proc %d ele gid %d ndofs %d\n",dis.Comm().MyPID(),i->first,(int)dofs.size());
-    //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
-    //printf("\n");
+    std::vector<int>& dofs = i->second;
+    std::copy(dofs.begin(), dofs.end(), std::back_inserter(localrowdofs));
+    // printf("Proc %d ele gid %d ndofs %d\n",dis.Comm().MyPID(),i->first,(int)dofs.size());
+    // for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
+    // printf("\n");
   }
 
-  Exporter nodeexporter( *dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm() );
-  nodeexporter.Export( nodedofset );
+  Exporter nodeexporter(*dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm());
+  nodeexporter.Export(nodedofset);
 
-  Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
-  elementexporter.Export( elementdofset );
+  Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
+  elementexporter.Export(elementdofset);
 
   if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
   {
-    Exporter faceexporter( *facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm() );
-    faceexporter.Export( facedofset );
+    Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
+    faceexporter.Export(facedofset);
   }
 
-  for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
-        i!=nodedofset.end();
-        ++i )
+  for (std::map<int, std::vector<int>>::iterator i = nodedofset.begin(); i != nodedofset.end(); ++i)
   {
-    std::vector<int> & dofs = i->second;
+    std::vector<int>& dofs = i->second;
     std::vector<int> cleandofs;
-    for (unsigned j=0; j<dofs.size(); ++j)
+    for (unsigned j = 0; j < dofs.size(); ++j)
     {
-      if ( std::find( localcoldofs.begin(), localcoldofs.end(), dofs[j] ) == localcoldofs.end() )
+      if (std::find(localcoldofs.begin(), localcoldofs.end(), dofs[j]) == localcoldofs.end())
         cleandofs.push_back(dofs[j]);
     }
-    std::copy( cleandofs.begin(), cleandofs.end(), std::back_inserter( localcoldofs ) );
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( allnodelocalcoldofs ) );
+    std::copy(cleandofs.begin(), cleandofs.end(), std::back_inserter(localcoldofs));
+    std::copy(dofs.begin(), dofs.end(), std::back_inserter(allnodelocalcoldofs));
   }
-  for ( std::map<int,std::vector<int> >::iterator i=facedofset.begin();
-        i!=facedofset.end();
-        ++i )
+  for (std::map<int, std::vector<int>>::iterator i = facedofset.begin(); i != facedofset.end(); ++i)
   {
-    std::vector<int> & dofs = i->second;
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
+    std::vector<int>& dofs = i->second;
+    std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));
   }
-  for ( std::map<int,std::vector<int> >::iterator i=elementdofset.begin();
-        i!=elementdofset.end();
-        ++i )
+  for (std::map<int, std::vector<int>>::iterator i = elementdofset.begin();
+       i != elementdofset.end(); ++i)
   {
-    std::vector<int> & dofs = i->second;
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
+    std::vector<int>& dofs = i->second;
+    std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));
   }
 
   // in case of bandwidth optimization we have to sort localrowdofs and
@@ -780,33 +764,36 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 #ifdef BW_OPT
   if (bw)
   {
-    std::sort(localrowdofs.begin(),localrowdofs.end());
-    std::sort(localcoldofs.begin(),localcoldofs.end());
+    std::sort(localrowdofs.begin(), localrowdofs.end());
+    std::sort(localcoldofs.begin(), localcoldofs.end());
   }
 #endif
 
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
+  dofrowmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), &localrowdofs[0], 0, dis.Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
-  dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1,localcoldofs.size(),&localcoldofs[0],0,dis.Comm()));
+  dofcolmap_ =
+      Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), &localcoldofs[0], 0, dis.Comm()));
 
   // **********************************************************************
   // **********************************************************************
   // build map of all (non-unique) column DoFs
-  dofscolnodes_ = Teuchos::rcp(new Epetra_Map(-1,allnodelocalcoldofs.size(),&allnodelocalcoldofs[0],0,dis.Comm()));
+  dofscolnodes_ = Teuchos::rcp(
+      new Epetra_Map(-1, allnodelocalcoldofs.size(), &allnodelocalcoldofs[0], 0, dis.Comm()));
 
   // build shift vector
   shiftcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
   int numcolnodes = dis.NumMyColNodes();
-  for (int i=0; i<numcolnodes; ++i)
+  for (int i = 0; i < numcolnodes; ++i)
   {
-    if (i==0)
+    if (i == 0)
     {
       (*shiftcolnodes_)[i] = 0;
     }
     else
     {
-      DRT::Node* lastnode = dis.lColNode(i-1);
-      (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i-1] + NumDofPerNode(*lastnode);
+      DRT::Node* lastnode = dis.lColNode(i - 1);
+      (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i - 1] + NumDofPerNode(*lastnode);
     }
   }
   // **********************************************************************

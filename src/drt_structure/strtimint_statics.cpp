@@ -18,70 +18,55 @@
 
 /*======================================================================*/
 /* constructor */
-STR::TimIntStatics::TimIntStatics
-(
-  const Teuchos::ParameterList& timeparams,
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& sdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<LINALG::Solver> contactsolver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-)
-: TimIntImpl
-  (
-    timeparams,
-    ioparams,
-    sdynparams,
-    xparams,
-    actdis,
-    solver,
-    contactsolver,
-    output
-  ),
-  fint_(Teuchos::null),
-  fintn_(Teuchos::null),
-  fext_(Teuchos::null),
-  fextn_(Teuchos::null)
+STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
+      fint_(Teuchos::null),
+      fintn_(Teuchos::null),
+      fext_(Teuchos::null),
+      fextn_(Teuchos::null)
 {
   // Keep this constructor empty!
-  // First do everything on the more basic objects like the discretizations, like e.g. redistribution of elements.
-  // Only then call the setup to this class. This will call the setup to all classes in the inheritance hierarchy.
-  // This way, this class may also override a method that is called during Setup() in a base class.
+  // First do everything on the more basic objects like the discretizations, like e.g.
+  // redistribution of elements. Only then call the setup to this class. This will call the setup to
+  // all classes in the inheritance hierarchy. This way, this class may also override a method that
+  // is called during Setup() in a base class.
   return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntStatics::Init
-(
-    const Teuchos::ParameterList& timeparams,
-    const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver
-)
+void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
+    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
 {
   // call Init() in base class
-  STR::TimIntImpl::Init(timeparams,sdynparams,xparams,actdis,solver);
+  STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
 
-  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
-  INPAR::STR::DynamicType dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
+  INPAR::STR::PreStress pstype =
+      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams, "PRESTRESS");
+  INPAR::STR::DynamicType dyntype =
+      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
 
-  if ( pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics )
+  if (pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics)
   {
     dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
   }
 
   // info to user
-  if (myrank_ == 0 && bool (printscreen_))
+  if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (pstype == INPAR::STR::prestress_mulf) IO::cout << "with static MULF prestress" << IO::endl;
-    else if (pstype == INPAR::STR::prestress_id) IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
-    else IO::cout << "with statics" << IO::endl;
+    if (pstype == INPAR::STR::prestress_mulf)
+      IO::cout << "with static MULF prestress" << IO::endl;
+    else if (pstype == INPAR::STR::prestress_id)
+      IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
+    else
+      IO::cout << "with statics" << IO::endl;
   }
 
   // have a nice day
@@ -137,7 +122,7 @@ void STR::TimIntStatics::PredictConstVelConsistAcc()
 {
   // for the first step we don't have any history to do
   // an extrapolation. Hence, we do TangDis
-  if (step_==0)
+  if (step_ == 0)
   {
     PredictTangDisConsistVelAcc();
     return;
@@ -146,10 +131,10 @@ void STR::TimIntStatics::PredictConstVelConsistAcc()
   {
     // Displacement increment over last time step
     Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
-    disp_inc->Update((*dt_)[0],*(*vel_)(0),0.);
-    LINALG::ApplyDirichlettoSystem(disp_inc,zeros_,*(dbcmaps_->CondMap()));
+    disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
+    LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
-    disn_->Update(1.,*disp_inc,1.);
+    disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
     accn_->Update(1.0, *(*acc_)(0), 0.0);
     return;
@@ -163,12 +148,12 @@ void STR::TimIntStatics::PredictConstAcc()
 {
   // for the first step we don't have any history to do
   // an extrapolation. Hence, we do TangDis
-  if (step_==0)
+  if (step_ == 0)
   {
     PredictTangDisConsistVelAcc();
     return;
   }
-  else if (step_==1)
+  else if (step_ == 1)
   {
     PredictConstVelConsistAcc();
     return;
@@ -177,11 +162,11 @@ void STR::TimIntStatics::PredictConstAcc()
   {
     // Displacement increment over last time step
     Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
-    disp_inc->Update((*dt_)[0],*(*vel_)(0),0.);
-    disp_inc->Update(.5*(*dt_)[0]*(*dt_)[0],*(*acc_)(0),1.);
-    LINALG::ApplyDirichlettoSystem(disp_inc,zeros_,*(dbcmaps_->CondMap()));
+    disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
+    disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
+    LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
-    disn_->Update(1.,*disp_inc,1.);
+    disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
     accn_->Update(1.0, *(*acc_)(0), 0.0);
     return;
@@ -196,8 +181,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
 {
   // get info about prediction step from parameter list
   bool predict = false;
-  if(params.isParameter("predict"))
-    predict = params.get<bool>("predict");
+  if (params.isParameter("predict")) predict = params.get<bool>("predict");
 
   // initialize stiffness matrix to zero
   stiff_->Zero();
@@ -220,7 +204,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);
 
   // apply forces and stiffness due to constraints
-  Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
+  Teuchos::ParameterList pcon;  // apply empty parameterlist, no scaling necessary
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // add forces and stiffness due to Cardiovascular0D bcs
@@ -230,7 +214,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
 
   // add forces and stiffness due to spring dashpot condition
   Teuchos::ParameterList psprdash;
-  ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
+  ApplyForceStiffSpringDashpot(stiff_, fintn_, disn_, veln_, predict, psprdash);
 
   // ************************** (3) INERTIAL FORCES ***************************
   // This is statics, so there are no intertial forces.
@@ -246,11 +230,11 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   fres_->Update(1.0, *fintn_, 1.0);
 
   // build pure structural residual (only LS with EAS)
-  if (fresn_str_!=Teuchos::null)
+  if (fresn_str_ != Teuchos::null)
   {
-    fresn_str_->Update(1.,*fintn_str_,0.);
-    fresn_str_->Update(-1.,*fextn_,1.);
-    LINALG::ApplyDirichlettoSystem(fresn_str_,zeros_,*(dbcmaps_->CondMap()));
+    fresn_str_->Update(1., *fintn_str_, 0.);
+    fresn_str_->Update(-1., *fextn_, 1.);
+    LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
   }
 
   // build tangent matrix : effective dynamic stiffness matrix
@@ -258,10 +242,10 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // i.e. do nothing here
 
   // apply forces and stiffness due to beam contact
-  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+  ApplyForceStiffBeamContact(stiff_, fres_, disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
+  ApplyForceStiffContactMeshtying(stiff_, fres_, disn_, predict);
 
   // close stiffness matrix
   stiff_->Complete();
@@ -285,7 +269,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidualRelax(Teuchos::ParameterList&
 /* Evaluate residual */
 void STR::TimIntStatics::EvaluateForceResidual()
 {
-
   // ************************** (1) EXTERNAL FORCES ***************************
 
   // build new external forces
@@ -317,11 +300,11 @@ void STR::TimIntStatics::EvaluateForceResidual()
   fres_->Update(1.0, *fintn_, 1.0);
 
   // build pure structural residual (only LS with EAS)
-  if (fresn_str_!=Teuchos::null)
+  if (fresn_str_ != Teuchos::null)
   {
-    fresn_str_->Update(1.,*fintn_str_,0.);
-    fresn_str_->Update(-1.,*fextn_,1.);
-    LINALG::ApplyDirichlettoSystem(fresn_str_,zeros_,*(dbcmaps_->CondMap()));
+    fresn_str_->Update(1., *fintn_str_, 0.);
+    fresn_str_->Update(-1., *fextn_, 1.);
+    LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
   }
 
   return;
@@ -383,19 +366,18 @@ void STR::TimIntStatics::UpdateIterIteratively()
 void STR::TimIntStatics::UpdateStepState()
 {
   // calculate pseudo velocity and acceleration for predictor before updates
-  if (pred_==INPAR::STR::pred_constvel || pred_==INPAR::STR::pred_constacc)
-    veln_->Update(1./(*(*dt_)(0)),*disn_,-1./(*(*dt_)(0)),*(*dis_)(0),0.);
-  if (pred_==INPAR::STR::pred_constacc)
-    accn_->Update(1./(*(*dt_)(0)),*veln_,-1./(*(*dt_)(0)),*(*vel_)(0),0.);
+  if (pred_ == INPAR::STR::pred_constvel || pred_ == INPAR::STR::pred_constacc)
+    veln_->Update(1. / (*(*dt_)(0)), *disn_, -1. / (*(*dt_)(0)), *(*dis_)(0), 0.);
+  if (pred_ == INPAR::STR::pred_constacc)
+    accn_->Update(1. / (*(*dt_)(0)), *veln_, -1. / (*(*dt_)(0)), *(*vel_)(0), 0.);
 
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
   dis_->UpdateSteps(*disn_);
 
-  //new material displacements
-  if( (dismatn_!=Teuchos::null))
-    dismat_->UpdateSteps(*dismatn_);
+  // new material displacements
+  if ((dismatn_ != Teuchos::null)) dismat_->UpdateSteps(*dismatn_);
 
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
@@ -444,59 +426,51 @@ void STR::TimIntStatics::UpdateStepElement()
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
-  //p.set("alpha f", theta_);
+  // p.set("alpha f", theta_);
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
   discret_->ClearState();
-  discret_->SetState("displacement",(*dis_)(0));
+  discret_->SetState("displacement", (*dis_)(0));
 
   // Set material displacement state for ale-wear formulation
-  if( (dismat_!=Teuchos::null))
-    discret_->SetState("material_displacement",(*dismat_)(0));
+  if ((dismat_ != Teuchos::null)) discret_->SetState("material_displacement", (*dismat_)(0));
 
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 }
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntStatics::ReadRestartForce()
-{
-  return;
-}
+void STR::TimIntStatics::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
 void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
-  output->WriteVector("fint",fint_);
+  output->WriteVector("fint", fint_);
 
-  //This restart output is needed in case of a static pre-simulation has to be restartet with dynamic time integration
-  Teuchos::RCP<Epetra_Vector> finert= LINALG::CreateVector(*DofRowMapView(), true);  //!< inertia force at \f$t_{n}\f$
+  // This restart output is needed in case of a static pre-simulation has to be restartet with
+  // dynamic time integration
+  Teuchos::RCP<Epetra_Vector> finert =
+      LINALG::CreateVector(*DofRowMapView(), true);  //!< inertia force at \f$t_{n}\f$
   finert->PutScalar(0.0);
-  output->WriteVector("finert",finert);
+  output->WriteVector("finert", finert);
   return;
 }
 
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
-void STR::TimIntStatics::ApplyDirichletBC
-(
-  const double time,
-  Teuchos::RCP<Epetra_Vector> dis,
-  Teuchos::RCP<Epetra_Vector> vel,
-  Teuchos::RCP<Epetra_Vector> acc,
-  bool recreatemap
-)
+void STR::TimIntStatics::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector> dis,
+    Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap)
 {
-  //call base ApplyDirichletBC
-  STR::TimInt::ApplyDirichletBC(time,dis,vel,acc,recreatemap);
+  // call base ApplyDirichletBC
+  STR::TimInt::ApplyDirichletBC(time, dis, vel, acc, recreatemap);
 
-  //statics: set velocities and accelerations to zero
-  if( vel!=Teuchos::null ) vel->PutScalar(0.0);
-  if( acc!=Teuchos::null ) acc->PutScalar(0.0);
+  // statics: set velocities and accelerations to zero
+  if (vel != Teuchos::null) vel->PutScalar(0.0);
+  if (acc != Teuchos::null) acc->PutScalar(0.0);
 
   return;
 }

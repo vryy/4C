@@ -25,7 +25,6 @@
 
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Static Prestress analysis
@@ -40,22 +39,18 @@ namespace STR
 
   class TimIntPrestress : public TimIntStatics
   {
-
-  public:
-
+   public:
     //! @name Construction
     //@{
     //! Constructor
-    TimIntPrestress
-    (
-      const Teuchos::ParameterList& timeparams,  //!< ioflags
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntPrestress(const Teuchos::ParameterList& timeparams,  //!< ioflags
+        const Teuchos::ParameterList& ioparams,                //!< ioflags
+        const Teuchos::ParameterList& sdynparams,              //!< input parameters
+        const Teuchos::ParameterList& xparams,                 //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,              //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,                   //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,            //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output          //!< the output
     );
 
     /*! \brief Initialize this object
@@ -79,12 +74,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 

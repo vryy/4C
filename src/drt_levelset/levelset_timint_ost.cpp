@@ -33,15 +33,13 @@
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
-  Teuchos::RCP<DRT::Discretization>      actdis,
-  Teuchos::RCP<LINALG::Solver>           solver,
-  Teuchos::RCP<Teuchos::ParameterList>   params,
-  Teuchos::RCP<Teuchos::ParameterList>   sctratimintparams,
-  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-  Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
-  LevelSetAlgorithm(actdis,solver,params,sctratimintparams,extraparams,output),
-  TimIntOneStepTheta(actdis,solver,sctratimintparams,extraparams,output)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
+      LevelSetAlgorithm(actdis, solver, params, sctratimintparams, extraparams, output),
+      TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -53,10 +51,7 @@ SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                              rasthofer 09/13 |
 *-----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntOneStepTheta::~LevelSetTimIntOneStepTheta()
-{
-  return;
-}
+SCATRA::LevelSetTimIntOneStepTheta::~LevelSetTimIntOneStepTheta() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -91,7 +86,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::Setup()
 *-----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::PrintTimeStepInfo()
 {
-  if (myrank_==0)
+  if (myrank_ == 0)
   {
     if (not switchreinit_)
       TimIntOneStepTheta::PrintTimeStepInfo();
@@ -99,7 +94,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrintTimeStepInfo()
     {
       if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
         printf("\nPSEUDOTIMESTEP: %11.4E      %s          THETA = %11.4E   PSEUDOSTEP = %4d/%4d \n",
-                  dtau_,MethodTitle().c_str(),thetareinit_,pseudostep_,pseudostepmax_);
+            dtau_, MethodTitle().c_str(), thetareinit_, pseudostep_, pseudostepmax_);
       else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
         printf("\nREINIT ELLIPTIC:\n");
     }
@@ -122,7 +117,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::CalcInitialTimeDerivative()
     // set element parameters with stabilization and artificial diffusivity deactivated
     SetReinitializationElementParameters(true);
 
-    // note: time-integration parameter list has not to be overwritten here, since we rely on incremental solve
+    // note: time-integration parameter list has not to be overwritten here, since we rely on
+    // incremental solve
     //       as already set in PrepareTimeLoopReinit()
 
     // compute time derivative of phi at pseudo-time tau=0
@@ -145,8 +141,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
   if (not switchreinit_)
     TimIntOneStepTheta::SetOldPartOfRighthandside();
   else
-  // hist_ = phin_ + dt*(1-Theta)*phidtn_
-   hist_->Update(1.0, *phin_, dtau_*(1.0-thetareinit_), *phidtn_, 0.0);
+    // hist_ = phin_ + dt*(1-Theta)*phidtn_
+    hist_->Update(1.0, *phin_, dtau_ * (1.0 - thetareinit_), *phidtn_, 0.0);
 
   return;
 }
@@ -195,22 +191,22 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
     // ComputeTimeDerivative() anymore within the current time step!!!
 
     // solution of this step becomes most recent solution of the last step
-    phin_ ->Update(1.0,*phinp_,0.0);
+    phin_->Update(1.0, *phinp_, 0.0);
 
     // time deriv. of this step becomes most recent time derivative of
     // last step
-    phidtn_->Update(1.0,*phidtnp_,0.0);
+    phidtn_->Update(1.0, *phidtnp_, 0.0);
   }
   else
   {
     // solution of this step becomes most recent solution of the last step
-    phin_ ->Update(1.0,*phinp_,0.0);
+    phin_->Update(1.0, *phinp_, 0.0);
 
     // reinitialization is done, reset flag
-    if (switchreinit_ == true)
-      switchreinit_ = false;
+    if (switchreinit_ == true) switchreinit_ = false;
 
-    // we also have reset the time-integration parameter list, since incremental solver has to be overwritten if used
+    // we also have reset the time-integration parameter list, since incremental solver has to be
+    // overwritten if used
     SetElementTimeParameter(true);
 
     // compute time derivative at time n (and n+1)
@@ -239,21 +235,21 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::UpdateReinit()
 {
-  //TODO: Fkt hier raus nehmen
+  // TODO: Fkt hier raus nehmen
   // compute time derivative at time n+1
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
-  const double fact1 = 1.0/(thetareinit_*dtau_);
-  const double fact2 = 1.0 - (1.0/thetareinit_);
-  phidtnp_->Update(fact2,*phidtn_,0.0);
-  phidtnp_->Update(fact1,*phinp_,-fact1,*phin_,1.0);
+  const double fact1 = 1.0 / (thetareinit_ * dtau_);
+  const double fact2 = 1.0 - (1.0 / thetareinit_);
+  phidtnp_->Update(fact2, *phidtn_, 0.0);
+  phidtnp_->Update(fact1, *phinp_, -fact1, *phin_, 1.0);
 
   // solution of this step becomes most recent solution of the last step
-  phin_ ->Update(1.0,*phinp_,0.0);
+  phin_->Update(1.0, *phinp_, 0.0);
 
   // time deriv. of this step becomes most recent time derivative of
   // last step
-  phidtn_->Update(1.0,*phidtnp_,0.0);
+  phidtn_->Update(1.0, *phidtnp_, 0.0);
 
   return;
 }
@@ -263,7 +259,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateReinit()
  | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
  |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph)
+void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(
+    const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
 {
   // let the base class do the basic redistribution and transfer of the base class members
   LevelSetAlgorithm::Redistribute(nodegraph);
@@ -275,7 +272,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_
   if (fsphinp_ != Teuchos::null)
   {
     old = fsphinp_;
-    fsphinp_ = LINALG::CreateVector(*newdofrowmap,true);
+    fsphinp_ = LINALG::CreateVector(*newdofrowmap, true);
     LINALG::Export(*old, *fsphinp_);
   }
 
@@ -286,16 +283,16 @@ void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*
  | setup problem after restart                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(
+    const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // do basic restart
-  TimIntOneStepTheta::ReadRestart(step,input);
+  TimIntOneStepTheta::ReadRestart(step, input);
 
   // read restart for particles
   if (particle_ != Teuchos::null)
   {
-    if(myrank_ == 0)
-      std::cout << "===== Particle restart! =====" <<std::endl;
+    if (myrank_ == 0) std::cout << "===== Particle restart! =====" << std::endl;
 
     particle_->ReadRestart(step);
   }
@@ -307,13 +304,12 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP
 /*----------------------------------------------------------------------*
  | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(
-    const double theta_inter)
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(const double theta_inter)
 {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP< Epetra_Vector> phi_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-    phi_tmp->Update((1.0-theta_inter),*phin_,theta_inter,*phinp_,0.0);
-    return phi_tmp;
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> phi_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
+  phi_tmp->Update((1.0 - theta_inter), *phin_, theta_inter, *phinp_, 0.0);
+  return phi_tmp;
 }
 
 
@@ -323,8 +319,8 @@ Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(
 Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phidtnptheta(
     const double theta_inter)
 {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP< Epetra_Vector> phidt_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-    phidt_tmp->Update((1.0-theta_inter),*phidtn_,theta_inter,*phidtnp_,0.0);
-    return phidt_tmp;
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> phidt_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
+  phidt_tmp->Update((1.0 - theta_inter), *phidtn_, theta_inter, *phidtnp_, 0.0);
+  return phidt_tmp;
 }

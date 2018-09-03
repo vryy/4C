@@ -19,451 +19,453 @@
 
 namespace WEAR
 {
+  class WearInterface : public CONTACT::CoInterface
+  {
+   public:
+    /*!
+    \brief Constructor
+
+    */
+    WearInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+        bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~WearInterface() {}
+
+    /*!
+    \brief Assemble second mortar D matrix for both-sided wear
+
+    */
+    virtual void AssembleD2(LINALG::SparseMatrix& dglobal);
+
+    /*!
+    \brief Assemble Mortar wear matrices T and E
+
+    */
+    virtual void AssembleTE(LINALG::SparseMatrix& tglobal, LINALG::SparseMatrix& eglobal);
+
+    /*!
+    \brief Assemble Mortar wear matrices T and E (maser side)
+
+    */
+    virtual void AssembleTE_Master(LINALG::SparseMatrix& tglobal, LINALG::SparseMatrix& eglobal);
+
+    /*!
+    \brief Assemble matrices LinT containing linearizations
+           w.r.t. displacements
+    */
+    virtual void AssembleLinT_D(LINALG::SparseMatrix& lintglobal);
+
+    /*!
+    \brief Assemble matrices LinT containing linearizations
+           w.r.t. displacements (for master side)
+    */
+    virtual void AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal);
+
+    /*!
+    \brief Assemble matrices LinT containing linearizations
+           w.r.t. LM
+    */
+    virtual void AssembleLinT_LM(LINALG::SparseMatrix& lintglobal);
 
-class WearInterface : public CONTACT::CoInterface
-{
+    /*!
+    \brief Assemble matrices LinT containing linearizations
+           w.r.t. LM
+    */
+    virtual void AssembleLinT_LM_Master(LINALG::SparseMatrix& lintglobal);
 
-public:
-
-  /*!
-  \brief Constructor
-
-  */
-  WearInterface(
-      const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-      const int id, const Epetra_Comm& comm, const int dim,
-      const Teuchos::ParameterList& icontact,
-      bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~WearInterface() {}
-
-  /*!
-  \brief Assemble second mortar D matrix for both-sided wear
-
-  */
-  virtual void AssembleD2(LINALG::SparseMatrix& dglobal);
-
-  /*!
-  \brief Assemble Mortar wear matrices T and E
-
-  */
-  virtual void AssembleTE(LINALG::SparseMatrix& tglobal,
-                          LINALG::SparseMatrix& eglobal);
-
-  /*!
-  \brief Assemble Mortar wear matrices T and E (maser side)
-
-  */
-  virtual void AssembleTE_Master(LINALG::SparseMatrix& tglobal,
-                          LINALG::SparseMatrix& eglobal);
-
-  /*!
-  \brief Assemble matrices LinT containing linearizations
-         w.r.t. displacements
-  */
-  virtual void AssembleLinT_D(LINALG::SparseMatrix& lintglobal);
-
-  /*!
-  \brief Assemble matrices LinT containing linearizations
-         w.r.t. displacements (for master side)
-  */
-  virtual void AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal);
-
-  /*!
-  \brief Assemble matrices LinT containing linearizations
-         w.r.t. LM
-  */
-  virtual void AssembleLinT_LM(LINALG::SparseMatrix& lintglobal);
+    /*!
+    \brief Assemble matrices LinE containing linearizations
+           w.r.t. displacements
+    */
+    virtual void AssembleLinE_D(LINALG::SparseMatrix& lineglobal);
 
-  /*!
-  \brief Assemble matrices LinT containing linearizations
-         w.r.t. LM
-  */
-  virtual void AssembleLinT_LM_Master(LINALG::SparseMatrix& lintglobal);
+    /*!
+    \brief Assemble matrices LinE containing linearizations
+           w.r.t. displacements (for master side)
+    */
+    virtual void AssembleLinE_D_Master(LINALG::SparseMatrix& lineglobal);
 
-  /*!
-  \brief Assemble matrices LinE containing linearizations
-         w.r.t. displacements
-  */
-  virtual void AssembleLinE_D(LINALG::SparseMatrix& lineglobal);
+    /*!
+    \brief Assemble matrix S containing linearizations
 
-  /*!
-  \brief Assemble matrices LinE containing linearizations
-         w.r.t. displacements (for master side)
-  */
-  virtual void AssembleLinE_D_Master(LINALG::SparseMatrix& lineglobal);
+    This method builds an algebraic form of the FULL linearization
+    of the normal contact condition g~ = 0. Concretely, this
+    includes assembling the linearizations of the slave side
+    nodal normals and of the Mortar matrices D  and M.
 
-  /*!
-  \brief Assemble matrix S containing linearizations
+    */
+    virtual void AssembleS(LINALG::SparseMatrix& sglobal);
 
-  This method builds an algebraic form of the FULL linearization
-  of the normal contact condition g~ = 0. Concretely, this
-  includes assembling the linearizations of the slave side
-  nodal normals and of the Mortar matrices D  and M.
+    /*!
+    \brief Assemble matrix S containing linearizations w
 
-  */
-  virtual void AssembleS(LINALG::SparseMatrix& sglobal);
+    */
+    virtual void AssembleLinG_W(LINALG::SparseMatrix& sglobal);
 
-  /*!
-  \brief Assemble matrix S containing linearizations w
+    /*!
+    \brief Assemble matrix LinStick containing linearizations
 
-  */
-  virtual void AssembleLinG_W(LINALG::SparseMatrix& sglobal);
+    This method builds an algebraic form of the FULL linearization
+    of the tangential stick condition delta tg = 0. Concretely, this
+    includes assembling the linearizations of the slave side
+    nodal tangents and of the Mortar matrices D  and M.
 
-  /*!
-  \brief Assemble matrix LinStick containing linearizations
+    */
+    virtual void AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
+        LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
+    /*!
+    \brief Assemble matrix LinSlip containing linearizations
 
-  This method builds an algebraic form of the FULL linearization
-  of the tangential stick condition delta tg = 0. Concretely, this
-  includes assembling the linearizations of the slave side
-  nodal tangents and of the Mortar matrices D  and M.
+    This method builds an algebraic form of the FULL linearization
+    of the tangential slip condition. Concretely, this
+    includes assembling the linearizations of the slave side
+    nodal tangents and of the Mortar matrices D  and M.
 
-  */
-  virtual void AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
-                                LINALG::SparseMatrix& linstickDISglobal,
-                                Epetra_Vector& linstickRHSglobal);
-  /*!
-  \brief Assemble matrix LinSlip containing linearizations
+    */
+    virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
+        LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
 
-  This method builds an algebraic form of the FULL linearization
-  of the tangential slip condition. Concretely, this
-  includes assembling the linearizations of the slave side
-  nodal tangents and of the Mortar matrices D  and M.
+    /*!
+    \brief Assemble matrix LinSlip containing w linearizations
 
-  */
-  virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
-                               LINALG::SparseMatrix& linslipDISglobal,
-                               Epetra_Vector& linslipRHSglobal);
+    */
+    virtual void AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal);
 
-  /*!
-  \brief Assemble matrix LinSlip containing w linearizations
+    /*!
+    \brief Assemble matrices W containing linearizations
 
-  */
-  virtual void AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal);
+    This method builds an algebraic form of the FULL linearization
+    of the normal contact and slip contact condition for ~w.
+    --> w.r.t. lagr. mult.
 
-  /*!
-  \brief Assemble matrices W containing linearizations
+    */
+    virtual void AssembleLinWLm(LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinWLmSl(LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinWLmSt(LINALG::SparseMatrix& sglobal);
 
-  This method builds an algebraic form of the FULL linearization
-  of the normal contact and slip contact condition for ~w.
-  --> w.r.t. lagr. mult.
+    /*!
+    \brief Assemble wear w
 
-  */
-  virtual void AssembleLinWLm(LINALG::SparseMatrix& sglobal);
-  virtual void AssembleLinWLmSl(LINALG::SparseMatrix& sglobal);
-  virtual void AssembleLinWLmSt(LINALG::SparseMatrix& sglobal);
+     This method assembles the weighted wear vector.
+     */
+    virtual void AssembleWear(Epetra_Vector& wglobal);
 
-  /*!
-  \brief Assemble wear w
+    /*!
+    \brief Build active set (nodes / dofs) of this interface
 
-   This method assembles the weighted wear vector.
-   */
-   virtual void AssembleWear(Epetra_Vector& wglobal);
+    If the flag init==true, the active set is initialized (for t=0)
+    according to the contact initialization defined in the input file.
 
-   /*!
-   \brief Build active set (nodes / dofs) of this interface
+    */
+    virtual bool BuildActiveSet(bool init = false);
 
-   If the flag init==true, the active set is initialized (for t=0)
-   according to the contact initialization defined in the input file.
+    /*!
+    \brief Build corresponding active set for master side
 
-   */
-   virtual bool BuildActiveSet(bool init=false);
+    */
+    virtual bool BuildActiveSetMaster();
 
-   /*!
-   \brief Build corresponding active set for master side
+    /*!
+    \brief Check mortar wear T derivatives with finite differences
 
-   */
-   virtual bool BuildActiveSetMaster();
+    */
+    void FDCheckMortarTDeriv();
 
-   /*!
-   \brief Check mortar wear T derivatives with finite differences
+    /*!
+    \brief Check mortar wear T derivatives with finite differences (Master)
 
-   */
-   void FDCheckMortarTDeriv();
+    */
+    void FDCheckMortarT_Master_Deriv();
 
-   /*!
-   \brief Check mortar wear T derivatives with finite differences (Master)
+    /*!
+    \brief Check mortar wear E derivatives with finite differences
 
-   */
-   void FDCheckMortarT_Master_Deriv();
+    */
+    void FDCheckMortarEDeriv();
 
-   /*!
-   \brief Check mortar wear E derivatives with finite differences
+    /*!
+    \brief Check mortar wear E derivatives with finite differences (for master)
 
-   */
-   void FDCheckMortarEDeriv();
+    */
+    void FDCheckMortarE_Master_Deriv();
 
-   /*!
-   \brief Check mortar wear E derivatives with finite differences (for master)
+    /*!
+    \brief Check mortar wear T derivatives with finite differences
+      --> for wear condition
 
-   */
-   void FDCheckMortarE_Master_Deriv();
+    */
+    void FDCheckDerivT_D(LINALG::SparseMatrix& lintdis);
 
-   /*!
-   \brief Check mortar wear T derivatives with finite differences
-     --> for wear condition
+    /*!
+    \brief Check mortar wear T derivatives with finite differences
+      --> for wear condition (Master)
 
-   */
-   void FDCheckDerivT_D(LINALG::SparseMatrix& lintdis);
+    */
+    void FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis);
 
-   /*!
-   \brief Check mortar wear T derivatives with finite differences
-     --> for wear condition (Master)
+    /*!
+    \brief Check mortar wear E derivatives with finite differences
+      --> for wear condition
 
-   */
-   void FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis);
+    */
+    void FDCheckDerivE_D(LINALG::SparseMatrix& linedis);
 
-   /*!
-   \brief Check mortar wear E derivatives with finite differences
-     --> for wear condition
+    /*!
+    \brief Check mortar wear E derivatives with finite differences
+      --> for wear condition (Master)
 
-   */
-   void FDCheckDerivE_D(LINALG::SparseMatrix& linedis);
+    */
+    void FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis);
+    /*!
+    \brief Check weighted gap g derivatives with finite differences
 
-   /*!
-   \brief Check mortar wear E derivatives with finite differences
-     --> for wear condition (Master)
+    */
+    void FDCheckGapDeriv();
 
-   */
-   void FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis);
-   /*!
-   \brief Check weighted gap g derivatives with finite differences
+    /*!
+    \brief Check weighted gap g derivatives with finite differences
 
-   */
-   void FDCheckGapDeriv();
+    */
+    void FDCheckGapDeriv_W();
 
-   /*!
-   \brief Check weighted gap g derivatives with finite differences
+    /*!
+    \brief Check weighted wear ~w derivatives with finite differences
+           derivation w.r.t. displ.
 
-   */
-   void FDCheckGapDeriv_W();
+    */
+    void FDCheckWearDeriv();
 
-   /*!
-   \brief Check weighted wear ~w derivatives with finite differences
-          derivation w.r.t. displ.
+    /*!
+    \brief Check weighted wear ~w derivatives with finite differences
+           derivation w.r.t. lagr.-mult.
 
-   */
-   void FDCheckWearDeriv();
+    */
+    void FDCheckWearDerivLm();
 
-   /*!
-   \brief Check weighted wear ~w derivatives with finite differences
-          derivation w.r.t. lagr.-mult.
+    /*!
+    \brief Check slip condition derivatives with finite differences
 
-   */
-   void FDCheckWearDerivLm();
+    */
+    virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
+        LINALG::SparseMatrix& linslipDISglobal, LINALG::SparseMatrix& linslipWglobal);
 
-   /*!
-   \brief Check slip condition derivatives with finite differences
+    /*!
+    \brief Assemble inactive rhs (incremental delta_w_)
+    */
+    virtual void AssembleInactiveWearRhs(Epetra_Vector& inactiverhs);
 
-   */
-   virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
-                                 LINALG::SparseMatrix& linslipDISglobal,
-                                 LINALG::SparseMatrix& linslipWglobal);
+    /*!
+    \brief Assemble inactive rhs (incremental delta_w_)
+    */
+    virtual void AssembleInactiveWearRhs_Master(Epetra_FEVector& inactiverhs);
 
-   /*!
-   \brief Assemble inactive rhs (incremental delta_w_)
-   */
-   virtual void AssembleInactiveWearRhs(Epetra_Vector& inactiverhs);
+    /*!
+    \brief Assemble wear-cond. rhs
+    */
+    virtual void AssembleWearCondRhs(Epetra_Vector& rhs);
 
-   /*!
-   \brief Assemble inactive rhs (incremental delta_w_)
-   */
-   virtual void AssembleInactiveWearRhs_Master(Epetra_FEVector& inactiverhs);
+    /*!
+    \brief Assemble wear-cond. rhs
+    */
+    virtual void AssembleWearCondRhs_Master(Epetra_FEVector& rhs);
 
-   /*!
-   \brief Assemble wear-cond. rhs
-   */
-   virtual void AssembleWearCondRhs(Epetra_Vector& rhs);
+    /*!
+    \brief Initialize / reset interface for contact
 
-   /*!
-   \brief Assemble wear-cond. rhs
-   */
-   virtual void AssembleWearCondRhs_Master(Epetra_FEVector& rhs);
+    Derived version!
 
-   /*!
-   \brief Initialize / reset interface for contact
+    */
+    virtual void Initialize();
 
-   Derived version!
 
-   */
-   virtual void Initialize();
+    /*!
+    \brief Returning dofs for both-sided wear mapping
 
+    */
+    virtual const Teuchos::RCP<Epetra_Map> InvolvedDofs() const { return involveddofs_; }
 
-   /*!
-   \brief Returning dofs for both-sided wear mapping
+    virtual const Teuchos::RCP<Epetra_Map> InvolvedNodes() const { return involvednodes_; }
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> InvolvedDofs() const
-   {
-     return involveddofs_;
-   }
+    /*!
+    \brief Set element areas
 
-   virtual const Teuchos::RCP<Epetra_Map> InvolvedNodes() const
-   {
-     return involvednodes_;
-   }
+    Derived version!
 
-   /*!
-   \brief Set element areas
+    */
+    void SplitSlaveDofs();
+    void SplitMasterDofs();
+    /*!
+    \brief Set element areas
 
-   Derived version!
+    Derived version!
 
-   */
-   void SplitSlaveDofs();
-   void SplitMasterDofs();
-   /*!
-   \brief Set element areas
+    */
+    void SetElementAreas();
 
-   Derived version!
+    /*!
+    \brief Evaluate nodal normals
 
-   */
-   void SetElementAreas();
+    */
+    virtual void EvaluateNodalNormals() const;
 
-   /*!
-   \brief Evaluate nodal normals
 
-   */
-   virtual void EvaluateNodalNormals() const;
+    /*!
+    \brief Evaluate nodal normals
 
+    */
+    virtual void ExportNodalNormals() const;
 
-   /*!
-   \brief Evaluate nodal normals
+    /*!
+    \brief Update interface Wear variable sets
 
-   */
-   virtual void ExportNodalNormals() const;
+    This update is usually only done ONCE in the initialization phase
+    and sets up the wear unknowns (only dofs) for the whole
+    simulation.
 
-   /*!
-   \brief Update interface Wear variable sets
+    */
+    virtual void UpdateWSets(int offset_if, int maxdofwear, bool bothdiscr);
 
-   This update is usually only done ONCE in the initialization phase
-   and sets up the wear unknowns (only dofs) for the whole
-   simulation.
+    /*!
+    \brief Get map of slave wear dofs (Filled()==true is prerequisite)
 
-   */
-   virtual void UpdateWSets(int offset_if, int maxdofwear, bool bothdiscr);
+    */
+    virtual const Teuchos::RCP<Epetra_Map> WDofs() const
+    {
+      if (Filled())
+        return wdofmap_;
+      else
+        dserror("CONTACT::WearInterface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get map of slave wear dofs (Filled()==true is prerequisite)
+    /*!
+    \brief Get map of master wear dofs (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> WDofs() const
-   {
-     if (Filled()) return wdofmap_;
-     else dserror("CONTACT::WearInterface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    */
+    virtual const Teuchos::RCP<Epetra_Map> WMDofs() const
+    {
+      if (Filled())
+        return wmdofmap_;
+      else
+        dserror("CONTACT::WearInterface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get map of master wear dofs (Filled()==true is prerequisite)
+    /*!
+    \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> WMDofs() const
-   {
-     if (Filled()) return wmdofmap_;
-     else dserror("CONTACT::WearInterface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    */
+    virtual const Teuchos::RCP<Epetra_Map> SNDofs() const
+    {
+      if (Filled())
+        return sndofmap_;
+      else
+        dserror("CONTACT::WearInterface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
+    /*!
+    \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> SNDofs() const
-   {
-     if (Filled()) return sndofmap_;
-     else dserror("CONTACT::WearInterface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    */
+    virtual const Teuchos::RCP<Epetra_Map> MNDofs() const
+    {
+      if (Filled())
+        return mndofmap_;
+      else
+        dserror("CONTACT::WearInterface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
+    /*!
+    \brief Get row map of active nodes (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> MNDofs() const
-   {
-     if (Filled()) return mndofmap_;
-     else dserror("CONTACT::WearInterface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    */
+    virtual const Teuchos::RCP<Epetra_Map> ActiveMasterNodes() const
+    {
+      if (Filled())
+        return activmasternodes_;
+      else
+        dserror("CONTACT::Interface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get row map of active nodes (Filled()==true is prerequisite)
+    /*!
+    \brief Get row map of active nodes (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> ActiveMasterNodes() const
-   {
-     if (Filled()) return activmasternodes_;
-     else dserror("CONTACT::Interface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    */
+    virtual const Teuchos::RCP<Epetra_Map> SlipMasterNodes() const
+    {
+      if (Filled())
+        return slipmasternodes_;
+      else
+        dserror("CONTACT::Interface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get row map of active nodes (Filled()==true is prerequisite)
+    /*!
+    \brief Get row map of active nodes (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> SlipMasterNodes() const
-   {
-     if (Filled()) return slipmasternodes_;
-     else dserror("CONTACT::Interface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    */
+    virtual const Teuchos::RCP<Epetra_Map> SlipMasterNDofs() const
+    {
+      if (Filled())
+        return slipmn_;
+      else
+        dserror("CONTACT::Interface::FillComplete was not called");
+      exit(EXIT_FAILURE);  // calm down the compiler
+    }
 
-   /*!
-   \brief Get row map of active nodes (Filled()==true is prerequisite)
 
-   */
-   virtual const Teuchos::RCP<Epetra_Map> SlipMasterNDofs() const
-   {
-     if (Filled()) return slipmn_;
-     else dserror("CONTACT::Interface::FillComplete was not called");
-     exit(EXIT_FAILURE); // calm down the compiler
-   }
+    /*!
+    \brief Get type of wear shapefnct
 
+    */
+    INPAR::WEAR::WearShape WearShapeFcn()
+    {
+      return DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_, "WEAR_SHAPEFCN");
+    }
 
-   /*!
-   \brief Get type of wear shapefnct
+   private:
+    /*!
+    \brief initialize node and element data container
 
-   */
-   INPAR::WEAR::WearShape WearShapeFcn()
-       { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_,"WEAR_SHAPEFCN"); }
+    Derived verision!
 
-private:
-   /*!
-   \brief initialize node and element data container
+    */
+    virtual void InitializeDataContainer();
 
-   Derived verision!
 
-   */
-   virtual void InitializeDataContainer();
+    // both-sided wear specific stuff
+    Teuchos::RCP<Epetra_Map> involvednodes_;  // row map of all involved master nodes
+    Teuchos::RCP<Epetra_Map> involveddofs_;   // row map of all involved master dofs
 
+    Teuchos::RCP<Epetra_Map> wdofmap_;   // row map of all slave wear dofs
+    Teuchos::RCP<Epetra_Map> wmdofmap_;  // row map of all master wear dofs
 
-   // both-sided wear specific stuff
-   Teuchos::RCP<Epetra_Map>      involvednodes_;  // row map of all involved master nodes
-   Teuchos::RCP<Epetra_Map>      involveddofs_;   // row map of all involved master dofs
+    Teuchos::RCP<Epetra_Map> sndofmap_;  // row map of all slave dofs (first entries)
+    Teuchos::RCP<Epetra_Map> mndofmap_;  // row map of all master dofs (first entries)
 
-   Teuchos::RCP<Epetra_Map>      wdofmap_;       // row map of all slave wear dofs
-   Teuchos::RCP<Epetra_Map>      wmdofmap_;      // row map of all master wear dofs
+    Teuchos::RCP<Epetra_Map>
+        activmasternodes_;  // row map of all active master nodes (first entries)
+    Teuchos::RCP<Epetra_Map>
+        slipmasternodes_;              // row map of all active master nodes (first entries)
+    Teuchos::RCP<Epetra_Map> slipmn_;  // row map of all active master nodes (first entries)
 
-   Teuchos::RCP<Epetra_Map>      sndofmap_;      // row map of all slave dofs (first entries)
-   Teuchos::RCP<Epetra_Map>      mndofmap_;      // row map of all master dofs (first entries)
+    bool wear_;      // bool for wear
+    bool wearimpl_;  // bool for implicit wear
+    bool wearpv_;    // bool for wear with own discretization
+    bool wearboth_;  // bool for wear on both sides
+    bool sswear_;    // bool steady state wear
 
-   Teuchos::RCP<Epetra_Map>      activmasternodes_;      // row map of all active master nodes (first entries)
-   Teuchos::RCP<Epetra_Map>      slipmasternodes_;      // row map of all active master nodes (first entries)
-   Teuchos::RCP<Epetra_Map>      slipmn_;      // row map of all active master nodes (first entries)
+  };  // class
 
-   bool wear_;            // bool for wear
-   bool wearimpl_;        // bool for implicit wear
-   bool wearpv_;          // bool for wear with own discretization
-   bool wearboth_;        // bool for wear on both sides
-   bool sswear_;          // bool steady state wear
 
-}; //class
-
-
-}
+}  // namespace WEAR
 
 #endif /* CONTACT_WEAR_INTERFACE_H_ */

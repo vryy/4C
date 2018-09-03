@@ -18,8 +18,8 @@
 
 #include <Teuchos_RCP.hpp>
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   // forward declaration
   class BeamToSolidVolumeMeshtyingEvaluationData;
 
@@ -27,33 +27,30 @@ namespace BEAMINTERACTION {
    *  */
   class BeamContactEvaluationData
   {
-  public:
+   public:
     //! constructor
     BeamContactEvaluationData();
 
     //! destructor
-    virtual ~BeamContactEvaluationData() {};
+    virtual ~BeamContactEvaluationData(){};
 
     //! builds a new BeamToSolidVolumeMeshtyingEvaluationData object
     void BuildBeamToSolidVolumeMeshtyingEvaluationData();
 
     //! access to the evaluation data object
     inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingEvaluationData>
-        BeamToSolidVolumeMeshtyingEvaluationData() const
+    BeamToSolidVolumeMeshtyingEvaluationData() const
     {
       return beam_to_solid_volume_meshtying_evaluation_data_;
     }
 
 
-  private:
-
+   private:
     //! pointer to the evaluation data class of beam-to-solid-volume contact
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingEvaluationData>
-      beam_to_solid_volume_meshtying_evaluation_data_;
-
-
+        beam_to_solid_volume_meshtying_evaluation_data_;
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

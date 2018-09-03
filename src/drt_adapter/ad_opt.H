@@ -31,8 +31,8 @@ namespace TOPOPT
 }
 
 // Algorithm adapter classes for use in multi-field problems
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /*!
   \brief general topology optimization field interface
 
@@ -49,27 +49,25 @@ namespace ADAPTER {
   /// basic scalar transport solver
   class TopOptBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor
     explicit TopOptBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-        const std::string disname             ///< scatra discretization name (default: "opti")
-      );
+        const Teuchos::ParameterList& prbdyn,  ///< problem-dependent parameters
+        const std::string disname              ///< scatra discretization name (default: "opti")
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~TopOptBaseAlgorithm(){};
 
     /// access to the optimizer
-    Teuchos::RCP<TOPOPT::Optimizer>& Optimizer(){return optimizer_;};
+    Teuchos::RCP<TOPOPT::Optimizer>& Optimizer() { return optimizer_; };
 
-  private:
-
+   private:
     /// scalar transport field solver
     Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
 
-  }; // class TopOptBaseAlgorithm
+  };  // class TopOptBaseAlgorithm
 
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 #endif /* ADAPTER_FLUID_TOPOPT_H_ */

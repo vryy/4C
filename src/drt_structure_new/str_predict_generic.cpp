@@ -40,8 +40,7 @@ STR::PREDICT::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::Init(const enum INPAR::STR::PredEnum& type,
-    const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
-    const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+    const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataIO>& iodata_ptr,
     const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr)
@@ -96,22 +95,17 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
 
-  Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(),
-      GlobalState().GetMutableDisNp(),
-      GlobalState().GetMutableVelNp(),
-      GlobalState().GetMutableAccNp(),
-      false);
+  Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(), GlobalState().GetMutableDisNp(),
+      GlobalState().GetMutableVelNp(), GlobalState().GetMutableAccNp(), false);
 
   // Create the new solution vector
-  Teuchos::RCP<NOX::Epetra::Vector> x_vec =
-      GlobalState().CreateGlobalVector(DRT::UTILS::vec_init_current_state,
-          ImplInt().ModelEvalPtr());
+  Teuchos::RCP<NOX::Epetra::Vector> x_vec = GlobalState().CreateGlobalVector(
+      DRT::UTILS::vec_init_current_state, ImplInt().ModelEvalPtr());
   // resets all isValid flags
   grp.setX(*x_vec);
 
   NOX::NLN::Group* nlngrp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (nlngrp_ptr == NULL)
-    dserror("Group cast failed!");
+  if (nlngrp_ptr == NULL) dserror("Group cast failed!");
   // evaluate the right hand side and the jacobian
   implint_ptr_->SetIsPredictorState(true);
   nlngrp_ptr->computeFandJacobian();
@@ -130,16 +124,14 @@ const std::string STR::PREDICT::Generic::Name() const
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::CheckInit() const
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -176,8 +168,7 @@ STR::Dbc& STR::PREDICT::Generic::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::
-    GlobalStatePtr()
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& STR::PREDICT::Generic::GlobalStatePtr()
 {
   CheckInit();
   return gstate_ptr_;
@@ -236,18 +227,16 @@ Teuchos::ParameterList& STR::PREDICT::Generic::NoxParams()
 void STR::PREDICT::Generic::Print() const
 {
   CheckInitSetup();
-  if (gstate_ptr_->GetMyRank() == 0 and
-      iodata_ptr_->GetPrint2ScreenEveryNStep() and
-      gstate_ptr_->GetStepN()%iodata_ptr_->GetPrint2ScreenEveryNStep()==0)
+  if (gstate_ptr_->GetMyRank() == 0 and iodata_ptr_->GetPrint2ScreenEveryNStep() and
+      gstate_ptr_->GetStepN() % iodata_ptr_->GetPrint2ScreenEveryNStep() == 0)
   {
-    IO::cout << "=== Structural predictor: " << Name().c_str() <<
-        " ===" << IO::endl;
+    IO::cout << "=== Structural predictor: " << Name().c_str() << " ===" << IO::endl;
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::PREDICT::Generic::PreApplyForceExternal( Epetra_Vector& fextnp ) const
+bool STR::PREDICT::Generic::PreApplyForceExternal(Epetra_Vector& fextnp) const
 {
   // do nothing
   return false;

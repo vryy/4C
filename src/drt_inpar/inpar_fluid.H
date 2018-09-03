@@ -19,16 +19,21 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   namespace FLUID
   {
-    //! physical type of the fluid flow (incompressible, weakly compressible, weakly compressible stokes, Boussinesq approximation, varying density, loma
-    //! temperature-dependent water)
+    //! physical type of the fluid flow (incompressible, weakly compressible, weakly compressible
+    //! stokes, Boussinesq approximation, varying density, loma temperature-dependent water)
     enum PhysicalType
     {
       physicaltype_undefined,
@@ -201,8 +206,8 @@ namespace INPAR
       EOS_he_max_diameter_to_opp_surf,
       EOS_he_max_dist_to_opp_surf,
       EOS_he_surf_with_max_diameter,
-      EOS_hk_max_diameter,           // maximal nD diameter of the neighboring elements
-      EOS_he_surf_diameter,          // maximal (n-1)D diameter of the internal face/edge
+      EOS_hk_max_diameter,   // maximal nD diameter of the neighboring elements
+      EOS_he_surf_diameter,  // maximal (n-1)D diameter of the internal face/edge
       EOS_he_vol_eq_diameter
     };
 
@@ -293,9 +298,9 @@ namespace INPAR
     /// scheme for gridvel
     enum Gridvel
     {
-      BE,   // first order
-      BDF2, // second order
-      OST   // one-step-theta
+      BE,    // first order
+      BDF2,  // second order
+      OST    // one-step-theta
     };
 
     //! physical turbulence models
@@ -351,11 +356,11 @@ namespace INPAR
     //!  norm for convergence check of nonlinear iteration
     enum ItNorm
     {
-      fncc_L1,       // converg. check with L1 norm
-      fncc_L2,       // converg. check with L2 norm
-      fncc_L2_wo_res,/* converg. check with L2 norm, no computation
-                      *   of residual norm if itmax is reached        */
-      fncc_Linf      //converg. check with L-inf. norm
+      fncc_L1,        // converg. check with L1 norm
+      fncc_L2,        // converg. check with L2 norm
+      fncc_L2_wo_res, /* converg. check with L2 norm, no computation
+                       *   of residual norm if itmax is reached        */
+      fncc_Linf       // converg. check with L-inf. norm
     };
 
     enum XWallTauwType
@@ -364,11 +369,11 @@ namespace INPAR
       between_steps
     };
 
-    enum WSSType //! wss calculation type
+    enum WSSType  //! wss calculation type
     {
-      wss_standard, //! calculate 'normal' wss
-      wss_aggregation, //! calculate aggregated wss
-      wss_mean //! calculate mean wss
+      wss_standard,     //! calculate 'normal' wss
+      wss_aggregation,  //! calculate aggregated wss
+      wss_mean          //! calculate mean wss
     };
 
     enum XWallTauwCalcType
@@ -403,7 +408,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set fluid-specific conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace FLUID
 
@@ -411,7 +416,7 @@ namespace INPAR
   {
     /// set the low mach number parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
-  }
+  }  // namespace LOMA
 
 }  // namespace INPAR
 

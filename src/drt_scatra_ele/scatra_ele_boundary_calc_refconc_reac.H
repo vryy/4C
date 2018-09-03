@@ -2,8 +2,8 @@
 /*!
 \file scatra_ele_boundary_calc_refconc_reac.H
 
-\brief main file containing routines for calculation of scatra element formulated in reference concentrations
-  and with advanced reaction terms
+\brief main file containing routines for calculation of scatra element formulated in reference
+concentrations and with advanced reaction terms
 
 \level 3
 
@@ -22,56 +22,50 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    template <DRT::Element::DiscretizationType distype>
+    class ScaTraEleBoundaryCalcRefConcReac : public ScaTraEleBoundaryCalc<distype>
+    {
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
 
-namespace ELEMENTS
-{
+     public:
+      /// Singleton access method
+      static ScaTraEleBoundaryCalcRefConcReac<distype>* Instance(const int numdofpernode,
+          const int numscal, const std::string& disname,
+          const ScaTraEleBoundaryCalcRefConcReac* delete_me = NULL);
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraEleBoundaryCalcRefConcReac : public ScaTraEleBoundaryCalc<distype>
-{
-  typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      /// Empty destructor
+      virtual ~ScaTraEleBoundaryCalcRefConcReac(){};
 
-public:
+      /// called upon destruction
+      void Done();
 
-  /// Singleton access method
-  static ScaTraEleBoundaryCalcRefConcReac<distype> * Instance(
-      const int numdofpernode,
-      const int numscal,
-      const std::string& disname,
-      const ScaTraEleBoundaryCalcRefConcReac* delete_me = NULL );
-
-  /// Empty destructor
-  virtual ~ScaTraEleBoundaryCalcRefConcReac() {};
-
-  /// called upon destruction
-  void Done();
-
-protected:
-
-  //! Factor needed for the calculation of reference concentrations
-  virtual double FacForRefConc(
-      const int                      iquad,             ///< current boundary integration point
-      const DRT::FaceElement*        bele,              ///< current boundary element
-      Teuchos::ParameterList&        params,            ///< parameter list
-      DRT::Discretization&           discretization     ///< discretization
-  );
-
-private:
-  /// private constructor since we are singleton
-  ScaTraEleBoundaryCalcRefConcReac(const int numdofpernode, const int numscal,const std::string& disname);
-
-  template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
-  double CalcJatIntPoint(
-      const int                      iquad,             ///< current boundary integration point
-      const DRT::FaceElement*        bele,              ///< current boundary element
-      const DRT::Element*            pele,              ///< current parent element
-      Teuchos::ParameterList&        params,            ///< parameter list
-      DRT::Discretization&           discretization     ///< discretization
+     protected:
+      //! Factor needed for the calculation of reference concentrations
+      virtual double FacForRefConc(const int iquad,  ///< current boundary integration point
+          const DRT::FaceElement* bele,              ///< current boundary element
+          Teuchos::ParameterList& params,            ///< parameter list
+          DRT::Discretization& discretization        ///< discretization
       );
 
-}; // class ScaTraEleBoundaryCalcRefConcReac
+     private:
+      /// private constructor since we are singleton
+      ScaTraEleBoundaryCalcRefConcReac(
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-} //namsepace ELEMENTS
+      template <DRT::Element::DiscretizationType bdistype,
+          DRT::Element::DiscretizationType pdistype>
+      double CalcJatIntPoint(const int iquad,  ///< current boundary integration point
+          const DRT::FaceElement* bele,        ///< current boundary element
+          const DRT::Element* pele,            ///< current parent element
+          Teuchos::ParameterList& params,      ///< parameter list
+          DRT::Discretization& discretization  ///< discretization
+      );
 
-} // namespace DRT
+    };  // class ScaTraEleBoundaryCalcRefConcReac
+
+  }  // namespace ELEMENTS
+
+}  // namespace DRT
 #endif

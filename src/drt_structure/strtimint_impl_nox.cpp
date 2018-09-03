@@ -34,9 +34,9 @@ void STR::TimIntImpl::NoxSetup()
   // solving
   Teuchos::ParameterList& newtonParams = (*noxparams_).sublist("Newton");
   newtonParams = *(NoxCreateSolverParameters());
-//  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-//  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  //  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+  //  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  // Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
 
   // printing
   Teuchos::ParameterList& printParams = (*noxparams_).sublist("Printing");
@@ -61,24 +61,19 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
   printParams.set("Output Precision", 3);
   printParams.set("Output Processor", 0);
   int outputinformationlevel = NOX::Utils::Error;  // NOX::Utils::Error==0
-  if (printParams.get<bool>("Error"))
-    outputinformationlevel += NOX::Utils::Error;
-  if (printParams.get<bool>("Warning"))
-    outputinformationlevel += NOX::Utils::Warning;
+  if (printParams.get<bool>("Error")) outputinformationlevel += NOX::Utils::Error;
+  if (printParams.get<bool>("Warning")) outputinformationlevel += NOX::Utils::Warning;
   if (printParams.get<bool>("Outer Iteration"))
     outputinformationlevel += NOX::Utils::OuterIteration;
   if (printParams.get<bool>("Inner Iteration"))
     outputinformationlevel += NOX::Utils::InnerIteration;
-  if (printParams.get<bool>("Parameters"))
-    outputinformationlevel += NOX::Utils::Parameters;
-  if (printParams.get<bool>("Details"))
-    outputinformationlevel += NOX::Utils::Details;
+  if (printParams.get<bool>("Parameters")) outputinformationlevel += NOX::Utils::Parameters;
+  if (printParams.get<bool>("Details")) outputinformationlevel += NOX::Utils::Details;
   if (printParams.get<bool>("Outer Iteration StatusTest"))
     outputinformationlevel += NOX::Utils::OuterIterationStatusTest;
   if (printParams.get<bool>("Linear Solver Details"))
     outputinformationlevel += NOX::Utils::LinearSolverDetails;
-  if (printParams.get<bool>("Test Details"))
-    outputinformationlevel += NOX::Utils::TestDetails;
+  if (printParams.get<bool>("Test Details")) outputinformationlevel += NOX::Utils::TestDetails;
   /*  // for LOCA
   if (printParams.get<bool>("Stepper Iteration"))
     outputinformationlevel += NOX::Utils::StepperIteration;
@@ -87,8 +82,7 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
   if (printParams.get<bool>("Stepper Parameters"))
     outputinformationlevel += NOX::Utils::StepperParameters;
   */
-  if (printParams.get<bool>("Debug"))
-    outputinformationlevel += NOX::Utils::Debug;
+  if (printParams.get<bool>("Debug")) outputinformationlevel += NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
   noxutils_ = Teuchos::rcp(new NOX::Utils(printParams));
 }
@@ -96,16 +90,13 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
-(
-  Teuchos::RCP<NOX::Abstract::Group> grp
-)
+Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
+    Teuchos::RCP<NOX::Abstract::Group> grp)
 {
   // type of norm
   NOX::Epetra::Vector::NormType norm = NOX::Epetra::Vector::TwoNorm;
   NOX::StatusTest::NormF::ScaleType scalefres = NOX::StatusTest::NormF::Scaled;
-  NOX::StatusTest::NormUpdate::ScaleType scaledisi =
-      NOX::StatusTest::NormUpdate::Scaled;
+  NOX::StatusTest::NormUpdate::ScaleType scaledisi = NOX::StatusTest::NormUpdate::Scaled;
   if (iternorm_ == INPAR::STR::norm_l1)
   {
     norm = NOX::Epetra::Vector::OneNorm;
@@ -132,21 +123,18 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   }
   else
   {
-    dserror("Norm %s is not available",
-            INPAR::STR::VectorNormString(iternorm_).c_str());
+    dserror("Norm %s is not available", INPAR::STR::VectorNormString(iternorm_).c_str());
   }
 
   // combined residual force and displacement test
   Teuchos::RCP<NOX::StatusTest::Combo> combo2 = Teuchos::null;
-  if ( combdisifres_ == INPAR::STR::bop_and )
+  if (combdisifres_ == INPAR::STR::bop_and)
   {
-    combo2 = Teuchos::rcp(
-        new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+    combo2 = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
   }
-  else if ( combdisifres_ == INPAR::STR::bop_or )
+  else if (combdisifres_ == INPAR::STR::bop_or)
   {
-    combo2 = Teuchos::rcp(
-        new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+    combo2 = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
   }
   else
   {
@@ -155,22 +143,21 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
 
 
   // convergence tests for force residual
-  if ( normtypefres_ == INPAR::STR::convnorm_abs )
+  if (normtypefres_ == INPAR::STR::convnorm_abs)
   {
     // absolute test
     Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres =
         Teuchos::rcp(new NOX::StatusTest::NormF(tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if ( normtypefres_ == INPAR::STR::convnorm_rel )
+  else if (normtypefres_ == INPAR::STR::convnorm_rel)
   {
     // relative
     Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFres =
-        Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm,
-            scalefres));
+        Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if ( normtypefres_ == INPAR::STR::convnorm_mix )
+  else if (normtypefres_ == INPAR::STR::convnorm_mix)
   {
     // mixed
     Teuchos::RCP<NOX::StatusTest::Combo> combo3 =
@@ -182,8 +169,7 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
     combo3->addStatusTest(statusTestNormFresAbs);
     // AND relative
     Teuchos::RCP<NOX::StatusTest::NormF> statusTestNormFresRel =
-        Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm,
-            scalefres));
+        Teuchos::rcp(new NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo3->addStatusTest(statusTestNormFresRel);
   }
   else
@@ -192,30 +178,28 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
   }
 
   // convergence tests for residual displacements
-  if ( normtypedisi_ == INPAR::STR::convnorm_abs )
+  if (normtypedisi_ == INPAR::STR::convnorm_abs)
   {
     // absolute test
     Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi =
-        Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm,
-            scaledisi));
+        Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
   }
-  else if ( normtypedisi_ == INPAR::STR::convnorm_rel )
+  else if (normtypedisi_ == INPAR::STR::convnorm_rel)
   {
     // relative test
     // NOT AVAILABLE
     dserror("Not available");
   }
-  else if ( normtypedisi_ == INPAR::STR::convnorm_mix )
+  else if (normtypedisi_ == INPAR::STR::convnorm_mix)
   {
     // mixed
-    //Teuchos::RCP<NOX::StatusTest::Combo> combo3
+    // Teuchos::RCP<NOX::StatusTest::Combo> combo3
     //  = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
-    //combo2->addStatusTest(combo3);
+    // combo2->addStatusTest(combo3);
     // absolute test
     Teuchos::RCP<NOX::StatusTest::NormUpdate> statusTestNormDisi =
-        Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm,
-            scaledisi));
+        Teuchos::rcp(new NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
     // relative test
     // NOT AVAILABLE
@@ -244,19 +228,17 @@ Teuchos::RCP<NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>
-STR::TimIntImpl::NoxCreateSolverParameters()
+Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreateSolverParameters()
 {
   // Create the list of solver parameters
-  Teuchos::RCP<Teuchos::ParameterList> solverParametersPtr
-    = Teuchos::rcp(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> solverParametersPtr =
+      Teuchos::rcp(new Teuchos::ParameterList);
 
   // Select the solver (this is the default)
   solverParametersPtr->set("Nonlinear Solver", "Line Search Based");
 
   // Create the line search parameters sublist
-  Teuchos::ParameterList& lineSearchParameters
-    = solverParametersPtr->sublist("Line Search");
+  Teuchos::ParameterList& lineSearchParameters = solverParametersPtr->sublist("Line Search");
 
   // Set the line search method
   lineSearchParameters.set("Method", "Full Step");
@@ -271,37 +253,28 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::NoxCreatePrintParameters(
     const bool verbose) const
 {
   // Set the printing parameters in the "Printing" sublist
-  Teuchos::RCP<Teuchos::ParameterList> printParams
-    = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> printParams = Teuchos::rcp(new Teuchos::ParameterList());
   (*printParams).set("MyPID", myrank_);
   (*printParams).set("Output Precision", 6);
   (*printParams).set("Output Processor", 0);
   if (verbose)
   {
-    (*printParams).set("Output Information",
-                       NOX::Utils::OuterIteration
-                       + NOX::Utils::OuterIterationStatusTest
-                       + NOX::Utils::InnerIteration
-                       + NOX::Utils::LinearSolverDetails
-                       + NOX::Utils::Parameters
-                       + NOX::Utils::Details
-                       + NOX::Utils::Warning
-                       + NOX::Utils::Debug
-                       + NOX::Utils::TestDetails
-                       + NOX::Utils::Error);
+    (*printParams)
+        .set("Output Information",
+            NOX::Utils::OuterIteration + NOX::Utils::OuterIterationStatusTest +
+                NOX::Utils::InnerIteration + NOX::Utils::LinearSolverDetails +
+                NOX::Utils::Parameters + NOX::Utils::Details + NOX::Utils::Warning +
+                NOX::Utils::Debug + NOX::Utils::TestDetails + NOX::Utils::Error);
   }
   else if (printiter_)
   {
-    (*printParams).set("Output Information",
-                       NOX::Utils::Error
-                       + NOX::Utils::OuterIterationStatusTest
-                       + NOX::Utils::TestDetails);
+    (*printParams)
+        .set("Output Information",
+            NOX::Utils::Error + NOX::Utils::OuterIterationStatusTest + NOX::Utils::TestDetails);
   }
   else
   {
-    (*printParams).set("Output Information",
-                       NOX::Utils::Error
-                       + NOX::Utils::TestDetails);
+    (*printParams).set("Output Information", NOX::Utils::Error + NOX::Utils::TestDetails);
   }
 
   // deliver liver
@@ -338,8 +311,7 @@ bool STR::TimIntImpl::computeF(const Epetra_Vector& x, Epetra_Vector& RHS,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool STR::TimIntImpl::computeJacobian(const Epetra_Vector& x,
-    Epetra_Operator& Jac)
+bool STR::TimIntImpl::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   // create parameter list
   Teuchos::ParameterList params;
@@ -355,8 +327,8 @@ bool STR::TimIntImpl::computeJacobian(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool STR::TimIntImpl::computePreconditioner(const Epetra_Vector &x,
-    Epetra_Operator &M, Teuchos::ParameterList *precParams)
+bool STR::TimIntImpl::computePreconditioner(
+    const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   // deliver
   return true;
@@ -365,8 +337,7 @@ bool STR::TimIntImpl::computePreconditioner(const Epetra_Vector &x,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem(
-    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
-    Teuchos::RCP<NOX::Utils> utils)
+    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
 {
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = Teuchos::null;
 
@@ -385,8 +356,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem(
       printParams, lsParams, Teuchos::rcp(iJac,false), J,
       Teuchos::rcp(iPrec,false), M, noxSoln));
 #else
-  linSys = Teuchos::rcp(new NOX::STR::LinearSystem(printParams, lsParams,
-        Teuchos::rcp(iJac, false), J, noxSoln, solver_));
+  linSys = Teuchos::rcp(new NOX::STR::LinearSystem(
+      printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver_));
 #endif
 
   // just a half-empty tin of cat food
@@ -405,19 +376,19 @@ int STR::TimIntImpl::NoxSolve()
   NOX::Epetra::Vector noxSoln(disn_, NOX::Epetra::Vector::CreateView);
 
   // Linear system
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys
-    = NoxCreateLinearSystem(nlParams, noxSoln, noxutils_);
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
+      NoxCreateLinearSystem(nlParams, noxSoln, noxutils_);
 
   // Create group
-  Teuchos::RCP<NOX::STR::Group> grp = Teuchos::rcp(new NOX::STR::Group(*this,
-      printParams, Teuchos::rcp(this, false), noxSoln, linSys));
+  Teuchos::RCP<NOX::STR::Group> grp = Teuchos::rcp(
+      new NOX::STR::Group(*this, printParams, Teuchos::rcp(this, false), noxSoln, linSys));
 
   // Create status test
   noxstatustest_ = NoxCreateStatusTest(grp);
 
   // Create the solver
-  Teuchos::RCP<NOX::Solver::Generic> solver
-    = NOX::Solver::buildSolver(grp, noxstatustest_, noxparams_);
+  Teuchos::RCP<NOX::Solver::Generic> solver =
+      NOX::Solver::buildSolver(grp, noxstatustest_, noxparams_);
 
   // Solve the nonlinear system
   NOX::StatusTest::StatusType status = solver->solve();
@@ -430,36 +401,34 @@ int STR::TimIntImpl::NoxSolve()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int STR::TimIntImpl::NoxErrorCheck(NOX::StatusTest::StatusType status,
-    Teuchos::RCP<NOX::Solver::Generic> solver)
+int STR::TimIntImpl::NoxErrorCheck(
+    NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver)
 {
   noxstatustest_->print(std::cout);
 
   // check if nonlinear solver converged
   if (status != NOX::StatusTest::Converged)
   {
-    if (divcontype_ == INPAR::STR::divcont_halve_step
-        or divcontype_ == INPAR::STR::divcont_repeat_step
-        or divcontype_ == INPAR::STR::divcont_repeat_simulation)
+    if (divcontype_ == INPAR::STR::divcont_halve_step or
+        divcontype_ == INPAR::STR::divcont_repeat_step or
+        divcontype_ == INPAR::STR::divcont_repeat_simulation)
     {
-      if (myrank_ == 0)
-        noxutils_->out() << "Nonlinear solver failed to converge!" << std::endl;
+      if (myrank_ == 0) noxutils_->out() << "Nonlinear solver failed to converge!" << std::endl;
       return 1;
     }
     else if (divcontype_ == INPAR::STR::divcont_continue)
     {
       if (myrank_ == 0)
-        noxutils_->out() << "Nonlinear solver failed to converge! continuing "
-                         << std::endl;
+        noxutils_->out() << "Nonlinear solver failed to converge! continuing " << std::endl;
       return 0;
     }
     else
     {
       dserror("Nonlinear solver failed to converge!");
-      return 1; //make compiler happy
+      return 1;  // make compiler happy
     }
   }
-  else // everything is fine
+  else  // everything is fine
   {
     // extract number of iteration steps
     iter_ = solver->getNumIterations();

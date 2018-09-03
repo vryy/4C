@@ -20,21 +20,19 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ALE::AleResultTest::AleResultTest(ALE::Ale& ale) :
-    DRT::ResultTest("ALE"), aledis_(ale.Discretization()), dispnp_(ale.Dispnp())
+ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
+    : DRT::ResultTest("ALE"), aledis_(ale.Discretization()), dispnp_(ale.Dispnp())
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
-    int& test_count)
+void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.ExtractString("DIS", dis);
-  if (dis != aledis_->Name())
-    return;
+  if (dis != aledis_->Name()) return;
 
   int node;
   res.ExtractInt("NODE", node);
@@ -46,8 +44,7 @@ void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1,
-        aledis_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", node + 1, aledis_->Name().c_str());
   }
   else
   {
@@ -56,8 +53,7 @@ void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
       DRT::Node* actnode = aledis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != aledis_->Comm().MyPID())
-        return;
+      if (actnode->Owner() != aledis_->Comm().MyPID()) return;
 
       double result = 0.;
 

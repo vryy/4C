@@ -24,8 +24,7 @@
 
 
 /*----------------------------------------------------------------------*/
-INVANA::PredictionSMC::PredictionSMC(const Teuchos::ParameterList& invp) :
-  OptimizerSMC(invp)
+INVANA::PredictionSMC::PredictionSMC(const Teuchos::ParameterList& invp) : OptimizerSMC(invp)
 {
   return;
 }
@@ -37,14 +36,14 @@ void INVANA::PredictionSMC::Setup()
   OptimizerSMC::Setup();
 
   // the vector temporarily holding solutions
-  solutions_ = Teuchos::rcp(new Epetra_Vector(
-      *Particles()->Evaluator().EvalPost().GetPrimalVariables()(0)));
+  solutions_ =
+      Teuchos::rcp(new Epetra_Vector(*Particles()->Evaluator().EvalPost().GetPrimalVariables()(0)));
 
   // initialize data structure to hold solutions
-  //data_.clear();
-  std::map<int, Teuchos::RCP<INVANA::ParticleData> > data = Particles()->GetData();
-  std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
-  for (it=data.begin(); it!=data.end(); it++)
+  // data_.clear();
+  std::map<int, Teuchos::RCP<INVANA::ParticleData>> data = Particles()->GetData();
+  std::map<int, Teuchos::RCP<ParticleData>>::iterator it;
+  for (it = data.begin(); it != data.end(); it++)
   {
     data_[it->first] = Teuchos::rcp(new INVANA::ParticleData());
     data_[it->first]->Init(solutions_->Map());
@@ -62,31 +61,33 @@ void INVANA::PredictionSMC::Integrate()
     Particles()->DrawInitialStates();
 
     // inform user
-    if (Particles()->PComm().LComm().MyPID()==0)
-      std::cout << "(Group "<< MyGroup() << ") Particles initialized from Prior." << std::endl;
+    if (Particles()->PComm().LComm().MyPID() == 0)
+      std::cout << "(Group " << MyGroup() << ") Particles initialized from Prior." << std::endl;
   }
   else
-    // inform user
-    if (Particles()->PComm().LComm().MyPID()==0)
-      std::cout << "(Group "<< MyGroup() << ") Particles initialized from existing "
-        "Particle basis" << std::endl;
+      // inform user
+      if (Particles()->PComm().LComm().MyPID() == 0)
+    std::cout << "(Group " << MyGroup()
+              << ") Particles initialized from existing "
+                 "Particle basis"
+              << std::endl;
 
   // run all the particles
   EvaluateParticles();
 
   // do statistical evaluation of the forward problem solution
-  Teuchos::RCP<Epetra_Vector> mean = Teuchos::rcp(new Epetra_Vector(solutions_->Map(),true));
-  Teuchos::RCP<Epetra_Vector> stdev = Teuchos::rcp(new Epetra_Vector(solutions_->Map(),true));
-  Particles()->ComputeMean(data_,*mean,*stdev);
+  Teuchos::RCP<Epetra_Vector> mean = Teuchos::rcp(new Epetra_Vector(solutions_->Map(), true));
+  Teuchos::RCP<Epetra_Vector> stdev = Teuchos::rcp(new Epetra_Vector(solutions_->Map(), true));
+  Particles()->ComputeMean(data_, *mean, *stdev);
 
-  if (MyGroup()==0)
+  if (MyGroup() == 0)
   {
-    Writer()->WriteMesh(1,1.0);
+    Writer()->WriteMesh(1, 1.0);
 
-    Writer()->WriteNewStep(1,1.0);
+    Writer()->WriteNewStep(1, 1.0);
 
-    Writer()->WriteNamedVector("solution_mean",mean,IO::dofvector);
-    Writer()->WriteNamedVector("solution_std",stdev,IO::dofvector);
+    Writer()->WriteNamedVector("solution_mean", mean, IO::dofvector);
+    Writer()->WriteNamedVector("solution_std", stdev, IO::dofvector);
   }
 
 
@@ -98,22 +99,20 @@ void INVANA::PredictionSMC::Integrate()
 int INVANA::PredictionSMC::EvaluateParticles()
 {
   // dummies
-  double valpost,valprior;
+  double valpost, valprior;
 
   // the state of the particles (i.e. the parameters)
-  std::map<int, Teuchos::RCP<INVANA::ParticleData> > pdata =
-      Particles()->GetData();
+  std::map<int, Teuchos::RCP<INVANA::ParticleData>> pdata = Particles()->GetData();
 
   // loop all the different particles in this group
-  std::map<int, Teuchos::RCP<ParticleData> >::iterator it;
-  for (it=data_.begin(); it!=data_.end(); it++)
+  std::map<int, Teuchos::RCP<ParticleData>>::iterator it;
+  for (it = data_.begin(); it != data_.end(); it++)
   {
     // evaluate solution
     int err = Particles()->Evaluator().EvaluateMixture(
-        pdata[it->first]->GetState(),valpost,valprior,*solutions_);
+        pdata[it->first]->GetState(), valpost, valprior, *solutions_);
 
-    if (err)
-      dserror("found error during evaluation");
+    if (err) dserror("found error during evaluation");
 
     it->second->SetState(*solutions_);
   }

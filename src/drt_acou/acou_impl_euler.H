@@ -19,24 +19,20 @@
 
 namespace ACOU
 {
+  class TimIntImplEuler : public AcouImplicitTimeInt
+  {
+   public:
+    /// constructor
+    TimIntImplEuler(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output);
 
-class TimIntImplEuler : public AcouImplicitTimeInt
-{
-
-public:
-  /// constructor
-  TimIntImplEuler(
-      const Teuchos::RCP<DRT::DiscretizationHDG>&   actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output
-      );
-
-  /// return the name of the time integration scheme
-  virtual std::string Name() { return "Euler" ; }
-};
+    /// return the name of the time integration scheme
+    virtual std::string Name() { return "Euler"; }
+  };
 
 
-} // namespace ACOU
+}  // namespace ACOU
 
 #endif /* ACOU_IMPL_EULER_H */

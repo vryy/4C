@@ -33,12 +33,9 @@ namespace MAT
     /// material parameters for micro material
     class MicroMaterial : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      MicroMaterial(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      MicroMaterial(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~MicroMaterial() { ; }
@@ -62,20 +59,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class MicroMaterialType : public DRT::ParObjectType
-{
-public:
+  class MicroMaterialType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MicroMaterialType"; }
 
-  std::string Name() const { return "MicroMaterialType"; }
+    static MicroMaterialType& Instance() { return instance_; };
 
-  static MicroMaterialType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static MicroMaterialType instance_;
-};
+   private:
+    static MicroMaterialType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   // forward
@@ -85,8 +80,7 @@ private:
   /// class for handling of micro-macro transitions
   class MicroMaterial : public So3Material
   {
-  public:
-
+   public:
     /// construct empty material object
     MicroMaterial();
 
@@ -101,7 +95,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MicroMaterialType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return MicroMaterialType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -132,33 +129,31 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_struct_multiscale; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_struct_multiscale;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-      dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MicroMaterial( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new MicroMaterial(*this)); }
 
     /// evaluate micro material on a processor with macro scale
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,
-                          Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat,
-                          const int eleGID);
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        const int eleGID);
 
-    /// evaluate micro material on a processor which only knows about the micro scale (supporting proc)
-    void Evaluate(LINALG::Matrix<3,3>* defgrd,
-                  LINALG::Matrix<6,6>* cmat,
-                  LINALG::Matrix<6,1>* stress,
-                  const int gp,
-                  const int ele_ID,
-                  const int microdisnum,
-                  double V0,
-                  bool eleowner);
+    /// evaluate micro material on a processor which only knows about the micro scale (supporting
+    /// proc)
+    void Evaluate(LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 6>* cmat,
+        LINALG::Matrix<6, 1>* stress, const int gp, const int ele_ID, const int microdisnum,
+        double V0, bool eleowner);
 
     virtual double Density() const;
 
@@ -174,8 +169,10 @@ private:
     /// Read restart of micro scale on a processor with macro scale
     void ReadRestart(const int gp, const int eleID, const bool eleowner);
 
-    /// restart micro material on a processor which only knows about the micro scale (supporting proc)
-    void ReadRestart(const int gp, const int eleID, const bool eleowner, int microdisnum, double V0);
+    /// restart micro material on a processor which only knows about the micro scale (supporting
+    /// proc)
+    void ReadRestart(
+        const int gp, const int eleID, const bool eleowner, int microdisnum, double V0);
 
     /// Prepare new run of inverse analysis
     void InvAnaInit(bool eleowner, int eleID);
@@ -190,9 +187,8 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
-    std::map<int,Teuchos::RCP<MicroMaterialGP> > matgp_;
+   private:
+    std::map<int, Teuchos::RCP<MicroMaterialGP>> matgp_;
 
     double density_;
 
@@ -200,7 +196,6 @@ private:
     MAT::PAR::MicroMaterial* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

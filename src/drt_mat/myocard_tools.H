@@ -30,8 +30,7 @@
 
 class Myocard_Tools
 {
-
-public:
+ public:
   /// construct empty material object
   Myocard_Tools();
 
@@ -39,11 +38,12 @@ public:
   virtual ~Myocard_Tools() { ; }
 
   /// compute Heaviside step function
-  double GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const;
+  double GatingFunction(const double Gate1, const double Gate2, const double p, const double var,
+      const double thresh) const;
 
   /// compute gating variable 'y' from dy/dt = (y_inf-y)/y_tau
   double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
 
-}; // Myocard_Tools
+};  // Myocard_Tools
 
 #endif

@@ -25,35 +25,30 @@
 
 namespace FLD
 {
+  class TimIntLomaGenAlpha : public TimIntGenAlpha, public TimIntLoma
+  {
+   public:
+    /// Standard Constructor
+    TimIntLomaGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntLomaGenAlpha : public TimIntGenAlpha, public TimIntLoma
-{
-public:
-  /// Standard Constructor
-  TimIntLomaGenAlpha(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntLomaGenAlpha();
 
-  /// Destructor
-  virtual ~TimIntLomaGenAlpha();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
-
-  */
-  virtual void Init();
+    */
+    virtual void Init();
 
 
-protected:
+   protected:
+   private:
+  };  // class TimIntLomaGenAlpha
 
-private:
-
-
-}; // class TimIntLomaGenAlpha
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_LOMA_GENALPHA_H

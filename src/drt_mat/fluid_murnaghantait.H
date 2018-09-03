@@ -24,22 +24,17 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for weakly compressible fluid according to Murnaghan-Tait
     ///
     /// This object exists only once for each read Murnaghan-Tait fluid.
     class MurnaghanTaitFluid : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      MurnaghanTaitFluid(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      MurnaghanTaitFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~MurnaghanTaitFluid() { ; }
@@ -69,20 +64,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class MurnaghanTaitFluidType : public DRT::ParObjectType
-{
-public:
+  class MurnaghanTaitFluidType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MurnaghanTaitFluidType"; }
 
-  std::string Name() const { return "MurnaghanTaitFluidType"; }
+    static MurnaghanTaitFluidType& Instance() { return instance_; };
 
-  static MurnaghanTaitFluidType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static MurnaghanTaitFluidType instance_;
-};
+   private:
+    static MurnaghanTaitFluidType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Murnaghan-Tait fluid material
@@ -90,8 +83,7 @@ private:
   /// This object exists (several times) at every element
   class MurnaghanTaitFluid : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     MurnaghanTaitFluid();
 
@@ -106,7 +98,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MurnaghanTaitFluidType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return MurnaghanTaitFluidType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -137,10 +132,16 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_fluid_murnaghantait; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_fluid_murnaghantait;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MurnaghanTaitFluid( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new MurnaghanTaitFluid(*this));
+    }
 
     /// compute density
     double ComputeDensity(const double press) const;
@@ -169,13 +170,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::MurnaghanTaitFluid* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

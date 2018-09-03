@@ -25,45 +25,40 @@
 
 namespace FLD
 {
+  class TimIntPoroStat : public TimIntStationary, public TimIntPoro
+  {
+   public:
+    /// Standard Constructor
+    TimIntPoroStat(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntPoroStat : public TimIntStationary, public TimIntPoro
-{
-public:
-  /// Standard Constructor
-  TimIntPoroStat(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntPoroStat();
 
-  /// Destructor
-  virtual ~TimIntPoroStat();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
+    */
+    virtual void Init();
 
-  */
-  virtual void Init();
+    /*!
+    \brief return scheme-specific time integration parameter
+    */
+    virtual double TimIntParam() const { return 0.0; };
 
-  /*!
-  \brief return scheme-specific time integration parameter
-  */
-  virtual double TimIntParam() const{return 0.0;};
-
-  /*!
-  \brief read restart data
-  */
-  virtual void ReadRestart(int step);
+    /*!
+    \brief read restart data
+    */
+    virtual void ReadRestart(int step);
 
 
-protected:
+   protected:
+   private:
+  };  // class TimIntPoroStat
 
-private:
-
-
-}; // class TimIntPoroStat
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_PORO_STAT_H

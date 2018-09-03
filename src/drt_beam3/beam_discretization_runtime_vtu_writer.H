@@ -19,11 +19,13 @@
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
-namespace GEO{
-namespace MESHFREE{
-  class BoundingBox;
-}
-}
+namespace GEO
+{
+  namespace MESHFREE
+  {
+    class BoundingBox;
+  }
+}  // namespace GEO
 class Epetra_Vector;
 class Epetra_MultiVector;
 
@@ -33,11 +35,11 @@ namespace DRT
 {
   class Discretization;
 
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
     class Beam3Base;
-}
-}
+  }
+}  // namespace DRT
 
 /*-----------------------------------------------------------------------------------------------*/
 /* namespace */
@@ -60,58 +62,49 @@ namespace ELEMENTS
  */
 class BeamDiscretizationRuntimeVtuWriter
 {
-
-public:
+ public:
   /// Constructor
   BeamDiscretizationRuntimeVtuWriter();
 
   /// Destructor
-  virtual ~BeamDiscretizationRuntimeVtuWriter()
-  {}
+  virtual ~BeamDiscretizationRuntimeVtuWriter() {}
 
   /** \brief initialize object with all required data
    *
    *  \author grill
    *  \date 03/17 */
-  void Initialize(
-      Teuchos::RCP<DRT::Discretization> discretization,
+  void Initialize(Teuchos::RCP<DRT::Discretization> discretization,
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
       bool use_absolute_positions_for_point_coordinates,
       Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
-      unsigned int max_number_timesteps_to_be_written,
-      double time,
-      bool write_binary_output );
+      unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output);
 
 
   /** \brief reset current simulation time and time step number
    *
    *  \author grill
    *  \date 03/17 */
-  void ResetTimeAndTimeStep(
-      double time,
-      unsigned int timestep );
+  void ResetTimeAndTimeStep(double time, unsigned int timestep);
 
 
   /** \brief append triad field determined from given displacement state to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendTriadField(
-      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+  void AppendTriadField(Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
-    /** \brief append discplacement state
+  /** \brief append discplacement state
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendDisplacementField(
-      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+  void AppendDisplacementField(Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append tangent vector field determined from given displacement state to output data
    *
    *  \author grill
    *  \date 03/17 */
-//  void AppendTangentVectorField(
-//      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+  //  void AppendTangentVectorField(
+  //      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
 
   /** \brief append information about element owning processor to output data
@@ -144,7 +137,8 @@ public:
    *  \date 03/17 */
   void AppendElementCircularCrossSectionRadius();
 
-  /** \brief append a vector field defining orientation and radius of a circular cross-section to output data
+  /** \brief append a vector field defining orientation and radius of a circular cross-section to
+   * output data
    *
    *  \author grill
    *  \date 03/17 */
@@ -174,14 +168,14 @@ public:
    *  \author eichinger
    *  \date 08/17 */
   void AppendElementOrientationParamater(
-      Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector);
+      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append sum of all element (node 0) internal energy cut in direction cut_dim
    *
    *  \author eichinger
    *  \date 08/17 */
   void AppendRVECrosssectionForces(
-      Teuchos::RCP<const Epetra_Vector> const & displacement_state_vector );
+      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append current internal energy of the elements to output data
    *
@@ -209,20 +203,17 @@ public:
   void SetGeometryFromBeamDiscretization(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
-private:
-
+ private:
   /** \brief insert all values of a given std::vector at the end of another given std::vector
    *
    *  \author grill
    *  \date 03/17 */
   // Todo template <typename T>
   void InsertVectorValuesAtBackOfOtherVector(
-      const std::vector<double> & vector_input,
-      std::vector<double> & vector_output);
+      const std::vector<double>& vector_input, std::vector<double>& vector_output);
 
 
-private:
-
+ private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
   Teuchos::RCP<const DRT::Discretization> discretization_;
 
@@ -242,7 +233,6 @@ private:
   //! flag indicating whether to use absolute positions for point coordinates
   // false: use reference position
   bool use_absolute_positions_;
-
 };
 
 #endif

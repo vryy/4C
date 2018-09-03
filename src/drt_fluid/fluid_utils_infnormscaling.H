@@ -23,56 +23,52 @@
 // forward declarations
 namespace LINALG
 {
-class MapExtractor;
-class SparseOperator;
-}
+  class MapExtractor;
+  class SparseOperator;
+}  // namespace LINALG
 
 namespace FLD
 {
+  /*!
+   * \brief namespace for fluid related stuff
+   */
+  namespace UTILS
+  {
+    class FluidInfNormScaling
+    {
+     public:
+      //! constructor
+      FluidInfNormScaling(LINALG::MapExtractor& mapextractor);
 
-/*!
- * \brief namespace for fluid related stuff
- */
-namespace UTILS
-{
+      //! destructor
+      virtual ~FluidInfNormScaling(){};
 
-class FluidInfNormScaling{
+      //! perform infnorm-scaling of linear system
+      void ScaleSystem(Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& b);
 
-public:
+      //! perform un-scaling of solution (and the system, just to be on the safe side)
+      void UnscaleSolution(
+          Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
 
+     private:
+      //! processor id
+      const int myrank_;
 
-  //! constructor
-  FluidInfNormScaling(  LINALG::MapExtractor& mapextractor);
+      //! Extractor for splitting of velocity and pressure dofs
+      LINALG::MapExtractor& velpressplitter_;
 
-  //! destructor
-  virtual ~FluidInfNormScaling(){};
+      Teuchos::RCP<Epetra_Vector> srowsum_;
+      Teuchos::RCP<Epetra_Vector> scolsum_;
+      Teuchos::RCP<Epetra_Vector> prowsum_;
+      Teuchos::RCP<Epetra_Vector> pcolsum_;
 
-  //! perform infnorm-scaling of linear system
-  void ScaleSystem(Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& b);
+      // flags
+      const bool leftscale_momentum_;
+      const bool leftscale_continuity_;
 
-  //! perform un-scaling of solution (and the system, just to be on the safe side)
-  void UnscaleSolution(Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
+    };  // class FluidInfNormScaling
 
-private:
-
-  //! processor id
-  const int myrank_;
-
-  //! Extractor for splitting of velocity and pressure dofs
-  LINALG::MapExtractor&     velpressplitter_;
-
-  Teuchos::RCP<Epetra_Vector> srowsum_;
-  Teuchos::RCP<Epetra_Vector> scolsum_;
-  Teuchos::RCP<Epetra_Vector> prowsum_;
-  Teuchos::RCP<Epetra_Vector> pcolsum_;
-
-  // flags
-  const bool leftscale_momentum_;
-  const bool leftscale_continuity_;
-
-}; // class FluidInfNormScaling
-
-} // namespace UTILS
-} // namespace FLD
+  }  // namespace UTILS
+}  // namespace FLD
 
 #endif  // #ifndef FLUID_UTILS_H

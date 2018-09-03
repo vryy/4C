@@ -29,7 +29,7 @@ References are
 
 #include "../drt_inpar/inpar_fluid.H"
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -37,45 +37,42 @@ namespace DRT
 
 namespace FLD
 {
-// forward declarations
-class FluidImplicitTimeInt;
-class XWall;
+  // forward declarations
+  class FluidImplicitTimeInt;
+  class XWall;
 
-class ForcingInterface
-{
-  public:
-
+  class ForcingInterface
+  {
+   public:
     //! constructor
-    ForcingInterface(){}
+    ForcingInterface() {}
 
-    virtual ~ForcingInterface(){}
+    virtual ~ForcingInterface() {}
 
     //! initialize with initial spectrum
-    virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type)=0;
+    virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) = 0;
 
     //! turn on forcing
-    virtual void ActivateForcing(const bool activate)=0;
+    virtual void ActivateForcing(const bool activate) = 0;
 
     //! calculate power input
-    virtual void CalculateForcing(const int step)=0;
+    virtual void CalculateForcing(const int step) = 0;
 
     //! get forcing
-    virtual void UpdateForcing(const int step)=0;
+    virtual void UpdateForcing(const int step) = 0;
 
     //! time update of energy spectrum
-    virtual void TimeUpdateForcing()=0;
+    virtual void TimeUpdateForcing() = 0;
+  };
 
-};
-
-class HomIsoTurbForcing: public ForcingInterface
-{
-  public:
-
+  class HomIsoTurbForcing : public ForcingInterface
+  {
+   public:
     //! constructor
     HomIsoTurbForcing(FluidImplicitTimeInt& timeint);
 
     //! destructor
-    virtual ~HomIsoTurbForcing(){}
+    virtual ~HomIsoTurbForcing() {}
 
     //! initialize with initial spectrum
     virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type);
@@ -92,17 +89,15 @@ class HomIsoTurbForcing: public ForcingInterface
     //! time update of energy spectrum
     void TimeUpdateForcing();
 
-  protected:
-
+   protected:
     //! sort criterium for double values up to a tolerance of 10-9
     class LineSortCriterion
     {
-      public:
-        bool operator() (const double& p1,
-                         const double& p2) const { return (p1 < p2 - 1E-9);}
+     public:
+      bool operator()(const double& p1, const double& p2) const { return (p1 < p2 - 1E-9); }
 
-      protected:
-      private:
+     protected:
+     private:
     };
 
     //! type of forcing
@@ -130,23 +125,25 @@ class HomIsoTurbForcing: public ForcingInterface
 
     //! specifies the special flow
     enum FlowType
-    { decaying_homogeneous_isotropic_turbulence,
-      forced_homogeneous_isotropic_turbulence} flow_type_;
+    {
+      decaying_homogeneous_isotropic_turbulence,
+      forced_homogeneous_isotropic_turbulence
+    } flow_type_;
 
     //! number of resolved mode
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double> > coordinates_;
+    Teuchos::RCP<std::vector<double>> coordinates_;
 
     //! vector of wave numbers
-    Teuchos::RCP<std::vector<double> > wavenumbers_;
+    Teuchos::RCP<std::vector<double>> wavenumbers_;
 
     //! vector energy spectrum (sum over k=const) at time n
-    Teuchos::RCP<std::vector<double> > energyspectrum_n_;
+    Teuchos::RCP<std::vector<double>> energyspectrum_n_;
 
     //! vector energy spectrum  (sum over k=const) at time n+1/n+af
-    Teuchos::RCP<std::vector<double> > energyspectrum_np_;
+    Teuchos::RCP<std::vector<double>> energyspectrum_np_;
 
     //! time step length
     double dt_;
@@ -168,28 +165,23 @@ class HomIsoTurbForcing: public ForcingInterface
 
     //! interpolation function
     static double Interpolate(
-      const double& x,
-      const double& x_1,
-      const double& x_2,
-      const double& y_1,
-      const double& y_2)
+        const double& x, const double& x_1, const double& x_2, const double& y_1, const double& y_2)
     {
       const double value = y_1 + (y_2 - y_1) / (x_2 - x_1) * (x - x_1);
       return value;
     }
-};
+  };
 
-//there are quite some differences for the HDG case
-//author: bk 03/15
-class HomIsoTurbForcingHDG: public HomIsoTurbForcing
-{
-  public:
-
+  // there are quite some differences for the HDG case
+  // author: bk 03/15
+  class HomIsoTurbForcingHDG : public HomIsoTurbForcing
+  {
+   public:
     //! constructor
     HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
 
     //! destructor
-    virtual ~HomIsoTurbForcingHDG(){}
+    virtual ~HomIsoTurbForcingHDG() {}
 
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type);
@@ -199,30 +191,28 @@ class HomIsoTurbForcingHDG: public HomIsoTurbForcing
 
     //! get forcing
     void UpdateForcing(const int step);
+  };
 
-};
-
-//this is an adaptive body force for the periodic hill benchmark such
-//that the mass flow reaches the given value.
-//author: bk 12/14
-class PeriodicHillForcing: public ForcingInterface
-{
-  public:
-
+  // this is an adaptive body force for the periodic hill benchmark such
+  // that the mass flow reaches the given value.
+  // author: bk 12/14
+  class PeriodicHillForcing : public ForcingInterface
+  {
+   public:
     //! constructor
     PeriodicHillForcing(FluidImplicitTimeInt& timeint);
 
     //! destructor
-    virtual ~PeriodicHillForcing(){}
+    virtual ~PeriodicHillForcing() {}
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type){return;}
+    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) { return; }
 
     //! turn on forcing
-    void ActivateForcing(const bool activate){return;}
+    void ActivateForcing(const bool activate) { return; }
 
     //! calculate power input
-    void CalculateForcing(const int step){ return;}
+    void CalculateForcing(const int step) { return; }
 
     //! get forcing
     void UpdateForcing(const int step);
@@ -231,8 +221,7 @@ class PeriodicHillForcing: public ForcingInterface
     void TimeUpdateForcing();
 
 
-  private:
-
+   private:
     //! fluid discretization
     Teuchos::RCP<DRT::Discretization> discret_;
 
@@ -244,7 +233,7 @@ class PeriodicHillForcing: public ForcingInterface
     Teuchos::RCP<Epetra_Vector> velaf_;
 
     //! xwall object is required for evaluating inner element planes of channel
-    Teuchos::RCP<FLD::XWall>              myxwall_;
+    Teuchos::RCP<FLD::XWall> myxwall_;
 
     //! values of previous step
     double oldforce_;
@@ -253,15 +242,15 @@ class PeriodicHillForcing: public ForcingInterface
     //! reference value for optimal control
     double idealmassflow_;
 
-    //length of overall flow domain
+    // length of overall flow domain
     double length_;
 
     //! step and statistical data
     int step_;
     int count_;
     double sum_;
-};
+  };
 
-}
+}  // namespace FLD
 
 #endif

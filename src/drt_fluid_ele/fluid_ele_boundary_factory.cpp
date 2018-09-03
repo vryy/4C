@@ -25,9 +25,10 @@
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem)
+DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(
+    DRT::Element::DiscretizationType distype, std::string problem)
 {
-  switch(distype)
+  switch (distype)
   {
     case DRT::Element::quad4:
     {
@@ -74,17 +75,18 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
       return DefineProblemType<DRT::Element::nurbs9>(problem);
     }
     default:
-      dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
+      dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
-    }
+  }
   return NULL;
 }
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(std::string problem)
+template <DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(
+    std::string problem)
 {
   if (problem == "std")
     return DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance();
@@ -97,4 +99,3 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
 
   return NULL;
 }
-

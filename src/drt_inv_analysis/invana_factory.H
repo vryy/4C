@@ -20,38 +20,34 @@
 // forward declarations
 namespace Teuchos
 {
-class ParameterList;
+  class ParameterList;
 }
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 namespace INVANA
 {
-
-class InvanaBase;
+  class InvanaBase;
 
   /*!
   \brief A factory for the inverse analysis optimization problem
   \author kehl
  */
 
-class InvanaFactory {
+  class InvanaFactory
+  {
+   public:
+    //! standard constructor
+    InvanaFactory();
 
-public:
+    //! destructor
+    virtual ~InvanaFactory() { ; };
 
-  //! standard constructor
-  InvanaFactory();
-
-  //! destructor
-  virtual ~InvanaFactory() {;};
-
-  //! Return a reference to the optimization problem
-  Teuchos::RCP<INVANA::InvanaBase> Create(
-      const Teuchos::ParameterList& invp
-      );
-};
+    //! Return a reference to the optimization problem
+    Teuchos::RCP<INVANA::InvanaBase> Create(const Teuchos::ParameterList& invp);
+  };
 }  // namespace INVANA
 
 #endif /*INVANA_FACTORY_H_*/

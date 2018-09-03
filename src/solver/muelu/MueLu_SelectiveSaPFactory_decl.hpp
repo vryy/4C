@@ -28,8 +28,8 @@
 #include "MueLu_TentativePFactory_fwd.hpp"
 #include "MueLu_Utilities_fwd.hpp"
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class SelectiveSaPFactory class.
     @brief Factory for building Smoothed Aggregation prolongators.
@@ -40,24 +40,25 @@ namespace MueLu {
   */
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  class SelectiveSaPFactory : public PFactory {
+  class SelectiveSaPFactory : public PFactory
+  {
 #undef MUELU_SELECTIVESAPFACTORY_SHORT
 #include "MueLu_UseShortNames.hpp"
 
-  public:
-
+   public:
     //! @name Constructors/Destructors.
     //@{
 
     /*! @brief Constructor.
       User can supply a factory for generating the tentative prolongator.
     */
-    SelectiveSaPFactory() { }
+    SelectiveSaPFactory() {}
 
     //! Destructor.
-    virtual ~SelectiveSaPFactory() { }
+    virtual ~SelectiveSaPFactory() {}
 
-    Teuchos::RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+    Teuchos::RCP<const ParameterList> GetValidParameterList(
+        const ParameterList &paramList = ParameterList()) const;
 
     //@}
 
@@ -77,9 +78,9 @@ namespace MueLu {
       Builds smoothed aggregation prolongator and returns it in <tt>coarseLevel</tt>.
       //FIXME what does the return code mean (unclear in MueMat)?
       */
-    void Build(Level& fineLevel, Level &coarseLevel) const;
+    void Build(Level &fineLevel, Level &coarseLevel) const;
 
-    void BuildP(Level &fineLevel, Level &coarseLevel) const; //Build()
+    void BuildP(Level &fineLevel, Level &coarseLevel) const;  // Build()
 
     //@}
 
@@ -90,7 +91,7 @@ namespace MueLu {
     void SetDampingFactor(Scalar dampingFactor);
 
     //! Deprecated: Change view of diagonal.
-    void SetDiagonalView(std::string const& diagView);
+    void SetDiagonalView(std::string const &diagView);
     //@}
 
     //! @name Get methods.
@@ -104,15 +105,19 @@ namespace MueLu {
 
     //@}
 
-  private:
-    Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal> > MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal> > const &Op, bool const & optimizeTranspose) const;
-    Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> > FixAPproduct(Level &fineLevel, Level &coarseLevel,Teuchos::RCP<Matrix> & A, Teuchos::RCP<Matrix> & DinvAP) const;
-  }; //class SelectiveSaPFactory
+   private:
+    Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal>> MyTranspose(
+        Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal>> const &Op,
+        bool const &optimizeTranspose) const;
+    Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> FixAPproduct(
+        Level &fineLevel, Level &coarseLevel, Teuchos::RCP<Matrix> &A,
+        Teuchos::RCP<Matrix> &DinvAP) const;
+  };  // class SelectiveSaPFactory
 
-} //namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DECL_HPP_ */

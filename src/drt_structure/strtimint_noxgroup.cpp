@@ -20,15 +20,10 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NOX::STR::Group::Group
-(
-  ::STR::TimIntImpl& sti,
-  Teuchos::ParameterList& printParams,
-  const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-  const NOX::Epetra::Vector& x,
-  const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys
-)
-: NOX::Epetra::Group(printParams, i, x, linSys)
+NOX::STR::Group::Group(::STR::TimIntImpl& sti, Teuchos::ParameterList& printParams,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
+    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
+    : NOX::Epetra::Group(printParams, i, x, linSys)
 {
 }
 
@@ -51,14 +46,12 @@ NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
 /*----------------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
 {
-  NOX::Abstract::Group::ReturnType ret
-    = NOX::Epetra::Group::computeJacobian();
+  NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeJacobian();
   if (ret == NOX::Abstract::Group::Ok)
   {
     isValidJacobian = true;
 
-    if (not isValidRHS)
-      isValidRHS = true;
+    if (not isValidRHS) isValidRHS = true;
   }
 
   return ret;

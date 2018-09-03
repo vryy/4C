@@ -25,25 +25,25 @@ namespace ADAPTER
 }
 namespace POROFLUIDMULTIPHASE
 {
-class MeshtyingStrategyBase
-{
-  public:
-
+  class MeshtyingStrategyBase
+  {
+   public:
     //! constructor
-    explicit MeshtyingStrategyBase(
-        POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint,
-        const Teuchos::ParameterList&           probparams,
-        const Teuchos::ParameterList&           poroparams
-        ) :
-        porofluidmultitimint_(porofluidmultitimint),
-        params_ (probparams),
-        poroparams_ (poroparams),
-        vectornormfres_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(poroparams_,"VECTORNORM_RESF")),
-        vectornorminc_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(poroparams_,"VECTORNORM_INC"))
-        {return;}
+    explicit MeshtyingStrategyBase(POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint,
+        const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams)
+        : porofluidmultitimint_(porofluidmultitimint),
+          params_(probparams),
+          poroparams_(poroparams),
+          vectornormfres_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
+              poroparams_, "VECTORNORM_RESF")),
+          vectornorminc_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::VectorNorm>(
+              poroparams_, "VECTORNORM_INC"))
+    {
+      return;
+    }
 
     //! destructor
-    virtual ~MeshtyingStrategyBase(){return;};
+    virtual ~MeshtyingStrategyBase() { return; };
 
     //! prepare time loop
     virtual void PrepareTimeLoop() = 0;
@@ -58,20 +58,13 @@ class MeshtyingStrategyBase
     virtual void Output() = 0;
 
     //! solve linear system of equations
-    virtual void LinearSolve(
-        Teuchos::RCP<LINALG::Solver>         solver,
-        Teuchos::RCP<LINALG::SparseOperator> sysmat,
-        Teuchos::RCP<Epetra_Vector>          increment,
-        Teuchos::RCP<Epetra_Vector>          residual
-        ) = 0;
+    virtual void LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+        Teuchos::RCP<Epetra_Vector> residual) = 0;
 
     //! calculate norms for convergence checks
-    virtual void CalculateNorms(
-        double& preresnorm,
-        double& incprenorm,
-        double& prenorm,
-        const Teuchos::RCP<const Epetra_Vector> increment
-        ) = 0;
+    virtual void CalculateNorms(double& preresnorm, double& incprenorm, double& prenorm,
+        const Teuchos::RCP<const Epetra_Vector> increment) = 0;
 
     //! create the field test
     virtual void CreateFieldTest() = 0;
@@ -83,7 +76,8 @@ class MeshtyingStrategyBase
     virtual void Evaluate() = 0;
 
     //! extract increments and update mesh tying
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
+        const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     // return arterial network time integrator
     virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt()
@@ -100,7 +94,7 @@ class MeshtyingStrategyBase
     }
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase>  ArteryPorofluidSysmat() const
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const
     {
       dserror("ArteryPorofluidSysmat() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
@@ -114,18 +108,16 @@ class MeshtyingStrategyBase
     }
 
     //! access to global (combined) increment of coupled problem
-    virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(Teuchos::RCP<const Epetra_Vector> inc) const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
+        Teuchos::RCP<const Epetra_Vector> inc) const = 0;
 
     // check if initial fields on coupled DOFs are equal
-    virtual void CheckInitialFields(
-        Teuchos::RCP<const Epetra_Vector>      vec_cont
-        ) const = 0;
+    virtual void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const = 0;
 
     //! apply the mesh movement
     virtual void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
 
-  protected:
-
+   protected:
     //! porofluid multi time integrator
     POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint_;
 
@@ -140,8 +132,8 @@ class MeshtyingStrategyBase
 
     // vector norm for increments
     enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornorminc_;
-};
+  };
 
-} // namespace POROFLUIDMULTIPHASE
+}  // namespace POROFLUIDMULTIPHASE
 
 #endif /* SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_BASE_H_ */

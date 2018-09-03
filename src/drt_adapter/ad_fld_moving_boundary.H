@@ -32,7 +32,7 @@ namespace FLD
   {
     class MapExtractor;
   }
-}
+}  // namespace FLD
 
 namespace ADAPTER
 {
@@ -50,8 +50,7 @@ namespace ADAPTER
    */
   class FluidMovingBoundary
   {
-  public:
-
+   public:
     /// virtual destructor to get polymorph destruction
     virtual ~FluidMovingBoundary() {}
 
@@ -63,7 +62,7 @@ namespace ADAPTER
     virtual const Teuchos::RCP<ADAPTER::Fluid>& FluidField() = 0;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const = 0;
 
     //@}
 
@@ -73,7 +72,7 @@ namespace ADAPTER
     virtual void PrepareTimeStep() = 0;
 
     /// evaluate elements with given displacement
-    //virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
+    // virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// update at time step end
     virtual void Update() = 0;
@@ -85,29 +84,29 @@ namespace ADAPTER
     virtual double ReadRestart(int step) = 0;
 
     /// calculation (and output) of lift&drag
-    //virtual void LiftDrag() = 0;
+    // virtual void LiftDrag() = 0;
 
     //@}
 
     //! @name Solver calls
 
     /// nonlinear solve
-    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
-                                Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null) = 0;
+    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp = Teuchos::null,
+        Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null) = 0;
 
     /// nonlinear solve
-    virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
-                                Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null)
+    virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp = Teuchos::null,
+        Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null)
     {
       dserror("Not implemented in base class");
     }
 
     /// linear fluid solve with just a interface load
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                        double dt) = 0;
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, double dt) = 0;
 
     /// get the linear solver object used for this field
-    //virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+    // virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
 
     //@}
 
@@ -143,11 +142,10 @@ namespace ADAPTER
   /// base of all algorithms that use a fluid on a variable domain
   class FluidMovingBoundaryBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    explicit FluidMovingBoundaryBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
-                                       std::string condname);
+    explicit FluidMovingBoundaryBaseAlgorithm(
+        const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidMovingBoundaryBaseAlgorithm() {}
@@ -155,12 +153,10 @@ namespace ADAPTER
     /// fluid field solver
     const Teuchos::RCP<FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
-  private:
-
+   private:
     /// fluid field solver
     Teuchos::RCP<FluidMovingBoundary> fluid_;
   };
-}
+}  // namespace ADAPTER
 
 #endif
-

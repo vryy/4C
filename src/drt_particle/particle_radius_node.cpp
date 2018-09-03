@@ -24,8 +24,8 @@ PARTICLE::ParticleRadiusNodeType PARTICLE::ParticleRadiusNodeType::instance_;
  *----------------------------------------------------------------------*/
 DRT::ParObject* PARTICLE::ParticleRadiusNodeType::Create(const std::vector<char>& data)
 {
-  double dummycoords[3] = {0.,0.,0.};
-  DRT::Node* const particle = new PARTICLE::ParticleRadiusNode(-1,dummycoords,0.,-1);
+  double dummycoords[3] = {0., 0., 0.};
+  DRT::Node* const particle = new PARTICLE::ParticleRadiusNode(-1, dummycoords, 0., -1);
   particle->Unpack(data);
   return particle;
 }
@@ -34,9 +34,9 @@ DRT::ParObject* PARTICLE::ParticleRadiusNodeType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  | standard constructor                                      fang 04/17 |
  *----------------------------------------------------------------------*/
-PARTICLE::ParticleRadiusNode::ParticleRadiusNode(int id, const double* coords, const double radius, const int owner)
-: ParticleNode(id,coords,owner),
-  radius_(radius)
+PARTICLE::ParticleRadiusNode::ParticleRadiusNode(
+    int id, const double* coords, const double radius, const int owner)
+    : ParticleNode(id, coords, owner), radius_(radius)
 {
   return;
 }
@@ -46,8 +46,7 @@ PARTICLE::ParticleRadiusNode::ParticleRadiusNode(int id, const double* coords, c
  | copy constructor                                          fang 04/17 |
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleRadiusNode::ParticleRadiusNode(const ParticleRadiusNode& old)
-: ParticleNode(old),
-  radius_(old.radius_)
+    : ParticleNode(old), radius_(old.radius_)
 {
   dserror("Not yet needed!");
   return;
@@ -72,13 +71,13 @@ void PARTICLE::ParticleRadiusNode::Pack(DRT::PackBuffer& data) const
   sm.Insert();
 
   // pack type of this instance of ParObject
-  AddtoPack(data,UniqueParObjectId());
+  AddtoPack(data, UniqueParObjectId());
 
   // add base class
   ParticleNode::Pack(data);
 
   // add particle radius
-  AddtoPack(data,radius_);
+  AddtoPack(data, radius_);
 
   return;
 }
@@ -93,23 +92,22 @@ void PARTICLE::ParticleRadiusNode::Unpack(const std::vector<char>& data)
 
   // extract type
   int type(0);
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
 
   // safety check
-  if(type != UniqueParObjectId())
-    dserror("Wrong instance type!");
+  if (type != UniqueParObjectId()) dserror("Wrong instance type!");
 
   // extract base class
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   ParticleNode::Unpack(basedata);
 
   // extract particle radius
-  ExtractfromPack(position,data,radius_);
+  ExtractfromPack(position, data, radius_);
 
   // safety check
-  if(position != data.size())
-    dserror("Mismatch in size of data: %d <-> %d!",(int) data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data: %d <-> %d!", (int)data.size(), position);
 
   return;
 }

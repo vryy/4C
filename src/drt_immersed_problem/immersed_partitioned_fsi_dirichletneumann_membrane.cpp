@@ -1,7 +1,8 @@
 /*!----------------------------------------------------------------------
 \file immersed_partitioned_fsi_dirichletneumann_membrane.cpp
 
-\brief partitioned immersed fsi algorithm for dirichlet-neumann coupling with membrane finite elements
+\brief partitioned immersed fsi algorithm for dirichlet-neumann coupling with membrane finite
+elements
 
 \level 3
 
@@ -20,8 +21,9 @@
 
 #include "../drt_fluid/fluid_utils.H"
 
-IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::ImmersedPartitionedFSIDirichletNeumannMembrane(const Epetra_Comm& comm)
-  : ImmersedPartitionedFSIDirichletNeumann(comm)
+IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::
+    ImmersedPartitionedFSIDirichletNeumannMembrane(const Epetra_Comm& comm)
+    : ImmersedPartitionedFSIDirichletNeumann(comm)
 {
   // empty constructor
 }
@@ -29,18 +31,20 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::ImmersedPartitionedFSI
 /*----------------------------------------------------------------------*
  | calc the current artificial velocity                  sfuchs 11/2016 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::CalcArtificialVelocity()
+Teuchos::RCP<Epetra_Vector>
+IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::CalcArtificialVelocity()
 {
-  if(not artificial_velocity_isvalid_)
+  if (not artificial_velocity_isvalid_)
   {
     // reinitialize the transfer vector
     fluid_artificial_velocity_->Scale(0.0);
 
     // declare parameter list and set some params
     Teuchos::ParameterList params;
-    params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structure_SearchTree_);
-    params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct_);
-    params.set<std::string>("immerseddisname","structure");
+    params.set<Teuchos::RCP<GEO::SearchTree>>("structsearchtree_rcp", structure_SearchTree_);
+    params.set<std::map<int, LINALG::Matrix<3, 1>>*>(
+        "currpositions_struct", &currpositions_struct_);
+    params.set<std::string>("immerseddisname", "structure");
 
     // pointer to (potentially) immersed fluid element
     DRT::Element* ele;
@@ -62,11 +66,16 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
     std::vector<int> immersedbdrygids(0);
 
 
-    if(myrank_ == 0)
+    if (myrank_ == 0)
     {
-      std::cout<<"################################################################################################"<<std::endl;
-      std::cout<<"###   Least squares approximation of "<<fluid_dis->Name()<<" nodal velocities from immersed elements..."<<std::endl;
-      std::cout<<"################################################################################################"<<std::endl;
+      std::cout << "###############################################################################"
+                   "#################"
+                << std::endl;
+      std::cout << "###   Least squares approximation of " << fluid_dis->Name()
+                << " nodal velocities from immersed elements..." << std::endl;
+      std::cout << "###############################################################################"
+                   "#################"
+                << std::endl;
     }
 
     /*===============================================================================*
@@ -74,12 +83,14 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
      *===============================================================================*/
 
     // set fluid action type
-    params.set<int>("action",FLD::search_immersed_boundary_elements);
+    params.set<int>("action", FLD::search_immersed_boundary_elements);
 
     // loop over all potentially immersed fluid elements
-    for (std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_fluiddis_.begin(); closele != curr_subset_of_fluiddis_.end(); closele++)
+    for (std::map<int, std::set<int>>::const_iterator closele = curr_subset_of_fluiddis_.begin();
+         closele != curr_subset_of_fluiddis_.end(); closele++)
     {
-      for (std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+      for (std::set<int>::const_iterator eleIter = (closele->second).begin();
+           eleIter != (closele->second).end(); eleIter++)
       {
         ele = fluid_dis->gElement(*eleIter);
 
@@ -89,7 +100,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
 
         // location array containing fluid dofset
         DRT::Element::LocationArray la(1);
-        immersedelebase->LocationVector(*fluid_dis,la,false);
+        immersedelebase->LocationVector(*fluid_dis, la, false);
 
         // dummy matrix and vector
         Epetra_SerialDenseMatrix dummyMat;
@@ -97,7 +108,8 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
 
         // check if current fluid element contains structure nodes or gauss points
         // and set the flags SetIsImmersed(1) and SetHasProjectedDirichlet(1) for the element
-        immersedelebase->Evaluate(params,*fluid_dis,la[0].lm_,dummyMat,dummyMat,dummyVec,dummyVec,dummyVec);
+        immersedelebase->Evaluate(
+            params, *fluid_dis, la[0].lm_, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
 
         // fluid element is immersed by structure
         if (immersedelebase->IsImmersed())
@@ -106,7 +118,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
           immersedbdrygids.push_back(immersedelebase->Id());
 
           // loop over nodes of immersed fluid element
-          for (int node=0; node<(ele->NumNode()); node++)
+          for (int node = 0; node < (ele->NumNode()); node++)
           {
             // access current node
             DRT::Node* currnode = (ele->Nodes()[node]);
@@ -115,28 +127,28 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
             if (currnode->Owner() == myrank_)
             {
               // dof gids of node are already added
-              if (static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
-                continue;
+              if (static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->IsMatched()) continue;
 
               // otherwise mark node as matched and add dof gids
-              static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
+              static_cast<IMMERSED::ImmersedNode*>(ele->Nodes()[node])->SetIsMatched(1);
 
               // get nodal dof gids
-              std::vector<int> dofs = fluid_dis->Dof(0,currnode);
+              std::vector<int> dofs = fluid_dis->Dof(0, currnode);
 
               // append nodal dof gids
-              for (int dim=0; dim<4; ++dim)
+              for (int dim = 0; dim < 4; ++dim)
               {
                 immerseddofs.push_back(dofs[dim]);
               }
             }
-          } // end loop over nodes of immersed fluid element
+          }  // end loop over nodes of immersed fluid element
         }
       }
-    } // end loop over all potentially immersed fluid elements
+    }  // end loop over all potentially immersed fluid elements
 
     // output of found immersed elements
-    std::cout<<"CalcArtificialVelocity found "<<immersedbdrygids.size()<<" boundary immersed elements on Proc "<<myrank_<<std::endl;
+    std::cout << "CalcArtificialVelocity found " << immersedbdrygids.size()
+              << " boundary immersed elements on Proc " << myrank_ << std::endl;
 
     /*===============================================================================*
      | get DofRowMaps and initialize the map extractor                               |
@@ -144,20 +156,21 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
 
     // build DofRowMap of immersed fluid nodes
     int numimmerseddofs = immerseddofs.size();
-    Teuchos::RCP<Epetra_Map> immersed_dofrowmap = Teuchos::rcp(new Epetra_Map(-1,numimmerseddofs,&(immerseddofs[0]),0,fluid_dis->Comm()));
+    Teuchos::RCP<Epetra_Map> immersed_dofrowmap =
+        Teuchos::rcp(new Epetra_Map(-1, numimmerseddofs, &(immerseddofs[0]), 0, fluid_dis->Comm()));
 
     if (not immersed_dofrowmap->UniqueGIDs())
       dserror("immersed_dofrowmap in CalcArtificialVelocity is not unique!");
 
     // get DofRowMap of all fluid nodes
-    Teuchos::RCP<Epetra_Map> fluid_dofrowmap = Teuchos::rcp(new Epetra_Map(*fluid_dis->DofRowMap(0)));
+    Teuchos::RCP<Epetra_Map> fluid_dofrowmap =
+        Teuchos::rcp(new Epetra_Map(*fluid_dis->DofRowMap(0)));
 
     // initialize (fluid nodal dof <-> immersed nodal dof) map extractor
-    Teuchos::RCP<LINALG::MapExtractor> bdry_map_extractor = Teuchos::rcp(
-        new LINALG::MapExtractor(
-            *fluid_dofrowmap,
-            immersed_dofrowmap // is condition map
-        ));
+    Teuchos::RCP<LINALG::MapExtractor> bdry_map_extractor =
+        Teuchos::rcp(new LINALG::MapExtractor(*fluid_dofrowmap,
+            immersed_dofrowmap  // is condition map
+            ));
 
     // check immersed boundary map extractor
     bdry_map_extractor->CheckForValidMapExtractor();
@@ -167,19 +180,14 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
      *===============================================================================*/
 
     // initialize least squares system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> ls_mat = Teuchos::rcp(
-        new LINALG::SparseMatrix(
-            *immersed_dofrowmap,
-            32,
-            true,
-            false
-        ));
+    Teuchos::RCP<LINALG::SparseMatrix> ls_mat =
+        Teuchos::rcp(new LINALG::SparseMatrix(*immersed_dofrowmap, 32, true, false));
 
     // initialize least squares right-hand side vector
-    Teuchos::RCP<Epetra_Vector> ls_rhs = LINALG::CreateVector(*immersed_dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> ls_rhs = LINALG::CreateVector(*immersed_dofrowmap, true);
 
     // initialize least squares solution vector
-    Teuchos::RCP<Epetra_Vector> ls_sol = LINALG::CreateVector(*immersed_dofrowmap,true);
+    Teuchos::RCP<Epetra_Vector> ls_sol = LINALG::CreateVector(*immersed_dofrowmap, true);
 
     /*===============================================================================*
      | create assemble strategy                                                      |
@@ -187,13 +195,13 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
 
     // create strategy for assembly of least squares system matrix and right-hand side vector
     DRT::AssembleStrategy ls_strategy(
-        0,                    // row assembly based on number of dofset associated with fluid discretization
-        0,                    // column assembly based on number of dofset associated with fluid discretization
-        ls_mat,               // least squares system matrix
-        Teuchos::null,        //
-        ls_rhs,               // least squares right-hand side vector
-        Teuchos::null,        //
-        Teuchos::null         //
+        0,       // row assembly based on number of dofset associated with fluid discretization
+        0,       // column assembly based on number of dofset associated with fluid discretization
+        ls_mat,  // least squares system matrix
+        Teuchos::null,  //
+        ls_rhs,         // least squares right-hand side vector
+        Teuchos::null,  //
+        Teuchos::null   //
     );
 
     /*===============================================================================*
@@ -201,14 +209,14 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
      *===============================================================================*/
 
     // set fluid action type
-    params.set<int>("action",FLD::least_squares_matrix_rhs_immersed_boundary);
+    params.set<int>("action", FLD::least_squares_matrix_rhs_immersed_boundary);
 
     // loop over all immersed fluid elements
-    for (int i=0; i<(int)immersedbdrygids.size(); ++i)
+    for (int i = 0; i < (int)immersedbdrygids.size(); ++i)
     {
       int eid = immersedbdrygids[i];
 
-      ele=fluid_dis->gElement(eid);
+      ele = fluid_dis->gElement(eid);
 
       immersedelebase = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
       if (immersedelebase == NULL)
@@ -216,29 +224,26 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
 
       // location array containing fluid dofset
       DRT::Element::LocationArray la(1);
-      immersedelebase->LocationVector(*fluid_dis,la,false);
+      immersedelebase->LocationVector(*fluid_dis, la, false);
 
       // get row and col dofset
       int row = ls_strategy.FirstDofSet();
       int col = ls_strategy.SecondDofSet();
 
-      ls_strategy.ClearElementStorage( la[row].Size(), la[col].Size() );
+      ls_strategy.ClearElementStorage(la[row].Size(), la[col].Size());
 
       // evaluate the least squares matrix and rhs for the current fluid element
-      immersedelebase->Evaluate(params,*fluid_dis,la[row].lm_,
-          ls_strategy.Elematrix1(),
-          ls_strategy.Elematrix2(),
-          ls_strategy.Elevector1(),
-          ls_strategy.Elevector2(),
+      immersedelebase->Evaluate(params, *fluid_dis, la[row].lm_, ls_strategy.Elematrix1(),
+          ls_strategy.Elematrix2(), ls_strategy.Elevector1(), ls_strategy.Elevector2(),
           ls_strategy.Elevector3());
 
       // assembly
-      ls_strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
-      ls_strategy.AssembleVector1(la[row].lm_, la[row].lmowner_ );
+      ls_strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
+      ls_strategy.AssembleVector1(la[row].lm_, la[row].lmowner_);
     }
 
     // finalize least squares system matrix
-    ls_mat->Complete(*immersed_dofrowmap,*immersed_dofrowmap);
+    ls_mat->Complete(*immersed_dofrowmap, *immersed_dofrowmap);
 
     /*===============================================================================*
      | solve resulting least squares system (saddle point system)                    |
@@ -248,7 +253,8 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
     Teuchos::ParameterList param_solve = DRT::Problem::Instance()->UMFPACKSolverParams();
     bool refactor = true;
     bool reset = true;
-    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(param_solve, fluid_dis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(
+        param_solve, fluid_dis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
     fluid_dis->ComputeNullSpaceIfNecessary(solver->Params());
 
     // solve for least squares optimal nodal values
@@ -258,7 +264,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannMemb
      | extract the least squares optimal nodal values                                |
      *===============================================================================*/
 
-    bdry_map_extractor->InsertVector(ls_sol,1,fluid_artificial_velocity_);
+    bdry_map_extractor->InsertVector(ls_sol, 1, fluid_artificial_velocity_);
 
     // we just validated the artificial velocity
     artificial_velocity_isvalid_ = true;
@@ -279,7 +285,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::CorrectInterfaceV
 {
   /*
    *  not implemented yet for immersed_partitioned_fsi_dirichletneumann_membrane
-   *  (a strategy in order to prevent oscillations of pressure close to the immersed boundary interface)
+   *  (a strategy in order to prevent oscillations of pressure close to the immersed boundary
+   * interface)
    */
 
   return;
@@ -291,10 +298,12 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::CorrectInterfaceV
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumannMembrane::CalcFluidTractionsOnStructure()
 {
   /*
-   *  the immersed partitioned fsi with membrane finite elements is in a first step implemented solely for structures
-   *  with dirichlet b.c. prescribed on all nodes so there is no need to determine the fluid traction
+   *  the immersed partitioned fsi with membrane finite elements is in a first step implemented
+   * solely for structures with dirichlet b.c. prescribed on all nodes so there is no need to
+   * determine the fluid traction
    *
-   *  remove this overloaded function after implementing the struct_calc_fluid_traction action type in membrane_evaluate
+   *  remove this overloaded function after implementing the struct_calc_fluid_traction action type
+   * in membrane_evaluate
    */
 
   return;

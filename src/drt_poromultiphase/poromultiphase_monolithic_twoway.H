@@ -27,7 +27,7 @@ namespace LINALG
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class Solver;
-}
+}  // namespace LINALG
 
 namespace DRT
 {
@@ -35,37 +35,27 @@ namespace DRT
   {
     class LocsysManager;
   }
-}
+}  // namespace DRT
 
 namespace POROMULTIPHASE
 {
-
   //! Base class of all solid-scatra algorithms
   class PoroMultiPhaseMonolithicTwoWay : public PoroMultiPhaseMonolithic
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseMonolithicTwoWay(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseMonolithicTwoWay(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& algoparams,
-        const Teuchos::ParameterList& structparams,
-        const Teuchos::ParameterList& fluidparams,
-        const std::string& struct_disname,
-        const std::string& fluid_disname,
-        bool isale,
-        int nds_disp,
-        int nds_vel,
-        int nds_solidpressure,
-        int ndsporofluid_scatra);
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
+        const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
+        const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
+        int nds_solidpressure, int ndsporofluid_scatra);
 
     /// setup
     virtual void SetupSystem();
@@ -74,42 +64,27 @@ namespace POROMULTIPHASE
     virtual void TimeStep();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
-    {
-      return blockrowdofmap_;
-    }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> sx,
-        Teuchos::RCP<const Epetra_Vector> fx,
-        const bool firstcall
-        );
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
+        const bool firstcall);
 
-    //! update all fields after convergence (add increment on displacements and fluid primary variables)
-    //! public for access from monolithic scatra problem
+    //! update all fields after convergence (add increment on displacements and fluid primary
+    //! variables) public for access from monolithic scatra problem
     void UpdateFieldsAfterConvergence(
-        Teuchos::RCP<const Epetra_Vector>& sx,
-        Teuchos::RCP<const Epetra_Vector>& fx
-        );
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
     // access to monolithic rhs vector
-    Teuchos::RCP<const Epetra_Vector> RHS() const
-    {
-      return rhs_;
-    }
+    Teuchos::RCP<const Epetra_Vector> RHS() const { return rhs_; }
 
     // access to monolithic block system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
-    {
-      return systemmatrix_;
-    }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const { return systemmatrix_; }
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
 
-  protected:
-
+   protected:
     //! Newton output to screen
     virtual void NewtonOutput();
 
@@ -127,10 +102,10 @@ namespace POROMULTIPHASE
     virtual Teuchos::RCP<Epetra_Vector> SetupStructurePartofRHS();
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv, //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
-        );
+    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
+    );
 
     //! extract the field vectors from a given composed vector.
     /*!
@@ -139,37 +114,36 @@ namespace POROMULTIPHASE
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
      */
-    virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx,
-        Teuchos::RCP<const Epetra_Vector>& fx);
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
     /// setup composed system matrix from field solvers
-    virtual void SetupMaps() ;
+    virtual void SetupMaps();
 
-    //Setup solver for monolithic system
+    // Setup solver for monolithic system
     virtual bool SetupSolver();
 
     //! build the block null spaces
     virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver);
 
     //! Evaluate mechanical-fluid system matrix
-    virtual void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
-        );
+    virtual void ApplyStrCouplMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+    );
 
     //! Evaluate fluid-mechanical system matrix
-    virtual void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
-          );
+    virtual void ApplyFluidCouplMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+    );
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc
-    );
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! return structure fluid coupling sparse matrix
     Teuchos::RCP<LINALG::SparseMatrix> StructFluidCouplingMatrix();
@@ -184,19 +158,20 @@ namespace POROMULTIPHASE
     void EquilibrateSystem();
 
     //! equilibrate matrix rows
-    void EquilibrateMatrixRows(
-        LINALG::SparseMatrix&                matrix,      //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&
+            invrowsums  //!< sums of absolute values of row entries in matrix
         ) const;
 
     //! compute inverse sums of absolute values of matrix row entries
-    void ComputeInvRowSums(
-        const LINALG::SparseMatrix&          matrix,      //!< matrix
-        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&
+            invrowsums  //!< inverse sums of absolute values of row entries in matrix
         ) const;
 
     //! Create the linear solver
-    virtual void CreateLinearSolver(const Teuchos::ParameterList& solverparams,const int solvertype);
+    virtual void CreateLinearSolver(
+        const Teuchos::ParameterList& solverparams, const int solvertype);
 
     //! Setup Newton-Raphson
     void SetupNewton();
@@ -204,7 +179,8 @@ namespace POROMULTIPHASE
     //! Print Header to screen
     void PrintHeader();
 
-    //! update all fields after convergence (add increment on displacements and fluid primary variables)
+    //! update all fields after convergence (add increment on displacements and fluid primary
+    //! variables)
     void UpdateFieldsAfterConvergence();
 
     // build norms for convergence check
@@ -216,7 +192,7 @@ namespace POROMULTIPHASE
     bool Converged();
 
     /// Print user output that structure field is disabled
-    void PrintStructureDisabledInfo() ;
+    void PrintStructureDisabledInfo();
 
 
     //! linear solver
@@ -232,16 +208,16 @@ namespace POROMULTIPHASE
     //! current iteration step
     int itnum_;
     //! @name Global vectors
-    Teuchos::RCP<Epetra_Vector> zeros_; //!< a zero vector of full length
+    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
+    Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of Poroelasticity system
 
-    Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
-    double solveradaptolbetter_;            //!< tolerance to which is adpated ?
-    bool solveradapttol_;                   //!< adapt solver tolerance
+    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;           //!< tolerance to which is adpated ?
+    bool solveradapttol_;                  //!< adapt solver tolerance
 
 
     //@}
@@ -273,30 +249,30 @@ namespace POROMULTIPHASE
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
-    double tolinc_;     //!< tolerance residual increment
-    double tolfres_;    //!< tolerance force residual
+    double tolinc_;   //!< tolerance residual increment
+    double tolfres_;  //!< tolerance force residual
 
-    double tolinc_struct_;     //!< tolerance residual increment for structure displacements
-    double tolfres_struct_;    //!< tolerance force residual for structure displacements
+    double tolinc_struct_;   //!< tolerance residual increment for structure displacements
+    double tolfres_struct_;  //!< tolerance force residual for structure displacements
 
-    double tolinc_fluid_;     //!< tolerance residual increment for fluid
-    double tolfres_fluid_;    //!< tolerance force residual for fluid
+    double tolinc_fluid_;   //!< tolerance residual increment for fluid
+    double tolfres_fluid_;  //!< tolerance force residual for fluid
 
     double normrhs_;  //!< norm of residual forces
     double norminc_;  //!< norm of residual unknowns
 
-    double normrhsfluid_;     //!< norm of residual forces (fluid )
-    double normincfluid_;     //!< norm of residual unknowns (fluid )
+    double normrhsfluid_;  //!< norm of residual forces (fluid )
+    double normincfluid_;  //!< norm of residual unknowns (fluid )
 
-    double normrhsstruct_;    //!< norm of residual forces (structure)
-    double normincstruct_;    //!< norm of residual unknowns (structure)
+    double normrhsstruct_;  //!< norm of residual forces (structure)
+    double normincstruct_;  //!< norm of residual unknowns (structure)
 
-    enum INPAR::POROMULTIPHASE::VectorNorm vectornormfres_;   //!< type of norm for residual
+    enum INPAR::POROMULTIPHASE::VectorNorm vectornormfres_;  //!< type of norm for residual
     enum INPAR::POROMULTIPHASE::VectorNorm vectornorminc_;   //!< type of norm for increments
 
-    Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
-    double dtsolve_; //!< linear solver time
-    double dtele_; //!< time for element evaluation + build-up of system matrix
+    Epetra_Time timernewton_;  //!< timer for measurement of solution time of newton iterations
+    double dtsolve_;           //!< linear solver time
+    double dtele_;             //!< time for element evaluation + build-up of system matrix
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
@@ -304,16 +280,15 @@ namespace POROMULTIPHASE
     //! flag for finite difference check
     INPAR::POROMULTIPHASE::FDCheck fdcheck_;
 
-  }; //PoroMultiPhasePartitioned
+  };  // PoroMultiPhasePartitioned
 
   //! Base class of all solid-scatra algorithms
   class PoroMultiPhaseMonolithicTwoWayArteryCoupling : public PoroMultiPhaseMonolithicTwoWay
   {
-  public:
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseMonolithicTwoWayArteryCoupling(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseMonolithicTwoWayArteryCoupling(){};
@@ -326,18 +301,15 @@ namespace POROMULTIPHASE
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
                    and artery pressure
      */
-    virtual void ExtractFieldVectors(
-        Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx,
-        Teuchos::RCP<const Epetra_Vector>& fx);
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
-  protected:
+   protected:
+    /// setup composed system matrix from field solvers
+    virtual void SetupMaps();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupMaps() ;
-
-    /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
     /// setup global rhs
     virtual void SetupRHS();
@@ -346,20 +318,21 @@ namespace POROMULTIPHASE
     virtual void BuildCombinedDBCMap();
 
     //! Create the linear solver
-    virtual void CreateLinearSolver(const Teuchos::ParameterList& solverparams,const int solvertype);
+    virtual void CreateLinearSolver(
+        const Teuchos::ParameterList& solverparams, const int solvertype);
 
     //! build the block null spaces
-    virtual void BuildArteryBlockNullSpace(Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum);
+    virtual void BuildArteryBlockNullSpace(
+        Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum);
 
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;
 
     //! dof row map splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
-
   };
 
 
-}
+}  // namespace POROMULTIPHASE
 
 #endif /* SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_ */

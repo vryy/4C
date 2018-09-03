@@ -30,7 +30,6 @@ namespace ART
 {
   namespace UTILS
   {
-
     //--------------------------------------------------------------------
     // Wrapper class (to be called from outside) for inlet bc
     //--------------------------------------------------------------------
@@ -45,25 +44,21 @@ namespace ART
     \brief Standard solver for 1d artery inlet
     */
     void SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> actdis,
-                                   const DRT::Condition *   condition,
-                                   Teuchos::ParameterList &          params);
+        const DRT::Condition* condition, Teuchos::ParameterList& params);
 
     /*
     \brief Standard solver for 1d artery reflective outlet
     */
     void SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdis,
-                                 const DRT::Condition *           condition,
-                                 Teuchos::ParameterList &                  params);
+        const DRT::Condition* condition, Teuchos::ParameterList& params);
 
     /*
     \brief Standard solver for 1d artery explicit windkessel BC outlet
     */
     void SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
-                               const DRT::Condition *           condition,
-                               Teuchos::ParameterList &                  params);
+        const DRT::Condition* condition, Teuchos::ParameterList& params);
 
-  } // namespace UTILS
-} // namespace ART
+  }  // namespace UTILS
+}  // namespace ART
 
 #endif /* ART_TERMINAL_H_ */
-

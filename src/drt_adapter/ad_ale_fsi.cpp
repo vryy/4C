@@ -18,8 +18,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleFsiWrapper::AleFsiWrapper(Teuchos::RCP<Ale> ale)
-  : AleWrapper(ale)
+ADAPTER::AleFsiWrapper::AleFsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
@@ -30,8 +29,7 @@ ADAPTER::AleFsiWrapper::AleFsiWrapper(Teuchos::RCP<Ale> ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor>
-ADAPTER::AleFsiWrapper::Interface() const
+Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleFsiWrapper::Interface() const
 {
   return interface_;
 }

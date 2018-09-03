@@ -26,25 +26,20 @@ Maintainer: Martin Winklmaier
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                    winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
-TOPOPT::Algorithm::Algorithm(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& topopt
-)
-: FluidTopOptCouplingAlgorithm(comm, topopt),
-  topopt_(topopt),
-  optimizer_(Optimizer()),
-  doGradient_(true),
-  gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(topopt_,"GRADIENT_TYPE")),
-  restarttype_(INPAR::TOPOPT::no_restart)
+TOPOPT::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& topopt)
+    : FluidTopOptCouplingAlgorithm(comm, topopt),
+      topopt_(topopt),
+      optimizer_(Optimizer()),
+      doGradient_(true),
+      gradienttype_(
+          DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(topopt_, "GRADIENT_TYPE")),
+      restarttype_(INPAR::TOPOPT::no_restart)
 {
   return;
 }
 
 
-void TOPOPT::Algorithm::TimeLoop()
-{
-  dserror("No time loop in main optimization routine!");
-}
+void TOPOPT::Algorithm::TimeLoop() { dserror("No time loop in main optimization routine!"); }
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -61,7 +56,9 @@ void TOPOPT::Algorithm::OptimizationLoop()
   DoFluidField();
 
   // stop if only primal equations are tested
-  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")==INPAR::TOPOPT::adjointtest_primal)
+  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
+          AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"), "TESTCASE") ==
+      INPAR::TOPOPT::adjointtest_primal)
     return;
 
   // required when restart is called, otherwise only objective value required
@@ -74,36 +71,38 @@ void TOPOPT::Algorithm::OptimizationLoop()
     {
       switch (gradienttype_)
       {
-      case INPAR::TOPOPT::gradientByAdjoints:
-      {
-        // Transfer data from primary field to adjoint field
-        PrepareAdjointField();
+        case INPAR::TOPOPT::gradientByAdjoints:
+        {
+          // Transfer data from primary field to adjoint field
+          PrepareAdjointField();
 
-        // solve the adjoint equations
-        DoAdjointField();
+          // solve the adjoint equations
+          DoAdjointField();
 
-        break;
-      }
-      case INPAR::TOPOPT::gradientByFD1:
-      {
-        FDGradient(1);
-        break;
-      }
-      case INPAR::TOPOPT::gradientByFD2:
-      {
-        FDGradient(2);
-        break;
-      }
-      default:
-      {
-        dserror("unknown approach for computation of objective gradient");
-        break;
-      }
+          break;
+        }
+        case INPAR::TOPOPT::gradientByFD1:
+        {
+          FDGradient(1);
+          break;
+        }
+        case INPAR::TOPOPT::gradientByFD2:
+        {
+          FDGradient(2);
+          break;
+        }
+        default:
+        {
+          dserror("unknown approach for computation of objective gradient");
+          break;
+        }
       }
     }
 
-    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")!=INPAR::TOPOPT::adjointtest_no)
-      break; // stop here if adjoints are tested
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
+            AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"), "TESTCASE") !=
+        INPAR::TOPOPT::adjointtest_no)
+      break;  // stop here if adjoints are tested
 
     // compute the gradient of the objective function
     PrepareOptimizationStep();
@@ -148,19 +147,24 @@ void TOPOPT::Algorithm::PrepareOptimization()
  *------------------------------------------------------------------------------------------------*/
 bool TOPOPT::Algorithm::OptimizationFinished()
 {
-  INPAR::TOPOPT::AdjointCase testcase =
-      DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
-          AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE");
+  INPAR::TOPOPT::AdjointCase testcase = DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
+      AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"), "TESTCASE");
 
-  if (testcase!=INPAR::TOPOPT::adjointtest_no and optimizer_->Iter()>=1)
-    return true; // special test cases for adjoint equations -> no optimization
+  if (testcase != INPAR::TOPOPT::adjointtest_no and optimizer_->Iter() >= 1)
+    return true;  // special test cases for adjoint equations -> no optimization
 
-  if (FluidField()->Discretization()->Comm().MyPID()==0)
+  if (FluidField()->Discretization()->Comm().MyPID() == 0)
   {
     printf("\n");
-    printf("          +----------------------------------------------------------------------+          \n");
-    printf("          |                          Optimization Step                           |          \n");
-    printf("          +----------------------------------------------------------------------+          \n");
+    printf(
+        "          +----------------------------------------------------------------------+        "
+        "  \n");
+    printf(
+        "          |                          Optimization Step                           |        "
+        "  \n");
+    printf(
+        "          +----------------------------------------------------------------------+        "
+        "  \n");
   }
 
   return optimizer_->Converged(doGradient_);
@@ -172,20 +176,20 @@ bool TOPOPT::Algorithm::OptimizationFinished()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareFluidField()
 {
-  Teuchos::rcp_dynamic_cast<FLD::TimIntTopOpt>(FluidField())->SetTopOptData(
-      Optimizer()->Density(),
-      optimizer_);
+  Teuchos::rcp_dynamic_cast<FLD::TimIntTopOpt>(FluidField())
+      ->SetTopOptData(Optimizer()->Density(), optimizer_);
 
   // reset initial field
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
-  if(initfield != INPAR::FLUID::initfield_zero_field)
+  INPAR::FLUID::InitialField initfield =
+      DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
+  if (initfield != INPAR::FLUID::initfield_zero_field)
   {
     int startfuncno = fdyn.get<int>("STARTFUNCNO");
     if (initfield != INPAR::FLUID::initfield_field_by_function and
         initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
-      startfuncno=-1;
-    FluidField()->SetInitialFlowField(initfield,startfuncno);
+      startfuncno = -1;
+    FluidField()->SetInitialFlowField(initfield, startfuncno);
   }
 
   return;
@@ -198,12 +202,18 @@ void TOPOPT::Algorithm::PrepareFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoFluidField()
 {
-  if (FluidField()->Discretization()->Comm().MyPID()==0)
+  if (FluidField()->Discretization()->Comm().MyPID() == 0)
   {
     printf("\n");
-    printf("          +----------------------------------------------------------------------------+          \n");
-    printf("          |                          Solving Fluid Equations                           |          \n");
-    printf("          +----------------------------------------------------------------------------+          \n");
+    printf(
+        "          +----------------------------------------------------------------------------+  "
+        "        \n");
+    printf(
+        "          |                          Solving Fluid Equations                           |  "
+        "        \n");
+    printf(
+        "          +----------------------------------------------------------------------------+  "
+        "        \n");
   }
 
   FluidField()->Integrate();
@@ -218,17 +228,16 @@ void TOPOPT::Algorithm::DoFluidField()
 void TOPOPT::Algorithm::PrepareAdjointField()
 {
   AdjointFluidField()->SetTopOptData(
-      Optimizer()->ExportFluidData(),
-      Optimizer()->Density(),
-      optimizer_);
+      Optimizer()->ExportFluidData(), Optimizer()->Density(), optimizer_);
 
   // reset initial field
-  const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
-  INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
+  const Teuchos::ParameterList& adjointfdyn =
+      DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
+  INPAR::TOPOPT::InitialAdjointField initfield =
+      DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn, "INITIALFIELD");
   int startfuncno = adjointfdyn.get<int>("INITFUNCNO");
-  if (initfield != INPAR::TOPOPT::initadjointfield_field_by_function)
-    startfuncno=-1;
-  AdjointFluidField()->SetInitialAdjointField(initfield,startfuncno);
+  if (initfield != INPAR::TOPOPT::initadjointfield_field_by_function) startfuncno = -1;
+  AdjointFluidField()->SetInitialAdjointField(initfield, startfuncno);
 
   return;
 }
@@ -240,12 +249,20 @@ void TOPOPT::Algorithm::PrepareAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoAdjointField()
 {
-  if (AdjointFluidField()->Discretization()->Comm().MyPID()==0)
+  if (AdjointFluidField()->Discretization()->Comm().MyPID() == 0)
   {
     printf("\n");
-    printf("          +------------------------------------------------------------------------------+          \n");
-    printf("          |                          Solving Adjoint Equations                           |          \n");
-    printf("          +------------------------------------------------------------------------------+          \n");
+    printf(
+        "          "
+        "+------------------------------------------------------------------------------+          "
+        "\n");
+    printf(
+        "          |                          Solving Adjoint Equations                           "
+        "|          \n");
+    printf(
+        "          "
+        "+------------------------------------------------------------------------------+          "
+        "\n");
   }
 
   AdjointFluidField()->Integrate();
@@ -260,34 +277,35 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
 {
   Teuchos::RCP<const Epetra_Vector> density = Optimizer()->Density();
 
-  if (density->GlobalLength()>5000) dserror("really that much fluid solutions for gradient computation???");
+  if (density->GlobalLength() > 5000)
+    dserror("really that much fluid solutions for gradient computation???");
 
-  double c = 1.0e-5; // good step size for gradient approximation (low discretization and round-off error)
+  double c =
+      1.0e-5;  // good step size for gradient approximation (low discretization and round-off error)
 
-  for (int i=0;i<Optimizer()->RowMap()->NumGlobalElements();i++)
+  for (int i = 0; i < Optimizer()->RowMap()->NumGlobalElements(); i++)
   {
     if (Optimizer()->OptiDis()->Comm().MyPID() == 0)
     {
       printf("+----------------------------------------------------------------------+\n");
-      printf("|- computing finite difference gradient in direction %6d of %6d -|\n",i+1,density->GlobalLength());
+      printf("|- computing finite difference gradient in direction %6d of %6d -|\n", i + 1,
+          density->GlobalLength());
       printf("+----------------------------------------------------------------------+\n");
     }
 
-    for (int j=0;j<numFDPoints;j++)
+    for (int j = 0; j < numFDPoints; j++)
     {
-      if (j==1) c = -c; // first direction is +c, second -c
+      if (j == 1) c = -c;  // first direction is +c, second -c
 
       // change optimization variable in current direction
-      Optimizer()->AdoptDensityForFD(c,i);
+      Optimizer()->AdoptDensityForFD(c, i);
 
       // adapt porosity field and clear no more required fluid data
       Update();
 
       // data of primal (fluid) problem no more required
       FluidField()->Reset(
-          true,
-          AlgoParameters().get<int>("NUM_OUTPUT_STEPS"),
-          Optimizer()->Iter()+2);
+          true, AlgoParameters().get<int>("NUM_OUTPUT_STEPS"), Optimizer()->Iter() + 2);
 
       // prepare data for new optimization iteration
       PrepareFluidField();
@@ -296,10 +314,10 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
       DoFluidField();
 
       // compute gradient in this direction
-      Optimizer()->ComputeGradientDirectionForFD(c,i,j,numFDPoints);
+      Optimizer()->ComputeGradientDirectionForFD(c, i, j, numFDPoints);
 
       // remove change in order to recover original optimization variable
-      Optimizer()->AdoptDensityForFD(-c,i);
+      Optimizer()->AdoptDensityForFD(-c, i);
     }
   }
 }
@@ -311,14 +329,10 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareOptimizationStep()
 {
-  if (doGradient_ and gradienttype_==INPAR::TOPOPT::gradientByAdjoints)
-    optimizer_->Gradients();
+  if (doGradient_ and gradienttype_ == INPAR::TOPOPT::gradientByAdjoints) optimizer_->Gradients();
 
   // data of primal (fluid) problem no more required
-  FluidField()->Reset(
-      true,
-      AlgoParameters().get<int>("NUM_OUTPUT_STEPS"),
-      Optimizer()->Iter()+2);
+  FluidField()->Reset(true, AlgoParameters().get<int>("NUM_OUTPUT_STEPS"), Optimizer()->Iter() + 2);
 
   // hack to get new optimization parameters in fluid without new routines...
   FluidField()->Init();
@@ -351,8 +365,7 @@ void TOPOPT::Algorithm::FinishOptimizationStep()
   // data of dual (adjoint) problem no more required
   if (doGradient_)
     AdjointFluidField()->Reset(
-        AlgoParameters().get<int>("NUM_OUTPUT_STEPS"),
-        Optimizer()->Iter()+1);
+        AlgoParameters().get<int>("NUM_OUTPUT_STEPS"), Optimizer()->Iter() + 1);
 
   return;
 }
@@ -395,36 +408,36 @@ void TOPOPT::Algorithm::Restart(const int step, const INPAR::TOPOPT::Restart typ
   restarttype_ = type;
   switch (type)
   {
-  case INPAR::TOPOPT::adjoint:
-  {
-    dserror("currently not implemented restart type");
-    AdjointFluidField()->ReadRestart(step);
-    break;
-  }
-  case INPAR::TOPOPT::fluid:
-  {
-    dserror("currently not implemented restart type");
-    FluidField()->ReadRestart(step);
-    break;
-  }
-  case INPAR::TOPOPT::gradient:
-  {
-    dserror("currently not implemented restart type");
-    break;
-  }
-  case INPAR::TOPOPT::opti_step:
-  {
-    if (gradienttype_ != INPAR::TOPOPT::gradientByAdjoints)
-      dserror("restart only implemented for adjoints approach!");
+    case INPAR::TOPOPT::adjoint:
+    {
+      dserror("currently not implemented restart type");
+      AdjointFluidField()->ReadRestart(step);
+      break;
+    }
+    case INPAR::TOPOPT::fluid:
+    {
+      dserror("currently not implemented restart type");
+      FluidField()->ReadRestart(step);
+      break;
+    }
+    case INPAR::TOPOPT::gradient:
+    {
+      dserror("currently not implemented restart type");
+      break;
+    }
+    case INPAR::TOPOPT::opti_step:
+    {
+      if (gradienttype_ != INPAR::TOPOPT::gradientByAdjoints)
+        dserror("restart only implemented for adjoints approach!");
 
-    Optimizer()->ReadRestart(step);
-    break;
-  }
-  default:
-  {
-    dserror("unknown restart type");
-    break;
-  }
+      Optimizer()->ReadRestart(step);
+      break;
+    }
+    default:
+    {
+      dserror("unknown restart type");
+      break;
+    }
   }
 
   return;

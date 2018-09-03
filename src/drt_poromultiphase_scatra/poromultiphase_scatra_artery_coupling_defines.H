@@ -16,33 +16,36 @@
 /************************************************************************/
 /* Projection                                                           */
 /************************************************************************/
-#define PROJMAXITER 10     /* max number of steps for local Newton */
-//default: 10
-#define PROJOUTPUT false   /* output of projection algorithm */
-//default: false
-#define SMALLESTSEGMENT 1.0e-12   /* segments cannot be smaller than this */
-//default: 1.0e-12
-#define ETAABTOL 1.0e-10   /* used for check if segments are identical */
-//default: 1.0e-10
-#define VALIDPROJTOL 1.0e-9   /* used for check if projection is valid
+#define PROJMAXITER 10 /* max number of steps for local Newton */
+// default: 10
+#define PROJOUTPUT false /* output of projection algorithm */
+// default: false
+#define SMALLESTSEGMENT 1.0e-12 /* segments cannot be smaller than this */
+// default: 1.0e-12
+#define ETAABTOL 1.0e-10 /* used for check if segments are identical */
+// default: 1.0e-10
+#define VALIDPROJTOL                                                 \
+  1.0e-9                    /* used for check if projection is valid \
 //default: 1.0e-9                (lies inside parameter space of this element) */
-#define COLINEARTOL 1.0e-12   /* used for check if elements are colinear */
-//default: 1.0e-12
-#define CONVTOLNEWTONPROJ 1.0e-14   /* tolerance for Newton projection algorithm */
-//default: 1.0e-14
-#define NUMPROJCHECKS 11   /* number of checks performed in interval [-0.99, 0.99] */
-//default: 11
-#define THROW_ERR_AT_DEGENERATE_CASE false   /* throw error if degenerate case is detected */
-//default: false
+#define COLINEARTOL 1.0e-12 /* used for check if elements are colinear */
+// default: 1.0e-12
+#define CONVTOLNEWTONPROJ 1.0e-14 /* tolerance for Newton projection algorithm */
+// default: 1.0e-14
+#define NUMPROJCHECKS 11 /* number of checks performed in interval [-0.99, 0.99] */
+// default: 11
+#define THROW_ERR_AT_DEGENERATE_CASE false /* throw error if degenerate case is detected */
+// default: false
 /************************************************************************/
 /* Random                                                               */
 /************************************************************************/
-#define KAPPAINVTOL 1.0e-10   /* used if kappa vector can be inverted */
-//default: 1.0e-10
-#define CONVTOLNEWTONMESHMOVEMENT 1.0e-09   /* used for convergence check of Newton for
-//default: 1.0e-9                             recomputation of eta and xi in current configuration */
-#define MESHMOVEMENTMAXITER 10     /* max number of steps for local Newton (mesh movement) */
-//default: 10
-#define BRUTEFORCESAFETY 1.4     /* safety factor for brute force search */
-//default: 1.4
+#define KAPPAINVTOL 1.0e-10 /* used if kappa vector can be inverted */
+// default: 1.0e-10
+#define CONVTOLNEWTONMESHMOVEMENT                                                                                       \
+  1.0e-09                      /* used for convergence check of Newton for                                              \
+//default: 1.0e-9                             recomputation of eta and xi in current configuration \
+                     */
+#define MESHMOVEMENTMAXITER 10 /* max number of steps for local Newton (mesh movement) */
+// default: 10
+#define BRUTEFORCESAFETY 1.4 /* safety factor for brute force search */
+// default: 1.4
 #endif /* SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H_ */

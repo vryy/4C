@@ -11,7 +11,8 @@
 
 #ifdef HAVE_MueLu
 
-namespace MueLu {
+namespace MueLu
+{
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class ContactAFilterFactory;
 }
@@ -20,6 +21,6 @@ namespace MueLu {
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
 #endif
 
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
-#endif // MUELU_CONTACTAFILTERFACTORY_FWD_HPP
+#endif  // MUELU_CONTACTAFILTERFACTORY_FWD_HPP

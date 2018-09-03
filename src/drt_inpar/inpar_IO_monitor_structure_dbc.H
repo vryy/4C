@@ -24,20 +24,19 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-namespace IO_MONITOR_STRUCTURE_DBC
-{
-
-  /// data format for written numeric data
-  enum FileType
+  namespace IO_MONITOR_STRUCTURE_DBC
   {
-    csv,
-    data
-  };
+    /// data format for written numeric data
+    enum FileType
+    {
+      csv,
+      data
+    };
 
-  /// set the valid parameters related to writing of VTK output at runtime
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    /// set the valid parameters related to writing of VTK output at runtime
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}
-}
+  }  // namespace IO_MONITOR_STRUCTURE_DBC
+}  // namespace INPAR
 
 #endif

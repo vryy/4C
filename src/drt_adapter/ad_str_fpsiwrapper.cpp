@@ -19,8 +19,9 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> structure)
-: FSIStructureWrapper(structure)
-{}
+    : FSIStructureWrapper(structure)
+{
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -36,7 +37,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
     double time = 0.0;
     double pstime = -1.0;
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    INPAR::STR::PreStress pstype =
+        DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
       time = TimeOld();
@@ -45,7 +47,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
 
     if (pstype != INPAR::STR::prestress_none && time <= pstime)
     {
-      return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(),true));
+      return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }
     else
     {
@@ -60,16 +62,17 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
 Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispnp(bool FPSI)
 {
   if (!FPSI)
-   {
-     return ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp();
-   }
-   else
-   {
+  {
+    return ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp();
+  }
+  else
+  {
     // prestressing business
     double time = 0.0;
     double pstime = -1.0;
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    INPAR::STR::PreStress pstype =
+        DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn, "PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
       time = Time();
@@ -78,11 +81,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::ExtractInterfaceDispn
 
     if (pstype != INPAR::STR::prestress_none && time <= pstime)
     {
-      return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(),true));
+      return Teuchos::rcp(new Epetra_Vector(*interface_->FPSICondMap(), true));
     }
     else
     {
       return interface_->ExtractFPSICondVector(Dispnp());
     }
-   }
+  }
 }

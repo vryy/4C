@@ -25,7 +25,6 @@
 /* belongs to particle namespace */
 namespace PARTICLE
 {
-
   /*====================================================================*/
   /*!
    * \brief Runge-Kutta:         2nd/4th order accurate,
@@ -35,24 +34,20 @@ namespace PARTICLE
    */
   class TimIntRK : public PARTICLE::TimIntExpl
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! Constructor
-    TimIntRK
-    (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& particledynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntRK(const Teuchos::ParameterList& ioparams,      //!< ioflags
+        const Teuchos::ParameterList& particledynparams,  //!< input parameters
+        const Teuchos::ParameterList& xparams,            //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,         //!< current discretisation
+        Teuchos::RCP<IO::DiscretizationWriter> output     //!< the output
     );
 
     //! Destructor
-    virtual ~TimIntRK(){ ; }
+    virtual ~TimIntRK() { ; }
 
     //@}
 
@@ -69,18 +64,14 @@ namespace PARTICLE
     virtual void UpdateStatesAfterParticleTransfer();
 
     //! write restart
-    virtual void OutputRestart
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    virtual void OutputRestart(bool& datawritten  //!< (in/out) read and append if
+                                                  //!< it was written at this time step
     );
 
     //! output displacements, velocities and accelerations
     //! and more system vectors
-    virtual void OutputState
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    virtual void OutputState(bool& datawritten  //!< (in/out) read and append if
+                                                //!< it was written at this time step
     );
 
     //! read and set restart state
@@ -104,16 +95,14 @@ namespace PARTICLE
 
     //@}
 
-  protected:
-
+   protected:
     //! Runge-Kutta scheme 2nd order
     void Integrate_RK_Second();
 
     //! Runge-Kutta scheme 4th order
     void Integrate_RK_Fourth();
 
-  private:
-
+   private:
     //! output displacement
     virtual void OutputDisplacement() const;
 

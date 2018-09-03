@@ -21,19 +21,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
     class MatList : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      MatList(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      MatList(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~MatList() { ; }
@@ -45,12 +41,12 @@ namespace MAT
       //@{
 
       /// provide ids of the individual materials
-      const std::vector<int>* MatIds() const {return matids_;}
+      const std::vector<int>* MatIds() const { return matids_; }
 
       /// provide access to material by its ID
       Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
 
-      std::map<int,Teuchos::RCP<MAT::Material> >* MaterialMapWrite() {return &mat_;}
+      std::map<int, Teuchos::RCP<MAT::Material>>* MaterialMapWrite() { return &mat_; }
 
       /// length of material list
       const int nummat_;
@@ -61,10 +57,9 @@ namespace MAT
       /// flag for individual materials or only one at global scope
       bool local_;
 
-    private:
-
+     private:
       /// map to materials (only used for local_==true)
-      std::map<int,Teuchos::RCP<MAT::Material> > mat_;
+      std::map<int, Teuchos::RCP<MAT::Material>> mat_;
 
       //@}
 
@@ -72,27 +67,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class MatListType : public DRT::ParObjectType
-{
-public:
+  class MatListType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MatListType"; }
 
-  std::string Name() const { return "MatListType"; }
+    static MatListType& Instance() { return instance_; };
 
-  static MatListType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static MatListType instance_;
-};
+   private:
+    static MatListType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
   class MatList : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     MatList();
 
@@ -141,13 +133,13 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatList( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new MatList(*this)); }
 
     /// number of materials
     int NumMat() const { return params_->nummat_; }
 
     /// material ID by Index
-    int MatID( const unsigned index ) const;
+    int MatID(const unsigned index) const;
 
     /// provide access to material by its ID
     virtual Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
@@ -155,16 +147,14 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::MatList* Parameter() const { return params_; }
 
-  protected:
+   protected:
+    /// return pointer to the materials map, which has read-only access.
+    const std::map<int, Teuchos::RCP<MAT::Material>>* MaterialMapRead() const { return &mat_; }
 
-    ///return pointer to the materials map, which has read-only access.
-    const std::map<int,Teuchos::RCP<MAT::Material> >* MaterialMapRead() const {return &mat_;}
+    /// return pointer to the materials map, which has read and write access.
+    std::map<int, Teuchos::RCP<MAT::Material>>* MaterialMapWrite() { return &mat_; }
 
-    ///return pointer to the materials map, which has read and write access.
-    std::map<int,Teuchos::RCP<MAT::Material> >* MaterialMapWrite() {return &mat_;}
-
-  private:
-
+   private:
     /// setup of material map
     void SetupMatMap();
 
@@ -175,11 +165,9 @@ private:
     MAT::PAR::MatList* params_;
 
     /// map to materials
-    std::map<int,Teuchos::RCP<MAT::Material> > mat_;
-
+    std::map<int, Teuchos::RCP<MAT::Material>> mat_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

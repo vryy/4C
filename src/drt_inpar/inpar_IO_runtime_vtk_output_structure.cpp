@@ -20,43 +20,39 @@
 
 namespace INPAR
 {
-namespace IO_RUNTIME_VTK
-{
-namespace STRUCTURE
-{
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+  namespace IO_RUNTIME_VTK
   {
-    using namespace DRT::INPUT;
-    using Teuchos::tuple;
-    using Teuchos::setStringToIntegralParameter;
+    namespace STRUCTURE
+    {
+      /*----------------------------------------------------------------------*
+       *----------------------------------------------------------------------*/
+      void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+      {
+        using namespace DRT::INPUT;
+        using Teuchos::setStringToIntegralParameter;
+        using Teuchos::tuple;
 
-    Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
-    Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
+        Teuchos::Array<std::string> yesnotuple =
+            tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
+        Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
 
-    // related sublist
-    Teuchos::ParameterList& sublist_IO = list->sublist("IO",false,"");
-    Teuchos::ParameterList& sublist_IO_VTK =
-        sublist_IO.sublist("RUNTIME VTK OUTPUT",false,"");
-    Teuchos::ParameterList& sublist_IO_VTK_structure =
-        sublist_IO_VTK.sublist("STRUCTURE",false,"");
+        // related sublist
+        Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
+        Teuchos::ParameterList& sublist_IO_VTK =
+            sublist_IO.sublist("RUNTIME VTK OUTPUT", false, "");
+        Teuchos::ParameterList& sublist_IO_VTK_structure =
+            sublist_IO_VTK.sublist("STRUCTURE", false, "");
 
-    // whether to write output for structure
-    setStringToIntegralParameter<int>("OUTPUT_STRUCTURE","No",
-                                 "write structure output",
-                                 yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+        // whether to write output for structure
+        setStringToIntegralParameter<int>("OUTPUT_STRUCTURE", "No", "write structure output",
+            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
-    // whether to write displacement state
-    setStringToIntegralParameter<int>("DISPLACEMENT","No",
-                                 "write displacement output",
-                                 yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
-
-  }
+        // whether to write displacement state
+        setStringToIntegralParameter<int>("DISPLACEMENT", "No", "write displacement output",
+            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+      }
 
 
-}
-}
-}
-
+    }  // namespace STRUCTURE
+  }    // namespace IO_RUNTIME_VTK
+}  // namespace INPAR

@@ -33,24 +33,21 @@
  | constructor                                            pfaller Oct17 |
  *----------------------------------------------------------------------*/
 UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
-:
-actdisc_(discr),
-myrank_(actdisc_->Comm().MyPID()),
-morparams_(DRT::Problem::Instance()->MORParams()),
-havemor_(false),
-projmatrix_(Teuchos::null),
-structmapr_(Teuchos::null),
-redstructmapr_(Teuchos::null),
-structrimpo_(Teuchos::null),
-structrinvimpo_(Teuchos::null)
+    : actdisc_(discr),
+      myrank_(actdisc_->Comm().MyPID()),
+      morparams_(DRT::Problem::Instance()->MORParams()),
+      havemor_(false),
+      projmatrix_(Teuchos::null),
+      structmapr_(Teuchos::null),
+      redstructmapr_(Teuchos::null),
+      structrimpo_(Teuchos::null),
+      structrinvimpo_(Teuchos::null)
 {
   // check if model order reduction is given in input file
-  if (morparams_.get<std::string>("POD_MATRIX") != std::string("none"))
-    havemor_ = true;
+  if (morparams_.get<std::string>("POD_MATRIX") != std::string("none")) havemor_ = true;
 
   // no mor? -> exit
-  if(not havemor_)
-    return;
+  if (not havemor_) return;
 
   // read projection matrix from binary file
   ReadMatrix(morparams_.get<std::string>("POD_MATRIX"), projmatrix_);
@@ -60,17 +57,17 @@ structrinvimpo_(Teuchos::null)
     if (myrank_ == 0) dserror("Projection matrix does not match discretization.");
 
   // check orthogonality
-  if(not IsOrthogonal(projmatrix_))
-    dserror("Projection matrix is not orthogonal.");
+  if (not IsOrthogonal(projmatrix_)) dserror("Projection matrix is not orthogonal.");
 
   // maps for reduced system
-  structmapr_=Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(),0,actdisc_->Comm()));
-  redstructmapr_=Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(),projmatrix_->NumVectors(),0,actdisc_->Comm()));
+  structmapr_ = Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, actdisc_->Comm()));
+  redstructmapr_ = Teuchos::rcp(
+      new Epetra_Map(projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, actdisc_->Comm()));
   // LINALG::AllreduceEMap cant't be used here, because NumGlobalElements will be choosen wrong
 
   // importers for reduced system
-  structrimpo_=Teuchos::rcp(new Epetra_Import(*structmapr_,*redstructmapr_));
-  structrinvimpo_=Teuchos::rcp(new Epetra_Import(*redstructmapr_,*structmapr_));
+  structrimpo_ = Teuchos::rcp(new Epetra_Import(*structmapr_, *redstructmapr_));
+  structrinvimpo_ = Teuchos::rcp(new Epetra_Import(*redstructmapr_, *structmapr_));
 
   return;
 }
@@ -81,16 +78,20 @@ structrinvimpo_(Teuchos::null)
 Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(Teuchos::RCP<LINALG::SparseMatrix> M)
 {
   // right multiply M * V
-  Teuchos::RCP<Epetra_MultiVector> M_tmp = Teuchos::rcp(new Epetra_MultiVector(M->RowMap(),projmatrix_->NumVectors(),true));
-  M->Multiply(false,*projmatrix_,*M_tmp);
+  Teuchos::RCP<Epetra_MultiVector> M_tmp =
+      Teuchos::rcp(new Epetra_MultiVector(M->RowMap(), projmatrix_->NumVectors(), true));
+  M->Multiply(false, *projmatrix_, *M_tmp);
 
   // left multiply V^T * (M * V)
-  Teuchos::RCP<Epetra_MultiVector> M_red_mvec = Teuchos::rcp(new Epetra_MultiVector(*structmapr_,M_tmp->NumVectors(),true));
-  MultiplyEpetraMultiVectors(projmatrix_,'T',M_tmp,'N',redstructmapr_,structrimpo_,M_red_mvec);
+  Teuchos::RCP<Epetra_MultiVector> M_red_mvec =
+      Teuchos::rcp(new Epetra_MultiVector(*structmapr_, M_tmp->NumVectors(), true));
+  MultiplyEpetraMultiVectors(
+      projmatrix_, 'T', M_tmp, 'N', redstructmapr_, structrimpo_, M_red_mvec);
 
   // convert Epetra_MultiVector to LINALG::SparseMatrix
-  Teuchos::RCP<LINALG::SparseMatrix> M_red = Teuchos::rcp(new LINALG::SparseMatrix(*structmapr_,0,false,true));
-  EpetraMultiVectorToLINALGSparseMatrix(M_red_mvec,structmapr_,Teuchos::null,M_red);
+  Teuchos::RCP<LINALG::SparseMatrix> M_red =
+      Teuchos::rcp(new LINALG::SparseMatrix(*structmapr_, 0, false, true));
+  EpetraMultiVectorToLINALGSparseMatrix(M_red_mvec, structmapr_, Teuchos::null, M_red);
 
   return M_red;
 }
@@ -98,16 +99,19 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(Teuchos::RCP<LINAL
 /*----------------------------------------------------------------------*
  | M_red = V^T * M                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(Teuchos::RCP<LINALG::SparseMatrix> M)
+Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
+    Teuchos::RCP<LINALG::SparseMatrix> M)
 {
   // right multiply M * V
-  Teuchos::RCP<Epetra_MultiVector> M_tmp = Teuchos::rcp(new Epetra_MultiVector(M->DomainMap(),projmatrix_->NumVectors(),true));
-  M->Multiply(true,*projmatrix_,*M_tmp);
+  Teuchos::RCP<Epetra_MultiVector> M_tmp =
+      Teuchos::rcp(new Epetra_MultiVector(M->DomainMap(), projmatrix_->NumVectors(), true));
+  M->Multiply(true, *projmatrix_, *M_tmp);
 
   // convert Epetra_MultiVector to LINALG::SparseMatrix
   Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->DomainMap()));
-  Teuchos::RCP<LINALG::SparseMatrix> M_red = Teuchos::rcp(new LINALG::SparseMatrix(*rangemap,0,false,true));
-  EpetraMultiVectorToLINALGSparseMatrix(M_tmp,rangemap,structmapr_,M_red);
+  Teuchos::RCP<LINALG::SparseMatrix> M_red =
+      Teuchos::rcp(new LINALG::SparseMatrix(*rangemap, 0, false, true));
+  EpetraMultiVectorToLINALGSparseMatrix(M_tmp, rangemap, structmapr_, M_red);
 
   return M_red;
 }
@@ -117,8 +121,8 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(Teuchos::RCP<LI
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> UTILS::MOR::ReduceRHS(Teuchos::RCP<Epetra_MultiVector> v)
 {
-  Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_,true));
-  MultiplyEpetraMultiVectors(projmatrix_,'T',v,'N',redstructmapr_,structrimpo_,v_red);
+  Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_, true));
+  MultiplyEpetraMultiVectors(projmatrix_, 'T', v, 'N', redstructmapr_, structrimpo_, v_red);
 
   return v_red;
 }
@@ -129,9 +133,9 @@ Teuchos::RCP<Epetra_MultiVector> UTILS::MOR::ReduceRHS(Teuchos::RCP<Epetra_Multi
 Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vector> v)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_));
-  v_tmp->Multiply('T','N',1.0,*projmatrix_,*v,0.0);
+  v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
   Teuchos::RCP<Epetra_Vector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_));
-  v_red->Import(*v_tmp,*structrimpo_,Insert,0);
+  v_red->Import(*v_tmp, *structrimpo_, Insert, 0);
 
   return v_red;
 }
@@ -141,10 +145,10 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vecto
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> UTILS::MOR::ExtendSolution(Teuchos::RCP<Epetra_Vector> v_red)
 {
-  Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_,true));
-  v_tmp->Import(*v_red,*structrinvimpo_,Insert,0);
+  Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
+  v_tmp->Import(*v_red, *structrinvimpo_, Insert, 0);
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
-  v->Multiply('N','N',1.0,*projmatrix_,*v_tmp,0.0);
+  v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
 
   return v;
 }
@@ -152,23 +156,20 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ExtendSolution(Teuchos::RCP<Epetra_Vecto
 /*----------------------------------------------------------------------*
  | multiply two Epetra MultiVectors                       pfaller Oct17 |
  *----------------------------------------------------------------------*/
-void UTILS::MOR::MultiplyEpetraMultiVectors(
-     Teuchos::RCP<Epetra_MultiVector> multivect1,
-     char multivect1Trans,
-     Teuchos::RCP<Epetra_MultiVector> multivect2,
-     char multivect2Trans,
-     Teuchos::RCP<Epetra_Map> redmap,
-     Teuchos::RCP<Epetra_Import> impo,
-     Teuchos::RCP<Epetra_MultiVector> result)
+void UTILS::MOR::MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector> multivect1,
+    char multivect1Trans, Teuchos::RCP<Epetra_MultiVector> multivect2, char multivect2Trans,
+    Teuchos::RCP<Epetra_Map> redmap, Teuchos::RCP<Epetra_Import> impo,
+    Teuchos::RCP<Epetra_MultiVector> result)
 {
   // initialize temporary Epetra_MultiVector (redmap: all procs hold all elements/rows)
-  Teuchos::RCP<Epetra_MultiVector> multivect_temp = Teuchos::rcp(new Epetra_MultiVector(*redmap,multivect2->NumVectors(),true));
+  Teuchos::RCP<Epetra_MultiVector> multivect_temp =
+      Teuchos::rcp(new Epetra_MultiVector(*redmap, multivect2->NumVectors(), true));
 
   // do the multiplication: (all procs hold the full result)
-  multivect_temp->Multiply(multivect1Trans,multivect2Trans,1.0,*multivect1,*multivect2,0.0);
+  multivect_temp->Multiply(multivect1Trans, multivect2Trans, 1.0, *multivect1, *multivect2, 0.0);
 
   // import the result to a Epetra_MultiVector whose elements/rows are distributed over all procs
-  result->Import(*multivect_temp,*impo,Insert,0);
+  result->Import(*multivect_temp, *impo, Insert, 0);
 
   return;
 }
@@ -176,24 +177,22 @@ void UTILS::MOR::MultiplyEpetraMultiVectors(
 /*----------------------------------------------------------------------*
  | Epetra_MultiVector to LINALG::SparseMatrix             pfaller Oct17 |
  *----------------------------------------------------------------------*/
-void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(
-    Teuchos::RCP<Epetra_MultiVector> multivect,
-    Teuchos::RCP<Epetra_Map> rangemap,
-    Teuchos::RCP<Epetra_Map> domainmap,
+void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_MultiVector> multivect,
+    Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
     Teuchos::RCP<LINALG::SparseMatrix> sparsemat)
 {
   // pointer to values of the Epetra_MultiVector
   double *Values;
-  Values=multivect->Values();
+  Values = multivect->Values();
 
   // loop over columns of the Epetra_MultiVector
-  for (int i=0;i<multivect->NumVectors();i++)
+  for (int i = 0; i < multivect->NumVectors(); i++)
   {
     // loop over rows of the Epetra_MultiVector
-    for (int j=0;j<multivect->MyLength();j++)
+    for (int j = 0; j < multivect->MyLength(); j++)
     {
       // assemble the values into the LINALG::SparseMatrix (value by value)
-      sparsemat->Assemble(Values[i*multivect->MyLength()+j],rangemap->GID(j),i);
+      sparsemat->Assemble(Values[i * multivect->MyLength() + j], rangemap->GID(j), i);
     }
   }
 
@@ -201,7 +200,7 @@ void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(
   if (domainmap == Teuchos::null)
     sparsemat->Complete();
   else
-    sparsemat->Complete(*domainmap,*rangemap);
+    sparsemat->Complete(*domainmap, *rangemap);
   return;
 }
 
@@ -217,35 +216,35 @@ void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(
  |   fclose(fid);                                                       |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector>& projmatrix)
+void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector> &projmatrix)
 {
   // insert path to file if necessary
-  if (filename[0]!='/')
+  if (filename[0] != '/')
   {
     std::string pathfilename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
     std::string::size_type pos = pathfilename.rfind('/');
-    if (pos!=std::string::npos)
+    if (pos != std::string::npos)
     {
-      std::string path = pathfilename.substr(0,pos+1);
+      std::string path = pathfilename.substr(0, pos + 1);
       filename.insert(filename.begin(), path.begin(), path.end());
     }
   }
 
   // open binary file
-  std::ifstream file(filename.c_str(), std::ifstream::in | std::ifstream::binary | std::ifstream::ate);
+  std::ifstream file(
+      filename.c_str(), std::ifstream::in | std::ifstream::binary | std::ifstream::ate);
 
   if (!file.good())
     dserror("File containing the projection matrix could not be opened. Check Input-File.");
 
   // check whether file could be opened and inform user
-  if (myrank_ == 0)
-    std::cout << "Reading binary file containing projection matrix";
+  if (myrank_ == 0) std::cout << "Reading binary file containing projection matrix";
 
   // number of bytes in file
-  std::streampos size=file.tellg();
+  std::streampos size = file.tellg();
 
   // allocation of a memory-block to read the data
-  char *memblock=new char [size];
+  char *memblock = new char[size];
 
   // jump to beginning of file
   file.seekg(0, std::ifstream::beg);
@@ -261,37 +260,43 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
     char ValueAsChars[4];
     int ValueAsInt;
     float ValueAsFloat;
-  }NumRows, NumCols, Value;
+  } NumRows, NumCols, Value;
 
   // number of rows
-  for (int k=0; k<4; k++)
-    NumRows.ValueAsChars[k]=memblock[k]; // Alternative (w/o union for NumRows): (unsigned char)memblock[0] | (unsigned char)memblock[1] << 8 | (unsigned char)memblock[2] << 16 | (signed char)memblock[3] << 24;
+  for (int k = 0; k < 4; k++)
+    NumRows.ValueAsChars[k] =
+        memblock[k];  // Alternative (w/o union for NumRows): (unsigned char)memblock[0] | (unsigned
+                      // char)memblock[1] << 8 | (unsigned char)memblock[2] << 16 | (signed
+                      // char)memblock[3] << 24;
 
   // number of columns
-  for (int k=0; k<4; k++)
-    NumCols.ValueAsChars[k]=memblock[k+4]; // Alternative (w/o union for NumCols): (unsigned char)memblock[4] | (unsigned char)memblock[5] << 8 | (unsigned char)memblock[6] << 16 | (signed char)memblock[7] << 24;
+  for (int k = 0; k < 4; k++)
+    NumCols.ValueAsChars[k] =
+        memblock[k + 4];  // Alternative (w/o union for NumCols): (unsigned char)memblock[4] |
+                          // (unsigned char)memblock[5] << 8 | (unsigned char)memblock[6] << 16 |
+                          // (signed char)memblock[7] << 24;
 
   // global row ids of the calling processor
   int *MyGlobalElements;
-  MyGlobalElements=actdisc_->DofRowMap()->MyGlobalElements();
+  MyGlobalElements = actdisc_->DofRowMap()->MyGlobalElements();
 
   // initialize array of pointers and double arrays to each of this pointers
-  double **Values=new double*[NumCols.ValueAsInt];
-  for (int i=0; i<NumCols.ValueAsInt; i++)
-    Values[i]=new double[NumRows.ValueAsInt];
+  double **Values = new double *[NumCols.ValueAsInt];
+  for (int i = 0; i < NumCols.ValueAsInt; i++) Values[i] = new double[NumRows.ValueAsInt];
 
   // loop over columns
-  for (int i=0; i<NumCols.ValueAsInt; i++)
+  for (int i = 0; i < NumCols.ValueAsInt; i++)
   {
     // loop over all rows owned by the calling processor
-    for (int j=0; j<actdisc_->DofRowMap()->NumMyElements(); j++)
+    for (int j = 0; j < actdisc_->DofRowMap()->NumMyElements(); j++)
     {
       // current value
-      for (int k=0; k<4; k++)
-        Value.ValueAsChars[k]=memblock[8+MyGlobalElements[j]*4*NumCols.ValueAsInt+i*4+k];
+      for (int k = 0; k < 4; k++)
+        Value.ValueAsChars[k] =
+            memblock[8 + MyGlobalElements[j] * 4 * NumCols.ValueAsInt + i * 4 + k];
 
       // write current value to Values
-      Values[i][j]=double(Value.ValueAsFloat);
+      Values[i][j] = double(Value.ValueAsFloat);
     }
   }
 
@@ -299,16 +304,15 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   delete[] memblock;
 
   // write projmatrix_ as Epetra_MultiVector
-  projmatrix=Teuchos::rcp(new Epetra_MultiVector(Copy,*(actdisc_->DofRowMap()),Values,NumCols.ValueAsInt));
+  projmatrix = Teuchos::rcp(
+      new Epetra_MultiVector(Copy, *(actdisc_->DofRowMap()), Values, NumCols.ValueAsInt));
 
   // delete pointers in Values and Values
-  for (int i=0; i<NumCols.ValueAsInt; i++)
-    delete[] Values[i];
+  for (int i = 0; i < NumCols.ValueAsInt; i++) delete[] Values[i];
   delete[] Values;
 
   // Inform user
-  if (myrank_ == 0)
-    std::cout << " --> Successful\n" << std::endl;
+  if (myrank_ == 0) std::cout << " --> Successful\n" << std::endl;
 
   return;
 }
@@ -321,21 +325,19 @@ bool UTILS::MOR::IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M)
   const int n = M->NumVectors();
 
   // calculate V^T * V (should be identity)
-  Epetra_Map map = Epetra_Map(n,n,0,actdisc_->Comm());
-  Epetra_MultiVector identity = Epetra_MultiVector(map,n,true);
-  identity.Multiply('T','N',1.0,*M,*M,0.0);
+  Epetra_Map map = Epetra_Map(n, n, 0, actdisc_->Comm());
+  Epetra_MultiVector identity = Epetra_MultiVector(map, n, true);
+  identity.Multiply('T', 'N', 1.0, *M, *M, 0.0);
 
   // subtract one from diagonal
-  for (int i=0; i<n; ++i)
-    identity.SumIntoGlobalValue(i,i,-1.0);
+  for (int i = 0; i < n; ++i) identity.SumIntoGlobalValue(i, i, -1.0);
 
   // inf norm of columns
-  double* norms = new double[n];
+  double *norms = new double[n];
   identity.NormInf(norms);
 
-  for (int i=0; i<n; ++i)
-    if(norms[i]>1.0e-7)
-      return false;
+  for (int i = 0; i < n; ++i)
+    if (norms[i] > 1.0e-7) return false;
 
   return true;
 }

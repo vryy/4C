@@ -24,9 +24,7 @@
  | Calculate vector norm                                    bborn 08/09 |
  *----------------------------------------------------------------------*/
 double THR::AUX::CalculateVectorNorm(
-  const enum INPAR::THR::VectorNorm norm,
-  const Teuchos::RCP<Epetra_Vector> vect
-  )
+    const enum INPAR::THR::VectorNorm norm, const Teuchos::RCP<Epetra_Vector> vect)
 {
   // L1 norm
   if (norm == INPAR::THR::norm_l1)
@@ -47,7 +45,7 @@ double THR::AUX::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
-    return vectnorm/std::sqrt((double) vect->GlobalLength());
+    return vectnorm / std::sqrt((double)vect->GlobalLength());
   }
   // infinity/maximum norm
   else if (norm == INPAR::THR::norm_inf)
@@ -61,7 +59,7 @@ double THR::AUX::CalculateVectorNorm(
     dserror("Cannot handle vector norm");
     return 0;
   }
-} // CalculateVectorNorm()
+}  // CalculateVectorNorm()
 
 
 /*----------------------------------------------------------------------*/

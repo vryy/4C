@@ -23,7 +23,6 @@ Maintainer: Martin Winklmaier
 
 namespace ADAPTER
 {
-
   /// basis coupling algorithm for the fields required for topology optimization
   /*!
 
@@ -37,18 +36,15 @@ namespace ADAPTER
     \author winklmaier
     \date 12/11
    */
-  class FluidTopOptCouplingAlgorithm :
-    public FluidBaseAlgorithm,
-    public TopOptBaseAlgorithm,
-    public TopOptFluidAdjointAlgorithm
+  class FluidTopOptCouplingAlgorithm : public FluidBaseAlgorithm,
+                                       public TopOptBaseAlgorithm,
+                                       public TopOptFluidAdjointAlgorithm
   {
-  public:
-
+   public:
     /// constructor using a Epetra_Comm
-    explicit FluidTopOptCouplingAlgorithm(
-        const Epetra_Comm& comm,              ///< communicator
-        const Teuchos::ParameterList& prbdyn ///< problem-specific parameters
-        );
+    explicit FluidTopOptCouplingAlgorithm(const Epetra_Comm& comm,  ///< communicator
+        const Teuchos::ParameterList& prbdyn                        ///< problem-specific parameters
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidTopOptCouplingAlgorithm();
@@ -57,18 +53,16 @@ namespace ADAPTER
     virtual void TimeLoop() = 0;
 
     /// read restart data
-    virtual void ReadRestart(
-        int step ///< step number where the calculation is continued
-        );
+    virtual void ReadRestart(int step  ///< step number where the calculation is continued
+    );
 
     /// provide access to algorithm parameters
-    virtual const Teuchos::ParameterList& AlgoParameters() const {return params_;}
+    virtual const Teuchos::ParameterList& AlgoParameters() const { return params_; }
 
-  private:
-
+   private:
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;
   };
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 #endif /* ADAPTER_FLUID_TOPOPT_ALGO_H_ */

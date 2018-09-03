@@ -37,7 +37,7 @@ LOCA::NLN::Stepper::Stepper(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
     const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
     const Teuchos::RCP<Teuchos::ParameterList>& p)
-    : LOCA::Stepper(loca_gdata,initial_guess,loca_test,nox_otest,p),
+    : LOCA::Stepper(loca_gdata, initial_guess, loca_test, nox_otest, p),
       noxInnerStatusTestPtr_(nox_itest),
       noxNlnGlobalDataPtr_(nln_gdata)
 {
@@ -59,19 +59,18 @@ bool LOCA::NLN::Stepper::reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool LOCA::NLN::Stepper::reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
-        const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
-        const Teuchos::RCP<LOCA::StatusTest::Abstract>& loca_test,
-        const Teuchos::RCP<NOX::StatusTest::Generic>& nox_otest,
-        const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
-        const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
-        const Teuchos::RCP<Teuchos::ParameterList>& p)
+    const Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup>& initial_guess,
+    const Teuchos::RCP<LOCA::StatusTest::Abstract>& loca_test,
+    const Teuchos::RCP<NOX::StatusTest::Generic>& nox_otest,
+    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& nox_itest,
+    const Teuchos::RCP<NOX::NLN::GlobalData>& nln_gdata,
+    const Teuchos::RCP<Teuchos::ParameterList>& p)
 {
   noxInnerStatusTestPtr_ = nox_itest;
   noxNlnGlobalDataPtr_ = nln_gdata;
 
-  bool check = LOCA::Stepper::reset(loca_gdata,initial_guess,loca_test,nox_otest,p);
-  if (!check)
-    dserror("LOCA::Stepper::reset() failed!");
+  bool check = LOCA::Stepper::reset(loca_gdata, initial_guess, loca_test, nox_otest, p);
+  if (!check) dserror("LOCA::Stepper::reset() failed!");
 
   // reset the NOX::Solver object with own provided factory
   check = resetSolver();
@@ -83,8 +82,8 @@ bool LOCA::NLN::Stepper::reset(const Teuchos::RCP<LOCA::GlobalData>& loca_gdata,
  *----------------------------------------------------------------------------*/
 bool LOCA::NLN::Stepper::resetSolver()
 {
-  solverPtr = NOX::NLN::Solver::BuildSolver(curGroupPtr,
-      noxStatusTestPtr,noxInnerStatusTestPtr_,noxNlnGlobalDataPtr_);
+  solverPtr = NOX::NLN::Solver::BuildSolver(
+      curGroupPtr, noxStatusTestPtr, noxInnerStatusTestPtr_, noxNlnGlobalDataPtr_);
 
   return true;
 }
@@ -112,18 +111,14 @@ LOCA::Abstract::Iterator::IteratorStatus LOCA::NLN::Stepper::start()
 
   // Set up continuation groups
   const LOCA::MultiContinuation::ExtendedGroup& constSolnGrp =
-    dynamic_cast<const LOCA::MultiContinuation::ExtendedGroup&>(
-       solverPtr->getSolutionGroup());
-  Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup> underlyingGroup
-    = Teuchos::rcp_const_cast<LOCA::MultiContinuation::AbstractGroup>(constSolnGrp.getUnderlyingGroup());
+      dynamic_cast<const LOCA::MultiContinuation::ExtendedGroup&>(solverPtr->getSolutionGroup());
+  Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup> underlyingGroup =
+      Teuchos::rcp_const_cast<LOCA::MultiContinuation::AbstractGroup>(
+          constSolnGrp.getUnderlyingGroup());
 
   // Create continuation strategy
   curGroupPtr = globalData->locaFactory->createContinuationStrategy(
-                            parsedParams,
-                            stepperList,
-                            underlyingGroup,
-                            predictor,
-                            conParamIDs);
+      parsedParams, stepperList, underlyingGroup, predictor, conParamIDs);
 
   // Do printing (stepNumber==0 case) after continuation group set up
   if (solverStatus == NOX::StatusTest::Failed)
@@ -135,13 +130,11 @@ LOCA::Abstract::Iterator::IteratorStatus LOCA::NLN::Stepper::start()
   curGroupPtr->setStepSize(stepSize);
 
   prevGroupPtr =
-    Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::AbstractStrategy>(
-    curGroupPtr->clone());
+      Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::AbstractStrategy>(curGroupPtr->clone());
 
   // If nonlinear solve failed, return (this must be done after continuation
   // groups are created so Stepper::getSolutionGroup() functions correctly.
-  if (solverStatus != NOX::StatusTest::Converged)
-    return LOCA::Abstract::Iterator::Failed;
+  if (solverStatus != NOX::StatusTest::Converged) return LOCA::Abstract::Iterator::Failed;
 
   // Save initial solution
   curGroupPtr->printSolution();
@@ -149,26 +142,23 @@ LOCA::Abstract::Iterator::IteratorStatus LOCA::NLN::Stepper::start()
   // Compute eigenvalues/eigenvectors if requested
   if (calcEigenvalues)
   {
-    Teuchos::RCP< std::vector<double> > evals_r;
-    Teuchos::RCP< std::vector<double> > evals_i;
-    Teuchos::RCP< NOX::Abstract::MultiVector > evecs_r;
-    Teuchos::RCP< NOX::Abstract::MultiVector > evecs_i;
+    Teuchos::RCP<std::vector<double>> evals_r;
+    Teuchos::RCP<std::vector<double>> evals_i;
+    Teuchos::RCP<NOX::Abstract::MultiVector> evecs_r;
+    Teuchos::RCP<NOX::Abstract::MultiVector> evecs_i;
     eigensolver->computeEigenvalues(
-                 *curGroupPtr->getBaseLevelUnderlyingGroup(),
-                 evals_r, evals_i, evecs_r, evecs_i);
+        *curGroupPtr->getBaseLevelUnderlyingGroup(), evals_r, evals_i, evecs_r, evecs_i);
 
     saveEigenData->save(evals_r, evals_i, evecs_r, evecs_i);
   }
 
   // Compute predictor direction
-  NOX::Abstract::Group::ReturnType predictorStatus =
-    curGroupPtr->computePredictor();
-  globalData->locaErrorCheck->checkReturnType(predictorStatus,
-                          callingFunction);
-  curPredictorPtr =
-    Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::ExtendedVector>(curGroupPtr->getPredictorTangent()[0].clone(NOX::DeepCopy));
-  prevPredictorPtr =
-    Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::ExtendedVector>(curGroupPtr->getPredictorTangent()[0].clone(NOX::ShapeCopy));
+  NOX::Abstract::Group::ReturnType predictorStatus = curGroupPtr->computePredictor();
+  globalData->locaErrorCheck->checkReturnType(predictorStatus, callingFunction);
+  curPredictorPtr = Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::ExtendedVector>(
+      curGroupPtr->getPredictorTangent()[0].clone(NOX::DeepCopy));
+  prevPredictorPtr = Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::ExtendedVector>(
+      curGroupPtr->getPredictorTangent()[0].clone(NOX::ShapeCopy));
 
   // Create new solver using new continuation groups and combo status test
   resetSolver();
@@ -178,8 +168,8 @@ LOCA::Abstract::Iterator::IteratorStatus LOCA::NLN::Stepper::start()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LOCA::Abstract::Iterator::IteratorStatus
-LOCA::NLN::Stepper::finish(LOCA::Abstract::Iterator::IteratorStatus itStatus)
+LOCA::Abstract::Iterator::IteratorStatus LOCA::NLN::Stepper::finish(
+    LOCA::Abstract::Iterator::IteratorStatus itStatus)
 {
   std::string callingFunction = "LOCA::NLN::Stepper::finish()";
 
@@ -191,17 +181,15 @@ LOCA::NLN::Stepper::finish(LOCA::Abstract::Iterator::IteratorStatus itStatus)
   curGroupPtr->copy(solverPtr->getSolutionGroup());
 
   // Return if iteration failed (reached max number of steps)
-  if (itStatus == LOCA::Abstract::Iterator::Failed)
-    return itStatus;
+  if (itStatus == LOCA::Abstract::Iterator::Failed) return itStatus;
 
   bool do_target = stepperList->get("Hit Continuation Bound", true);
-  if (!do_target)
-    return LOCA::Abstract::Iterator::Finished;
+  if (!do_target) return LOCA::Abstract::Iterator::Finished;
 
   // Do one additional step using natural continuation to hit target value
   double value = curGroupPtr->getContinuationParameter();
 
-  if (fabs(value-targetValue) > 1.0e-15*(1.0 + fabs(targetValue)))
+  if (fabs(value - targetValue) > 1.0e-15 * (1.0 + fabs(targetValue)))
   {
     isTargetStep = true;
 
@@ -209,41 +197,34 @@ LOCA::NLN::Stepper::finish(LOCA::Abstract::Iterator::IteratorStatus itStatus)
     prevGroupPtr->copy(*curGroupPtr);
 
     // Get bifurcation group if there is one, or solution group if not
-    Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup> underlyingGrp
-      = curGroupPtr->getUnderlyingGroup();
+    Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup> underlyingGrp =
+        curGroupPtr->getUnderlyingGroup();
 
     // Create predictor strategy
     Teuchos::RCP<Teuchos::ParameterList> lastStepPredictorParams =
-      parsedParams->getSublist("Last Step Predictor");
+        parsedParams->getSublist("Last Step Predictor");
     // change default method to constant to avoid infinite stack recursion
     lastStepPredictorParams->get("Method", "Constant");
-    predictor = globalData->locaFactory->createPredictorStrategy(
-                             parsedParams,
-                             lastStepPredictorParams);
+    predictor =
+        globalData->locaFactory->createPredictorStrategy(parsedParams, lastStepPredictorParams);
 
     // Make a copy of the parameter list, change continuation method to
     // natural
     Teuchos::RCP<Teuchos::ParameterList> lastStepperParams =
-      Teuchos::rcp(new Teuchos::ParameterList(*stepperList));
+        Teuchos::rcp(new Teuchos::ParameterList(*stepperList));
     lastStepperParams->set("Continuation Method", "Natural");
 
     // Create continuation strategy
     curGroupPtr = globalData->locaFactory->createContinuationStrategy(
-                              parsedParams,
-                              lastStepperParams,
-                              underlyingGrp,
-                              predictor,
-                              conParamIDs);
+        parsedParams, lastStepperParams, underlyingGrp, predictor, conParamIDs);
 
     // Set step size
     stepSize = targetValue - value;
     curGroupPtr->setStepSize(stepSize);
 
     // Get predictor direction
-    NOX::Abstract::Group::ReturnType predictorStatus =
-      curGroupPtr->computePredictor();
-    globalData->locaErrorCheck->checkReturnType(predictorStatus,
-                        callingFunction);
+    NOX::Abstract::Group::ReturnType predictorStatus = curGroupPtr->computePredictor();
+    globalData->locaErrorCheck->checkReturnType(predictorStatus, callingFunction);
     *curPredictorPtr = curGroupPtr->getPredictorTangent()[0];
 
     // Set previous solution vector in current solution group
@@ -272,7 +253,8 @@ LOCA::NLN::Stepper::finish(LOCA::Abstract::Iterator::IteratorStatus itStatus)
     // Get solution
     curGroupPtr->copy(solverPtr->getSolutionGroup());
 
-    if (solverStatus != NOX::StatusTest::Converged) {
+    if (solverStatus != NOX::StatusTest::Converged)
+    {
       printEndStep(LOCA::Abstract::Iterator::Unsuccessful);
       return LOCA::Abstract::Iterator::Failed;
     }
@@ -287,8 +269,8 @@ LOCA::NLN::Stepper::finish(LOCA::Abstract::Iterator::IteratorStatus itStatus)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LOCA::Abstract::Iterator::StepStatus
-LOCA::NLN::Stepper::preprocess(LOCA::Abstract::Iterator::StepStatus stepStatus)
+LOCA::Abstract::Iterator::StepStatus LOCA::NLN::Stepper::preprocess(
+    LOCA::Abstract::Iterator::StepStatus stepStatus)
 {
   if (stepStatus == LOCA::Abstract::Iterator::Unsuccessful)
   {

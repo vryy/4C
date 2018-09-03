@@ -17,10 +17,8 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToSphereContactParams::BeamToSphereContactParams():
-  isinit_(false),
-  issetup_(false),
-  BTSPH_penalty_param_(-1.0)
+BEAMINTERACTION::BeamToSphereContactParams::BeamToSphereContactParams()
+    : isinit_(false), issetup_(false), BTSPH_penalty_param_(-1.0)
 {
   // empty constructor
 }
@@ -35,11 +33,9 @@ void BEAMINTERACTION::BeamToSphereContactParams::Init()
   const Teuchos::ParameterList& beam_to_beam_contact_params_list =
       DRT::Problem::Instance()->BeamContactParams();
 
-    BTSPH_penalty_param_ =
-        beam_to_beam_contact_params_list.get<double>("BEAMS_BTSPH_PENALTYPARAM");
+  BTSPH_penalty_param_ = beam_to_beam_contact_params_list.get<double>("BEAMS_BTSPH_PENALTYPARAM");
 
-    if (BTSPH_penalty_param_ < 0.0)
-      dserror("beam-to-sphere penalty parameter must not be negative!");
+  if (BTSPH_penalty_param_ < 0.0) dserror("beam-to-sphere penalty parameter must not be negative!");
 
 
   isinit_ = true;

@@ -21,21 +21,14 @@
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-XCONTACT::Interface::Interface(
-    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    const int id,
-    const Epetra_Comm& comm,
-    const int dim,
-    const Teuchos::ParameterList& icontact,
-    bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact,
-        redundant),
+XCONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, const int id,
+    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant),
       sndofrowmap_(Teuchos::null),
       stdofrowmap_(Teuchos::null),
-      parent_discret_(*icontact.get<
-          Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> >(
-              "ParentDiscretPair"))
+      parent_discret_(*icontact.get<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair>>(
+          "ParentDiscretPair"))
 {
   // Empty constructor body
 }
@@ -85,8 +78,7 @@ void XCONTACT::Interface::Initialize()
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Interface::PreMortarCoupling(
-    const MORTAR::MortarElement* sele,
+void XCONTACT::Interface::PreMortarCoupling(const MORTAR::MortarElement* sele,
     const std::vector<MORTAR::MortarElement*> mele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const
 {
@@ -96,8 +88,7 @@ void XCONTACT::Interface::PreMortarCoupling(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Interface::PostMortarCoupling(
-    const MORTAR::MortarElement* sele,
+void XCONTACT::Interface::PostMortarCoupling(const MORTAR::MortarElement* sele,
     const std::vector<MORTAR::MortarElement*> mele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const
 {
@@ -107,12 +98,10 @@ void XCONTACT::Interface::PostMortarCoupling(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Interface::AssembleWeightedGap(
-    Epetra_Vector & wgap) const
+void XCONTACT::Interface::AssembleWeightedGap(Epetra_Vector& wgap) const
 {
   // Return if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // Loop over procs active slave nodes of the interface for assembly
   // (use standard row map to assemble each node only once)
@@ -140,9 +129,7 @@ void XCONTACT::Interface::AssembleWeightedGap(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Interface::AssembleContactRHS(
-    Epetra_Vector& Wc_lm,
-    Epetra_Vector& lmN) const
+void XCONTACT::Interface::AssembleContactRHS(Epetra_Vector& Wc_lm, Epetra_Vector& lmN) const
 {
   // Return if not participating in interface
   if (!lComm())
@@ -181,9 +168,7 @@ void XCONTACT::Interface::AssembleContactRHS(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XCONTACT::Interface::AssembleMortar(
-    LINALG::SparseMatrix& D,
-    LINALG::SparseMatrix& M) const
+void XCONTACT::Interface::AssembleMortar(LINALG::SparseMatrix& D, LINALG::SparseMatrix& M) const
 {
   // Return if not participating in interface
   if (!lComm())
@@ -249,8 +234,7 @@ void XCONTACT::Interface::AssembleMortar(
  | Assemble structural contact tangent matrix                    Hofer 08/16 |
  *---------------------------------------------------------------------------*/
 void XCONTACT::Interface::AssembleWcUU(
-    LINALG::SparseMatrix& Wc_su_u,
-    LINALG::SparseMatrix& Wc_mu_u) const
+    LINALG::SparseMatrix& Wc_su_u, LINALG::SparseMatrix& Wc_mu_u) const
 {
   // Return if not participating in interface
   if (!lComm())
@@ -274,14 +258,14 @@ void XCONTACT::Interface::AssembleWcUU(
 
     // Define type of map iterators
     typedef std::map<int, double>::const_iterator CI;
-    typedef std::map<int, std::map<int, double> >::const_iterator CII;
+    typedef std::map<int, std::map<int, double>>::const_iterator CII;
 
 
     // ========================================================================
     // Slave varied part
     // ========================================================================
 
-    std::map<int, std::map<int, double> >& Wc_su_u_node = cnode->CoData().GetWcSuU();
+    std::map<int, std::map<int, double>>& Wc_su_u_node = cnode->CoData().GetWcSuU();
 
     // iteration over ALL slave Dof Ids
     for (CII p = Wc_su_u_node.begin(); p != Wc_su_u_node.end(); ++p)
@@ -303,10 +287,10 @@ void XCONTACT::Interface::AssembleWcUU(
     // Master varied part
     // ========================================================================
 
-    std::map<int, std::map<int, double> >& Wc_mu_u_node = cnode->CoData().GetWcMuU();
+    std::map<int, std::map<int, double>>& Wc_mu_u_node = cnode->CoData().GetWcMuU();
 
     // iteration over ALL master Dof Ids
-    for (CII p = Wc_mu_u_node.begin(); p!= Wc_mu_u_node.end(); ++p)
+    for (CII p = Wc_mu_u_node.begin(); p != Wc_mu_u_node.end(); ++p)
     {
       const int mRow = p->first;
 
@@ -362,7 +346,7 @@ void XCONTACT::Interface::SplitSlaveDofs()
   }
 
   // Loop over all contact nodes
-  for (int k = 0; k <snoderowmap_->NumMyElements(); ++k)
+  for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
   {
     int gid = snoderowmap_->GID(k);
     CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(idiscret_->gNode(gid));

@@ -27,7 +27,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#define USE_PHIN_FOR_VEL // TODO
+#define USE_PHIN_FOR_VEL  // TODO
 
 
 namespace PARTICLE
@@ -43,19 +43,15 @@ namespace LINALG
 
 namespace SCATRA
 {
-
   class LevelSetAlgorithm : public virtual ScaTraTimIntImpl
   {
-  public:
-
+   public:
     /// Standard Constructor
-    LevelSetAlgorithm(
-        Teuchos::RCP<DRT::Discretization>        dis,
-        Teuchos::RCP<LINALG::Solver>             solver,
-        Teuchos::RCP<Teuchos::ParameterList>     params,
-        Teuchos::RCP<Teuchos::ParameterList>     sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList>     extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter>   output);
+    LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// virtual destructor
     virtual ~LevelSetAlgorithm();
@@ -74,34 +70,31 @@ namespace SCATRA
     void TimeLoop();
 
     /// output solution and restart data to file
-    void Output(const int num =0);
+    void Output(const int num = 0);
 
     /// read restart data
-    virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
+    virtual void ReadRestart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
-    void SetVelocityField(bool init=false);
+    void SetVelocityField(bool init = false);
 
     /// set convective velocity field (+ pressure and acceleration field as
     /// well as fine-scale velocity field, if required) (function for coupled fluid problems)
-    void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector> convvel,
-      Teuchos::RCP<const Epetra_Vector> acc,
-      Teuchos::RCP<const Epetra_Vector> vel,
-      Teuchos::RCP<const Epetra_Vector> fsvel,
-      bool setpressure=false,
-      bool init=false);
+    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> convvel,
+        Teuchos::RCP<const Epetra_Vector> acc, Teuchos::RCP<const Epetra_Vector> vel,
+        Teuchos::RCP<const Epetra_Vector> fsvel, bool setpressure = false, bool init = false);
 
     /// access routine for nodal curvature
     Teuchos::RCP<Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi,
-                                                  const Teuchos::RCP<const Epetra_MultiVector> gradphi);
+        const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 
 
     // output position of center of mass assuming a smoothed interfaces
     void MassCenterUsingSmoothing();
 
     /// redistribute the scatra discretization and vectors according to nodegraph
-    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph);
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
     /// return velocity at intermediate time n+theta
     const Teuchos::RCP<Epetra_Vector> ConVelTheta(double theta);
@@ -125,18 +118,15 @@ namespace SCATRA
     /// calculate error compared to analytical solution
     void EvaluateErrorComparedToAnalyticalSol();
 
-  protected:
-
-    virtual void GetInitialVolumeOfMinusDomain(
-        const Teuchos::RCP<const Epetra_Vector>& phinp,
-        const Teuchos::RCP<const DRT::Discretization> & scatradis,
-        double& volumedomainminus) const;
+   protected:
+    virtual void GetInitialVolumeOfMinusDomain(const Teuchos::RCP<const Epetra_Vector>& phinp,
+        const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus) const;
 
     //! identify interface side due to phivalue value
     inline bool plusDomain(double phiValue)
     {
       double TOL = 1.0e-14;
-      if (phiValue<-TOL)
+      if (phiValue < -TOL)
         return false;
       else
         return true;
@@ -173,26 +163,24 @@ namespace SCATRA
     /** \brief access nodal gradient-based values for reinitialization
      *
      * (ReinitEq() only; Sussman and Elliptic) */
-    inline Teuchos::RCP<Epetra_MultiVector> & NodalGradBasedValue()
-    { return nb_grad_val_; }
+    inline Teuchos::RCP<Epetra_MultiVector>& NodalGradBasedValue() { return nb_grad_val_; }
     inline Teuchos::RCP<const Epetra_MultiVector> NodalGradBasedValue() const
-    { return nb_grad_val_; }
+    {
+      return nb_grad_val_;
+    }
 
     /// access the interval for reinitialization (every 'reinitinterval_' time steps)
-    inline const int & ReinitInterval() const
-    { return reinitinterval_; }
+    inline const int& ReinitInterval() const { return reinitinterval_; }
 
     /// use projection for grad phi and related quantities
-    inline const bool & UseProjection() const
-    { return projection_; }
+    inline const bool& UseProjection() const { return projection_; }
 
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature
     // -----------------------------------------------------------------
-    void ReconstructedNodalCurvature(
-      Teuchos::RCP<Epetra_Vector> curvature,
-      const Teuchos::RCP<const Epetra_Vector> phi,
-      const Teuchos::RCP<const Epetra_MultiVector> gradphi);
+    void ReconstructedNodalCurvature(Teuchos::RCP<Epetra_Vector> curvature,
+        const Teuchos::RCP<const Epetra_Vector> phi,
+        const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 
     // -----------------------------------------------------------------
     // members
@@ -225,8 +213,7 @@ namespace SCATRA
     /// pseudo theata (ReinitEq() only)
     double thetareinit_;
 
-  private:
-
+   private:
     /// add parameters depending of the problem, i.e., loma, level-set, ...
     void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params);
 
@@ -246,13 +233,15 @@ namespace SCATRA
     /// set time parameters for reinitialization equation
     void SetReinitializationElementTimeParameters();
 
-    /// preparations to solve reinitialization equation within existing framework (helper function for ReinitEq())
+    /// preparations to solve reinitialization equation within existing framework (helper function
+    /// for ReinitEq())
     void PrepareTimeLoopReinit();
 
     /// time loop for reinitialization equation (helper function for ReinitEq())
     void TimeLoopReinit();
 
-    /// clean necessary modifications to solve reinitialization equation within existing framework (helper function for ReinitEq())
+    /// clean necessary modifications to solve reinitialization equation within existing framework
+    /// (helper function for ReinitEq())
     void FinishTimeLoopReinit();
 
     /// setup the variables to do a new reinitialization time step (helper function for ReinitEq())
@@ -264,46 +253,38 @@ namespace SCATRA
     /// correction step according to Sussman & Fatemi 1999 (helper function for ReinitEq())
     void CorrectionReinit();
 
-    /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for ReinitEq())
+    /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for
+    /// ReinitEq())
     bool ConvergenceCheckReinit();
 
     /// update phi within the reinitialization loop
     virtual void UpdateReinit() = 0;
 
     /// geometric reinitialization via computation of distance of node to interface
-    void ReinitGeo(const std::map<int,GEO::BoundaryIntCells >& interface);
+    void ReinitGeo(const std::map<int, GEO::BoundaryIntCells>& interface);
 
     /// compute normal vector of interface patch (helper function for ReinitGeo())
-    void ComputeNormalVectorToInterface(
-        const GEO::BoundaryIntCell&      patch,
-        const LINALG::SerialDenseMatrix& patchcoord,
-        LINALG::Matrix<3,1>&             normal);
+    void ComputeNormalVectorToInterface(const GEO::BoundaryIntCell& patch,
+        const LINALG::SerialDenseMatrix& patchcoord, LINALG::Matrix<3, 1>& normal);
 
     /// compute distance to vertex of patch (helper function for ReinitGeo())
-    void ComputeDistanceToPatch(
-        const LINALG::Matrix<3,1>&       node,
-        const GEO::BoundaryIntCell&      patch,
-        const LINALG::SerialDenseMatrix& patchcoord,
-        double&                          vertexdist);
+    void ComputeDistanceToPatch(const LINALG::Matrix<3, 1>& node, const GEO::BoundaryIntCell& patch,
+        const LINALG::SerialDenseMatrix& patchcoord, double& vertexdist);
 
     /// compute distance to edge of patch (helper function for ReinitGeo())
-    void ComputeDistanceToEdge(
-        const LINALG::Matrix<3,1>&       node,
-        const GEO::BoundaryIntCell&      patch,
-        const LINALG::SerialDenseMatrix& patchcoord,
-        double&                          edgedist);
+    void ComputeDistanceToEdge(const LINALG::Matrix<3, 1>& node, const GEO::BoundaryIntCell& patch,
+        const LINALG::SerialDenseMatrix& patchcoord, double& edgedist);
 
-    /// find a facing interface patch by projection of node into boundary cell space (helper function for ReinitGeo())
-    void FindFacingPatchProjCellSpace(
-        const LINALG::Matrix<3,1>&       node,
-        const GEO::BoundaryIntCell&      patch,
-        const LINALG::SerialDenseMatrix& patchcoord,
-        const LINALG::Matrix<3,1>&       normal,
-        bool&                            facenode,
-        double&                          patchdist);
+    /// find a facing interface patch by projection of node into boundary cell space (helper
+    /// function for ReinitGeo())
+    void FindFacingPatchProjCellSpace(const LINALG::Matrix<3, 1>& node,
+        const GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+        const LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist);
 
-    /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper function for ReinitGeo())
-    static bool MyComparePairs (const std::pair<int,double>& first, const std::pair<int,double>& second)
+    /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper
+    /// function for ReinitGeo())
+    static bool MyComparePairs(
+        const std::pair<int, double>& first, const std::pair<int, double>& second)
     {
       if (fabs(first.second) < fabs(second.second))
         return true;
@@ -312,21 +293,16 @@ namespace SCATRA
     };
 
     /// project node into the boundary cell space (2D) (helper function for ReinitGeo())
-    template<DRT::Element::DiscretizationType DISTYPE>
-    bool ProjectNodeOnPatch(
-        const LINALG::Matrix<3,1>&       node,
-        const GEO::BoundaryIntCell&      patch,
-        const LINALG::SerialDenseMatrix& patchcoord,
-        const LINALG::Matrix<3,1>&       normal,
-        LINALG::Matrix<2,1>&             eta,
-        double&                          alpha);
+    template <DRT::Element::DiscretizationType DISTYPE>
+    bool ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& node, const GEO::BoundaryIntCell& patch,
+        const LINALG::SerialDenseMatrix& patchcoord, const LINALG::Matrix<3, 1>& normal,
+        LINALG::Matrix<2, 1>& eta, double& alpha);
 
     /// correct the volume of the minus domain after reinitialization
     void CorrectVolume();
 
     /// elliptic reinitialization
-    void ReinitElliptic(
-        std::map<int,GEO::BoundaryIntCells >& interface);
+    void ReinitElliptic(std::map<int, GEO::BoundaryIntCells>& interface);
 
     // -----------------------------------------------------------------
     // additional post-processing and evaluation methods
@@ -336,14 +312,11 @@ namespace SCATRA
 
     // check for mass conservation before and after reinitialization as well as
     // at the end of the time step
-    void MassConservationCheck(
-      const double actvolminus,
-      const bool writetofile = false);
+    void MassConservationCheck(const double actvolminus, const bool writetofile = false);
 
     // reconstruction of interface and output of domains
     void CaptureInterface(
-      std::map<int,GEO::BoundaryIntCells >& interface,
-      const bool writetofile = false);
+        std::map<int, GEO::BoundaryIntCells>& interface, const bool writetofile = false);
 
     // -----------------------------------------------------------------
     // members
@@ -382,26 +355,28 @@ namespace SCATRA
     /// use projection for grad phi and related quantities
     bool projection_;
 
-    //TODO:
-//    /// vector containing denominator of penalty parameter for each element (ReinitEq() only)
-//    Teuchos::RCP<Epetra_Vector> lambda_ele_denominator_;
-//
-//    /// vector containing smoothed haevyside function for each dof (ReinitEq() only)
-//    Teuchos::RCP<Epetra_Vector> node_deriv_smoothfunct_;
+    // TODO:
+    //    /// vector containing denominator of penalty parameter for each element (ReinitEq() only)
+    //    Teuchos::RCP<Epetra_Vector> lambda_ele_denominator_;
+    //
+    //    /// vector containing smoothed haevyside function for each dof (ReinitEq() only)
+    //    Teuchos::RCP<Epetra_Vector> node_deriv_smoothfunct_;
 
-    /// tolerance for convergence check according to Sussman et al. 1994 (turned off negative) (ReinitEq() only)
+    /// tolerance for convergence check according to Sussman et al. 1994 (turned off negative)
+    /// (ReinitEq() only)
     double reinit_tol_;
 
     /// flag to correct volume after reinitialization
     bool reinitvolcorrection_;
 
     /// interface for elliptic reinitialization
-    Teuchos::RCP<std::map<int,GEO::BoundaryIntCells > > interface_eleq_;
+    Teuchos::RCP<std::map<int, GEO::BoundaryIntCells>> interface_eleq_;
 
     // --------------
     // members related to transport and velocity fields from Navier-Stokes
 
-    /// flag for replacing the velocity of nodes at a certain distance of the interface by an approximate interface velocity
+    /// flag for replacing the velocity of nodes at a certain distance of the interface by an
+    /// approximate interface velocity
     bool extract_interface_vel_;
 
     /// number of element layers around the interface with unmodified velocity
@@ -409,9 +384,8 @@ namespace SCATRA
 
     /// flag for modification of convective velocity at contact points
     bool cpbc_;
-
   };
 
-}
+}  // namespace SCATRA
 
-#endif // #ifndef LEVELSET_ALGORITHM_H
+#endif  // #ifndef LEVELSET_ALGORITHM_H

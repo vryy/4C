@@ -18,16 +18,20 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   /// Input parameters for SCATRA
   namespace SCATRA
   {
-
     /// time integration schemes for scalar transport problems
     enum TimeIntegrationScheme
     {
@@ -238,7 +242,8 @@ namespace INPAR
       outputscalars_entiredomain_condition
     };
 
-    /// possible options for computation of domain and boundary integrals, i.e., surface areas and volumes
+    /// possible options for computation of domain and boundary integrals, i.e., surface areas and
+    /// volumes
     enum ComputeIntegrals
     {
       computeintegrals_none,
@@ -265,7 +270,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set additional scatra conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace SCATRA
 }  // namespace INPAR

@@ -55,8 +55,7 @@ void MORTAR::STRATEGY::Factory::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::Init(
-    Teuchos::RCP<DRT::DiscretizationInterface> dis)
+void MORTAR::STRATEGY::Factory::Init(Teuchos::RCP<DRT::DiscretizationInterface> dis)
 {
   // call Setup() after Init()
   issetup_ = false;
@@ -75,8 +74,7 @@ void MORTAR::STRATEGY::Factory::Setup()
   CheckInit();
 
   //  get the underlying discretization
-  if (gstate_ptr_!=Teuchos::null)
-    discret_ptr_ = gstate_ptr_->GetMutableDiscret();
+  if (gstate_ptr_ != Teuchos::null) discret_ptr_ = gstate_ptr_->GetMutableDiscret();
 
   // get a copy of the underlying structural communicator
   comm_ptr_ = Teuchos::rcp(discret_ptr_->Comm().Clone());
@@ -91,22 +89,19 @@ void MORTAR::STRATEGY::Factory::Setup()
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckInit() const
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState()
-    const
+const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState() const
 {
   CheckInit();
   return *gstate_ptr_;
@@ -164,58 +159,47 @@ Teuchos::RCP<const Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr() const
  *----------------------------------------------------------------------*/
 const int& MORTAR::STRATEGY::Factory::Dim() const
 {
-  if (dim_==-1)
-    dserror("Call the STR::MODELEVEALUATOR::Setup() routine first to "
+  if (dim_ == -1)
+    dserror(
+        "Call the STR::MODELEVEALUATOR::Setup() routine first to "
         "set the problem dimension variable!");
   return dim_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::PrepareNURBSElement(
-    const DRT::DiscretizationInterface& discret,
-    Teuchos::RCP<DRT::Element> ele,
-    Teuchos::RCP<MORTAR::MortarElement> cele) const
+void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::DiscretizationInterface& discret,
+    Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::MortarElement> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));
-  if (nurbsdis==NULL)
-    dserror("Dynamic cast failed!");
+  if (nurbsdis == NULL) dserror("Dynamic cast failed!");
 
-  Teuchos::RCP<const DRT::NURBS::Knotvector> knots =
-      nurbsdis->GetKnotVector();
+  Teuchos::RCP<const DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
   std::vector<Epetra_SerialDenseVector> parentknots(Dim());
   std::vector<Epetra_SerialDenseVector> mortarknots(Dim() - 1);
 
   double normalfac = 0.0;
-  Teuchos::RCP<DRT::FaceElement> faceele =
-      Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
-  if ( faceele.is_null() )
-    dserror( "Cast to FaceElement failed!" );
+  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
+  if (faceele.is_null()) dserror("Cast to FaceElement failed!");
 
-  bool zero_size = knots->GetBoundaryEleAndParentKnots(
-      parentknots,
-      mortarknots,
-      normalfac,
-      faceele->ParentMasterElement()->Id(),
-      faceele->FaceMasterNumber());
+  bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
+      faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
   // store nurbs specific data to node
   cele->ZeroSized() = zero_size;
-  cele->Knots()     = mortarknots;
+  cele->Knots() = mortarknots;
   cele->NormalFac() = normalfac;
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::PrepareNURBSNode(const DRT::Node* node,
-    Teuchos::RCP<MORTAR::MortarNode> mnode) const
+void MORTAR::STRATEGY::Factory::PrepareNURBSNode(
+    const DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode) const
 {
-  const DRT::NURBS::ControlPoint* cp =
-      dynamic_cast<const DRT::NURBS::ControlPoint*>(node);
+  const DRT::NURBS::ControlPoint* cp = dynamic_cast<const DRT::NURBS::ControlPoint*>(node);
 
   mnode->NurbsW() = cp->W();
 

@@ -25,35 +25,30 @@
 
 namespace FLD
 {
+  class TimIntTopOptGenAlpha : public TimIntGenAlpha, public TimIntTopOpt
+  {
+   public:
+    /// Standard Constructor
+    TimIntTopOptGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntTopOptGenAlpha : public TimIntGenAlpha, public TimIntTopOpt
-{
-public:
-  /// Standard Constructor
-  TimIntTopOptGenAlpha(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntTopOptGenAlpha();
 
-  /// Destructor
-  virtual ~TimIntTopOptGenAlpha();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
-
-  */
-  virtual void Init();
+    */
+    virtual void Init();
 
 
-protected:
+   protected:
+   private:
+  };  // class TimIntTopOptGenAlpha
 
-private:
-
-
-}; // class TimIntTopOptGenAlpha
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_TOPOPT_GENALPHA_H

@@ -1,6 +1,7 @@
 /*!----------------------------------------------------------------------
 \file coupling_manager.H
-\brief  Pure Virtual Coupling Manager, to define the basic functionality of all specified coupling managers
+\brief  Pure Virtual Coupling Manager, to define the basic functionality of all specified coupling
+managers
 
 \level 2
 
@@ -23,44 +24,47 @@ namespace LINALG
 {
   class BlockSparseMatrixBase;
   class MultiMapExtractor;
-}
+}  // namespace LINALG
 
 namespace IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}
+}  // namespace IO
 
 namespace XFEM
 {
   class Coupling_Manager
   {
-    public:
-
+   public:
     //! @name Destruction
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~Coupling_Manager(){}
+    virtual ~Coupling_Manager() {}
 
-    //!predict states in the coupling object
+    //! predict states in the coupling object
     virtual void PredictCouplingStates() = 0;
 
     //! Set required states in the coupling object
     virtual void SetCouplingStates() = 0;
 
-    //! Initializes the couplings (done at the beginning of the algorithm after fields have their state for timestep n)
+    //! Initializes the couplings (done at the beginning of the algorithm after fields have their
+    //! state for timestep n)
     virtual void InitCouplingStates() = 0;
 
     //! Add the coupling matrixes to the global systemmatrix
-    // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the blockmatrix
-    // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
+    // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
+    // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
+    // systemmatrix
     virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) = 0;
 
     //! Add the coupling rhs
-    // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the blockmatrix
-    // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,const LINALG::MultiMapExtractor& me, double scaling) = 0;
+    // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
+    // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
+    // systemmatrix
+    virtual void AddCouplingRHS(
+        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling) = 0;
 
     //! Update (Perform after Each Timestep)
     virtual void Update(double scaling) = 0;
@@ -71,6 +75,6 @@ namespace XFEM
     //! Read Restart (For quantities stored on the interface)
     virtual void ReadRestart(IO::DiscretizationReader& reader) = 0;
   };
-}
+}  // namespace XFEM
 
 #endif

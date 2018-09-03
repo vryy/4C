@@ -34,7 +34,7 @@ namespace ADAPTER
 {
   class Coupling;
   class ScaTraBaseAlgorithm;
-}
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -45,8 +45,8 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace LINALG
 {
@@ -54,16 +54,14 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-}
+}  // namespace LINALG
 
 
 namespace FS3I
 {
   class PartFPS3I : public FS3I_Base
   {
-
-  public:
-
+   public:
     //! constructor of base class for partitioned FPS3I
     PartFPS3I(const Epetra_Comm& comm);
 
@@ -102,42 +100,40 @@ namespace FS3I
     void SetFPSISolution();
 
     /// set scatra solution on structure field
-    void SetStructScatraSolution() ;
+    void SetStructScatraSolution();
 
     //! return communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
 
     /// extract fluid convective and structure convective velocities
-    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel,
-                    std::vector<Teuchos::RCP<const Epetra_Vector> >& convel);
+    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& vel,
+        std::vector<Teuchos::RCP<const Epetra_Vector>>& convel);
 
     /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
+    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss);
 
-    ///extracts pressures at the interface
-    void ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector> >& pressure);
+    /// extracts pressures at the interface
+    void ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector>>& pressure);
 
-    ///provide velocities from FPSI subproblem for scatra subproblem
+    /// provide velocities from FPSI subproblem for scatra subproblem
     void SetVelocityFields();
 
-    ///provide wall shear stresses from FPSI subproblem for scatra subproblem
+    /// provide wall shear stresses from FPSI subproblem for scatra subproblem
     void SetWallShearStresses();
 
-    ///provide pressures from FPSI subproblem for scatra subproblem
+    /// provide pressures from FPSI subproblem for scatra subproblem
     void SetPressureFields();
 
-    ///provide displacements from FPSI subproblem for scatra subproblem
+    /// provide displacements from FPSI subproblem for scatra subproblem
     void SetMeshDisp();
 
-  protected:
-
+   protected:
     /// fpsi algorithm
     Teuchos::RCP<FPSI::Monolithic_Plain> fpsi_;
 
 
-  private:
-
+   private:
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
 
@@ -146,8 +142,7 @@ namespace FS3I
 
     /// scatra field on structure
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra_;
-
   };
-}
+}  // namespace FS3I
 
 #endif

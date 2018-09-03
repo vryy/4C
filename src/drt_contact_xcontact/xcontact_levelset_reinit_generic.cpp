@@ -18,18 +18,14 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-XCONTACT::LEVELSET::REINIT::Generic::Generic()
-    : isinit_( false ),
-      issetup_( false ),
-      algorithm_( NULL )
+XCONTACT::LEVELSET::REINIT::Generic::Generic() : isinit_(false), issetup_(false), algorithm_(NULL)
 {
   /* left blank */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XCONTACT::LEVELSET::REINIT::Generic::Init(
-    XCONTACT::LEVELSET::Algorithm * const algorithm )
+void XCONTACT::LEVELSET::REINIT::Generic::Init(XCONTACT::LEVELSET::Algorithm* const algorithm)
 {
   issetup_ = false;
 
@@ -40,27 +36,27 @@ void XCONTACT::LEVELSET::REINIT::Generic::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XCONTACT::LEVELSET::REINIT::Generic::Compute( const Epetra_Vector & phinp )
+void XCONTACT::LEVELSET::REINIT::Generic::Compute(const Epetra_Vector& phinp)
 {
   CheckInitSetup();
 
   PreSolve();
 
-  Solve( phinp );
+  Solve(phinp);
 
   PostSolve();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-XCONTACT::LEVELSET::Algorithm & XCONTACT::LEVELSET::REINIT::Generic::Algorithm()
+XCONTACT::LEVELSET::Algorithm& XCONTACT::LEVELSET::REINIT::Generic::Algorithm()
 {
   return *algorithm_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const XCONTACT::LEVELSET::Algorithm & XCONTACT::LEVELSET::REINIT::Generic::Algorithm() const
+const XCONTACT::LEVELSET::Algorithm& XCONTACT::LEVELSET::REINIT::Generic::Algorithm() const
 {
   return *algorithm_;
 }

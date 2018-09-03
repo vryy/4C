@@ -26,15 +26,15 @@
 
 namespace FSI
 {
-  //class OverlappingBlockMatrix;
+  // class OverlappingBlockMatrix;
 
   namespace UTILS
   {
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace ADAPTER
 {
@@ -48,11 +48,12 @@ namespace ADAPTER
 namespace POROELAST
 {
   /// monolithic structure split for condensing DOFs, when using the brinkman-equation
-  class MonolithicSplitNoPenetration: public MonolithicSplit
+  class MonolithicSplitNoPenetration : public MonolithicSplit
   {
-  public:
+   public:
     //! create using a Epetra_Comm
-    explicit MonolithicSplitNoPenetration(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit MonolithicSplitNoPenetration(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor to support polymorph destruction
     virtual ~MonolithicSplitNoPenetration(){};
@@ -61,7 +62,7 @@ namespace POROELAST
     virtual void SetupSystem();
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(bool firstcall=false);
+    virtual void SetupRHS(bool firstcall = false);
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
@@ -79,23 +80,25 @@ namespace POROELAST
     virtual void PrintNewtonIterHeaderStream(std::ostringstream& oss);
 
 
-  protected:
+   protected:
     //! @name Apply current field state to system
 
     //! Evaluate mechanical-fluid system matrix
-    virtual void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
-        );
+    virtual void ApplyStrCouplMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+    );
 
     //! Evaluate fluid-mechanical system matrix
-    virtual void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
-          );
+    virtual void ApplyFluidCouplMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+    );
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
-    /// (i.e. condensed forces onto the structure) needed for rhs in next newton step
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
+    /// iteration step (i.e. condensed forces onto the structure) needed for rhs in next newton step
     virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
-    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
+    /// step (i.e. condensed forces onto the structure) needed for rhs in next time step
     virtual void RecoverLagrangeMultiplierAfterTimeStep();
 
     //! output
@@ -111,13 +114,12 @@ namespace POROELAST
     virtual void BuildConvergenceNorms();
 
     //@}
-  private:
-
+   private:
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv, //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
-        );
+    void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
+        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
+    );
 
     //! @name Global matrices and vectors
 
@@ -145,8 +147,9 @@ namespace POROELAST
     //! transform object for linearization of k_D matrix \f$D\f$
     Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_DLin_transform_;
 
-    //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
-    //! evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
+    //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
+    //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next
+    //! iteration step
     Teuchos::RCP<Epetra_Vector> lambdanp_;
 
     //@}
@@ -178,7 +181,7 @@ namespace POROELAST
     Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_adapter_;
   };
 
-}
+}  // namespace POROELAST
 
 
 #endif /* PORO_MONOLITHICSPLIT_NOPENETRATION_H_ */

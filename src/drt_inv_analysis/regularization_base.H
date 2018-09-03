@@ -21,7 +21,7 @@
 /* headers */
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
-#include "matpar_manager.H" //for ConnectivityData
+#include "matpar_manager.H"  //for ConnectivityData
 
 namespace LINALG
 {
@@ -29,7 +29,7 @@ namespace LINALG
 }
 namespace Teuchos
 {
-class ParameterList;
+  class ParameterList;
 }
 
 namespace DRT
@@ -39,75 +39,70 @@ namespace DRT
 
 namespace INVANA
 {
-
   class ConnectivityData;
   class InitialGuess;
 
-/*! \class RegularizationBase
- * \brief A class for regularization on a vector 'theta' of parameters
- *
- * Base class for the regularization functional in an optimization context.
- * It simply provides the interface methods Evaluate and EvaluateGradient
- * for the evaluation of the functional value and the functional derivative
- * wrt to the parameter vector.
- *
- * \author kehl
- */
-class RegularizationBase
-{
+  /*! \class RegularizationBase
+   * \brief A class for regularization on a vector 'theta' of parameters
+   *
+   * Base class for the regularization functional in an optimization context.
+   * It simply provides the interface methods Evaluate and EvaluateGradient
+   * for the evaluation of the functional value and the functional derivative
+   * wrt to the parameter vector.
+   *
+   * \author kehl
+   */
+  class RegularizationBase
+  {
+   public:
+    //! constructor
+    RegularizationBase();
 
-public:
+    //! destructor
+    virtual ~RegularizationBase() { ; }
 
-  //! constructor
-  RegularizationBase();
+    //! @name Initialization
+    //@{
 
-  //! destructor
-  virtual ~RegularizationBase() { ; }
+    //! Set member variables after construction.
+    virtual void Init(const Teuchos::ParameterList& invp,  /// [in] parameters
+        Teuchos::RCP<ConnectivityData> connectivity,  /// [in] connectivity between the parameters
+        Teuchos::RCP<InitialGuess> initguess          /// [in] initial guess data
+    );
 
-  //! @name Initialization
-  //@{
+    //! Setup
+    virtual void Setup(const Teuchos::ParameterList& invp) = 0;
 
-  //! Set member variables after construction.
-  virtual void Init(
-      const Teuchos::ParameterList& invp, /// [in] parameters
-      Teuchos::RCP<ConnectivityData> connectivity, /// [in] connectivity between the parameters
-      Teuchos::RCP<InitialGuess> initguess /// [in] initial guess data
-      );
+    //@}
 
-  //! Setup
-  virtual void Setup(const Teuchos::ParameterList& invp) = 0;
+    //! @name Evaluation methods
+    //@{
 
-  //@}
+    //! Evaluate value of the regularization functional
+    virtual void Evaluate(const Epetra_MultiVector& theta,  /// [in] vector to be regularized
+        double* value                                       /// [out] functional value
+        ) = 0;
 
-  //! @name Evaluation methods
-  //@{
+    //! Evaluate gradient of the regularization functional
+    virtual void EvaluateGradient(
+        const Epetra_MultiVector& theta,           /// [in] vector to be regularized
+        Teuchos::RCP<Epetra_MultiVector> gradient  /// [out] directional derivative wrt. theta
+        ) = 0;
 
-  //! Evaluate value of the regularization functional
-  virtual void Evaluate(const Epetra_MultiVector& theta, /// [in] vector to be regularized
-      double* value /// [out] functional value
-      ) = 0;
+    //@}
 
-  //! Evaluate gradient of the regularization functional
-  virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
-      Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
-      ) = 0;
+   protected:
+    //! layout of the parameters
+    Teuchos::RCP<ConnectivityData> connectivity_;
 
-  //@}
+    //! get mean from some initial guess in case
+    Teuchos::RCP<InitialGuess> initguess_;
 
-protected:
+    //! weight of the regularization
+    double weight_;
+  };
 
-  //! layout of the parameters
-  Teuchos::RCP<ConnectivityData> connectivity_;
-
-  //! get mean from some initial guess in case
-  Teuchos::RCP<InitialGuess> initguess_;
-
-  //! weight of the regularization
-  double weight_;
-
-};
-
-}
+}  // namespace INVANA
 
 /*----------------------------------------------------------------------*/
 #endif

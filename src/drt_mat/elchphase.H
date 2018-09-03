@@ -23,20 +23,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
     class ElchPhase : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ElchPhase(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ElchPhase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ElchPhase() { ; }
@@ -45,14 +40,14 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
       /// provide ids of the individual mat
-      const std::vector<int>& MatIds() const {return matids_;}
+      const std::vector<int>& MatIds() const { return matids_; }
 
       /// provide access to phases by its ID
       Teuchos::RCP<MAT::Material> MatById(const int id) const
       {
         if (not local_)
         {
-          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+          std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
 
           if (m == mat_.end())
           {
@@ -88,36 +83,32 @@ namespace MAT
 
       //@}
 
-    private:
-
+     private:
       /// map to materials (only used for local_==true)
-      std::map<int,Teuchos::RCP<MAT::Material> > mat_;
+      std::map<int, Teuchos::RCP<MAT::Material>> mat_;
 
     };  // class ElchPhase
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class ElchPhaseType : public DRT::ParObjectType
-{
-public:
+  class ElchPhaseType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ElchPhaseType"; }
 
-  std::string Name() const { return "ElchPhaseType"; }
+    static ElchPhaseType& Instance() { return instance_; };
 
-  static ElchPhaseType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ElchPhaseType instance_;
-};
+   private:
+    static ElchPhaseType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for the material properties of an ion species in an electrolyte solution
   class ElchPhase : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ElchPhase();
 
@@ -166,7 +157,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_elchphase; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElchPhase( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ElchPhase(*this)); }
 
     /// return constant porosity
     double Epsilon() const { return params_->epsilon_; }
@@ -176,9 +167,7 @@ private:
     int NumMat() const { return params_->nummat_; }
 
     /// material ID by Index
-    int MatID(
-      const unsigned index
-    ) const
+    int MatID(const unsigned index) const
     {
       if ((int)index < params_->nummat_)
         return params_->matids_.at(index);
@@ -194,7 +183,7 @@ private:
     {
       if (params_->local_)
       {
-        std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+        std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
         if (m == mat_.end())
         {
           dserror("Material %d could not be found", id);
@@ -203,15 +192,14 @@ private:
         else
           return m->second;
       }
-      else // material is global (stored in material parameters)
+      else  // material is global (stored in material parameters)
         return params_->MatById(id);
     }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// setup of material map
     void SetupMatMap();
 
@@ -222,10 +210,9 @@ private:
     MAT::PAR::ElchPhase* params_;
 
     /// map to materials
-    std::map<int,Teuchos::RCP<MAT::Material> > mat_;
+    std::map<int, Teuchos::RCP<MAT::Material>> mat_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

@@ -23,39 +23,36 @@
 
 namespace SCATRA
 {
+  /*!
+  \brief concentrations-el.potential split strategy
 
-/*!
-\brief concentrations-el.potential split strategy
-
- */
+   */
   class SplitStrategy
   {
-  public:
-
+   public:
     /// construct with a block matrix base
     explicit SplitStrategy(LINALG::BlockSparseMatrixBase& mat)
-      : mat_(mat),
-      matrix00_(mat_.Matrix(0,0)),
-      matrix01_(mat_.Matrix(0,1)),
-      matrix10_(mat_.Matrix(1,0)),
-      matrix11_(mat_.Matrix(1,1)),
-      numscal_(-1),
-      numdofpernode_(-1)
-    {}
+        : mat_(mat),
+          matrix00_(mat_.Matrix(0, 0)),
+          matrix01_(mat_.Matrix(0, 1)),
+          matrix10_(mat_.Matrix(1, 0)),
+          matrix11_(mat_.Matrix(1, 1)),
+          numscal_(-1),
+          numdofpernode_(-1)
+    {
+    }
 
     /// find row block to a given row gid
     int RowBlock(int lrow, int rgid)
     {
-      if ((lrow%numdofpernode_)<numscal_)
-        return 0;
+      if ((lrow % numdofpernode_) < numscal_) return 0;
       return 1;
     }
 
     /// find column block to a given column gid
     int ColBlock(int rblock, int lcol, int cgid)
     {
-      if ((lcol%numdofpernode_)<numscal_)
-        return 0;
+      if ((lcol % numdofpernode_) < numscal_) return 0;
       return 1;
     }
 
@@ -68,13 +65,9 @@ namespace SCATRA
      * shows this drawback.
      * Effects: Faster assembly and a more sparse global matrix (and graph)
      */
-    void Assemble(int eid,
-        int myrank,
-        const std::vector<int>& lmstride,
-        const Epetra_SerialDenseMatrix& Aele,
-        const std::vector<int>& lmrow,
-        const std::vector<int>& lmrowowner,
-        const std::vector<int>& lmcol)
+    void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
+        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
     {
       const int lrowdim = (int)lmrow.size();
       const int lcoldim = (int)lmcol.size();
@@ -89,50 +82,50 @@ namespace SCATRA
         // If no row dofs are present on this proc, their is nothing to assemble.
         // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
         bool doit = false;
-        for (int lrow=0; lrow<lrowdim; ++lrow)
+        for (int lrow = 0; lrow < lrowdim; ++lrow)
           if (lmrowowner[lrow] == myrank)
           {
-            doit = true; // This proc owns at least one row of interest
+            doit = true;  // This proc owns at least one row of interest
             break;
           }
         if (!doit) return;
 
         // get the maps
-        const Epetra_Map& colmap00 = mat_.Matrix(0,0).ColMap();
-        const Epetra_Map& colmap01 = mat_.Matrix(0,1).ColMap();
-        const Epetra_Map& colmap10 = mat_.Matrix(1,0).ColMap();
-        const Epetra_Map& colmap11 = mat_.Matrix(1,1).ColMap();
-        const Epetra_Map& rowmap00 = mat_.Matrix(0,0).RowMap();
-        const Epetra_Map& rowmap01 = mat_.Matrix(0,1).RowMap();
-        const Epetra_Map& rowmap10 = mat_.Matrix(1,0).RowMap();
-        const Epetra_Map& rowmap11 = mat_.Matrix(1,1).RowMap();
+        const Epetra_Map& colmap00 = mat_.Matrix(0, 0).ColMap();
+        const Epetra_Map& colmap01 = mat_.Matrix(0, 1).ColMap();
+        const Epetra_Map& colmap10 = mat_.Matrix(1, 0).ColMap();
+        const Epetra_Map& colmap11 = mat_.Matrix(1, 1).ColMap();
+        const Epetra_Map& rowmap00 = mat_.Matrix(0, 0).RowMap();
+        const Epetra_Map& rowmap01 = mat_.Matrix(0, 1).RowMap();
+        const Epetra_Map& rowmap10 = mat_.Matrix(1, 0).RowMap();
+        const Epetra_Map& rowmap11 = mat_.Matrix(1, 1).RowMap();
 
         // prepare vectors for holding column local ids and the values to be assembled
-        const int nnode = lcoldim/numdofpernode_;
-        std::vector<double> values0(numscal_*nnode);
+        const int nnode = lcoldim / numdofpernode_;
+        std::vector<double> values0(numscal_ * nnode);
         std::vector<double> values1(nnode);
         std::vector<double> values00(nnode);
-        std::map<int,std::vector<int> > localcol00map;
-        for (int i = 0; i < numscal_ ; i++)
+        std::map<int, std::vector<int>> localcol00map;
+        for (int i = 0; i < numscal_; i++)
         {
           std::vector<int> vec(nnode);
-          localcol00map.insert(std::pair<int,std::vector<int>  >(i,vec));
+          localcol00map.insert(std::pair<int, std::vector<int>>(i, vec));
         }
         std::vector<int> localcol01(nnode);
-        std::vector<int> localcol10(numscal_*nnode);
+        std::vector<int> localcol10(numscal_ * nnode);
         std::vector<int> localcol11(nnode);
 
         // fill vectors with the column map LID's
-        for (int inode=0; inode<nnode; ++inode)
+        for (int inode = 0; inode < nnode; ++inode)
         {
-          const int p = inode*numdofpernode_;
+          const int p = inode * numdofpernode_;
           // the concentrations
           for (int sclarid = 0; sclarid < numscal_; ++sclarid)
           {
             const int lcol = p + sclarid;
             const int cgid = lmcol[lcol];
             (localcol00map[sclarid])[inode] = (colmap00.LID(cgid));
-            const int pos = inode*numscal_ + sclarid;
+            const int pos = inode * numscal_ + sclarid;
             localcol10[pos] = (colmap10.LID(cgid));
           }
           // the el. potential
@@ -147,14 +140,14 @@ namespace SCATRA
         int errone;
 
         // loop rows of local matrix and assemble each of them
-        for (int lrow=0; lrow<lrowdim; ++lrow)
+        for (int lrow = 0; lrow < lrowdim; ++lrow)
         {
           // check ownership of row
           if (lmrowowner[lrow] != myrank) continue;
 
           // get global id and block number for current row
           const int rgid = lmrow[lrow];
-          const int scalarid = lrow%numdofpernode_;
+          const int scalarid = lrow % numdofpernode_;
 
           if (scalarid < numscal_)
           {
@@ -162,29 +155,31 @@ namespace SCATRA
             rlid0 = rowmap00.LID(rgid);
             rlid1 = rowmap01.LID(rgid);
 #ifdef DEBUG
-            if (rlid0<0) dserror("Sparse matrix A00 does not have global row %d",rgid);
-            if (rlid1<0) dserror("Sparse matrix A01 does not have global row %d",rgid);
+            if (rlid0 < 0) dserror("Sparse matrix A00 does not have global row %d", rgid);
+            if (rlid1 < 0) dserror("Sparse matrix A01 does not have global row %d", rgid);
 #endif
 
             // separate the (non-zero!) values of the current row
-            for (int j=0; j<nnode; ++j)
+            for (int j = 0; j < nnode; ++j)
             {
-              int lcol = j*numdofpernode_ + scalarid;
-              double val = Aele(lrow,lcol);
+              int lcol = j * numdofpernode_ + scalarid;
+              double val = Aele(lrow, lcol);
               values00[j] = val;
 
-              lcol = j*numdofpernode_ + numscal_;
-              val = Aele(lrow,lcol);
+              lcol = j * numdofpernode_ + numscal_;
+              val = Aele(lrow, lcol);
               values1[j] = val;
             }
 
             // assemble
-            errone = matrix00_.EpetraMatrix()->SumIntoMyValues(rlid0,nnode,&values00[0],&(localcol00map[scalarid])[0]);
+            errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
+                rlid0, nnode, &values00[0], &(localcol00map[scalarid])[0]);
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A00",errone);
-            errone = matrix01_.EpetraMatrix()->SumIntoMyValues(rlid1,nnode,&values1[0],&localcol01[0]);
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A00", errone);
+            errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
+                rlid1, nnode, &values1[0], &localcol01[0]);
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A01",errone);
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A01", errone);
           }
           else
           {
@@ -192,18 +187,18 @@ namespace SCATRA
             rlid0 = rowmap10.LID(rgid);
             rlid1 = rowmap11.LID(rgid);
 #ifdef DEBUG
-            if (rlid0<0) dserror("Sparse matrix A10 does not have global row %d",rgid);
-            if (rlid1<0) dserror("Sparse matrix A11 does not have global row %d",rgid);
+            if (rlid0 < 0) dserror("Sparse matrix A10 does not have global row %d", rgid);
+            if (rlid1 < 0) dserror("Sparse matrix A11 does not have global row %d", rgid);
 #endif
             // separate the values of the current row
             int nodespassed = 0;
-            for (int lcol=0; lcol<lcoldim; ++lcol)
+            for (int lcol = 0; lcol < lcoldim; ++lcol)
             {
-              double val = Aele(lrow,lcol);
-              const int rest = lcol%numdofpernode_;
-              if (rest<numscal_)
+              double val = Aele(lrow, lcol);
+              const int rest = lcol % numdofpernode_;
+              if (rest < numscal_)
               {
-                int pos = nodespassed*numscal_ + rest;
+                int pos = nodespassed * numscal_ + rest;
                 values0[pos] = val;
               }
               else
@@ -214,63 +209,64 @@ namespace SCATRA
             }
 
             // assemble
-            errone = matrix10_.EpetraMatrix()->SumIntoMyValues(rlid0,nnode*numscal_,&values0[0],&localcol10[0]);
+            errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
+                rlid0, nnode * numscal_, &values0[0], &localcol10[0]);
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A10",errone);
-            errone = matrix11_.EpetraMatrix()->SumIntoMyValues(rlid1,nnode,&values1[0],&localcol11[0]);
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A10", errone);
+            errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
+                rlid1, nnode, &values1[0], &localcol11[0]);
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A11",errone);
+              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A11", errone);
           }
-        } // for (int lrow=0; lrow<ldim; ++lrow)
+        }  // for (int lrow=0; lrow<ldim; ++lrow)
       }
       else
       {
         // the maps of the blockmatrices are not yet available; use global ids instead
 
         // loop rows of local matrix
-        for (int lrow=0; lrow<lrowdim; ++lrow)
+        for (int lrow = 0; lrow < lrowdim; ++lrow)
         {
           // check ownership of row
-          if (lmrowowner[lrow]!=myrank)
-            continue;
+          if (lmrowowner[lrow] != myrank) continue;
 
           int rgid = lmrow[lrow];
-          int rblock = RowBlock(lrow,rgid);
-          const int scalarid = lrow%numdofpernode_;
+          int rblock = RowBlock(lrow, rgid);
+          const int scalarid = lrow % numdofpernode_;
 
           if (scalarid < numscal_)
           {
-            //special treatment for block matrix A00:
-            for (int lcol=scalarid; lcol<lcoldim; lcol+=numdofpernode_)
+            // special treatment for block matrix A00:
+            for (int lcol = scalarid; lcol < lcoldim; lcol += numdofpernode_)
             {
-              double val = Aele(lrow,lcol);
+              double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock,lcol,cgid);
+              int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-              matrix.Assemble(val,rgid,cgid);
+              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              matrix.Assemble(val, rgid, cgid);
             }
             // values for block matrix A01:
-            for (int lcol=numscal_; lcol<lcoldim; lcol+=numdofpernode_)
+            for (int lcol = numscal_; lcol < lcoldim; lcol += numdofpernode_)
             {
-              double val = Aele(lrow,lcol);
+              double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock,lcol,cgid);
+              int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-              matrix.Assemble(val,rgid,cgid);
+              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              matrix.Assemble(val, rgid, cgid);
             }
           }
-          else  //rblock == 1, assemble everything
+          else  // rblock == 1, assemble everything
           {
-            for (int lcol=0; lcol<lcoldim; ++lcol)
+            for (int lcol = 0; lcol < lcoldim; ++lcol)
             {
-              double val = Aele(lrow,lcol);
+              double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock,lcol,cgid);
+              int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-              matrix.Assemble(val,rgid,cgid);
+              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              matrix.Assemble(val, rgid, cgid);
             }
           }
         }
@@ -280,10 +276,10 @@ namespace SCATRA
     /// assemble into the given block
     void Assemble(double val, int rgid, int cgid)
     {
-      int rblock = RowBlock(0,rgid);
-      int cblock = ColBlock(rblock,0,cgid);
-      LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-      matrix.Assemble(val,rgid,cgid);
+      int rblock = RowBlock(0, rgid);
+      int cblock = ColBlock(rblock, 0, cgid);
+      LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+      matrix.Assemble(val, rgid, cgid);
     }
 
     /// assemble the remaining ghost entries
@@ -291,11 +287,12 @@ namespace SCATRA
 
     /// set number of concentration dofs
     void SetNumScal(const int numscal)
-    { numscal_ = numscal;
-      numdofpernode_ = numscal +1;}
+    {
+      numscal_ = numscal;
+      numdofpernode_ = numscal + 1;
+    }
 
-  private:
-
+   private:
     /// my block matrix base
     LINALG::BlockSparseMatrixBase& mat_;
 
@@ -311,9 +308,8 @@ namespace SCATRA
     /// number of dofs per node (= numdim_ +1)
     int numdofpernode_;
 
-  }; // class SplitStrategy
+  };  // class SplitStrategy
 
-} // namespace SCATRA
+}  // namespace SCATRA
 
 #endif
-

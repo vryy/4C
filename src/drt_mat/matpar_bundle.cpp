@@ -22,31 +22,21 @@
 #include "../drt_matelast/elast_summand.H"
 
 /*----------------------------------------------------------------------*/
-MAT::PAR::Bundle::Bundle()
-  : materialreadfromproblem_(0)
-{
-}
+MAT::PAR::Bundle::Bundle() : materialreadfromproblem_(0) {}
 
 
 /*----------------------------------------------------------------------*/
-MAT::PAR::Bundle::~Bundle()
-{
-}
+MAT::PAR::Bundle::~Bundle() {}
 
 
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Bundle::Insert(
-  int matid,
-  Teuchos::RCP<MAT::PAR::Material> mat
-  )
+void MAT::PAR::Bundle::Insert(int matid, Teuchos::RCP<MAT::PAR::Material> mat)
 {
-  matmap_.insert(std::pair<int,Teuchos::RCP<MAT::PAR::Material> >(matid,mat));
+  matmap_.insert(std::pair<int, Teuchos::RCP<MAT::PAR::Material>>(matid, mat));
 }
 
 /*----------------------------------------------------------------------*/
-int MAT::PAR::Bundle::Find(
-  const int id
-  ) const
+int MAT::PAR::Bundle::Find(const int id) const
 {
   if (matmap_.find(id) == matmap_.end())
     return -1;
@@ -57,9 +47,8 @@ int MAT::PAR::Bundle::Find(
 /*----------------------------------------------------------------------*/
 void MAT::PAR::Bundle::MakeParameters()
 {
-  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::iterator m=matmap_.begin();
-       m!=matmap_.end();
-       ++m)
+  for (std::map<int, Teuchos::RCP<MAT::PAR::Material>>::iterator m = matmap_.begin();
+       m != matmap_.end(); ++m)
   {
     int matid = m->first;
 
@@ -69,8 +58,7 @@ void MAT::PAR::Bundle::MakeParameters()
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
       // check if allocation was successful
       Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
-      if (matpar->Parameter() != NULL)
-        continue;
+      if (matpar->Parameter() != NULL) continue;
     }
 
     // 2nd try
@@ -79,8 +67,7 @@ void MAT::PAR::Bundle::MakeParameters()
       Teuchos::RCP<MAT::ELASTIC::Summand> mat = MAT::ELASTIC::Summand::Factory(matid);
       // check if allocation was successful
       Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
-      if (matpar->Parameter() != NULL)
-        continue;
+      if (matpar->Parameter() != NULL) continue;
     }
 
     // trials failed
@@ -89,14 +76,11 @@ void MAT::PAR::Bundle::MakeParameters()
 }
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(
-  const int num
-  ) const
+Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(const int num) const
 {
-  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator m = matmap_.find(num);
+  std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator m = matmap_.find(num);
 
-  if (matmap_.size() == 0)
-    dserror("No materials available, num=%d",num);
+  if (matmap_.size() == 0) dserror("No materials available, num=%d", num);
 
   if (m == matmap_.end())
     dserror("Material 'MAT %d' could not be found", num);
@@ -108,14 +92,12 @@ Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(
 }
 
 /*----------------------------------------------------------------------*/
-int MAT::PAR::Bundle::FirstIdByType(
-  const INPAR::MAT::MaterialType type
-  ) const
+int MAT::PAR::Bundle::FirstIdByType(const INPAR::MAT::MaterialType type) const
 {
-  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator m;
+  std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator m;
 
   int id = -1;
-  for (m=matmap_.begin(); m!=matmap_.end(); ++m)
+  for (m = matmap_.begin(); m != matmap_.end(); ++m)
   {
     if (m->second->Type() == type)
     {
@@ -126,4 +108,3 @@ int MAT::PAR::Bundle::FirstIdByType(
 
   return id;
 }
-

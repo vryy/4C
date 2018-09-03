@@ -17,53 +17,56 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_INTEGRATOR_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_structure.H" // enumerators
-#include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enumerators
-#include <NOX_Abstract_Vector.H> // enumerators
+#include "../drt_inpar/inpar_structure.H"             // enumerators
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"  // enumerators
+#include <NOX_Abstract_Vector.H>                      // enumerators
 
 // forward declaration
 class Epetra_Vector;
-namespace LINALG {
+namespace LINALG
+{
   class SparseOperator;
 }
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace IO {
+}  // namespace Teuchos
+namespace IO
+{
   class DiscretizationWriter;
   class DiscretizationReader;
-} // namespace IO
-namespace STR {
+}  // namespace IO
+namespace STR
+{
   class ModelEvaluator;
   class Dbc;
   class MonitorDbc;
-namespace MODELEVALUATOR {
-  class Data;
-  class Generic;
-} // namespace MODELEVALUATOR
-namespace TIMINT {
-  class Base;
-  class BaseDataSDyn;
-  class BaseDataGlobalState;
-  class BaseDataIO;
-} // namespace TIMINT
+  namespace MODELEVALUATOR
+  {
+    class Data;
+    class Generic;
+  }  // namespace MODELEVALUATOR
+  namespace TIMINT
+  {
+    class Base;
+    class BaseDataSDyn;
+    class BaseDataGlobalState;
+    class BaseDataIO;
+  }  // namespace TIMINT
   class Integrator
   {
-  public:
+   public:
     //! constructor
     Integrator();
 
     //! destructor
-    virtual ~Integrator() {};
+    virtual ~Integrator(){};
 
     //! Initialization
-    virtual void Init(
-        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
+    virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
-        const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr
-        );
+        const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! Setup (has to be implemented by the derived classes)
     virtual void Setup();
@@ -95,16 +98,18 @@ namespace TIMINT {
     virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const = 0;
 
     //! Apply the right hand side only
-    virtual bool ApplyForce(const Epetra_Vector& x,
-        Epetra_Vector& f) = 0;
+    virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
 
     //! Assemble the right hand side
-    virtual bool AssembleForce( Epetra_Vector& f,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
+    virtual bool AssembleForce(Epetra_Vector& f,
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const = 0;
 
     //! Assemble Jacobian
-    virtual bool AssembleJac( LINALG::SparseOperator& jac,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const {return false;};
+    virtual bool AssembleJac(LINALG::SparseOperator& jac,
+        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const
+    {
+      return false;
+    };
 
     //! Create backup state
     void CreateBackupState(const Epetra_Vector& dir);
@@ -120,10 +125,9 @@ namespace TIMINT {
 
     /*! write restart information of the different time integration schemes
      *  and model evaluators */
-    void WriteRestart(IO::DiscretizationWriter& iowriter) const
-    { WriteRestart(iowriter,false); };
-    virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
-        const bool& forced_writerestart) const = 0;
+    void WriteRestart(IO::DiscretizationWriter& iowriter) const { WriteRestart(iowriter, false); };
+    virtual void WriteRestart(
+        IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
     /*! read restart information of the different time integration schemes
      *  and model evaluators */
@@ -196,17 +200,14 @@ namespace TIMINT {
     //! @name Accessors
     //! @{
 
-    double GetCondensedUpdateNorm(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    double GetCondensedUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
-    double GetCondensedPreviousSolNorm(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    double GetCondensedPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
     double GetCondensedSolutionUpdateRMS(
         const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
-    int GetCondensedDofNumber(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+    int GetCondensedDofNumber(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
     //! Return the model evaluator control object (read and write)
     STR::ModelEvaluator& ModelEval();
@@ -232,14 +233,12 @@ namespace TIMINT {
 
     //! @}
 
-  protected:
+   protected:
     //! returns init state
-    inline const bool& IsInit() const
-    { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! returns setup state
-    inline const bool& IsSetup() const
-    { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! Check the init state
     void CheckInit() const;
@@ -279,23 +278,21 @@ namespace TIMINT {
     const STR::TIMINT::Base& TimInt() const;
 
     //! reset the time step dependent parameters for the element evaluation
-    virtual void ResetEvalParams(){ };
+    virtual void ResetEvalParams(){};
 
-    double GetCondensedGlobalNorm(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype,
-        const enum NOX::Abstract::Vector::NormType& normtype,
-        double& mynorm) const;
+    double GetCondensedGlobalNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
+        const enum NOX::Abstract::Vector::NormType& normtype, double& mynorm) const;
 
-    void MonitorDbc( IO::DiscretizationWriter& writer ) const;
+    void MonitorDbc(IO::DiscretizationWriter& writer) const;
 
-  protected:
+   protected:
     //! indicates if the Init() function has been called
     bool isinit_;
 
     //! indicates if the Setup() function has been called
     bool issetup_;
 
-  private:
+   private:
     //! pointer to the model evaluator
     Teuchos::RCP<STR::ModelEvaluator> modelevaluator_ptr_;
 
@@ -319,7 +316,7 @@ namespace TIMINT {
 
     Teuchos::RCP<STR::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
   };
-} // namespace STR
+}  // namespace STR
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_INTEGRATOR_H_ */

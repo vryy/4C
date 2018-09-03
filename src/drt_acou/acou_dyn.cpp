@@ -39,33 +39,44 @@
 
 void printacoulogo()
 {
-  std::cout << "---------------------------------------------------------------------------------" << std::endl;
-  std::cout << "---------------------------------------------------------------------------------" << std::endl;
-  std::cout << "-----------------   Welcome to the problem type Acoustics       -----------------" << std::endl;
-  std::cout << "---------------------------------------------------------------------------------" << std::endl;
-  std::cout << "---------------------------------------------------------------------------------" << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "-----------------   Welcome to the problem type Acoustics       -----------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
   return;
 }
 
 void printacouinvlogo()
 {
-  std::cout << "---------------------------------------------------------------------------------" << std::endl;
-  std::cout << "-----------------   Welcome to the problem type Acoustics       -----------------" << std::endl;
-  std::cout << "-----------------            Inverse analysis                   -----------------" << std::endl;
-  std::cout << "-----------------    Photoacoustic image reconstruction         -----------------" << std::endl;
-  std::cout << "---------------------------------------------------------------------------------" << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
+  std::cout << "-----------------   Welcome to the problem type Acoustics       -----------------"
+            << std::endl;
+  std::cout << "-----------------            Inverse analysis                   -----------------"
+            << std::endl;
+  std::cout << "-----------------    Photoacoustic image reconstruction         -----------------"
+            << std::endl;
+  std::cout << "---------------------------------------------------------------------------------"
+            << std::endl;
   return;
 }
 
-void redistributescatradis(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> acoudis)
+void redistributescatradis(
+    Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> acoudis)
 {
   const Teuchos::ParameterList& acouparams = DRT::Problem::Instance()->AcousticParams();
-  bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams,"MESHCONFORM");
-  if(meshconform==false)
-    dserror("at the moment only implemented for conforming meshes.");
+  bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams, "MESHCONFORM");
+  if (meshconform == false) dserror("at the moment only implemented for conforming meshes.");
 
-  // redistribute scatra discretization, since it usually has way less dofs than acou and does not need as many processors
-  //if(DRT::INPUT::IntegralValue<bool>(acouparams,"REDISTRIBUTESCATRA"))
+  // redistribute scatra discretization, since it usually has way less dofs than acou and does not
+  // need as many processors
+  // if(DRT::INPUT::IntegralValue<bool>(acouparams,"REDISTRIBUTESCATRA"))
   {
     std::vector<int> rownodeids;
     std::vector<int> colnodeids;
@@ -73,25 +84,27 @@ void redistributescatradis(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos:
     int minacounodegid = acoudis->NodeRowMap()->MinAllGID();
     int minscanodegid = scatradis->NodeRowMap()->MinAllGID();
 
-    for(int i=minscanodegid; i<minscanodegid+scatradis->NumGlobalNodes(); ++i)
+    for (int i = minscanodegid; i < minscanodegid + scatradis->NumGlobalNodes(); ++i)
     {
       // check who owns the acoustical node
-      int lidrownode = acoudis->NodeRowMap()->LID(i-minscanodegid+minacounodegid);
-      int lidcolnode = acoudis->NodeColMap()->LID(i-minscanodegid+minacounodegid);
+      int lidrownode = acoudis->NodeRowMap()->LID(i - minscanodegid + minacounodegid);
+      int lidcolnode = acoudis->NodeColMap()->LID(i - minscanodegid + minacounodegid);
 
-      if(lidrownode>=0)
-        rownodeids.push_back(i);
-      if(lidcolnode>=0)
-        colnodeids.push_back(i);
+      if (lidrownode >= 0) rownodeids.push_back(i);
+      if (lidcolnode >= 0) colnodeids.push_back(i);
     }
 
     // create new maps
-    Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(new Epetra_Map(scatradis->NumGlobalNodes(),rownodeids.size(),&rownodeids[0],0,acoudis->Comm()));
-    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,colnodeids.size(),&colnodeids[0],0,acoudis->Comm()));
+    Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(new Epetra_Map(
+        scatradis->NumGlobalNodes(), rownodeids.size(), &rownodeids[0], 0, acoudis->Comm()));
+    Teuchos::RCP<Epetra_Map> newnodecolmap =
+        Teuchos::rcp(new Epetra_Map(-1, colnodeids.size(), &colnodeids[0], 0, acoudis->Comm()));
 
     // redistribute
-    scatradis->Redistribute(*newnoderowmap,*newnodecolmap,true,true,true,true,true);
-    std::cout<<"warning: this function is not tested for empty processors or processors which accidently only get one or two elements, test it and implement something better"<<std::endl;
+    scatradis->Redistribute(*newnoderowmap, *newnodecolmap, true, true, true, true, true);
+    std::cout << "warning: this function is not tested for empty processors or processors which "
+                 "accidently only get one or two elements, test it and implement something better"
+              << std::endl;
   }
 
   return;
@@ -103,10 +116,12 @@ void acoustics_drt()
   const Teuchos::ParameterList& acouparams = DRT::Problem::Instance()->AcousticParams();
 
   // do we want to do inverse analysis?
-  bool invanalysis = (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS") != INPAR::ACOU::pat_none);
+  bool invanalysis = (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(
+                          acouparams, "INV_ANALYSIS") != INPAR::ACOU::pat_none);
 
   // access the discretization
-  Teuchos::RCP<DRT::DiscretizationHDG> acoudishdg = Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(DRT::Problem::Instance()->GetDis("acou"));
+  Teuchos::RCP<DRT::DiscretizationHDG> acoudishdg =
+      Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(DRT::Problem::Instance()->GetDis("acou"));
   if (acoudishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
@@ -115,29 +130,31 @@ void acoustics_drt()
 
   // for explicit time integration, need to provide some additional ghosting
   {
-    switch(DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT"))
+    switch (DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams, "TIMEINT"))
     {
-    case INPAR::ACOU::acou_expleuler:
-    case INPAR::ACOU::acou_classrk4:
-    case INPAR::ACOU::acou_lsrk45reg2:
-    case INPAR::ACOU::acou_lsrk33reg2:
-    case INPAR::ACOU::acou_lsrk45reg3:
-    case INPAR::ACOU::acou_ssprk:
-    case INPAR::ACOU::acou_ader:
-    case INPAR::ACOU::acou_ader_lts:
-    {
-      acoudishdg->AddElementGhostLayer();
-      break;
-    }
-    default:
-      break;
+      case INPAR::ACOU::acou_expleuler:
+      case INPAR::ACOU::acou_classrk4:
+      case INPAR::ACOU::acou_lsrk45reg2:
+      case INPAR::ACOU::acou_lsrk33reg2:
+      case INPAR::ACOU::acou_lsrk45reg3:
+      case INPAR::ACOU::acou_ssprk:
+      case INPAR::ACOU::acou_ader:
+      case INPAR::ACOU::acou_ader_lts:
+      {
+        acoudishdg->AddElementGhostLayer();
+        break;
+      }
+      default:
+        break;
     }
   }
 
-  // if explicit time integration and float evaluation, we need to set something for denormal numbers:
+  // if explicit time integration and float evaluation, we need to set something for denormal
+  // numbers:
   {
-    if(DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT") != INPAR::ACOU::acou_impleuler)
-      if( (DRT::INPUT::IntegralValue<bool>(acouparams,"DOUBLEORFLOAT")) == false)
+    if (DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams, "TIMEINT") !=
+        INPAR::ACOU::acou_impleuler)
+      if ((DRT::INPUT::IntegralValue<bool>(acouparams, "DOUBLEORFLOAT")) == false)
       {
         // change mode for rounding: denormals are flushed to zero to avoid computing
         // on denormals which can slow down things.
@@ -145,190 +162,208 @@ void acoustics_drt()
         // compilers end up here. ICC is particularly tricky because it exports
         // the __GNUC__ symbol.
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
-        #define MXCSR_DAZ (1 << 6)      /* Enable denormals are zero mode */
-        #define MXCSR_FTZ (1 << 15)     /* Enable flush to zero mode */
+#define MXCSR_DAZ (1 << 6)  /* Enable denormals are zero mode */
+#define MXCSR_FTZ (1 << 15) /* Enable flush to zero mode */
 
-        unsigned int mxcsr = __builtin_ia32_stmxcsr ();
+        unsigned int mxcsr = __builtin_ia32_stmxcsr();
         mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
-        __builtin_ia32_ldmxcsr (mxcsr);
+        __builtin_ia32_ldmxcsr(mxcsr);
 #endif
       }
   }
 
   // set degrees of freedom in the discretization
-  //acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
+  // acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
   // build map
-  const Teuchos::RCP<Epetra_IntVector> eledofs = Teuchos::rcp(new Epetra_IntVector(*acoudishdg->ElementColMap()));
-  for(int i=0; i<acoudishdg->NumMyColElements(); ++i)
+  const Teuchos::RCP<Epetra_IntVector> eledofs =
+      Teuchos::rcp(new Epetra_IntVector(*acoudishdg->ElementColMap()));
+  for (int i = 0; i < acoudishdg->NumMyColElements(); ++i)
   {
-    (*eledofs)[i] = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lColElement(i))->NumDofPerElementAuxiliary();
+    (*eledofs)[i] =
+        dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lColElement(i))->NumDofPerElementAuxiliary();
   }
 
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0,eledofs,0,false));
+      Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   acoudishdg->AddDofSet(dofsetaux);
 
   // call fill complete on acoustical discretization
   acoudishdg->FillComplete();
 
   // print problem specific logo
-  if(!acoudishdg->Comm().MyPID()) { if (!invanalysis) printacoulogo(); else printacouinvlogo(); }
+  if (!acoudishdg->Comm().MyPID())
+  {
+    if (!invanalysis)
+      printacoulogo();
+    else
+      printacouinvlogo();
+  }
 
   const int linsolvernumber_acou = acouparams.get<int>("LINEAR_SOLVER");
   if (linsolvernumber_acou == (-1))
-    dserror("no linear solver defined for acoustical problem. Please set LINEAR_SOLVER in ACOUSTIC DYNAMIC to a valid number!");
+    dserror(
+        "no linear solver defined for acoustical problem. Please set LINEAR_SOLVER in ACOUSTIC "
+        "DYNAMIC to a valid number!");
 
   // create solver
   Teuchos::RCP<LINALG::Solver> solver =
-    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber_acou),
-                                    acoudishdg->Comm(),
-                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber_acou),
+          acoudishdg->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   // if ( DRT::Problem::Instance()->SolverParams(linsolvernumber_acou).get<int>("AZREUSE") < 10 )
-  //   dserror("note: you can set AZREUSE to NUMSTEP (ACOUSTIC DYNAMIC) because the system matrix does not change -> save lots of CPU time");
+  //   dserror("note: you can set AZREUSE to NUMSTEP (ACOUSTIC DYNAMIC) because the system matrix
+  //   does not change -> save lots of CPU time");
 
   // create output
   Teuchos::RCP<IO::DiscretizationWriter> output = acoudishdg->Writer();
 
   // create acoustical parameter list
-  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList(acouparams));
-  if(invanalysis)
+  Teuchos::RCP<Teuchos::ParameterList> params =
+      Teuchos::rcp(new Teuchos::ParameterList(acouparams));
+  if (invanalysis)
   {
-    params->set<bool>("invana",true);
+    params->set<bool>("invana", true);
   }
   else
   {
-    params->set<bool>("invana",false);
-    params->set<bool>("adjoint",false);
-    params->set<bool>("acouopt",false);
-    params->set<bool>("reduction",false);
-    params->set<bool>("writeacououtput",true);
+    params->set<bool>("invana", false);
+    params->set<bool>("adjoint", false);
+    params->set<bool>("acouopt", false);
+    params->set<bool>("reduction", false);
+    params->set<bool>("writeacououtput", true);
   }
 
   // set restart step if we do not perform inverse analysis
   int restart = DRT::Problem::Instance()->Restart();
-  params->set<int>("restart",restart);
+  params->set<int>("restart", restart);
 
 
   // the main part of this function:
-  if(!invanalysis)
+  if (!invanalysis)
   {
-    // do we do a PHOTOacoustic simulation? if so -> do a SCATRA simulation for initial pressure distribution
-    bool photoacou = DRT::INPUT::IntegralValue<bool>(acouparams,"PHOTOACOU");
+    // do we do a PHOTOacoustic simulation? if so -> do a SCATRA simulation for initial pressure
+    // distribution
+    bool photoacou = DRT::INPUT::IntegralValue<bool>(acouparams, "PHOTOACOU");
 
     // create algorithm depending on the temporal discretization
     Teuchos::RCP<ACOU::AcouTimeInt> acoualgo;
 
-    INPAR::ACOU::DynamicType dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT");
+    INPAR::ACOU::DynamicType dyna =
+        DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams, "TIMEINT");
 
-    switch(dyna)
+    switch (dyna)
     {
-    case INPAR::ACOU::acou_impleuler:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::TimIntImplEuler(acoudishdg,solver,params,output));
-      break;
-    }
-    case INPAR::ACOU::acou_expleuler:
-    case INPAR::ACOU::acou_classrk4:
-    case INPAR::ACOU::acou_lsrk45reg2:
-    case INPAR::ACOU::acou_lsrk33reg2:
-    case INPAR::ACOU::acou_lsrk45reg3:
-    case INPAR::ACOU::acou_ssprk:
-    case INPAR::ACOU::acou_ader:
-    case INPAR::ACOU::acou_ader_lts:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::AcouExplicitTimeInt(acoudishdg,solver,params,output));
-      break;
-    }
-    case INPAR::ACOU::acou_ader_tritet:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::AcouTimeIntAderTriTet(acoudishdg,solver,params,output));
-      break;
-    }
-    default:
-      dserror("Unknown time integration scheme for problem type Acoustics");
-      break;
+      case INPAR::ACOU::acou_impleuler:
+      {
+        acoualgo = Teuchos::rcp(new ACOU::TimIntImplEuler(acoudishdg, solver, params, output));
+        break;
+      }
+      case INPAR::ACOU::acou_expleuler:
+      case INPAR::ACOU::acou_classrk4:
+      case INPAR::ACOU::acou_lsrk45reg2:
+      case INPAR::ACOU::acou_lsrk33reg2:
+      case INPAR::ACOU::acou_lsrk45reg3:
+      case INPAR::ACOU::acou_ssprk:
+      case INPAR::ACOU::acou_ader:
+      case INPAR::ACOU::acou_ader_lts:
+      {
+        acoualgo = Teuchos::rcp(new ACOU::AcouExplicitTimeInt(acoudishdg, solver, params, output));
+        break;
+      }
+      case INPAR::ACOU::acou_ader_tritet:
+      {
+        acoualgo =
+            Teuchos::rcp(new ACOU::AcouTimeIntAderTriTet(acoudishdg, solver, params, output));
+        break;
+      }
+      default:
+        dserror("Unknown time integration scheme for problem type Acoustics");
+        break;
     }
 
     acoualgo->PrintInformationToScreen();
 
     // set initial field
-    if (restart) // standard restart scenario
+    if (restart)  // standard restart scenario
     {
       acoualgo->ReadRestart(restart);
     }
-    else if (!photoacou) // standard acoustic simulation
+    else if (!photoacou)  // standard acoustic simulation
     {
       int startfuncno = acouparams.get<int>("STARTFUNCNO");
       acoualgo->SetInitialField(startfuncno);
     }
-    else // initial field calculated in dependence on light distribution - photoacoustic setting
+    else  // initial field calculated in dependence on light distribution - photoacoustic setting
     {
-
       // access the problem-specific parameter list
-      const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      const Teuchos::ParameterList& scatradyn =
+          DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
       // access the scatra discretization
       Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
       scatradis->FillComplete();
-      if(0)
+      if (0)
       {
-        redistributescatradis(scatradis,acoudishdg);
+        redistributescatradis(scatradis, acoudishdg);
         scatradis->FillComplete();
       }
 
-      if(scatradis->NumGlobalElements()==0)
+      if (scatradis->NumGlobalElements() == 0)
         dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
 
       Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo;
 
       // do the scatra
-      const INPAR::SCATRA::VelocityField veltype = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
+      const INPAR::SCATRA::VelocityField veltype =
+          DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
       switch (veltype)
       {
-        case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
+        case INPAR::SCATRA::velocity_zero:      // zero  (see case 1)
         case INPAR::SCATRA::velocity_function:  // function
         {
           // we directly use the elements from the scalar transport elements section
-          if (scatradis->NumGlobalNodes()==0)
+          if (scatradis->NumGlobalNodes() == 0)
             dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
           // add proxy of velocity related degrees of freedom to scatra discretization
-          Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-              Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
-          if ( scatradis->AddDofSet(dofsetaux)!= 1 )
+          Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
+              new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+          if (scatradis->AddDofSet(dofsetaux) != 1)
             dserror("Scatra discretization has illegal number of dofsets!");
 
           // finalize discretization
           scatradis->FillComplete(true, false, false);
 
           // create solver
-          Teuchos::RCP<LINALG::Solver> scatrasolver =
-            Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scatradyn.get<int>("LINEAR_SOLVER")),
-                                            scatradis->Comm(),
-                                            DRT::Problem::Instance()->ErrorFile()->Handle()));
+          Teuchos::RCP<LINALG::Solver> scatrasolver = Teuchos::rcp(new LINALG::Solver(
+              DRT::Problem::Instance()->SolverParams(scatradyn.get<int>("LINEAR_SOLVER")),
+              scatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
           // create scatra output
           Teuchos::RCP<IO::DiscretizationWriter> scatraoutput = scatradis->Writer();
-          scatraoutput->WriteMesh(0,0.0);
+          scatraoutput->WriteMesh(0, 0.0);
           // access the problem-specific parameter list
-          Teuchos::RCP<Teuchos::ParameterList> scatraparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ScalarTransportDynamicParams()));
+          Teuchos::RCP<Teuchos::ParameterList> scatraparams = Teuchos::rcp(
+              new Teuchos::ParameterList(DRT::Problem::Instance()->ScalarTransportDynamicParams()));
 
           // create necessary extra parameter list for scatra
           //{
           Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
           scatraextraparams = Teuchos::rcp(new Teuchos::ParameterList());
-          scatraextraparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
-          scatraextraparams->set<bool>("isale",false);
+          scatraextraparams->set<FILE*>(
+              "err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+          scatraextraparams->set<bool>("isale", false);
           const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-          scatraextraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-          scatraextraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
-          scatraextraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
-          scatraextraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
+          scatraextraparams->sublist("TURBULENCE MODEL") = fdyn.sublist("TURBULENCE MODEL");
+          scatraextraparams->sublist("SUBGRID VISCOSITY") = fdyn.sublist("SUBGRID VISCOSITY");
+          scatraextraparams->sublist("MULTIFRACTAL SUBGRID SCALES") =
+              fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
+          scatraextraparams->sublist("TURBULENT INFLOW") = fdyn.sublist("TURBULENT INFLOW");
           //}
 
 
           // create instance of scalar transport basis algorithm (empty fluid discretization)
-          scatraalgo = Teuchos::rcp(new SCATRA::TimIntStationary(scatradis, scatrasolver, scatraparams, scatraextraparams, scatraoutput));
+          scatraalgo = Teuchos::rcp(new SCATRA::TimIntStationary(
+              scatradis, scatrasolver, scatraparams, scatraextraparams, scatraoutput));
 
           // run
 
@@ -340,35 +375,41 @@ void acoustics_drt()
           break;
         }
         default:
-          dserror("unknown velocity field type for transport of passive scalar in problem type Acoustics");
+          dserror(
+              "unknown velocity field type for transport of passive scalar in problem type "
+              "Acoustics");
           break;
       }
 
       // calculate initial pressure distribution by means of the scalar transport problem
       Teuchos::RCP<Epetra_Vector> scatrainitialpress;
       scatrainitialpress = scatraalgo->Phinp();
-      bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams,"MESHCONFORM");
-      acoualgo->SetInitialPhotoAcousticField(scatrainitialpress,DRT::Problem::Instance()->GetDis("scatra"), meshconform);
-      //acoualgo->SetInitialPhotoAcousticField(scatraalgo);
+      bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams, "MESHCONFORM");
+      acoualgo->SetInitialPhotoAcousticField(
+          scatrainitialpress, DRT::Problem::Instance()->GetDis("scatra"), meshconform);
+      // acoualgo->SetInitialPhotoAcousticField(scatraalgo);
     }
 
     acoualgo->Integrate();
 
     // print monitoring of time consumption
-    Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(acoudishdg->Comm());
+    Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+        COMM_UTILS::toTeuchosComm<int>(acoudishdg->Comm());
     Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
     DRT::Problem::Instance()->AddFieldTest(acoualgo->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(acoudishdg->Comm());
-  } // if(!invanalysis)
+  }  // if(!invanalysis)
   else
   {
     // error message in case someone does not exactly know, what to do
-    if ( !DRT::INPUT::IntegralValue<bool>(acouparams,"PHOTOACOU") )
-      dserror("you chose to do a photoacoustic image reconstruction, so please set PHOTOACOU to Yes");
+    if (!DRT::INPUT::IntegralValue<bool>(acouparams, "PHOTOACOU"))
+      dserror(
+          "you chose to do a photoacoustic image reconstruction, so please set PHOTOACOU to Yes");
 
     // access the problem-specific parameter list
-    Teuchos::RCP<Teuchos::ParameterList> scatraparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ScalarTransportDynamicParams()));
+    Teuchos::RCP<Teuchos::ParameterList> scatraparams = Teuchos::rcp(
+        new Teuchos::ParameterList(DRT::Problem::Instance()->ScalarTransportDynamicParams()));
 
     // access the scatra discretization
     Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
@@ -376,13 +417,13 @@ void acoustics_drt()
     // ensure that all dofs are assigned in the right order
     scatradis->FillComplete();
 
-    //if ( scatradis->NumGlobalElements() == 0 )
+    // if ( scatradis->NumGlobalElements() == 0 )
     //  dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
 
     // add proxy of velocity related degrees of freedom to scatra discretization
-    Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
-        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim()+1, 0, 0, true));
-    if ( scatradis->AddDofSet(dofsetaux)!= 1 )
+    Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
+        new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim() + 1, 0, 0, true));
+    if (scatradis->AddDofSet(dofsetaux) != 1)
       dserror("Scatra discretization has illegal number of dofsets!");
 
     // finalize discretization
@@ -391,52 +432,62 @@ void acoustics_drt()
     // till here it was all the same...
     // now, we set up the inverse analysis algorithm
     const int linsolvernumber_scatra = scatraparams->get<int>("LINEAR_SOLVER");
-    if ( linsolvernumber_scatra == (-1) )
-      dserror("no linear solver defined for acoustical problem. Please set LINEAR_SOLVER in ACOUSTIC DYNAMIC to a valid number!");
+    if (linsolvernumber_scatra == (-1))
+      dserror(
+          "no linear solver defined for acoustical problem. Please set LINEAR_SOLVER in ACOUSTIC "
+          "DYNAMIC to a valid number!");
 
     // create solver
-    Teuchos::RCP<LINALG::Solver> scatrasolver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber_scatra),
-                                      scatradis->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<LINALG::Solver> scatrasolver = Teuchos::rcp(
+        new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber_scatra),
+            scatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     // create scatra output
     Teuchos::RCP<IO::DiscretizationWriter> scatraoutput = scatradis->Writer();
 
     // create and run the inverse problem
     Teuchos::RCP<ACOU::PatImageReconstruction> myinverseproblem;
-    switch(DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS"))
+    switch (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams, "INV_ANALYSIS"))
     {
-    case INPAR::ACOU::pat_none:
-      dserror("you should not be here");
-    break;
-    case INPAR::ACOU::pat_opti:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstruction(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
-    break;
-    case INPAR::ACOU::pat_optisplit:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplit(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
-    break;
-    case INPAR::ACOU::pat_optisplitacousplit:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouSplit(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
-    break;
-    case INPAR::ACOU::pat_optisplitacouident:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdent(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
-    break;
-    case INPAR::ACOU::pat_optisplitacouidentsmart:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdentSmart(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
-    break;
-    case INPAR::ACOU::pat_reduction:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionReduction(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
-    break;
-    default:
-      dserror("other pat types not listed");
-      break;
+      case INPAR::ACOU::pat_none:
+        dserror("you should not be here");
+        break;
+      case INPAR::ACOU::pat_opti:
+        myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstruction(scatradis, acoudishdg,
+            scatraparams, params, scatrasolver, solver, scatraoutput, output));
+        break;
+      case INPAR::ACOU::pat_optisplit:
+        myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplit(scatradis,
+            acoudishdg, scatraparams, params, scatrasolver, solver, scatraoutput, output));
+        break;
+      case INPAR::ACOU::pat_optisplitacousplit:
+        myinverseproblem =
+            Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouSplit(scatradis, acoudishdg,
+                scatraparams, params, scatrasolver, solver, scatraoutput, output));
+        break;
+      case INPAR::ACOU::pat_optisplitacouident:
+        myinverseproblem =
+            Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdent(scatradis, acoudishdg,
+                scatraparams, params, scatrasolver, solver, scatraoutput, output));
+        break;
+      case INPAR::ACOU::pat_optisplitacouidentsmart:
+        myinverseproblem =
+            Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdentSmart(scatradis,
+                acoudishdg, scatraparams, params, scatrasolver, solver, scatraoutput, output));
+        break;
+      case INPAR::ACOU::pat_reduction:
+        myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionReduction(scatradis,
+            acoudishdg, scatraparams, params, scatrasolver, solver, scatraoutput, output));
+        break;
+      default:
+        dserror("other pat types not listed");
+        break;
     }
-    if(DRT::INPUT::IntegralValue<bool>(acouparams.sublist("PA IMAGE RECONSTRUCTION"),"SAMPLEOBJECTIVE"))
+    if (DRT::INPUT::IntegralValue<bool>(
+            acouparams.sublist("PA IMAGE RECONSTRUCTION"), "SAMPLEOBJECTIVE"))
       myinverseproblem->SampleObjectiveFunction();
 
-    if(restart>0)
-      myinverseproblem->ReadRestart(restart);
+    if (restart > 0) myinverseproblem->ReadRestart(restart);
 
     myinverseproblem->Optimize();
 
@@ -444,8 +495,6 @@ void acoustics_drt()
     DRT::Problem::Instance()->AddFieldTest(myinverseproblem->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(scatradis->Comm());
 
-  } // else ** if(!invanalysis)
+  }  // else ** if(!invanalysis)
   return;
-
 }
-

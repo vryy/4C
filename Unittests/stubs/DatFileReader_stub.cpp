@@ -13,16 +13,14 @@
 
 namespace DRT
 {
-namespace INPUT
-{
+  namespace INPUT
+  {
+    DatFileReaderStub::DatFileReaderStub() {}
 
-DatFileReaderStub::DatFileReaderStub()
-{}
+    Teuchos::RCP<Epetra_Comm> DatFileReaderStub::Comm() const
+    {
+      return Teuchos::rcp(new Epetra_SerialComm);
+    }
 
-Teuchos::RCP<Epetra_Comm> DatFileReaderStub::Comm() const
-{
-  return Teuchos::rcp(new Epetra_SerialComm);
-}
-
-}
-}
+  }  // namespace INPUT
+}  // namespace DRT

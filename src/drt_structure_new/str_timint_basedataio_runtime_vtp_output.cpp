@@ -23,7 +23,7 @@
 STR::TIMINT::ParamsRuntimeVtpOutput::ParamsRuntimeVtpOutput()
     : isinit_(false),
       issetup_(false),
-      output_data_format_( INPAR::IO_RUNTIME_VTP_STRUCTURE::vague ),
+      output_data_format_(INPAR::IO_RUNTIME_VTP_STRUCTURE::vague),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_owner_(false),
@@ -37,7 +37,7 @@ STR::TIMINT::ParamsRuntimeVtpOutput::ParamsRuntimeVtpOutput()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
-    const Teuchos::ParameterList& IO_vtp_structure_paramslist )
+    const Teuchos::ParameterList& IO_vtp_structure_paramslist)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -45,30 +45,28 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   // initialize the parameter values
   output_data_format_ =
       DRT::INPUT::IntegralValue<INPAR::IO_RUNTIME_VTP_STRUCTURE::OutputDataFormat>(
-          IO_vtp_structure_paramslist, "OUTPUT_DATA_FORMAT" );
+          IO_vtp_structure_paramslist, "OUTPUT_DATA_FORMAT");
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
   output_every_iteration_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
-/*  output_displacement_state_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "DISPLACEMENT");*/
+  /*  output_displacement_state_ =
+        (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "DISPLACEMENT");*/
 
-  if ( output_every_iteration_ )
-    dserror("not implemented yet!");
+  if (output_every_iteration_) dserror("not implemented yet!");
 
-  output_owner_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
+  output_owner_ = (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 
   output_orientationandlength_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
 
   output_numberofbonds_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
   output_linkingforce_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
 
 
   isinit_ = true;
@@ -78,8 +76,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
 {
-  if ( not IsInit() )
-    dserror("Init() has not been called, yet!");
+  if (not IsInit()) dserror("Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -90,6 +87,5 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::CheckInitSetup() const
 {
-  if ( not IsInit() or not IsSetup() )
-    dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }

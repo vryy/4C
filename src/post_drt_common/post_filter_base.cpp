@@ -21,14 +21,14 @@
 
 
 #include "../pss_full/pss_cpp.h"
-extern "C" {
+extern "C"
+{
 #include "../pss_full/pss_table_iter.h"
 }
 
 
 
-PostFilterBase::PostFilterBase(PostField *field,
-                               const std::string &name)
+PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 {
   if (field->problem()->filter() == "ensight")
     writer_ = Teuchos::rcp(new EnsightWriter(field, name));
@@ -60,15 +60,13 @@ void PostFilterBase::WriteFilesChangingGeom()
 
 
 
-void PostFilterBase::WriteAnyResults(PostField* field,
-                                     const char* type,
-                                     const ResultType restype)
+void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const ResultType restype)
 {
   PostResult result = PostResult(field);
   result.next_result();
 
   MAP_ITERATOR iter;
-  init_map_iterator(&iter,result.group());
+  init_map_iterator(&iter, result.group());
 
   while (next_map_node(&iter))
   {
@@ -77,29 +75,27 @@ void PostFilterBase::WriteAnyResults(PostField* field,
     // map functions to find out if this key names an element vector group.
     MAP_NODE* node = iterator_get_node(&iter);
     char* key = node->key;
-    if (map_has_map(result.group(),key))
+    if (map_has_map(result.group(), key))
     {
-      MAP* entry = map_read_map(result.group(),key);
+      MAP* entry = map_read_map(result.group(), key);
       if (map_has_string(entry, "type", type))
       {
         int dim;
         // This is bad. We should have a generic way to find how many dofs
         // there are. Until then this is remains a special purpose routine
         // that cannot serve everybody.
-        if (restype==elementbased)
+        if (restype == elementbased)
           // for elements we have the number of columns
           dim = map_read_int(entry, "columns");
-        else if (restype==nodebased)
+        else if (restype == nodebased)
           // for node the number of columns might be a same bet as well
           dim = map_read_int(entry, "columns");
         else
           // Normal dof vectors have ndim dofs per node. (But then there are
           // velocity / pressure vectors and such...)
           dim = field->problem()->num_dim();
-        writer_->WriteResult(key,key,restype,dim);
+        writer_->WriteResult(key, key, restype, dim);
       }
     }
   }
 }
-
-

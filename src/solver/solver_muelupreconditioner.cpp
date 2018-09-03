@@ -43,53 +43,53 @@
 #include <MueLu_AggregationExportFactory.hpp>
 
 
-#include <MueLu_EpetraOperator.hpp> // Aztec interface
+#include <MueLu_EpetraOperator.hpp>  // Aztec interface
 
-#include "muelu/MueLu_BaciFactoryFactory_decl.hpp" // Baci specific MueLu factories with xml interface
+#include "muelu/MueLu_BaciFactoryFactory_decl.hpp"  // Baci specific MueLu factories with xml interface
 
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
 #include "solver_muelupreconditioner.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::MueLuPreconditioner::MueLuPreconditioner( FILE * outfile, Teuchos::ParameterList & mllist )
-  : PreconditionerType( outfile ),
-    mllist_( mllist )
+LINALG::SOLVER::MueLuPreconditioner::MueLuPreconditioner(
+    FILE* outfile, Teuchos::ParameterList& mllist)
+    : PreconditionerType(outfile), mllist_(mllist)
 {
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::MueLuPreconditioner::replaceAll(std::string& str, const std::string& from, const std::string& to) {
-  if(from.empty())
-    return;
+void LINALG::SOLVER::MueLuPreconditioner::replaceAll(
+    std::string& str, const std::string& from, const std::string& to)
+{
+  if (from.empty()) return;
   size_t start_pos = 0;
-  while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+  {
     str.replace(start_pos, from.length(), to);
-    start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    start_pos += to.length();  // In case 'to' contains 'from', like replacing 'x' with 'yx'
   }
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
-                                              Epetra_Operator * matrix,
-                                              Epetra_MultiVector * x,
-                                              Epetra_MultiVector * b )
+void LINALG::SOLVER::MueLuPreconditioner::Setup(
+    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  SetupLinearProblem( matrix, x, b );
+  SetupLinearProblem(matrix, x, b);
 
-  if ( create )
+  if (create)
   {
     // check whether A is a Epetra_CrsMatrix
     // i.e. no block matrix
-    Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
+    Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
 
     // free old matrix first
-    P_       = Teuchos::null;
+    P_ = Teuchos::null;
     Pmatrix_ = Teuchos::null;
 
     // create a copy of the scaled matrix
@@ -97,16 +97,18 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
     // see whether we use standard ml or our own mlapi operator
-    //const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
+    // const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
 
     // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
+        Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+    Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> mueluOp =
+        Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
 
     // remove unsupported flags
-    mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
+    mllist_.remove("aggregation: threshold", false);  // no support for aggregation: threshold TODO
 
-#if 0 // helper routine to export null space vectors (adapt file name by hand)
+#if 0  // helper routine to export null space vectors (adapt file name by hand)
     std::cout << "*** EXPORT nullspace: BEGIN ***" << std::endl;
     // DO NOT COMMIT THIS STUFF
     // write out nullspace
@@ -137,7 +139,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     std::cout << "*** EXPORT nullspace: END ***" << std::endl;
 #endif
 
-#if 0 // helper routine to export matrix and RHS
+#if 0  // helper routine to export matrix and RHS
     // DO NOT COMMIT THIS STUFF
     LINALG::PrintMatrixInMatlabFormat("F.out",*A,true);
 
@@ -170,13 +172,17 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 #endif
 
     // append user-given factories (for export of aggregates, debug info etc...)
-    //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",/*UCAggFact.get()*/ NULL, /*dropFact.get()*/ NULL));
-    //std::vector<Teuchos::RCP<FactoryBase> > vec;
-    //vec.push_back(aggExpFact);
+    // Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>
+    // > aggExpFact = Teuchos::rcp(new
+    // MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",/*UCAggFact.get()*/
+    // NULL, /*dropFact.get()*/ NULL)); std::vector<Teuchos::RCP<FactoryBase> > vec;
+    // vec.push_back(aggExpFact);
 
 
-    // read MueLu parameters from XML file (if provided as file name in the STRATIMIKOS_XMLFILE parameter in the solver block of the dat file)
-    if(mllist_.isParameter("xml file") && mllist_.get<std::string>("xml file") != "none"){
+    // read MueLu parameters from XML file (if provided as file name in the STRATIMIKOS_XMLFILE
+    // parameter in the solver block of the dat file)
+    if (mllist_.isParameter("xml file") && mllist_.get<std::string>("xml file") != "none")
+    {
       // use parameters from user-provided XML file
 
       // xxd -i ${INPUT_FILE_NAME} | sed s/}\;/,0x00}\;/ > ${INPUT_FILE_PATH}.h
@@ -190,35 +196,46 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       std::string xmlFileName = mllist_.get<std::string>("xml file");
 
       // screen output
-      if(matrix->Comm().MyPID() == 0)
+      if (matrix->Comm().MyPID() == 0)
       {
-        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-        *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
+        Teuchos::RCP<Teuchos::FancyOStream> fos =
+            Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+        *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy"
+             << std::endl;
       }
 
       // prepare nullspace vector for MueLu
-      int numdf = mllist_.get<int>("PDE equations",-1);
-      int dimns = mllist_.get<int>("null space: dimension",-1);
-      if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
-      Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
+      int numdf = mllist_.get<int>("PDE equations", -1);
+      int dimns = mllist_.get<int>("null space: dimension", -1);
+      if (dimns == -1 || numdf == -1)
+        dserror("Error: PDE equations or null space dimension wrong.");
+      Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
 
-      Teuchos::RCP<Xpetra::MultiVector<SC,LO,GO,NO> > nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-      Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
+          Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(
+              rowMap, dimns, true);
+      Teuchos::RCP<std::vector<double>> nsdata =
+          mllist_.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
 
-      for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-          Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
-          const size_t myLength = nspVector->getLocalLength();
-          for(size_t j=0; j<myLength; j++) {
-                  nspVectori[j] = (*nsdata)[i*myLength+j];
-          }
+      for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
+      {
+        Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
+        const size_t myLength = nspVector->getLocalLength();
+        for (size_t j = 0; j < myLength; j++)
+        {
+          nspVectori[j] = (*nsdata)[i * myLength + j];
+        }
       }
 
       mueluOp->SetFixedBlockSize(numdf);
 
-      Teuchos::RCP<MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node> > myFactFact = Teuchos::rcp(new MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>());
-      MueLu::ParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()),myFactFact);
+      Teuchos::RCP<MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>>
+          myFactFact = Teuchos::rcp(
+              new MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>());
+      MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
+          xmlFileName, *(mueluOp->getRowMap()->getComm()), myFactFact);
 
-      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = mueLuFactory.CreateHierarchy();
+      Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = mueLuFactory.CreateHierarchy();
       H->SetDefaultVerbLevel(MueLu::Extreme);
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->Set("Nullspace", nspVector);
@@ -242,14 +259,14 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
       // set preconditioner
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-
-    } else {
-
+    }
+    else
+    {
       // Standard case: use ML parameters from dat file
 
       // Setup MueLu Hierarchy
-      MueLu::MLParameterListInterpreter<SC,LO,GO,NO> mueLuFactory(mllist_/*, vec*/);
-      Teuchos::RCP<MueLu::Hierarchy<SC,LO,GO,NO> > H = mueLuFactory.CreateHierarchy();
+      MueLu::MLParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(mllist_ /*, vec*/);
+      Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = mueLuFactory.CreateHierarchy();
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
       H->setlib(Xpetra::UseEpetra);
@@ -257,8 +274,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
       // set preconditioner
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-    } // if (xml file)
-  } // if (create)
+    }  // if (xml file)
+  }    // if (create)
 }
 
 #endif

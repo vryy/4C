@@ -25,35 +25,30 @@
 
 namespace FLD
 {
+  class TimIntTwoPhaseGenAlpha : public TimIntGenAlpha, public TimIntTwoPhase
+  {
+   public:
+    /// Standard Constructor
+    TimIntTwoPhaseGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntTwoPhaseGenAlpha : public TimIntGenAlpha, public TimIntTwoPhase
-{
-public:
-  /// Standard Constructor
-  TimIntTwoPhaseGenAlpha(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntTwoPhaseGenAlpha();
 
-  /// Destructor
-  virtual ~TimIntTwoPhaseGenAlpha();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
-
-  */
-  virtual void Init();
+    */
+    virtual void Init();
 
 
-protected:
+   protected:
+   private:
+  };  // class TimIntTwoPhaseGenAlpha
 
-private:
-
-
-}; // class TimIntTwoPhaseGenAlpha
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_TWO_PHASE_GENALPHA_H

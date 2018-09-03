@@ -17,17 +17,21 @@
 
 #include "../drt_lib/drt_condition.H"
 
-namespace IO {
+namespace IO
+{
   class DiscretizationWriter;
 }
-namespace DRT {
+namespace DRT
+{
   class DiscretizationInterface;
 }
-namespace STR {
+namespace STR
+{
   class Dbc;
-namespace TIMINT {
-  class BaseDataGlobalState;
-}
+  namespace TIMINT
+  {
+    class BaseDataGlobalState;
+  }
 
   /** \brief Monitor Dirichlet boundary conditions
    *
@@ -56,109 +60,78 @@ namespace TIMINT {
     /// constants for the SCREEN output
     const static unsigned OS_WIDTH = 14;
 
-  public:
+   public:
     MonitorDbc() = default;
 
     ~MonitorDbc() = default;
 
     /// initialize class members
-    void Init(
-        DRT::DiscretizationInterface& discret,
-        STR::TIMINT::BaseDataGlobalState& gstate,
-        STR::Dbc& dbc );
+    void Init(DRT::DiscretizationInterface& discret, STR::TIMINT::BaseDataGlobalState& gstate,
+        STR::Dbc& dbc);
 
     /// setup new class members
     void Setup();
 
     /// monitor the tensile test results and write them to a text file
-    void Execute( IO::DiscretizationWriter& writer );
+    void Execute(IO::DiscretizationWriter& writer);
 
-  private:
-    int GetUniqueId(
-        int tagged_id,
-        DRT::Condition::GeometryType gtype ) const;
+   private:
+    int GetUniqueId(int tagged_id, DRT::Condition::GeometryType gtype) const;
 
     void CreateReactionForceCondition(
-        const DRT::Condition& tagged_cond,
-        DRT::DiscretizationInterface& discret ) const;
+        const DRT::Condition& tagged_cond, DRT::DiscretizationInterface& discret) const;
 
-    void GetTaggedCondition(
-        std::vector<const DRT::Condition*>& tagged_conds,
-        const std::string& cond_name,
-        const std::string& tag_name,
-        const DRT::DiscretizationInterface& discret ) const;
+    void GetTaggedCondition(std::vector<const DRT::Condition*>& tagged_conds,
+        const std::string& cond_name, const std::string& tag_name,
+        const DRT::DiscretizationInterface& discret) const;
 
-    void CreateReactionMaps(
-        const DRT::DiscretizationInterface& discret,
-        const DRT::Condition& rcond,
-        Teuchos::RCP<Epetra_Map>* react_maps ) const;
+    void CreateReactionMaps(const DRT::DiscretizationInterface& discret,
+        const DRT::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     void ReadResultsPriorRestartStepAndWriteToFile(
-        const std::vector<std::string> & full_restart_filepaths,
-        int restart_step) const;
+        const std::vector<std::string>& full_restart_filepaths, int restart_step) const;
 
-    void GetArea(double area_ref[], const DRT::Condition* rcond ) const;
+    void GetArea(double area_ref[], const DRT::Condition* rcond) const;
 
-    double GetReactionForce( LINALG::Matrix<3,1>& rforce_xyz,
-        const Teuchos::RCP<Epetra_Map>* react_maps ) const;
+    double GetReactionForce(
+        LINALG::Matrix<3, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     std::vector<std::string> CreateFilePaths(
-        const std::vector< Teuchos::RCP< DRT::Condition > > & rconds,
-        const std::string & full_dirpath,
-        const std::string & filename_only_prefix,
-        const std::string & file_type) const;
+        const std::vector<Teuchos::RCP<DRT::Condition>>& rconds, const std::string& full_dirpath,
+        const std::string& filename_only_prefix, const std::string& file_type) const;
 
-    void ClearFilesAndWriteHeader(
-        const std::vector<Teuchos::RCP<DRT::Condition> >& rconds,
-        std::vector<std::string> & full_filepaths,
-        bool write_condition_header );
+    void ClearFilesAndWriteHeader(const std::vector<Teuchos::RCP<DRT::Condition>>& rconds,
+        std::vector<std::string>& full_filepaths, bool write_condition_header);
 
     void WriteConditionHeader(
-        std::ostream& os,
-        const int col_width,
-        const DRT::Condition* cond = NULL) const;
+        std::ostream& os, const int col_width, const DRT::Condition* cond = NULL) const;
 
-    void WriteColumnHeader(
-        std::ostream& os,
-        const int col_width) const;
+    void WriteColumnHeader(std::ostream& os, const int col_width) const;
 
-    void WriteResultsToFile(
-        const std::string& full_filepath,
-        const LINALG::Matrix<DIM,1>& rforce,
-        const double& area_ref,
-        const double& area_curr ) const;
+    void WriteResultsToFile(const std::string& full_filepath, const LINALG::Matrix<DIM, 1>& rforce,
+        const double& area_ref, const double& area_curr) const;
 
-    void WriteResultsToScreen(
-        const Teuchos::RCP<DRT::Condition>& rcond_ptr,
-        const LINALG::Matrix<DIM,1>& rforce,
-        const double& area_ref,
-        const double& area_curr ) const;
+    void WriteResultsToScreen(const Teuchos::RCP<DRT::Condition>& rcond_ptr,
+        const LINALG::Matrix<DIM, 1>& rforce, const double& area_ref,
+        const double& area_curr) const;
 
-    void WriteResults(
-        std::ostream& os,
-        const int col_width,
-        const int precision,
-        const unsigned step,
-        const double time,
-        const LINALG::Matrix<DIM,1>& rforce,
-        const double & area_ref,
-        const double & area_cur ) const;
+    void WriteResults(std::ostream& os, const int col_width, const int precision,
+        const unsigned step, const double time, const LINALG::Matrix<DIM, 1>& rforce,
+        const double& area_ref, const double& area_cur) const;
 
     inline const Epetra_Comm& Comm() const;
 
     inline void ThrowIfNotInit() const
     {
-      if ( not isinit_ )
-        dserror( "Call Init() first!" );
+      if (not isinit_) dserror("Call Init() first!");
     }
 
     inline void ThrowIfNotSetup() const
     {
-      if ( not issetup_ )
-        dserror( "Call Setup() first!" );
+      if (not issetup_) dserror("Call Setup() first!");
     }
 
-  private:
+   private:
     DRT::DiscretizationInterface* discret_ptr_ = NULL;
     STR::TIMINT::BaseDataGlobalState* gstate_ptr_ = NULL;
     STR::Dbc* dbc_ptr_ = NULL;
@@ -166,7 +139,7 @@ namespace TIMINT {
     std::vector<std::string> full_filepaths_ = std::vector<std::string>();
 
     /// extract the dofs of the reaction forces which shall be monitored
-    std::map< int, std::vector<Teuchos::RCP<Epetra_Map> > > react_maps_;
+    std::map<int, std::vector<Teuchos::RCP<Epetra_Map>>> react_maps_;
     DRT::Condition::GeometryType geo_type_ = DRT::Condition::NoGeom;
 
     unsigned of_precision_ = -1;
@@ -177,6 +150,6 @@ namespace TIMINT {
     bool issetup_ = false;
   };
 
-}
+}  // namespace STR
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_MONITOR_DBC_H_ */

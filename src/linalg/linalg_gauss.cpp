@@ -16,117 +16,113 @@
 
 namespace LINALG
 {
+  /*!
+    \brief computes a Gaussian elimination for a linear system of equations
 
-/*!
-  \brief computes a Gaussian elimination for a linear system of equations
-
-  \tparam do_piv   (in)    : do_piv = true does pivoting, do_piv = false does not do pivoting
-  \tparam dim      (in)    : dimension of the matrix
-  \return determinant of system matrix
-*/
-template<bool do_piv, unsigned dim>
-double gaussElimination(
-  LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
-  LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
+    \tparam do_piv   (in)    : do_piv = true does pivoting, do_piv = false does not do pivoting
+    \tparam dim      (in)    : dimension of the matrix
+    \return determinant of system matrix
+  */
+  template <bool do_piv, unsigned dim>
+  double gaussElimination(LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<dim, 1>& b,                        ///< (in)    : right-hand-side
+      LINALG::Matrix<dim, 1>& x                         ///< (out)   : solution vector
   )
-{
-  if (dim > 1)
   {
+    if (dim > 1)
+    {
 #if 0
     LINALG::Matrix<dim, dim> cA( A );
     LINALG::Matrix<dim, 1>   cb( b );
 #endif
-    bool changesign = false;
-    if ( not do_piv )
-    {
-      for ( unsigned k=0; k<dim; ++k )
+      bool changesign = false;
+      if (not do_piv)
       {
-        A(k,k) = 1. / A(k,k);
-
-        for ( unsigned i = k+1; i<dim; ++i )
+        for (unsigned k = 0; k < dim; ++k)
         {
-          A(i,k) *= A(k,k);
-          x(i) = A(i,k);
+          A(k, k) = 1. / A(k, k);
 
-          for ( unsigned j=k+1; j<dim; ++j )
+          for (unsigned i = k + 1; i < dim; ++i)
           {
-            A(i,j) -= A(i,k) * A(k,j);
+            A(i, k) *= A(k, k);
+            x(i) = A(i, k);
+
+            for (unsigned j = k + 1; j < dim; ++j)
+            {
+              A(i, j) -= A(i, k) * A(k, j);
+            }
+          }
+
+          for (unsigned i = k + 1; i < dim; ++i)
+          {
+            b(i) -= x(i) * b(k);
           }
         }
-
-        for ( unsigned i=k+1; i<dim; ++i )
-        {
-          b(i) -= x(i)*b(k);
-        }
       }
-    }
-    else
-    {
-      for ( unsigned k=0; k<dim; ++k )
+      else
       {
-        unsigned pivot = k;
-
-        // search for pivot element
-        for ( unsigned i=k+1; i<dim; ++i )
+        for (unsigned k = 0; k < dim; ++k)
         {
-          pivot = (fabs(A(pivot,k)) < fabs(A(i,k))) ? i : pivot;
-        }
+          unsigned pivot = k;
 
-        // exchange pivot row and current row
-        if (pivot != k)
-        {
-          for ( unsigned j=0; j<dim; ++j )
+          // search for pivot element
+          for (unsigned i = k + 1; i < dim; ++i)
           {
-            std::swap( A(k,j), A(pivot,j) );
+            pivot = (fabs(A(pivot, k)) < fabs(A(i, k))) ? i : pivot;
           }
-          std::swap( b(k,0), b(pivot,0) );
-          changesign = not changesign;
-        }
 
-        if ( fabs( A(k,k) ) < std::numeric_limits<double>::min() )
-        {
-          return 0;
-        }
-
-        A(k,k) = 1./A(k,k);
-
-        for ( unsigned i=k+1; i<dim; ++i )
-        {
-          A(i,k) *= A(k,k);
-          x(i,0) = A(i,k);
-
-          for ( unsigned j=k+1; j<dim; ++j )
+          // exchange pivot row and current row
+          if (pivot != k)
           {
-            A(i,j) -= A(i,k) * A(k,j);
+            for (unsigned j = 0; j < dim; ++j)
+            {
+              std::swap(A(k, j), A(pivot, j));
+            }
+            std::swap(b(k, 0), b(pivot, 0));
+            changesign = not changesign;
           }
-        }
 
-        for ( unsigned i=k+1; i<dim; ++i )
-        {
-          b(i,0) -= x(i,0)*b(k,0);
+          if (fabs(A(k, k)) < std::numeric_limits<double>::min())
+          {
+            return 0;
+          }
+
+          A(k, k) = 1. / A(k, k);
+
+          for (unsigned i = k + 1; i < dim; ++i)
+          {
+            A(i, k) *= A(k, k);
+            x(i, 0) = A(i, k);
+
+            for (unsigned j = k + 1; j < dim; ++j)
+            {
+              A(i, j) -= A(i, k) * A(k, j);
+            }
+          }
+
+          for (unsigned i = k + 1; i < dim; ++i)
+          {
+            b(i, 0) -= x(i, 0) * b(k, 0);
+          }
         }
       }
-    }
 
-    // back substitution
-    x(dim-1,0) = b(dim-1,0) * A(dim-1,dim-1);
+      // back substitution
+      x(dim - 1, 0) = b(dim - 1, 0) * A(dim - 1, dim - 1);
 
-    for ( int i=dim-2; i>=0 ; --i )
-    {
-      for ( int j=dim-1; j>i; --j )
+      for (int i = dim - 2; i >= 0; --i)
       {
-        b(i,0) -= A(i,j)*x(j,0);
+        for (int j = dim - 1; j > i; --j)
+        {
+          b(i, 0) -= A(i, j) * x(j, 0);
+        }
+        x(i, 0) = b(i, 0) * A(i, i);
       }
-      x(i,0) = b(i,0)*A(i,i);
-    }
 
-    double det = 1.0;
-    for ( unsigned i = 0 ; i < dim; ++i )
-      det *= 1.0/A(i,i);
+      double det = 1.0;
+      for (unsigned i = 0; i < dim; ++i) det *= 1.0 / A(i, i);
 
-    if(changesign)
-      det *= -1.0;
+      if (changesign) det *= -1.0;
 
 #if 0
     double nx = x.Norm2();
@@ -144,128 +140,104 @@ double gaussElimination(
     }
 #endif
 
-    return det;
+      return det;
+    }
+    else
+    {
+      x(0, 0) = b(0, 0) / A(0, 0);
+      return x(0, 0);
+    }
   }
-  else
-  {
-    x(0,0) = b(0,0)/A(0,0);
-    return x(0,0);
-  }
-}
 
-template
-double gaussElimination<true, 1>(
-  LINALG::Matrix<1, 1>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<1, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<1, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<true, 1>(LINALG::Matrix<1, 1>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<1, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<1, 1>& x                                         ///< (out)   : solution vector
   );
-template
-double gaussElimination<false, 1>(
-  LINALG::Matrix<1, 1>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<1, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<1, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<false, 1>(LINALG::Matrix<1, 1>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<1, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<1, 1>& x   ///< (out)   : solution vector
   );
-template
-double gaussElimination<true, 2>(
-  LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<true, 2>(LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<2, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<2, 1>& x                                         ///< (out)   : solution vector
   );
-template
-double gaussElimination<false, 2>(
-  LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<false, 2>(LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<2, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<2, 1>& x   ///< (out)   : solution vector
   );
-template
-double gaussElimination<true, 3>(
-  LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<true, 3>(LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<3, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<3, 1>& x                                         ///< (out)   : solution vector
   );
-template
-double gaussElimination<false, 3>(
-  LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<false, 3>(LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<3, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<3, 1>& x   ///< (out)   : solution vector
   );
-template
-double gaussElimination<true, 4>(
-  LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<true, 4>(LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<4, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<4, 1>& x                                         ///< (out)   : solution vector
   );
-template
-double gaussElimination<false, 4>(
-  LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
+  template double gaussElimination<false, 4>(LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<4, 1>& b,  ///< (in)    : right-hand-side
+      LINALG::Matrix<4, 1>& x   ///< (out)   : solution vector
   );
 
 
 
-/*!
-  \brief computes a Gaussian elimination for a linear system of equations after infnorm scaling
+  /*!
+    \brief computes a Gaussian elimination for a linear system of equations after infnorm scaling
 
-  \tparam dim      (in)    : dimension of the matrix
-  \return determinant of system matrix
-*/
-template<unsigned dim>
-double scaledGaussElimination(
-  LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
-  LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
+    \tparam dim      (in)    : dimension of the matrix
+    \return determinant of system matrix
+  */
+  template <unsigned dim>
+  double scaledGaussElimination(LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
+      LINALG::Matrix<dim, 1>& x                               ///< (out)   : solution vector
   )
-{
-  // infnorm scaling
-  for(unsigned i=0; i<dim; ++i)
   {
-    // find norm of max entry in row
-    double max = std::abs(A(i,0));
-    for(unsigned j=1; j<dim; ++j)
+    // infnorm scaling
+    for (unsigned i = 0; i < dim; ++i)
     {
-      const double norm = std::abs(A(i,j));
-      if(norm > max)
-        max = norm;
+      // find norm of max entry in row
+      double max = std::abs(A(i, 0));
+      for (unsigned j = 1; j < dim; ++j)
+      {
+        const double norm = std::abs(A(i, j));
+        if (norm > max) max = norm;
+      }
+
+      // close to zero row detected -> matrix does probably not have full rank
+      if (max < 1.0e-14)
+      {
+        return LINALG::gaussElimination<true, dim>(A, b, x);
+      }
+
+      // scale row with inv of max entry
+      const double scale = 1.0 / max;
+      for (unsigned j = 0; j < dim; ++j)
+      {
+        A(i, j) *= scale;
+      }
+      b(i) *= scale;
     }
 
-    // close to zero row detected -> matrix does probably not have full rank
-    if(max < 1.0e-14)
-    {
-      return LINALG::gaussElimination<true, dim>( A, b, x );
-    }
-
-    // scale row with inv of max entry
-    const double scale = 1.0/max;
-    for(unsigned j=0; j<dim; ++j)
-    {
-      A(i,j) *= scale;
-    }
-    b(i) *= scale;
+    // solve scaled system using pivoting
+    return LINALG::gaussElimination<true, dim>(A, b, x);
   }
 
-  // solve scaled system using pivoting
-  return LINALG::gaussElimination<true, dim>( A, b, x );
-}
 
-
-template
-double scaledGaussElimination<2>(
-  LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
+  template double scaledGaussElimination<2>(LINALG::Matrix<2, 2>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<2, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<2, 1>& x                                         ///< (out)   : solution vector
   );
-template
-double scaledGaussElimination<3>(
-  LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
+  template double scaledGaussElimination<3>(LINALG::Matrix<3, 3>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<3, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<3, 1>& x                                         ///< (out)   : solution vector
   );
-template
-double scaledGaussElimination<4>(
-  LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
-  LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
-  LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
+  template double scaledGaussElimination<4>(LINALG::Matrix<4, 4>& A,  ///< (in)    : system matrix
+      LINALG::Matrix<4, 1>& b,                                        ///< (in)    : right-hand-side
+      LINALG::Matrix<4, 1>& x                                         ///< (out)   : solution vector
   );
 
-}
+}  // namespace LINALG

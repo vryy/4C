@@ -23,25 +23,18 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::LAGRANGE::Strategy::Strategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    const Teuchos::ParameterList& params,
-    const plain_interface_set& interfaces,
-    int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm,
-    int maxdof )
-    : CONTACT::AUG::Strategy( data_ptr, DofRowMap, NodeRowMap, params, interfaces,
-        dim, comm, maxdof )
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
+    const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
+    int maxdof)
+    : CONTACT::AUG::Strategy(data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
   // cast to steepest ascent interfaces
-  for ( plain_interface_set::const_iterator cit = interfaces.begin();
-        cit != interfaces.end(); ++cit )
+  for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
   {
-    const Teuchos::RCP<CONTACT::CoInterface> & interface = *cit;
+    const Teuchos::RCP<CONTACT::CoInterface>& interface = *cit;
     // test interfaces for the correct type
-    Teuchos::rcp_dynamic_cast<CONTACT::AUG::LAGRANGE::Interface>(
-        interface, true );
+    Teuchos::rcp_dynamic_cast<CONTACT::AUG::LAGRANGE::Interface>(interface, true);
   }
 }
 
@@ -54,25 +47,25 @@ void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
     Data().StrContactRhsPtr() = Teuchos::null;
     return;
   }
-  Data().StrContactRhsPtr() =
-      Teuchos::rcp(new Epetra_Vector(*ProblemDofs(),true));
+  Data().StrContactRhsPtr() = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
 
 
   // For self contact, slave and master sets may have changed,
-  if ( IsSelfContact() )
-    dserror("ERROR: Augmented Lagrange Formulation: Self contact is not yet "
+  if (IsSelfContact())
+    dserror(
+        "ERROR: Augmented Lagrange Formulation: Self contact is not yet "
         "considered!");
 
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
-  Epetra_Vector augfs_exp( *ProblemDofs() );
-  LINALG::Export( Data().SlForceLm(), augfs_exp );
-  Data().StrContactRhs().Scale( -1.0, augfs_exp );
+  Epetra_Vector augfs_exp(*ProblemDofs());
+  LINALG::Export(Data().SlForceLm(), augfs_exp);
+  Data().StrContactRhs().Scale(-1.0, augfs_exp);
 
   // Master side
-  Epetra_Vector augfm_exp( *ProblemDofs() );
-  LINALG::Export( Data().MaForceLm(), augfm_exp );
-  CATCH_EPETRA_ERROR(Data().StrContactRhs().Update( -1.0, augfm_exp, 1.0 ));
+  Epetra_Vector augfm_exp(*ProblemDofs());
+  LINALG::Export(Data().MaForceLm(), augfm_exp);
+  CATCH_EPETRA_ERROR(Data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
 
   return;
 }

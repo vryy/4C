@@ -26,12 +26,12 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair() :
-    isinit_(false),
-    issetup_(false),
-    beam_potential_params_(Teuchos::null),
-    element1_(NULL),
-    element2_(NULL)
+BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
+    : isinit_(false),
+      issetup_(false),
+      beam_potential_params_(Teuchos::null),
+      element1_(NULL),
+      element2_(NULL)
 {
   // empty constructor
 }
@@ -40,8 +40,7 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair() :
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
-    const DRT::Element* element1,
-    const DRT::Element* element2)
+    const DRT::Element* element1, const DRT::Element* element2)
 {
   issetup_ = false;
 
@@ -65,9 +64,8 @@ void BEAMINTERACTION::BeamPotentialPair::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>
-BEAMINTERACTION::BeamPotentialPair::Create(
-    std::vector< DRT::Element const *> const& ele_ptrs,
+Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::Create(
+    std::vector<DRT::Element const*> const& ele_ptrs,
     BEAMINTERACTION::BeamPotentialParams const& beam_potential_params)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
@@ -89,66 +87,63 @@ BEAMINTERACTION::BeamPotentialPair::Create(
       {
         case 2:
         {
-          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
-            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<2,1>());
+          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>());
           else
           {
-            if ( beam_potential_params.UseFAD() )
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<2,1,Sacado::Fad::DFad<double> >() );
+            if (beam_potential_params.UseFAD())
+              return Teuchos::rcp(
+                  new BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<2,1,double>() );
+              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>());
           }
-
         }
         case 3:
         {
-          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
-            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<3,1>());
+          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>());
           else
           {
-            if ( beam_potential_params.UseFAD() )
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<3,1,Sacado::Fad::DFad<double> >() );
+            if (beam_potential_params.UseFAD())
+              return Teuchos::rcp(
+                  new BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<3,1,double>() );
+              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>());
           }
         }
         case 4:
         {
-          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
-            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<4,1>());
+          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>());
           else
           {
-            if ( beam_potential_params.UseFAD() )
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<4,1,Sacado::Fad::DFad<double> >() );
+            if (beam_potential_params.UseFAD())
+              return Teuchos::rcp(
+                  new BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<4,1,double>() );
+              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>());
           }
         }
         case 5:
         {
-          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
-            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<5,1>());
+          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>());
           else
           {
-            if ( beam_potential_params.UseFAD() )
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<5,1,Sacado::Fad::DFad<double> >() );
+            if (beam_potential_params.UseFAD())
+              return Teuchos::rcp(
+                  new BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<5,1,double>() );
+              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>());
           }
         }
         default:
         {
-          dserror("%d and %d is no valid template parameter combination for the "
+          dserror(
+              "%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
-              "interpolation!", numnodes_centerline, numnodalvalues);
+              "interpolation!",
+              numnodes_centerline, numnodalvalues);
           break;
         }
       }
@@ -160,60 +155,60 @@ BEAMINTERACTION::BeamPotentialPair::Create(
       {
         case 2:
         {
-          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
-            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<2,2>());
+          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>());
           else
           {
-            if ( beam_potential_params.UseFAD() )
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<2,2,Sacado::Fad::DFad<double> >() );
+            if (beam_potential_params.UseFAD())
+              return Teuchos::rcp(
+                  new BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp (
-                  new BEAMINTERACTION::BeamToBeamPotentialPair<2,2,double>() );
+              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>());
           }
         }
         default:
-          dserror("%d and %d is no valid template parameter combination for the "
+          dserror(
+              "%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
-              "interpolation!", numnodes_centerline, numnodalvalues);
+              "interpolation!",
+              numnodes_centerline, numnodalvalues);
           break;
       }
       break;
     }
     default:
     {
-      dserror("%d and %d is no valid template parameter combination for the "
+      dserror(
+          "%d and %d is no valid template parameter combination for the "
           "number of nodes and number of types of nodal DoFs used for centerline "
-          "interpolation!", numnodes_centerline, numnodalvalues);
+          "interpolation!",
+          numnodes_centerline, numnodalvalues);
       break;
     }
   }
 
   return Teuchos::null;
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::CheckInit() const
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
 {
-  switch ( Params()->NumberGaussPoints() )
+  switch (Params()->NumberGaussPoints())
   {
     case 5:
     {
@@ -246,7 +241,7 @@ DRT::UTILS::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
     }
 
     default:
-      dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints() );
+      dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
   }
 
   return DRT::UTILS::intrule1D_undefined;

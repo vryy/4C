@@ -34,55 +34,63 @@ namespace FPSI
 
   class Utils
   {
-  public:
+   public:
+    //! Singleton access method
+    static Teuchos::RCP<Utils> Instance();
 
-  //! Singleton access method
-  static Teuchos::RCP<Utils> Instance();
+    //! singleton object
+    static Teuchos::RCP<FPSI::Utils> instance_;
 
-  //! singleton object
-  static Teuchos::RCP<FPSI::Utils> instance_;
+    //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
+    Teuchos::RCP<FPSI::FPSI_Base> SetupDiscretizations(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& fpsidynparams,
+        const Teuchos::ParameterList& poroelastdynparams);
 
-  //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
-  Teuchos::RCP<FPSI::FPSI_Base> SetupDiscretizations(const Epetra_Comm& comm,
-                                                     const Teuchos::ParameterList& fpsidynparams,
-                                                     const Teuchos::ParameterList& poroelastdynparams);
+    //! redistribute interface for parallel computations
+    void RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis,
+        Teuchos::RCP<const DRT::Discretization> slavedis, const std::string& condname,
+        std::map<int, int>& interfacefacingelementmap);
 
-  //! redistribute interface for parallel computations
-  void RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<const DRT::Discretization> slavedis, const std::string& condname, std::map<int,int>& interfacefacingelementmap);
+    //! build map for fpsi interface
+    void SetupInterfaceMap(const Epetra_Comm& comm, Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> porofluiddis, Teuchos::RCP<DRT::Discretization> fluiddis,
+        Teuchos::RCP<DRT::Discretization> aledis);
 
-  //! build map for fpsi interface
-  void SetupInterfaceMap(const Epetra_Comm& comm,
-      Teuchos::RCP<DRT::Discretization> structdis,
-      Teuchos::RCP<DRT::Discretization> porofluiddis,
-      Teuchos::RCP<DRT::Discretization> fluiddis,
-      Teuchos::RCP<DRT::Discretization> aledis);
+    //! Fills a map that matches the global id of an interface element on the slave side to the
+    //! global id of the opposing bulk element. This is done processor locally. Works only for
+    //! matching grids.
+    /*!
+      \param In
+             masterdis - Reference of discretization of master field.
+      \param In
+             slavedis  - Reference of discretization of slave field.
+      \param In
+             condname  - String with name of condition on interface to be considered.
+      \param Out
+             interfacefacingelementmap - processor local map to be filled
 
-  //! Fills a map that matches the global id of an interface element on the slave side to the global id of the opposing bulk element.
-  //! This is done processor locally. Works only for matching grids.
-  /*!
-    \param In
-           masterdis - Reference of discretization of master field.
-    \param In
-           slavedis  - Reference of discretization of slave field.
-    \param In
-           condname  - String with name of condition on interface to be considered.
-    \param Out
-           interfacefacingelementmap - processor local map to be filled
+       See Detailed Description section for further discussion.
+    */
+    void SetupLocalInterfaceFacingElementMap(DRT::Discretization& masterdis,
+        const DRT::Discretization& slavedis, const std::string& condname,
+        std::map<int, int>& interfacefacingelementmap);
 
-     See Detailed Description section for further discussion.
-  */
-  void SetupLocalInterfaceFacingElementMap(DRT::Discretization& masterdis, const DRT::Discretization& slavedis, const std::string& condname, std::map<int,int>& interfacefacingelementmap);
+    //! access methods
+    Teuchos::RCP<std::map<int, int>> Get_Fluid_PoroFluid_InterfaceMap()
+    {
+      return Fluid_PoroFluid_InterfaceMap;
+    };
+    Teuchos::RCP<std::map<int, int>> Get_PoroFluid_Fluid_InterfaceMap()
+    {
+      return PoroFluid_Fluid_InterfaceMap;
+    };
 
-  //!access methods
-  Teuchos::RCP<std::map<int,int> > Get_Fluid_PoroFluid_InterfaceMap(){return Fluid_PoroFluid_InterfaceMap;};
-  Teuchos::RCP<std::map<int,int> > Get_PoroFluid_Fluid_InterfaceMap(){return PoroFluid_Fluid_InterfaceMap;};
+   private:
+    //! interface maps
+    Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap;
+    Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap;
 
-  private:
-  //!interface maps
-  Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap;
-  Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap;
-
-  }; // class Utils
+  };  // class Utils
 
 
   namespace UTILS
@@ -90,16 +98,17 @@ namespace FPSI
     /// specific MultiMapExtractor to handle the fluid field
     class MapExtractor : public LINALG::MultiMapExtractor
     {
-    public:
-
-      enum {
-        cond_other                    = 0,
-        cond_fsi                      = 1,
-        cond_fpsi                     = 2
+     public:
+      enum
+      {
+        cond_other = 0,
+        cond_fsi = 1,
+        cond_fpsi = 2
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis, bool withpressure = false, bool overlapping = false);
+      void Setup(
+          const DRT::Discretization& dis, bool withpressure = false, bool overlapping = false);
 
       /*!
        * \brief setup from an existing extractor
@@ -112,17 +121,18 @@ namespace FPSI
        * \author kruse
        * \date 05/2014
        */
-      void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap, const FPSI::UTILS::MapExtractor& extractor);
+      void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+          const FPSI::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> ConditionedElementMap(const DRT::Discretization& dis) const;
 
-      MAP_EXTRACTOR_VECTOR_METHODS(Other,  cond_other)
-      MAP_EXTRACTOR_VECTOR_METHODS(FSICond,cond_fsi)
-      MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
+      MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
+      MAP_EXTRACTOR_VECTOR_METHODS(FPSICond, cond_fpsi)
     };
 
-  }
-} // namespace FPSI
+  }  // namespace UTILS
+}  // namespace FPSI
 
 #endif /* FPSI_UTILS_H_ */

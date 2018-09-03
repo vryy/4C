@@ -17,16 +17,17 @@
 
 #include "ad_str_wrapper.H"
 
-namespace ADAPTER {
+namespace ADAPTER
+{
   class StructureLocaWrapper : public StructureWrapper
   {
-  public:
+   public:
     //! constructor
     explicit StructureLocaWrapper(Teuchos::RCP<Structure> structure)
-        : StructureWrapper(structure) {};
+        : StructureWrapper(structure){};
 
     //! destructor
-    virtual ~StructureLocaWrapper() {};
+    virtual ~StructureLocaWrapper(){};
 
     //! actual time loop
     virtual int Integrate();
@@ -54,9 +55,8 @@ namespace ADAPTER {
 
     //! wrapper for things that should be done after the output
     virtual void PostOutput(){};
-
   };
-} // namespace ADAPTER
+}  // namespace ADAPTER
 
 
 #endif /* SRC_DRT_ADAPTER_AD_STR_LOCA_WRAPPER_H_ */

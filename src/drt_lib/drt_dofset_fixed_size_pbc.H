@@ -28,63 +28,52 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
-
-/*!
-\brief A set of degrees of freedom
-
-\author
-*/
-class FixedSizePBCDofSet: public FixedSizeDofSet, public PBCDofSet
-{
-public:
+  class Discretization;
 
   /*!
-  \brief Standard Constructor
+  \brief A set of degrees of freedom
 
-
-  <pre>
-
-  create a dofset that reserves a certain amount of dofGIDs
-
-  </pre>
-
-  \return void
-
+  \author
   */
-  FixedSizePBCDofSet(Teuchos::RCP<map<int,std::vector<int> > >  couplednodes, int numreservedofpernode, int nodeindexrange)
-    :FixedSizeDofSet(numreservedofpernode,nodeindexrange), PBCDofSet(couplednodes)
+  class FixedSizePBCDofSet : public FixedSizeDofSet, public PBCDofSet
   {
-    return;
-  }
+   public:
+    /*!
+    \brief Standard Constructor
 
-  /*!
-  \brief Destructor
 
-  */
-  virtual ~FixedSizePBCDofSet()
-  {
-    return;
-  }
+    <pre>
 
-  /// create a copy of this object
-  virtual Teuchos::RCP<DofSet> Clone()
-  {
-    return Teuchos::rcp(new FixedSizePBCDofSet(*this));
-  }
+    create a dofset that reserves a certain amount of dofGIDs
 
-  /// Get maximum GID of degree of freedom row map
-  virtual int MaxAllGID() const
-  {
-    return PBCDofSet::MinAllGID() + numMyReservedDofs_;
-  }
+    </pre>
 
-protected:
+    \return void
 
-private:
+    */
+    FixedSizePBCDofSet(Teuchos::RCP<map<int, std::vector<int>>> couplednodes,
+        int numreservedofpernode, int nodeindexrange)
+        : FixedSizeDofSet(numreservedofpernode, nodeindexrange), PBCDofSet(couplednodes)
+    {
+      return;
+    }
 
-}; // class StdDofSet
+    /*!
+    \brief Destructor
 
-}
+    */
+    virtual ~FixedSizePBCDofSet() { return; }
+
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new FixedSizePBCDofSet(*this)); }
+
+    /// Get maximum GID of degree of freedom row map
+    virtual int MaxAllGID() const { return PBCDofSet::MinAllGID() + numMyReservedDofs_; }
+
+   protected:
+   private:
+  };  // class StdDofSet
+
+}  // namespace DRT
 
 #endif  // #ifndef DOFSET_INDEPENDENT_H

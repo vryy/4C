@@ -21,15 +21,12 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntTopOptGenAlpha::TimIntTopOptGenAlpha(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntGenAlpha(actdis,solver,params,output,alefluid),
-      TimIntTopOpt(actdis,solver,params,output,alefluid)
+FLD::TimIntTopOptGenAlpha::TimIntTopOptGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntGenAlpha(actdis, solver, params, output, alefluid),
+      TimIntTopOpt(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -55,8 +52,4 @@ void FLD::TimIntTopOptGenAlpha::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntTopOptGenAlpha::~TimIntTopOptGenAlpha()
-{
-  return;
-}
-
+FLD::TimIntTopOptGenAlpha::~TimIntTopOptGenAlpha() { return; }

@@ -4,7 +4,7 @@
 
 <pre>
 Maintainer: Ursula Mayer
-			mayer@lnm.mw.tum.de
+      mayer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
 </pre>
@@ -21,20 +21,15 @@ Maintainer: Ursula Mayer
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters
     class CarreauYasuda : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      CarreauYasuda(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      CarreauYasuda(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~CarreauYasuda() { ; }
@@ -42,12 +37,12 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      const double nu_0_; 		/* zero-shear viscosity */
-      const double nu_inf_;		/* infinite-shear viscosity */
-      const double lambda_;      /* characteristic time */
-      const double a_param_;		/* constant parameter */
-      const double b_param_;     /* constant parameter */
-      const double density_;     /* density */
+      const double nu_0_;    /* zero-shear viscosity */
+      const double nu_inf_;  /* infinite-shear viscosity */
+      const double lambda_;  /* characteristic time */
+      const double a_param_; /* constant parameter */
+      const double b_param_; /* constant parameter */
+      const double density_; /* density */
 
       //@}
 
@@ -58,26 +53,23 @@ namespace MAT
 
   }  // namespace PAR
 
-class CarreauYasudaType : public DRT::ParObjectType
-{
-public:
+  class CarreauYasudaType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "CarreauYasudaType"; }
 
-  std::string Name() const { return "CarreauYasudaType"; }
+    static CarreauYasudaType& Instance() { return instance_; };
 
-  static CarreauYasudaType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static CarreauYasudaType instance_;
-};
+   private:
+    static CarreauYasudaType instance_;
+  };
 
   /// Nonlinear viscosity according to Carreau-Yasuda
   class CarreauYasuda : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     CarreauYasuda();
 
@@ -93,7 +85,10 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return CarreauYasudaType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return CarreauYasudaType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -127,7 +122,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_carreauyasuda; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CarreauYasuda( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new CarreauYasuda(*this)); }
 
     /// return material parameters for element calculation
     //@{
@@ -150,14 +145,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::CarreauYasuda* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif
-

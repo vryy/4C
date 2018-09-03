@@ -27,21 +27,21 @@
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void DRT::ELEMENTS::So_hex27::soh27_homog(Teuchos::ParameterList&  params)
+void DRT::ELEMENTS::So_hex27::soh27_homog(Teuchos::ParameterList& params)
 {
-  if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
+  if (DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh27_weights();
 
-    for (int gp=0; gp<NUMGPT_SOH27; ++gp)
+    for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
     {
       const double density = Material()->Density(gp);
       homogdens += detJ_[gp] * weights[gp] * density;
     }
 
     double homogdensity = params.get<double>("homogdens", 0.0);
-    params.set("homogdens", homogdensity+homogdens);
+    params.set("homogdens", homogdensity + homogdens);
   }
 
   return;
@@ -57,17 +57,13 @@ void DRT::ELEMENTS::So_hex27::soh27_read_restart_multi()
 
   if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {
-    MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+    MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID()==Owner()) eleowner = true;
+    if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner()) eleowner = true;
 
-    for (int gp=0; gp<NUMGPT_SOH27; ++gp)
-      micro->ReadRestart(gp, eleID, eleowner);
+    for (int gp = 0; gp < NUMGPT_SOH27; ++gp) micro->ReadRestart(gp, eleID, eleowner);
   }
 
   return;
 }
-
-
-

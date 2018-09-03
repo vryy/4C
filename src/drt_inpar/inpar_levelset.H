@@ -19,12 +19,17 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   namespace SCATRA
   {
     /// type of reinitialization for level set function
@@ -52,7 +57,8 @@ namespace INPAR
       fixed_point
     };
 
-    /// type of characteristic element length for reinitialization based on solving Sussman's equation
+    /// type of characteristic element length for reinitialization based on solving Sussman's
+    /// equation
     enum CharEleLengthReinit
     {
       root_of_volume_reinit,
@@ -126,10 +132,9 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific level set conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
-  }
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+  }  // namespace LEVELSET
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_LEVELSET_H
-

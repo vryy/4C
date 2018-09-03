@@ -19,77 +19,75 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
 }
 
-namespace NOX {
+namespace NOX
+{
   class Utils;
-namespace NLN {
-namespace INNER {
-namespace StatusTest {
-  class Generic;
-
-  class Factory
+  namespace NLN
   {
-  public:
-    //! Constructor.
-    Factory();
+    namespace INNER
+    {
+      namespace StatusTest
+      {
+        class Generic;
 
-    //! Destructor.
-    virtual ~Factory() {};
+        class Factory
+        {
+         public:
+          //! Constructor.
+          Factory();
 
-    //! Returns a inner status test set from a parameter list.
-    Teuchos::RCP<Generic> BuildInnerStatusTests(
-        Teuchos::ParameterList& p, const NOX::Utils& utils,
-        std::map<std::string, Teuchos::RCP<Generic> >* tagged_tests) const;
+          //! Destructor.
+          virtual ~Factory(){};
 
-  protected:
-    //! Build the Armijo sufficient decrease test
-    Teuchos::RCP<Generic> BuildArmijoTest(
-        Teuchos::ParameterList& p, const NOX::Utils& u) const;
+          //! Returns a inner status test set from a parameter list.
+          Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
+              const NOX::Utils& utils,
+              std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
-    //! Build the filter test
-    Teuchos::RCP<Generic> BuildFilterTest(
-        Teuchos::ParameterList& p, const NOX::Utils& u) const;
+         protected:
+          //! Build the Armijo sufficient decrease test
+          Teuchos::RCP<Generic> BuildArmijoTest(
+              Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
-    //! Build the upper bound test
-    Teuchos::RCP<Generic> BuildUpperBoundTest(
-        Teuchos::ParameterList& p, const NOX::Utils& u) const;
+          //! Build the filter test
+          Teuchos::RCP<Generic> BuildFilterTest(
+              Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
-    /*! \brief Build the inner_statustest_combo object
+          //! Build the upper bound test
+          Teuchos::RCP<Generic> BuildUpperBoundTest(
+              Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
-    */
-    Teuchos::RCP<Generic> BuildComboTest(
-        Teuchos::ParameterList& p, const NOX::Utils& u,
-        std::map<std::string, Teuchos::RCP<Generic> >*
-        tagged_tests) const;
+          /*! \brief Build the inner_statustest_combo object
 
-    bool CheckAndTagTest(
-        const Teuchos::ParameterList& p,
-        const Teuchos::RCP<Generic>& test,
-        std::map<std::string, Teuchos::RCP<Generic> >*
-        tagged_tests) const;
+          */
+          Teuchos::RCP<Generic> BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
+              std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
-  private:
-    //! Throws formated error
-    void throwError(
-        const std::string& functionName,
-        const std::string& errorMsg) const;
-  };
+          bool CheckAndTagTest(const Teuchos::ParameterList& p, const Teuchos::RCP<Generic>& test,
+              std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
-  /*! \brief Nonmember helper function for the NOX::NLN::INNER::StatusTest::Factory.
+         private:
+          //! Throws formated error
+          void throwError(const std::string& functionName, const std::string& errorMsg) const;
+        };
 
-  \relates NOX::NLN::INNER::StatusTest::Factory
+        /*! \brief Nonmember helper function for the NOX::NLN::INNER::StatusTest::Factory.
 
-  */
-  Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
-      const NOX::Utils& utils, std::map<std::string, Teuchos::RCP<Generic> >*
-      tagged_tests=0);
-} // namespace StatusTest
-} // namespace INNER
-} // namespace NLN
-} // namespace NOX
+        \relates NOX::NLN::INNER::StatusTest::Factory
+
+        */
+        Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
+            const NOX::Utils& utils,
+            std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = 0);
+      }  // namespace StatusTest
+    }    // namespace INNER
+  }      // namespace NLN
+}  // namespace NOX
 
 
 #endif /* NOX_NLN_INNER_STATUSTEST_FACTORY_H_ */

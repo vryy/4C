@@ -20,39 +20,32 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    // forward declaration
+    class PoroFluidMultiPhaseEleInterface;
 
-namespace ELEMENTS
-{
-// forward declaration
-class PoroFluidMultiPhaseEleInterface;
+    class PoroFluidMultiPhaseBoundaryFactory
+    {
+     public:
+      //! ctor
+      PoroFluidMultiPhaseBoundaryFactory() { return; };
 
-class PoroFluidMultiPhaseBoundaryFactory
-{
+      //! dtor
+      virtual ~PoroFluidMultiPhaseBoundaryFactory() { return; };
 
-public:
-  //! ctor
-  PoroFluidMultiPhaseBoundaryFactory(){return;};
+      //! ProvideImpl
+      static PoroFluidMultiPhaseEleInterface* ProvideImpl(
+          const DRT::Element* ele, const int numdofpernode, const std::string& disname);
 
-  //! dtor
-  virtual ~PoroFluidMultiPhaseBoundaryFactory(){return;};
-
-  //! ProvideImpl
-  static PoroFluidMultiPhaseEleInterface* ProvideImpl(
-                                              const DRT::Element* ele,
-                                              const int numdofpernode,
-                                              const std::string& disname);
-
-private:
-
-  //! return instance of element evaluation class depending on implementation type
-  template<DRT::Element::DiscretizationType distype>
-  static PoroFluidMultiPhaseEleInterface* DefineProblemType(
-      const int numdofpernode,
-      const std::string& disname
-      );
-}; // class PoroFluidMultiPhaseBoundaryFactory
-} // namespace ELEMENTS
-} // namespace DRT
+     private:
+      //! return instance of element evaluation class depending on implementation type
+      template <DRT::Element::DiscretizationType distype>
+      static PoroFluidMultiPhaseEleInterface* DefineProblemType(
+          const int numdofpernode, const std::string& disname);
+    };  // class PoroFluidMultiPhaseBoundaryFactory
+  }     // namespace ELEMENTS
+}  // namespace DRT
 
 
 #endif /* SRC_DRT_POROFLUIDMULTIPHASE_ELE_POROFLUIDMULTIPHASE_ELE_BOUNDARY_FACTORY_H_ */

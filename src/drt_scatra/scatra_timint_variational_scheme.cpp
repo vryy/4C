@@ -25,17 +25,18 @@
  |  Constructor (public)                                   deanda 10/17 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntVariationalOST::TimIntVariationalOST(
-  Teuchos::RCP<DRT::Discretization>        actdis,        //!< discretization
-  Teuchos::RCP<LINALG::Solver>             solver,        //!< linear solver
-  Teuchos::RCP<Teuchos::ParameterList>     params,        //!< parameter list
-  Teuchos::RCP<Teuchos::ParameterList>     extraparams,   //!< supplementary parameter list
-  Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< output writer
-  const int                                probnum        //!< global problem number
-  ):
-  ScaTraTimIntImpl(actdis,solver,params,extraparams,output,probnum)
-  ,TimIntVariational(actdis,solver,params,extraparams,output,probnum)
-  ,TimIntOneStepTheta(actdis,solver,params,extraparams,output,probnum)
-  ,semImplicitFunctional_(DRT::INPUT::IntegralValue<int>(params->sublist("VARIATIONAL"),"SEMIMPLICITFUNCTIONAL"))
+    Teuchos::RCP<DRT::Discretization> actdis,          //!< discretization
+    Teuchos::RCP<LINALG::Solver> solver,               //!< linear solver
+    Teuchos::RCP<Teuchos::ParameterList> params,       //!< parameter list
+    Teuchos::RCP<Teuchos::ParameterList> extraparams,  //!< supplementary parameter list
+    Teuchos::RCP<IO::DiscretizationWriter> output,     //!< output writer
+    const int probnum                                  //!< global problem number
+    )
+    : ScaTraTimIntImpl(actdis, solver, params, extraparams, output, probnum),
+      TimIntVariational(actdis, solver, params, extraparams, output, probnum),
+      TimIntOneStepTheta(actdis, solver, params, extraparams, output, probnum),
+      semImplicitFunctional_(
+          DRT::INPUT::IntegralValue<int>(params->sublist("VARIATIONAL"), "SEMIMPLICITFUNCTIONAL"))
 {
   return;
 }
@@ -62,7 +63,7 @@ void SCATRA::TimIntVariationalOST::Setup()
 {
   // call Setup()-functions of base classes
   // note: this order is important
-    // back-up of the initial condition
+  // back-up of the initial condition
   TimIntVariational::Setup();
   TimIntOneStepTheta::Setup();
   return;
@@ -72,7 +73,7 @@ void SCATRA::TimIntVariationalOST::AddTimeIntegrationSpecificVectors(bool forced
 {
   // call base class routine
   TimIntVariational::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
-  discret_->SetState("phin",phin_);
+  discret_->SetState("phin", phin_);
   TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
 
   return;
@@ -81,10 +82,7 @@ void SCATRA::TimIntVariationalOST::AddTimeIntegrationSpecificVectors(bool forced
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                 deanda 10/17 |
 *-----------------------------------------------------------------------*/
-SCATRA::TimIntVariationalOST::~TimIntVariationalOST()
-{
-  return;
-}
+SCATRA::TimIntVariationalOST::~TimIntVariationalOST() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -117,22 +115,22 @@ void SCATRA::TimIntVariationalOST::ExplicitPredictor() const
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariationalOST::PrepareFirstTimeStep()
 {
-  TimIntVariational::ApplyDirichletBC(time_,phin_,Teuchos::null);
+  TimIntVariational::ApplyDirichletBC(time_, phin_, Teuchos::null);
   TimIntVariational::PrepareFirstTimeStep();
 
   return;
-} // SCATRA::TimIntVariationalOST::PrepareFirstTimeStep
+}  // SCATRA::TimIntVariationalOST::PrepareFirstTimeStep
 
 /*----------------------------------------------------------------------*
  | add parameters depending on the problem                  deanda 10/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntVariationalOST::AddProblemSpecificParametersAndVectors(
-  Teuchos::ParameterList& params //!< parameter list
+    Teuchos::ParameterList& params  //!< parameter list
 )
 {
   TimIntVariational::AddProblemSpecificParametersAndVectors(params);
 
   // Defines the type of scheme to use in the variational functional: Implicit or semi-implicit
-  params.set<bool>("Is_semImplicit_Functional", semImplicitFunctional_ );
+  params.set<bool>("Is_semImplicit_Functional", semImplicitFunctional_);
   return;
 }

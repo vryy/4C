@@ -21,30 +21,25 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters
     class ModPowerLaw : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ModPowerLaw(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ModPowerLaw(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ModPowerLaw() { ; }
 
       /// @name material parameters
       //@{
-     const double m_cons_;         /* consistency */
-     const double delta_;         /* safety factor */
-     const double a_exp_;      /* exponent */
-     const double density_;       /* density */
+      const double m_cons_;  /* consistency */
+      const double delta_;   /* safety factor */
+      const double a_exp_;   /* exponent */
+      const double density_; /* density */
       //@}
 
       /// create material instance of matching type with my parameters
@@ -54,27 +49,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class ModPowerLawType : public DRT::ParObjectType
-{
-public:
+  class ModPowerLawType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ModPowerLawType"; }
 
-  std::string Name() const { return "ModPowerLawType"; }
+    static ModPowerLawType& Instance() { return instance_; };
 
-  static ModPowerLawType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ModPowerLawType instance_;
-};
+   private:
+    static ModPowerLawType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Nonlinear viscosity according to a modified power law
   class ModPowerLaw : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ModPowerLaw();
 
@@ -90,7 +82,10 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return ModPowerLawType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return ModPowerLawType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -124,7 +119,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_modpowerlaw; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ModPowerLaw( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ModPowerLaw(*this)); }
 
     /// return material parameters for element calculation
 
@@ -140,14 +135,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::ModPowerLaw* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif
-

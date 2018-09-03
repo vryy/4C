@@ -22,7 +22,7 @@ namespace ADAPTER
 {
   class Structure;
   class Fluid;
-}
+}  // namespace ADAPTER
 
 namespace NOX
 {
@@ -30,8 +30,8 @@ namespace NOX
   {
     class AdaptiveNewtonNormF;
     class Group;
-  }
-}
+  }  // namespace FSI
+}  // namespace NOX
 
 namespace LINALG
 {
@@ -47,8 +47,8 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace FSI
 {
@@ -64,12 +64,11 @@ namespace FSI
    */
   class MonolithicStructureSplit : public BlockMonolithic
   {
-
     friend class FSI::FSIResultTest;
 
-  public:
-    explicit MonolithicStructureSplit(const Epetra_Comm& comm,
-                                      const Teuchos::ParameterList& timeparams);
+   public:
+    explicit MonolithicStructureSplit(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /*! do the setup for the monolithic system
 
@@ -106,9 +105,9 @@ namespace FSI
      *  might be produced at the interface. It can be computed as
      *  \f[
      *  \Delta E_\Gamma^{n\rightarrow n+1}
-     *  = \left((a-b)\lambda^n + (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right)
-     *  \f]
-     *  with the time interpolation factors a and b.
+     *  = \left((a-b)\lambda^n +
+     * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
+     * interpolation factors a and b.
      *
      *  \author mayr.mt \date 05/2014
      */
@@ -123,7 +122,8 @@ namespace FSI
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    virtual void UnscaleSolution(
+        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //@}
 
@@ -140,7 +140,7 @@ namespace FSI
     virtual void ReadRestart(int step);
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    Teuchos::RCP<Epetra_Vector> GetLambda (){return lambda_; };
+    Teuchos::RCP<Epetra_Vector> GetLambda() { return lambda_; };
 
     //! @name Time Adaptivity
     //@{
@@ -176,27 +176,22 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(
-        std::map<int,int>* nodeOwner,
-        std::map<int,std::list<int> >* inverseNodeOwner,
-        std::map<int, DRT::Node*>* fluidnodesPtr,
+    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+        std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
+        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain)
     {
       dserror("Not implemented!");
     }
 
-  protected:
-
+   protected:
     /// create the composed system matrix
     void CreateSystemMatrix();
 
     /// setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo>
-    CreateStatusTest(Teuchos::ParameterList& nlParams,
-                     Teuchos::RCP<NOX::Epetra::Group> grp);
+    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp);
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -217,8 +212,7 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
     );
 
-  protected:
-
+   protected:
     /*! \brief Create the combined DOF row map for the FSI problem
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
@@ -253,12 +247,12 @@ namespace FSI
     //! If all input vectors contain interface DOFs, we first have to extract
     //! the inner portion of the slave vectors. Then, we just put them together.
     //! As usual, the ordering is: structure --  fluid -- ALE
-    void CombineFieldVectors(
-          Epetra_Vector &v,                       ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv,         ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av,         ///< ale DOFs
-          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+    void CombineFieldVectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+        Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
+        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
+                          ///< (false)
     );
 
     /// block system matrix
@@ -294,23 +288,26 @@ namespace FSI
 
     /// @name Some quantities to recover the Lagrange multiplier at the end of each time step
 
-    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
-    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
+    //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! Lagrange multiplier of previous time step
     Teuchos::RCP<Epetra_Vector> lambdaold_;
 
-    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current NOX
+    //! iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddiinc_;
 
     //! inner displacement solution of the structure at previous NOX iteration
     Teuchos::RCP<const Epetra_Vector> soliprev_;
 
-    //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
+    //! current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;
 
-    //! fluid interface velocity increment \f$\Delta(\Delta u_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
+    //! fluid interface velocity increment \f$\Delta(\Delta u_{\Gamma,i+1}^{n+1})\f$ at current NOX
+    //! iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> duginc_;
 
     //! interface displacement solution of the structure at previous NOX iteration
@@ -342,6 +339,6 @@ namespace FSI
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
   };
-}
+}  // namespace FSI
 
 #endif

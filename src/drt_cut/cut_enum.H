@@ -26,9 +26,9 @@ namespace GEO
   {
     enum FacetShape
     {
-      Convex,               // convex facet
-      SinglePtConcave,      // only one concave point --> special triangulation can be used
-      Concave               // concave facet
+      Convex,           // convex facet
+      SinglePtConcave,  // only one concave point --> special triangulation can be used
+      Concave           // concave facet
     };
 
     enum ProjectionDirection

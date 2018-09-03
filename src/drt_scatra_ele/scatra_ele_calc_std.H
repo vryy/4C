@@ -22,33 +22,27 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template<DRT::Element::DiscretizationType distype,int probdim>
-    class ScaTraEleCalcStd : public ScaTraEleCalc<distype,probdim>
+    template <DRT::Element::DiscretizationType distype, int probdim>
+    class ScaTraEleCalcStd : public ScaTraEleCalc<distype, probdim>
     {
-      public:
+     public:
+      //! abbreviation
+      typedef ScaTraEleCalc<distype, probdim> my;
 
-        //! abbreviation
-        typedef ScaTraEleCalc<distype,probdim> my;
+      //! destructor
+      virtual ~ScaTraEleCalcStd() { return; };
 
-        //! destructor
-        virtual ~ScaTraEleCalcStd(){return;};
+      //! singleton access method
+      static ScaTraEleCalcStd<distype, probdim>* Instance(const int numdofpernode,
+          const int numscal, const std::string& disname, const ScaTraEleCalcStd* delete_me = NULL);
 
-        //! singleton access method
-        static ScaTraEleCalcStd<distype,probdim> * Instance(
-            const int numdofpernode,
-            const int numscal,
-            const std::string& disname,
-            const ScaTraEleCalcStd* delete_me = NULL
-            );
+      //! called upon destruction
+      virtual void Done();
 
-        //! called upon destruction
-        virtual void Done();
-
-      protected:
-
-        //! protected constructor for singletons
-        ScaTraEleCalcStd(const int numdofpernode,const int numscal,const std::string& disname);
+     protected:
+      //! protected constructor for singletons
+      ScaTraEleCalcStd(const int numdofpernode, const int numscal, const std::string& disname);
     };
-  }
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif

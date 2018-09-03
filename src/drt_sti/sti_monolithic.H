@@ -34,8 +34,8 @@ namespace FSI
   {
     class MatrixColTransform;
     class MatrixRowTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace LINALG
 {
@@ -45,156 +45,162 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class SparseOperator;
-}
+}  // namespace LINALG
 
 namespace STI
 {
   //! monolithic coupling algorithm for scatra-thermo interaction
   class Monolithic : public Algorithm
   {
-    public:
+   public:
+    //! constructor
+    explicit Monolithic(const Epetra_Comm& comm,  //! communicator
+        const Teuchos::ParameterList& stidyn,     //! parameter list for scatra-thermo interaction
+        const Teuchos::ParameterList&
+            scatradyn,  //! scalar transport parameter list for scatra and thermo fields
+        const Teuchos::ParameterList&
+            solverparams,  //! solver parameter list for scatra-thermo interaction
+        const Teuchos::ParameterList&
+            solverparams_scatra,  //! solver parameter list for scatra field
+        const Teuchos::ParameterList&
+            solverparams_thermo  //! solver parameter list for thermo field
+    );
 
-      //! constructor
-      explicit Monolithic(
-          const Epetra_Comm&              comm,                  //! communicator
-          const Teuchos::ParameterList&   stidyn,                //! parameter list for scatra-thermo interaction
-          const Teuchos::ParameterList&   scatradyn,             //! scalar transport parameter list for scatra and thermo fields
-          const Teuchos::ParameterList&   solverparams,          //! solver parameter list for scatra-thermo interaction
-          const Teuchos::ParameterList&   solverparams_scatra,   //! solver parameter list for scatra field
-          const Teuchos::ParameterList&   solverparams_thermo    //! solver parameter list for thermo field
-         );
+    //! output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix
+    //! components in ascending order across all processors
+    static void OutputMatrixToFile(
+        const Teuchos::RCP<const LINALG::SparseOperator>
+            sparseoperator,           //!< sparse or block sparse matrix to be output
+        const int precision = 16,     //!< output precision
+        const double tolerance = -1.  //!< output omission tolerance
+    );
 
-      //! output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix components in ascending order across all processors
-      static void OutputMatrixToFile(
-          const Teuchos::RCP<const LINALG::SparseOperator>   sparseoperator,   //!< sparse or block sparse matrix to be output
-          const int                                          precision = 16,   //!< output precision
-          const double                                       tolerance = -1.   //!< output omission tolerance
-          );
+    //! output vector to *.csv file for debugging purposes, with global IDs of vector components in
+    //! ascending order across all processors
+    static void OutputVectorToFile(const Epetra_MultiVector& vector,  //!< vector to be output
+        const int precision = 16,                                     //!< output precision
+        const double tolerance = -1.                                  //!< output omission tolerance
+    );
 
-      //! output vector to *.csv file for debugging purposes, with global IDs of vector components in ascending order across all processors
-      static void OutputVectorToFile(
-          const Epetra_MultiVector&   vector,           //!< vector to be output
-          const int                   precision = 16,   //!< output precision
-          const double                tolerance = -1.   //!< output omission tolerance
-          );
+    //! return algebraic solver for global system of equations
+    const LINALG::Solver& Solver() const { return *solver_; };
 
-      //! return algebraic solver for global system of equations
-      const LINALG::Solver& Solver() const {return *solver_;};
+   private:
+    //! assemble global system of equations
+    void AssembleMatAndRHS();
 
-    private:
+    //! assemble off-diagonal scatra-thermo block of global system matrix
+    void AssembleODBlockScatraThermo();
 
-      //! assemble global system of equations
-      void AssembleMatAndRHS();
+    //! assemble off-diagonal thermo-scatra block of global system matrix
+    void AssembleODBlockThermoScatra();
 
-      //! assemble off-diagonal scatra-thermo block of global system matrix
-      void AssembleODBlockScatraThermo();
+    //! build null spaces associated with blocks of global system matrix
+    void BuildBlockNullSpaces() const;
 
-      //! assemble off-diagonal thermo-scatra block of global system matrix
-      void AssembleODBlockThermoScatra();
+    //! compute inverse sums of absolute values of matrix row entries
+    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,  //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&
+            invrowsums  //!< inverse sums of absolute values of row entries in matrix
+        ) const;
 
-      //! build null spaces associated with blocks of global system matrix
-      void BuildBlockNullSpaces() const;
+    //! compute null space information associated with global system matrix if applicable
+    void ComputeNullSpaceIfNecessary(Teuchos::ParameterList&
+            solverparams  //! solver parameter list for scatra-thermo interaction
+        ) const;
 
-      //! compute inverse sums of absolute values of matrix row entries
-      void ComputeInvRowSums(
-          const LINALG::SparseMatrix&          matrix,      //!< matrix
-          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
-          ) const;
+    //! global map of degrees of freedom
+    const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
-      //! compute null space information associated with global system matrix if applicable
-      void ComputeNullSpaceIfNecessary(
-          Teuchos::ParameterList&   solverparams   //! solver parameter list for scatra-thermo interaction
-          ) const;
+    //! equilibrate matrix rows
+    void EquilibrateMatrixRows(LINALG::SparseMatrix& matrix,  //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&
+            invrowsums  //!< sums of absolute values of row entries in matrix
+        ) const;
 
-      //! global map of degrees of freedom
-      const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
+    //! equilibrate global system of equations if necessary
+    void EquilibrateSystem(
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
+        ) const;
 
-      //! equilibrate matrix rows
-      void EquilibrateMatrixRows(
-          LINALG::SparseMatrix&                matrix,      //!< matrix
-          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
-          ) const;
+    //! check termination criterion for Newton-Raphson iteration
+    bool ExitNewtonRaphson();
 
-      //! equilibrate global system of equations if necessary
-      void EquilibrateSystem(
-          const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //!< system matrix
-          const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
-          ) const;
+    //! finite difference check for global system matrix
+    void FDCheck();
 
-      //! check termination criterion for Newton-Raphson iteration
-      bool ExitNewtonRaphson();
+    //! prepare time step
+    void PrepareTimeStep();
 
-      //! finite difference check for global system matrix
-      void FDCheck();
+    //! evaluate time step using Newton-Raphson iteration
+    void Solve();
 
-      //! prepare time step
-      void PrepareTimeStep();
+    //! absolute tolerance for residual vectors
+    const double restol_;
 
-      //! evaluate time step using Newton-Raphson iteration
-      void Solve();
+    //! global map extractor (0: scatra, 1: thermo)
+    Teuchos::RCP<LINALG::MapExtractor> maps_;
 
-      //! absolute tolerance for residual vectors
-      const double restol_;
+    // flag for double condensation of linear equations associated with temperature field
+    const bool condensationthermo_;
 
-      //! global map extractor (0: scatra, 1: thermo)
-      Teuchos::RCP<LINALG::MapExtractor> maps_;
+    //! global system matrix
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
 
-      // flag for double condensation of linear equations associated with temperature field
-      const bool condensationthermo_;
+    //! type of global system matrix in global system of equations
+    const INPAR::STI::MatrixType matrixtype_;
 
-      //! global system matrix
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
+    //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
+    //! degrees of freedom)
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock_;
 
-      //! type of global system matrix in global system of equations
-      const INPAR::STI::MatrixType matrixtype_;
+    //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
+    //! degrees of freedom)
+    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock_;
 
-      //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo degrees of freedom)
-      Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock_;
+    //! map extractor associated with blocks of global system matrix
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
 
-      //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra degrees of freedom)
-      Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock_;
+    //! map extractor associated with all degrees of freedom inside temperature field
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermo_;
 
-      //! map extractor associated with blocks of global system matrix
-      Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+    //! global increment vector for Newton-Raphson iteration
+    Teuchos::RCP<Epetra_Vector> increment_;
 
-      //! map extractor associated with all degrees of freedom inside temperature field
-      Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermo_;
+    //! global residual vector on right-hand side of global system of equations
+    Teuchos::RCP<Epetra_Vector> residual_;
 
-      //! global increment vector for Newton-Raphson iteration
-      Teuchos::RCP<Epetra_Vector> increment_;
+    //! time for element evaluation and assembly of global system of equations
+    double dtele_;
 
-      //! global residual vector on right-hand side of global system of equations
-      Teuchos::RCP<Epetra_Vector> residual_;
+    //! time for solution of global system of equations
+    double dtsolve_;
 
-      //! time for element evaluation and assembly of global system of equations
-      double dtele_;
+    //! algebraic solver for global system of equations
+    Teuchos::RCP<LINALG::Solver> solver_;
 
-      //! time for solution of global system of equations
-      double dtsolve_;
+    //! flag for equilibration of global system of equations
+    const INPAR::S2I::EquilibrationMethods equilibration_;
 
-      //! algebraic solver for global system of equations
-      Teuchos::RCP<LINALG::Solver> solver_;
+    //! inverse sums of absolute values of row entries in global system matrix
+    Teuchos::RCP<Epetra_Vector> invrowsums_;
 
-      //! flag for equilibration of global system of equations
-      const INPAR::S2I::EquilibrationMethods equilibration_;
+    //! interface coupling adapter for scatra discretization
+    Teuchos::RCP<const ADAPTER::Coupling> icoupscatra_;
 
-      //! inverse sums of absolute values of row entries in global system matrix
-      Teuchos::RCP<Epetra_Vector> invrowsums_;
+    //! interface coupling adapter for thermo discretization
+    Teuchos::RCP<const ADAPTER::Coupling> icoupthermo_;
 
-      //! interface coupling adapter for scatra discretization
-      Teuchos::RCP<const ADAPTER::Coupling> icoupscatra_;
+    //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformscatraod_;
 
-      //! interface coupling adapter for thermo discretization
-      Teuchos::RCP<const ADAPTER::Coupling> icoupthermo_;
+    //! slave-to-master column transformation operator for thermo-scatra block of global system
+    //! matrix
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransformthermood_;
 
-      //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
-      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformscatraod_;
-
-      //! slave-to-master column transformation operator for thermo-scatra block of global system matrix
-      Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransformthermood_;
-
-      //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
-      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformthermood_;
-  }; // class Monolithic : public Algorithm
-} // namespace STI
+    //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformthermood_;
+  };  // class Monolithic : public Algorithm
+}  // namespace STI
 #endif

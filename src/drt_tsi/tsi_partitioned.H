@@ -49,8 +49,7 @@ namespace TSI
   //!  \date 02/08
   class Partitioned : public Algorithm
   {
-  public:
-
+   public:
     //! create using a Epetra_Comm
     explicit Partitioned(const Epetra_Comm& comm);
 
@@ -76,13 +75,11 @@ namespace TSI
     void TimeLoopFull();
 
     //! read restart data
-    virtual void ReadRestart(
-      int step  //!< step number where the calculation is continued
-      );
+    virtual void ReadRestart(int step  //!< step number where the calculation is continued
+    );
 
 
-  protected:
-
+   protected:
     //! @name Time loop building blocks
 
     //! start a new time step
@@ -108,11 +105,10 @@ namespace TSI
     //@}
 
     //! convergence check for iterative staggered TSI solver
-    bool ConvergenceCheck(
-      int itnum,  //!< index of current iteration
-      int itmax,  //!< maximal number of iterations
-      double ittol  //!< iteration tolerance
-      );
+    bool ConvergenceCheck(int itnum,  //!< index of current iteration
+        int itmax,                    //!< maximal number of iterations
+        double ittol                  //!< iteration tolerance
+    );
 
     enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures
 
@@ -126,8 +122,7 @@ namespace TSI
     //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
-  private:
-
+   private:
     //! displacements at time step (t_n) or (t_n+1)
     Teuchos::RCP<const Epetra_Vector> disp_;
     //! velocities at time step (t_n) or (t_n+1)
@@ -140,7 +135,7 @@ namespace TSI
 
     //! difference of last two solutions
     // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
-    Teuchos::RCP<Epetra_Vector>  del_;
+    Teuchos::RCP<Epetra_Vector> del_;
     //! difference of difference of last two pair of solutions
     // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
     Teuchos::RCP<Epetra_Vector> delhist_;

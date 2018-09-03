@@ -18,24 +18,27 @@
 #include "MueLu_TwoLevelFactoryBase.hpp"
 //#include "MueLu_ThresholdAFilterFactory_fwd.hpp"
 
-#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
+#include <Xpetra_MapExtractorFactory.hpp>  // why no forward declarations in Xpetra?
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class ContactAFilterFactory class.
-    @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
+    @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying
+    problems
 
   */
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  class ContactTransferFactory : public TwoLevelFactoryBase {
+  class ContactTransferFactory : public TwoLevelFactoryBase
+  {
 #undef MUELU_CONTACTTRANSFERFACTORY_SHORT
-    #include "MueLu_UseShortNames.hpp"
+#include "MueLu_UseShortNames.hpp"
 
-    typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
+    typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node>
+        MapExtractorClass;  // TODO move me to ShortNames...
 
-  public:
+   public:
     //! @name Constructors/Destructors.
     //@{
 
@@ -61,22 +64,22 @@ namespace MueLu {
 
     //@}
 
-  private:
+   private:
+    std::string varName_;         ///< name of input and output variable
+    const FactoryBase *factory_;  ///< generating factory of input variable
 
-    std::string        varName_;   ///< name of input and output variable
-    const FactoryBase* factory_;   ///< generating factory of input variable
+    Teuchos::RCP<FactoryBase> PtentFact_;  ///< tentative P Factory
+    Teuchos::RCP<FactoryBase> AFact_;      ///< A factory (needed for maps)
 
-    Teuchos::RCP<FactoryBase>   PtentFact_; ///< tentative P Factory
-    Teuchos::RCP<FactoryBase>   AFact_;     ///< A factory (needed for maps)
-
-    Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    Teuchos::RCP<const MapExtractorClass>
+        mapextractor_;  ///< user given map extractor (for finest level only)
 
 
-  }; // class ContactTransferFactory
+  };  // class ContactTransferFactory
 
-} // namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_CONTACTTRANSFERFACTORY_SHORT
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_CONTACTTRANSFERFACTORY_DECL_HPP_ */

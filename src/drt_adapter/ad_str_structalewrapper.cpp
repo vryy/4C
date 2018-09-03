@@ -20,27 +20,24 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructAleWrapper::StructAleWrapper(Teuchos::RCP<Structure> structure)
-: StructureWrapper(structure),
-  structure_(Teuchos::rcp_dynamic_cast<ADAPTER::StructureNew>(structure,true)),
-  struct_ale_model_evaluator_(Teuchos::rcpFromRef(
-                              structure_-> ModelEvaluator(INPAR::STR::model_structure)))
+    : StructureWrapper(structure),
+      structure_(Teuchos::rcp_dynamic_cast<ADAPTER::StructureNew>(structure, true)),
+      struct_ale_model_evaluator_(
+          Teuchos::rcpFromRef(structure_->ModelEvaluator(INPAR::STR::model_structure)))
 {
   // empty
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector>& ADAPTER::StructAleWrapper::
-    GetMaterialDisplacementNpPtr()
+const Teuchos::RCP<Epetra_Vector>& ADAPTER::StructAleWrapper::GetMaterialDisplacementNpPtr()
 {
   return GetStructAleModelEvaluatorPtr()->GetMaterialDisplacementNpPtr();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructAleWrapper::
-    UpdateMaterialDisplacements(Teuchos::RCP<Epetra_Vector> dispmat)
+void ADAPTER::StructAleWrapper::UpdateMaterialDisplacements(Teuchos::RCP<Epetra_Vector> dispmat)
 {
-  GetStructAleModelEvaluatorPtr()->
-      GetMaterialDisplacementNpPtr()->Update(1.0,*dispmat,0.0);
+  GetStructAleModelEvaluatorPtr()->GetMaterialDisplacementNpPtr()->Update(1.0, *dispmat, 0.0);
 }

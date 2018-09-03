@@ -27,14 +27,10 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntStationary::TimIntStationary(
-  Teuchos::RCP<DRT::Discretization>      actdis,
-  Teuchos::RCP<LINALG::Solver>           solver,
-  Teuchos::RCP<Teuchos::ParameterList>   params,
-  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-  Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
-  fsphinp_(Teuchos::null)
+SCATRA::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
+    : ScaTraTimIntImpl(actdis, solver, params, extraparams, output), fsphinp_(Teuchos::null)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -59,10 +55,8 @@ void SCATRA::TimIntStationary::Init()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // fine-scale vector
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
-    fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
-  if (turbmodel_ != INPAR::FLUID::no_model)
-    dserror("Turbulence is not stationary problem!");
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no) fsphinp_ = LINALG::CreateVector(*dofrowmap, true);
+  if (turbmodel_ != INPAR::FLUID::no_model) dserror("Turbulence is not stationary problem!");
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -78,7 +72,7 @@ void SCATRA::TimIntStationary::Init()
   PrepareKrylovProjection();
 
   // safety check
-  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
+  if (DRT::INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION") == true)
     dserror("Natural convection for stationary time integration scheme is not implemented!");
 
   return;
@@ -88,10 +82,7 @@ void SCATRA::TimIntStationary::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                   gjb 08/08 |
 *----------------------------------------------------------------------*/
-SCATRA::TimIntStationary::~TimIntStationary()
-{
-  return;
-}
+SCATRA::TimIntStationary::~TimIntStationary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -101,21 +92,22 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",SCATRA::set_time_parameter);
-  eleparams.set<bool>("using generalized-alpha time integration",false);
-  eleparams.set<bool>("using stationary formulation",true);
-  if(forcedincrementalsolver==false)
-    eleparams.set<bool>("incremental solver",incremental_);
+  eleparams.set<int>("action", SCATRA::set_time_parameter);
+  eleparams.set<bool>("using generalized-alpha time integration", false);
+  eleparams.set<bool>("using stationary formulation", true);
+  if (forcedincrementalsolver == false)
+    eleparams.set<bool>("incremental solver", incremental_);
   else
-    eleparams.set<bool>("incremental solver",true);
+    eleparams.set<bool>("incremental solver", true);
 
-  eleparams.set<double>("time-step length",dta_);
-  eleparams.set<double>("total time",time_);
-  eleparams.set<double>("time factor",1.0);
-  eleparams.set<double>("alpha_F",1.0);
+  eleparams.set<double>("time-step length", dta_);
+  eleparams.set<double>("total time", time_);
+  eleparams.set<double>("time factor", 1.0);
+  eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
 }
@@ -124,10 +116,9 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
 /*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(
-  Teuchos::ParameterList& params)
+void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
 {
-  params.set("total time",time_);
+  params.set("total time", time_);
   return;
 }
 
@@ -152,7 +143,7 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::AddNeumannToResidual()
 {
-  residual_->Update(1.0,*neumann_loads_,1.0);
+  residual_->Update(1.0, *neumann_loads_, 1.0);
   return;
 }
 
@@ -166,10 +157,10 @@ void SCATRA::TimIntStationary::AVM3Separation()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
   // AVM3 separation
-  Sep_->Multiply(false,*phinp_,*fsphinp_);
+  Sep_->Multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
-  discret_->SetState("fsphinp",fsphinp_);
+  discret_->SetState("fsphinp", fsphinp_);
 
   return;
 }
@@ -183,8 +174,8 @@ void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincr
   // call base class routine
   ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
 
-  discret_->SetState("hist",hist_);
-  discret_->SetState("phinp",phinp_);
+  discret_->SetState("hist", hist_);
+  discret_->SetState("phinp", phinp_);
 
   return;
 }
@@ -193,27 +184,28 @@ void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincr
 /*----------------------------------------------------------------------*
  |                                                            gjb 09/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+void SCATRA::TimIntStationary::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // call base class routine
-  ScaTraTimIntImpl::ReadRestart(step,input);
+  ScaTraTimIntImpl::ReadRestart(step, input);
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
-  if(input == Teuchos::null)
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  if (input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
   else
-    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_, input, step));
 
   time_ = reader->ReadDouble("time");
   step_ = reader->ReadInt("step");
 
-  if (myrank_==0)
-    std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
+  if (myrank_ == 0)
+    std::cout << "Reading ScaTra restart data (time=" << time_ << " ; step=" << step_ << ")"
+              << std::endl;
 
   // read state vectors that are needed for restart
   reader->ReadVector(phinp_, "phinp");
 
-  ReadRestartProblemSpecific(step,*reader);
+  ReadRestartProblemSpecific(step, *reader);
 
   return;
 }
@@ -229,10 +221,10 @@ void SCATRA::TimIntStationary::Update(const int num)
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
-  if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
+  if (calcflux_domain_ != INPAR::SCATRA::flux_none or
+      calcflux_boundary_ != INPAR::SCATRA::flux_none)
   {
-    if (DoOutput() or DoBoundaryFluxStatistics())
-      CalcFlux(true, num);
+    if (DoOutput() or DoBoundaryFluxStatistics()) CalcFlux(true, num);
   }
 
   return;
@@ -248,9 +240,9 @@ void SCATRA::TimIntStationary::OutputRestart() const
 
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.
-  output_->WriteVector("phin", phinp_);  // for OST and BDF2
-  output_->WriteVector("phinm", phinp_); // for BDF2
-  output_->WriteVector("phidtn", zeros_); // for OST
+  output_->WriteVector("phin", phinp_);    // for OST and BDF2
+  output_->WriteVector("phinm", phinp_);   // for BDF2
+  output_->WriteVector("phidtn", zeros_);  // for OST
 
   return;
 }

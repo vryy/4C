@@ -20,164 +20,153 @@
 
 namespace DRT
 {
-class DiscretizationInterface;
+  class DiscretizationInterface;
 
-namespace INPUT {
-class LineDefinition;
-}
+  namespace INPUT
+  {
+    class LineDefinition;
+  }
 
-namespace UTILS
-{
-void CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
-bool CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
-    std::vector<Teuchos::RCP<DRT::UTILS::Function> >* function_);
+  namespace UTILS
+  {
+    void CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    bool CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
+        std::vector<Teuchos::RCP<DRT::UTILS::Function>>* function_);
 
-/// initial level-set field for two merging bubbles
-class BubbleFunction : public DRT::UTILS::Function
-{
-public:
+    /// initial level-set field for two merging bubbles
+    class BubbleFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      BubbleFunction();
 
-  /// ctor
-  BubbleFunction();
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+    /// special implementation for a level set test function
+    class ZalesaksDiskFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      ZalesaksDiskFunction();
 
-/// special implementation for a level set test function
-class ZalesaksDiskFunction : public DRT::UTILS::Function
-{
-public:
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// ctor
-  ZalesaksDiskFunction();
+    /// special implementation for a combustion test function
+    class CircularFlame2Function : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      CircularFlame2Function();
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-/// special implementation for a combustion test function
-class CircularFlame2Function : public DRT::UTILS::Function
-{
-public:
+    /// special implementation for a combustion test function
+    class CircularFlame3Function : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      CircularFlame3Function();
 
-  /// ctor
-  CircularFlame2Function();
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+    /// special implementation for a combustion test function
+    class CircularFlame4Function : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      CircularFlame4Function();
 
-/// special implementation for a combustion test function
-class CircularFlame3Function : public DRT::UTILS::Function
-{
-public:
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// ctor
-  CircularFlame3Function();
+    /// initial level-set field for dam break with obstacle
+    class DamBreakObstacle : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      DamBreakObstacle();
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-/// special implementation for a combustion test function
-class CircularFlame4Function : public DRT::UTILS::Function
-{
-public:
+    /// special implementation two-phase flow test case
+    class CollapsingWaterColumnFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      CollapsingWaterColumnFunction();
 
-  /// ctor
-  CircularFlame4Function();
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+    /// special implementation two-phase flow test case
+    class CollapsingWaterColumnFunctionCoarse : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      CollapsingWaterColumnFunctionCoarse();
 
-/// initial level-set field for dam break with obstacle
-class DamBreakObstacle : public DRT::UTILS::Function
-{
-public:
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// ctor
-  DamBreakObstacle();
+    /// special implementation for the G-function in the ORACLES problem
+    class ORACLESGFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      ORACLESGFunction();
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-/// special implementation two-phase flow test case
-class CollapsingWaterColumnFunction : public DRT::UTILS::Function
-{
-public:
+    /// special implementation for a level set test function
+    class RotatingConeFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      RotatingConeFunction();
 
-  /// ctor
-  CollapsingWaterColumnFunction();
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+    /// special implementation for a xfem test function
+    class LevelSetCutTestFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      LevelSetCutTestFunction();
 
-/// special implementation two-phase flow test case
-class CollapsingWaterColumnFunctionCoarse : public DRT::UTILS::Function
-{
-public:
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
-  /// ctor
-  CollapsingWaterColumnFunctionCoarse();
+    /// initial level-set field for impact of drop
+    class ImpactFunction : public DRT::UTILS::Function
+    {
+     public:
+      /// ctor
+      ImpactFunction();
 
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
-
-/// special implementation for the G-function in the ORACLES problem
-class ORACLESGFunction : public DRT::UTILS::Function
-{
-public:
-
-  /// ctor
-  ORACLESGFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
-
-/// special implementation for a level set test function
-class RotatingConeFunction : public DRT::UTILS::Function
-{
-public:
-
-  /// ctor
-  RotatingConeFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
-
-/// special implementation for a xfem test function
-class LevelSetCutTestFunction : public DRT::UTILS::Function
-{
-public:
-
-  /// ctor
-  LevelSetCutTestFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
-
-/// initial level-set field for impact of drop
-class ImpactFunction : public DRT::UTILS::Function
-{
-public:
-
-  /// ctor
-  ImpactFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t);
-};
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t);
+    };
 
 
-}
-}
+  }  // namespace UTILS
+}  // namespace DRT
 
 #endif

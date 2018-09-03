@@ -22,8 +22,7 @@
 bool STR::TIMINT::ImplicitBase::DestroyNoxState()
 {
   Teuchos::RCP<NOX::Abstract::Group> solgrp = SolutionGroupPtr();
-  Teuchos::RCP<NOX::NLN::Group> nlngrp =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Group>( solgrp, true );
+  Teuchos::RCP<NOX::NLN::Group> nlngrp = Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solgrp, true);
 
   nlngrp->DestroyJacobian();
 

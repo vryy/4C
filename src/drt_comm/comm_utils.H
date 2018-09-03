@@ -34,7 +34,7 @@ namespace DRT
 {
   class Discretization;
   class Problem;
-}
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*
  |                                                          ghamm 01/12 |
@@ -48,102 +48,102 @@ namespace COMM_UTILS
   //! create a local and a global communicator for the problem
   void CreateComm(int argc, char** argv);
 
-#if(0)
+#if (0)
   //! distribute discretizations from one group to the others
   void BroadcastDiscretizations(const int bgroup);
 #endif
 
   //! distribute discretizations from one group to the others with ponzi scheme
-  void BroadcastDiscretizations(int instance=0);
+  void BroadcastDiscretizations(int instance = 0);
 
   //! distribute a discretization from one group to one other
-  void NPDuplicateDiscretization(const int sgroup,
-                                 const int rgroup,
-                                 Teuchos::RCP<NestedParGroup> group,
-                                 Teuchos::RCP<DRT::Discretization> dis,
-                                 Teuchos::RCP<Epetra_MpiComm> icomm);
+  void NPDuplicateDiscretization(const int sgroup, const int rgroup,
+      Teuchos::RCP<NestedParGroup> group, Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<Epetra_MpiComm> icomm);
 
   //! distribute a discretization from one group to one other
   //! if the groups have the same size. In this special case it is desirable
   //! that the parallel distribution is the same for all groups. Hence,
   //! a different braodcasting scheme is used
-  void NPDuplicateDiscretizationEqualGroupSize(const int sgroup,
-                                 const int rgroup,
-                                 Teuchos::RCP<NestedParGroup> group,
-                                 Teuchos::RCP<DRT::Discretization> dis,
-                                 Teuchos::RCP<Epetra_MpiComm> icomm);
+  void NPDuplicateDiscretizationEqualGroupSize(const int sgroup, const int rgroup,
+      Teuchos::RCP<NestedParGroup> group, Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<Epetra_MpiComm> icomm);
 
-  //! comparison of two vectors from parallel baci runs for debugging reason using the given tolerance for each entry
-  void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
+  //! comparison of two vectors from parallel baci runs for debugging reason using the given
+  //! tolerance for each entry
+  void CompareVectors(
+      Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
 
-  //! comparison of two sparse matrices from parallel baci runs for debugging reason using the given tolerance for each entry
-  void CompareSparseMatrices(Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
+  //! comparison of two sparse matrices from parallel baci runs for debugging reason using the given
+  //! tolerance for each entry
+  void CompareSparseMatrices(
+      Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
-  template<class datatype>
-  Teuchos::RCP<const Teuchos::Comm<datatype> > toTeuchosComm(const Epetra_Comm & comm)
+  template <class datatype>
+  Teuchos::RCP<const Teuchos::Comm<datatype>> toTeuchosComm(const Epetra_Comm& comm)
   {
-    try {
-      const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-      Teuchos::RCP<Teuchos::MpiComm<datatype> > mpicomm =  Teuchos::rcp(new Teuchos::MpiComm<datatype>(Teuchos::opaqueWrapper(mpiComm.Comm())));
-      return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<datatype> >(mpicomm);
-    }
-    catch (std::bad_cast & b)
+    try
     {
-      dserror("Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm object is unknown");
+      const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
+      Teuchos::RCP<Teuchos::MpiComm<datatype>> mpicomm =
+          Teuchos::rcp(new Teuchos::MpiComm<datatype>(Teuchos::opaqueWrapper(mpiComm.Comm())));
+      return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<datatype>>(mpicomm);
     }
-    dserror("Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should not be here!");
+    catch (std::bad_cast& b)
+    {
+      dserror(
+          "Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm "
+          "object is unknown");
+    }
+    dserror(
+        "Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should "
+        "not be here!");
     return Teuchos::null;
   }
 
 
   class NestedParGroup
   {
-  public:
-    NestedParGroup(
-      int groupId,
-      int ngroup,
-      std::map<int, int> lpidgpid,
-      Teuchos::RCP<Epetra_Comm> lcomm,
-      Teuchos::RCP<Epetra_Comm> gcomm,
-      NP_TYPE npType
-      );
+   public:
+    NestedParGroup(int groupId, int ngroup, std::map<int, int> lpidgpid,
+        Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm, NP_TYPE npType);
 
     NestedParGroup(NestedParGroup& npgroup);
 
     virtual ~NestedParGroup(){};
 
     /// return group id
-    int GroupId(){ return groupId_; }
+    int GroupId() { return groupId_; }
 
     /// return number of groups
-    int NumGroups(){ return ngroup_; }
+    int NumGroups() { return ngroup_; }
 
     /// return group size
-    int GroupSize(){ return lcomm_->NumProc(); }
+    int GroupSize() { return lcomm_->NumProc(); }
 
     /// return global processor id of local processor id
-    int GPID(int LPID){ return lpidgpid_[LPID]; }
+    int GPID(int LPID) { return lpidgpid_[LPID]; }
 
     /// return local processor id of global processor id if GPID is in this group
     int LPID(int GPID);
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> LocalComm(){ return lcomm_; }
+    Teuchos::RCP<Epetra_Comm> LocalComm() { return lcomm_; }
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> GlobalComm(){ return gcomm_; }
+    Teuchos::RCP<Epetra_Comm> GlobalComm() { return gcomm_; }
 
     /// set a sub group communicator
     void SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm);
 
     /// return sub group communicator
-    Teuchos::RCP<Epetra_Comm> SubComm(){ return subcomm_; }
+    Teuchos::RCP<Epetra_Comm> SubComm() { return subcomm_; }
 
     /// return nested parallelism type
-    NP_TYPE NpType(){ return npType_; }
+    NP_TYPE NpType() { return npType_; }
 
-  private:
+   private:
     /// group id
     int groupId_;
 
@@ -164,11 +164,10 @@ namespace COMM_UTILS
 
     /// nested parallelism type
     NP_TYPE npType_;
-
   };
 
 
-} // namespace COMM_UTILS
+}  // namespace COMM_UTILS
 
 
 

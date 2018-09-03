@@ -34,35 +34,30 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox,
-    const Epetra_Comm& comm)
+void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
 {
   // make all Yes/No integral values to Boolean
   DRT::INPUT::BoolifyValidInputParameters(p_nox);
 
   // adjust printing parameter list
-  Teuchos::ParameterList& printParams = p_nox.sublist( "Printing" );
-  printParams.set<int>( "MyPID", comm.MyPID() );
-  printParams.set<int>( "Output Precision", 5 );
-  printParams.set<int>( "Output Processor", 0 );
+  Teuchos::ParameterList& printParams = p_nox.sublist("Printing");
+  printParams.set<int>("MyPID", comm.MyPID());
+  printParams.set<int>("Output Precision", 5);
+  printParams.set<int>("Output Processor", 0);
   int outputinformationlevel = NOX::Utils::Error;  // NOX::Utils::Error==0
-  if ( printParams.get<bool>( "Error", true ) )
-    outputinformationlevel += NOX::Utils::Error;
-  if ( printParams.get<bool>( "Warning", true ) )
-    outputinformationlevel += NOX::Utils::Warning;
-  if ( printParams.get<bool>( "Outer Iteration", true ) )
+  if (printParams.get<bool>("Error", true)) outputinformationlevel += NOX::Utils::Error;
+  if (printParams.get<bool>("Warning", true)) outputinformationlevel += NOX::Utils::Warning;
+  if (printParams.get<bool>("Outer Iteration", true))
     outputinformationlevel += NOX::Utils::OuterIteration;
-  if ( printParams.get<bool>( "Inner Iteration",true ) )
+  if (printParams.get<bool>("Inner Iteration", true))
     outputinformationlevel += NOX::Utils::InnerIteration;
-  if ( printParams.get<bool>( "Parameters", false ) )
-    outputinformationlevel += NOX::Utils::Parameters;
-  if ( printParams.get<bool>( "Details", false ) )
-    outputinformationlevel += NOX::Utils::Details;
-  if ( printParams.get<bool>( "Outer Iteration StatusTest", true ) )
+  if (printParams.get<bool>("Parameters", false)) outputinformationlevel += NOX::Utils::Parameters;
+  if (printParams.get<bool>("Details", false)) outputinformationlevel += NOX::Utils::Details;
+  if (printParams.get<bool>("Outer Iteration StatusTest", true))
     outputinformationlevel += NOX::Utils::OuterIterationStatusTest;
-  if ( printParams.get<bool>( "Linear Solver Details", false ) )
+  if (printParams.get<bool>("Linear Solver Details", false))
     outputinformationlevel += NOX::Utils::LinearSolverDetails;
-  if ( printParams.get<bool>( "Test Details", false ) )
+  if (printParams.get<bool>("Test Details", false))
     outputinformationlevel += NOX::Utils::TestDetails;
   /*  // for LOCA
   if (printParams.get<bool>("Stepper Iteration"))
@@ -72,8 +67,7 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox,
   if (printParams.get<bool>("Stepper Parameters"))
     outputinformationlevel += NOX::Utils::StepperParameters;
   */
-  if ( printParams.get<bool>( "Debug", false) )
-    outputinformationlevel += NOX::Utils::Debug;
+  if (printParams.get<bool>("Debug", false)) outputinformationlevel += NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
 
   return;
@@ -81,25 +75,22 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(
-    const LINALG::SparseOperator& op)
+NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(const LINALG::SparseOperator& op)
 {
   const Epetra_Operator* testOperator = 0;
 
   // Is it a LINALG_BlockSparseMatrix
-  testOperator = dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&op);
-  if (testOperator != 0)
-    return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
+  testOperator =
+      dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&op);
+  if (testOperator != 0) return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
 
   // Is it a LINALG_SparseMatrix?
   testOperator = dynamic_cast<const LINALG::SparseMatrix*>(&op);
-  if (testOperator != 0)
-    return NOX::NLN::LinSystem::LinalgSparseMatrix;
+  if (testOperator != 0) return NOX::NLN::LinSystem::LinalgSparseMatrix;
 
   // Is it a LINALG_SparseMatrixBase?
   testOperator = dynamic_cast<const LINALG::SparseMatrixBase*>(&op);
-  if (testOperator != 0)
-    return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
+  if (testOperator != 0) return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
 
   // Otherwise it must be a LINALG_SparseOperator
   return NOX::NLN::LinSystem::LinalgSparseOperator;
@@ -111,57 +102,60 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
     const NOX::NLN::LinearSystem::SolverMap& linsolvers)
 {
   const unsigned int num_ls = linsolvers.size();
-  const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >::const_iterator
-      ci_end = linsolvers.end();
+  const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>::const_iterator ci_end =
+      linsolvers.end();
 
-  switch ( num_ls )
+  switch (num_ls)
   {
     case 1:
     {
       // --- Pure structural case (+ spring dashpot)
-      if ( linsolvers.find( NOX::NLN::sol_structure ) != ci_end)
+      if (linsolvers.find(NOX::NLN::sol_structure) != ci_end)
       {
         return NOX::NLN::LinSystem::linear_system_structure;
       }
-      else if ( linsolvers.find( NOX::NLN::sol_scatra ) != ci_end)
+      else if (linsolvers.find(NOX::NLN::sol_scatra) != ci_end)
       {
         return NOX::NLN::LinSystem::linear_system_scatra;
       }
       // --- ToDo has to be extended
 
-      dserror("There is no capable linear system type for the given linear "
+      dserror(
+          "There is no capable linear system type for the given linear "
           "solver combination! ( 1 linear solver )");
       exit(EXIT_FAILURE);
     }
     case 2:
     {
       // --- Structure/Contact case (+ spring dashpot)
-      if ( linsolvers.find( NOX::NLN::sol_structure ) != ci_end and
-           linsolvers.find( NOX::NLN::sol_contact )   != ci_end )
+      if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
+          linsolvers.find(NOX::NLN::sol_contact) != ci_end)
       {
         return NOX::NLN::LinSystem::linear_system_structure_contact;
       }
       // --- Structure/CardioVascular0D case (+ spring dashpot)
-      else if ( linsolvers.find( NOX::NLN::sol_structure )        != ci_end and
-                linsolvers.find( NOX::NLN::sol_cardiovascular0d ) != ci_end )
+      else if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
+               linsolvers.find(NOX::NLN::sol_cardiovascular0d) != ci_end)
       {
         return NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d;
       }
       // --- Structure/Lagrange|Penalty Constaint case (+ spring dashpot)
-      else if ( linsolvers.find( NOX::NLN::sol_structure )          != ci_end and
-                linsolvers.find( NOX::NLN::sol_lag_pen_constraint ) != ci_end)
+      else if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
+               linsolvers.find(NOX::NLN::sol_lag_pen_constraint) != ci_end)
       {
         return NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint;
       }
       // --- ToDo has to be extended
 
-      dserror("There is no capable linear system type for the given linear "
+      dserror(
+          "There is no capable linear system type for the given linear "
           "solver combination ( 2 linear solvers )!");
       exit(EXIT_FAILURE);
     }
     default:
     {
-      dserror("There is no capable linear system type for the given linear "
+      dserror(
+          "There is no capable linear system type for the given linear "
           "solver combination!");
       exit(EXIT_FAILURE);
     }
@@ -172,33 +166,30 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::AUX::RootMeanSquareNorm(
-    const double& atol,
-    const double& rtol,
-    Teuchos::RCP<const Epetra_Vector> xnew,
-    Teuchos::RCP<const Epetra_Vector> xincr,
+double NOX::NLN::AUX::RootMeanSquareNorm(const double& atol, const double& rtol,
+    Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
     const bool& disable_implicit_weighting)
 {
   double rval = 0.0;
 
   // calculate the old iterate (k-1)
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*xnew));
-  v->Update(-1.0,*xincr,1.0);
+  v->Update(-1.0, *xincr, 1.0);
 
   // new auxiliary vector
-  Teuchos::RCP<Epetra_Vector> u = Teuchos::rcp(new Epetra_Vector(xnew->Map(),false));
+  Teuchos::RCP<Epetra_Vector> u = Teuchos::rcp(new Epetra_Vector(xnew->Map(), false));
 
   // create the weighting factor u = RTOL |x^(k-1)| + ATOL
   u->PutScalar(1.0);
-  u->Update(rtol,*v,atol);
+  u->Update(rtol, *v, atol);
 
   // v = xincr/u (elementwise)
-  v->ReciprocalMultiply(1.0,*u,*xincr,0);
+  v->ReciprocalMultiply(1.0, *u, *xincr, 0);
 
   // Turn off implicit scaling of norm if the vector supports it
   // ToDo Check if this makes any sense for pure Epetra_Vectors
   Teuchos::RCP<NOX::Abstract::ImplicitWeighting> iw_v;
-  iw_v = Teuchos::rcp_dynamic_cast<NOX::Abstract::ImplicitWeighting>(v,false);
+  iw_v = Teuchos::rcp_dynamic_cast<NOX::Abstract::ImplicitWeighting>(v, false);
   bool saved_status = false;
   if (Teuchos::nonnull(iw_v) and disable_implicit_weighting)
   {
@@ -211,18 +202,15 @@ double NOX::NLN::AUX::RootMeanSquareNorm(
   rval /= std::sqrt(static_cast<double>(v->GlobalLength()));
 
   // Set the implicit scaling back to original value
-  if (nonnull(iw_v) && disable_implicit_weighting)
-    iw_v->setImplicitWeighting(saved_status);
+  if (nonnull(iw_v) && disable_implicit_weighting) iw_v->setImplicitWeighting(saved_status);
 
   return rval;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::AUX::GetNormWRMSClassVariable(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qType,
-    const std::string& classVariableName)
+double NOX::NLN::AUX::GetNormWRMSClassVariable(const NOX::StatusTest::Generic& test,
+    const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
   const NOX::NLN::StatusTest::Combo* comboTest =
@@ -232,11 +220,10 @@ double NOX::NLN::AUX::GetNormWRMSClassVariable(
   if (comboTest == 0)
   {
     const NOX::NLN::StatusTest::NormWRMS* normWRMSTest =
-          dynamic_cast<const NOX::NLN::StatusTest::NormWRMS*>(&test);
+        dynamic_cast<const NOX::NLN::StatusTest::NormWRMS*>(&test);
 
     // no normF StatusTest...
-    if (normWRMSTest==0)
-      return -1.0;
+    if (normWRMSTest == 0) return -1.0;
     // yeah we found one...
     else
     {
@@ -250,15 +237,13 @@ double NOX::NLN::AUX::GetNormWRMSClassVariable(
   // if the nox_nln_statustest_combo Test cast was successful
   else
   {
-    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
-        comboTest->GetTestVector();
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
     double ret = -1.0;
-    for (std::size_t i=0;i<tests.size();++i)
+    for (std::size_t i = 0; i < tests.size(); ++i)
     {
       // recursive function call
-      ret = GetNormWRMSClassVariable(*(tests[i]),qType,classVariableName);
-      if (ret!=-1.0)
-        return ret;
+      ret = GetNormWRMSClassVariable(*(tests[i]), qType, classVariableName);
+      if (ret != -1.0) return ret;
     }
   }
 
@@ -268,10 +253,8 @@ double NOX::NLN::AUX::GetNormWRMSClassVariable(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::AUX::GetNormFClassVariable(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qType,
-    const std::string& classVariableName)
+double NOX::NLN::AUX::GetNormFClassVariable(const NOX::StatusTest::Generic& test,
+    const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
   const NOX::NLN::StatusTest::Combo* comboTest =
@@ -281,11 +264,10 @@ double NOX::NLN::AUX::GetNormFClassVariable(
   if (comboTest == 0)
   {
     const NOX::NLN::StatusTest::NormF* normFTest =
-          dynamic_cast<const NOX::NLN::StatusTest::NormF*>(&test);
+        dynamic_cast<const NOX::NLN::StatusTest::NormF*>(&test);
 
     // no normF StatusTest...
-    if (normFTest==0)
-      return -1.0;
+    if (normFTest == 0) return -1.0;
     // yeah we found one...
     else
     {
@@ -303,15 +285,13 @@ double NOX::NLN::AUX::GetNormFClassVariable(
   // if the nox_nln_statustest_combo Test cast was successful
   else
   {
-    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
-        comboTest->GetTestVector();
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
     double ret = -1.0;
-    for (std::size_t i=0;i<tests.size();++i)
+    for (std::size_t i = 0; i < tests.size(); ++i)
     {
       // recursive function call
-      ret = GetNormFClassVariable(*(tests[i]),qType,classVariableName);
-      if (ret!=-1.0)
-        return ret;
+      ret = GetNormFClassVariable(*(tests[i]), qType, classVariableName);
+      if (ret != -1.0) return ret;
     }
   }
 
@@ -322,8 +302,8 @@ double NOX::NLN::AUX::GetNormFClassVariable(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-bool NOX::NLN::AUX::IsQuantity(const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype)
+bool NOX::NLN::AUX::IsQuantity(
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
   const NOX::NLN::StatusTest::Combo* comboTest =
@@ -332,12 +312,10 @@ bool NOX::NLN::AUX::IsQuantity(const NOX::StatusTest::Generic& test,
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == 0)
   {
-    const T* desiredTest =
-        dynamic_cast<const T*>(&test);
+    const T* desiredTest = dynamic_cast<const T*>(&test);
 
     // not the desired status test...
-    if (desiredTest==0)
-      return false;
+    if (desiredTest == 0) return false;
     // yeah we found one...
     else
     {
@@ -348,14 +326,12 @@ bool NOX::NLN::AUX::IsQuantity(const NOX::StatusTest::Generic& test,
   // if the nox_nln_statustest_combo Test cast was successful
   else
   {
-    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
-        comboTest->GetTestVector();
-    for (std::size_t i=0;i<tests.size();++i)
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
+    for (std::size_t i = 0; i < tests.size(); ++i)
     {
       // recursive function call
-      bool isfound = IsQuantity<T>(*(tests[i]),qtype);
-      if (isfound)
-        return isfound;
+      bool isfound = IsQuantity<T>(*(tests[i]), qtype);
+      if (isfound) return isfound;
     }
   }
 
@@ -366,8 +342,8 @@ bool NOX::NLN::AUX::IsQuantity(const NOX::StatusTest::Generic& test,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-int NOX::NLN::AUX::GetNormType(const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype)
+int NOX::NLN::AUX::GetNormType(
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
   const NOX::NLN::StatusTest::Combo* comboTest =
@@ -376,12 +352,10 @@ int NOX::NLN::AUX::GetNormType(const NOX::StatusTest::Generic& test,
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == 0)
   {
-    const T* desiredTest =
-        dynamic_cast<const T*>(&test);
+    const T* desiredTest = dynamic_cast<const T*>(&test);
 
     // not the desired status test...
-    if (desiredTest==0)
-      return -100;
+    if (desiredTest == 0) return -100;
     // yeah we found one...
     else
     {
@@ -392,14 +366,12 @@ int NOX::NLN::AUX::GetNormType(const NOX::StatusTest::Generic& test,
   // if the nox_nln_statustest_combo Test cast was successful
   else
   {
-    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
-        comboTest->GetTestVector();
-    for (std::size_t i=0;i<tests.size();++i)
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
+    for (std::size_t i = 0; i < tests.size(); ++i)
     {
       // recursive function call
-      int ret = GetNormType<T>(*(tests[i]),qtype);
-      if (ret!=-100)
-        return ret;
+      int ret = GetNormType<T>(*(tests[i]), qtype);
+      if (ret != -100) return ret;
     }
   }
 
@@ -410,37 +382,33 @@ int NOX::NLN::AUX::GetNormType(const NOX::StatusTest::Generic& test,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(
-    NOX::StatusTest::Generic& otest )
+NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(NOX::StatusTest::Generic& otest)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
   const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>( &otest );
+      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&otest);
 
   // if it is no combo test, we just have to check for the desired type
-  if ( not comboTest )
+  if (not comboTest)
   {
-    return dynamic_cast<T*>( &otest );
+    return dynamic_cast<T*>(&otest);
   }
   // if the nox_nln_statustest_combo Test cast was successful
   else
   {
-    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
-        comboTest->GetTestVector();
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
 
     NOX::StatusTest::Generic* gdesired_test = NULL;
-    for ( const auto& test : tests )
+    for (const auto& test : tests)
     {
       // recursive function call
-      NOX::StatusTest::Generic* desired_test = GetOuterStatusTest<T>( *test );
+      NOX::StatusTest::Generic* desired_test = GetOuterStatusTest<T>(*test);
 
       // the test is not of the specified type, go to the next one
-      if ( not desired_test )
-        continue;
+      if (not desired_test) continue;
 
       // first found test
-      if ( not gdesired_test )
-        gdesired_test = desired_test;
+      if (not gdesired_test) gdesired_test = desired_test;
       // we've found already one test of the same type
       else
       {
@@ -448,7 +416,7 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(
 
         // If there are more tests of the same type, we return the
         // test which is possible unconverged (conservative choice, AND-combination).
-        gdesired_test = ( gstatus==NOX::StatusTest::Converged ? desired_test : gdesired_test );
+        gdesired_test = (gstatus == NOX::StatusTest::Converged ? desired_test : gdesired_test);
       }
     }
     return gdesired_test;
@@ -470,12 +438,10 @@ int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == 0)
   {
-    const T* desiredTest =
-        dynamic_cast<const T*>(&test);
+    const T* desiredTest = dynamic_cast<const T*>(&test);
 
     // not the desired status test...
-    if (desiredTest==0)
-      return -100;
+    if (desiredTest == 0) return -100;
     // yeah we found one...
     else
     {
@@ -486,30 +452,26 @@ int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
   // if the nox_nln_statustest_combo Test cast was successful
   else
   {
-    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
-        comboTest->GetTestVector();
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
     int gRet = -100;
-    for (std::size_t i=0;i<tests.size();++i)
+    for (std::size_t i = 0; i < tests.size(); ++i)
     {
       // recursive function call
       int lRet = GetOuterStatus<T>(*(tests[i]));
 
       // the test is not of the specified type, go to the next one
-      if (lRet==-100)
-        continue;
+      if (lRet == -100) continue;
 
       // first found test
-      if (gRet == -100)
-        gRet = lRet;
+      if (gRet == -100) gRet = lRet;
       // we've found already one test of the same type
       else
       {
-        NOX::StatusTest::StatusType gstatus =
-            static_cast<enum NOX::StatusTest::StatusType>(gRet);
+        NOX::StatusTest::StatusType gstatus = static_cast<enum NOX::StatusTest::StatusType>(gRet);
 
         // If there are more tests of the same type, we return the
         // status of the possible unconverged test (conservative choice).
-        gRet = ( gstatus==NOX::StatusTest::Converged ? lRet : gRet );
+        gRet = (gstatus == NOX::StatusTest::Converged ? lRet : gRet);
       }
     }
     return gRet;
@@ -522,10 +484,10 @@ int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
-      const enum NOX::NLN::StatusTest::QuantityType& qtype)
+    const enum NOX::NLN::StatusTest::QuantityType& qtype)
 {
   enum NOX::NLN::SolutionType soltype = NOX::NLN::sol_unknown;
-  switch(qtype)
+  switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_eas:
@@ -557,20 +519,17 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(
-    const std::string& name)
+enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(const std::string& name)
 {
-  enum NOX::Abstract::Vector::NormType norm_type =
-      NOX::Abstract::Vector::TwoNorm;
-  if (boost::iequals(name,"Two Norm"))
+  enum NOX::Abstract::Vector::NormType norm_type = NOX::Abstract::Vector::TwoNorm;
+  if (boost::iequals(name, "Two Norm"))
     norm_type = NOX::Abstract::Vector::TwoNorm;
-  else if (boost::iequals(name,"One Norm"))
+  else if (boost::iequals(name, "One Norm"))
     norm_type = NOX::Abstract::Vector::OneNorm;
-  else if (boost::iequals(name,"Max Norm"))
+  else if (boost::iequals(name, "Max Norm"))
     norm_type = NOX::Abstract::Vector::MaxNorm;
   else
-    dserror("Unknown conversion from STL_STRING to NormType enum for %s.",
-        name.c_str());
+    dserror("Unknown conversion from STL_STRING to NormType enum for %s.", name.c_str());
 
   return norm_type;
 }
@@ -578,59 +537,51 @@ enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::AUX::AddToPrePostOpVector(
-    Teuchos::ParameterList& p_nox_opt,
-    const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr )
+    Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr)
 {
-
   // if there is already a pre/post operator, we will convert the pre/post op
   // to a pre/post op vector and add the previous and new pre/post op
-  if ( p_nox_opt.isType< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
-          "User Defined Pre/Post Operator") )
+  if (p_nox_opt.isType<Teuchos::RCP<NOX::Abstract::PrePostOperator>>(
+          "User Defined Pre/Post Operator"))
   {
     Teuchos::RCP<NOX::Abstract::PrePostOperator> user_ppo =
-        p_nox_opt.get< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+        p_nox_opt.get<Teuchos::RCP<NOX::Abstract::PrePostOperator>>(
             "User Defined Pre/Post Operator");
 
     Teuchos::RCP<NOX::PrePostOperatorVector> user_ppo_vec =
-        Teuchos::rcp_dynamic_cast<NOX::PrePostOperatorVector>( user_ppo, false );
+        Teuchos::rcp_dynamic_cast<NOX::PrePostOperatorVector>(user_ppo, false);
 
-    if ( user_ppo_vec.is_null() )
+    if (user_ppo_vec.is_null())
     {
-      user_ppo_vec = Teuchos::rcp( new NOX::PrePostOperatorVector() );
-      user_ppo_vec->pushBack( user_ppo );
+      user_ppo_vec = Teuchos::rcp(new NOX::PrePostOperatorVector());
+      user_ppo_vec->pushBack(user_ppo);
     }
 
-    user_ppo_vec->pushBack( ppo_ptr );
+    user_ppo_vec->pushBack(ppo_ptr);
 
-    p_nox_opt.set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
-        "User Defined Pre/Post Operator", user_ppo_vec );
+    p_nox_opt.set<Teuchos::RCP<NOX::Abstract::PrePostOperator>>(
+        "User Defined Pre/Post Operator", user_ppo_vec);
   }
   // if there is no pre/post operator, we will just add the new one
   else
-    p_nox_opt.set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+    p_nox_opt.set<Teuchos::RCP<NOX::Abstract::PrePostOperator>>(
         "User Defined Pre/Post Operator", ppo_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormF>(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype);
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormUpdate>(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype);
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormWRMS>(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype);
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 template int NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormF>(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype);
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 template int NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormUpdate>(
-    const NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qtype);
+    const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 template NOX::StatusTest::Generic*
-NOX::NLN::AUX::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>(
-    NOX::StatusTest::Generic& otest );
+NOX::NLN::AUX::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>(NOX::StatusTest::Generic& otest);
 template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormF>(
     const NOX::StatusTest::Generic& test);
 template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormUpdate>(

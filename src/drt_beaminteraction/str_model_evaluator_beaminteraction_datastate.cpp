@@ -28,16 +28,16 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState() :
-    isinit_(false),
-    issetup_(false),
-    myrank_(0),
-    dis_(Teuchos::null),
-    disnp_(Teuchos::null),
-    discolnp_(Teuchos::null),
-    forcen_(Teuchos::null),
-    forcenp_(Teuchos::null),
-    stiff_(Teuchos::null)
+STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
+    : isinit_(false),
+      issetup_(false),
+      myrank_(0),
+      dis_(Teuchos::null),
+      disnp_(Teuchos::null),
+      discolnp_(Teuchos::null),
+      forcen_(Teuchos::null),
+      forcenp_(Teuchos::null),
+      stiff_(Teuchos::null)
 {
   // empty constructor
 }
@@ -57,13 +57,12 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Init()
 
   // end of initialization
   isinit_ = true;
-
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
-    Teuchos::RCP<const DRT::Discretization> const & ia_discret)
+    Teuchos::RCP<const DRT::Discretization> const& ia_discret)
 {
   // safety check
   CheckInit();
@@ -71,17 +70,17 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
   myrank_ = ia_discret->Comm().MyPID();
 
   // displacements
-  dis_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->DofRowMap(), true));
+  dis_ =
+      Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->DofRowMap(), true));
   disnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
-  discolnp_ =  Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
+  discolnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
 
   // force
-  forcen_ = Teuchos::rcp(new Epetra_FEVector( *ia_discret->DofRowMap() ) );
-  forcenp_ = Teuchos::rcp(new Epetra_FEVector( *ia_discret->DofRowMap() ) );
+  forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->DofRowMap()));
+  forcenp_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->DofRowMap()));
 
-  stiff_ = Teuchos::rcp(new
-      LINALG::SparseMatrix(*ia_discret->DofRowMap(), 81, true, true,LINALG::SparseMatrix::FE_MATRIX));
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *ia_discret->DofRowMap(), 81, true, true, LINALG::SparseMatrix::FE_MATRIX));
 
   issetup_ = true;
-
 }

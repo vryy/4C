@@ -21,7 +21,7 @@
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "../linalg/linalg_mapextractor.H"
 
-//Needed for input parameter
+// Needed for input parameter
 #include "../drt_inpar/inpar_twophase.H"
 
 /*!
@@ -30,7 +30,6 @@
 */
 namespace TWOPHASEFLOW
 {
-
   /// Two phase flow base algorithm
   /*!
 
@@ -44,14 +43,12 @@ namespace TWOPHASEFLOW
    */
   class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    explicit Algorithm(
-        const Epetra_Comm& comm,             ///< communicator
-        const Teuchos::ParameterList& prbdyn,///< problem-specific parameter list
-        const Teuchos::ParameterList& solverparams ///<solver-specific parameter list
-        );
+    explicit Algorithm(const Epetra_Comm& comm,     ///< communicator
+        const Teuchos::ParameterList& prbdyn,       ///< problem-specific parameter list
+        const Teuchos::ParameterList& solverparams  ///< solver-specific parameter list
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
@@ -77,12 +74,12 @@ namespace TWOPHASEFLOW
     \return void
     \date 09/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
     );
 
     /*! \brief Setup all class internal objects and members
@@ -120,9 +117,7 @@ namespace TWOPHASEFLOW
     /// Test the results aquired
     void TestResults();
 
-  protected:
-
-
+   protected:
     /// do (partitioned) outer iteration loop
     void OuterLoop();
     /// set values from ScaTra and solve the fluid field
@@ -146,7 +141,7 @@ namespace TWOPHASEFLOW
 
     /// write output
     void Output();
-    ///Write Output for initial fields
+    /// Write Output for initial fields
     void OutputInitialField();
 
     /// get convective velocity at correct time
@@ -155,29 +150,29 @@ namespace TWOPHASEFLOW
     void SetScaTraValuesInFluid();
 
     /// Get smoothed LevelSet gradient
-    Teuchos::RCP<Epetra_MultiVector> GetSmoothedLevelSetGradient(const Teuchos::RCP<const Epetra_Vector> & phinp);
+    Teuchos::RCP<Epetra_MultiVector> GetSmoothedLevelSetGradient(
+        const Teuchos::RCP<const Epetra_Vector>& phinp);
 
-  private:
-
+   private:
     /// time-step length, maximum time and maximum number of steps
-    double  dt_;
-    double  maxtime_;
-    int     stepmax_;
+    double dt_;
+    double maxtime_;
+    int stepmax_;
 
     /// (preliminary) maximum number of iterations and tolerance for outer iteration
-    int     itmax_;
-    double  ittol_;
+    int itmax_;
+    double ittol_;
 
-    //flag for output specific options
+    // flag for output specific options
 
-    ///Masscenter
-    bool    write_center_of_mass_;
+    /// Masscenter
+    bool write_center_of_mass_;
 
     /// flag for turbulent inflow
-    bool    turbinflow_;
+    bool turbinflow_;
 
     /// number of inflow steps
-    int     numinflowsteps_;
+    int numinflowsteps_;
 
 
     /// Outer-loop convergence variables:
@@ -191,11 +186,10 @@ namespace TWOPHASEFLOW
     Teuchos::ParameterList prbdyn_;
 
     /// Two Phase Specific parameter
-    INPAR::TWOPHASE::SmoothGradPhi        smoothedgradphitype_;
-    bool                                  scalesmoothedgradients_;
-
+    INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype_;
+    bool scalesmoothedgradients_;
   };
 
-} // namespace TWOPHASEFLOW
+}  // namespace TWOPHASEFLOW
 
-#endif // TWO_PHASE_ALGORITHM_H
+#endif  // TWO_PHASE_ALGORITHM_H

@@ -31,20 +31,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for neo-Hooke
     class NeoHooke : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      NeoHooke(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      NeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~NeoHooke() { ; }
@@ -68,27 +63,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class NeoHookeType : public DRT::ParObjectType
-{
-public:
+  class NeoHookeType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "NeoHookeType"; }
 
-  std::string Name() const { return "NeoHookeType"; }
+    static NeoHookeType& Instance() { return instance_; };
 
-  static NeoHookeType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static NeoHookeType instance_;
-};
+   private:
+    static NeoHookeType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Neo-Hookean Material
   class NeoHooke : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     NeoHooke();
 
@@ -139,7 +131,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_neohooke; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new NeoHooke( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new NeoHooke(*this)); }
 
     /// Young's modulus
     double Youngs() const { return params_->youngs_; }
@@ -151,7 +143,7 @@ private:
     virtual double Density() const { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
+    double ShearMod() const { return 0.5 * params_->youngs_ / (1.0 + params_->poissonratio_); }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -161,29 +153,22 @@ private:
     //! @name Evaluation methods
 
     /// evaluate material law
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-                  Epetra_SerialDenseMatrix* cmat_e,
-                  Epetra_SerialDenseVector* stress_e);
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e, Epetra_SerialDenseMatrix* cmat_e,
+        Epetra_SerialDenseVector* stress_e);
 
     /// evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                          LINALG::Matrix<6,6>& cmat,
-                          LINALG::Matrix<6,1>& stress);
+    virtual void Evaluate(const LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<6, 6>& cmat,
+        LINALG::Matrix<6, 1>& stress);
 
     //@}
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::NeoHooke* params_;
 
     void InverseTensor(
-                  const Epetra_SerialDenseMatrix& M,
-                  Epetra_SerialDenseMatrix& Minv,
-                  const double I3);
-
-
+        const Epetra_SerialDenseMatrix& M, Epetra_SerialDenseMatrix& Minv, const double I3);
   };
-}
+}  // namespace MAT
 
 #endif /*NEOHOOKE_H_*/

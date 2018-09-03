@@ -24,126 +24,118 @@
 
 namespace DRT
 {
-namespace INPUT
-{
+  namespace INPUT
+  {
+    /*----------------------------------------------------------------------*/
+    /*!
+      \brief helper class to read all nodes shared by many discretizations
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief helper class to read all nodes shared by many discretizations
+      The interface class to the reading subsystem.
+      \author u.kue
+      \date 05/07
+     */
+    /*----------------------------------------------------------------------*/
+    class NodeReader
+    {
+     public:
+      /// construct a reader that reads a given section
+      NodeReader(const DatFileReader& reader, std::string sectionname);
 
-  The interface class to the reading subsystem.
-  \author u.kue
-  \date 05/07
- */
-/*----------------------------------------------------------------------*/
-class NodeReader
-{
-public:
+      /// add an element reader for each discretization
+      /*!
+        Each discretization needs its own ElementReader. These readers
+        have to be registered at the NodeReader.
 
-  /// construct a reader that reads a given section
-  NodeReader(const DatFileReader& reader, std::string sectionname);
+        \param er (i) a reader of one discretization that uses (a fraction of) our nodes
+       */
+      void AddElementReader(Teuchos::RCP<ElementReader> er) { ereader_.push_back(er); }
 
-  /// add an element reader for each discretization
-  /*!
-    Each discretization needs its own ElementReader. These readers
-    have to be registered at the NodeReader.
+      /*!
+       * \brief Adds the selected element/domain/file reader to this nodereader
+       *
+       * \param dis            [in] This discretization will be passed on
+       * \param reader         [in] This reader will be passed on
+       * \param sectionname    [in] This will be passed on element/domain readers only (not used for
+       * file reader) \param elementtypes   [in] This set of types will be passed on \param
+       * geometrysource [in] selects which reader will be created \param geofilepath    [in] path to
+       * the file for the file reader (not used for the others)
+       */
+      void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
+          const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
+          const std::set<std::string>& elementtypes, const INPAR::GeometryType geometrysource,
+          const std::string* geofilepath);
 
-    \param er (i) a reader of one discretization that uses (a fraction of) our nodes
-   */
-  void AddElementReader(Teuchos::RCP<ElementReader> er) { ereader_.push_back(er); }
+      /*!
+       * \brief Adds the selected element/domain/file reader to this nodereader
+       *
+       * This is a version without specific elementtypes. It just calls the full
+       * version with a dummy set.
+       *
+       * \param dis            [in] This discretization will be passed on
+       * \param reader         [in] This reader will be passed on
+       * \param sectionname    [in] This will be passed on element/domain readers only (not used for
+       * file reader) \param geometrysource [in] selects which reader will be created \param
+       * geofilepath    [in] path to the file for the file reader (not used for the others)
+       */
+      void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
+          const DRT::INPUT::DatFileReader& reader, const std::string& sectionname,
+          const INPAR::GeometryType geometrysource, const std::string* geofilepath);
 
-  /*!
-   * \brief Adds the selected element/domain/file reader to this nodereader
-   *
-   * \param dis            [in] This discretization will be passed on
-   * \param reader         [in] This reader will be passed on
-   * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
-   * \param elementtypes   [in] This set of types will be passed on
-   * \param geometrysource [in] selects which reader will be created
-   * \param geofilepath    [in] path to the file for the file reader (not used for the others)
-   */
-  void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
-      const DRT::INPUT::DatFileReader& reader,
-      const std::string&               sectionname,
-      const std::set<std::string>&     elementtypes,
-      const INPAR::GeometryType        geometrysource,
-      const std::string*               geofilepath);
+      /*!
+       * \brief Adds a particle reader to this nodereader
+       *
+       * This is a version specific for particles
+       *
+       * \param dis            [in] This discretization will be passed on
+       * \param reader         [in] This reader will be passed on
+       * \param sectionname    [in] This will be passed on element/domain readers only (not used for
+       * file reader)
+       */
+      void AddParticleReader(Teuchos::RCP<Discretization> dis,
+          const DRT::INPUT::DatFileReader& reader, const std::string& sectionname);
 
-  /*!
-   * \brief Adds the selected element/domain/file reader to this nodereader
-   *
-   * This is a version without specific elementtypes. It just calls the full
-   * version with a dummy set.
-   *
-   * \param dis            [in] This discretization will be passed on
-   * \param reader         [in] This reader will be passed on
-   * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
-   * \param geometrysource [in] selects which reader will be created
-   * \param geofilepath    [in] path to the file for the file reader (not used for the others)
-   */
-  void AddAdvancedReader(Teuchos::RCP<Discretization> dis,
-      const DRT::INPUT::DatFileReader& reader,
-      const std::string&               sectionname,
-      const INPAR::GeometryType        geometrysource,
-      const std::string*               geofilepath);
+      /// do the actual reading
+      /*!
+        This method contains the whole machinery. The reading consists of
+        three steps:
 
-  /*!
-   * \brief Adds a particle reader to this nodereader
-   *
-   * This is a version specific for particles
-   *
-   * \param dis            [in] This discretization will be passed on
-   * \param reader         [in] This reader will be passed on
-   * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
-   */
-  void AddParticleReader(Teuchos::RCP<Discretization> dis,
-      const DRT::INPUT::DatFileReader& reader,
-      const std::string&               sectionname
-      );
+        - Reading and distributing elements using each registered
+          ElementReader. This includes creating the connectivity graph,
+          partitioning, building the node row and column maps.
 
-  /// do the actual reading
-  /*!
-    This method contains the whole machinery. The reading consists of
-    three steps:
+        - Reading and distributing all nodes. Each node gets assigned to
+          its discretization.
 
-    - Reading and distributing elements using each registered
-      ElementReader. This includes creating the connectivity graph,
-      partitioning, building the node row and column maps.
+        - Finalizing the discretizations.
 
-    - Reading and distributing all nodes. Each node gets assigned to
-      its discretization.
+        Actually most of the work gets done by the ElementReader. The
+        reading of both elements and nodes happens in blocks on processor
+        0. After each block read the discretizations are redistributed.
 
-    - Finalizing the discretizations.
+       */
+      void Read();
 
-    Actually most of the work gets done by the ElementReader. The
-    reading of both elements and nodes happens in blocks on processor
-    0. After each block read the discretizations are redistributed.
+     private:
+      /// find the discretization that contains the given node
+      std::vector<Teuchos::RCP<DRT::Discretization>> FindDisNode(int nodeid);
 
-   */
-  void Read();
+      /// the main dat file reader
+      const DatFileReader& reader_;
 
-private:
+      /// my comm
+      Teuchos::RCP<Epetra_Comm> comm_;
 
-  /// find the discretization that contains the given node
-  std::vector<Teuchos::RCP<DRT::Discretization> > FindDisNode(int nodeid);
+      /// my section to read
+      std::string sectionname_;
 
-  /// the main dat file reader
-  const DatFileReader& reader_;
+      /// my element readers
+      std::vector<Teuchos::RCP<ElementReader>> ereader_;
 
-  /// my comm
-  Teuchos::RCP<Epetra_Comm> comm_;
+      /// my domain readers
+      std::vector<Teuchos::RCP<DomainReader>> dreader_;
+    };
 
-  /// my section to read
-  std::string sectionname_;
-
-  /// my element readers
-  std::vector<Teuchos::RCP<ElementReader> > ereader_;
-
-  /// my domain readers
-  std::vector<Teuchos::RCP<DomainReader> > dreader_;
-};
-
-}
-}
+  }  // namespace INPUT
+}  // namespace DRT
 
 #endif

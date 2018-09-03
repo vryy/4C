@@ -24,16 +24,16 @@ namespace INPAR
     /// (this enum represents the input file parameter WEAR)
     enum WearLaw
     {
-      wear_none,     ///< no wear
-      wear_archard   ///< Archard wear law
+      wear_none,    ///< no wear
+      wear_archard  ///< Archard wear law
     };
 
     /// Definition of contact wear surface
     /// (this enum represents the input file parameter WEAR_SIDE)
     enum WearSide
     {
-      wear_slave,     ///< wear on slave side
-      wear_both      ///< slave and master wear
+      wear_slave,  ///< wear on slave side
+      wear_both    ///< slave and master wear
     };
 
     /// Definition of contact wear algorithm
@@ -48,8 +48,8 @@ namespace INPAR
     /// (this enum represents the input file parameter WEARTIMINT)
     enum WearTimInt
     {
-      wear_expl,   ///< implicit time integration
-      wear_impl    ///< explicit time integration
+      wear_expl,  ///< implicit time integration
+      wear_impl   ///< explicit time integration
     };
 
     /// Definition of wear shape functions (necessary for prim. var. approach)
@@ -64,33 +64,34 @@ namespace INPAR
     /// (this enum represents the input file parameter WEAR_COUPALGO)
     enum WearCoupAlgo
     {
-      wear_stagg,        ///< partitioned (fractional step) approach
-      wear_iterstagg,    ///< partitioned approach
-      wear_monolithic    ///< monolithic approach not (yet?) implemented
+      wear_stagg,      ///< partitioned (fractional step) approach
+      wear_iterstagg,  ///< partitioned approach
+      wear_monolithic  ///< monolithic approach not (yet?) implemented
     };
 
     /// Definition of wear-ALE time scale coupling algorithm
     /// (this enum represents the input file parameter WEAR_TIMESCALE)
     enum WearTimeScale
     {
-      wear_time_equal,    ///< shape evolution step after each structural step
-      wear_time_different ///< shape evolution for accumulated wear after predefined structural steps
+      wear_time_equal,     ///< shape evolution step after each structural step
+      wear_time_different  ///< shape evolution for accumulated wear after predefined structural
+                           ///< steps
     };
 
     /// Definition of configuration for wear coefficient
     /// (this enum represents the input file parameter WEARCOEFF_CONF)
     enum WearCoeffConf
     {
-      wear_coeff_mat,   ///< wear coefficient in material conf. constant
-      wear_coeff_sp     ///< wear coefficient in spatial conf. constant
+      wear_coeff_mat,  ///< wear coefficient in material conf. constant
+      wear_coeff_sp    ///< wear coefficient in spatial conf. constant
     };
 
     /// Definition of configuration for shape evolution step
     /// (this enum represents the input file parameter WEAR_SHAPE_EVO)
     enum WearShapeEvo
     {
-      wear_se_mat,   ///< shape evolution in material conf.
-      wear_se_sp     ///< shape evolution in spat. conf.
+      wear_se_mat,  ///< shape evolution in material conf.
+      wear_se_sp    ///< shape evolution in spat. conf.
     };
 
     /// set the wear parameters

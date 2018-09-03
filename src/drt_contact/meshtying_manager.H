@@ -23,116 +23,112 @@ namespace DRT
 
 namespace CONTACT
 {
-
-// forward declarations
-
-/*!
-\brief BACI implementation of main class to control all meshtying
-
-\author popp (popp@lnm.mw.tum.de)
-*/
-class MtManager : public MORTAR::ManagerBase
-{
-public:
+  // forward declarations
 
   /*!
-  \brief Standard Constructor
+  \brief BACI implementation of main class to control all meshtying
 
-  The constructor takes a discretization that is expected to have at least
-  two meshtying boundary conditions. It extracts all meshtying boundary conditions
-  and constructs one or multiple meshtying interfaces from them and stores them.
-
-  It calls MORTAR::MortarInterface::FillComplete() on all meshtying interfaces which
-  makes the nodes and elements of a meshtying interfaces redundant on all
-  processors that either own a node or an element on the interfaces in the
-  input discretization.
-
-  In addition, it creates the necessary solver strategy object which handles
-  the whole meshtying evaluation.
-
-  \param discret (in): A discretization containing meshtying boundary conditions
-  \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
-
+  \author popp (popp@lnm.mw.tum.de)
   */
-  MtManager(DRT::Discretization& discret, double alphaf = 0.0);
+  class MtManager : public MORTAR::ManagerBase
+  {
+   public:
+    /*!
+    \brief Standard Constructor
 
-  /*!
-  \brief Destructor
+    The constructor takes a discretization that is expected to have at least
+    two meshtying boundary conditions. It extracts all meshtying boundary conditions
+    and constructs one or multiple meshtying interfaces from them and stores them.
 
-  */
-  virtual ~MtManager() {};
+    It calls MORTAR::MortarInterface::FillComplete() on all meshtying interfaces which
+    makes the nodes and elements of a meshtying interfaces redundant on all
+    processors that either own a node or an element on the interfaces in the
+    input discretization.
 
-  //! @name Access methods
+    In addition, it creates the necessary solver strategy object which handles
+    the whole meshtying evaluation.
 
-  /*!
-  \brief Get discretization
+    \param discret (in): A discretization containing meshtying boundary conditions
+    \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
-  */
-  DRT::Discretization& Discret() const { return discret_;};
+    */
+    MtManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-  //@}
+    /*!
+    \brief Destructor
 
-  //! @name Evaluation methods
+    */
+    virtual ~MtManager(){};
 
-  /*!
-  \brief Read and check input parameters
+    //! @name Access methods
 
-  All specified meshtying-related input parameters are read from the
-  DRT::Problem::Instance() and stored into a local variable of
-  type Teuchos::ParameterList. Invalid parameter combinations are
-  sorted out and throw a dserror.
+    /*!
+    \brief Get discretization
 
-  */
-  bool ReadAndCheckInput(Teuchos::ParameterList& mtparams);
+    */
+    DRT::Discretization& Discret() const { return discret_; };
 
-  /*!
-  \brief Write restart information for meshtying
+    //@}
 
-  The additionally necessary restart information in the meshtying
-  case are the current Lagrange multiplier values.
+    //! @name Evaluation methods
 
-  \param output (in): IO::Discretization writer for restart
+    /*!
+    \brief Read and check input parameters
 
-  */
-  void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart=false);
+    All specified meshtying-related input parameters are read from the
+    DRT::Problem::Instance() and stored into a local variable of
+    type Teuchos::ParameterList. Invalid parameter combinations are
+    sorted out and throw a dserror.
 
-  /*!
-  \brief Read restart information for contact
+    */
+    bool ReadAndCheckInput(Teuchos::ParameterList& mtparams);
 
-  This method has the inverse functionality of WriteRestart, as
-  it reads the restart Lagrange mulitplier vectors. Moreover,
-  all mortar coupling quantities (e.g. D and M) have to be
-  re-computed upon restart..
+    /*!
+    \brief Write restart information for meshtying
 
-  \param reader (in): IO::Discretization reader for restart
-  \param dis (in)   : global dof displacement vector
-  \param zero (in)  : global dof zero vector
+    The additionally necessary restart information in the meshtying
+    case are the current Lagrange multiplier values.
 
-  */
-  void ReadRestart(IO::DiscretizationReader& reader,
-                   Teuchos::RCP<Epetra_Vector> dis,
-                   Teuchos::RCP<Epetra_Vector> zero);
+    \param output (in): IO::Discretization writer for restart
 
-  /*!
-  \brief Write interface tractions for postprocessing
+    */
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
 
-  \param output (in): IO::Discretization writer for restart
+    /*!
+    \brief Read restart information for contact
 
-  */
-  void PostprocessQuantities(IO::DiscretizationWriter& output);
+    This method has the inverse functionality of WriteRestart, as
+    it reads the restart Lagrange mulitplier vectors. Moreover,
+    all mortar coupling quantities (e.g. D and M) have to be
+    re-computed upon restart..
 
-  //@}
+    \param reader (in): IO::Discretization reader for restart
+    \param dis (in)   : global dof displacement vector
+    \param zero (in)  : global dof zero vector
+
+    */
+    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<Epetra_Vector> zero);
+
+    /*!
+    \brief Write interface tractions for postprocessing
+
+    \param output (in): IO::Discretization writer for restart
+
+    */
+    void PostprocessQuantities(IO::DiscretizationWriter& output);
+
+    //@}
 
 
-protected:
+   protected:
+    // don't want = operator and cctor
+    MtManager operator=(const MtManager& old);
+    MtManager(const MtManager& old);
 
-  // don't want = operator and cctor
-  MtManager operator = (const MtManager& old);
-  MtManager(const MtManager& old);
+    DRT::Discretization& discret_;  // the underlying problem discretization
 
-  DRT::Discretization&  discret_; // the underlying problem discretization
-
-}; // class MtManager
-} // namespace CONTACT
+  };  // class MtManager
+}  // namespace CONTACT
 
 #endif  // #ifndef MESHTYING_MANAGER_H

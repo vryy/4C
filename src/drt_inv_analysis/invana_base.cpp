@@ -29,39 +29,35 @@
 
 
 /*----------------------------------------------------------------------*/
-INVANA::InvanaBase::InvanaBase():
-discret_(Teuchos::null),
-objfunct_(Teuchos::null),
-matman_(Teuchos::null),
-regman_(Teuchos::null),
-fprestart_(0),
-isinit_(false)
-{;}
+INVANA::InvanaBase::InvanaBase()
+    : discret_(Teuchos::null),
+      objfunct_(Teuchos::null),
+      matman_(Teuchos::null),
+      regman_(Teuchos::null),
+      fprestart_(0),
+      isinit_(false)
+{
+  ;
+}
 
 /*----------------------------------------------------------------------*/
-void INVANA::InvanaBase::Init(
-    Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<INVANA::ObjectiveFunct> objfunct,
-    Teuchos::RCP<INVANA::MatParManager> matman,
-    Teuchos::RCP<INVANA::RegularizationBase> regman,
-    Teuchos::RCP<INVANA::InitialGuess> initguess)
+void INVANA::InvanaBase::Init(Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<INVANA::ObjectiveFunct> objfunct, Teuchos::RCP<INVANA::MatParManager> matman,
+    Teuchos::RCP<INVANA::RegularizationBase> regman, Teuchos::RCP<INVANA::InitialGuess> initguess)
 {
-  discret_=discret;
-  objfunct_=objfunct;
-  matman_=matman;
-  regman_=regman;
-  initguess_=initguess;
+  discret_ = discret;
+  objfunct_ = objfunct;
+  matman_ = matman;
+  regman_ = regman;
+  initguess_ = initguess;
 
   SetupIO();
 
-  isinit_=true;
+  isinit_ = true;
 }
 
 /*----------------------------------------------------------------------*/
-const Epetra_Comm& INVANA::InvanaBase::Comm()
-{
-  return discret_->Comm();
-}
+const Epetra_Comm& INVANA::InvanaBase::Comm() { return discret_->Comm(); }
 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> INVANA::InvanaBase::VectorRowLayout()
@@ -76,7 +72,7 @@ void INVANA::InvanaBase::SetupIO()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // binio from the binio section (applied to the forward problem output only)
-  bool binio = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN");
+  bool binio = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN");
 
   // read forward problem restart stuff
   const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
@@ -88,18 +84,14 @@ void INVANA::InvanaBase::SetupIO()
   std::string prefix = problem->OutputControlFile()->FileNameOnlyPrefix();
   size_t pos = filename.rfind('/');
   size_t pos2 = prefix.rfind('-');
-  filename = filename.substr(0,pos+1) + prefix.substr(0,pos2) +
-      "_forward" + filename.substr(pos+1+prefix.length());
+  filename = filename.substr(0, pos + 1) + prefix.substr(0, pos2) + "_forward" +
+             filename.substr(pos + 1 + prefix.length());
 
   // a new controlfile with this name
   Teuchos::RCP<IO::OutputControl> controlfile = Teuchos::null;
-  controlfile = Teuchos::rcp(new IO::OutputControl(
-      Discret()->Comm(), problem->ProblemName(),
-      problem->SpatialApproximation(),
-      problem->OutputControlFile()->InputFileName(),
-      filename, problem->NDim(),0,
-      problem->OutputControlFile()->FileSteps(),binio)
-      );
+  controlfile = Teuchos::rcp(new IO::OutputControl(Discret()->Comm(), problem->ProblemName(),
+      problem->SpatialApproximation(), problem->OutputControlFile()->InputFileName(), filename,
+      problem->NDim(), 0, problem->OutputControlFile()->FileSteps(), binio));
 
   // give this one to the discretization to be used in the field output
   Discret()->Writer()->SetOutput(controlfile);
@@ -107,13 +99,13 @@ void INVANA::InvanaBase::SetupIO()
   // set forward problem restart to the restartname in case
   if (restartfilename.compare("none") != 0)
   {
-    inputcontrol_ = Teuchos::rcp(new
-        IO::InputControl(restartfilename,Discret()->Comm()));
+    inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartfilename, Discret()->Comm()));
   }
 
   // sanity check
-  if ( (restartfilename.compare("none") == 0) and (fprestart_ != 0) )
-    dserror("Set a proper forward problem restart name to be able to restart a forward simulation!");
+  if ((restartfilename.compare("none") == 0) and (fprestart_ != 0))
+    dserror(
+        "Set a proper forward problem restart name to be able to restart a forward simulation!");
 
   return;
 }

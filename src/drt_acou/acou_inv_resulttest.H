@@ -24,41 +24,39 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 
 namespace ACOU
 {
-class PatImageReconstruction;
+  class PatImageReconstruction;
 
-class AcouInvResultTest : public DRT::ResultTest
-{
-public:
+  class AcouInvResultTest : public DRT::ResultTest
+  {
+   public:
+    /*!
+    \brief constructor
+    */
+    AcouInvResultTest(PatImageReconstruction& invalgo);
 
-  /*!
-  \brief constructor
-  */
-  AcouInvResultTest(PatImageReconstruction& invalgo);
 
+    /// our version of nodal value tests
+    /*!
+      Possible position flags is only "pressure"
+     */
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-  /// our version of nodal value tests
-  /*!
-    Possible position flags is only "pressure"
-   */
-  virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+   private:
+    /// Teuchos::RCP to scatra discretization
+    Teuchos::RCP<DRT::Discretization> dis_;
 
-private:
+    /// Teuchos::RCP to solution vector
+    Teuchos::RCP<Epetra_MultiVector> mysol_;
 
-  /// Teuchos::RCP to scatra discretization
-  Teuchos::RCP<DRT::Discretization> dis_;
-
-  /// Teuchos::RCP to solution vector
-  Teuchos::RCP<Epetra_MultiVector>       mysol_;
-
-}; // class AcouInvResultTest
+  };  // class AcouInvResultTest
 
 
 
-} // namespace ACOU
+}  // namespace ACOU
 
 #endif /* ACOU_INV_RESULTTEST_H */

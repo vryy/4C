@@ -20,8 +20,8 @@
 #include "MueLu_ConfigDefs.hpp"
 #include "MueLu_SingleLevelFactoryBase.hpp"
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class IterationAFactory class.
     @brief builds a filtered matrix object "A" using the input matrix "A" where
@@ -42,11 +42,12 @@ namespace MueLu {
   */
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  class IterationAFactory : public SingleLevelFactoryBase {
+  class IterationAFactory : public SingleLevelFactoryBase
+  {
 #undef MUELU_ITERATIONAFACTORY_SHORT
-    #include "MueLu_UseShortNames.hpp"
+#include "MueLu_UseShortNames.hpp"
 
-  public:
+   public:
     //! @name Constructors/Destructors.
     //@{
 
@@ -69,17 +70,16 @@ namespace MueLu {
     //! @name Build methods.
 
     //! Build an object with this factory.
-    void Build(Level & currentLevel) const;
+    void Build(Level &currentLevel) const;
 
     //@}
 
-  private:
+   private:
+  };  // class IterationAFactory
 
-  }; // class IterationAFactory
-
-} // namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_ITERATIONAFACTORY_SHORT
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_ITERATIONAFACTORY_DECL_HPP_ */

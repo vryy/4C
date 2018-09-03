@@ -9,11 +9,12 @@ The material is a special case of a generalised pover law neo-Hookean material
 This material law accounts for spatial variation of the material parameters young and beta
 by using an random field, such that every element gets its own set of mat parameters.
 
-The sample of the random field is not calculated in the material routine but globally in MLMC because
-it cannot be stored in each element. At the moment beta is the only stochastic parameter.
+The sample of the random field is not calculated in the material routine but globally in MLMC
+because it cannot be stored in each element. At the moment beta is the only stochastic parameter.
 
 the input line should read
-  MAT 1 MAT_Struct_AAANeoHooke_Stopro YOUNG 1.044E7 BETA 188.1E5 NUE 0.3 DENS 1.0 SIGMA 0.25 CORRLENGTH 5.0
+  MAT 1 MAT_Struct_AAANeoHooke_Stopro YOUNG 1.044E7 BETA 188.1E5 NUE 0.3 DENS 1.0 SIGMA 0.25
+CORRLENGTH 5.0
 
 <pre>
 Maintainer: Jonas Biehler
@@ -32,21 +33,15 @@ Maintainer: Jonas Biehler
 
 namespace MAT
 {
-
   namespace PAR
   {
-
-
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
     class AAAneohooke_stopro : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      AAAneohooke_stopro(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~AAAneohooke_stopro() { ; }
@@ -73,21 +68,19 @@ namespace MAT
       void OptParams(std::vector<std::string>* pnames);
 
     };  // class AAAneohooke
-  }  // namespace PAR
+  }     // namespace PAR
 
 
   class AAAneohooke_stoproType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "AAAneohooke_stoproType"; }
 
-    static AAAneohooke_stoproType & Instance() { return instance_; };
+    static AAAneohooke_stoproType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static AAAneohooke_stoproType instance_;
   };
 
@@ -95,9 +88,7 @@ namespace MAT
   /// aneurysm wall material according to Raghavan and Vorp [2000]
   class AAAneohooke_stopro : public So3Material
   {
-
-  public:
-
+   public:
     // empty constructor
     AAAneohooke_stopro();
 
@@ -106,8 +97,10 @@ namespace MAT
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-      dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     //! @name Packing and Unpacking
 
@@ -117,7 +110,10 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return AAAneohooke_stoproType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return AAAneohooke_stoproType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -148,51 +144,50 @@ namespace MAT
     //@}
 
     // stochastic beta
-    double Beta() const {return beta_;}
+    double Beta() const { return beta_; }
 
     // stochastic youngs
-    double Youngs() const {return youngs_;}
+    double Youngs() const { return youngs_; }
 
     /// material mass density
     virtual double Density() const { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_mean_/(1.0+params_->nue_); }
+    double ShearMod() const { return 0.5 * params_->youngs_mean_ / (1.0 + params_->nue_); }
 
     // material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaneohooke_stopro; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_aaaneohooke_stopro;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAneohooke_stopro( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new AAAneohooke_stopro(*this));
+    }
 
     // Init stochastic beta
     void Init(double value_stopro, std::string stochpar);
 
     // THE material routine
-    virtual void Evaluate(
-      const LINALG::Matrix<3,3>* defgrd,
-      const LINALG::Matrix<6,1>* glstrain,
-      Teuchos::ParameterList& params,
-      LINALG::Matrix<6,1>* stress,
-      LINALG::Matrix<6,6>* cmat,
-      const int eleGID);
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                              double& psi,
-                              const int eleGID);
+    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::AAAneohooke_stopro* params_;
 
@@ -206,6 +201,6 @@ namespace MAT
     bool isinit_youngs_;
   };
 
-}//namespace MAT
+}  // namespace MAT
 
 #endif  // AAANEOHOOKE_STOPRO_H_

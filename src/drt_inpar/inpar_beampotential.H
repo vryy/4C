@@ -16,16 +16,17 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT {
-namespace INPUT {
-class ConditionDefinition;
-}
-}
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   /// Input parameters for potential-based beam interaction
   namespace BEAMPOTENTIAL
   {
@@ -33,8 +34,8 @@ namespace INPAR
     /// (this enum represents the input file parameter BEAMPOTENTIAL_TYPE)
     enum BeamPotentialType
     {
-      beampot_surf,         ///< surface potential
-      beampot_vol,          ///< volume potential
+      beampot_surf,  ///< surface potential
+      beampot_vol,   ///< volume potential
       beampot_vague
     };
 
@@ -42,9 +43,12 @@ namespace INPAR
     /// (this enum represents the input file parameter STRATEGY)
     enum BeamPotentialStrategy
     {
-      strategy_doublelengthspec_largesepapprox,  ///< double length specific potential, large separations
-      strategy_doublelengthspec_smallsepapprox,  ///< double length specific potential, small separations
-      strategy_singlelengthspec_smallsepapprox,  ///< single length specific potential, small separations
+      strategy_doublelengthspec_largesepapprox,  ///< double length specific potential, large
+                                                 ///< separations
+      strategy_doublelengthspec_smallsepapprox,  ///< double length specific potential, small
+                                                 ///< separations
+      strategy_singlelengthspec_smallsepapprox,  ///< single length specific potential, small
+                                                 ///< separations
       strategy_vague
     };
 
@@ -60,7 +64,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set beam potential specific conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace BEAMPOTENTIAL
 

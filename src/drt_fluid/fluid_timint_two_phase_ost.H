@@ -24,51 +24,46 @@
 
 namespace FLD
 {
+  class TimIntTwoPhaseOst : public TimIntOneStepTheta, public TimIntTwoPhase
+  {
+   public:
+    /// Standard Constructor
+    TimIntTwoPhaseOst(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntTwoPhaseOst : public TimIntOneStepTheta, public TimIntTwoPhase
-{
-public:
-  /// Standard Constructor
-  TimIntTwoPhaseOst(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntTwoPhaseOst();
 
-  /// Destructor
-  virtual ~TimIntTwoPhaseOst();
-
-  /*!
-  \brief initialization
-
-  */
-  virtual void Init();
-
-
-  /*!
-  \brief set scalar fields at previous time step within outer iteration loop (needed for new OST)
-
-  */
-  void SetIterScalarFieldsn(Teuchos::RCP<const Epetra_Vector> curvaturen,
-                            Teuchos::RCP<const Epetra_MultiVector> gradphin,
-                            Teuchos::RCP<DRT::Discretization> scatradis);
-
-  /*!
-    \brief Add problem dependent vector.
+    /*!
+    \brief initialization
 
     */
-  virtual void AddProblemDependentVectors();
-
-protected:
-
-  Teuchos::RCP<Epetra_Vector>              tpf_gradphi_curvn_;
-
-private:
+    virtual void Init();
 
 
-}; // class TimIntTwoPhaseOst
+    /*!
+    \brief set scalar fields at previous time step within outer iteration loop (needed for new OST)
 
-} // namespace FLD
+    */
+    void SetIterScalarFieldsn(Teuchos::RCP<const Epetra_Vector> curvaturen,
+        Teuchos::RCP<const Epetra_MultiVector> gradphin,
+        Teuchos::RCP<DRT::Discretization> scatradis);
+
+    /*!
+      \brief Add problem dependent vector.
+
+      */
+    virtual void AddProblemDependentVectors();
+
+   protected:
+    Teuchos::RCP<Epetra_Vector> tpf_gradphi_curvn_;
+
+   private:
+  };  // class TimIntTwoPhaseOst
+
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_TWO_PHASE_OST_H

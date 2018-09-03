@@ -43,12 +43,9 @@ void poromultiphase_dyn(int restart)
   if (comm.MyPID() == 0)
   {
     POROMULTIPHASE::PrintLogo();
-    std::cout << "###################################################"
-        << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: "
-        << problem->ProblemName() << std::endl;
-    std::cout << "###################################################"
-        << std::endl;
+    std::cout << "###################################################" << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << problem->ProblemName() << std::endl;
+    std::cout << "###################################################" << std::endl;
   }
 
   // initialize variables for dof set numbers
@@ -58,58 +55,44 @@ void poromultiphase_dyn(int restart)
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
   POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
-      comm,
-      struct_disname,
-      fluid_disname,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure);
+      comm, struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
 
-  //Parameter reading
+  // Parameter reading
   const Teuchos::ParameterList& poroparams = problem->PoroMultiPhaseDynamicParams();
   // access scatra params list
-  const Teuchos::ParameterList& structdyn =  problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
   // access poro fluid dynamic params list
-  const Teuchos::ParameterList& fluiddyn  = problem->PoroFluidMultiPhaseDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = problem->PoroFluidMultiPhaseDynamicParams();
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // coupling scheme
   // -------------------------------------------------------------------
   INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme =
-    DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(poroparams,"COUPALGO");
+      DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(
+          poroparams, "COUPALGO");
 
   Teuchos::RCP<ADAPTER::PoroMultiPhase> algo =
-      POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme,poroparams,comm);
+      POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme, poroparams, comm);
 
   // initialize
-  algo->Init(
-      poroparams,
-      poroparams,
-      structdyn,
-      fluiddyn,
-      struct_disname,
-      fluid_disname,
-      true,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure,
-      -1 // no scalar field
-      );
+  algo->Init(poroparams, poroparams, structdyn, fluiddyn, struct_disname, fluid_disname, true,
+      nds_disp, nds_vel, nds_solidpressure,
+      -1  // no scalar field
+  );
 
   // read the restart information, set vectors and variables
-  if (restart)
-    algo->ReadRestart(restart);
+  if (restart) algo->ReadRestart(restart);
 
   // assign poro material for evaluation of porosity
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
-  POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname,fluid_disname);
+  POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname, fluid_disname);
 
   // Setup the solver (only for the monolithic problem)
   algo->SetupSolver();
 
-  //Run of the actual problem.
+  // Run of the actual problem.
 
   // Some setup needed for the subproblems.
   algo->SetupSystem();
@@ -126,5 +109,4 @@ void poromultiphase_dyn(int restart)
 
   return;
 
-} // poromultiphase_dyn
-
+}  // poromultiphase_dyn

@@ -27,19 +27,16 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntGenAlpha::TimIntGenAlpha(
-    const Teuchos::RCP<DRT::Discretization>&      actdis,
-    const Teuchos::RCP<LINALG::Solver>&           solver,
-    const Teuchos::RCP<Teuchos::ParameterList>&   params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output,
-    bool                                          alefluid /*= false*/)
-: FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-  alphaM_(params_->get<double>("alpha_M")),
-  alphaF_(params_->get<double>("alpha_F")),
-  gamma_ (params_->get<double>("gamma")),
-  startalgo_(false)
-  // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
-  // (may be reset below when starting algorithm is used)
+FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      alphaM_(params_->get<double>("alpha_M")),
+      alphaF_(params_->get<double>("alpha_F")),
+      gamma_(params_->get<double>("gamma")),
+      startalgo_(false)
+// af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
+// (may be reset below when starting algorithm is used)
 {
   return;
 }
@@ -60,9 +57,9 @@ void FLD::TimIntGenAlpha::Init()
   {
     if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
       dserror("no starting algorithm supported for schemes other than af-gen-alpha");
-    else startalgo_= true;
-    if (numstasteps_>stepmax_)
-      dserror("more steps for starting algorithm than steps overall");
+    else
+      startalgo_ = true;
+    if (numstasteps_ > stepmax_) dserror("more steps for starting algorithm than steps overall");
   }
 
   SetElementTimeParameter();
@@ -76,10 +73,7 @@ void FLD::TimIntGenAlpha::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *-----------------------------------------------------------------------*/
-FLD::TimIntGenAlpha::~TimIntGenAlpha()
-{
-  return;
-}
+FLD::TimIntGenAlpha::~TimIntGenAlpha() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -87,21 +81,25 @@ FLD::TimIntGenAlpha::~TimIntGenAlpha()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::PrintTimeStepInfo()
 {
-  if (myrank_==0)
+  if (myrank_ == 0)
   {
     switch (timealgo_)
     {
-    case INPAR::FLUID::timeint_afgenalpha:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha (gamma = %0.2f, alphaF = %0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,gamma_,alphaF_,alphaM_,step_,stepmax_);
-      break;
-    case INPAR::FLUID::timeint_npgenalpha:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha (gamma = %0.2f, alphaF = %0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,gamma_,alphaF_,alphaM_,step_,stepmax_);
-      break;
-    default:
-      dserror("parameter out of range: IOP\n");
-      break;
+      case INPAR::FLUID::timeint_afgenalpha:
+        printf(
+            "TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha (gamma = %0.2f, alphaF = "
+            "%0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
+            time_, maxtime_, dta_, gamma_, alphaF_, alphaM_, step_, stepmax_);
+        break;
+      case INPAR::FLUID::timeint_npgenalpha:
+        printf(
+            "TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha (gamma = %0.2f, alphaF = "
+            "%0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
+            time_, maxtime_, dta_, gamma_, alphaF_, alphaM_, step_, stepmax_);
+        break;
+      default:
+        dserror("parameter out of range: IOP\n");
+        break;
     } /* end of switch(timealgo) */
   }
   return;
@@ -123,31 +121,31 @@ void FLD::TimIntGenAlpha::SetTheta()
   if (startalgo_)
   {
     // use backward-Euler-type parameter combination
-    if (step_<=numstasteps_)
+    if (step_ <= numstasteps_)
     {
-      if (myrank_==0)
+      if (myrank_ == 0)
       {
-        std::cout<<"Starting algorithm for Af_GenAlpha active. "
-            <<"Performing step "<<step_ <<" of "<<numstasteps_
-            <<" Backward Euler starting steps"<<std::endl;
+        std::cout << "Starting algorithm for Af_GenAlpha active. "
+                  << "Performing step " << step_ << " of " << numstasteps_
+                  << " Backward Euler starting steps" << std::endl;
       }
       alphaM_ = 1.0;
       alphaF_ = 1.0;
-      gamma_  = 1.0;
+      gamma_ = 1.0;
     }
     else
     {
       // recall original user wish
       alphaM_ = params_->get<double>("alpha_M");
       alphaF_ = params_->get<double>("alpha_F");
-      gamma_  = params_->get<double>("gamma");
+      gamma_ = params_->get<double>("gamma");
       // do not enter starting algorithm section in the future
       startalgo_ = false;
     }
   }
 
   // compute "pseudo-theta" for af-generalized-alpha scheme
-  theta_ = alphaF_*gamma_/alphaM_;
+  theta_ = alphaF_ * gamma_ / alphaM_;
 
   return;
 }
@@ -180,7 +178,6 @@ void FLD::TimIntGenAlpha::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
 {
-
   //                                  n+1     n
   //                               vel   - vel
   //       n+1      n  gamma-1.0      (i)
@@ -189,8 +186,8 @@ void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
   //
 
   // compute factors
-  const double fact1 = 1.0/(gamma_*dta_);
-  const double fact2 = 1.0 - (1.0/gamma_);
+  const double fact1 = 1.0 / (gamma_ * dta_);
+  const double fact2 = 1.0 - (1.0 / gamma_);
 
   // consider both velocity and pressure degrees of freedom in case of
   // artificial compressibility or weakly_compressible or
@@ -201,25 +198,25 @@ void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
       physicaltype_ == INPAR::FLUID::weakly_compressible or
       physicaltype_ == INPAR::FLUID::weakly_compressible_stokes)
   {
-    accnp_->Update(fact2,*accn_,0.0);
-    accnp_->Update(fact1,*velnp_,-fact1,*veln_,1.0);
+    accnp_->Update(fact2, *accn_, 0.0);
+    accnp_->Update(fact1, *velnp_, -fact1, *veln_, 1.0);
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_->ExtractOtherVector(veln_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->ExtractOtherVector(accn_);
+    Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_->ExtractOtherVector(veln_);
     Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 
-    onlyaccnp->Update(fact2,*onlyaccn,0.0);
-    onlyaccnp->Update(fact1,*onlyvelnp,-fact1,*onlyveln,1.0);
+    onlyaccnp->Update(fact2, *onlyaccn, 0.0);
+    onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
     // copy back into global vector
-    LINALG::Export(*onlyaccnp,*accnp_);
+    LINALG::Export(*onlyaccnp, *accnp_);
   }
 
-} // TimIntGenAlpha::GenAlphaUpdateAcceleration
+}  // TimIntGenAlpha::GenAlphaUpdateAcceleration
 
 
 /*----------------------------------------------------------------------*
@@ -243,19 +240,19 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
       physicaltype_ == INPAR::FLUID::weakly_compressible or
       physicaltype_ == INPAR::FLUID::weakly_compressible_stokes)
   {
-    accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
+    accam_->Update((alphaM_), *accnp_, (1.0 - alphaM_), *accn_, 0.0);
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->ExtractOtherVector(accn_);
     Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
-    onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
+    onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    LINALG::Export(*onlyaccam,*accam_);
+    LINALG::Export(*onlyaccam, *accam_);
   }
 
   // set intermediate values for velocity
@@ -272,9 +269,9 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
   //
   // note that its af-genalpha with mid-point treatment of the pressure,
   // not implicit treatment as for the genalpha according to Whiting
-  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+  velaf_->Update((alphaF_), *velnp_, (1.0 - alphaF_), *veln_, 0.0);
 
-} // TimIntGenAlpha::GenAlphaIntermediateValues
+}  // TimIntGenAlpha::GenAlphaIntermediateValues
 
 
 /*----------------------------------------------------------------------*
@@ -282,8 +279,7 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
  | for given vectors at n and n+1                           ghamm 04/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
-    Teuchos::RCP<Epetra_Vector>& vecnp,
-    Teuchos::RCP<Epetra_Vector>& vecn)
+    Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn)
 {
   // compute intermediate values for given vectors
   //
@@ -295,23 +291,20 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
 
   // do stupid conversion into Epetra map
   Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
-                                                                vecnp->Map().NumMyElements(),
-                                                                vecnp->Map().MyGlobalElements(),
-                                                                0,
-                                                                vecnp->Map().Comm()));
+      vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm()));
 
   Teuchos::RCP<Epetra_Vector> vecam = LINALG::CreateVector(*vecmap, true);
-  vecam->Update((alphaM_),*vecnp,(1.0-alphaM_),*vecn,0.0);
+  vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
   Teuchos::RCP<Epetra_Vector> vecaf = LINALG::CreateVector(*vecmap, true);
-  vecaf->Update((alphaF_),*vecnp,(1.0-alphaF_),*vecn,0.0);
+  vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors
   vecnp = vecaf;
   vecn = vecam;
 
   return;
-} // TimIntGenAlpha::GenAlphaIntermediateValues
+}  // TimIntGenAlpha::GenAlphaIntermediateValues
 
 
 /*----------------------------------------------------------------------*
@@ -319,11 +312,9 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::SetStateTimInt()
 {
-
-  discret_->SetState("velaf",velaf_);
-  discret_->SetState("velam",velam_);
-  if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
-    discret_->SetState("velnp",velnp_);
+  discret_->SetState("velaf", velaf_);
+  discret_->SetState("velam", velam_);
+  if (timealgo_ == INPAR::FLUID::timeint_npgenalpha) discret_->SetState("velnp", velnp_);
 
   return;
 }
@@ -334,30 +325,23 @@ void FLD::TimIntGenAlpha::SetStateTimInt()
 void FLD::TimIntGenAlpha::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
 {
   FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
-  if(reconstructder_)
-    FLD::UTILS::ProjectGradientAndSetParam(discret_,eleparams,velaf_,"velafgrad",alefluid_);
+  if (reconstructder_)
+    FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velaf_, "velafgrad", alefluid_);
   return;
 }
 
 /*----------------------------------------------------------------------*
 | return alphaF_                                               bk 12/13 |
 *-----------------------------------------------------------------------*/
-double FLD::TimIntGenAlpha::SetTimeFac()
-{
-  return alphaF_;
-}
+double FLD::TimIntGenAlpha::SetTimeFac() { return alphaF_; }
 
 
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::CalculateAcceleration(
-    const Teuchos::RCP<const Epetra_Vector>    velnp,
-    const Teuchos::RCP<const Epetra_Vector>    veln,
-    const Teuchos::RCP<const Epetra_Vector>    velnm,
-    const Teuchos::RCP<const Epetra_Vector>    accn,
-    const Teuchos::RCP<Epetra_Vector>          accnp
-)
+void FLD::TimIntGenAlpha::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
+    const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
+    const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
 {
   // do nothing: new acceleration is calculated at beginning of next time step
 
@@ -370,7 +354,7 @@ void FLD::TimIntGenAlpha::CalculateAcceleration(
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::SetGamma(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set("gamma"  ,gamma_);
+  eleparams.set("gamma", gamma_);
   return;
 }
 
@@ -380,7 +364,7 @@ void FLD::TimIntGenAlpha::SetGamma(Teuchos::ParameterList& eleparams)
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::Sep_Multiply()
 {
-  Sep_->Multiply(false,*velaf_,*fsvelaf_);
+  Sep_->Multiply(false, *velaf_, *fsvelaf_);
   return;
 }
 
@@ -390,7 +374,7 @@ void FLD::TimIntGenAlpha::Sep_Multiply()
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::UpdateVelafGenAlpha()
 {
-  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+  velaf_->Update((alphaF_), *velnp_, (1.0 - alphaF_), *veln_, 0.0);
   return;
 }
 
@@ -399,23 +383,22 @@ void FLD::TimIntGenAlpha::UpdateVelafGenAlpha()
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::OutputofFilteredVel(
-     Teuchos::RCP<Epetra_Vector> outvec,
-     Teuchos::RCP<Epetra_Vector> fsoutvec)
+    Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+  row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 
   // get fine scale velocity
   if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
-    Sep_->Multiply(false,*velaf_,*row_finescaleveltmp);
+    Sep_->Multiply(false, *velaf_, *row_finescaleveltmp);
   else
     dserror("Unknown separation type!");
 
   // get filtered or coarse scale velocity
-  outvec->Update(1.0,*velaf_,-1.0,*row_finescaleveltmp,0.0);
+  outvec->Update(1.0, *velaf_, -1.0, *row_finescaleveltmp, 0.0);
 
-  fsoutvec->Update(1.0,*row_finescaleveltmp,0.0);
+  fsoutvec->Update(1.0, *row_finescaleveltmp, 0.0);
 
   return;
 }
@@ -428,50 +411,47 @@ void FLD::TimIntGenAlpha::SetElementTimeParameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",FLD::set_time_parameter);
-  eleparams.set<int>("Physical Type",physicaltype_);
+  eleparams.set<int>("action", FLD::set_time_parameter);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
-  //set time integration scheme
+  // set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
-  eleparams.set("dt",dta_);
-  eleparams.set("theta",theta_);
-  eleparams.set("omtheta",0.0);
+  eleparams.set("dt", dta_);
+  eleparams.set("theta", theta_);
+  eleparams.set("omtheta", 0.0);
 
   // set scheme-specific element parameters and vector values
-  if (time_ >0.0)
+  if (time_ > 0.0)
   {
-    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("total time", time_ - (1 - alphaF_) * dta_);
   }
   else
   {
-    eleparams.set("total time",time_);
+    eleparams.set("total time", time_);
   }
-  eleparams.set("alphaF",alphaF_);
-  eleparams.set("alphaM",alphaM_);
-  eleparams.set("gamma",gamma_);
+  eleparams.set("alphaF", alphaF_);
+  eleparams.set("alphaM", alphaM_);
+  eleparams.set("gamma", gamma_);
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }
 
 /*----------------------------------------------------------------------*
 | extrapolate end point                                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::ExtrapolateEndPoint
-(
-  Teuchos::RCP<Epetra_Vector> vecn,
-  Teuchos::RCP<Epetra_Vector> vecm
-)
+Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::ExtrapolateEndPoint(
+    Teuchos::RCP<Epetra_Vector> vecn, Teuchos::RCP<Epetra_Vector> vecm)
 {
-  Teuchos::RCP<Epetra_Vector> vecnp=
-  FluidImplicitTimeInt::ExtrapolateEndPoint(vecn,vecm);
+  Teuchos::RCP<Epetra_Vector> vecnp = FluidImplicitTimeInt::ExtrapolateEndPoint(vecn, vecm);
 
   // For gen-alpha extrapolate mid-point quantities to end-point.
   // Otherwise, equilibrium time level is already end-point.
 
-  vecnp->Update((alphaF_-1.0)/alphaF_,*vecn,1.0/alphaF_);
+  vecnp->Update((alphaF_ - 1.0) / alphaF_, *vecn, 1.0 / alphaF_);
 
   return vecnp;
 }

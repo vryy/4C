@@ -40,14 +40,14 @@ void wear_dyn_drt(int restart)
   // ***********************************************************
   // Setup the problem
   // ***********************************************************
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& wearpara = DRT::Problem::Instance()->WearParams();
 
-  //check if quasistatic analysis
-  if(sdyn.get<std::string>("DYNAMICTYP")!= "Statics")
+  // check if quasistatic analysis
+  if (sdyn.get<std::string>("DYNAMICTYP") != "Statics")
   {
     std::cout << "WARNING: wear without dynamic effects!!!" << std::endl;
-    //dserror ("ERROR: Structure with ale only for quasistatic analysis so in new sti so far.");
+    // dserror ("ERROR: Structure with ale only for quasistatic analysis so in new sti so far.");
   }
 
   // access the structure discretization, make sure it is filled
@@ -62,13 +62,12 @@ void wear_dyn_drt(int restart)
   if (!aledis->Filled()) aledis->FillComplete();
 
   // we use the structure discretization as layout for the ale discretization
-  if (structdis->NumGlobalNodes()==0)
-    dserror("ERROR: Structure discretization is empty!");
+  if (structdis->NumGlobalNodes() == 0) dserror("ERROR: Structure discretization is empty!");
 
   // clone ale mesh from structure discretization
-  if (aledis->NumGlobalNodes()==0)
+  if (aledis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis, aledis);
     aledis->FillComplete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -78,14 +77,14 @@ void wear_dyn_drt(int restart)
   else  // filled ale discretization
   {
     // if we have non-matching meshes:
-    if (!DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->WearParams(),"MATCHINGGRID"))
+    if (!DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->WearParams(), "MATCHINGGRID"))
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      std::vector<Teuchos::RCP<DRT::Discretization>> dis;
       dis.push_back(structdis);
       dis.push_back(aledis);
 
-      DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
+      DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
     }
   }
   // ***********************************************************
@@ -93,13 +92,13 @@ void wear_dyn_drt(int restart)
   Teuchos::RCP<WEAR::Algorithm> stru_ale = Teuchos::null;
 
   // structure ale object
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
-      ==  INPAR::WEAR::wear_stagg)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+      INPAR::WEAR::wear_stagg)
   {
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }
-  else if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
-      ==  INPAR::WEAR::wear_iterstagg)
+  else if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+           INPAR::WEAR::wear_iterstagg)
   {
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }
@@ -109,8 +108,7 @@ void wear_dyn_drt(int restart)
   }
 
   // read restart before joining the time loop
-  if (restart!=0)
-    stru_ale->ReadRestart(restart);
+  if (restart != 0) stru_ale->ReadRestart(restart);
 
   // solve the whole problem
   stru_ale->TimeLoop();
@@ -123,6 +121,6 @@ void wear_dyn_drt(int restart)
   DRT::Problem::Instance()->TestAll(comm);
 
   return;
-} // wear_dyn_drt()
+}  // wear_dyn_drt()
 
 /*----------------------------------------------------------------------*/

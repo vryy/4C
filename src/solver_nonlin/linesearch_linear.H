@@ -36,8 +36,7 @@ namespace NLNSOL
    */
   class LineSearchLinear : public NLNSOL::LineSearchBase
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -69,9 +68,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2014
      */
-    virtual void ComputeLSParam(
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeLSParam(double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr  ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     /*! \brief Compute the step length / line search parameter
@@ -83,8 +81,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2014
      */
-    virtual void ComputeLSParam(
-        double& lsparam ///< line search parameter (to be determined)
+    virtual void ComputeLSParam(double& lsparam  ///< line search parameter (to be determined)
         ) const;
 
     //@}
@@ -100,11 +97,9 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
-  }; // class LineSearchLinear
-} // namespace NLNSOL
+   protected:
+   private:
+  };  // class LineSearchLinear
+}  // namespace NLNSOL
 
 #endif /* LINESEARCH_LINEAR_H */

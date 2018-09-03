@@ -23,8 +23,8 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr )
-    : ::CONTACT::AUG::Interface( idata_ptr )
+    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
+    : ::CONTACT::AUG::Interface(idata_ptr)
 {
   /* do nothing */
 }
@@ -32,14 +32,10 @@ CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
-    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    int id,
-    const Epetra_Comm& comm,
-    int dim,
-    const Teuchos::ParameterList& icontact,
-    bool selfcontact,
-    INPAR::MORTAR::RedundantStorage redundant )
-    : ::CONTACT::AUG::Interface(idata_ptr,id,comm,dim,icontact,selfcontact,redundant)
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, int id, const Epetra_Comm& comm, int dim,
+    const Teuchos::ParameterList& icontact, bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : ::CONTACT::AUG::Interface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant)
 {
   /* left blank, nothing to do here */
 }
@@ -49,31 +45,29 @@ CONTACT::AUG::STEEPESTASCENT::Interface::Interface(
 Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
 CONTACT::AUG::STEEPESTASCENT::Interface::CreateNodeBasedAssembleStrategy()
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type =
-      GetVariationalApproachType();
+  const enum INPAR::CONTACT::VariationalApproach var_type = GetVariationalApproachType();
 
-  switch ( var_type )
+  switch (var_type)
   {
     case INPAR::CONTACT::var_complete:
     {
       typedef CONTACT::AUG::INTERFACE::CompleteAssemblePolicy complete_policy;
 
-      return Teuchos::rcp( new STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-          complete_policy>( this ) );
+      return Teuchos::rcp(
+          new STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<complete_policy>(this));
     }
     case INPAR::CONTACT::var_incomplete:
     {
       typedef CONTACT::AUG::INTERFACE::IncompleteAssemblePolicy incomplete_policy;
 
-      return Teuchos::rcp( new STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-          incomplete_policy>( this ) );
+      return Teuchos::rcp(
+          new STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<incomplete_policy>(this));
     }
     default:
     {
-      dserror( "Unknown variational approach! (var_type= \"%s\" | %d)",
-          INPAR::CONTACT::VariationalApproach2String( var_type ).c_str(),
-          var_type );
-      exit( EXIT_FAILURE );
+      dserror("Unknown variational approach! (var_type= \"%s\" | %d)",
+          INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
+      exit(EXIT_FAILURE);
     }
   }
 }

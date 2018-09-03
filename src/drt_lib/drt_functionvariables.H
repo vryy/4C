@@ -29,192 +29,199 @@ struct periodicstruct
 /*----------------------------------------------------------------------*/
 namespace Sacado
 {
-namespace Fad
+  namespace Fad
+  {
+    template <typename>
+    class DFad;
+  }
+}  // namespace Sacado
+
+namespace DRT
 {
-template <typename> class DFad;
-}
-}
+  namespace PARSER
+  {
+    template <typename>
+    class Parser;
+  }
 
-namespace DRT {
+  namespace UTILS
+  {
+    /// class that defines the main properties of a time dependent variable
+    class FunctionVariable
+    {
+     public:
+      FunctionVariable(std::string name);
 
-namespace PARSER
-{
-template <typename> class Parser;
-}
+      virtual ~FunctionVariable(){};
 
-namespace UTILS {
+      /// evaluate the function at given time
+      virtual double Value(const double t) = 0;
 
-/// class that defines the main properties of a time dependent variable
-class FunctionVariable
-{
-public:
-  FunctionVariable(std::string name);
+      /// evaluate the time derivative at given time
+      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1) = 0;
 
-  virtual ~FunctionVariable(){};
+      /// check the inclusion of the considered time
+      virtual bool ContainTime(const double t) = 0;
 
-  /// evaluate the function at given time
-  virtual double Value(const double t) = 0;
+      /// return the name of the variable
+      std::string Name() { return name_; }
 
-  /// evaluate the time derivative at given time
-  virtual double TimeDerivativeValue(const double t, const unsigned deg=1) = 0;
+     private:
+      /// name of the variable
+      const std::string name_;
 
-  /// check the inclusion of the considered time
-  virtual bool ContainTime (const double t) = 0;
-
-  /// return the name of the variable
-  std::string Name() { return name_; }
-
-private:
-  /// name of the variable
-  const std::string name_;
-
-private:
-};
+     private:
+    };
 
 
-/// variable based on a parsed expression
-class ParsedFunctionVariable : public FunctionVariable
-{
-public:
-  ParsedFunctionVariable(std::string name, std::string buf);
+    /// variable based on a parsed expression
+    class ParsedFunctionVariable : public FunctionVariable
+    {
+     public:
+      ParsedFunctionVariable(std::string name, std::string buf);
 
-  virtual ~ParsedFunctionVariable(){};
+      virtual ~ParsedFunctionVariable(){};
 
-  /// evaluate the function at given time
-  virtual double Value(const double t);
+      /// evaluate the function at given time
+      virtual double Value(const double t);
 
-  /// evaluate the time derivative at given time
-  virtual double TimeDerivativeValue(const double t, const unsigned deg=1);
+      /// evaluate the time derivative at given time
+      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
 
-  /// check the inclusion of the considered time
-  virtual bool ContainTime (const double t);
+      /// check the inclusion of the considered time
+      virtual bool ContainTime(const double t);
 
-private:
-  /// parsed function
-  Teuchos::RCP<DRT::PARSER::Parser<double> > timefunction_;
+     private:
+      /// parsed function
+      Teuchos::RCP<DRT::PARSER::Parser<double>> timefunction_;
 
-  // parsed derivative
-  Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > timederivative_;
-};
-
-
-/// variable based on a linear interpolation
-class LinearInterpolationVariable : public FunctionVariable
-{
-public:
-  LinearInterpolationVariable(std::string name, std::vector<double> times, std::vector<double> values, struct periodicstruct periodicdata);
-
-  virtual ~LinearInterpolationVariable(){};
-
-  /// evaluate the function at given time
-  virtual double Value(const double t);
-
-  /// templated function to evaluate and to derive from using sacado
-  template <typename ScalarT>
-  ScalarT Value(const ScalarT& t);
-
-  /// evaluate the time derivative at given time
-  virtual double TimeDerivativeValue(const double t, const unsigned deg=1);
-
-  /// check the inclusion of the considered time
-  virtual bool ContainTime (const double t);
-
-private:
-  /// times for the interpolation
-  const std::vector<double> times_;
-
-  /// values for the interpolation
-  const std::vector<double> values_;
-
-  /// flag for periodic repetition
-  const bool periodic_;
-
-  /// initial time of the periodic repetition
-  const double t1_;
-
-  /// final time of the periodic repetition
-  const double t2_;
-};
+      // parsed derivative
+      Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>
+          timederivative_;
+    };
 
 
-/// variable based on a set of parsed expressions
-class MultiFunctionVariable : public FunctionVariable
-{
-public:
-  MultiFunctionVariable(std::string name, std::vector<double> times, std::vector<std::string> description_vec, struct periodicstruct periodicdata);
+    /// variable based on a linear interpolation
+    class LinearInterpolationVariable : public FunctionVariable
+    {
+     public:
+      LinearInterpolationVariable(std::string name, std::vector<double> times,
+          std::vector<double> values, struct periodicstruct periodicdata);
 
-  virtual ~MultiFunctionVariable(){};
+      virtual ~LinearInterpolationVariable(){};
 
-  /// evaluate the function at given time
-  virtual double Value(const double t);
+      /// evaluate the function at given time
+      virtual double Value(const double t);
 
-  /// evaluate the time derivative at given time
-  virtual double TimeDerivativeValue(const double t, const unsigned deg=1);
+      /// templated function to evaluate and to derive from using sacado
+      template <typename ScalarT>
+      ScalarT Value(const ScalarT& t);
 
-  /// check the inclusion of the considered time
-  virtual bool ContainTime (const double t);
+      /// evaluate the time derivative at given time
+      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
 
-private:
-  /// times defining each interval
-  const std::vector<double> times_;
+      /// check the inclusion of the considered time
+      virtual bool ContainTime(const double t);
 
-  ///vector of parsed functions
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > timefunction_;
+     private:
+      /// times for the interpolation
+      const std::vector<double> times_;
 
-  /// vector of parsed derivatives
-  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > > timederivative_;
+      /// values for the interpolation
+      const std::vector<double> values_;
 
-  /// flag for periodic repetition
-  const bool periodic_;
+      /// flag for periodic repetition
+      const bool periodic_;
 
-  /// initial time of the periodic repetition
-  const double t1_;
+      /// initial time of the periodic repetition
+      const double t1_;
 
-  /// final time of the periodic repetition
-  const double t2_;
-};
-
-
-/// variable based on a Fourier interpolation
-class FourierInterpolationVariable : public FunctionVariable
-{
-public:
-  FourierInterpolationVariable(std::string name, std::vector<double> times, std::vector<double> values, struct periodicstruct periodicdata);
-
-  virtual ~FourierInterpolationVariable(){};
-
-  /// evaluate the function at given time
-  virtual double Value(const double t);
-
-  /// templated function to evaluate and to derive from using sacado
-  template <typename ScalarT>
-  ScalarT Value(const ScalarT& t);
-
-  /// evaluate the time derivative at given time
-  virtual double TimeDerivativeValue(const double t, const unsigned deg=1);
-
-  /// check the inclusion of the considered time
-  virtual bool ContainTime (const double t);
-
-private:
-  /// times for the interpolation
-  const std::vector<double> times_;
-
-  /// values for the interpolation
-  const std::vector<double> values_;
-
-  /// flag for periodic repetition
-  const bool periodic_;
-
-  /// initial time of the periodic repetition
-  const double t1_;
-
-  /// final time of the periodic repetition
-  const double t2_;
-};
+      /// final time of the periodic repetition
+      const double t2_;
+    };
 
 
-} // namespace DRT
-} // namespace UTILS
+    /// variable based on a set of parsed expressions
+    class MultiFunctionVariable : public FunctionVariable
+    {
+     public:
+      MultiFunctionVariable(std::string name, std::vector<double> times,
+          std::vector<std::string> description_vec, struct periodicstruct periodicdata);
+
+      virtual ~MultiFunctionVariable(){};
+
+      /// evaluate the function at given time
+      virtual double Value(const double t);
+
+      /// evaluate the time derivative at given time
+      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
+
+      /// check the inclusion of the considered time
+      virtual bool ContainTime(const double t);
+
+     private:
+      /// times defining each interval
+      const std::vector<double> times_;
+
+      /// vector of parsed functions
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<double>>> timefunction_;
+
+      /// vector of parsed derivatives
+      std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>>>
+          timederivative_;
+
+      /// flag for periodic repetition
+      const bool periodic_;
+
+      /// initial time of the periodic repetition
+      const double t1_;
+
+      /// final time of the periodic repetition
+      const double t2_;
+    };
+
+
+    /// variable based on a Fourier interpolation
+    class FourierInterpolationVariable : public FunctionVariable
+    {
+     public:
+      FourierInterpolationVariable(std::string name, std::vector<double> times,
+          std::vector<double> values, struct periodicstruct periodicdata);
+
+      virtual ~FourierInterpolationVariable(){};
+
+      /// evaluate the function at given time
+      virtual double Value(const double t);
+
+      /// templated function to evaluate and to derive from using sacado
+      template <typename ScalarT>
+      ScalarT Value(const ScalarT& t);
+
+      /// evaluate the time derivative at given time
+      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
+
+      /// check the inclusion of the considered time
+      virtual bool ContainTime(const double t);
+
+     private:
+      /// times for the interpolation
+      const std::vector<double> times_;
+
+      /// values for the interpolation
+      const std::vector<double> values_;
+
+      /// flag for periodic repetition
+      const bool periodic_;
+
+      /// initial time of the periodic repetition
+      const double t1_;
+
+      /// final time of the periodic repetition
+      const double t2_;
+    };
+
+
+  }  // namespace UTILS
+}  // namespace DRT
 
 #endif

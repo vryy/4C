@@ -24,18 +24,14 @@ Maintainer: Andreas Rauch
 
 
 /* constructor */
-ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid,
-    Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<IO::DiscretizationWriter> output,
-    bool isale,
-    bool dirichletcond)
-: FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
-  fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor()))
+ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+    : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
+      fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor()))
 {
   return;
-} // constructor
+}  // constructor
 
 
 /* initialization */
@@ -44,7 +40,7 @@ void ADAPTER::FluidFPSI::Init()
   // call base class init
   FluidFSI::Init();
 
-  fpsiinterface_->Setup(*dis_,true, true); //Always Create overlapping FPSI Interface
+  fpsiinterface_->Setup(*dis_, true, true);  // Always Create overlapping FPSI Interface
 
   return;
 }
@@ -54,25 +50,26 @@ void ADAPTER::FluidFPSI::Init()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFPSI::SetupInterface()
 {
-  interface_->Setup(*dis_,false,true); //create overlapping maps for fpsi problem
+  interface_->Setup(*dis_, false, true);  // create overlapping maps for fpsi problem
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFPSI::UseBlockMatrix(
-    bool splitmatrix,
-    Teuchos::RCP<FPSI::UTILS::MapExtractor>const& shapederivSplitter)
+    bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter)
 {
-  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
-  Teuchos::RCP<std::set<int> > condelements_shape = shapederivSplitter->ConditionedElementMap(*Discretization());
-  fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),condelements_shape,*shapederivSplitter,*shapederivSplitter,splitmatrix);
+  Teuchos::RCP<std::set<int>> condelements = Interface()->ConditionedElementMap(*Discretization());
+  Teuchos::RCP<std::set<int>> condelements_shape =
+      shapederivSplitter->ConditionedElementMap(*Discretization());
+  fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), condelements_shape,
+      *shapederivSplitter, *shapederivSplitter, splitmatrix);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::UseBlockMatrix(
-    bool splitmatrix)
+void ADAPTER::FluidFPSI::UseBlockMatrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
-  fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),condelements,*Interface(),*Interface(),splitmatrix);
+  Teuchos::RCP<std::set<int>> condelements = Interface()->ConditionedElementMap(*Discretization());
+  fluidimpl_->UseBlockMatrix(condelements, *Interface(), *Interface(), condelements, *Interface(),
+      *Interface(), splitmatrix);
 }

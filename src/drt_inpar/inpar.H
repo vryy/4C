@@ -15,7 +15,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-
   //! Geometry reading specification
   enum GeometryType
   {

@@ -24,80 +24,71 @@ distributions
 
 class Epetra_Map;
 class Epetra_Export;
-namespace LINALG {
+namespace LINALG
+{
   class SparseMatrix;
-} // namespace LINALG
-namespace MORTAR {
-
+}  // namespace LINALG
+namespace MORTAR
+{
   class MatrixRowColTransformer
   {
-    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP< Epetra_Export > > plain_block_export_pairs;
+    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Export>>
+        plain_block_export_pairs;
 
-  public:
-    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>* > plain_block_map_pairs;
+   public:
+    typedef GEN::pairedvector<DRT::UTILS::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+        plain_block_map_pairs;
 
-  public:
+   public:
     /// constructor
-    MatrixRowColTransformer( const unsigned num_transformer );
+    MatrixRowColTransformer(const unsigned num_transformer);
 
     /// destructor
-    ~MatrixRowColTransformer() {};
+    ~MatrixRowColTransformer(){};
 
-    void Init(
-        const plain_block_map_pairs& redistributed_row,
+    void Init(const plain_block_map_pairs& redistributed_row,
         const plain_block_map_pairs& redistributed_column,
         const plain_block_map_pairs& unredistributed_row,
-        const plain_block_map_pairs& unredistributed_column );
+        const plain_block_map_pairs& unredistributed_column);
 
     void Setup();
 
     Teuchos::RCP<LINALG::SparseMatrix> RedistributedToUnredistributed(
-        const DRT::UTILS::MatBlockType bt,
-        const LINALG::SparseMatrix& src_mat );
+        const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat);
 
-    void RedistributedToUnredistributed(
-        const DRT::UTILS::MatBlockType bt,
-        const LINALG::SparseMatrix& src_mat,
-        LINALG::SparseMatrix& dst_mat );
+    void RedistributedToUnredistributed(const DRT::UTILS::MatBlockType bt,
+        const LINALG::SparseMatrix& src_mat, LINALG::SparseMatrix& dst_mat);
 
     Teuchos::RCP<LINALG::SparseMatrix> UnredistributedToRedistributed(
-        const DRT::UTILS::MatBlockType bt,
-        const LINALG::SparseMatrix& src_mat );
+        const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat);
 
-    void UnredistributedToRedistributed(
-        const DRT::UTILS::MatBlockType bt,
-        const LINALG::SparseMatrix& src_mat,
-        LINALG::SparseMatrix& dst_mat );
+    void UnredistributedToRedistributed(const DRT::UTILS::MatBlockType bt,
+        const LINALG::SparseMatrix& src_mat, LINALG::SparseMatrix& dst_mat);
 
-  private:
-    void SetSlaveMapPairs(
-        const plain_block_map_pairs& redistributed_row,
-        const plain_block_map_pairs& redistributed_column );
+   private:
+    void SetSlaveMapPairs(const plain_block_map_pairs& redistributed_row,
+        const plain_block_map_pairs& redistributed_column);
 
-    void SetMasterMapPairs(
-        const plain_block_map_pairs& unredistributed_row,
-        const plain_block_map_pairs& unredistributed_column );
+    void SetMasterMapPairs(const plain_block_map_pairs& unredistributed_row,
+        const plain_block_map_pairs& unredistributed_column);
 
     // hide empty constructor
     MatrixRowColTransformer();
 
     inline void ThrowIfNotInit() const
     {
-      if ( not isinit_ )
-        dserror( "Call Init() first!" );
+      if (not isinit_) dserror("Call Init() first!");
     }
 
     inline void ThrowIfNotInitAndSetup() const
     {
       ThrowIfNotInit();
-      if ( not issetup_ )
-        dserror( "Call Setup() first!" );
+      if (not issetup_) dserror("Call Setup() first!");
     }
 
-    void ResetExporter( Teuchos::RCP<Epetra_Export>& exporter ) const;
+    void ResetExporter(Teuchos::RCP<Epetra_Export>& exporter) const;
 
-  private:
-
+   private:
     bool isinit_;
     bool issetup_;
 
@@ -112,7 +103,7 @@ namespace MORTAR {
 
   };  // class MatrixTransform
 
-} // namespace MORTAR
+}  // namespace MORTAR
 
 
 

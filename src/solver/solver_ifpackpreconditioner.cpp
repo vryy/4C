@@ -16,27 +16,24 @@
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LINALG::SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(FILE * outfile,
-    Teuchos::ParameterList & ifpacklist, Teuchos::ParameterList & azlist)
-  : PreconditionerType(outfile),
-    ifpacklist_(ifpacklist),
-    azlist_(azlist)
+LINALG::SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(
+    FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& azlist)
+    : PreconditionerType(outfile), ifpacklist_(ifpacklist), azlist_(azlist)
 {
   return;
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void LINALG::SOLVER::IFPACKPreconditioner::Setup(bool create,
-    Epetra_Operator * matrix, Epetra_MultiVector * x, Epetra_MultiVector * b)
+void LINALG::SOLVER::IFPACKPreconditioner::Setup(
+    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  SetupLinearProblem( matrix, x, b );
+  SetupLinearProblem(matrix, x, b);
 
   if (create)
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
-    if (A == NULL)
-      dserror("CrsMatrix expected");
+    if (A == NULL) dserror("CrsMatrix expected");
 
     // free old matrix first
     prec_ = Teuchos::null;
@@ -55,8 +52,7 @@ void LINALG::SOLVER::IFPACKPreconditioner::Setup(bool create,
     prec_ = Teuchos::rcp(Factory.Create(prectype, Pmatrix_.get(), overlap));
 
     if (prec_.is_null())
-      dserror("Creation of IFPACK preconditioner of type '%s' failed.",
-          prectype.c_str());
+      dserror("Creation of IFPACK preconditioner of type '%s' failed.", prectype.c_str());
 
     // setup
     prec_->SetParameters(ifpacklist_);
@@ -66,4 +62,3 @@ void LINALG::SOLVER::IFPACKPreconditioner::Setup(bool create,
     return;
   }
 }
-

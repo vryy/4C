@@ -27,13 +27,13 @@ namespace STR
 {
   class TimInt;
   class TimAda;
-}
+}  // namespace STR
 
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /*====================================================================*/
   /*!
    * \brief Structure field adapter for time step size adaptivity within monolithic FSI
@@ -58,13 +58,9 @@ namespace ADAPTER {
   class StructureFSITimIntAda : virtual public FSIStructureWrapper,
                                 virtual public StructureTimIntAda
   {
-  public:
-
+   public:
     //! Constructor
-    StructureFSITimIntAda(
-      Teuchos::RCP<STR::TimAda> sta,
-      Teuchos::RCP<Structure> sti
-    );
+    StructureFSITimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
 
     //! Destructor
     virtual ~StructureFSITimIntAda() { ; }
@@ -74,13 +70,14 @@ namespace ADAPTER {
 
     //! Indicate norms of local discretization error
     virtual void IndicateErrorNorms(
-        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
-        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
-        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
-        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
-        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
-        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
-        );
+        double& err,       ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,    ///< L-inf-norm of temporal discretization error based on all DOFs
+        double&
+            errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
+    );
 
     //! Calculate time step size suggestion
     virtual double CalculateDt(const double norm);
@@ -101,27 +98,27 @@ namespace ADAPTER {
     virtual void ResetStep();
 
     //! return pointer to structure time integration
-    Teuchos::RCP<Structure> GetStrTimIntPtr(){return str_time_integrator_;};
+    Teuchos::RCP<Structure> GetStrTimIntPtr() { return str_time_integrator_; };
 
-  private:
-
+   private:
     //! Indicate local discretization error
     void IndicateErrors(
-        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
-        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
-        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
-        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
-        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
-        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
-        );
+        double& err,       ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,    ///< L-inf-norm of temporal discretization error based on all DOFs
+        double&
+            errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
+    );
 
     enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
 
-    int numdbcdofs_;      ///< number of DOFs with Dirichlet boundary condition
-    int numdbcfsidofs_;   ///< number of interface DOFs with Dirichlet boundary condition
-    int numdbcinnerdofs_; ///< number of inner DOFs with Dirichlet boundary condition
+    int numdbcdofs_;       ///< number of DOFs with Dirichlet boundary condition
+    int numdbcfsidofs_;    ///< number of interface DOFs with Dirichlet boundary condition
+    int numdbcinnerdofs_;  ///< number of inner DOFs with Dirichlet boundary condition
 
-    Teuchos::RCP<Structure> str_time_integrator_; ///< pointer to the structural time integrator
+    Teuchos::RCP<Structure> str_time_integrator_;  ///< pointer to the structural time integrator
 
   };  // class StructureFSITimIntAda
 

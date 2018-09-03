@@ -26,137 +26,131 @@ The input line should read
 
 namespace MAT
 {
-namespace ELASTIC
-{
-
-  namespace PAR
+  namespace ELASTIC
   {
+    namespace PAR
+    {
+      /*----------------------------------------------------------------------*/
+      /// material parameters for isochoric contribution of a general power material
+      ///
+      /// <h3>Input line</h3>
+      /// MAT 1 ELAST_Coup2Pow C 1 D 1
+      class Coup2Pow : public MAT::PAR::Parameter
+      {
+       public:
+        /// standard constructor
+        Coup2Pow(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+        /// destructor
+        virtual ~Coup2Pow() { ; }
+
+        /// @name material parameters
+        //@{
+
+        /// material parameters
+        double c_;
+        int d_;
+
+        //@}
+
+        /// create material instance of matching type with my parameters
+        ///
+        /// Remark:                                                  AN 03/2014
+        /// Function has to be implemented, since it is a pure virtual
+        /// function in the MAT::PAR::Material class.
+        /// Function stays empty, since the call within the material factory is done only
+        /// respective the elasthyper class
+        ///
+        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+
+        /// @name Write methods
+        //@{
+        void SetC(const double c) { c_ = c; }
+        void SetD(const int d) { d_ = d; }
+        //@}
+
+      };  // class Coup1Pow
+
+    }  // namespace PAR
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isochoric contribution of a general power material
+    /// Isochoric general power material
     ///
-    /// <h3>Input line</h3>
-    /// MAT 1 ELAST_Coup2Pow C 1 D 1
-    class Coup2Pow : public MAT::PAR::Parameter
+    /// This is a summand of variable order hyperelastic, isotropic
+    /// material depending on the seccond invariant of the right Cauchy-Green tensor.
+    ///
+    /// Strain energy function is given by
+    ///\f[
+    ///   \Psi = C (II_{\boldsymbol{C}}-3)^D.
+    ///\f]
+    ///
+    ///
+    /// \author rausch
+    /// \date 03/11
+    class Coup2Pow : public Summand
     {
-    public:
+     public:
+      /// constructor with given material parameters
+      Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params);
 
-      /// standard constructor
-      Coup2Pow(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
-
-      /// destructor
-      virtual ~Coup2Pow() { ; }
-
-      /// @name material parameters
+      /// @name Access material constants
       //@{
 
-      /// material parameters
-      double c_;
-      int d_;
+      /// material type
+      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coup2pow; }
 
       //@}
 
-      /// create material instance of matching type with my parameters
-      ///
-      /// Remark:                                                  AN 03/2014
-      /// Function has to be implemented, since it is a pure virtual
-      /// function in the MAT::PAR::Material class.
-      /// Function stays empty, since the call within the material factory is done only
-      /// respective the elasthyper class
-      ///
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
+      // add strain energy
+      virtual void AddStrainEnergy(double& psi,  ///< strain energy function
+          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+          const int eleGID                       ///< element GID
+      );
 
-      /// @name Write methods
+
+      virtual void AddDerivativesPrincipal(
+          LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
+          LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
+          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const int eleGID                    ///< element GID
+      );
+
+      /// add the derivatives of a coupled strain energy functions associated with a purely
+      /// isochoric deformation
+      virtual void AddCoupDerivVol(
+          const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
+      {
+        dserror("not implemented");
+      }
+
+      /// @name Access methods
       //@{
-      void SetC(const double c) { c_ = c; }
-      void SetD(const int d) { d_ = d; }
+      double C() const { return params_->c_; }
+      int D() const { return params_->d_; }
+
       //@}
 
-    };  // class Coup1Pow
-
-  }  // namespace PAR
-
-  /*----------------------------------------------------------------------*/
-  /// Isochoric general power material
-  ///
-  /// This is a summand of variable order hyperelastic, isotropic
-  /// material depending on the seccond invariant of the right Cauchy-Green tensor.
-  ///
-  /// Strain energy function is given by
-  ///\f[
-  ///   \Psi = C (II_{\boldsymbol{C}}-3)^D.
-  ///\f]
-  ///
-  ///
-  /// \author rausch
-  /// \date 03/11
-  class Coup2Pow : public Summand
-  {
-
-  public:
-
-    /// constructor with given material parameters
-    Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params);
-
-    /// @name Access material constants
-    //@{
-
-    /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coup2pow; }
-
-    //@}
-
-    // add strain energy
-    virtual void AddStrainEnergy(
-        double& psi,                      ///< strain energy function
-        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<6,1>& glstrain,///< Green-Lagrange strain
-        const int eleGID                   ///< element GID
-        );
-
-
-    virtual void AddDerivativesPrincipal(
-        LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
-        LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
-        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
-        const int eleGID                  ///< element GID
-        );
-
-    /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
-    virtual void AddCoupDerivVol(const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
-    {dserror("not implemented");}
-
-    /// @name Access methods
-    //@{
-    double C() const { return params_->c_; }
-    int D() const { return params_->d_; }
-
-    //@}
-
-    /// Indicator for formulation
-    virtual void SpecifyFormulation(
-      bool& isoprinc, ///< global indicator for isotropic principal formulation
-      bool& isomod, ///< global indicator for isotropic splitted formulation
-      bool& anisoprinc, ///< global indicator for anisotropic principal formulation
-      bool& anisomod, ///< global indicator for anisotropic splitted formulation
-      bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
+      /// Indicator for formulation
+      virtual void SpecifyFormulation(
+          bool& isoprinc,     ///< global indicator for isotropic principal formulation
+          bool& isomod,       ///< global indicator for isotropic splitted formulation
+          bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
+          bool& anisomod,     ///< global indicator for anisotropic splitted formulation
+          bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
       )
-    {
-      isoprinc = true;
-      return;
+      {
+        isoprinc = true;
+        return;
+      };
+
+     private:
+      /// my material parameters
+      MAT::ELASTIC::PAR::Coup2Pow* params_;
     };
 
-  private:
-
-    /// my material parameters
-    MAT::ELASTIC::PAR::Coup2Pow* params_;
-
-  };
-
-}  // namespace ELAST
+  }  // namespace ELASTIC
 }  // namespace MAT
 
 #endif  // COUP2POW_H_

@@ -22,31 +22,27 @@
 
 namespace DRT
 {
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
+    template <DRT::Element::DiscretizationType distype>
+    class FluidEleCalcStd : public FluidEleCalc<distype>
+    {
+      typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
 
-template<DRT::Element::DiscretizationType distype>
-class FluidEleCalcStd : public FluidEleCalc<distype>
-{
-  typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
+     public:
+      virtual ~FluidEleCalcStd() {}
 
-public:
-  virtual ~FluidEleCalcStd() {}
+      /// Singleton access method
+      static FluidEleCalcStd<distype>* Instance(bool create = true);
 
-  /// Singleton access method
-  static FluidEleCalcStd<distype>* Instance( bool create=true );
+      /// called upon destruction
+      virtual void Done();
 
-  /// called upon destruction
-  virtual void Done();
-
-private:
-  /// private constructor, since we are a Singleton.
-  FluidEleCalcStd();
-
-
-};
-}
-}
+     private:
+      /// private constructor, since we are a Singleton.
+      FluidEleCalcStd();
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif
-

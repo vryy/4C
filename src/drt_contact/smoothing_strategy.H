@@ -14,7 +14,7 @@
 #define SMOOTHING_STRATEGY_H_
 
 #include "contact_abstract_strategy.H"
-#include "../drt_mortar/mortar_utils.H" // TODO: nötig?
+#include "../drt_mortar/mortar_utils.H"  // TODO: nötig?
 
 
 // forward declaration
@@ -25,41 +25,27 @@ namespace MORTAR
 
 namespace CONTACT
 {
-
-class SmoothingStrategy : public CoAbstractStrategy
-{
-  public:
-
-  //! Standard constructor
-  SmoothingStrategy(
-    const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
-    int dim,
-    Teuchos::RCP<Epetra_Comm> comm,
-    double alphaf,
-    int maxdof);
+  class SmoothingStrategy : public CoAbstractStrategy
+  {
+   public:
+    //! Standard constructor
+    SmoothingStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> cinterface,
+        std::vector<Teuchos::RCP<MORTAR::MortarInterface>> mtinterface, int dim,
+        Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     //! Shared data constructor
-  SmoothingStrategy(
-      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
-      const Epetra_Map* DofRowMap,
-      const Epetra_Map* NodeRowMap,
-      Teuchos::ParameterList params,
-      std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
-      std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
-      int dim,
-      Teuchos::RCP<Epetra_Comm> comm,
-      double alphaf,
-      int maxdof);
+    SmoothingStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+        const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+        std::vector<Teuchos::RCP<CONTACT::CoInterface>> cinterface,
+        std::vector<Teuchos::RCP<MORTAR::MortarInterface>> mtinterface, int dim,
+        Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~SmoothingStrategy() {};
+    virtual ~SmoothingStrategy(){};
 
     //! @name Access methods
 
@@ -75,9 +61,11 @@ class SmoothingStrategy : public CoAbstractStrategy
     */
     bool ActiveSetSemiSmoothConverged() const
     {
-      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
-      if (semismooth) return activesetssconv_;
-      else            return true;
+      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+      if (semismooth)
+        return activesetssconv_;
+      else
+        return true;
     }
 
     /*!
@@ -92,9 +80,11 @@ class SmoothingStrategy : public CoAbstractStrategy
     */
     bool ActiveSetConverged()
     {
-      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
-      if (!semismooth) return activesetconv_;
-      else             return true;
+      bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+      if (!semismooth)
+        return activesetconv_;
+      else
+        return true;
     }
 
     /*!
@@ -105,11 +95,17 @@ class SmoothingStrategy : public CoAbstractStrategy
 
     //! Get the active node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
-    { dserror("Currently unsupported for the smoothing strategy!"); return Teuchos::null; };
+    {
+      dserror("Currently unsupported for the smoothing strategy!");
+      return Teuchos::null;
+    };
 
     //! Get the slip node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    { dserror("Currently unsupported for the smoothing strategy!"); return Teuchos::null; };
+    {
+      dserror("Currently unsupported for the smoothing strategy!");
+      return Teuchos::null;
+    };
 
     //@}
 
@@ -133,13 +129,15 @@ class SmoothingStrategy : public CoAbstractStrategy
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
 
     */
-    void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateContact(
+        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Evaluate frictional contact
 
     */
-    void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateFriction(
+        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Build 2x2 saddle point system
@@ -154,21 +152,20 @@ class SmoothingStrategy : public CoAbstractStrategy
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
-                                        Teuchos::RCP<Epetra_Vector> fd,
-                                        Teuchos::RCP<Epetra_Vector> sold,
-                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
-                                        int numiter,
-                                        Teuchos::RCP<Epetra_Operator>& blockMat,
-                                        Teuchos::RCP<Epetra_Vector>& blocksol,
-                                        Teuchos::RCP<Epetra_Vector>& blockrhs);
+        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
+        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
+        Teuchos::RCP<Epetra_Vector>& blockrhs);
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
     \param sold (in): the displacement dof solution increment (associated with displacement dofs)
-    \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution vector of the full merged linear system)
+    \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
+    vector of the full merged linear system)
     */
-    void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
+    void UpdateDisplacementsAndLMincrements(
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
 
     /*!
     \brief The entries of the constraint right-hand side are
@@ -209,7 +206,7 @@ class SmoothingStrategy : public CoAbstractStrategy
     to be performed for the current time / load step.
 
     */
-    void UpdateActiveSet(){return;}; //TODO
+    void UpdateActiveSet() { return; };  // TODO
 
     /*!
     \brief Update active set and check for convergence
@@ -244,8 +241,7 @@ class SmoothingStrategy : public CoAbstractStrategy
     \brief Set current displ state [derived]
 
     */
-    virtual void SetState(const enum MORTAR::StateType& statetype,
-        const Epetra_Vector& vec);
+    virtual void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec);
 
     /*!
     \brief Return matrix T
@@ -261,7 +257,7 @@ class SmoothingStrategy : public CoAbstractStrategy
     \brief Check linear and angular momentum conservation
 
     */
-    void CheckConservationLaws(const Epetra_Vector& fs, const Epetra_Vector& fm){return;};
+    void CheckConservationLaws(const Epetra_Vector& fs, const Epetra_Vector& fm) { return; };
 
 
     //@}
@@ -275,37 +271,35 @@ class SmoothingStrategy : public CoAbstractStrategy
     Call them whenever you like.
 
     */
-    double ConstraintNorm() const {return 0.0;}
+    double ConstraintNorm() const { return 0.0; }
     void EvaluateRelMovPredict() {}
-    double InitialPenalty() {return 0.0;}
-    void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
+    double InitialPenalty() { return 0.0; }
+    void InitializeUzawa(
+        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    {
+    }
     void ResetPenalty() {}
     void ModifyPenalty() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 
-  protected:
+   protected:
     //! derived
-    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces()
+    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() { return interface_; }
+
+    //! derived
+    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const
     {
       return interface_;
     }
 
-    //! derived
-    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const
-    {
-      return interface_;
-    }
-
-  private:
+   private:
     /*!
     \brief create vector with node positions
 
     */
-    void AssembleCoords(const std::string& sidename,
-                        bool ref,
-                        Teuchos::RCP<Epetra_Vector> vec);
+    void AssembleCoords(const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec);
 
     /*!
     \brief Setup mortar maps for strategy
@@ -313,96 +307,114 @@ class SmoothingStrategy : public CoAbstractStrategy
     */
     void SetupMT(bool redistributed);
 
-  private:
+   private:
     // don't want = operator and cctor
-    SmoothingStrategy operator = (const SmoothingStrategy& old);
+    SmoothingStrategy operator=(const SmoothingStrategy& old);
     SmoothingStrategy(const SmoothingStrategy& old);
 
-    //Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
+    // Store Coupling Matrices in case of Poro Lagrange Strategy ... here just ignore!
     virtual void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,
-                              Teuchos::RCP<LINALG::SparseMatrix> mhataam,
-                              Teuchos::RCP<LINALG::SparseMatrix> invda)
-    {return;}
+        Teuchos::RCP<LINALG::SparseMatrix> mhataam, Teuchos::RCP<LINALG::SparseMatrix> invda)
+    {
+      return;
+    }
 
-    bool activesetssconv_;    // convergence flag for semi-smooth active set search
-    bool activesetconv_;      // convergence flag for fixed-point active set search
-    int  activesetsteps_;     // number of fixed-point active set steps in this time step
+    bool activesetssconv_;  // convergence flag for semi-smooth active set search
+    bool activesetconv_;    // convergence flag for fixed-point active set search
+    int activesetsteps_;    // number of fixed-point active set steps in this time step
 
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_; //!< contact interfaces
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;  //!< contact interfaces
 
-    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M
+    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M
 
-    Teuchos::RCP<LINALG::SparseMatrix> tmatrix_;      // global Matrix T containing active node tangents
-    Teuchos::RCP<LINALG::SparseMatrix> smatrix_;      // global Matrix S containing normal+D+M derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> smatrixW_;     // global Matrix S containing W derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> tderivmatrix_; // global Matrix P containing tangent derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> tmatrix_;  // global Matrix T containing active node tangents
+    Teuchos::RCP<LINALG::SparseMatrix>
+        smatrix_;  // global Matrix S containing normal+D+M derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> smatrixW_;  // global Matrix S containing W derivatives
+    Teuchos::RCP<LINALG::SparseMatrix>
+        tderivmatrix_;  // global Matrix P containing tangent derivatives
 
 
-    Teuchos::RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invd_; // inverse of Mortar matrix D (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> ksn_;  // stiffness block K_sn (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> ksm_;  // stiffness block K_sm (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> kss_;  // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<Epetra_Vector> fs_;           // slave side effective forces (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_;  // inverse of Mortar matrix D (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksn_;   // stiffness block K_sn (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksm_;   // stiffness block K_sm (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kss_;   // stiffness block K_ss (needed for LM)
 
-    Teuchos::RCP<LINALG::SparseMatrix>  linslipLM_;   // global matrix containing derivatives (LM) of slip condition
-    Teuchos::RCP<LINALG::SparseMatrix>  linslipDIS_;  // global matrix containing derivatives (DIS) of slip condition
-    Teuchos::RCP<Epetra_Vector>         linslipRHS_;  // r.h.s vector friction slip nodes
-    Teuchos::RCP<LINALG::SparseMatrix>  linstickLM_;  // global matrix containing derivatives (LM) of slip condition
-    Teuchos::RCP<LINALG::SparseMatrix>  linstickDIS_; // global matrix containing derivatives (DIS) of stick condition
-    Teuchos::RCP<Epetra_Vector>         linstickRHS_; // r.h.s vector for friction stick condition
+    Teuchos::RCP<LINALG::SparseMatrix>
+        linslipLM_;  // global matrix containing derivatives (LM) of slip condition
+    Teuchos::RCP<LINALG::SparseMatrix>
+        linslipDIS_;  // global matrix containing derivatives (DIS) of slip condition
+    Teuchos::RCP<Epetra_Vector> linslipRHS_;  // r.h.s vector friction slip nodes
+    Teuchos::RCP<LINALG::SparseMatrix>
+        linstickLM_;  // global matrix containing derivatives (LM) of slip condition
+    Teuchos::RCP<LINALG::SparseMatrix>
+        linstickDIS_;  // global matrix containing derivatives (DIS) of stick condition
+    Teuchos::RCP<Epetra_Vector> linstickRHS_;  // r.h.s vector for friction stick condition
 
-    Teuchos::RCP<Epetra_Map> zigzagone_;   // active node set of last active set try
-    Teuchos::RCP<Epetra_Map> zigzagtwo_;   // active node set of second-last active set try
-    Teuchos::RCP<Epetra_Map> zigzagthree_; // active node set of third-last active set try
+    Teuchos::RCP<Epetra_Map> zigzagone_;    // active node set of last active set try
+    Teuchos::RCP<Epetra_Map> zigzagtwo_;    // active node set of second-last active set try
+    Teuchos::RCP<Epetra_Map> zigzagthree_;  // active node set of third-last active set try
 
     //******************************************
     // meshtying stuff
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > minterface_;  // mt interfaces
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> minterface_;  // mt interfaces
 
-    Teuchos::RCP<LINALG::SparseMatrix> MT_dmatrix_;    // Mortar matrix D for global mt
-    Teuchos::RCP<LINALG::SparseMatrix> MT_mmatrix_;    // Mortar matrix M for global mt
-    Teuchos::RCP<Epetra_Vector> MT_g_;                 // global weighted gap vector g for global mt
+    Teuchos::RCP<LINALG::SparseMatrix> MT_dmatrix_;  // Mortar matrix D for global mt
+    Teuchos::RCP<LINALG::SparseMatrix> MT_mmatrix_;  // Mortar matrix M for global mt
+    Teuchos::RCP<Epetra_Vector> MT_g_;               // global weighted gap vector g for global mt
 
-    Teuchos::RCP<LINALG::SparseMatrix> mt1_dmatrix_;    // Mortar matrix D for mt1
-    Teuchos::RCP<LINALG::SparseMatrix> mt1_mmatrix_;    // Mortar matrix M for mt1
+    Teuchos::RCP<LINALG::SparseMatrix> mt1_dmatrix_;  // Mortar matrix D for mt1
+    Teuchos::RCP<LINALG::SparseMatrix> mt1_mmatrix_;  // Mortar matrix M for mt1
 
-    Teuchos::RCP<LINALG::SparseMatrix> mt2_dmatrix_;    // Mortar matrix D for mt2
-    Teuchos::RCP<LINALG::SparseMatrix> mt2_mmatrix_;    // Mortar matrix M for mt2
+    Teuchos::RCP<LINALG::SparseMatrix> mt2_dmatrix_;  // Mortar matrix D for mt2
+    Teuchos::RCP<LINALG::SparseMatrix> mt2_mmatrix_;  // Mortar matrix M for mt2
 
-    Teuchos::RCP<Epetra_Vector> MT_z_;                 // current vector of Lagrange multipliers at t_n+1
-    Teuchos::RCP<Epetra_Vector> MT_zold_;              // old vector of Lagrange multipliers at t_n
-    Teuchos::RCP<Epetra_Vector> MT_zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> MT_z_;     // current vector of Lagrange multipliers at t_n+1
+    Teuchos::RCP<Epetra_Vector> MT_zold_;  // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector>
+        MT_zincr_;  // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the
+                    // increment of z_ between t_{n+1} and t_{n}!)
 
-    Teuchos::RCP<Epetra_Vector> mt1_z_;                 // current vector of Lagrange multipliers at t_n+1
-    Teuchos::RCP<Epetra_Vector> mt1_zold_;              // old vector of Lagrange multipliers at t_n
-    Teuchos::RCP<Epetra_Vector> mt1_zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> mt1_z_;     // current vector of Lagrange multipliers at t_n+1
+    Teuchos::RCP<Epetra_Vector> mt1_zold_;  // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector>
+        mt1_zincr_;  // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT
+                     // the increment of z_ between t_{n+1} and t_{n}!)
 
-    Teuchos::RCP<Epetra_Vector> mt2_z_;                 // current vector of Lagrange multipliers at t_n+1
-    Teuchos::RCP<Epetra_Vector> mt2_zold_;              // old vector of Lagrange multipliers at t_n
-    Teuchos::RCP<Epetra_Vector> mt2_zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> mt2_z_;     // current vector of Lagrange multipliers at t_n+1
+    Teuchos::RCP<Epetra_Vector> mt2_zold_;  // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector>
+        mt2_zincr_;  // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT
+                     // the increment of z_ between t_{n+1} and t_{n}!)
 
-    int globaloffset_;                          // contact lm gids
+    int globaloffset_;  // contact lm gids
 
-    Teuchos::RCP<Epetra_Map> MT_glmdofrowmap_;  // global MT Lagrange mult. dof row map (of all minterfaces)
+    Teuchos::RCP<Epetra_Map>
+        MT_glmdofrowmap_;  // global MT Lagrange mult. dof row map (of all minterfaces)
 
-    Teuchos::RCP<Epetra_Map> MT_gsdofrowmap_;   // global MT slave dof row map (of all minterfaces) = contact s+m
-    Teuchos::RCP<Epetra_Map> MT_gmdofrowmap_;   // global MT master dof row map (of all minterfaces)
+    Teuchos::RCP<Epetra_Map>
+        MT_gsdofrowmap_;  // global MT slave dof row map (of all minterfaces) = contact s+m
+    Teuchos::RCP<Epetra_Map> MT_gmdofrowmap_;  // global MT master dof row map (of all minterfaces)
 
-    Teuchos::RCP<Epetra_Map> MT_gsnoderowmap_;  // global MT slave node row map (of all minterfaces) = contact s+m
-    Teuchos::RCP<Epetra_Map> MT_gmnoderowmap_;  // global MT master node row map (of all minterfaces)
+    Teuchos::RCP<Epetra_Map>
+        MT_gsnoderowmap_;  // global MT slave node row map (of all minterfaces) = contact s+m
+    Teuchos::RCP<Epetra_Map>
+        MT_gmnoderowmap_;  // global MT master node row map (of all minterfaces)
 
-    Teuchos::RCP<Epetra_Map> MT_gsmdofrowmap_;  // global MT slave + master dof row map (of all minterface
+    Teuchos::RCP<Epetra_Map>
+        MT_gsmdofrowmap_;  // global MT slave + master dof row map (of all minterface
 
 
 
-    //penalty
-    Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;        // global matrix LinZ with derivatives of LM
-    double                             constrnorm_;        // L2-norm of normal contact constraints
-    double                             constrnormtan_;     // L2-norm of tangential contact constraints
-    double                             initialpenalty_;    // initial penalty parameter
-    double                             initialpenaltytan_; // initial tangential penalty parameter
+    // penalty
+    Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;  // global matrix LinZ with derivatives of LM
+    double constrnorm_;                              // L2-norm of normal contact constraints
+    double constrnormtan_;                           // L2-norm of tangential contact constraints
+    double initialpenalty_;                          // initial penalty parameter
+    double initialpenaltytan_;                       // initial tangential penalty parameter
 
-}; // class SmoothingStrategy
-} // namespace CONTACT
+  };  // class SmoothingStrategy
+}  // namespace CONTACT
 
 #endif /* SMOOTHING_STRATEGY_H_ */

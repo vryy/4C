@@ -35,32 +35,23 @@
  | constructor                                              vuong 08/16  |
  *----------------------------------------------------------------------*/
 POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    AlgorithmBase(comm, globaltimeparams),
-    structure_(Teuchos::null),
-    fluid_(Teuchos::null),
-    struct_zeros_(Teuchos::null),
-    solve_structure_(true),
-    artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams,"ARTERY_COUPLING"))
+    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : AlgorithmBase(comm, globaltimeparams),
+      structure_(Teuchos::null),
+      fluid_(Teuchos::null),
+      struct_zeros_(Teuchos::null),
+      solve_structure_(true),
+      artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | initialize algorithm                                    vuong 08/16  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::Init(
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& algoparams,
-    const Teuchos::ParameterList& structparams,
-    const Teuchos::ParameterList& fluidparams,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
+void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
+    const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
+    const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
     int ndsporofluid_scatra)
 {
   // access the global problem
@@ -75,12 +66,13 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
       ADAPTER::STR::BuildStructureAlgorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->Setup();
-  structure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::Structure>(adapterbase->StructureField());
+  structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::Structure>(adapterbase->StructureField());
 
   // initialize zero vector for convenience
   struct_zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
-  // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh deformation
-  solve_structure_ = DRT::INPUT::IntegralValue<int>(algoparams,"SOLVE_STRUCTURE");
+  // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
+  // deformation
+  solve_structure_ = DRT::INPUT::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = fluidparams.get<int>("LINEAR_SOLVER");
@@ -89,7 +81,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
   // -------------------------------------------------------------------
   // access the fluid discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> fluiddis  = DRT::Problem::Instance()->GetDis(fluid_disname);
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(fluid_disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -100,45 +92,34 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = fluiddis->Writer();
-  output->WriteMesh(0,0.0);
+  output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-    DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(fluidparams,"TIMEINTEGR");
+      DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+          fluidparams, "TIMEINTEGR");
 
   // build poro fluid time integrator
   Teuchos::RCP<ADAPTER::PoroFluidMultiphase> porofluid =
-      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
-        timintscheme,
-        fluiddis,
-        linsolvernumber,
-        globaltimeparams,
-        fluidparams,
-        DRT::Problem::Instance()->ErrorFile()->Handle(),
-        output
-        );
+      POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(timintscheme, fluiddis, linsolvernumber,
+          globaltimeparams, fluidparams, DRT::Problem::Instance()->ErrorFile()->Handle(), output);
 
   // wrap it
   fluid_ = Teuchos::rcp(new ADAPTER::PoroFluidMultiphaseWrapper(porofluid));
   // initialize it
-  fluid_->Init(
-      isale,
-      nds_disp,
-      nds_vel,
-      nds_solidpressure,
-      ndsporofluid_scatra);
+  fluid_->Init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
 
-  //done.
+  // done.
   return;
 }
 
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 08/16  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart( int restart )
+void POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart(int restart)
 {
   if (restart)
   {
@@ -164,7 +145,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
   // prepare the loop
   PrepareTimeLoop();
 
-  //time loop
+  // time loop
   while (NotFinished())
   {
     PrepareTimeStep();
@@ -172,11 +153,9 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
     TimeStep();
 
     UpdateAndOutput();
-
   }
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -184,19 +163,19 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
 {
-  //initial output
-  if(solve_structure_)
+  // initial output
+  if (solve_structure_)
   {
-    StructureField()-> PrepareOutput();
-    StructureField()-> Output();
-    SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+    StructureField()->PrepareOutput();
+    StructureField()->Output();
+    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   }
   else
   {
     // Inform user that structure field has been disabled
     PrintStructureDisabledInfo();
     // just set displacements and velocities to zero
-    SetStructSolution(struct_zeros_,struct_zeros_);
+    SetStructSolution(struct_zeros_, struct_zeros_);
   }
   FluidField()->PrepareTimeLoop();
 
@@ -210,16 +189,16 @@ void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
 {
   IncrementTimeAndStep();
 
-  StructureField()->Discretization()->SetState(1,"porofluid",FluidField()->Phinp());
+  StructureField()->Discretization()->SetState(1, "porofluid", FluidField()->Phinp());
 
-  if(solve_structure_)
+  if (solve_structure_)
   {
-    //NOTE: the predictor of the structure is called in here
-    StructureField()-> PrepareTimeStep();
-    SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+    // NOTE: the predictor of the structure is called in here
+    StructureField()->PrepareTimeStep();
+    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   }
   else
-    SetStructSolution(struct_zeros_,struct_zeros_);
+    SetStructSolution(struct_zeros_, struct_zeros_);
 
   FluidField()->PrepareTimeStep();
 }
@@ -239,8 +218,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
  | communicate the solution of the structure to the fluid    vuong 08/16  |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::SetStructSolution(
-    Teuchos::RCP<const Epetra_Vector> disp,
-    Teuchos::RCP<const Epetra_Vector> vel )
+    Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
 {
   SetMeshDisp(disp);
   SetVelocityFields(vel);
@@ -249,8 +227,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetStructSolution(
 /*------------------------------------------------------------------------*
  | communicate the structure velocity  to the fluid           vuong 08/16  |
  *------------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::SetVelocityFields(
-    Teuchos::RCP<const Epetra_Vector> vel)
+void POROMULTIPHASE::PoroMultiPhaseBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
 {
   fluid_->SetVelocityField(vel);
 }
@@ -261,15 +238,14 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetVelocityFields(
 void POROMULTIPHASE::PoroMultiPhaseBase::SetScatraSolution(
     unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars)
 {
-  fluid_->SetScatraSolution(nds,scalars);
+  fluid_->SetScatraSolution(nds, scalars);
 }
 
 
 /*------------------------------------------------------------------------*
  | communicate the structure displacement to the fluid        vuong 08/16  |
  *------------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseBase::SetMeshDisp(
-    Teuchos::RCP<const Epetra_Vector> disp )
+void POROMULTIPHASE::PoroMultiPhaseBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   fluid_->ApplyMeshMovement(disp);
 }
@@ -280,17 +256,17 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetMeshDisp(
 void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
 {
   // prepare the output
-  StructureField()-> PrepareOutput();
+  StructureField()->PrepareOutput();
 
   // update single fields
-  StructureField()-> Update();
+  StructureField()->Update();
   FluidField()->Update();
 
   // evaluate error if desired
   FluidField()->EvaluateErrorComparedToAnalyticalSol();
 
   // output single fields
-  StructureField()-> Output();
+  StructureField()->Output();
   FluidField()->Output();
 }
 
@@ -313,7 +289,8 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMa
 /*------------------------------------------------------------------------*
  | coupled artery-porofluid system matrix                kremheller 05/18 |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROMULTIPHASE::PoroMultiPhaseBase::ArteryPorofluidSysmat() const
+Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+POROMULTIPHASE::PoroMultiPhaseBase::ArteryPorofluidSysmat() const
 {
   return fluid_->ArteryPorofluidSysmat();
 }
@@ -388,12 +365,13 @@ Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::SolidPress
 void POROMULTIPHASE::PoroMultiPhaseBase::PrintStructureDisabledInfo()
 {
   // print out Info
-  if (Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   {
-    std::cout<<"\n";
-    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-    std::cout<<" INFO:    STRUCTURE FIELD IS NOT SOLVED   \n";
-    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    std::cout << "\n";
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                 "++++++++++++++++++++++++++++++++\n";
+    std::cout << " INFO:    STRUCTURE FIELD IS NOT SOLVED   \n";
+    std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+                 "++++++++++++++++++++++++++++++++\n";
   }
-
 }

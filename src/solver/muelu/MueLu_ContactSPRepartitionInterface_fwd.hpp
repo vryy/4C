@@ -12,7 +12,8 @@
 
 #ifdef HAVE_MueLu
 
-namespace MueLu {
+namespace MueLu
+{
   template <class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
   class ContactSPRepartitionInterface;
 }

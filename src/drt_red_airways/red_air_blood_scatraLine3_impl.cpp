@@ -29,21 +29,23 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface* DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(DRT::ELEMENTS::RedAirBloodScatraLine3* red_acinus)
+DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface*
+DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
+    DRT::ELEMENTS::RedAirBloodScatraLine3* red_acinus)
 {
   switch (red_acinus->Shape())
   {
-  case DRT::Element::line3:
-  {
-    static RedAirBloodScatraLine3Impl<DRT::Element::line3>* acinus;
-    if (acinus==NULL)
+    case DRT::Element::line3:
     {
-      acinus = new RedAirBloodScatraLine3Impl<DRT::Element::line3>;
+      static RedAirBloodScatraLine3Impl<DRT::Element::line3>* acinus;
+      if (acinus == NULL)
+      {
+        acinus = new RedAirBloodScatraLine3Impl<DRT::Element::line3>;
+      }
+      return acinus;
     }
-    return acinus;
-  }
-  default:
-    dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+    default:
+      dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
   }
   return NULL;
 }
@@ -56,26 +58,18 @@ DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface* DRT::ELEMENTS::RedAirBloodSc
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::RedAirBloodScatraLine3Impl()
 {
-
 }
 
 /*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(
-  RedAirBloodScatraLine3*         ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  std::vector<int>&          lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra,
-  Teuchos::RCP<MAT::Material> mat)
+int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScatraLine3* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
-
   return 0;
 }
 
@@ -84,44 +78,34 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(
-  RedAirBloodScatraLine3*                     ele,
-  Teuchos::ParameterList&                         params,
-  DRT::Discretization&                   discretization,
-  std::vector<int>&                      lm,
-  Teuchos::RCP<const MAT::Material>      material)
+void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScatraLine3* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<const MAT::Material> material)
 {
-
-  Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> generations = params.get<Teuchos::RCP<Epetra_Vector>>("generations");
 
   //--------------------------------------------------------------------
   // get the generation numbers
   //--------------------------------------------------------------------
   //  if(myrank == ele->Owner())
   {
-    int    gid = ele->Id();
+    int gid = ele->Id();
     double val = -2.0;
-    generations->ReplaceGlobalValues(1,&val,&gid);
+    generations->ReplaceGlobalValues(1, &val, &gid);
   }
 
-}//RedAirBloodScatraLine3Impl::Initial
+}  // RedAirBloodScatraLine3Impl::Initial
 
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Sysmat(
-  RedAirBloodScatraLine3*                       ele,
-  Epetra_SerialDenseVector&                epnp,
-  Epetra_SerialDenseVector&                epn,
-  Epetra_SerialDenseVector&                epnm,
-  Epetra_SerialDenseMatrix&                sysmat,
-  Epetra_SerialDenseVector&                rhs,
-  Teuchos::RCP<const MAT::Material>        material,
-  Teuchos::ParameterList &                          params,
-  double                                   time,
-  double                                   dt)
+void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Sysmat(RedAirBloodScatraLine3* ele,
+    Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm,
+    Epetra_SerialDenseMatrix& sysmat, Epetra_SerialDenseVector& rhs,
+    Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, double time,
+    double dt)
 {
 }
 
@@ -131,14 +115,10 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::EvaluateTerminalBC(
-  RedAirBloodScatraLine3*           ele,
-  Teuchos::ParameterList&      params,
-  DRT::Discretization&         discretization,
-  std::vector<int>&            lm,
-  Epetra_SerialDenseVector&    rhs,
-  Teuchos::RCP<MAT::Material>   material)
+    RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& rhs,
+    Teuchos::RCP<MAT::Material> material)
 {
-
 }
 
 
@@ -147,17 +127,13 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::EvaluateTerminalBC(
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::CalcFlowRates(
-  RedAirBloodScatraLine3*           ele,
-  Teuchos::ParameterList&      params,
-  DRT::Discretization&         discretization,
-  Epetra_SerialDenseVector&    elevec1, //a_volumenp,
-  Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
-  std::vector<int>&            lm,
-  Teuchos::RCP<MAT::Material>   material)
+void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::CalcFlowRates(RedAirBloodScatraLine3* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    Epetra_SerialDenseVector& elevec1,  // a_volumenp,
+    Epetra_SerialDenseVector& elevec2,  // a_volume_strain_np,
+    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 
 {
-
 }
 
 /*----------------------------------------------------------------------*
@@ -166,13 +142,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::CalcFlowRates(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
-  RedAirBloodScatraLine3*                   ele,
-  Teuchos::ParameterList&      params,
-  DRT::Discretization&         discretization,
-  std::vector<int>&            lm,
-  Teuchos::RCP<MAT::Material>   material)
+    RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
-
 }
 
 /*----------------------------------------------------------------------*
@@ -222,13 +194,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
-  RedAirBloodScatraLine3*      ele,
-  Epetra_SerialDenseVector&    dscatra,
-  Epetra_SerialDenseVector&    dvo2,
-  Teuchos::ParameterList&      params,
-  DRT::Discretization&         discretization,
-  std::vector<int>&            lm,
-  Teuchos::RCP<MAT::Material>           material)
+    RedAirBloodScatraLine3* ele, Epetra_SerialDenseVector& dscatra, Epetra_SerialDenseVector& dvo2,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<MAT::Material> material)
 {
 }
 #if 0

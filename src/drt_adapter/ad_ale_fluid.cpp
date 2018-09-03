@@ -25,21 +25,19 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale)
-  : AleWrapper(ale)
+ADAPTER::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
   interface_->Setup(*Discretization());
   // extend dirichlet map by the dof
   if (interface_->FSICondRelevant())
-    SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_part_fsi,interface_);
+    SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_part_fsi, interface_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor>
-ADAPTER::AleFluidWrapper::Interface() const
+Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleFluidWrapper::Interface() const
 {
   return interface_;
 }
@@ -49,7 +47,7 @@ ADAPTER::AleFluidWrapper::Interface() const
 int ADAPTER::AleFluidWrapper::Solve()
 {
   if (interface_->FSICondRelevant())
-    Evaluate(Teuchos::null,ALE::UTILS::MapExtractor::dbc_set_part_fsi);
+    Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_part_fsi);
   else
     Evaluate();
 
@@ -69,8 +67,7 @@ void ADAPTER::AleFluidWrapper::ApplyFreeSurfaceDisplacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFluidWrapper::ApplyAleUpdateDisplacements(
-    Teuchos::RCP<const Epetra_Vector> audisp)
+void ADAPTER::AleFluidWrapper::ApplyAleUpdateDisplacements(Teuchos::RCP<const Epetra_Vector> audisp)
 {
   interface_->InsertAUCondVector(audisp, WriteAccessDispnp());
 }

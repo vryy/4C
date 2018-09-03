@@ -32,7 +32,7 @@ namespace ADAPTER
   class FluidFSI;
   class FSIStructureWrapper;
   class StructureFSITimIntAda;
-}
+}  // namespace ADAPTER
 
 namespace DRT
 {
@@ -40,9 +40,10 @@ namespace DRT
 
   namespace UTILS
   {
-    template <typename> class TimIntMStep;
+    template <typename>
+    class TimIntMStep;
   }
-}
+}  // namespace DRT
 
 namespace FSI
 {
@@ -53,14 +54,14 @@ namespace FSI
   {
     class DebugWriter;
     class MonolithicDebugWriter;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace LINALG
 {
   class SparseMatrix;
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace NOX
 {
@@ -68,12 +69,13 @@ namespace NOX
   {
     class AdaptiveNewtonNormF;
     class Group;
-  }
-}
+  }  // namespace FSI
+}  // namespace NOX
 
 namespace TIMINT
 {
-  template <typename> class TimIntMStep;
+  template <typename>
+  class TimIntMStep;
 }
 
 namespace FSI
@@ -102,11 +104,9 @@ namespace FSI
    */
   class MonolithicBase : public ADAPTER::AlgorithmBase
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
-    explicit MonolithicBase(const Epetra_Comm& comm,
-                            const Teuchos::ParameterList& timeparams);
+    explicit MonolithicBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// virtual destructor to support polymorph destruction
     virtual ~MonolithicBase();
@@ -116,16 +116,16 @@ namespace FSI
 
     //! create time integrator for structure field
     virtual void CreateStructureTimeIntegrator(
-        const Teuchos::ParameterList& timeparams, ///< time integration parameters
-        Teuchos::RCP<DRT::Discretization> structdis ///< discretization of structure field
-        );
+        const Teuchos::ParameterList& timeparams,    ///< time integration parameters
+        Teuchos::RCP<DRT::Discretization> structdis  ///< discretization of structure field
+    );
 
     //! create time integrators for fluid and ale field
     virtual void CreateFluidAndALETimeIntegrator(
-        const Teuchos::ParameterList& timeparams, ///< time integration parameters
-        Teuchos::RCP<DRT::Discretization> fluiddis, ///< discretization of fluid field
-        Teuchos::RCP<DRT::Discretization> aledis ///< discretization of ALE field
-        );
+        const Teuchos::ParameterList& timeparams,    ///< time integration parameters
+        Teuchos::RCP<DRT::Discretization> fluiddis,  ///< discretization of fluid field
+        Teuchos::RCP<DRT::Discretization> aledis     ///< discretization of ALE field
+    );
 
     //! @name Time loop building blocks
 
@@ -142,13 +142,16 @@ namespace FSI
     virtual void Output();
 
     /// Write Lagrange multiplier
-    virtual void OutputLambda() { dserror("This function must be implemented in a derived class!"); };
+    virtual void OutputLambda()
+    {
+      dserror("This function must be implemented in a derived class!");
+    };
 
     /// access to structural field
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<ADAPTER::FluidFSI>& FluidField(){return fluid_;}
+    const Teuchos::RCP<ADAPTER::FluidFSI>& FluidField() { return fluid_; }
 
     /// access to ale field
     const Teuchos::RCP<ADAPTER::AleFsiWrapper>& AleField() { return ale_; }
@@ -161,8 +164,7 @@ namespace FSI
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     //@}
 
-  protected:
-
+   protected:
     //! Prepare time steps for the fsi problem
     virtual void PrepareTimeStepFSI();
 
@@ -173,13 +175,13 @@ namespace FSI
     virtual void PrepareTimeStepFields();
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FluidFSI> fluid_;
+    Teuchos::RCP<::ADAPTER::FluidFSI> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP< ::ADAPTER::AleFsiWrapper> ale_;
+    Teuchos::RCP<::ADAPTER::AleFsiWrapper> ale_;
 
     //! @name Transfer helpers
 
@@ -194,8 +196,10 @@ namespace FSI
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface(
+        Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 
@@ -208,28 +212,34 @@ namespace FSI
 
     //! @name Coupling objects
 
-    ADAPTER::Coupling& StructureFluidCoupling()         { return *coupsf_; }
-    ADAPTER::Coupling& StructureAleCoupling()           { return *coupsa_; }
-    ADAPTER::Coupling& FluidAleCoupling()               { return *coupfa_; }
-    ADAPTER::Coupling& InterfaceFluidAleCoupling()      { return *icoupfa_; }
+    ADAPTER::Coupling& StructureFluidCoupling() { return *coupsf_; }
+    ADAPTER::Coupling& StructureAleCoupling() { return *coupsa_; }
+    ADAPTER::Coupling& FluidAleCoupling() { return *coupfa_; }
+    ADAPTER::Coupling& InterfaceFluidAleCoupling() { return *icoupfa_; }
 
-    const ADAPTER::Coupling& StructureFluidCoupling()     const { return *coupsf_; }
-    const ADAPTER::Coupling& StructureAleCoupling()       const { return *coupsa_; }
-    const ADAPTER::Coupling& FluidAleCoupling()           const { return *coupfa_; }
-    const ADAPTER::Coupling& InterfaceFluidAleCoupling()  const { return *icoupfa_; }
+    const ADAPTER::Coupling& StructureFluidCoupling() const { return *coupsf_; }
+    const ADAPTER::Coupling& StructureAleCoupling() const { return *coupsa_; }
+    const ADAPTER::Coupling& FluidAleCoupling() const { return *coupfa_; }
+    const ADAPTER::Coupling& InterfaceFluidAleCoupling() const { return *icoupfa_; }
 
     //@}
 
     //! @name Time step size adaptivity
     //@{
 
-    bool IsAdaStructure() const { return isadastructure_; }  ///< Time step size adaptivity based on structure?
-    bool IsAdaFluid() const { return isadafluid_; }          ///< Time step size adaptivity based on fluid?
-    bool IsAdaSolver() const { return isadasolver_; }        ///< Time step size adaptivity based on solver convergence?
+    bool IsAdaStructure() const
+    {
+      return isadastructure_;
+    }  ///< Time step size adaptivity based on structure?
+    bool IsAdaFluid() const { return isadafluid_; }  ///< Time step size adaptivity based on fluid?
+    bool IsAdaSolver() const
+    {
+      return isadasolver_;
+    }  ///< Time step size adaptivity based on solver convergence?
 
-    bool isadastructure_; ///< Time step size adaptivity based on structure?
-    bool isadafluid_;     ///< Time step size adaptivity based on fluid?
-    bool isadasolver_;    ///< Time step size adaptivity based on solver convergence?
+    bool isadastructure_;  ///< Time step size adaptivity based on structure?
+    bool isadafluid_;      ///< Time step size adaptivity based on fluid?
+    bool isadasolver_;     ///< Time step size adaptivity based on solver convergence?
 
     //@}
 
@@ -241,25 +251,23 @@ namespace FSI
 
     //@}
 
-  private:
-
+   private:
     //! @name Interface coupling transfer objects
     //@{
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling>               coupsf_;
+    Teuchos::RCP<ADAPTER::Coupling> coupsf_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling>               coupsa_;
+    Teuchos::RCP<ADAPTER::Coupling> coupsa_;
 
     /// coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<ADAPTER::Coupling>               coupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> coupfa_;
 
     /// coupling of fluid and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling>               icoupfa_;
+    Teuchos::RCP<ADAPTER::Coupling> icoupfa_;
 
     //@}
-
   };
 
 
@@ -278,12 +286,10 @@ namespace FSI
                      public NOX::Epetra::Interface::Preconditioner,
                      public NOX::Direction::UserDefinedFactory
   {
-
     friend class FSI::UTILS::MonolithicDebugWriter;
 
-  public:
-    explicit Monolithic(const Epetra_Comm& comm,
-                        const Teuchos::ParameterList& timeparams);
+   public:
+    explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     ///
     /*! do the setup for the monolithic system
@@ -330,13 +336,14 @@ namespace FSI
     //! @name NOX methods
 
     /// compute FSI residual
-    bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
 
     /// compute FSI block matrix
-    bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
+    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
 
     /// preconditioner
-    bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
+    bool computePreconditioner(
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
 
     /// request NOX convergence from outside (needed for coupled problems)
     NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
@@ -353,13 +360,13 @@ namespace FSI
       normal Newton direction enhanced with adaptive tolerance control for the
       internal linear (iterative) solver.
      */
-    virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
-                                                                 Teuchos::ParameterList& params) const;
+    virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(
+        const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
-        );
+        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
+    );
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(Epetra_Vector& b) {}
@@ -368,7 +375,11 @@ namespace FSI
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    virtual Teuchos::RCP<Epetra_Vector> GetLambda () {dserror ("GetLambda not implemented in the base class"); return Teuchos::null;};
+    virtual Teuchos::RCP<Epetra_Vector> GetLambda()
+    {
+      dserror("GetLambda not implemented in the base class");
+      return Teuchos::null;
+    };
 
     //! Get number of time step repetitions in case of time step adaptivity
     int GetNumAdaptSteps() const { return adaptstep_; }
@@ -386,9 +397,8 @@ namespace FSI
      *  This implementation only works for matching grids at the interface
      *  but produces better results than RedistributeDomainDecomposition.
      */
-    virtual void RedistributeMonolithicGraph(
-        const FSI_COUPLING coupling, ///< coupling algorithm
-        const Epetra_Comm& comm ///< communicator
+    virtual void RedistributeMonolithicGraph(const FSI_COUPLING coupling,  ///< coupling algorithm
+        const Epetra_Comm& comm                                            ///< communicator
         ) = 0;
 
     /*! \brief Redistribute domain decomposition
@@ -399,18 +409,16 @@ namespace FSI
      *  Isorropia/Zoltan to repartition fluid or/and structure field.
      */
     virtual void RedistributeDomainDecomposition(
-        const INPAR::FSI::Redistribute domain, ///< type of redistribution algorithm
-        const FSI_COUPLING coupling, ///< coupling algorithm
-        const double inputWeight1, ///< weight for graph
-        const double inputWeight2, ///< weight for graph
-        const Epetra_Comm& comm, ///< communicator
-        int unbalance
-        ) = 0;
+        const INPAR::FSI::Redistribute domain,  ///< type of redistribution algorithm
+        const FSI_COUPLING coupling,            ///< coupling algorithm
+        const double inputWeight1,              ///< weight for graph
+        const double inputWeight2,              ///< weight for graph
+        const Epetra_Comm& comm,                ///< communicator
+        int unbalance) = 0;
 
     //@}
 
-  protected:
-
+   protected:
     //! Prepare preconditioner for new time step
     virtual void PrepareTimeStepPreconditioner() = 0;
 
@@ -427,9 +435,8 @@ namespace FSI
      *  \sa SetupRHSLambda()
      *  \sa SetupRHSFirstiter()
      */
-    virtual void SetupRHS(
-        Epetra_Vector& f,     ///< empty rhs vector (to be filled)
-        bool firstcall=false  ///< indicates whether this is the first nonlinear iteration or not
+    virtual void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+        bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
     );
 
     /// setup composed system matrix from field solvers
@@ -438,15 +445,13 @@ namespace FSI
     //@}
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                       NOX::Epetra::Vector& noxSoln,
-                       Teuchos::RCP<NOX::Utils> utils) = 0;
+    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
+        Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln,
+        Teuchos::RCP<NOX::Utils> utils) = 0;
 
     //! setup of NOX convergence tests
-    virtual Teuchos::RCP<NOX::StatusTest::Combo>
-    CreateStatusTest(Teuchos::ParameterList& nlParams,
-                     Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
+    virtual Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(
+        Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
 
     /*! \brief Extract the three field vectors from a given composed vector
      *
@@ -463,9 +468,8 @@ namespace FSI
      *  \param ax (o) ale displacements
      */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                     Teuchos::RCP<const Epetra_Vector>& sx,
-                                     Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
+        Teuchos::RCP<const Epetra_Vector>& ax) = 0;
 
     /*! \brief Put three field vectors together to a monolithic vector
      *
@@ -478,11 +482,10 @@ namespace FSI
      *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
      *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
      */
-    void CombineFieldVectors(
-          Epetra_Vector &v,                       ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av    ///< ale DOFs
+    void CombineFieldVectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+        Teuchos::RCP<const Epetra_Vector> av    ///< ale DOFs
     );
 
     /*! \brief Put three field vectors together to a monolithic vector
@@ -497,12 +500,13 @@ namespace FSI
      *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
      */
     virtual void CombineFieldVectors(
-          Epetra_Vector &v,                       ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
-          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
-    ) = 0;
+        Epetra_Vector& v,                      ///< composed vector containing all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,  ///< structural DOFs
+        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid DOFs
+        Teuchos::RCP<const Epetra_Vector> av,  ///< ale DOFs
+        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
+                          ///< (false)
+        ) = 0;
 
     //! @name Access methods for subclasses
 
@@ -518,7 +522,7 @@ namespace FSI
      *  defines the number of blocks, their maps and the block order. The block
      *  maps must be row maps by themselves and must not contain identical GIDs.
      */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps of single fields
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
@@ -532,7 +536,10 @@ namespace FSI
     void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergence
-    void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
+    void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test)
+    {
+      statustests_.push_back(test);
+    }
 
     /// flag is true if this is the first Newton iteration, false otherwise
     bool firstcall_;
@@ -558,21 +565,42 @@ namespace FSI
     double DtPast(const int step) const;
 
     // access to time step size suggestions based on different norms
-    double GetAdaStrDt() const      {return dtstr_;}      ///< \f$\Delta t\f$ based on all structural DOFs
-    double GetAdaStrFSIDt() const   {return dtstrfsi_;}   ///< \f$\Delta t\f$ based on structural FSI DOFs
-    double GetAdaStrInnerDt() const {return dtstrinner_;} ///< \f$\Delta t\f$ based on inner structural DOFs
-    double GetAdaFlDt() const       {return dtfl_;}       ///< \f$\Delta t\f$ based on all fluid DOFs
-    double GetAdaFlFSIDt() const    {return dtflfsi_;}    ///< \f$\Delta t\f$ based on fluid FSI DOFs
-    double GetAdaFlInnerDt() const  {return dtflinner_;}  ///< \f$\Delta t\f$ based on inner fluid DOFs
-    double GetAdaNonLinSolverDt() const { return dtnonlinsolver_; } ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
+    double GetAdaStrDt() const { return dtstr_; }  ///< \f$\Delta t\f$ based on all structural DOFs
+    double GetAdaStrFSIDt() const
+    {
+      return dtstrfsi_;
+    }  ///< \f$\Delta t\f$ based on structural FSI DOFs
+    double GetAdaStrInnerDt() const
+    {
+      return dtstrinner_;
+    }                                            ///< \f$\Delta t\f$ based on inner structural DOFs
+    double GetAdaFlDt() const { return dtfl_; }  ///< \f$\Delta t\f$ based on all fluid DOFs
+    double GetAdaFlFSIDt() const { return dtflfsi_; }  ///< \f$\Delta t\f$ based on fluid FSI DOFs
+    double GetAdaFlInnerDt() const
+    {
+      return dtflinner_;
+    }  ///< \f$\Delta t\f$ based on inner fluid DOFs
+    double GetAdaNonLinSolverDt() const
+    {
+      return dtnonlinsolver_;
+    }  ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
 
     // access to error norms
-    double GetAdaStrnorm() const      {return strnorm_;}      ///< error norm based on all structural DOFs
-    double GetAdaStrFSInorm() const   {return strfsinorm_;}   ///< error norm based on structural FSI DOFs
-    double GetAdaStrInnernorm() const {return strinnernorm_;} ///< error norm based on inner structural DOFs
-    double GetAdaFlnorm() const       {return flnorm_;}       ///< error norm based on all fluid DOFs
-    double GetAdaFlFSInorm() const    {return flfsinorm_;}    ///< error norm based on fluid FSI DOFs
-    double GetAdaFlInnerNorm() const  {return flinnernorm_;}  ///< error norm based on inner fluid DOFs
+    double GetAdaStrnorm() const { return strnorm_; }  ///< error norm based on all structural DOFs
+    double GetAdaStrFSInorm() const
+    {
+      return strfsinorm_;
+    }  ///< error norm based on structural FSI DOFs
+    double GetAdaStrInnernorm() const
+    {
+      return strinnernorm_;
+    }                                                ///< error norm based on inner structural DOFs
+    double GetAdaFlnorm() const { return flnorm_; }  ///< error norm based on all fluid DOFs
+    double GetAdaFlFSInorm() const { return flfsinorm_; }  ///< error norm based on fluid FSI DOFs
+    double GetAdaFlInnerNorm() const
+    {
+      return flinnernorm_;
+    }  ///< error norm based on inner fluid DOFs
 
     /*! \brief Select \f$\Delta t_{min}\f$ of all proposed time step sizes based on error estimation
      *
@@ -603,20 +631,20 @@ namespace FSI
 
     enum ErrorAction
     {
-      erroraction_none = 0,       ///< do noting
-      erroraction_stop = 1,       ///< stop simulation
-      erroraction_continue = 2,   ///< continue (only warning)
-      erroraction_halve_step = 3, ///< halve the time step size
-      erroraction_revert_dt = 4   ///< revert time step size to previous one
+      erroraction_none = 0,        ///< do noting
+      erroraction_stop = 1,        ///< stop simulation
+      erroraction_continue = 2,    ///< continue (only warning)
+      erroraction_halve_step = 3,  ///< halve the time step size
+      erroraction_revert_dt = 4    ///< revert time step size to previous one
     };
 
     //! @name Parameters for FSI time adaptivity
     //@{
 
-    double errtolfl_; ///< tolerance for norm of local truncation error in fluid field
-    double errtolstr_; ///< tolerance for norm of local truncation error in structure field
+    double errtolfl_;   ///< tolerance for norm of local truncation error in fluid field
+    double errtolstr_;  ///< tolerance for norm of local truncation error in structure field
 
-    std::string flmethod_; ///< type of auxiliary time integrator in fluid field
+    std::string flmethod_;  ///< type of auxiliary time integrator in fluid field
 
     //@}
 
@@ -634,15 +662,14 @@ namespace FSI
     virtual void WriteInterfaceEnergyFile(
         const double energystep,  ///< interface energy of current time step
         const double energysum    ///< summation of all interface energy increments
-        );
+    );
 
     /// output stream for energy-file
     Teuchos::RCP<std::ofstream> logenergy_;
 
     //@}
 
-  private:
-
+   private:
     /*! \brief Create the combined DOF row map for the FSI problem
      *
      *  Combine the DOF row maps of structure, fluid and ALE to an global FSI
@@ -689,7 +716,7 @@ namespace FSI
      *  for rhs in next time step in order to guarantee temporal consistent
      *  exchange of coupling traction
      */
-    virtual void RecoverLagrangeMultiplier(){ return; };
+    virtual void RecoverLagrangeMultiplier() { return; };
 
     /*! \brief Compute spurious interface energy increment due to temporal discretization
      *
@@ -697,9 +724,9 @@ namespace FSI
      *  might be produced at the interface. It can be computed as
      *  \f[
      *  \Delta E_\Gamma^{n\rightarrow n+1}
-     *  = \left((a-b)\lambda^n + (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right)
-     *  \f]
-     *  with the time interpolation factors a and b.
+     *  = \left((a-b)\lambda^n +
+     * (b-a)\lambda^{n+1}\right)\left(d_\Gamma^{S,n+1}-d_\Gamma^{S,n}\right) \f] with the time
+     * interpolation factors a and b.
      *
      *  \author mayr.mt \date 05/2014
      */
@@ -723,7 +750,8 @@ namespace FSI
      *  \sa SelectTimeStepSize
      *
      *  <h3> References </h3>
-     *  Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013 (supervised by Matthias Mayr)
+     *  Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013
+     * (supervised by Matthias Mayr)
      *
      *  \author mayr.mt
      *  \date 08/2013
@@ -825,9 +853,9 @@ namespace FSI
      *  \author mayr.mt \date 12/2013
      */
     double CalculateTimeStepSize(
-        const double errnorm, ///< length-scaled L2-norm of local discretization error
-        const double errtol, ///< user given error tolerance
-        const double estorder ///< order of accuracy of time integration scheme
+        const double errnorm,  ///< length-scaled L2-norm of local discretization error
+        const double errtol,   ///< user given error tolerance
+        const double estorder  ///< order of accuracy of time integration scheme
         ) const;
 
     /*! \brief Select new time step size \f$\Delta t\f$ from all suggestions
@@ -860,8 +888,8 @@ namespace FSI
     //@{
 
     // time step sizes
-    double dtmax_; ///< maximum time step size
-    double dtmin_; ///< minimum time step size
+    double dtmax_;  ///< maximum time step size
+    double dtmin_;  ///< minimum time step size
 
     /*! \brief Collection of past and present time step sizes
      *
@@ -878,24 +906,24 @@ namespace FSI
      *  The algorithm's marching time step size is still the one from
      *  ADAPTER::AlgorithmBase.
      */
-    Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;
+    Teuchos::RCP<TIMINT::TimIntMStep<double>> dt_;
 
-    int adaptstep_; ///< current number of adaption steps, i.e. repetitions of this time step
+    int adaptstep_;  ///< current number of adaption steps, i.e. repetitions of this time step
 
-    bool accepted_; ///< Indicate whether an acceptable time step size was found
+    bool accepted_;  ///< Indicate whether an acceptable time step size was found
 
     //! reason/field that is responsible for the new time step size
     std::string adareason_;
 
-    int numflfsidbcdofs_;   ///< Number of fluid interface DOFs with Dirichlet BC
+    int numflfsidbcdofs_;  ///< Number of fluid interface DOFs with Dirichlet BC
 
     // L2-norms of estimation of temporal discretization errors
-    double strnorm_;      ///< L2-norm of error in entire structure field
-    double flnorm_;       ///< L2-norm of error in entire fluid field
-    double strfsinorm_;   ///< L2-norm of error in interface DOFs of structure field
-    double flfsinorm_;    ///< L2-norm of error in interface DOFs of fluid field
-    double strinnernorm_; ///< L2-norm of error in interior DOFs of structure field
-    double flinnernorm_;  ///< L2-norm of error in interior DOFs of fluid field
+    double strnorm_;       ///< L2-norm of error in entire structure field
+    double flnorm_;        ///< L2-norm of error in entire fluid field
+    double strfsinorm_;    ///< L2-norm of error in interface DOFs of structure field
+    double flfsinorm_;     ///< L2-norm of error in interface DOFs of fluid field
+    double strinnernorm_;  ///< L2-norm of error in interior DOFs of structure field
+    double flinnernorm_;   ///< L2-norm of error in interior DOFs of fluid field
 
     // L-inf-norms of estimation of temporal discretization errors
     double strinfnorm_;       ///< L-inf-norm of error in entire structure field
@@ -906,15 +934,15 @@ namespace FSI
     double flinfinnernorm_;   ///< L-inf-norm of error in interior DOFs of fluid field
 
     // time step sizes calculated according to the 6 available L2-norms
-    double dtstr_;          ///< time step size based on error in entire structure field
-    double dtfl_;           ///< time step size based on error in entire fluid field
-    double dtstrfsi_;       ///< time step size based on error in interface DOFs of structure field
-    double dtflfsi_;        ///< time step size based on error in interface DOFs of fluid field
-    double dtstrinner_;     ///< time step size based on error in interior DOFs of structure field
-    double dtflinner_;      ///< time step size based on error in interior DOFs of fluid field
-    double dtnonlinsolver_; ///< time step size based on non-convergence of nonlinear solver
+    double dtstr_;           ///< time step size based on error in entire structure field
+    double dtfl_;            ///< time step size based on error in entire fluid field
+    double dtstrfsi_;        ///< time step size based on error in interface DOFs of structure field
+    double dtflfsi_;         ///< time step size based on error in interface DOFs of fluid field
+    double dtstrinner_;      ///< time step size based on error in interior DOFs of structure field
+    double dtflinner_;       ///< time step size based on error in interior DOFs of fluid field
+    double dtnonlinsolver_;  ///< time step size based on non-convergence of nonlinear solver
 
-    bool dtminused_;    ///< true if time step size has been repeated with dtmin_
+    bool dtminused_;  ///< true if time step size has been repeated with dtmin_
 
     /*! Number of consecutive steps that want to increase time step size before
      *  actually increasing it.
@@ -954,7 +982,7 @@ namespace FSI
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction
-    std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
+    std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF>> statustests_;
 
     /// status of NOX convergence check
     NOX::StatusTest::StatusType noxstatus_;
@@ -985,18 +1013,18 @@ namespace FSI
   /// Monolithic FSI with block system matrix
   class BlockMonolithic : public Monolithic
   {
-  public:
-    explicit BlockMonolithic(const Epetra_Comm& comm,
-                             const Teuchos::ParameterList& timeparams);
+   public:
+    explicit BlockMonolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! @name NOX methods
     //@{
 
     /// compute FSI block matrix (not for standard FSI)
-    bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
+    bool computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac);
 
     /// preconditioner
-    bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
+    bool computePreconditioner(
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
 
     //@}
 
@@ -1018,10 +1046,13 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(),b); }
+    virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(), b); }
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) { UnscaleSolution(*SystemMatrix(),x,b); }
+    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b)
+    {
+      UnscaleSolution(*SystemMatrix(), x, b);
+    }
 
     /*! \brief Apply infnorm scaling to linear block system
      *
@@ -1031,7 +1062,10 @@ namespace FSI
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) {}
+    virtual void UnscaleSolution(
+        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    {
+    }
 
     //@}
 
@@ -1058,10 +1092,9 @@ namespace FSI
      *  This implementation only works for matching grids at the interface
      *  but produces better results than RedistributeDomainDecomposition.
      */
-    virtual void RedistributeMonolithicGraph(
-        const FSI_COUPLING coupling, ///< coupling algorithm
-        const Epetra_Comm& comm ///< communicator
-        );
+    virtual void RedistributeMonolithicGraph(const FSI_COUPLING coupling,  ///< coupling algorithm
+        const Epetra_Comm& comm                                            ///< communicator
+    );
 
     /*! \brief Redistribute domain decomposition
      *
@@ -1071,13 +1104,12 @@ namespace FSI
      *  Isorropia/Zoltan to repartition fluid or/and structure field.
      */
     virtual void RedistributeDomainDecomposition(
-        const INPAR::FSI::Redistribute domain, ///< redistribute structure or fluid
-        const FSI_COUPLING coupling, ///< coupling algorithm
-        const double inputWeight1, ///< weight for graph
-        const double inputWeight2, ///< weight for graph
-        const Epetra_Comm& comm, ///< communicator
-        int unbalance
-        );
+        const INPAR::FSI::Redistribute domain,  ///< redistribute structure or fluid
+        const FSI_COUPLING coupling,            ///< coupling algorithm
+        const double inputWeight1,              ///< weight for graph
+        const double inputWeight2,              ///< weight for graph
+        const Epetra_Comm& comm,                ///< communicator
+        int unbalance);
 
     /*! \brief Find future / desired owner for each node at the interface
      *
@@ -1089,29 +1121,23 @@ namespace FSI
      *  The maps are built for interface nodes of the domain \c domain, where
      *  domain = {fluid, structure}.
      */
-    virtual void CreateNodeOwnerRelationship(
-        std::map<int,int>* nodeOwner,
-        std::map<int,std::list<int> >* inverseNodeOwner,
-        std::map<int, DRT::Node*>* fluidnodesPtr,
+    virtual void CreateNodeOwnerRelationship(std::map<int, int>* nodeOwner,
+        std::map<int, std::list<int>>* inverseNodeOwner, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis, ///< structure discretization
-        Teuchos::RCP<DRT::Discretization> fluiddis, ///< fluid discretization
-        const INPAR::FSI::Redistribute domain
-        ) = 0;
+        Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
+        Teuchos::RCP<DRT::Discretization> fluiddis,      ///< fluid discretization
+        const INPAR::FSI::Redistribute domain) = 0;
 
     /*! \brief Find neighboring node of the opposing field for each node at the interface
      *
      * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
-    virtual void CreateInterfaceMapping(
-        Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
-        std::map<int, DRT::Node*>* fluidnodesPtr,
+    virtual void CreateInterfaceMapping(Teuchos::RCP<DRT::Discretization> structuredis,
+        Teuchos::RCP<DRT::Discretization> fluiddis, std::map<int, DRT::Node*>* fluidnodesPtr,
         std::map<int, DRT::Node*>* structuregnodesPtr,
-        std::map<int,std::vector<int> > &fluidToStructureMap,
-        std::map<int,std::vector<int> > &structureToFluidMap
-        ){};
+        std::map<int, std::vector<int>>& fluidToStructureMap,
+        std::map<int, std::vector<int>>& structureToFluidMap){};
 
     /*! \brief Build nodal connectivity graph for complete domain, i.e. fluid and structure
      *    discretization
@@ -1125,14 +1151,13 @@ namespace FSI
      * in \c deletedEdges and \c insertedEdges, repectively.
      *
      */
-    virtual void BuildMonolithicGraph(
-        Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
-        std::map<int, std::vector<int> > &deletedEdges,
-        std::map<int,std::vector<int> > &insertedEdges,
-        std::map<int, std::vector<int> > &fluidToStructureMap,
-        std::map<int, std::vector<int> > &structureToFluidMap,
-        Teuchos::RCP<DRT::Discretization> structuredis, ///< structure discretization
-        Teuchos::RCP<DRT::Discretization> fluiddis); ///< fluid discretization);
+    virtual void BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+        std::map<int, std::vector<int>>& deletedEdges,
+        std::map<int, std::vector<int>>& insertedEdges,
+        std::map<int, std::vector<int>>& fluidToStructureMap,
+        std::map<int, std::vector<int>>& structureToFluidMap,
+        Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
+        Teuchos::RCP<DRT::Discretization> fluiddis);     ///< fluid discretization);
 
     /*! \brief Build weighted graph to influence distribution made by ZOLTAN
      *
@@ -1147,17 +1172,14 @@ namespace FSI
      *
      *  \sa InsertDeletedEdges()
      */
-    virtual void BuildWeightedGraph(
-        Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
+    virtual void BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
         Teuchos::RCP<Epetra_CrsGraph> initgraph_manip,
-        Teuchos::RCP<const Epetra_CrsGraph> initgraph,
-        const double inputWeight1,
-        const double inputWeight2,
-        std::map<int,int>* nodeOwner,
-        std::map<int,std::list<int> >* inverseNodeOwner,
-        std::map<int,std::list<int> >* deletedEdges,
-        const Epetra_Comm& comm ///< communicator
-        );
+        Teuchos::RCP<const Epetra_CrsGraph> initgraph, const double inputWeight1,
+        const double inputWeight2, std::map<int, int>* nodeOwner,
+        std::map<int, std::list<int>>* inverseNodeOwner,
+        std::map<int, std::list<int>>* deletedEdges,
+        const Epetra_Comm& comm  ///< communicator
+    );
 
     /*! \brief Call to ZOLTAN
      *
@@ -1167,12 +1189,11 @@ namespace FSI
      *  \c crs_ge_weights is used.
      */
     virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltan(
-        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, ///< manipulated graph
-        Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights, ///< matrix with weights
+        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,  ///< manipulated graph
+        Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights,  ///< matrix with weights
         Teuchos::RCP<Epetra_Vector> vector_weights,
-        std::string partitioningMethod,                      ///< graph or hypergraph partitioning
-        int unbalance
-        );
+        std::string partitioningMethod,  ///< graph or hypergraph partitioning
+        int unbalance);
 
     /*! \brief Call to ZOLTAN
      *
@@ -1182,10 +1203,9 @@ namespace FSI
      *  \c crs_ge_weights is used.
      */
     virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltanWithoutWeights(
-        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, ///< manipulated graph
-        std::string partitioningMethod,                      ///< graph or hypergraph partitioning
-        int unbalance
-        );
+        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,  ///< manipulated graph
+        std::string partitioningMethod,                       ///< graph or hypergraph partitioning
+        int unbalance);
 
     /*! \brief Switch the nodes of the patches between processors
      *
@@ -1194,12 +1214,10 @@ namespace FSI
      *  processor after the redistribution. This function switches the patches
      *  among the processors in order to achieve this.
      */
-    virtual Teuchos::RCP<Epetra_CrsGraph> SwitchDomains(
-        Teuchos::RCP<Epetra_Map> rownodes,
-        std::map<int,int>* nodeOwner,
-        Teuchos::RCP<Epetra_CrsGraph> bal_graph,
-        const Epetra_Comm& comm ///< communicator
-        );
+    virtual Teuchos::RCP<Epetra_CrsGraph> SwitchDomains(Teuchos::RCP<Epetra_Map> rownodes,
+        std::map<int, int>* nodeOwner, Teuchos::RCP<Epetra_CrsGraph> bal_graph,
+        const Epetra_Comm& comm  ///< communicator
+    );
 
     /*! \brief Restore structure and fluid nodal connectivity graph from \c monolithicGraph
      *
@@ -1209,16 +1227,12 @@ namespace FSI
      * deleted now, respectively.
      *
      */
-    virtual void RestoreRedistStructFluidGraph(
-        std::map<int, std::vector<int> > &edgesToRemove,
-        std::map<int, std::vector<int> > &edgesToInsert,
-        Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
-        Teuchos::RCP<Epetra_Map> rowmap,
-        Teuchos::RCP<Epetra_Map> colmap,
-        Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist,
+    virtual void RestoreRedistStructFluidGraph(std::map<int, std::vector<int>>& edgesToRemove,
+        std::map<int, std::vector<int>>& edgesToInsert,
+        Teuchos::RCP<Epetra_CrsGraph> monolithicGraph, Teuchos::RCP<Epetra_Map> rowmap,
+        Teuchos::RCP<Epetra_Map> colmap, Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist,
         Teuchos::RCP<Epetra_CrsGraph> fluidGraphRedist,
-        std::map<int,std::vector<int> > &fluidToStructureMap
-        );
+        std::map<int, std::vector<int>>& fluidToStructureMap);
 
     /*! \brief Get row maps for fluid and structure after redistribution of monolithic Graph
      *
@@ -1228,12 +1242,9 @@ namespace FSI
      * (flag \c fluid).
      *
      */
-    virtual Teuchos::RCP<Epetra_Map> GetRedistRowMap(
-        const Epetra_Map& oldMap,
+    virtual Teuchos::RCP<Epetra_Map> GetRedistRowMap(const Epetra_Map& oldMap,
         Teuchos::RCP<Epetra_Map> monolithicRownodes,
-        std::map<int,std::vector<int> > &fluidToStructureMap,
-        bool fluid=false
-        );
+        std::map<int, std::vector<int>>& fluidToStructureMap, bool fluid = false);
 
     /*! \brief Insert edges that were deleted in BuildWeightedGraph()
      *
@@ -1245,11 +1256,9 @@ namespace FSI
      *
      *  \sa BuildWeightedGraph()
      */
-    virtual void InsertDeletedEdges(
-        std::map<int,std::list<int> >* deletedEdges,
+    virtual void InsertDeletedEdges(std::map<int, std::list<int>>* deletedEdges,
         Teuchos::RCP<Epetra_Map> switched_rownodes,
-        Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph
-        );
+        Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph);
 
     /*! \brief Find the node that is related to a given dof
      *
@@ -1260,16 +1269,15 @@ namespace FSI
      *              and owner id of node
      */
     virtual void FindNodeRelatedToDof(
-        std::map<int, DRT::Node*>* nodes, ///< map of nodes with their global ids
-        int gdofid, ///<  global id of dof
-        Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
-        int* re ///< pointer to array with global id of node related to gdofid and owner id of node
-        );
+        std::map<int, DRT::Node*>* nodes,                  ///< map of nodes with their global ids
+        int gdofid,                                        ///<  global id of dof
+        Teuchos::RCP<DRT::Discretization> discretization,  ///< discretization
+        int* re  ///< pointer to array with global id of node related to gdofid and owner id of node
+    );
 
     //@}
 
-  protected:
-
+   protected:
     /*! \brief Prepare preconditioner for new time step
      *
      *  It is recommended to rebuild the preconditioner at the beginning of
@@ -1284,15 +1292,14 @@ namespace FSI
     virtual void PrepareTimeStepPreconditioner();
 
     /// create the composed system matrix
-    void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat,
-                            bool structuresplit);
+    void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat, bool structuresplit);
 
     /// setup solver for global block system
-    virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
-    CreateLinearSystem(Teuchos::ParameterList& nlParams, ///< parameter list
-        NOX::Epetra::Vector& noxSoln, ///< solution vector in NOX format
-        Teuchos::RCP<NOX::Utils> utils ///< NOX utils
-        );
+    virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(
+        Teuchos::ParameterList& nlParams,  ///< parameter list
+        NOX::Epetra::Vector& noxSoln,      ///< solution vector in NOX format
+        Teuchos::RCP<NOX::Utils> utils     ///< NOX utils
+    );
 
     /*! Put three field vectors together to a monolithic vector
      *
@@ -1306,11 +1313,12 @@ namespace FSI
      *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
      */
     virtual void CombineFieldVectors(
-          Epetra_Vector &v,                       ///< composed vector containing all field vectors
-          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
-          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
-          Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
-          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+        Epetra_Vector& v,                      ///< composed vector containing all field vectors
+        Teuchos::RCP<const Epetra_Vector> sv,  ///< structural DOFs
+        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid DOFs
+        Teuchos::RCP<const Epetra_Vector> av,  ///< ale DOFs
+        bool fullvectors  ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs
+                          ///< (false)
     ){};
 
     /// debug writer to be used inside preconditioner
@@ -1327,8 +1335,7 @@ namespace FSI
 
     const Teuchos::ParameterList& timeparams_;
 
-  private:
-
+   private:
     //! @name Setup of RHS vector
     //@{
 
@@ -1345,9 +1352,8 @@ namespace FSI
 
     //! list of procs who own interface nodes
     std::list<int> interfaceprocs_;
-
   };
-}
+}  // namespace FSI
 
 
 #endif

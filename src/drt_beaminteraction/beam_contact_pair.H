@@ -17,251 +17,242 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 
-//forward declaration ...
-namespace LINALG {
+// forward declaration ...
+namespace LINALG
+{
   class SerialDenseVector;
   class SerialDenseMatrix;
-}
-namespace DRT {
-class Element;
+}  // namespace LINALG
+namespace DRT
+{
+  class Element;
 }
 
 namespace BEAMINTERACTION
 {
+  // forward declaration ...
+  class BeamContactParams;
+  class BeamContactEvaluationData;
 
-//forward declaration ...
-class BeamContactParams;
-class BeamContactEvaluationData;
-
-
-/*!
- \brief
- */
-class BeamContactPair
-{
-public:
-
-  //! @name Friends
-  //no friend classes defined
-  //@}
-
-  //! @name Constructors and destructors and related methods
-
-  BeamContactPair();
 
   /*!
-  \brief Destructor
-  */
-  virtual ~BeamContactPair() {}
-
-  //! Initialization
-  void Init(
-      const Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluation_data_ptr,
-      const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-      std::vector< DRT::Element const*> elements);
-
-  //! Setup
-  virtual void Setup();
-
-  //@}
-
-  /*!
-  \brief things that need to be done in a separate loop before the actual evaluation loop
-         over all contact pairs
-  */
-  virtual void PreEvaluate() = 0;
-
-  //! @name Public evaluation methods
-  /*!
-  \brief Evaluate this contact element pair, return value indicates whether pair is active,
-         i.e. non-zero values for force and stiffmat are returned
-  */
-  virtual bool Evaluate(
-      LINALG::SerialDenseVector* forcevec1,
-      LINALG::SerialDenseVector* forcevec2,
-      LINALG::SerialDenseMatrix* stiffmat11,
-      LINALG::SerialDenseMatrix* stiffmat12,
-      LINALG::SerialDenseMatrix* stiffmat21,
-      LINALG::SerialDenseMatrix* stiffmat22)=0;
-
-  //! return appropriate internal implementation class (acts as a simple factory)
-  static Teuchos::RCP<BeamContactPair> Create(
-      std::vector< DRT::Element const *> const& ele_ptrs);
-
-  /*
-  \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
-  */
-  virtual void ResetState(
-      const std::vector<double>& centerline_dofvec_ele1,
-      const std::vector<double>& centerline_dofvec_ele2)=0;
-
-  //@}
-
-  //! @name Access methods
-
-  inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const
+   \brief
+   */
+  class BeamContactPair
   {
-    return params_;
-  }
+   public:
+    //! @name Friends
+    // no friend classes defined
+    //@}
 
-  inline Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> EvaluationData() const
-  {
-    return evaluationData_;
-  }
+    //! @name Constructors and destructors and related methods
 
-  /*!
-  \brief Get first element
-  */
-  inline const DRT::Element* Element1() const { return element1_;};
+    BeamContactPair();
 
-  /*!
-  \brief Get second element
-  */
-  inline const DRT::Element* Element2() const { return element2_;};
+    /*!
+    \brief Destructor
+    */
+    virtual ~BeamContactPair() {}
 
-//  /*!
-//  \brief Get number of contact points on this element pair
-//  */
-//  virtual int GetNumCps()=0;
-//  virtual int GetNumGps()=0;
-//  virtual int GetNumEps()=0;
-//
-//  /*!
-//  \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end point contact) of all contact pairs
-//  */
-//  virtual std::vector<int> GetContactType()=0;
-//
-//  /*!
-//  \brief Get vector of all contact angles of this contact pair
-//  */
-//  virtual std::vector<double> GetContactAngle()=0;
-//
-//  /*!
-//  \brief Get vector of all closest points of this contact pair
-//  */
-//  virtual std::vector<std::pair<double,double> > GetClosestPoint()=0;
-//
-//  /*!
-//  \brief Return number of individual contact segments on element pair
-//  */
-//  virtual std::pair<int,int> GetNumSegments()=0;
-//
-//  /*!
-//  \brief Return ids of active segments
-//  */
-//  virtual std::vector<std::pair<int,int> > GetSegmentIds()=0;
+    //! Initialization
+    void Init(const Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluation_data_ptr,
+        const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+        std::vector<DRT::Element const*> elements);
 
-  /*!
-  \brief Get flag indicating whether contact is active (true) or inactive (false)
-  */
-  virtual bool GetContactFlag() const=0;
+    //! Setup
+    virtual void Setup();
 
-  /*!
-  \brief Get number of active contact point pairs on this element pair
-  */
-  virtual unsigned int GetNumAllActiveContactPointPairs() const=0;
+    //@}
 
-  /*!
-  \brief Get coordinates of all active contact points on element1 and element2
-  */
-  virtual void GetAllActiveContactPointCoordsElement1(
-      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const=0;
+    /*!
+    \brief things that need to be done in a separate loop before the actual evaluation loop
+           over all contact pairs
+    */
+    virtual void PreEvaluate() = 0;
 
-  virtual void GetAllActiveContactPointCoordsElement2(
-      std::vector<LINALG::TMatrix<double,3,1> >& coords ) const=0;
+    //! @name Public evaluation methods
+    /*!
+    \brief Evaluate this contact element pair, return value indicates whether pair is active,
+           i.e. non-zero values for force and stiffmat are returned
+    */
+    virtual bool Evaluate(LINALG::SerialDenseVector* forcevec1,
+        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
+        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
+        LINALG::SerialDenseMatrix* stiffmat22) = 0;
 
-  /*!
-  \brief Get all (scalar) contact forces of this contact pair
-  */
-  virtual void GetAllActiveContactForces( std::vector<double> & forces ) const=0;
+    //! return appropriate internal implementation class (acts as a simple factory)
+    static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs);
 
-  /*!
-  \brief Get all (scalar) gap values of this contact pair
-  */
-  virtual void GetAllActiveContactGaps( std::vector<double> & gaps ) const=0;
+    /*
+    \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
+    elements
+    */
+    virtual void ResetState(const std::vector<double>& centerline_dofvec_ele1,
+        const std::vector<double>& centerline_dofvec_ele2) = 0;
 
-//  virtual LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()=0;
-//
-//  /*!
-//    \Check, if there is a difference between the result of the new and old gap definition, i.e. if the beams centerlines have already crossed or not.
-//  */
-//  virtual bool GetNewGapStatus()=0;
+    //@}
 
-  /*!
-  \brief Get energy of penalty contact.
-  */
-  virtual double GetEnergy() const = 0;
+    //! @name Access methods
 
-//  /*!
-//    \Get energy of perp penalty contact without transition factor contribution.
-//  */
-//  virtual double GetUnscaledPerpEnergy()=0;
-//
-//  /*!
-//    \Get energy of parallel penalty contact without transition factor contribution.
-//  */
-//  virtual double GetUnscaledParallelEnergy()=0;
-//
-//  virtual bool FirstTimeStep()=0;
-//
-//  /*!
-//  \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
-//  */
-//  virtual bool GetShiftStatus()=0;
-//  //@}
+    inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const { return params_; }
 
-  /** \brief print this beam contact element pair to screen
-   *
-   *  \author grill
-   *  \date 05/16 */
-  virtual void Print(std::ostream& out) const=0;
+    inline Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> EvaluationData() const
+    {
+      return evaluationData_;
+    }
 
-  /** \brief print this beam contact element pair to screen
-   *
-   *  \author grill
-   *  \date 05/16 */
-  virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const=0;
+    /*!
+    \brief Get first element
+    */
+    inline const DRT::Element* Element1() const { return element1_; };
 
-protected:
-  //! returns init state
-  inline const bool& IsInit() const
-  { return isinit_; };
+    /*!
+    \brief Get second element
+    */
+    inline const DRT::Element* Element2() const { return element2_; };
 
-  //! returns setup state
-  inline const bool& IsSetup() const
-  { return issetup_; };
+    //  /*!
+    //  \brief Get number of contact points on this element pair
+    //  */
+    //  virtual int GetNumCps()=0;
+    //  virtual int GetNumGps()=0;
+    //  virtual int GetNumEps()=0;
+    //
+    //  /*!
+    //  \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2=
+    //  end point contact) of all contact pairs
+    //  */
+    //  virtual std::vector<int> GetContactType()=0;
+    //
+    //  /*!
+    //  \brief Get vector of all contact angles of this contact pair
+    //  */
+    //  virtual std::vector<double> GetContactAngle()=0;
+    //
+    //  /*!
+    //  \brief Get vector of all closest points of this contact pair
+    //  */
+    //  virtual std::vector<std::pair<double,double> > GetClosestPoint()=0;
+    //
+    //  /*!
+    //  \brief Return number of individual contact segments on element pair
+    //  */
+    //  virtual std::pair<int,int> GetNumSegments()=0;
+    //
+    //  /*!
+    //  \brief Return ids of active segments
+    //  */
+    //  virtual std::vector<std::pair<int,int> > GetSegmentIds()=0;
 
-  //! Check the init state
-  void CheckInit() const;
+    /*!
+    \brief Get flag indicating whether contact is active (true) or inactive (false)
+    */
+    virtual bool GetContactFlag() const = 0;
 
-  //! Check the init and setup state
-  void CheckInitSetup() const;
+    /*!
+    \brief Get number of active contact point pairs on this element pair
+    */
+    virtual unsigned int GetNumAllActiveContactPointPairs() const = 0;
 
-protected:
-  //! @name member variables
+    /*!
+    \brief Get coordinates of all active contact points on element1 and element2
+    */
+    virtual void GetAllActiveContactPointCoordsElement1(
+        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const = 0;
 
-  //! indicates if the Init() function has been called
-  bool isinit_;
+    virtual void GetAllActiveContactPointCoordsElement2(
+        std::vector<LINALG::TMatrix<double, 3, 1>>& coords) const = 0;
 
-  //! indicates if the Setup() function has been called
-  bool issetup_;
+    /*!
+    \brief Get all (scalar) contact forces of this contact pair
+    */
+    virtual void GetAllActiveContactForces(std::vector<double>& forces) const = 0;
 
-private:
+    /*!
+    \brief Get all (scalar) gap values of this contact pair
+    */
+    virtual void GetAllActiveContactGaps(std::vector<double>& gaps) const = 0;
 
-  //! beam contact parameter data container
-  Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
+    //  virtual LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()=0;
+    //
+    //  /*!
+    //    \Check, if there is a difference between the result of the new and old gap definition,
+    //    i.e. if the beams centerlines have already crossed or not.
+    //  */
+    //  virtual bool GetNewGapStatus()=0;
 
-  //! beam contact evaluation data container
-  Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluationData_;
+    /*!
+    \brief Get energy of penalty contact.
+    */
+    virtual double GetEnergy() const = 0;
 
-  //! first element of interacting pair
-  const DRT::Element* element1_;
+    //  /*!
+    //    \Get energy of perp penalty contact without transition factor contribution.
+    //  */
+    //  virtual double GetUnscaledPerpEnergy()=0;
+    //
+    //  /*!
+    //    \Get energy of parallel penalty contact without transition factor contribution.
+    //  */
+    //  virtual double GetUnscaledParallelEnergy()=0;
+    //
+    //  virtual bool FirstTimeStep()=0;
+    //
+    //  /*!
+    //  \brief Get flag indicating whether the nodal values of one element had been shifted due to
+    //  r1=r2
+    //  */
+    //  virtual bool GetShiftStatus()=0;
+    //  //@}
 
-  //! second element of interacting pair
-  const DRT::Element* element2_;
-  //@}
+    /** \brief print this beam contact element pair to screen
+     *
+     *  \author grill
+     *  \date 05/16 */
+    virtual void Print(std::ostream& out) const = 0;
 
-};
-}
+    /** \brief print this beam contact element pair to screen
+     *
+     *  \author grill
+     *  \date 05/16 */
+    virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const = 0;
+
+   protected:
+    //! returns init state
+    inline const bool& IsInit() const { return isinit_; };
+
+    //! returns setup state
+    inline const bool& IsSetup() const { return issetup_; };
+
+    //! Check the init state
+    void CheckInit() const;
+
+    //! Check the init and setup state
+    void CheckInitSetup() const;
+
+   protected:
+    //! @name member variables
+
+    //! indicates if the Init() function has been called
+    bool isinit_;
+
+    //! indicates if the Setup() function has been called
+    bool issetup_;
+
+   private:
+    //! beam contact parameter data container
+    Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
+
+    //! beam contact evaluation data container
+    Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluationData_;
+
+    //! first element of interacting pair
+    const DRT::Element* element1_;
+
+    //! second element of interacting pair
+    const DRT::Element* element2_;
+    //@}
+  };
+}  // namespace BEAMINTERACTION
 
 #endif

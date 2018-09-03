@@ -8,28 +8,29 @@
 
 class MeshLoader
 {
-public:
+ public:
+  void GetCutNode(int nid, double x, double y, double z, double lsv);
 
-  void GetCutNode( int nid, double x, double y, double z, double lsv );
+  void GetNode(int nid, double x, double y, double z, double lsv);
 
-  void GetNode( int nid, double x, double y, double z, double lsv );
+  void CreateSide(
+      int sid, int nid1, int nid2, int nid3, int nid4, DRT::Element::DiscretizationType shape);
 
-  void CreateSide( int sid, int nid1, int nid2, int nid3, int nid4, DRT::Element::DiscretizationType shape );
+  void CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7,
+      int nid8, DRT::Element::DiscretizationType);
 
-  void CreateElement( int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7, int nid8, DRT::Element::DiscretizationType );
-
-  void CutTest_Cut( bool include_inner, bool do_Cut_Positions_Dofsets = false)
+  void CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofsets = false)
   {
-    mesh_.CutTest_Cut( include_inner,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true,do_Cut_Positions_Dofsets);
+    mesh_.CutTest_Cut(include_inner, INPAR::CUT::VCellGaussPts_Tessellation,
+        INPAR::CUT::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
     mesh_.PrintCellStats();
   }
 
-private:
-
-  void Fill( std::map<int, std::vector<double> > & nodes, int nid, double * values );
+ private:
+  void Fill(std::map<int, std::vector<double>>& nodes, int nid, double* values);
 
   GEO::CUT::MeshIntersection mesh_;
-  std::map<int, std::vector<double> > nodes_;
-  std::map<int, std::vector<double> > cut_nodes_;
+  std::map<int, std::vector<double>> nodes_;
+  std::map<int, std::vector<double>> cut_nodes_;
 };
 #endif

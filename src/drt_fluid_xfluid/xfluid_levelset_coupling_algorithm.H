@@ -21,13 +21,12 @@
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "../linalg/linalg_mapextractor.H"
 
-//Needed for input parameter
+// Needed for input parameter
 #include "../drt_inpar/inpar_twophase.H"
 
 
 namespace XFLUIDLEVELSET
 {
-
   /// Xfluid level set coupling
   /*!
 
@@ -40,15 +39,14 @@ namespace XFLUIDLEVELSET
    */
   class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    explicit Algorithm(
-        const Epetra_Comm& comm,             ///< communicator
-        const Teuchos::ParameterList& prbdyn,///< problem-specific parameter list
-        const Teuchos::ParameterList& solverparams, ///<solver-specific parameter list
-        const std::map<std::string, int>& dofset_couling_map ///< key=meaning of a dofset in a dis, nodal dofset number
-        );
+    explicit Algorithm(const Epetra_Comm& comm,      ///< communicator
+        const Teuchos::ParameterList& prbdyn,        ///< problem-specific parameter list
+        const Teuchos::ParameterList& solverparams,  ///< solver-specific parameter list
+        const std::map<std::string, int>&
+            dofset_couling_map  ///< key=meaning of a dofset in a dis, nodal dofset number
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
@@ -74,12 +72,12 @@ namespace XFLUIDLEVELSET
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
     );
 
     /*! \brief Setup all class internal objects and members
@@ -114,8 +112,7 @@ namespace XFLUIDLEVELSET
     /// Restart
     void Restart(int restart);
 
-  protected:
-
+   protected:
     virtual void DoAlgorithmSpecificInit();
 
     /// convergence Check for present iteration step
@@ -134,33 +131,28 @@ namespace XFLUIDLEVELSET
     /// print string to std cout
     void PrintToScreen(const std::string str);
 
-    //Communication between fields:
+    // Communication between fields:
     /// set scatra values required in fluid
     void SetScaTraValuesInFluid();
     /// set fluid values required in scatra
     void SetFluidValuesInScaTra(bool init);
 
     /// compute geometric quantities (normalvector field and curvatures) from level set field
-    void ComputeGeometricQuantities(
-        const bool require_smoothedgradphi,
-        const bool require_nodalcurvature,
-        const Teuchos::RCP<const Epetra_Vector> & phinp,
+    void ComputeGeometricQuantities(const bool require_smoothedgradphi,
+        const bool require_nodalcurvature, const Teuchos::RCP<const Epetra_Vector>& phinp,
         const INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype,
-        Teuchos::RCP<Epetra_MultiVector> & smoothedgradphi,
-        Teuchos::RCP<Epetra_Vector> & nodalcurvature
-    );
+        Teuchos::RCP<Epetra_MultiVector>& smoothedgradphi,
+        Teuchos::RCP<Epetra_Vector>& nodalcurvature);
 
-    /// copy geometric quantities from scatra to cutter discretization stored in the conditionmanager
-    void CopyGeometricQuantities(
-        const bool require_smoothedgradphi,
-        const bool require_nodalcurvature,
-        const Teuchos::RCP<const Epetra_Vector> & scatra_phinp,
-        const Teuchos::RCP<const Epetra_MultiVector> & scatra_smoothedgradphi,
-        const Teuchos::RCP<const Epetra_Vector>      & scatra_nodalcurvature,
-        const Teuchos::RCP<Epetra_Vector> & fluid_phinp,
-        const Teuchos::RCP<Epetra_MultiVector> & fluid_smoothedgradphi,
-        const Teuchos::RCP<Epetra_Vector>      & fluid_nodalcurvature
-    );
+    /// copy geometric quantities from scatra to cutter discretization stored in the
+    /// conditionmanager
+    void CopyGeometricQuantities(const bool require_smoothedgradphi,
+        const bool require_nodalcurvature, const Teuchos::RCP<const Epetra_Vector>& scatra_phinp,
+        const Teuchos::RCP<const Epetra_MultiVector>& scatra_smoothedgradphi,
+        const Teuchos::RCP<const Epetra_Vector>& scatra_nodalcurvature,
+        const Teuchos::RCP<Epetra_Vector>& fluid_phinp,
+        const Teuchos::RCP<Epetra_MultiVector>& fluid_smoothedgradphi,
+        const Teuchos::RCP<Epetra_Vector>& fluid_nodalcurvature);
 
 
     /// update time
@@ -180,28 +172,29 @@ namespace XFLUIDLEVELSET
 
 
     /// Get smoothed LevelSet gradient
-    Teuchos::RCP<Epetra_MultiVector> GetSmoothedLevelSetGradient(const Teuchos::RCP<const Epetra_Vector> & phinp,
-                                                                 INPAR::TWOPHASE::SmoothGradPhi        smoothedgradphi);
-  private:
+    Teuchos::RCP<Epetra_MultiVector> GetSmoothedLevelSetGradient(
+        const Teuchos::RCP<const Epetra_Vector>& phinp,
+        INPAR::TWOPHASE::SmoothGradPhi smoothedgradphi);
 
+   private:
     /// time-step length, maximum time and maximum number of steps
-    double  dt_;
-    double  maxtime_;
-    int     stepmax_;
+    double dt_;
+    double maxtime_;
+    int stepmax_;
 
     /// (preliminary) maximum number of iterations and tolerance for outer iteration
-    int     itmax_;
-    double  ittol_;
+    int itmax_;
+    double ittol_;
 
     /// flag for output specific options
     int upres_;
 
     /// masscenter output
-    bool    write_center_of_mass_;
+    bool write_center_of_mass_;
 
     /// Two Phase Specific parameter
-    INPAR::TWOPHASE::SmoothGradPhi        smoothedgradphitype_;
-    bool                                  scalesmoothedgradients_;
+    INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype_;
+    bool scalesmoothedgradients_;
 
     /// Outer-loop convergence variables:
     Teuchos::RCP<Epetra_Vector> velnpi_;
@@ -215,9 +208,8 @@ namespace XFLUIDLEVELSET
     Teuchos::ParameterList prbdyn_;
 
     std::map<std::string, int> dofset_coupling_map_;
-
   };
 
-} // namespace XFLUIDLEVELSET
+}  // namespace XFLUIDLEVELSET
 
-#endif // XFLUID_LEVELSET_ALGORITHM_H
+#endif  // XFLUID_LEVELSET_ALGORITHM_H

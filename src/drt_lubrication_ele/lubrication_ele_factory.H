@@ -20,39 +20,35 @@ Maintainer: Andy Wirtz
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    // forward declaration
+    class LubricationEleInterface;
 
-namespace ELEMENTS
-{
+    class LubricationFactory
+    {
+     public:
+      //! ctor
+      LubricationFactory() { return; }
 
-// forward declaration
-class LubricationEleInterface;
+      //! dtor
+      virtual ~LubricationFactory() { return; }
 
-class LubricationFactory
-{
-public:
-  //! ctor
-  LubricationFactory(){ return; }
+      //! ProvideImpl
+      static LubricationEleInterface* ProvideImpl(
+          DRT::Element::DiscretizationType distype, const std::string& disname);
 
-  //! dtor
-  virtual ~LubricationFactory(){ return; }
-
-  //! ProvideImpl
-  static LubricationEleInterface* ProvideImpl(
-    DRT::Element::DiscretizationType distype,
-    const std::string& disname);
-
-private:
-  //! define LubricationEle instances dependent on problem
-  template<DRT::Element::DiscretizationType distype,int probdim>
-  static LubricationEleInterface* DefineProblemType(
-    const std::string& disname);
+     private:
+      //! define LubricationEle instances dependent on problem
+      template <DRT::Element::DiscretizationType distype, int probdim>
+      static LubricationEleInterface* DefineProblemType(const std::string& disname);
 
 
-}; // end class LubricationFactory
+    };  // end class LubricationFactory
 
-} // end ELEMENTS
+  }  // namespace ELEMENTS
 
-} // end DRT
+}  // namespace DRT
 
 
 #endif /* SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_ */

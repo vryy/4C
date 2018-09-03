@@ -46,28 +46,21 @@ namespace DRT
  */
 class RuntimeVtpWriter
 {
-
-public:
+ public:
   /// Constructor
   RuntimeVtpWriter();
 
   /// Destructor
-  virtual ~RuntimeVtpWriter()
-  {}
+  virtual ~RuntimeVtpWriter() {}
 
   /** \brief reset current simulation time and time step number
    *
    *  \author grill
    *  \date 04/17 */
-  void Initialize(
-      unsigned int myrank,
-      unsigned int num_processors,
+  void Initialize(unsigned int myrank, unsigned int num_processors,
       unsigned int max_number_timesteps_to_be_written,
-      const std::string& path_existing_output_directory,
-      const std::string& simulation_name,
-      const std::string& geometry_name,
-      const std::string& restart_name,
-      double restart_time,
+      const std::string& path_existing_output_directory, const std::string& simulation_name,
+      const std::string& geometry_name, const std::string& restart_name, double restart_time,
       bool write_binary_output);
 
   /** \brief reset current simulation time and time step number and geometry name
@@ -75,15 +68,13 @@ public:
    *  \author grill
    *  \date 04/17 */
   void SetupForNewTimeStepAndGeometry(
-      double time,
-      unsigned int timestep,
-      const std::string & geometryname);
+      double time, unsigned int timestep, const std::string& geometryname);
 
   /** \brief reset geometry data for poly data set all at once
    *
    *  \author grill
    *  \date 04/17 */
-  void ResetGeometry( const std::vector<double>& point_coordinates );
+  void ResetGeometry(const std::vector<double>& point_coordinates);
 
   /** \brief get mutable point coordinate vector for poly data set
    *
@@ -99,10 +90,8 @@ public:
    *  \author grill
    *  \date 04/17 */
   // Todo template <typename T>, double, int,
-  void AppendVisualizationPointDataVector(
-      const std::vector<double>& datavalues,
-      const unsigned int num_components_per_point,
-      const std::string& dataname);
+  void AppendVisualizationPointDataVector(const std::vector<double>& datavalues,
+      const unsigned int num_components_per_point, const std::string& dataname);
 
 
   /** \brief write all required VTK files to filesystem
@@ -115,11 +104,10 @@ public:
    *
    *  \author grill
    *  \date 04/17 */
-  void WriteCollectionFileOfAllWrittenFiles( const std::string & collectionfilename );
+  void WriteCollectionFileOfAllWrittenFiles(const std::string& collectionfilename);
 
 
-private:
-
+ private:
   /** \brief write all stored data vectors to VTK files
    *
    *  \author grill
@@ -127,8 +115,7 @@ private:
   void WriteAllPointDataVectorsToFiles();
 
 
-private:
-
+ private:
   //! the actual vtp writer object
   Teuchos::RCP<VtpWriter> vtp_writer_;
 
@@ -143,8 +130,7 @@ private:
 
 
   //! key: result name, entry: (solution data vector, num_components)
-  std::map<std::string, std::pair<std::vector<double>, unsigned int> > point_data_vectors_;
-
+  std::map<std::string, std::pair<std::vector<double>, unsigned int>> point_data_vectors_;
 };
 
 #endif

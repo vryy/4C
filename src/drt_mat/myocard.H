@@ -40,9 +40,9 @@ namespace MAT
     /// parameters for scalar transport material
     class Myocard : public Parameter
     {
-    public:
+     public:
       /// standard constructor
-      Myocard( Teuchos::RCP<MAT::PAR::Material> matdata );
+      Myocard(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~Myocard() { ; }
@@ -75,191 +75,208 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    }; // class myocard
-  } // namespace PAR
+    };  // class myocard
+  }     // namespace PAR
 
-class MyocardType : public DRT::ParObjectType
-{
-public:
-  std::string Name() const { return "MyocardType"; }
-  static MyocardType & Instance() { return instance_; };
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+  class MyocardType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MyocardType"; }
+    static MyocardType& Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-private:
-  static MyocardType instance_;
-};
+   private:
+    static MyocardType instance_;
+  };
 
-/*----------------------------------------------------------------------*/
-/// Myocard material
-///
-/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac muscle tissue
-///
-/// \author cbert
-///
-/// \date 08/13
-
-class Myocard : public Material
-
-{
-
-public:
-  /// construct empty material object
-  Myocard();
-
-  /// constructor with given material parameters
-  Myocard(MAT::PAR::Myocard* params);
-
-  /// @name Packing and Unpacking
-  //@{
-
-  /// Return unique ParObject id
+  /*----------------------------------------------------------------------*/
+  /// Myocard material
   ///
-  ///  every class implementing ParObject needs a unique id defined at the
-  ///  top of drt_parobject.H (this file) and should return it in this method.
-  virtual int UniqueParObjectId() const { return MyocardType::Instance().UniqueParObjectId(); }
-
-  /// Pack this class so it can be communicated
+  /// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac
+  /// muscle tissue
   ///
-  /// Resizes the vector data and stores all information of a class in it.
-  /// The first information to be stored in data has to be the
-  /// unique parobject id delivered by UniqueParObjectId() which will then
-  /// identify the exact class on the receiving processor.
-  virtual void Pack(DRT::PackBuffer& data) const;  ///< (in/out): char vector to store class information
-
-  /// \brief Unpack data from a char vector into this class
+  /// \author cbert
   ///
-  /// The vector data contains all information to rebuild the
-  /// exact copy of an instance of a class on a different processor.
-  /// The first entry in data has to be an integer which is the unique
-  /// parobject id defined at the top of this file and delivered by
-  /// UniqueParObjectId().
-  ///
-  virtual void Unpack(const std::vector<char>& data);  ///< vector storing all data to be unpacked into this
+  /// \date 08/13
 
-  //@}
+  class Myocard : public Material
 
-  /// Unpack Material for adaptive methods
-  virtual void UnpackMaterial(const std::vector<char>& data);
+  {
+   public:
+    /// construct empty material object
+    Myocard();
 
-  /// init material
-  void SetGP(int gp) {params_->num_gp = gp; };
+    /// constructor with given material parameters
+    Myocard(MAT::PAR::Myocard* params);
 
-  /// material type
-  virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_myocard; }
+    /// @name Packing and Unpacking
+    //@{
 
-  /// return copy of this material object
-  virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Myocard( *this ) ); }
+    /// Return unique ParObject id
+    ///
+    ///  every class implementing ParObject needs a unique id defined at the
+    ///  top of drt_parobject.H (this file) and should return it in this method.
+    virtual int UniqueParObjectId() const { return MyocardType::Instance().UniqueParObjectId(); }
 
-  /// material call from DRT::ELEMENTS::Transport::ReadElement function
-  /// to setup conductivity tensor for each element
-  void Setup(const LINALG::Matrix<3,1>& fiber1);
-  void Setup(const LINALG::Matrix<2,1>& fiber1);
-  void Setup(DRT::INPUT::LineDefinition* linedef);
+    /// Pack this class so it can be communicated
+    ///
+    /// Resizes the vector data and stores all information of a class in it.
+    /// The first information to be stored in data has to be the
+    /// unique parobject id delivered by UniqueParObjectId() which will then
+    /// identify the exact class on the receiving processor.
+    virtual void Pack(
+        DRT::PackBuffer& data) const;  ///< (in/out): char vector to store class information
 
-  void SetupDiffusionTensor(const std::vector<double> &fiber1);
-  void SetupDiffusionTensor(const LINALG::Matrix<3,1>& fiber1);
-  void SetupDiffusionTensor(const LINALG::Matrix<2,1>& fiber1);
+    /// \brief Unpack data from a char vector into this class
+    ///
+    /// The vector data contains all information to rebuild the
+    /// exact copy of an instance of a class on a different processor.
+    /// The first entry in data has to be an integer which is the unique
+    /// parobject id defined at the top of this file and delivered by
+    /// UniqueParObjectId().
+    ///
+    virtual void Unpack(
+        const std::vector<char>& data);  ///< vector storing all data to be unpacked into this
 
-  /// diffusivity
-  void Diffusivity(LINALG::Matrix<1,1>& diffus3) const { Diffusivity(diffus3,0); return;};
-  void Diffusivity(LINALG::Matrix<2,2>& diffus3) const { Diffusivity(diffus3,0); return;};
-  void Diffusivity(LINALG::Matrix<3,3>& diffus3) const { Diffusivity(diffus3,0); return;};
+    //@}
 
-  /// diffusivity
-  void Diffusivity(LINALG::Matrix<1,1>& diffus3, int gp) const;
-  void Diffusivity(LINALG::Matrix<2,2>& diffus3, int gp) const;
-  void Diffusivity(LINALG::Matrix<3,3>& diffus3, int gp) const;
+    /// Unpack Material for adaptive methods
+    virtual void UnpackMaterial(const std::vector<char>& data);
 
-  bool DiffusionAtEleCenter() const {
-    return diff_at_ele_center_;};
+    /// init material
+    void SetGP(int gp) { params_->num_gp = gp; };
 
-  void ResetDiffusionTensor() {difftensor_.clear(); return;};
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_myocard; }
 
-  /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt) const;
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Myocard(*this)); }
 
-  /// compute reaction coefficient for multiple points per element
-  double ReaCoeff(const double phi, const double dt, int gp) const;
+    /// material call from DRT::ELEMENTS::Transport::ReadElement function
+    /// to setup conductivity tensor for each element
+    void Setup(const LINALG::Matrix<3, 1>& fiber1);
+    void Setup(const LINALG::Matrix<2, 1>& fiber1);
+    void Setup(DRT::INPUT::LineDefinition* linedef);
 
-  /// compute reaction coefficient for multiple points per element at timestep n
-  double ReaCoeffN(const double phi, const double dt, int gp) const;
+    void SetupDiffusionTensor(const std::vector<double>& fiber1);
+    void SetupDiffusionTensor(const LINALG::Matrix<3, 1>& fiber1);
+    void SetupDiffusionTensor(const LINALG::Matrix<2, 1>& fiber1);
 
-  /// compute reaction coefficient derivative
-  double ReaCoeffDeriv(const double csnp, const double dt) const;
+    /// diffusivity
+    void Diffusivity(LINALG::Matrix<1, 1>& diffus3) const
+    {
+      Diffusivity(diffus3, 0);
+      return;
+    };
+    void Diffusivity(LINALG::Matrix<2, 2>& diffus3) const
+    {
+      Diffusivity(diffus3, 0);
+      return;
+    };
+    void Diffusivity(LINALG::Matrix<3, 3>& diffus3) const
+    {
+      Diffusivity(diffus3, 0);
+      return;
+    };
 
-  /// compute reaction coefficient derivative for multiple points per element
-  double ReaCoeffDeriv(const double csnp, const double dt, int gp) const;
+    /// diffusivity
+    void Diffusivity(LINALG::Matrix<1, 1>& diffus3, int gp) const;
+    void Diffusivity(LINALG::Matrix<2, 2>& diffus3, int gp) const;
+    void Diffusivity(LINALG::Matrix<3, 3>& diffus3, int gp) const;
 
-  /// compute Heaviside step function
-  double GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const;
+    bool DiffusionAtEleCenter() const { return diff_at_ele_center_; };
 
-  /// compute gating variable 'y' from dy/dt = (y_inf-y)/y_tau
-  double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
+    void ResetDiffusionTensor()
+    {
+      difftensor_.clear();
+      return;
+    };
 
-  ///  returns number of internal state variables of the material
-  int GetNumberOfInternalStateVariables() const;
+    /// compute reaction coefficient
+    double ReaCoeff(const double phi, const double dt) const;
 
-  ///  returns current internal state of the material
-  double GetInternalState(const int k) const;
+    /// compute reaction coefficient for multiple points per element
+    double ReaCoeff(const double phi, const double dt, int gp) const;
 
-  ///  returns current internal state of the material for multiple points per element
-  double GetInternalState(const int k, int gp) const;
+    /// compute reaction coefficient for multiple points per element at timestep n
+    double ReaCoeffN(const double phi, const double dt, int gp) const;
 
-  ///  set internal state of the material
-  void SetInternalState(const int k, const double val);
+    /// compute reaction coefficient derivative
+    double ReaCoeffDeriv(const double csnp, const double dt) const;
 
-  ///  set internal state of the material for multiple points per element
-  void SetInternalState(const int k, const double val, int gp);
+    /// compute reaction coefficient derivative for multiple points per element
+    double ReaCoeffDeriv(const double csnp, const double dt, int gp) const;
 
-  ///  return number of ionic currents
-  int GetNumberOfIonicCurrents() const;
+    /// compute Heaviside step function
+    double GatingFunction(const double Gate1, const double Gate2, const double p, const double var,
+        const double thresh) const;
 
-  ///  return ionic currents
-  double GetIonicCurrents(const int k) const;
+    /// compute gating variable 'y' from dy/dt = (y_inf-y)/y_tau
+    double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
 
-  ///  return ionic currents for multiple points per element
-  double GetIonicCurrents(const int k, int gp) const;
+    ///  returns number of internal state variables of the material
+    int GetNumberOfInternalStateVariables() const;
 
-  /// initialize internal variables (called by constructors)
-  void Initialize();
+    ///  returns current internal state of the material
+    double GetInternalState(const int k) const;
 
-  /// resize internal state variables
-  void ResizeInternalStateVariables();
+    ///  returns current internal state of the material for multiple points per element
+    double GetInternalState(const int k, int gp) const;
 
-  /// time update for this material
-  void Update(const double phi, const double dt);
+    ///  set internal state of the material
+    void SetInternalState(const int k, const double val);
 
-  /// get number of Gauss points
-  int GetNumberOfGP() const;
+    ///  set internal state of the material for multiple points per element
+    void SetInternalState(const int k, const double val, int gp);
 
-  bool MyocardMat() const {return myocard_mat_ != Teuchos::null;};
+    ///  return number of ionic currents
+    int GetNumberOfIonicCurrents() const;
 
-  /// @name Access material constants
-  //@{
+    ///  return ionic currents
+    double GetIonicCurrents(const int k) const;
 
-  //@}
+    ///  return ionic currents for multiple points per element
+    double GetIonicCurrents(const int k, int gp) const;
 
-  /// Return quick accessible material parameter data
-  virtual MAT::PAR::Myocard* Parameter() const { return params_; }
+    /// initialize internal variables (called by constructors)
+    void Initialize();
 
-private:
+    /// resize internal state variables
+    void ResizeInternalStateVariables();
 
-  /// my material parameters
-  MAT::PAR::Myocard* params_;
+    /// time update for this material
+    void Update(const double phi, const double dt);
 
-  /// conductivity tensor
-  std::vector<LINALG::Matrix<3,3> > difftensor_;
+    /// get number of Gauss points
+    int GetNumberOfGP() const;
 
-  /// number of internal state variables
-  int nb_state_variables_;
+    bool MyocardMat() const { return myocard_mat_ != Teuchos::null; };
 
-  // Type of material model
-  Teuchos::RCP<Myocard_General> myocard_mat_;
+    /// @name Access material constants
+    //@{
 
-  /// diffusion at element center
-  bool diff_at_ele_center_;
+    //@}
 
-}; // Myocard
-} // namespace MAT
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Myocard* Parameter() const { return params_; }
+
+   private:
+    /// my material parameters
+    MAT::PAR::Myocard* params_;
+
+    /// conductivity tensor
+    std::vector<LINALG::Matrix<3, 3>> difftensor_;
+
+    /// number of internal state variables
+    int nb_state_variables_;
+
+    // Type of material model
+    Teuchos::RCP<Myocard_General> myocard_mat_;
+
+    /// diffusion at element center
+    bool diff_at_ele_center_;
+
+  };  // Myocard
+}  // namespace MAT
 
 #endif

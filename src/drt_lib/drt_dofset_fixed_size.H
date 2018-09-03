@@ -26,117 +26,99 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
-
-/*!
-\brief A set of degrees of freedom
-
-\author
-*/
-class FixedSizeDofSet: virtual public DofSet
-{
-public:
+  class Discretization;
 
   /*!
-  \brief Standard Constructor
+  \brief A set of degrees of freedom
 
-
-  <pre>
-
-  create a dofset that reserves a certain amount of dofGIDs
-
-  </pre>
-
-  \return void
-
+  \author
   */
-  FixedSizeDofSet(int numreservedofpernode, int nodeindexrange)
-    :DofSet(),
-     numMyReservedDofs_(numreservedofpernode*nodeindexrange),
-     numMyReservedDofsperNode_(numreservedofpernode)
+  class FixedSizeDofSet : virtual public DofSet
   {
-    minGID_ = -1;
-    return;
-  }
+   public:
+    /*!
+    \brief Standard Constructor
 
-  /*!
-  \brief Destructor
 
-  */
-  virtual ~FixedSizeDofSet()
-  {
-    return;
-  }
+    <pre>
 
-  /// create a copy of this object
-  virtual Teuchos::RCP<DofSet> Clone()
-  {
-    return Teuchos::rcp(new FixedSizeDofSet(*this));
-  }
+    create a dofset that reserves a certain amount of dofGIDs
 
-  /// Get maximum GID of degree of freedom row map
-  virtual int MaxAllGID() const
-  {
-    return MinAllGID() + numMyReservedDofs_;
-  }
+    </pre>
 
-  /// Get minimum GID of degree of freedom row map
-  virtual int MinAllGID() const
-  {
-    int mymindof;
-    if (minGID_ == -1)
-      mymindof = dofrowmap_->MinAllGID();
-    else
+    \return void
+
+    */
+    FixedSizeDofSet(int numreservedofpernode, int nodeindexrange)
+        : DofSet(),
+          numMyReservedDofs_(numreservedofpernode * nodeindexrange),
+          numMyReservedDofsperNode_(numreservedofpernode)
     {
-      int minall = dofrowmap_->MinAllGID() ;
-      mymindof = (minGID_ <= minall ) ? minGID_ : minall;
-    }
-    return mymindof;
-  }
-
-  /// set the minimal global id
-  virtual void SetMinGID(int mingid) {minGID_ = mingid;}
-
-  ///Get Reserved Max Number Dofs per Node
-  virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf)
-  {
-    if (maxnodenumdf > numMyReservedDofsperNode_)
-    {
-      dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enough Dofs reserved!!!");
+      minGID_ = -1;
       return;
     }
-    maxnodenumdf = numMyReservedDofsperNode_;
 
-    return;
-  }
+    /*!
+    \brief Destructor
 
-  /// get the number of reserved DoF's (see also NumMyReservedDofsPerNode())
-  int NumMyReservedDofs() const
-  {
-    return numMyReservedDofs_;
-  }
+    */
+    virtual ~FixedSizeDofSet() { return; }
 
-  /// get the number of reserved DoF's per node
-  int NumMyReservedDofsPerNode() const
-  {
-    return numMyReservedDofsperNode_;
-  }
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new FixedSizeDofSet(*this)); }
 
-  /// minimal global dof id
-  int minGID_ ;
+    /// Get maximum GID of degree of freedom row map
+    virtual int MaxAllGID() const { return MinAllGID() + numMyReservedDofs_; }
 
-protected:
+    /// Get minimum GID of degree of freedom row map
+    virtual int MinAllGID() const
+    {
+      int mymindof;
+      if (minGID_ == -1)
+        mymindof = dofrowmap_->MinAllGID();
+      else
+      {
+        int minall = dofrowmap_->MinAllGID();
+        mymindof = (minGID_ <= minall) ? minGID_ : minall;
+      }
+      return mymindof;
+    }
 
-  /// Number of reserved dofs
-  int numMyReservedDofs_;
+    /// set the minimal global id
+    virtual void SetMinGID(int mingid) { minGID_ = mingid; }
 
-  /// Number of reserved dofs per node
-  int numMyReservedDofsperNode_;
+    /// Get Reserved Max Number Dofs per Node
+    virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf)
+    {
+      if (maxnodenumdf > numMyReservedDofsperNode_)
+      {
+        dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enough Dofs reserved!!!");
+        return;
+      }
+      maxnodenumdf = numMyReservedDofsperNode_;
 
-private:
+      return;
+    }
 
-}; // class FixedSizeDofSet
+    /// get the number of reserved DoF's (see also NumMyReservedDofsPerNode())
+    int NumMyReservedDofs() const { return numMyReservedDofs_; }
 
-}
+    /// get the number of reserved DoF's per node
+    int NumMyReservedDofsPerNode() const { return numMyReservedDofsperNode_; }
+
+    /// minimal global dof id
+    int minGID_;
+
+   protected:
+    /// Number of reserved dofs
+    int numMyReservedDofs_;
+
+    /// Number of reserved dofs per node
+    int numMyReservedDofsperNode_;
+
+   private:
+  };  // class FixedSizeDofSet
+
+}  // namespace DRT
 
 #endif  // #ifndef DOFSET_FIXED_SIZE_H

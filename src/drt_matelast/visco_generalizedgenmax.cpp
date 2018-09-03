@@ -17,13 +17,11 @@
 /*----------------------------------------------------------------------*
  | Constructor Parameter                                                        |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  numbranch_(matdata->GetInt("NUMBRANCH")),
-  matids_(matdata->Get<std::vector<int> >("MATIDS")),
-  solve_(*matdata->Get<std::string>("SOLVE"))
+MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      numbranch_(matdata->GetInt("NUMBRANCH")),
+      matids_(matdata->Get<std::vector<int>>("MATIDS")),
+      solve_(*matdata->Get<std::string>("SOLVE"))
 
 {
 }
@@ -33,28 +31,26 @@ MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
  |  Constructor Material
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::GeneralizedGenMax* params)
-  : params_(params),
-    branchespotsum_(0),
-    internalpotsum_(0)
+    : params_(params), branchespotsum_(0), internalpotsum_(0)
 {
-
   // loop over materials of GeneralizedGenMax (branches)
   std::vector<int>::const_iterator m;
-  for (m=params_->matids_->begin(); m!=params_->matids_->end(); ++m)
+  for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
   {
-    //make sure the summands of the current branch is empty
+    // make sure the summands of the current branch is empty
     internalpotsum_.clear();
-    //get parameters of each branch
+    // get parameters of each branch
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> ViscoBranch = MAT::ELASTIC::Summand::Factory(matid);
 
-    double nummat = -1.0;;
-    const std::vector<int>* branchmatids=NULL;
+    double nummat = -1.0;
+    ;
+    const std::vector<int>* branchmatids = NULL;
 
-    ViscoBranch->ReadMaterialParameters(nummat,branchmatids);
+    ViscoBranch->ReadMaterialParameters(nummat, branchmatids);
 
     // loop over materials of ViscoBranch (components of the viscoelastic branch)
-    for(int i=0; i<nummat;++i)
+    for (int i = 0; i < nummat; ++i)
     {
       // get parameters of each component
       int curmatid = branchmatids->at(i);
@@ -67,20 +63,17 @@ MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::Generalize
     // write into vector of summands of the GeneralizedGenMax material
     branchespotsum_.push_back(internalpotsum_);
 
-  }//end for-loop over branches
+  }  // end for-loop over branches
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::GeneralizedGenMax::ReadMaterialParameters(
-  int& numbranch,
-  const std::vector<int>*& matids,
-  std::string& solve
-  )
+    int& numbranch, const std::vector<int>*& matids, std::string& solve)
 {
-  numbranch = params_ -> numbranch_;
-  matids    = params_ -> matids_;
-  solve     = params_ -> solve_;
+  numbranch = params_->numbranch_;
+  matids = params_->matids_;
+  solve = params_->solve_;
 
   return;
 }
@@ -89,12 +82,10 @@ void MAT::ELASTIC::GeneralizedGenMax::ReadMaterialParameters(
 /*----------------------------------------------------------------------*/
 /*-----------------VISCOBRANCH------------------------------------------*/
 
-MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  nummat_(matdata->GetInt("NUMMAT")),
-  matids_(matdata->Get<std::vector<int> >("MATIDS"))
+MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata),
+      nummat_(matdata->GetInt("NUMMAT")),
+      matids_(matdata->Get<std::vector<int>>("MATIDS"))
 {
 }
 
@@ -102,31 +93,23 @@ MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(
 /*----------------------------------------------------------------------*
  |  Constructor
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::ViscoBranch::ViscoBranch(MAT::ELASTIC::PAR::ViscoBranch* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::ViscoBranch::ViscoBranch(MAT::ELASTIC::PAR::ViscoBranch* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::ViscoBranch::ReadMaterialParameters(
-  double& nummat,
-  const std::vector<int>*& matids
-  )
+    double& nummat, const std::vector<int>*& matids)
 {
-  nummat = params_ -> nummat_;
-  matids = params_ -> matids_;
+  nummat = params_->nummat_;
+  matids = params_->matids_;
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*-----------------VISCOPART--------------------------------------------*/
-MAT::ELASTIC::PAR::ViscoPart::ViscoPart(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  tau_(matdata->GetDouble("TAU"))
+MAT::ELASTIC::PAR::ViscoPart::ViscoPart(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), tau_(matdata->GetDouble("TAU"))
 {
 }
 
@@ -134,20 +117,12 @@ MAT::ELASTIC::PAR::ViscoPart::ViscoPart(
 /*----------------------------------------------------------------------*
  |  Constructor
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::ViscoPart::ViscoPart(MAT::ELASTIC::PAR::ViscoPart* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::ViscoPart::ViscoPart(MAT::ELASTIC::PAR::ViscoPart* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::ViscoPart::ReadMaterialParameters(
-  double& tau
-  )
+void MAT::ELASTIC::ViscoPart::ReadMaterialParameters(double& tau)
 {
-  tau = params_ -> tau_;
+  tau = params_->tau_;
   return;
 }
-
-
-

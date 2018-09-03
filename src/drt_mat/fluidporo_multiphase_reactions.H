@@ -23,19 +23,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
     class FluidPoroMultiPhaseReactions : public FluidPoroMultiPhase
     {
-    public:
-
+     public:
       /// standard constructor
-      FluidPoroMultiPhaseReactions(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      FluidPoroMultiPhaseReactions(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~FluidPoroMultiPhaseReactions() { ; }
@@ -47,7 +43,7 @@ namespace MAT
       //@{
 
       /// provide ids of the individual reaction materials
-      const std::vector<int>* ReacIds() const {return reacids_;}
+      const std::vector<int>* ReacIds() const { return reacids_; }
 
       /// length of reaction list
       const int numreac_;
@@ -61,27 +57,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class FluidPoroMultiPhaseReactionsType : public DRT::ParObjectType
-{
-public:
+  class FluidPoroMultiPhaseReactionsType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "FluidPoroMultiPhaseReactions"; }
 
-  std::string Name() const { return "FluidPoroMultiPhaseReactions"; }
+    static FluidPoroMultiPhaseReactionsType& Instance() { return instance_; };
 
-  static FluidPoroMultiPhaseReactionsType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static FluidPoroMultiPhaseReactionsType instance_;
-};
+   private:
+    static FluidPoroMultiPhaseReactionsType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
   class FluidPoroMultiPhaseReactions : public FluidPoroMultiPhase
   {
-  public:
-
+   public:
     /// construct empty material object
     FluidPoroMultiPhaseReactions();
 
@@ -96,7 +89,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return FluidPoroMultiPhaseReactionsType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return FluidPoroMultiPhaseReactionsType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -127,30 +123,34 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_fluidporo_multiphase_reactions; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_fluidporo_multiphase_reactions;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new FluidPoroMultiPhaseReactions( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new FluidPoroMultiPhaseReactions(*this));
+    }
 
     /// number of reactions
     int NumReac() const { return paramsreac_->numreac_; }
 
     /// reaction ID by Index
-    int ReacID( const unsigned index ) const;
+    int ReacID(const unsigned index) const;
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::FluidPoroMultiPhaseReactions* Parameter() const { return paramsreac_; }
 
     /// return whether reaction terms need to be evaluated
-    virtual bool IsReactive() const {return true;};
+    virtual bool IsReactive() const { return true; };
 
-  protected:
-
+   protected:
     /// setup of material map
     virtual void SetupMatMap();
 
-  private:
-
+   private:
     /// clear everything
     void Clear();
 
@@ -158,7 +158,7 @@ private:
     MAT::PAR::FluidPoroMultiPhaseReactions* paramsreac_;
   };
 
-}
+}  // namespace MAT
 
 
 #endif /* SRC_DRT_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_H_ */

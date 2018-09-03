@@ -36,99 +36,102 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
-
-
-/*!
-\brief A set of degrees of freedom
-
-\author gammi
-*/
-class PBCDofSet: virtual public DRT::DofSet
-{
-public:
-
+  class Discretization;
 
 
   /*!
-  \brief Standard Constructor
+  \brief A set of degrees of freedom
 
-
-  <pre>
-
-  create a dofset that allows coupled nodes for periodic boundary
-  conditions                                         gammi 05/07
-
-  </pre>
-
-  \param couplednodes (i) list of coupled nodes
-
-
-  \return void
-
+  \author gammi
   */
-  PBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~PBCDofSet();
-
-  /// Get maximum GID of degree of freedom row map
-  virtual int MaxAllGID() const;
-
-  /// Get minimum GID of degree of freedom row map
-  virtual int MinAllGID() const;
-
-  /// create a copy of this object
-  virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new PBCDofSet(*this)); }
-
-  /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
-
-  /// Update the coupled nodes map of dofset
-  virtual void SetCoupledNodes(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
-
-  /// Get coupled nodes map (corresponding col format)
-  virtual Teuchos::RCP<std::map<int,std::vector<int> > > GetCoupledNodes(){return perbndcouples_;};
-
-  /// Get connectivity map between slave node and its master node
-  virtual Teuchos::RCP<std::map<int,int> > GetSlaveToMasterNodeConnectivity(){return perbnd_slavetomaster_;};
-
-protected:
-
-  /// get number of nodal dofs for this element at this node
-  virtual int NumDofPerNode( const DRT::Node & node ) const
+  class PBCDofSet : virtual public DRT::DofSet
   {
-    if ( slavenodeids_->count( node.Id() )==0 )
+   public:
+    /*!
+    \brief Standard Constructor
+
+
+    <pre>
+
+    create a dofset that allows coupled nodes for periodic boundary
+    conditions                                         gammi 05/07
+
+    </pre>
+
+    \param couplednodes (i) list of coupled nodes
+
+
+    \return void
+
+    */
+    PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
+
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~PBCDofSet();
+
+    /// Get maximum GID of degree of freedom row map
+    virtual int MaxAllGID() const;
+
+    /// Get minimum GID of degree of freedom row map
+    virtual int MinAllGID() const;
+
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new PBCDofSet(*this)); }
+
+    /// Assign dof numbers using all elements and nodes of the discretization.
+    virtual int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start);
+
+    /// Update the coupled nodes map of dofset
+    virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
+
+    /// Get coupled nodes map (corresponding col format)
+    virtual Teuchos::RCP<std::map<int, std::vector<int>>> GetCoupledNodes()
     {
-      return DRT::DofSet::NumDofPerNode( node );
+      return perbndcouples_;
+    };
+
+    /// Get connectivity map between slave node and its master node
+    virtual Teuchos::RCP<std::map<int, int>> GetSlaveToMasterNodeConnectivity()
+    {
+      return perbnd_slavetomaster_;
+    };
+
+   protected:
+    /// get number of nodal dofs for this element at this node
+    virtual int NumDofPerNode(const DRT::Node& node) const
+    {
+      if (slavenodeids_->count(node.Id()) == 0)
+      {
+        return DRT::DofSet::NumDofPerNode(node);
+      }
+      return 0;
     }
-    return 0;
-  }
 
-  //!\brief master and slave node connectivity for periodic boundary conditions
-  Teuchos::RCP<std::map<int,std::vector<int> > >           perbndcouples_;
+    //!\brief master and slave node connectivity for periodic boundary conditions
+    Teuchos::RCP<std::map<int, std::vector<int>>> perbndcouples_;
 
-  //!\brief the largest original GID, to stop the dofset from 'shrinking'
-  int myMaxGID_;
+    //!\brief the largest original GID, to stop the dofset from 'shrinking'
+    int myMaxGID_;
 
-  //!\brief the smallest original GID, to stop the dofset from 'shrinking'
-  int myMinGID_;
+    //!\brief the smallest original GID, to stop the dofset from 'shrinking'
+    int myMinGID_;
 
-private:
+   private:
+    /// Build the connectivity between slave node and its master node
+    void BuildSlaveToMasterNodeConnectivity();
 
-  /// Build the connectivity between slave node and its master node
-  void BuildSlaveToMasterNodeConnectivity();
+    Teuchos::RCP<std::set<int>> slavenodeids_;
 
-  Teuchos::RCP<std::set<int> > slavenodeids_;
+    //!\brief slave node to master node connectivity for periodic boundary conditions (key=slave
+    //!nid, value=master nid)
+    Teuchos::RCP<std::map<int, int>> perbnd_slavetomaster_;
 
-  //!\brief slave node to master node connectivity for periodic boundary conditions (key=slave nid, value=master nid)
-  Teuchos::RCP<std::map<int,int> >  perbnd_slavetomaster_;
+  };  // class PBCDofSet
 
-}; // class PBCDofSet
-
-}
+}  // namespace DRT
 
 #endif  // #ifndef PBCDOFSET_H

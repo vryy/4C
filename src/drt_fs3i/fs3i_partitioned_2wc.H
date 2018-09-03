@@ -27,8 +27,7 @@ namespace FS3I
 {
   class PartFS3I_2WC : public PartFS3I
   {
-  public:
-
+   public:
     PartFS3I_2WC(const Epetra_Comm& comm);
 
     virtual ~PartFS3I_2WC(){};
@@ -47,7 +46,7 @@ namespace FS3I
 
     void OuterLoop();
 
-    //void SetFSIValuesInScaTra();
+    // void SetFSIValuesInScaTra();
 
     void SetScaTraValuesInFSI();
 
@@ -57,11 +56,10 @@ namespace FS3I
 
     void TimeUpdateAndOutput();
 
-  private:
-
+   private:
     //! @name  (preliminary) maximum number of iterations and tolerance for outer iteration
-    int     itmax_;
-    double  ittol_;
+    int itmax_;
+    double ittol_;
     //@}
 
     /// flag for constant thermodynamic pressure
@@ -71,6 +69,6 @@ namespace FS3I
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structurescatra_;
   };
-}
+}  // namespace FS3I
 
 #endif

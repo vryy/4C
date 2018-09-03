@@ -25,22 +25,21 @@ namespace DRT
 {
   class DiscretizationInterface;
 
-  namespace INPUT {
+  namespace INPUT
+  {
     class LineDefinition;
   }
 
   namespace UTILS
   {
-
     void XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
     bool XfluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
-                                 std::vector<Teuchos::RCP<Function> >* function_);
+        std::vector<Teuchos::RCP<Function>>* function_);
 
     /// special implementation level set cut utilizing xfluid
     class GerstenbergerForwardfacingStep : public Function
     {
-    public:
-
+     public:
       /// ctor
       GerstenbergerForwardfacingStep();
 
@@ -58,8 +57,7 @@ namespace DRT
     */
     class MovingLevelSetCylinder : public Function
     {
-    public:
-
+     public:
       /// ctor
       MovingLevelSetCylinder(std::vector<double>* origin, double radius,
           std::vector<double>* direction, double distance, double maxspeed);
@@ -67,8 +65,7 @@ namespace DRT
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
 
-    private:
-
+     private:
       // Origin of the geometry
       std::vector<double> origin_;
 
@@ -88,13 +85,14 @@ namespace DRT
       double maxspeed_;
     };
 
-    /* Moves a 3D torus back and forth along a predetermined direction in a sine like fashion with constant rotation,
+    /* Moves a 3D torus back and forth along a predetermined direction in a sine like fashion with
+      constant rotation,
 
        +++ LEVEL SET VALUE +++
 
        TORUS
-       The torus is oriented in the orientationvec_torus direction and its midpoint is at origin (for t=0).
-       The radius of the torus is radius, where as the radius for the tube is radius_tube.
+       The torus is oriented in the orientationvec_torus direction and its midpoint is at origin
+      (for t=0). The radius of the torus is radius, where as the radius for the tube is radius_tube.
 
        TRANSLATION
        x_pos = midpoint_trajectory_ + direction_*(L/2)*sin(sin_coeff*t-PI*0.5)
@@ -103,7 +101,8 @@ namespace DRT
                                            and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
 
        ROTATION
-       The torus rotates around a given rotation vector rotvector, at the constant rotation speed rotspeed.
+       The torus rotates around a given rotation vector rotvector, at the constant rotation speed
+      rotspeed.
 
           R(theta) = cos(theta) I + sin(theta) * [w]_x +(1-cos(theta))*w(x)w
           theta = rotspeed*t
@@ -144,22 +143,13 @@ namespace DRT
     */
     class MovingLSTorus : public Function
     {
-    public:
-
+     public:
       /// ctor
-      MovingLSTorus(std::vector<double>* origin,
-                          std::vector<double>* orientationvec_torus,
-                          double radius,
-                          double radius_tube,
-                          std::vector<double>* direction,
-                          double distance,
-                          double maxspeed,
-                          std::vector<double>* rotvector,
-                          double rotspeed,
-                          double rotramptime);
+      MovingLSTorus(std::vector<double>* origin, std::vector<double>* orientationvec_torus,
+          double radius, double radius_tube, std::vector<double>* direction, double distance,
+          double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
-    protected:
-
+     protected:
       // Origin of the geometry
       std::vector<double> origin_;
 
@@ -193,49 +183,32 @@ namespace DRT
       // Ramp time for the rotation ( ramping done as: 0.5*cos(PI*t/T_ramp) )
       double ramptime_;
 
-      //MATRICES!!
-      std::vector< std::vector<double> > eye_;
-      std::vector< std::vector<double> > rot_joint_;
-      std::vector< std::vector<double> > rot_cross_;
-
+      // MATRICES!!
+      std::vector<std::vector<double>> eye_;
+      std::vector<std::vector<double>> rot_joint_;
+      std::vector<std::vector<double>> rot_cross_;
     };
 
     class MovingLevelSetTorus : public MovingLSTorus
     {
-    public:
-
+     public:
       /// ctor
-      MovingLevelSetTorus(std::vector<double>* origin,
-                          std::vector<double>* orientationvec_torus,
-                          double radius,
-                          double radius_tube,
-                          std::vector<double>* direction,
-                          double distance,
-                          double maxspeed,
-                          std::vector<double>* rotvector,
-                          double rotspeed,
-                          double rotramptime);
+      MovingLevelSetTorus(std::vector<double>* origin, std::vector<double>* orientationvec_torus,
+          double radius, double radius_tube, std::vector<double>* direction, double distance,
+          double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
-
     };
 
     class MovingLevelSetTorusVelocity : public MovingLSTorus
     {
-    public:
-
+     public:
       /// ctor
       MovingLevelSetTorusVelocity(std::vector<double>* origin,
-                          std::vector<double>* orientationvec_torus,
-                          double radius,
-                          double radius_tube,
-                          std::vector<double>* direction,
-                          double distance,
-                          double maxspeed,
-                          std::vector<double>* rotvector,
-                          double rotspeed,
-                          double rotramptime);
+          std::vector<double>* orientationvec_torus, double radius, double radius_tube,
+          std::vector<double>* direction, double distance, double maxspeed,
+          std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
@@ -247,37 +220,23 @@ namespace DRT
       \return number of components (u,v,w)
 
       */
-      virtual int NumberComponents()
-      {
-        return(3);
-      };
-
+      virtual int NumberComponents() { return (3); };
     };
 
     class MovingLevelSetTorusSliplength : public MovingLSTorus
     {
-    public:
-
+     public:
       /// ctor
       MovingLevelSetTorusSliplength(std::vector<double>* origin,
-                          std::vector<double>* orientationvec_torus,
-                          double radius,
-                          double radius_tube,
-                          std::vector<double>* direction,
-                          double distance,
-                          double maxspeed,
-                          std::vector<double>* rotvector,
-                          double rotspeed,
-                          double rotramptime,
-                          int slipfunct);
+          std::vector<double>* orientationvec_torus, double radius, double radius_tube,
+          std::vector<double>* direction, double distance, double maxspeed,
+          std::vector<double>* rotvector, double rotspeed, double rotramptime, int slipfunct);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
 
-    private:
-
+     private:
       int slipfunct_;
-
     };
 
     /* Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner cylinder.
@@ -285,29 +244,20 @@ namespace DRT
     */
     class TaylorCouetteFlow : public Function
     {
-    public:
-
+     public:
       /// ctor (for NavSlip at both boundaries)
-      TaylorCouetteFlow(
-          double radius_inner,
-          double radius_outer,
-          double vel_theta_inner,
-          double vel_theta_outer,
-          double epsilon_inner,
-          double epsilon_outer,
-          double traction_theta_inner,
-          double traction_theta_outer,
-          double viscosity);
+      TaylorCouetteFlow(double radius_inner, double radius_outer, double vel_theta_inner,
+          double vel_theta_outer, double epsilon_inner, double epsilon_outer,
+          double traction_theta_inner, double traction_theta_outer, double viscosity);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
 
       std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t);
 
-    private:
-
+     private:
       // Origin of the geometry
-//      std::vector<double> origin_; // Assume (0,0,0)
+      //      std::vector<double> origin_; // Assume (0,0,0)
 
       // Radius
       double radius_inner_;
@@ -320,63 +270,46 @@ namespace DRT
       double c1_;
       double c2_;
       double c3_;
-
     };
 
     /* Urquiza-box flow
      * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity
      * is chosen as the analytic solution to the Nav-Stokes equations).
-    */
+     */
     class UrquizaBoxFlow : public Function
     {
-    public:
-
+     public:
       /// ctor
-      UrquizaBoxFlow(
-              double lengthx,
-              double lengthy,
-              double rotation,
-              double viscosity,
-              double density,
-              int    functno,
-              std::vector<double> lincomb);
+      UrquizaBoxFlow(double lengthx, double lengthy, double rotation, double viscosity,
+          double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
 
-      //Derivative
+      // Derivative
       std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t);
 
-    protected:
-
-      double lengthx_;   //Length lx -> [-lx,lx]
-      double lengthy_;   //Length ly ->[-ly,ly]
-      double rotation_;  //rot    [0,2*pi]
-      std::vector< std::vector<double> > rotvector_;
-      double kinvisc_;   //kinvisc = visc/rho
-      int functno_;   //function number
+     protected:
+      double lengthx_;   // Length lx -> [-lx,lx]
+      double lengthy_;   // Length ly ->[-ly,ly]
+      double rotation_;  // rot    [0,2*pi]
+      std::vector<std::vector<double>> rotvector_;
+      double kinvisc_;  // kinvisc = visc/rho
+      int functno_;     // function number
 
       double c1_;
       double c2_;
-
     };
 
 
     /* Urquiza-box test case
-    */
-    class UrquizaBoxFlowForce : public UrquizaBoxFlow //public Function
+     */
+    class UrquizaBoxFlowForce : public UrquizaBoxFlow  // public Function
     {
-    public:
-
+     public:
       /// ctor
-      UrquizaBoxFlowForce(
-              double lengthx,
-              double lengthy,
-              double rotation,
-              double viscosity,
-              double density,
-              int    functno,
-              std::vector<double> lincomb);
+      UrquizaBoxFlowForce(double lengthx, double lengthy, double rotation, double viscosity,
+          double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
@@ -386,24 +319,16 @@ namespace DRT
         dserror("Derivative not implemented for UrquizaBoxFlowForce");
         return std::vector<double>();
       }
-
     };
 
     /* SlipLengthManipulator. Useful for testing different slip-length functions.
-    */
-    class UrquizaBoxFlowTraction : public UrquizaBoxFlow //public Function
+     */
+    class UrquizaBoxFlowTraction : public UrquizaBoxFlow  // public Function
     {
-    public:
-
+     public:
       /// ctor
-      UrquizaBoxFlowTraction(
-              double lengthx,
-              double lengthy,
-              double rotation,
-              double viscosity,
-              double density,
-              int    functno,
-              std::vector<double> lincomb);
+      UrquizaBoxFlowTraction(double lengthx, double lengthy, double rotation, double viscosity,
+          double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
       double Evaluate(int index, const double* x, double t);
@@ -416,11 +341,10 @@ namespace DRT
     };
 
     /* SlipLengthManipulator. Useful for testing different slip-length functions.
-    */
+     */
     class SlipLengthLevelSetManipulator : public Function
     {
-    public:
-
+     public:
       /// ctor
       SlipLengthLevelSetManipulator();
 
@@ -429,7 +353,7 @@ namespace DRT
     };
 
 
-  }
-}
+  }  // namespace UTILS
+}  // namespace DRT
 
 #endif

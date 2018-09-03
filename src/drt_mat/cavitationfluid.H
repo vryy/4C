@@ -23,22 +23,17 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for Cavitation fluid
     ///
     /// This object exists only once for each read cavitation fluid.
     class CavitationFluid : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      CavitationFluid(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      CavitationFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~CavitationFluid() { ; }
@@ -64,20 +59,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class CavitationFluidType : public DRT::ParObjectType
-{
-public:
+  class CavitationFluidType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "CavitationFluidType"; }
 
-  std::string Name() const { return "CavitationFluidType"; }
+    static CavitationFluidType& Instance() { return instance_; };
 
-  static CavitationFluidType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static CavitationFluidType instance_;
-};
+   private:
+    static CavitationFluidType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Cavitation fluid material
@@ -85,8 +78,7 @@ private:
   /// This object exists (several times) at every element
   class CavitationFluid : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     CavitationFluid();
 
@@ -101,7 +93,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return CavitationFluidType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return CavitationFluidType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -135,7 +130,10 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_cavitation; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CavitationFluid( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new CavitationFluid(*this));
+    }
 
     /// return viscosity
     virtual double Viscosity() const { return params_->viscosity_; }
@@ -152,13 +150,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::CavitationFluid* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

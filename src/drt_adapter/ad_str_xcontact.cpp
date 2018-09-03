@@ -38,21 +38,20 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-ADAPTER::StructureXContact::StructureXContact(
-    const Teuchos::RCP<ADAPTER::Structure>& structure )
-    : ADAPTER::StructureWrapper( structure ),
-      isinit_( false ),
-      issetup_( false ),
-      structure_ptr_( Teuchos::rcp_dynamic_cast<StructureNew>( structure, true ) ),
-      multi_discret_ptr_( Teuchos::rcp_dynamic_cast<XCONTACT::MultiDiscretizationWrapper>(
-          structure_ptr_->DiscretizationInterface(), true ) ),
-      p_xfem_general_ptr_( Teuchos::null ),
-      state_creator_ptr_( Teuchos::null ),
-      state_ptr_( Teuchos::null ),
-      num_dof_per_node_( -1 ),
-      max_num_dof_sets_( -1 ),
-      state_count_( -1 ),
-      iscontact_( false )
+ADAPTER::StructureXContact::StructureXContact(const Teuchos::RCP<ADAPTER::Structure>& structure)
+    : ADAPTER::StructureWrapper(structure),
+      isinit_(false),
+      issetup_(false),
+      structure_ptr_(Teuchos::rcp_dynamic_cast<StructureNew>(structure, true)),
+      multi_discret_ptr_(Teuchos::rcp_dynamic_cast<XCONTACT::MultiDiscretizationWrapper>(
+          structure_ptr_->DiscretizationInterface(), true)),
+      p_xfem_general_ptr_(Teuchos::null),
+      state_creator_ptr_(Teuchos::null),
+      state_ptr_(Teuchos::null),
+      num_dof_per_node_(-1),
+      max_num_dof_sets_(-1),
+      state_count_(-1),
+      iscontact_(false)
 {
   /* intentionally left blank */
 }
@@ -60,13 +59,11 @@ ADAPTER::StructureXContact::StructureXContact(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureXContact::Init(
-    const Teuchos::ParameterList& p_xfem_general,
-    const int& num_dof_per_node)
+    const Teuchos::ParameterList& p_xfem_general, const int& num_dof_per_node)
 {
   issetup_ = false;
 
-  p_xfem_general_ptr_ = Teuchos::rcpFromRef<const Teuchos::ParameterList>(
-      p_xfem_general);
+  p_xfem_general_ptr_ = Teuchos::rcpFromRef<const Teuchos::ParameterList>(p_xfem_general);
   num_dof_per_node_ = num_dof_per_node;
 
   isinit_ = true;
@@ -79,14 +76,14 @@ void ADAPTER::StructureXContact::Setup()
   CheckInit();
 
   // get the maximum number of dof sets
-  max_num_dof_sets_ = p_xfem_general_ptr_->get<int>( "MAX_NUM_DOFSETS" );
+  max_num_dof_sets_ = p_xfem_general_ptr_->get<int>("MAX_NUM_DOFSETS");
 
   // ---------------------------------------------------------------------
   // build, initialize and setup the state creator
   // ---------------------------------------------------------------------
-  state_creator_ptr_ = Teuchos::rcp( new XCONTACT::StateCreator() );
-  state_creator_ptr_->Init( Teuchos::null, *p_xfem_general_ptr_,
-      num_dof_per_node_, max_num_dof_sets_, 0, true );
+  state_creator_ptr_ = Teuchos::rcp(new XCONTACT::StateCreator());
+  state_creator_ptr_->Init(
+      Teuchos::null, *p_xfem_general_ptr_, num_dof_per_node_, max_num_dof_sets_, 0, true);
   state_creator_ptr_->Setup();
 
   // ---------------------------------------------------------------------
@@ -114,15 +111,9 @@ void ADAPTER::StructureXContact::CompleteInitialState()
 
   /* complete the state object (be aware that the condition manager is
    * undefined and we do not create a new cut wizard.) */
-  StateCreator().CompleteState(
-      state_ptr_,
-      MultiDiscret().DiscretPtr(XFEM::xstructure),
-      MultiDiscret().DiscretPtr(XFEM::structure),
-      Teuchos::null,
-      Structure().LinearSolver()->Params(),
-      Structure().GetTimeNp(),
-      Structure().GetStepNp(),
-      true);
+  StateCreator().CompleteState(state_ptr_, MultiDiscret().DiscretPtr(XFEM::xstructure),
+      MultiDiscret().DiscretPtr(XFEM::structure), Teuchos::null,
+      Structure().LinearSolver()->Params(), Structure().GetTimeNp(), Structure().GetStepNp(), true);
 
   Structure().Setup();
 
@@ -135,24 +126,17 @@ void ADAPTER::StructureXContact::RecreateState()
 {
   //---------------------------------------------------------------------------
   // get level-set values in nodal row layout
-  STR::MODELEVALUATOR::XContact & xcontact = XContactModel();
+  STR::MODELEVALUATOR::XContact& xcontact = XContactModel();
 
   Teuchos::RCP<Epetra_Vector> levelset_values =
-      Teuchos::rcp( new Epetra_Vector( xcontact.LevelSetValues() ) );
-  levelset_values->ReplaceMap( xcontact.Strategy().SlRowNodes() );
+      Teuchos::rcp(new Epetra_Vector(xcontact.LevelSetValues()));
+  levelset_values->ReplaceMap(xcontact.Strategy().SlRowNodes());
 
   //---------------------------------------------------------------------------
   // create the new state class ( vectors, matrices ... )
-  StateCreator().Recreate(
-      state_ptr_,
-      structure_ptr_,
-      MultiDiscret(),
-      Teuchos::null,
-      levelset_values,
-      Structure().LinearSolver()->Params(),
-      Structure().GetStepNp(),
-      Structure().GetTimeNp(),
-      true );
+  StateCreator().Recreate(state_ptr_, structure_ptr_, MultiDiscret(), Teuchos::null,
+      levelset_values, Structure().LinearSolver()->Params(), Structure().GetStepNp(),
+      Structure().GetTimeNp(), true);
 
   //---------------------------------------------------------------------------
   // increase the state counter
@@ -175,18 +159,17 @@ bool ADAPTER::StructureXContact::IsComingIntoContact()
   CheckInitSetup();
 
   // We are already in contact. Nothing to do.
-  if ( iscontact_ )
-    return false;
+  if (iscontact_) return false;
 
   XContactModel().EvaluateWeightedGap();
-  const Epetra_Vector & wgap = XContactModel().GetWeightedGap();
+  const Epetra_Vector& wgap = XContactModel().GetWeightedGap();
 
   // check if we are in contact
   double min_gap_value = 0.0;
-  wgap.MinValue( & min_gap_value );
+  wgap.MinValue(&min_gap_value);
 
   // update the iscontact flag
-  iscontact_ = ( min_gap_value <= 0.0 );
+  iscontact_ = (min_gap_value <= 0.0);
 
   // return true, if we are coming into contact
   return iscontact_;
@@ -194,7 +177,7 @@ bool ADAPTER::StructureXContact::IsComingIntoContact()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector & ADAPTER::StructureXContact::GetWeightedGap() const
+const Epetra_Vector& ADAPTER::StructureXContact::GetWeightedGap() const
 {
   CheckInitSetup();
   return XContactModel().GetWeightedGap();
@@ -213,17 +196,16 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureXContact::Solve()
   // ---------------------------------------------------------------------
   // Solve the direct contact problem
   // ---------------------------------------------------------------------
-  if ( iscontact_ )
+  if (iscontact_)
   {
-    IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
-        ": Solve for the contact state is not yet implemented!" << IO::endl;
+    IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__
+             << ": Solve for the contact state is not yet implemented!" << IO::endl;
   }
   else
     status = Structure().Solve();
 
   // --- nothing more to do, if the contact state was not solved ---------
-  if (not iscontact_)
-    return status;
+  if (not iscontact_) return status;
 
   // ---------------------------------------------------------------------
   // Solve m-times the sensibility problem
@@ -240,8 +222,7 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureXContact::Solve()
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureXContact::PreSolve()
 {
-  if ( not iscontact_ )
-    return;
+  if (not iscontact_) return;
 
   RecreateState();
 }
@@ -249,30 +230,25 @@ void ADAPTER::StructureXContact::PreSolve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureXContact::SetScaTraValuesInStructure_Np(
-    const Epetra_Vector& phi_np)
+void ADAPTER::StructureXContact::SetScaTraValuesInStructure_Np(const Epetra_Vector& phi_np)
 {
   CheckInitSetup();
-  STR::MODELEVALUATOR::XContact & xcontact = XContactModel();
+  STR::MODELEVALUATOR::XContact& xcontact = XContactModel();
 
-  if ( not iscontact_ )
+  if (not iscontact_)
   {
-    xcontact.SetLevelSetValuesPtr( Teuchos::null );
+    xcontact.SetLevelSetValuesPtr(Teuchos::null);
     return;
   }
 
-  xcontact.SetLevelSetValuesPtr( MultiDiscret().ScaTra2Contact( phi_np,
-      XFEM::xstructure ) );
+  xcontact.SetLevelSetValuesPtr(MultiDiscret().ScaTra2Contact(phi_np, XFEM::xstructure));
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Comm& ADAPTER::StructureXContact::Comm() const
-{
-  return MultiDiscret().Comm();
-}
+const Epetra_Comm& ADAPTER::StructureXContact::Comm() const { return MultiDiscret().Comm(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -280,23 +256,23 @@ STR::MODELEVALUATOR::XContact& ADAPTER::StructureXContact::XContactModel()
 {
   try
   {
-    STR::MODELEVALUATOR::XContact& evaluator =
-        dynamic_cast<STR::MODELEVALUATOR::XContact & >(
-            Structure().ModelEvaluator( INPAR::STR::model_contact ) );
+    STR::MODELEVALUATOR::XContact& evaluator = dynamic_cast<STR::MODELEVALUATOR::XContact&>(
+        Structure().ModelEvaluator(INPAR::STR::model_contact));
     return evaluator;
   }
   catch (const std::bad_cast& e)
   {
-    dserror("Dynamic cast to STR::MODELEVALUATOR::XContact failed!\\"
-            "( throw = \" %s \" )", e.what() );
+    dserror(
+        "Dynamic cast to STR::MODELEVALUATOR::XContact failed!\\"
+        "( throw = \" %s \" )",
+        e.what());
   }
   exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::MODELEVALUATOR::XContact& ADAPTER::StructureXContact::XContactModel()
-const
+const STR::MODELEVALUATOR::XContact& ADAPTER::StructureXContact::XContactModel() const
 {
   try
   {
@@ -311,4 +287,3 @@ const
   }
   exit(EXIT_FAILURE);
 }
-

@@ -40,187 +40,166 @@ namespace GEO
   {
     class Point;
 
-  namespace IMPL
-  {
-    typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
-                                  boost::property<boost::vertex_name_t, Point*,
-                                                  boost::property<boost::vertex_color_t, boost::default_color_type,
-                                                                  boost::property<boost::vertex_index_t, int> > >,
-                                  boost::property<boost::edge_index_t, int> > graph_t;
-
-    typedef boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
-    typedef boost::graph_traits<graph_t>::edge_descriptor edge_t;
-
-    typedef boost::graph_traits<graph_t>::vertex_iterator vertex_iterator;
-    typedef boost::graph_traits<graph_t>::edge_iterator edge_iterator;
-    typedef boost::graph_traits<graph_t>::adjacency_iterator adjacency_iterator;
-    typedef boost::graph_traits<graph_t>::out_edge_iterator out_edge_iterator;
-
-    typedef boost::property_map<graph_t, boost::vertex_name_t>::type name_map_t;
-    typedef boost::property_map<graph_t, boost::vertex_color_t>::type color_map_t;
-    typedef boost::property_map<graph_t, boost::vertex_index_t>::type vertex_index_map_t;
-    typedef boost::property_map<graph_t, boost::edge_index_t>::type edge_index_map_t;
-
-    typedef boost::color_traits<boost::property_traits<color_map_t>::value_type> color_t;
-
-    /// boost::graph visitor that is used to create a spanning tree from a graph
-    class SpanningTreeCreator : public boost::default_bfs_visitor
+    namespace IMPL
     {
-    public:
+      typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+          boost::property<boost::vertex_name_t, Point*,
+              boost::property<boost::vertex_color_t, boost::default_color_type,
+                  boost::property<boost::vertex_index_t, int>>>,
+          boost::property<boost::edge_index_t, int>>
+          graph_t;
 
-      SpanningTreeCreator( graph_t & st )
-        : st_( st )
+      typedef boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
+      typedef boost::graph_traits<graph_t>::edge_descriptor edge_t;
+
+      typedef boost::graph_traits<graph_t>::vertex_iterator vertex_iterator;
+      typedef boost::graph_traits<graph_t>::edge_iterator edge_iterator;
+      typedef boost::graph_traits<graph_t>::adjacency_iterator adjacency_iterator;
+      typedef boost::graph_traits<graph_t>::out_edge_iterator out_edge_iterator;
+
+      typedef boost::property_map<graph_t, boost::vertex_name_t>::type name_map_t;
+      typedef boost::property_map<graph_t, boost::vertex_color_t>::type color_map_t;
+      typedef boost::property_map<graph_t, boost::vertex_index_t>::type vertex_index_map_t;
+      typedef boost::property_map<graph_t, boost::edge_index_t>::type edge_index_map_t;
+
+      typedef boost::color_traits<boost::property_traits<color_map_t>::value_type> color_t;
+
+      /// boost::graph visitor that is used to create a spanning tree from a graph
+      class SpanningTreeCreator : public boost::default_bfs_visitor
       {
-      }
+       public:
+        SpanningTreeCreator(graph_t& st) : st_(st) {}
 
-      void tree_edge( edge_t e, const graph_t & g )
-      {
-        vertex_t u = boost::source( e, g );
-        vertex_t v = boost::target( e, g );
-
-        if ( u > v )
+        void tree_edge(edge_t e, const graph_t& g)
         {
-          std::swap( u, v );
+          vertex_t u = boost::source(e, g);
+          vertex_t v = boost::target(e, g);
+
+          if (u > v)
+          {
+            std::swap(u, v);
+          }
+
+          // assume same vertex ids
+          boost::add_edge(u, v, st_);
         }
 
-        // assume same vertex ids
-        boost::add_edge( u, v, st_ );
-      }
+       private:
+        graph_t& st_;
+      };
 
-    private:
-      graph_t & st_;
-    };
-
-    /// boost::graph visitor
-    class SpanningTreePathFinder : public boost::default_dfs_visitor
-    {
-    public:
-
-      SpanningTreePathFinder( vertex_t v, std::vector<vertex_t> & path )
-        : done_( false ),
-          v_( v ),
-          path_( path )
-      {}
-
-      void discover_vertex( vertex_t u, const graph_t & g )
+      /// boost::graph visitor
+      class SpanningTreePathFinder : public boost::default_dfs_visitor
       {
-        if ( not done_ )
+       public:
+        SpanningTreePathFinder(vertex_t v, std::vector<vertex_t>& path)
+            : done_(false), v_(v), path_(path)
         {
-          if ( u==v_ )
-            done_ = true;
-          path_.push_back( u );
         }
-      }
 
-      bool operator()( vertex_t u, const graph_t & g )
-      {
-        return done_;
-      }
-
-      void finish_vertex( vertex_t u, const graph_t & g )
-      {
-        if ( not done_ )
+        void discover_vertex(vertex_t u, const graph_t& g)
         {
-          if ( path_.back()!=u )
-            throw std::runtime_error( "confused" );
-          path_.pop_back();
+          if (not done_)
+          {
+            if (u == v_) done_ = true;
+            path_.push_back(u);
+          }
         }
-      }
 
-    private:
-      bool done_;
-      vertex_t v_;
-      std::vector<vertex_t> & path_;
-    };
+        bool operator()(vertex_t u, const graph_t& g) { return done_; }
 
-    /// visitor that collects cycles in a planar graph
-    struct face_visitor : public boost::planar_face_traversal_visitor
-    {
-      face_visitor( name_map_t name_map, std::vector<Cycle> & cycles )
-        : name_map_( name_map ),
-          cycles_( cycles )
+        void finish_vertex(vertex_t u, const graph_t& g)
+        {
+          if (not done_)
+          {
+            if (path_.back() != u) throw std::runtime_error("confused");
+            path_.pop_back();
+          }
+        }
+
+       private:
+        bool done_;
+        vertex_t v_;
+        std::vector<vertex_t>& path_;
+      };
+
+      /// visitor that collects cycles in a planar graph
+      struct face_visitor : public boost::planar_face_traversal_visitor
       {
-      }
+        face_visitor(name_map_t name_map, std::vector<Cycle>& cycles)
+            : name_map_(name_map), cycles_(cycles)
+        {
+        }
 
-      void begin_face()
+        void begin_face() { cycle.clear(); }
+
+        void end_face()
+        {
+          cycles_.push_back(Cycle());
+          std::swap(cycles_.back(), cycle);
+        }
+
+        template <typename Vertex>
+        void next_vertex(Vertex v)
+        {
+          cycle.push_back(name_map_[v]);
+        }
+
+        template <typename Edge>
+        void next_edge(Edge e)
+        {
+        }
+
+        name_map_t name_map_;
+        Cycle cycle;
+        std::vector<Cycle>& cycles_;
+      };
+
+      /// filter that selects all edges to a given marker
+      struct edge_filter
       {
-        cycle.clear();
-      }
+        edge_filter() : g_(NULL), component_(NULL), c_(0) {}
 
-      void end_face()
-      {
-        cycles_.push_back( Cycle() );
-        std::swap( cycles_.back(), cycle );
-      }
+        edge_filter(graph_t& g, const std::vector<int>& component, int c)
+            : g_(&g), component_(&component), c_(c)
+        {
+        }
 
-      template <typename Vertex>
-      void next_vertex( Vertex v )
-      {
-        cycle.push_back( name_map_[v] );
-      }
+        template <typename Edge>
+        bool operator()(const Edge& e) const
+        {
+          vertex_t u = boost::source(e, *g_);
+          vertex_t v = boost::target(e, *g_);
 
-      template <typename Edge>
-      void next_edge( Edge e )
-      {
-      }
+          vertex_index_map_t vertex_index_map = boost::get(boost::vertex_index, *g_);
 
-      name_map_t name_map_;
-      Cycle cycle;
-      std::vector<Cycle> & cycles_;
-    };
+          return ((*component_)[vertex_index_map[u]] == c_ and
+                  (*component_)[vertex_index_map[v]] == c_);
+        }
 
-    /// filter that selects all edges to a given marker
-    struct edge_filter
-    {
-      edge_filter()
-        : g_( NULL ),
-          component_( NULL ),
-          c_( 0 )
-      {
-      }
+        graph_t* g_;
+        const std::vector<int>* component_;
+        int c_;
+      };
 
-      edge_filter( graph_t & g, const std::vector<int> & component, int c )
-        : g_( &g ),
-          component_( &component ),
-          c_( c )
-      {
-      }
+      typedef boost::filtered_graph<graph_t, edge_filter> filtered_graph_t;
 
-      template <typename Edge>
-      bool operator()( const Edge & e ) const
-      {
-        vertex_t u = boost::source( e, *g_ );
-        vertex_t v = boost::target( e, *g_ );
-
-        vertex_index_map_t vertex_index_map = boost::get( boost::vertex_index, *g_ );
-
-        return ( ( *component_ )[vertex_index_map[u]]==c_ and
-                 ( *component_ )[vertex_index_map[v]]==c_ );
-      }
-
-      graph_t * g_;
-      const std::vector<int> * component_;
-      int c_;
-    };
-
-    typedef boost::filtered_graph<graph_t,edge_filter> filtered_graph_t;
-
-    typedef std::vector<vertex_t> cycle_t;
+      typedef std::vector<vertex_t> cycle_t;
 
 #ifdef CUT_USE_SORTED_VECTOR
-    typedef sorted_vector<cycle_t*> plain_cycle_set;
-    typedef sorted_vector<vertex_t> plain_vertix_set;
-    typedef sorted_vector<std::pair<vertex_t, vertex_t> > plain_graph_edge_set;
+      typedef sorted_vector<cycle_t*> plain_cycle_set;
+      typedef sorted_vector<vertex_t> plain_vertix_set;
+      typedef sorted_vector<std::pair<vertex_t, vertex_t>> plain_graph_edge_set;
 #else
-    typedef std::set<cycle_t*> plain_cycle_set;
-    typedef std::set<vertex_t> plain_vertix_set;
-    typedef std::set<std::pair<vertex_t, vertex_t> > plain_graph_edge_set;
+      typedef std::set<cycle_t*> plain_cycle_set;
+      typedef std::set<vertex_t> plain_vertix_set;
+      typedef std::set<std::pair<vertex_t, vertex_t>> plain_graph_edge_set;
 #endif
 
-    void find_cycles( graph_t & g, plain_cycle_set & base_cycles );
+      void find_cycles(graph_t& g, plain_cycle_set& base_cycles);
 
-  }
-  }
-}
+    }  // namespace IMPL
+  }    // namespace CUT
+}  // namespace GEO
 
 #endif

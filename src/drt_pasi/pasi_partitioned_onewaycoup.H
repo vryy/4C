@@ -28,28 +28,25 @@
  *----------------------------------------------------------------------*/
 namespace PASI
 {
+  //! one way coupled partitioned algorithm for particle structure interaction
+  class PASI_PartOneWayCoup : public PartitionedAlgo
+  {
+   public:
+    //! constructor
+    explicit PASI_PartOneWayCoup(const Epetra_Comm& comm,  //! communicator
+        const Teuchos::ParameterList&
+            pasi_params  //! input parameters for particle structure interaction
+    );
 
-//! one way coupled partitioned algorithm for particle structure interaction
-class PASI_PartOneWayCoup: public PartitionedAlgo
-{
+    //! virtual destructor
+    virtual ~PASI_PartOneWayCoup(){};
 
-public:
+    //! timeloop of coupled problem
+    virtual void Timeloop();
 
-  //! constructor
-  explicit PASI_PartOneWayCoup(
-      const Epetra_Comm&              comm,         //! communicator
-      const Teuchos::ParameterList&   pasi_params   //! input parameters for particle structure interaction
-      );
+  };  // class PASI_PartOneWayCoup: public PartitionedAlgo
 
-  //! virtual destructor
-  virtual ~PASI_PartOneWayCoup(){};
-
-  //! timeloop of coupled problem
-  virtual void Timeloop();
-
-}; // class PASI_PartOneWayCoup: public PartitionedAlgo
-
-} // namespace PASI
+}  // namespace PASI
 
 /*----------------------------------------------------------------------*/
-#endif // PASI_PARTITIONED_ONEWAYCOUP_H
+#endif  // PASI_PARTITIONED_ONEWAYCOUP_H

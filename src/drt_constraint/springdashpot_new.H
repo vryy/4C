@@ -25,7 +25,7 @@ namespace DRT
   class Condition;
   class Discretization;
   class Element;
-}
+}  // namespace DRT
 
 namespace Teuchos
 {
@@ -51,149 +51,128 @@ namespace UTILS
 {
   class SpringDashpotNew
   {
-    public:
+   public:
+    // type of spring
+    enum SpringType
+    {
+      xyz,            ///<
+      refsurfnormal,  ///<
+      cursurfnormal   ///<
+    };
 
-      // type of spring
-      enum SpringType
-      {
-        xyz, ///<
-        refsurfnormal,  ///<
-        cursurfnormal  ///<
-      };
+    /*!
+    \brief constructor
+     */
+    SpringDashpotNew(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Condition> cond);
 
-      /*!
-      \brief constructor
-       */
-      SpringDashpotNew(Teuchos::RCP<DRT::Discretization> dis,
-                       Teuchos::RCP<DRT::Condition> cond);
+    /*!
+    \brief destructor
+     */
+    ~SpringDashpotNew() { return; };
 
-      /*!
-      \brief destructor
-       */
-      ~SpringDashpotNew()
-      {
-        return;
-      };
+    //! add contribution of spring dashpot BC to residual vector
+    // old version, NOT consistently integrated over element surface!!
+    void EvaluateForce(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
+        const Teuchos::RCP<const Epetra_Vector> velp);
 
-      //! add contribution of spring dashpot BC to residual vector
-      // old version, NOT consistently integrated over element surface!!
-      void EvaluateForce(
-          Epetra_Vector& fint,
-          const Teuchos::RCP<const Epetra_Vector> disp,
-          const Teuchos::RCP<const Epetra_Vector> velp);
+    //! add contribution of spring dashpot BC to stiffness matrix
+    // old version, NOT consistently integrated over element surface!!
+    // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
+    // -> however should migrate to new EvaluateRobin... mhv 08/2016
+    void EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
+        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velp,
+        Teuchos::ParameterList p);
 
-      //! add contribution of spring dashpot BC to stiffness matrix
-      // old version, NOT consistently integrated over element surface!!
-      // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
-      // -> however should migrate to new EvaluateRobin... mhv 08/2016
-      void EvaluateForceStiff(
-          LINALG::SparseMatrix& stiff,
-          Epetra_Vector& fint,
-          const Teuchos::RCP<const Epetra_Vector> disp,
-          const Teuchos::RCP<const Epetra_Vector> velp,
-          Teuchos::ParameterList p);
+    // NEW version, consistently integrated over element surface!!
+    void EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
+        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
+        Teuchos::ParameterList p);
 
-      // NEW version, consistently integrated over element surface!!
-      void EvaluateRobin(
-          Teuchos::RCP<LINALG::SparseMatrix> stiff,
-          Teuchos::RCP<Epetra_Vector> fint,
-          const Teuchos::RCP<const Epetra_Vector> disp,
-          const Teuchos::RCP<const Epetra_Vector> velo,
-          Teuchos::ParameterList p);
+    //! reset after Newton step
+    void ResetNewton();
 
-      //! reset after Newton step
-      void ResetNewton();
+    //! reset after prestressing with MULF
+    void ResetPrestress(Teuchos::RCP<Epetra_Vector> dis);
 
-      //! reset after prestressing with MULF
-      void ResetPrestress(
-          Teuchos::RCP<Epetra_Vector> dis);
+    //! set reset after prestressing with MULF
+    void SetRestart(Teuchos::RCP<Epetra_Vector> vec);
 
-      //! set reset after prestressing with MULF
-      void SetRestart(
-          Teuchos::RCP<Epetra_Vector> vec);
+    //! set reset after prestressing with MULF
+    void SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec);
 
-      //! set reset after prestressing with MULF
-      void SetRestartOld(
-          Teuchos::RCP<Epetra_MultiVector> vec);
+    //! output of gap, normal, and nodal stiffness
+    void OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
+        Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const;
 
-      //! output of gap, normal, and nodal stiffness
-      void OutputGapNormal(
-          Teuchos::RCP<Epetra_Vector> &gap,
-          Teuchos::RCP<Epetra_MultiVector> &normals,
-          Teuchos::RCP<Epetra_MultiVector> &stress) const;
+    //! select spring stiffness for tensile or compressive spring
+    double SelectStiffness(double gap)
+    {
+      if (gap > 0)
+        return stiff_tens_;  // gap positive: tensile spring
+      else
+        return stiff_comp_;  // gap negative: compressive spring
+    }
 
-      //! select spring stiffness for tensile or compressive spring
-      double SelectStiffness(double gap)
-      {
-        if (gap > 0)
-          return stiff_tens_; // gap positive: tensile spring
-        else
-          return stiff_comp_; // gap negative: compressive spring
-      }
+    //! output of spring offset
+    void OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const;
 
-      //! output of spring offset
-      void OutputPrestrOffset(
-          Teuchos::RCP<Epetra_Vector> &springprestroffset) const;
+    //! output of spring offset
+    void OutputPrestrOffsetOld(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
 
-      //! output of spring offset
-      void OutputPrestrOffsetOld(
-          Teuchos::RCP<Epetra_MultiVector> &springprestroffset) const;
+    //! return type of spring
+    SpringType GetSpringType() { return springtype_; }
 
-      //! return type of spring
-      SpringType GetSpringType()
-      {
-        return springtype_;
-      }
+   private:
+    //! set type of spring during initialization
+    void SetSpringType();
 
-    private:
+    //! set up MORTAR interface for direction cursurfnormal
+    void InitializeCurSurfNormal();
 
-      //! set type of spring during initialization
-      void SetSpringType();
+    //! calculate nodal area - old!
+    void GetArea(const std::map<int, Teuchos::RCP<DRT::Element>>& geom);
 
-      //! set up MORTAR interface for direction cursurfnormal
-      void InitializeCurSurfNormal();
+    //! get current normal
+    void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp);
 
-      //! calculate nodal area - old!
-      void GetArea(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
+    //! initialize prestr offset
+    void InitializePrestrOffset();
 
-      //! get current normal
-      void GetCurNormals(const Teuchos::RCP<const Epetra_Vector>& disp);
+    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
+    Teuchos::RCP<DRT::Condition> spring_;        ///< spring dashpot condition
+    Teuchos::RCP<ADAPTER::CouplingNonLinMortar>
+        mortar_;  //< mortar interface in case of curnormal springs
 
-      //! initialize prestr offset
-      void InitializePrestrOffset();
+    // spring properties
+    const double stiff_tens_;  ///< spring stiffness when spring is in tension
+    const double stiff_comp_;  ///< spring stiffness when spring is in compression
+    const double offset_;      ///< spring offset
+    const double viscosity_;   ///< dashpot viscosity
+    const int coupling_;       ///< coupling id of reference DSURFACE
 
-      Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
-      Teuchos::RCP<DRT::Condition> spring_; ///< spring dashpot condition
-      Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_; //< mortar interface in case of curnormal springs
+    // condition properties
+    const std::vector<int>* nodes_;  ///< condition nodes
+    std::map<int, double> area_;     ///< condition nodal area
 
-      // spring properties
-      const double stiff_tens_; ///< spring stiffness when spring is in tension
-      const double stiff_comp_; ///< spring stiffness when spring is in compression
-      const double offset_; ///< spring offset
-      const double viscosity_; ///< dashpot viscosity
-      const int coupling_; ///< coupling id of reference DSURFACE
+    // spring dashpot evaluation
+    std::map<int, double> gap0_;                  //< nodal gap in reference configuration
+    std::map<int, double> gap_;                   //< nodal gap in current configuration
+    std::map<int, double> gapdt_;                 //< nodal gap velocity in current configuration
+    std::map<int, std::map<int, double>> dgap_;   //< linearization of nodal gap
+    std::map<int, std::vector<double>> normals_;  //< nodal normal
+    std::map<int, std::vector<GEN::pairedvector<int, double>>>
+        dnormals_;  //< linearization of nodal normal
+    std::map<int, std::vector<double>>
+        springstress_;  //< nodal force applied by spring dashpot BC for output
+    std::map<int, std::vector<double>> offset_prestr_;  //< prestressing offset
 
-      // condition properties
-      const std::vector<int>* nodes_; ///< condition nodes
-      std::map<int, double> area_; ///< condition nodal area
+    // this is a pointer to the accumulated whole displacement vector of all last load steps
+    // has dimension of full problem
+    Teuchos::RCP<Epetra_Vector> offset_prestr_new_;  //< new prestressing offset
 
-      // spring dashpot evaluation
-      std::map<int, double> gap0_; //< nodal gap in reference configuration
-      std::map<int, double> gap_; //< nodal gap in current configuration
-      std::map<int, double> gapdt_; //< nodal gap velocity in current configuration
-      std::map<int, std::map<int,double> > dgap_; //< linearization of nodal gap
-      std::map<int, std::vector<double> > normals_; //< nodal normal
-      std::map<int, std::vector<GEN::pairedvector<int,double> > > dnormals_; //< linearization of nodal normal
-      std::map<int, std::vector<double> > springstress_; //< nodal force applied by spring dashpot BC for output
-      std::map<int, std::vector<double> > offset_prestr_; //< prestressing offset
+   private:
+    SpringType springtype_;
 
-      // this is a pointer to the accumulated whole displacement vector of all last load steps
-      // has dimension of full problem
-      Teuchos::RCP<Epetra_Vector> offset_prestr_new_; //< new prestressing offset
-
-    private:
-      SpringType springtype_;
-
-  }; //class
-}
+  };  // class
+}  // namespace UTILS
 #endif /* SPRINGDASHPOT_MANAGER_NEW_H */

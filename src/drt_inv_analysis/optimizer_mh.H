@@ -17,157 +17,154 @@
 #ifndef OPTIMIZER_MH_H_
 #define OPTIMIZER_MH_H_
 
-#include "optimizer_base.H" // base class
+#include "optimizer_base.H"  // base class
 #include "../drt_io/io.H"
 
 #include "Teuchos_ParameterList.hpp"
 
 namespace TIMINT
 {
-  template <typename> class TimIntMStep;
+  template <typename>
+  class TimIntMStep;
 }
 
 namespace INVANA
 {
+  class LogLikeMixture;
+  class MetropolisKernel;
+  class ParticleData;
+  class ParticleComm;
 
-class LogLikeMixture;
-class MetropolisKernel;
-class ParticleData;
-class ParticleComm;
+  /*! \class OptimizerMH
+   * \brief Metropolis Hastings monte carlo sampling algorithm
+   *
+   * Basic version of Metropolis Hastings algorithm. To sample from
+   * a posterior probability. This posterior probability is provided
+   * in terms of the final scale (at t=1.0) of INVANA::LogLikeMixture.
+   * The inital scale (at t=0.0) is used as proposal density.
+   *
+   * The sampling is performed by the application of the
+   * INVANA::MetropolisKernel.
+   *
+   * This algorithm can be run in a nested-parallel way and the results
+   * are averaged in the end accros the groups.
+   *
+   * \author kehl \date 07/2016
+   */
+  class OptimizerMH : public OptimizerBase
+  {
+   public:
+    //! @name Construction and setup
+    //@{
 
-/*! \class OptimizerMH
- * \brief Metropolis Hastings monte carlo sampling algorithm
- *
- * Basic version of Metropolis Hastings algorithm. To sample from
- * a posterior probability. This posterior probability is provided
- * in terms of the final scale (at t=1.0) of INVANA::LogLikeMixture.
- * The inital scale (at t=0.0) is used as proposal density.
- *
- * The sampling is performed by the application of the
- * INVANA::MetropolisKernel.
- *
- * This algorithm can be run in a nested-parallel way and the results
- * are averaged in the end accros the groups.
- *
- * \author kehl \date 07/2016
- */
-class OptimizerMH : public OptimizerBase
-{
-public:
+    //! constructor
+    OptimizerMH(const Teuchos::ParameterList& invp);
 
-  //! @name Construction and setup
-  //@{
+    //! destructor
+    virtual ~OptimizerMH(){};
 
-  //! constructor
-  OptimizerMH(const Teuchos::ParameterList& invp);
+    //! setup algorithm specific stuff
+    virtual void Setup();
+    //@}
 
-  //! destructor
-  virtual ~OptimizerMH() {};
+    //! perform the sequential monte carlo procedure
+    virtual void Integrate();
 
-  //! setup algorithm specific stuff
-  virtual void Setup();
-  //@}
+    //! print step information
+    virtual void PrintInfo(const int& iter,  /// [int] iteration
+        const double& acc,                   /// [in] acceptance ratio
+        const double& scale                  /// [in] current covariance scale factor
+        ) const;
 
-  //! perform the sequential monte carlo procedure
-  virtual void Integrate();
+    //! @name Restarts
+    //@{
 
-  //! print step information
-  virtual void PrintInfo(const int& iter, /// [int] iteration
-      const double& acc, /// [in] acceptance ratio
-      const double& scale /// [in] current covariance scale factor
-      ) const;
+    //! read restart
+    virtual void ReadRestart(int run);
 
-  //! @name Restarts
-  //@{
+    //! write restart information
+    virtual void WriteRestart();
 
-  //! read restart
-  virtual void ReadRestart(int run);
+    //@}
 
-  //! write restart information
-  virtual void WriteRestart();
+   private:
+    //! setup particles
+    void SetupParticles();
 
-  //@}
+    //! randomly initialize particles
+    void DrawInitialStates();
 
-private:
+    //! particle to propagate
+    Teuchos::RCP<ParticleData> particles_;
 
-  //! setup particles
-  void SetupParticles();
+    //! metropolis kernel
+    Teuchos::RCP<MetropolisKernel> mh_kernel_;
 
-  //! randomly initialize particles
-  void DrawInitialStates();
+    //! mixture evaluator
+    Teuchos::RCP<LogLikeMixture> mixture_;
 
-  //! particle to propagate
-  Teuchos::RCP<ParticleData> particles_;
+    //! particle communicator
+    Teuchos::RCP<ParticleComm> pcomm_;
 
-  //! metropolis kernel
-  Teuchos::RCP<MetropolisKernel> mh_kernel_;
+    //! @name restart information
+    //@{
 
-  //! mixture evaluator
-  Teuchos::RCP<LogLikeMixture> mixture_;
+    //! is this a restart
+    bool is_restart_;
+    //@}
 
-  //! particle communicator
-  Teuchos::RCP<ParticleComm> pcomm_;
+    //! Parameter list with inverse analysis paremeters
+    const Teuchos::ParameterList params_;
 
-  //! @name restart information
-  //@{
+    //! @name number of particles and groups
+    //@{
 
-  //! is this a restart
-  bool is_restart_;
-  //@}
+    //! number of groups made up of particles
+    int ngroups_;
 
-  //! Parameter list with inverse analysis paremeters
-  const Teuchos::ParameterList params_;
+    //! my group id
+    int mygroup_;
+    //@}
 
-  //! @name number of particles and groups
-  //@{
+    //! @nameAlgorithmic parameters
+    //@{
 
-  //! number of groups made up of particles
-  int ngroups_;
+    //! numiter used for acceptance ration adaptance
+    int iter_adapt_;
 
-  //! my group id
-  int mygroup_;
-  //@}
+    //! adapt accenptance ratio every iter
+    int adapt_evry_iter_;
 
-  //! @nameAlgorithmic parameters
-  //@{
+    //! the final number of iterations used for adaption
+    int iter_adapted_;
 
-  //! numiter used for acceptance ration adaptance
-  int iter_adapt_;
+    //! are we still in the adaption phase?
+    bool doadapt_;
 
-  //! adapt accenptance ratio every iter
-  int adapt_evry_iter_;
+    //! scalefacttor for the covariance to adapt the acceptance ratio
+    double covscale_;
 
-  //! the final number of iterations used for adaption
-  int iter_adapted_;
+    //! use only every "thin"-th sample for the statistic
+    int thin_;
 
-  //! are we still in the adaption phase?
-  bool doadapt_;
+    //! burnin phase ignoring samples in the statistic
+    int burnin_;
 
-  //! scalefacttor for the covariance to adapt the acceptance ratio
-  double covscale_;
+    //! cumulative current acceptance ratio
+    double acc_cum_;
+    //@}
 
-  //! use only every "thin"-th sample for the statistic
-  int thin_;
+    //! @name Resulting statistics
+    //@{
 
-  //! burnin phase ignoring samples in the statistic
-  int burnin_;
+    //! mean
+    Teuchos::RCP<Epetra_MultiVector> mean_;
 
-  //! cumulative current acceptance ratio
-  double acc_cum_;
-  //@}
-
-  //! @name Resulting statistics
-  //@{
-
-  //! mean
-  Teuchos::RCP<Epetra_MultiVector> mean_;
-
-  //! standard deviation
-  Teuchos::RCP<Epetra_MultiVector> stddev_;
-  //@}
-
-};
-}
+    //! standard deviation
+    Teuchos::RCP<Epetra_MultiVector> stddev_;
+    //@}
+  };
+}  // namespace INVANA
 
 
 

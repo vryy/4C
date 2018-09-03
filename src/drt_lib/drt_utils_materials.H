@@ -23,22 +23,23 @@
 
 namespace DRT
 {
-/// collection of useful and important but less central stuff
-namespace UTILS
-{
+  /// collection of useful and important but less central stuff
+  namespace UTILS
+  {
+    /*! brief Update material configuration with displacements stored in dofrowmap format
+     *
+     *
+     *
+     */
+    void UpdateMaterialConfigWithDispVector(
+        Teuchos::RCP<DRT::Discretization>
+            dis,  ///< discretization of which material configuration shall be updated
+        Teuchos::RCP<const Epetra_Vector>
+            disp  ///< displacement vector which is used for moving the nodes
+    );
 
-  /*! brief Update material configuration with displacements stored in dofrowmap format
-   *
-   *
-   *
-   */
-  void UpdateMaterialConfigWithDispVector(
-      Teuchos::RCP<DRT::Discretization> dis, ///< discretization of which material configuration shall be updated
-      Teuchos::RCP<const Epetra_Vector> disp ///< displacement vector which is used for moving the nodes
-        );
-
-} // namespace UTILS
-} // namespace DRT
+  }  // namespace UTILS
+}  // namespace DRT
 
 
 #endif  // #ifndef UTILS_MATERIALS_H

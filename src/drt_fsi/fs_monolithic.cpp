@@ -43,21 +43,20 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
-                                        const Teuchos::ParameterList& timeparams)
-  : AlgorithmBase(comm,timeparams)
+FSI::MonolithicBaseFS::MonolithicBaseFS(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : AlgorithmBase(comm, timeparams)
 {
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(
+      timeparams, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", true));
   fluid_ = fluid->FluidField();
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
-      Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
-  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
-  if(ale_ == Teuchos::null)
-     dserror("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new ADAPTER::AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
+  if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
 
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
@@ -65,23 +64,15 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicBaseFS::~MonolithicBaseFS()
-{
-}
+FSI::MonolithicBaseFS::~MonolithicBaseFS() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling()
-{
-  return *coupfa_;
-}
+ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() { return *coupfa_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() const
-{
-  return *coupfa_;
-}
+const ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() const { return *coupfa_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -90,7 +81,7 @@ void FSI::MonolithicBaseFS::ReadRestart(int step)
   FluidField()->ReadRestart(step);
   AleField()->ReadRestart(step);
 
-  SetTimeStep(FluidField()->Time(),FluidField()->Step());
+  SetTimeStep(FluidField()->Time(), FluidField()->Step());
 }
 
 
@@ -102,8 +93,8 @@ void FSI::MonolithicBaseFS::PrepareTimeStep()
 
   PrintHeader();
 
-  FluidField()->    PrepareTimeStep();
-  AleField()->      PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
+  AleField()->PrepareTimeStep();
 }
 
 
@@ -111,8 +102,8 @@ void FSI::MonolithicBaseFS::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseFS::Update()
 {
-  FluidField()->    Update();
-  AleField()->      Update();
+  FluidField()->Update();
+  AleField()->Update();
 }
 
 
@@ -124,8 +115,8 @@ void FSI::MonolithicBaseFS::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField()->    Output();
-  AleField()->      Output();
+  FluidField()->Output();
+  AleField()->Output();
 }
 
 
@@ -140,7 +131,8 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<Epetr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(
+    Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
@@ -148,16 +140,17 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBaseFS::AleToFluid(Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicMainFS::MonolithicMainFS(const Epetra_Comm& comm,
-                                        const Teuchos::ParameterList& timeparams)
-  : MonolithicBaseFS(comm,timeparams)
+FSI::MonolithicMainFS::MonolithicMainFS(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : MonolithicBaseFS(comm, timeparams)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void FSI::MonolithicMainFS::Timeloop(
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = NOXParameterList();
@@ -178,16 +171,15 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
   Teuchos::RCP<std::ofstream> log;
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
-           << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
+           << "# Method         = " << nlParams.sublist("Direction").get("Method", "Newton") << "\n"
            << "# step | time | time/step | #nliter | res-norm | #liter\n"
-           << "#\n"
-      ;
+           << "#\n";
   }
 
   Teuchos::Time timer("time step timer");
@@ -197,7 +189,8 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     PrepareTimeStep();
 
     // start time measurement
-    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor =
+        Teuchos::rcp(new Teuchos::TimeMonitor(timer, true));
 
     // calculate initial linear system at current position
     // (no increment)
@@ -215,18 +208,18 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-      CreateLinearSystem(nlParams, noxSoln, utils_);
+    Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = CreateLinearSystem(nlParams, noxSoln, utils_);
 
     // Create the Group
     Teuchos::RCP<NOX::FSI::GroupFS> grp =
-      Teuchos::rcp(new NOX::FSI::GroupFS(*this, printParams, interface, noxSoln, linSys));
+        Teuchos::rcp(new NOX::FSI::GroupFS(*this, printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
     Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
+    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(
+        grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
 
     // we know we already have the first linear system calculated
     grp->CaptureSystemState();
@@ -234,26 +227,22 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     // solve the whole thing
     NOX::StatusTest::StatusType status = solver->solve();
 
-    if (status != NOX::StatusTest::Converged)
-      dserror("Nonlinear solver failed to converge!");
+    if (status != NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
 
     // cleanup
-    //mat_->Zero();
+    // mat_->Zero();
 
     // stop time measurement
     timemonitor = Teuchos::null;
 
-    if (Comm().MyPID()==0)
+    if (Comm().MyPID() == 0)
     {
-      (*log) << Step()
-             << "\t" << Time()
-             << " " << timer.totalElapsedTime()
-             << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
-             << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
-             << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
-        ;
+      (*log) << Step() << "\t" << Time() << " " << timer.totalElapsedTime() << " "
+             << nlParams.sublist("Output").get("Nonlinear Iterations", 0) << " "
+             << nlParams.sublist("Output").get("2-Norm of Residual", 0.) << " "
+             << lsParams.sublist("Output").get("Total Number of Linear Iterations", 0);
       (*log) << std::endl;
-      lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+      lsParams.sublist("Output").set("Total Number of Linear Iterations", 0);
     }
 
     Update();
@@ -271,9 +260,9 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Teuchos::RCP<const Epetra_Vector> fx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x!=Teuchos::null)
+  if (x != Teuchos::null)
   {
-    ExtractFieldVectors(x,fx,ax);
+    ExtractFieldVectors(x, fx, ax);
   }
 
   // Call all elements and assemble rhs and matrices
@@ -305,17 +294,17 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
+void FSI::MonolithicMainFS::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap,maps);
+  blockrowdofmap_.Setup(*fullmap, maps);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
-                                           Teuchos::ParameterList& list)
+void FSI::MonolithicMainFS::SetDefaultParameters(
+    const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
   // monolithic solver settings
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -324,12 +313,12 @@ void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& f
   Teuchos::ParameterList& nlParams = list;
 
   nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
-  //nlParams.set("Preconditioner", "None");
-  //nlParams.set("Norm abs F", fsimono.get<double>("CONVTOL"));
+  // nlParams.set("Preconditioner", "None");
+  // nlParams.set("Norm abs F", fsimono.get<double>("CONVTOL"));
   nlParams.set("Max Iterations", fsimono.get<int>("ITEMAX"));
 
   nlParams.set("Norm abs pres", fsimono.get<double>("CONVTOL"));
-  nlParams.set("Norm abs vel",  fsimono.get<double>("CONVTOL"));
+  nlParams.set("Norm abs vel", fsimono.get<double>("CONVTOL"));
   nlParams.set("Norm abs disp", fsimono.get<double>("CONVTOL"));
 
   // sublists
@@ -337,43 +326,44 @@ void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& f
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-//   Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
+  //   Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
 
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-  dirParams.set<std::string>("Method","User Defined");
-  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
-  dirParams.set("User Defined Direction Factory",newtonfactory);
+  dirParams.set<std::string>("Method", "User Defined");
+  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this, false);
+  dirParams.set("User Defined Direction Factory", newtonfactory);
 
   // status tests are expensive, but instructive
-  //solverOptions.set<std::string>("Status Test Check Type","Minimal");
-  solverOptions.set<std::string>("Status Test Check Type","Complete");
+  // solverOptions.set<std::string>("Status Test Check Type","Minimal");
+  solverOptions.set<std::string>("Status Test Check Type", "Complete");
 
   // be explicit about linear solver parameters
-  lsParams.set<std::string>("Aztec Solver","GMRES");
-  lsParams.set<int>("Size of Krylov Subspace",fsimono.get<int>("KRYLOV_SIZE"));
-  lsParams.set<int>("Max Iterations",fsimono.get<int>("KRYLOV_ITEMAX"));
-  lsParams.set<std::string>("Preconditioner","User Defined");
-  lsParams.set<int>("Output Frequency",10);
-  lsParams.set<bool>("Output Solver Details",true);
+  lsParams.set<std::string>("Aztec Solver", "GMRES");
+  lsParams.set<int>("Size of Krylov Subspace", fsimono.get<int>("KRYLOV_SIZE"));
+  lsParams.set<int>("Max Iterations", fsimono.get<int>("KRYLOV_ITEMAX"));
+  lsParams.set<std::string>("Preconditioner", "User Defined");
+  lsParams.set<int>("Output Frequency", 10);
+  lsParams.set<bool>("Output Solver Details", true);
 
   // adaptive tolerance settings for linear solver
-  lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
-  lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
-  lsParams.set<INPAR::FSI::Verbosity>("verbosity", DRT::INPUT::IntegralValue<INPAR::FSI::Verbosity>(fsidyn,"VERBOSITY")); // verbosity level of FSI algorithm
-
+  lsParams.set<double>("base tolerance", fsimono.get<double>("BASETOL"));  // relative tolerance
+  lsParams.set<double>(
+      "adaptive distance", fsimono.get<double>("ADAPTIVEDIST"));  // adaptive distance
+  lsParams.set<INPAR::FSI::Verbosity>(
+      "verbosity", DRT::INPUT::IntegralValue<INPAR::FSI::Verbosity>(
+                       fsidyn, "VERBOSITY"));  // verbosity level of FSI algorithm
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Direction::Generic>
-FSI::MonolithicMainFS::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
-                                Teuchos::ParameterList& params) const
+Teuchos::RCP<NOX::Direction::Generic> FSI::MonolithicMainFS::buildDirection(
+    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
-  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd,params));
-  for (unsigned i=0; i<statustests_.size(); ++i)
+  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd, params));
+  for (unsigned i = 0; i < statustests_.size(); ++i)
   {
     statustests_[i]->SetNewton(newton);
   }
@@ -383,10 +373,11 @@ FSI::MonolithicMainFS::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicMainFS::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
+bool FSI::MonolithicMainFS::computeF(
+    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::computeF");
-  Evaluate(Teuchos::rcp(&x,false));
+  Evaluate(Teuchos::rcp(&x, false));
   SetupRHS(F);
   return true;
 }
@@ -394,7 +385,7 @@ bool FSI::MonolithicMainFS::computeF(const Epetra_Vector &x, Epetra_Vector &F, c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicMainFS::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
+bool FSI::MonolithicMainFS::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   return true;
 }
@@ -402,9 +393,8 @@ bool FSI::MonolithicMainFS::computeJacobian(const Epetra_Vector &x, Epetra_Opera
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicMainFS::computePreconditioner(const Epetra_Vector &x,
-                                            Epetra_Operator &M,
-                                            Teuchos::ParameterList *precParams)
+bool FSI::MonolithicMainFS::computePreconditioner(
+    const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   return true;
 }
@@ -413,20 +403,19 @@ bool FSI::MonolithicMainFS::computePreconditioner(const Epetra_Vector &x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::BlockMonolithicFS::BlockMonolithicFS(const Epetra_Comm& comm,
-                                          const Teuchos::ParameterList& timeparams)
-  : MonolithicMainFS(comm,timeparams),
-    precondreusecount_(0)
+FSI::BlockMonolithicFS::BlockMonolithicFS(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : MonolithicMainFS(comm, timeparams), precondreusecount_(0)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::BlockMonolithicFS::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
+bool FSI::BlockMonolithicFS::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithicFS::computeJacobian");
-  Evaluate(Teuchos::rcp(&x,false));
+  Evaluate(Teuchos::rcp(&x, false));
   LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
   SetupSystemMatrix(mat);
   return true;
@@ -435,13 +424,12 @@ bool FSI::BlockMonolithicFS::computeJacobian(const Epetra_Vector &x, Epetra_Oper
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::BlockMonolithicFS::computePreconditioner(const Epetra_Vector &x,
-                                            Epetra_Operator &M,
-                                            Teuchos::ParameterList *precParams)
+bool FSI::BlockMonolithicFS::computePreconditioner(
+    const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithicFS::computePreconditioner");
 
-  if (precondreusecount_<=0)
+  if (precondreusecount_ <= 0)
   {
     // Create preconditioner operator. The blocks are already there. This is
     // the perfect place to initialize the block preconditioners.
@@ -470,12 +458,10 @@ void FSI::BlockMonolithicFS::PrepareTimeStep()
 
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
-                                const Teuchos::ParameterList& timeparams)
-  : BlockMonolithicFS(comm,timeparams)
+FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : BlockMonolithicFS(comm, timeparams)
 {
   aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
@@ -483,9 +469,10 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ =
+      DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  SetDefaultParameters(fsidyn,NOXParameterList());
+  SetDefaultParameters(fsidyn, NOXParameterList());
 
   ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
@@ -494,27 +481,21 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
-                                   FluidField()->Interface()->FSCondMap(),
-                                   *AleField()->Discretization(),
-                                   AleField()->Interface()->FSCondMap(),
-                                   "FREESURFCoupling",
-                                   ndim);
+      FluidField()->Interface()->FSCondMap(), *AleField()->Discretization(),
+      AleField()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap = AleField()->Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField()->Discretization(),
-                       *AleField()->Discretization(),
-                       *fluidnodemap,
-                       *alenodemap,
-                        ndim);
+  coupfa.SetupCoupling(*FluidField()->Discretization(), *AleField()->Discretization(),
+      *fluidnodemap, *alenodemap, ndim);
 
   FluidField()->SetMeshMap(coupfa.MasterDofMap());
 
   // create combined map
 
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
   vecSpaces.push_back(FluidField()->DofRowMap());
   vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
@@ -536,65 +517,50 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   std::vector<int> apciter;
   std::vector<double> apcomega;
   {
-    int    word1;
+    int word1;
     double word2;
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"PCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"PCOMEGA"));
-      while (pciterstream >> word1)
-        pciter.push_back(word1);
-      while (pcomegastream >> word2)
-        pcomega.push_back(word2);
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "PCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "PCOMEGA"));
+      while (pciterstream >> word1) pciter.push_back(word1);
+      while (pcomegastream >> word2) pcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCOMEGA"));
-      while (pciterstream >> word1)
-        spciter.push_back(word1);
-      while (pcomegastream >> word2)
-        spcomega.push_back(word2);
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCITER"));
+      std::istringstream pcomegastream(
+          Teuchos::getNumericStringParameter(fsimono, "STRUCTPCOMEGA"));
+      while (pciterstream >> word1) spciter.push_back(word1);
+      while (pcomegastream >> word2) spcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCOMEGA"));
-      while (pciterstream >> word1)
-        fpciter.push_back(word1);
-      while (pcomegastream >> word2)
-        fpcomega.push_back(word2);
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCOMEGA"));
+      while (pciterstream >> word1) fpciter.push_back(word1);
+      while (pcomegastream >> word2) fpcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"ALEPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"ALEPCOMEGA"));
-      while (pciterstream >> word1)
-        apciter.push_back(word1);
-      while (pcomegastream >> word2)
-        apcomega.push_back(word2);
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "ALEPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "ALEPCOMEGA"));
+      while (pciterstream >> word1) apciter.push_back(word1);
+      while (pcomegastream >> word2) apcomega.push_back(word2);
     }
   }
 
   // create block system matrix
-  switch(linearsolverstrategy_)
+  switch (linearsolverstrategy_)
   {
-    // FSIAMG not supported
+      // FSIAMG not supported
 
-  case INPAR::FSI::PreconditionedKrylov:
-    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFS(
-                                   Extractor(),
-                                   *FluidField(),
-                                   *AleField(),
-                                   true,
-                                   DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
-                                   pcomega[0],
-                                   pciter[0],
-                                   fpcomega[0],
-                                   fpciter[0],
-                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-  break;
-  default:
-    dserror("Unsupported type of monolithic free surface solver");
-  break;
+    case INPAR::FSI::PreconditionedKrylov:
+      systemmatrix_ =
+          Teuchos::rcp(new OverlappingBlockMatrixFS(Extractor(), *FluidField(), *AleField(), true,
+              DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
+              fpcomega[0], fpciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
+      break;
+    default:
+      dserror("Unsupported type of monolithic free surface solver");
+      break;
   }
-
 }
 
 
@@ -605,9 +571,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFS::SetupRHS");
 
   // see Kue eq. (4.2)
-  SetupVector(f,
-              FluidField()->RHS(),
-              AleField()->RHS());
+  SetupVector(f, FluidField()->RHS(), AleField()->RHS());
 
 
   // see Kue eq. (4.21)
@@ -621,11 +585,10 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     // And we are concerned with the u(n) part here.
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
-    if (a==Teuchos::null)
-      dserror("expect ale block matrix");
+    if (a == Teuchos::null) dserror("expect ale block matrix");
 
     // here we extract the free surface submatrices from position 2
-    LINALG::SparseMatrix& aig = a->Matrix(0,2);
+    LINALG::SparseMatrix& aig = a->Matrix(0, 2);
 
     // extract fluid free surface velocities.
     Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractFreeSurfaceVeln();
@@ -633,31 +596,31 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
 
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
-    aig.Apply(*aveln,*rhs);
+    aig.Apply(*aveln, *rhs);
 
-    rhs->Scale(-1.*Dt());
+    rhs->Scale(-1. * Dt());
 
-    Extractor().AddVector(*rhs,1,f);
+    Extractor().AddVector(*rhs, 1, f);
 
     // shape derivatives
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
-    if (mmm!=Teuchos::null)
+    if (mmm != Teuchos::null)
     {
       // here we extract the free surface submatrices from position 2
-      LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
-      LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
+      LINALG::SparseMatrix& fmig = mmm->Matrix(0, 2);
+      LINALG::SparseMatrix& fmgg = mmm->Matrix(2, 2);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
-      fmig.Apply(*fveln,*rhs);
+      fmig.Apply(*fveln, *rhs);
       Teuchos::RCP<Epetra_Vector> veln = FluidField()->Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
-      fmgg.Apply(*fveln,*rhs);
-      FluidField()->Interface()->InsertFSCondVector(rhs,veln);
+      fmgg.Apply(*fveln, *rhs);
+      FluidField()->Interface()->InsertFSCondVector(rhs, veln);
 
-      veln->Scale(-1.*Dt());
+      veln->Scale(-1. * Dt());
 
-      Extractor().AddVector(*veln,0,f);
+      Extractor().AddVector(*veln, 0, f);
     }
   }
 
@@ -683,16 +646,15 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-  if (a==Teuchos::null)
-    dserror("expect ale block matrix");
+  if (a == Teuchos::null) dserror("expect ale block matrix");
 
   // here we extract the free surface submatrices from position 2
-  LINALG::SparseMatrix& aii = a->Matrix(0,0);
-  LINALG::SparseMatrix& aig = a->Matrix(0,2);
+  LINALG::SparseMatrix& aii = a->Matrix(0, 0);
+  LINALG::SparseMatrix& aig = a->Matrix(0, 2);
 
   /*----------------------------------------------------------------------*/
 
-//   double scale     = FluidField()->ResidualScaling();
+  //   double scale     = FluidField()->ResidualScaling();
   double timescale = FluidField()->TimeScaling();
 
   // build block matrix
@@ -703,50 +665,34 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
   // interface meshes.
   f->UnComplete();
 
-  mat.Assign(0,0,LINALG::View,*f);
+  mat.Assign(0, 0, LINALG::View, *f);
 
-  (*aigtransform_)(a->FullRowMap(),
-                   a->FullColMap(),
-                   aig,
-                   1./timescale,
-                   ADAPTER::CouplingSlaveConverter(*icoupfa_),
-                   mat.Matrix(1,0));
-  mat.Assign(1,1,LINALG::View,aii);
+  (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
+      ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(1, 0));
+  mat.Assign(1, 1, LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
-  if (mmm!=Teuchos::null)
+  if (mmm != Teuchos::null)
   {
     // here we extract the free surface submatrices from position 2
-    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(2,0);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
+    LINALG::SparseMatrix& fmii = mmm->Matrix(0, 0);
+    LINALG::SparseMatrix& fmig = mmm->Matrix(0, 2);
+    LINALG::SparseMatrix& fmgi = mmm->Matrix(2, 0);
+    LINALG::SparseMatrix& fmgg = mmm->Matrix(2, 2);
 
-    mat.Matrix(0,0).Add(fmgg,false,1./timescale,1.0);
-    mat.Matrix(0,0).Add(fmig,false,1./timescale,1.0);
+    mat.Matrix(0, 0).Add(fmgg, false, 1. / timescale, 1.0);
+    mat.Matrix(0, 0).Add(fmig, false, 1. / timescale, 1.0);
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
-    (*fmgitransform_)(mmm->FullRowMap(),
-                      mmm->FullColMap(),
-                      fmgi,
-                      1.,
-                      ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(0,1),
-                      false,
-                      false);
+    (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
+        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, false);
 
-    (*fmiitransform_)(mmm->FullRowMap(),
-                      mmm->FullColMap(),
-                      fmii,
-                      1.,
-                      ADAPTER::CouplingMasterConverter(coupfa),
-                      mat.Matrix(0,1),
-                      false,
-                      true);
+    (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
+        ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, true);
   }
 
   // done. make sure all blocks are filled.
@@ -760,9 +706,7 @@ void FSI::MonolithicFS::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFS::InitialGuess");
 
-  SetupVector(*ig,
-              FluidField()->InitialGuess(),
-              AleField()->InitialGuess());
+  SetupVector(*ig, FluidField()->InitialGuess(), AleField()->InitialGuess());
 }
 
 
@@ -770,68 +714,64 @@ void FSI::MonolithicFS::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFS::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
-  //should we scale the system?
+  // should we scale the system?
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
     // The matrices are modified here. Do we have to change them back later on?
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(1,1).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(1, 1).EpetraMatrix();
 
-    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
-    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
+    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*arowsum_);
     A->InvColSums(*acolsum_);
-    if (A->LeftScale(*arowsum_) or
-        A->RightScale(*acolsum_) or
-        mat.Matrix(1,0).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(0,1).EpetraMatrix()->RightScale(*acolsum_))
+    if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
+        mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0, 1).EpetraMatrix()->RightScale(*acolsum_))
       dserror("ale scaling failed");
 
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,1);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 1);
 
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0))
-      dserror("ale scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
 
-    Extractor().InsertVector(*ax,1,b);
+    Extractor().InsertVector(*ax, 1, b);
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFS::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+void FSI::MonolithicFS::UnscaleSolution(
+    LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x,1);
+    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 1);
 
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0))
-      dserror("ale scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
 
-    Extractor().InsertVector(*ay,1,x);
+    Extractor().InsertVector(*ay, 1, x);
 
-    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,1);
+    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 1);
 
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0))
-      dserror("ale scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
 
-    Extractor().InsertVector(*ax,1,b);
+    Extractor().InsertVector(*ax, 1, b);
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(1,1).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(1, 1).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
     acolsum_->Reciprocal(*acolsum_);
-    if (A->LeftScale(*arowsum_) or
-        A->RightScale(*acolsum_) or
-        mat.Matrix(1,0).EpetraMatrix()->LeftScale(*arowsum_) or
-        mat.Matrix(0,1).EpetraMatrix()->RightScale(*acolsum_))
+    if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
+        mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*arowsum_) or
+        mat.Matrix(0, 1).EpetraMatrix()->RightScale(*acolsum_))
       dserror("ale scaling failed");
   }
 }
@@ -839,26 +779,22 @@ void FSI::MonolithicFS::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFS::SetupVector(Epetra_Vector &f,
-                                    Teuchos::RCP<const Epetra_Vector> fv,
-                                    Teuchos::RCP<const Epetra_Vector> av)
+void FSI::MonolithicFS::SetupVector(
+    Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av)
 {
-
   // extract the inner dofs of the ale field
   Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
-  Extractor().InsertVector(*fv,0,f);
+  Extractor().InsertVector(*fv, 0, f);
 
-  Extractor().InsertVector(*aov,1,f);
+  Extractor().InsertVector(*aov, 1, f);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicFS::CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                                      NOX::Epetra::Vector& noxSoln,
-                                      Teuchos::RCP<NOX::Utils> utils)
+Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
+    Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxSoln, Teuchos::RCP<NOX::Utils> utils)
 {
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
 
@@ -868,32 +804,27 @@ FSI::MonolithicFS::CreateLinearSystem(Teuchos::ParameterList& nlParams,
   Teuchos::ParameterList* lsParams = NULL;
 
   // in case of nonlinCG the linear solver list is somewhere else
-  if (dirParams.get("Method","User Defined")=="User Defined")
+  if (dirParams.get("Method", "User Defined") == "User Defined")
     lsParams = &(newtonParams.sublist("Linear Solver"));
-  else if (dirParams.get("Method","User Defined")=="NonlinearCG")
+  else if (dirParams.get("Method", "User Defined") == "NonlinearCG")
     lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
-  else dserror("Unknown nonlinear method");
+  else
+    dserror("Unknown nonlinear method");
 
   NOX::Epetra::Interface::Jacobian* iJac = this;
   NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
-  const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
+  const Teuchos::RCP<Epetra_Operator> J = systemmatrix_;
+  const Teuchos::RCP<Epetra_Operator> M = systemmatrix_;
 
   switch (linearsolverstrategy_)
   {
-  case INPAR::FSI::PreconditionedKrylov:
-    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(
-                                                               printParams,
-                                                               *lsParams,
-                                                               Teuchos::rcp(iJac,false),
-                                                               J,
-                                                               Teuchos::rcp(iPrec,false),
-                                                               M,
-                                                               noxSoln));
-    break;
-  default:
-    dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
-    break;
+    case INPAR::FSI::PreconditionedKrylov:
+      linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(printParams, *lsParams,
+          Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
+      break;
+    default:
+      dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+      break;
   }
 
   return linSys;
@@ -902,16 +833,18 @@ FSI::MonolithicFS::CreateLinearSystem(Teuchos::ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo>
-FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                    Teuchos::RCP<NOX::Epetra::Group> grp)
+Teuchos::RCP<NOX::StatusTest::Combo> FSI::MonolithicFS::CreateStatusTest(
+    Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<NOX::StatusTest::Combo> combo =
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<NOX::StatusTest::Combo> converged =
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
+      Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
@@ -922,85 +855,70 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   // setup tests for interface
 
-  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
+  std::vector<Teuchos::RCP<const Epetra_Map>> interface;
   interface.push_back(FluidField()->Interface()->FSCondMap());
   interface.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
+  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(), interface);
 
   Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
-    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest =
-    Teuchos::rcp(new NOX::FSI::PartialNormF("interface",
-                                            interfaceextract,0,
-                                            nlParams.get("Norm abs vel", 1.0e-6),
-                                            NOX::Abstract::Vector::TwoNorm,
-                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest = Teuchos::rcp(new NOX::FSI::PartialNormF(
+      "interface", interfaceextract, 0, nlParams.get("Norm abs vel", 1.0e-6),
+      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate =
-    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update",
-                                                 interfaceextract,0,
-                                                 nlParams.get("Norm abs vel", 1.0e-6),
-                                                 NOX::FSI::PartialNormUpdate::Scaled));
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update", interfaceextract, 0,
+          nlParams.get("Norm abs vel", 1.0e-6), NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(interfaceTest);
   interfacecombo->addStatusTest(interfaceTest);
-  //interfacecombo->addStatusTest(interfaceTestUpdate);
+  // interfacecombo->addStatusTest(interfaceTestUpdate);
 
   converged->addStatusTest(interfacecombo);
 
   // setup tests for fluid velocities
 
-  std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
+  std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
   fluidvel.push_back(FluidField()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
+  LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(), fluidvel);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
-    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel =
-    Teuchos::rcp(new NOX::FSI::PartialNormF("velocity",
-                                            fluidvelextract,0,
-                                            nlParams.get("Norm abs vel", 1.0e-6),
-                                            NOX::Abstract::Vector::TwoNorm,
-                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel = Teuchos::rcp(new NOX::FSI::PartialNormF(
+      "velocity", fluidvelextract, 0, nlParams.get("Norm abs vel", 1.0e-6),
+      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
-    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update",
-                                                 fluidvelextract,0,
-                                                 nlParams.get("Norm abs vel", 1.0e-6),
-                                                 NOX::FSI::PartialNormUpdate::Scaled));
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update", fluidvelextract, 0,
+          nlParams.get("Norm abs vel", 1.0e-6), NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
-  //fluidvelcombo->addStatusTest(innerFluidVelUpdate);
+  // fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
   converged->addStatusTest(fluidvelcombo);
 
   // setup tests for fluid pressure
 
-  std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
+  std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
   fluidpress.push_back(FluidField()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
+  LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(), fluidpress);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
-    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress =
-    Teuchos::rcp(new NOX::FSI::PartialNormF("pressure",
-                                            fluidpressextract,0,
-                                            nlParams.get("Norm abs pres", 1.0e-6),
-                                            NOX::Abstract::Vector::TwoNorm,
-                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress = Teuchos::rcp(new NOX::FSI::PartialNormF(
+      "pressure", fluidpressextract, 0, nlParams.get("Norm abs pres", 1.0e-6),
+      NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
-    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update",
-                                                 fluidpressextract,0,
-                                                 nlParams.get("Norm abs pres", 1.0e-6),
-                                                 NOX::FSI::PartialNormUpdate::Scaled));
+      Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update", fluidpressextract, 0,
+          nlParams.get("Norm abs pres", 1.0e-6), NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
-  //fluidpresscombo->addStatusTest(fluidPressUpdate);
+  // fluidpresscombo->addStatusTest(fluidPressUpdate);
 
   converged->addStatusTest(fluidpresscombo);
 
@@ -1011,19 +929,18 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                            Teuchos::RCP<const Epetra_Vector>& fx,
-                                            Teuchos::RCP<const Epetra_Vector>& ax)
+    Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFS::ExtractFieldVectors");
 
-  fx = Extractor().ExtractVector(x,0);
+  fx = Extractor().ExtractVector(x, 0);
 
   Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSCondVector(fx);
   FluidField()->FreeSurfVelocityToDisplacement(fcx);
 
   // process ale unknowns
 
-  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,1);
+  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x, 1);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
   Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
@@ -1035,13 +952,10 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::GroupFS::GroupFS(::FSI::MonolithicMainFS& mfsi,
-                           Teuchos::ParameterList& printParams,
-                           const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-                           const NOX::Epetra::Vector& x,
-                           const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
-  : NOX::Epetra::Group(printParams,i,x,linSys),
-    mfsi_(mfsi)
+NOX::FSI::GroupFS::GroupFS(::FSI::MonolithicMainFS& mfsi, Teuchos::ParameterList& printParams,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
+    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
+    : NOX::Epetra::Group(printParams, i, x, linSys), mfsi_(mfsi)
 {
 }
 
@@ -1052,7 +966,7 @@ void NOX::FSI::GroupFS::CaptureSystemState()
 {
   // we know we already have the first linear system calculated
 
-  mfsi_.SetupRHS(RHSVector.getEpetraVector(),true);
+  mfsi_.SetupRHS(RHSVector.getEpetraVector(), true);
   mfsi_.SetupSystemMatrix();
 
   sharedLinearSystem.getObject(this);
@@ -1066,7 +980,7 @@ void NOX::FSI::GroupFS::CaptureSystemState()
 NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeF()
 {
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
-  if (ret==NOX::Abstract::Group::Ok)
+  if (ret == NOX::Abstract::Group::Ok)
   {
     if (not isValidJacobian)
     {
@@ -1084,7 +998,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeF()
 NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeJacobian()
 {
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeJacobian();
-  if (ret==NOX::Abstract::Group::Ok)
+  if (ret == NOX::Abstract::Group::Ok)
   {
     if (not isValidRHS)
     {
@@ -1102,35 +1016,29 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeNewton(Teuchos::Param
 {
   mfsi_.ScaleSystem(RHSVector.getEpetraVector());
   NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
-  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(),RHSVector.getEpetraVector());
+  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(), RHSVector.getEpetraVector());
   return status;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
-                                                                ADAPTER::Fluid& fluid,
-                                                                ADAPTER::AleFluidWrapper& ale,
-                                                                int symmetric,
-                                                                double omega,
-                                                                int iterations,
-                                                                double fomega,
-                                                                int fiterations,
-                                                                FILE* err)
-  : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true),
-    symmetric_(symmetric),
-    omega_(omega),
-    iterations_(iterations),
-    fomega_(fomega),
-    fiterations_(fiterations),
-    err_(err)
+FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(
+    const LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid, ADAPTER::AleFluidWrapper& ale,
+    int symmetric, double omega, int iterations, double fomega, int fiterations, FILE* err)
+    : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps, maps, 81, false, true),
+      symmetric_(symmetric),
+      omega_(omega),
+      iterations_(iterations),
+      fomega_(fomega),
+      fiterations_(fiterations),
+      err_(err)
 {
   fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluid.LinearSolver()));
 
 #ifndef BLOCKMATRIXMERGE
   constalesolver_ = ale.ConstPreconditioner();
-  if (constalesolver_==Teuchos::null)
+  if (constalesolver_ == Teuchos::null)
     alesolver_ = Teuchos::rcp(new LINALG::Preconditioner(ale.LinearSolver()));
   else
     alesolver_ = constalesolver_;
@@ -1140,10 +1048,10 @@ FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(const LINALG::Mu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int FSI::BlockPreconditioningMatrixFS::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+int FSI::BlockPreconditioningMatrixFS::ApplyInverse(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  if (UseTranspose())
-    dserror("no transpose preconditioning");
+  if (UseTranspose()) dserror("no transpose preconditioning");
 
 #ifdef BLOCKMATRIXMERGE
   MergeSolve(X, Y);
@@ -1157,16 +1065,15 @@ int FSI::BlockPreconditioningMatrixFS::ApplyInverse(const Epetra_MultiVector &X,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::BlockPreconditioningMatrixFS::MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+void FSI::BlockPreconditioningMatrixFS::MergeSolve(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
 #ifdef BLOCKMATRIXMERGE
-  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+  const Epetra_Vector& x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
-  fluidsolver_->Solve(sparse_->EpetraMatrix(),
-                      Teuchos::rcp(&y,false),
-                      Teuchos::rcp(new Epetra_Vector(x)),
-                      true);
+  fluidsolver_->Solve(
+      sparse_->EpetraMatrix(), Teuchos::rcp(&y, false), Teuchos::rcp(new Epetra_Vector(x)), true);
 #endif
 }
 
@@ -1181,54 +1088,45 @@ void FSI::BlockPreconditioningMatrixFS::SetupPreconditioner()
   fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #else
-  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(0,0);
-  const LINALG::SparseMatrix& aleInnerOp    = Matrix(1,1);
+  const LINALG::SparseMatrix& fluidInnerOp = Matrix(0, 0);
+  const LINALG::SparseMatrix& aleInnerOp = Matrix(1, 1);
 
-  fluidsolver_    ->Setup(fluidInnerOp .EpetraMatrix());
-  if (constalesolver_==Teuchos::null)
-    alesolver_    ->Setup(aleInnerOp   .EpetraMatrix());
+  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix());
+  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
 #endif
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(Teuchos::RCP<LINALG::Preconditioner> solver,
-                                                             const LINALG::SparseMatrix& innerOp,
-                                                             Teuchos::RCP<Epetra_Vector> x,
-                                                             Teuchos::RCP<Epetra_Vector> y,
-                                                             Teuchos::RCP<Epetra_Vector> tmpx,
-                                                             int iterations,
-                                                             double omega,
-                                                             FILE* err,
-                                                             const Epetra_Comm& comm)
+void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(
+    Teuchos::RCP<LINALG::Preconditioner> solver, const LINALG::SparseMatrix& innerOp,
+    Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx,
+    int iterations, double omega, FILE* err, const Epetra_Comm& comm)
 {
   if (iterations > 0)
   {
     y->Scale(omega);
     Teuchos::RCP<Epetra_Vector> tmpy = Teuchos::rcp(new Epetra_Vector(y->Map()));
-    if (err!=NULL)
-      if (comm.MyPID()==0)
-        fprintf(err,"    fluid richardson (%d,%f):",iterations,omega);
-    for (int i=0; i<iterations; ++i)
+    if (err != NULL)
+      if (comm.MyPID() == 0) fprintf(err, "    fluid richardson (%d,%f):", iterations, omega);
+    for (int i = 0; i < iterations; ++i)
     {
-      innerOp.EpetraMatrix()->Multiply(false,*y,*tmpx);
-      tmpx->Update(1.0,*x,-1.0);
+      innerOp.EpetraMatrix()->Multiply(false, *y, *tmpx);
+      tmpx->Update(1.0, *x, -1.0);
 
-      if (err!=NULL)
+      if (err != NULL)
       {
         double n;
         tmpx->Norm2(&n);
-        if (comm.MyPID()==0)
-          fprintf(err," %e",n);
+        if (comm.MyPID() == 0) fprintf(err, " %e", n);
       }
 
-      solver->Solve(innerOp.EpetraMatrix(),tmpy,tmpx,false);
-      y->Update(omega,*tmpy,1.0);
+      solver->Solve(innerOp.EpetraMatrix(), tmpy, tmpx, false);
+      y->Update(omega, *tmpy, 1.0);
     }
-    if (err!=NULL)
-      if (comm.MyPID()==0)
-        fprintf(err,"\n");
+    if (err != NULL)
+      if (comm.MyPID() == 0) fprintf(err, "\n");
   }
 }
 
@@ -1236,27 +1134,13 @@ void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(Teuchos::RCP<LINALG
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
-                                                        ADAPTER::Fluid& fluid,
-                                                        ADAPTER::AleFluidWrapper& ale,
-                                                        bool structuresplit,
-                                                        int symmetric,
-                                                        double omega,
-                                                        int iterations,
-                                                        double fomega,
-                                                        int fiterations,
-                                                        FILE* err)
-  : BlockPreconditioningMatrixFS(maps,
-                                 fluid,
-                                 ale,
-                                 symmetric,
-                                 omega,
-                                 iterations,
-                                 fomega,
-                                 fiterations,
-                                 err),
-    structuresplit_(structuresplit),
-    fluid_(fluid),
-    ale_(ale)
+    ADAPTER::Fluid& fluid, ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric,
+    double omega, int iterations, double fomega, int fiterations, FILE* err)
+    : BlockPreconditioningMatrixFS(
+          maps, fluid, ale, symmetric, omega, iterations, fomega, fiterations, err),
+      structuresplit_(structuresplit),
+      fluid_(fluid),
+      ale_(ale)
 {
 }
 
@@ -1271,43 +1155,39 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
   fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #else
-  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(0,0);
-  const LINALG::SparseMatrix& aleInnerOp    = Matrix(1,1);
+  const LINALG::SparseMatrix& fluidInnerOp = Matrix(0, 0);
+  const LINALG::SparseMatrix& aleInnerOp = Matrix(1, 1);
 
   Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
-  Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
-  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
-                      fsidofmapex,
-                      fluid_.Discretization(),
-                      irownodes,
-                      structuresplit_);
-  if (constalesolver_==Teuchos::null)
-    alesolver_->Setup(aleInnerOp.EpetraMatrix());
+  fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.Discretization(), irownodes,
+      structuresplit_);
+  if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
 #endif
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(0,0);
-  const LINALG::SparseMatrix& fluidMeshOp   = Matrix(0,1);
-  const LINALG::SparseMatrix& aleInnerOp    = Matrix(1,1);
-  const LINALG::SparseMatrix& aleBoundOp    = Matrix(1,0);
+  const LINALG::SparseMatrix& fluidInnerOp = Matrix(0, 0);
+  const LINALG::SparseMatrix& fluidMeshOp = Matrix(0, 1);
+  const LINALG::SparseMatrix& aleInnerOp = Matrix(1, 1);
+  const LINALG::SparseMatrix& aleBoundOp = Matrix(1, 0);
 
   // Extract vector blocks
   // RHS
 
-  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+  const Epetra_Vector& x = Teuchos::dyn_cast<const Epetra_Vector>(X);
 
   // initial guess
 
-  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+  Epetra_Vector& y = Teuchos::dyn_cast<Epetra_Vector>(Y);
 
-  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,0);
-  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,1);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y, 0);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y, 1);
 
   Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(fy->Map()));
   Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(ay->Map()));
@@ -1316,57 +1196,58 @@ void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector &X, Epetra_Mult
   Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
 
   // outer Richardson loop
-  for (int run=0; run<iterations_; ++run)
+  for (int run = 0; run < iterations_; ++run)
   {
-    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,0);
-    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,1);
+    Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x, 0);
+    Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x, 1);
 
     // ----------------------------------------------------------------
     // lower GS
     {
       // Solve ale equations for ay
-      if (run>0)
+      if (run > 0)
       {
-        aleInnerOp.Multiply(false,*ay,*tmpax);
-        ax->Update(-1.0,*tmpax,1.0);
+        aleInnerOp.Multiply(false, *ay, *tmpax);
+        ax->Update(-1.0, *tmpax, 1.0);
 
-        aleBoundOp.Multiply(false,*fy,*tmpax);
-        ax->Update(-1.0,*tmpax,1.0);
+        aleBoundOp.Multiply(false, *fy, *tmpax);
+        ax->Update(-1.0, *tmpax, 1.0);
       }
 
-      alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
+      alesolver_->Solve(aleInnerOp.EpetraMatrix(), az, ax, true);
 
-      if (run>0)
+      if (run > 0)
       {
-        ay->Update(omega_,*az,1.0);
+        ay->Update(omega_, *az, 1.0);
       }
       else
       {
-        ay->Update(omega_,*az,0.0);
+        ay->Update(omega_, *az, 0.0);
       }
     }
 
     {
       // Solve fluid equations for fy
-      if (run>0)
+      if (run > 0)
       {
-        fluidInnerOp.Multiply(false,*fy,*tmpfx);
-        fx->Update(-1.0,*tmpfx,1.0);
+        fluidInnerOp.Multiply(false, *fy, *tmpfx);
+        fx->Update(-1.0, *tmpfx, 1.0);
       }
 
-      fluidMeshOp.Multiply(false,*ay,*tmpfx);
-      fx->Update(-1.0,*tmpfx,1.0);
-      fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
+      fluidMeshOp.Multiply(false, *ay, *tmpfx);
+      fx->Update(-1.0, *tmpfx, 1.0);
+      fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(), fz, fx, true);
 
-      LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
+      LocalBlockRichardson(
+          fluidsolver_, fluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
 
-      if (run>0)
+      if (run > 0)
       {
-        fy->Update(omega_,*fz,1.0);
+        fy->Update(omega_, *fz, 1.0);
       }
       else
       {
-        fy->Update(omega_,*fz,0.0);
+        fy->Update(omega_, *fz, 0.0);
       }
     }
 
@@ -1375,44 +1256,42 @@ void FSI::OverlappingBlockMatrixFS::SGS(const Epetra_MultiVector &X, Epetra_Mult
 
     if (symmetric_)
     {
-      fx = DomainExtractor().ExtractVector(x,0);
-      ax = DomainExtractor().ExtractVector(x,1);
+      fx = DomainExtractor().ExtractVector(x, 0);
+      ax = DomainExtractor().ExtractVector(x, 1);
 
       // ----------------------------------------------------------------
       // upper GS
 
       {
-        fluidInnerOp.Multiply(false,*fy,*tmpfx);
-        fx->Update(-1.0,*tmpfx,1.0);
-        fluidMeshOp.Multiply(false,*ay,*tmpfx);
-        fx->Update(-1.0,*tmpfx,1.0);
+        fluidInnerOp.Multiply(false, *fy, *tmpfx);
+        fx->Update(-1.0, *tmpfx, 1.0);
+        fluidMeshOp.Multiply(false, *ay, *tmpfx);
+        fx->Update(-1.0, *tmpfx, 1.0);
 
-        fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fz,fx,true);
+        fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(), fz, fx, true);
 
-        LocalBlockRichardson(fluidsolver_,fluidInnerOp,fx,fz,tmpfx,fiterations_,fomega_,err_,Comm());
-        fy->Update(omega_,*fz,1.0);
+        LocalBlockRichardson(
+            fluidsolver_, fluidInnerOp, fx, fz, tmpfx, fiterations_, fomega_, err_, Comm());
+        fy->Update(omega_, *fz, 1.0);
       }
 
       {
-        aleInnerOp.Multiply(false,*ay,*tmpax);
-        ax->Update(-1.0,*tmpax,1.0);
-        aleBoundOp.Multiply(false,*fy,*tmpax);
-        ax->Update(-1.0,*tmpax,1.0);
+        aleInnerOp.Multiply(false, *ay, *tmpax);
+        ax->Update(-1.0, *tmpax, 1.0);
+        aleBoundOp.Multiply(false, *fy, *tmpax);
+        ax->Update(-1.0, *tmpax, 1.0);
 
-        alesolver_->Solve(aleInnerOp.EpetraMatrix(),az,ax,true);
-        ay->Update(omega_,*az,1.0);
+        alesolver_->Solve(aleInnerOp.EpetraMatrix(), az, ax, true);
+        ay->Update(omega_, *az, 1.0);
       }
     }
   }
 
-  RangeExtractor().InsertVector(*fy,0,y);
-  RangeExtractor().InsertVector(*ay,1,y);
+  RangeExtractor().InsertVector(*fy, 0, y);
+  RangeExtractor().InsertVector(*ay, 1, y);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const char* FSI::OverlappingBlockMatrixFS::Label() const
-{
-  return "FSI::OverlappingBlockMatrixFS";
-}
+const char* FSI::OverlappingBlockMatrixFS::Label() const { return "FSI::OverlappingBlockMatrixFS"; }

@@ -21,56 +21,45 @@
 
 namespace POROMULTIPHASE
 {
-
   //! Base class of all solid-scatra algorithms
   class PoroMultiPhasePartitionedTwoWay : public PoroMultiPhasePartitioned
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhasePartitionedTwoWay(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhasePartitionedTwoWay(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& algoparams,
-        const Teuchos::ParameterList& structparams,
-        const Teuchos::ParameterList& fluidparams,
-        const std::string& struct_disname,
-        const std::string& fluid_disname,
-        bool isale,
-        int nds_disp,
-        int nds_vel,
-        int nds_solidpressure,
-        int ndsporofluid_scatra);
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
+        const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
+        const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
+        int nds_solidpressure, int ndsporofluid_scatra);
 
     /// setup
     virtual void SetupSystem();
 
     /// time step of coupled problem
-    virtual void TimeStep() {OuterLoop();};
+    virtual void TimeStep() { OuterLoop(); };
 
     /// read restart
-    virtual void ReadRestart( int restart );
+    virtual void ReadRestart(int restart);
 
     // update
     virtual void UpdateAndOutput();
 
     // update
-    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const
-    { return fluidphinp_;}
+    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const { return fluidphinp_; }
 
-  private:
-
+   private:
     //! perform iteration loop between fields
     virtual void OuterLoop();
 
-    //! perform iteration step of structure field and set the new disp and vel states in the fluid field
+    //! perform iteration step of structure field and set the new disp and vel states in the fluid
+    //! field
     virtual void DoStructStep();
 
     //! perform iteration step of scatra field and set the new phi state in the structure field
@@ -87,10 +76,10 @@ namespace POROMULTIPHASE
     virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum);
 
     /// set (relaxed) fluid solution on structure field
-    void SetRelaxedFluidSolution() ;
+    void SetRelaxedFluidSolution();
 
     /// perform aitken
-    void AitkenRelaxation(double& omega, const int itnum) ;
+    void AitkenRelaxation(double& omega, const int itnum);
 
     //! pressure increment of the outer loop
     Teuchos::RCP<Epetra_Vector> phiincnp_;
@@ -126,10 +115,10 @@ namespace POROMULTIPHASE
     //! relaxation method
     INPAR::POROMULTIPHASE::RelaxationMethods relaxationmethod_;
 
-  }; //PoroMultiPhasePartitioned
+  };  // PoroMultiPhasePartitioned
 
 
-}
+}  // namespace POROMULTIPHASE
 
 
 

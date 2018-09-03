@@ -36,40 +36,36 @@ namespace ADAPTER
  */
 namespace FSI
 {
+  /// Coupling structure and ALE, while keeping fluid velocities at zero
+  /*!
 
-/// Coupling structure and ALE, while keeping fluid velocities at zero
-/*!
+    \author tk
+    \date 06/07
+   */
+  class StructureALE : public Algorithm
+  {
+   public:
+    /// setup FSI algorithm
+    StructureALE(const Epetra_Comm& comm);
 
-  \author tk
-  \date 06/07
- */
-class StructureALE : public Algorithm
-{
-public:
+    /// outer level FSI time loop
+    void Timeloop();
 
-  /// setup FSI algorithm
-  StructureALE(const Epetra_Comm& comm);
+   protected:
+   private:
+    void Solve();
 
-  /// outer level FSI time loop
-  void Timeloop();
+    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
 
-protected:
+    /// interface structural operator
 
-private:
+    /// coupling of structure and fluid at the interface, with mortar. Experimental!
+    Teuchos::RCP<::ADAPTER::CouplingMortar> coupsfm_;
 
-  void Solve();
+    /// nodes at the fluid-structure interface match
+    bool matchingnodes_;
+  };
 
-  Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-
-  /// interface structural operator
-
-  /// coupling of structure and fluid at the interface, with mortar. Experimental!
-  Teuchos::RCP< ::ADAPTER::CouplingMortar>         coupsfm_;
-
-  /// nodes at the fluid-structure interface match
-  bool matchingnodes_;
-};
-
-}
+}  // namespace FSI
 
 #endif

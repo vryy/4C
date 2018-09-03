@@ -21,565 +21,562 @@ void test_alex60()
 
   int sidecount = 0;
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3587888889;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3693444444;
-    tri3_xyze(2,2) = 0.3209;
-
-    {
-      int data[] = {597859447,1072463033,-1409512822,1071052389,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
-    }
-    {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
-    }
-    {
-      int data[] = {-103079216,1072441982,-512341876,1071096662,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
-    }
-
-    nids.clear();
-    nids.push_back( 980 );
-    nids.push_back( 984 );
-    nids.push_back( 985 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
-  }
-  {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
-
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.87015;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3693444444;
-    tri3_xyze(2,2) = 0.3209;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3587888889;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3693444444;
+    tri3_xyze(2, 2) = 0.3209;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, -1409512822, 1071052389, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-804017878,1072420932,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-103079216,1072441982,-512341876,1071096662,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, -512341876, 1071096662, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 984 );
-    nids.push_back( 787 );
-    nids.push_back( 985 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(980);
+    nids.push_back(984);
+    nids.push_back(985);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.87015;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.31086875;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.87015;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3693444444;
+    tri3_xyze(2, 2) = 0.3209;
 
     {
-      int data[] = {-804017878,1072420932,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {-804017878, 1072420932, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-103079216,1072441982,384829070,1071140936,178670640,1070851398};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, -512341876, 1071096662, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 787 );
-    nids.push_back( 984 );
-    nids.push_back( 989 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(984);
+    nids.push_back(787);
+    nids.push_back(985);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3008375;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.31086875;
+    tri3_xyze(0, 0) = 0.87015;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.31086875;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {-804017878, 1072420932, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-103079216,1072441982,384829070,1071140936,178670640,1070851398};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, 384829070, 1071140936, 178670640, 1070851398};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 984 );
-    nids.push_back( 988 );
-    nids.push_back( 989 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(787);
+    nids.push_back(984);
+    nids.push_back(989);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3008375;
-    tri3_xyze(0,1) = 0.87015;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3008375;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.31086875;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3008375;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.31086875;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-804017878,1072420932,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-103079216,1072441982,384829070,1071140936,178670640,1070851398};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, 384829070, 1071140936, 178670640, 1070851398};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 988 );
-    nids.push_back( 825 );
-    nids.push_back( 989 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(984);
+    nids.push_back(988);
+    nids.push_back(989);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.87015;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3008375;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3008375;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.29080625;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3008375;
+    tri3_xyze(0, 1) = 0.87015;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3008375;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.31086875;
 
     {
-      int data[] = {-804017878,1072420932,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {-804017878, 1072420932, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-103079216,1072441982,384829070,1071140936,-783402035,1070767249};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, 384829070, 1071140936, 178670640, 1070851398};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 825 );
-    nids.push_back( 988 );
-    nids.push_back( 991 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(988);
+    nids.push_back(825);
+    nids.push_back(989);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3008375;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.280775;
-    tri3_xyze(0,2) = 0.8801875;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.29080625;
+    tri3_xyze(0, 0) = 0.87015;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3008375;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3008375;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.29080625;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {-804017878, 1072420932, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-1264438372,1070725175};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {-103079216,1072441982,384829070,1071140936,-783402035,1070767249};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, 384829070, 1071140936, -783402035, 1070767249};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 988 );
-    nids.push_back( 990 );
-    nids.push_back( 991 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(825);
+    nids.push_back(988);
+    nids.push_back(991);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.9103;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3693444444;
-    tri3_xyze(2,2) = 0.3209;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3008375;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.280775;
+    tri3_xyze(0, 2) = 0.8801875;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.29080625;
 
     {
-      int data[] = {1999736773,1072505133,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -1264438372, 1070725175};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {1298798110,1072484083,-512341876,1071096662,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {-103079216, 1072441982, 384829070, 1071140936, -783402035, 1070767249};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 1120 );
-    nids.push_back( 984 );
-    nids.push_back( 1121 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(988);
+    nids.push_back(990);
+    nids.push_back(991);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3587888889;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3693444444;
-    tri3_xyze(2,2) = 0.3209;
+    tri3_xyze(0, 0) = 0.9103;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3693444444;
+    tri3_xyze(2, 2) = 0.3209;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {1999736773, 1072505133, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,-1409512822,1071052389,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {1298798110,1072484083,-512341876,1071096662,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {1298798110, 1072484083, -512341876, 1071096662, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 984 );
-    nids.push_back( 980 );
-    nids.push_back( 1121 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(1120);
+    nids.push_back(984);
+    nids.push_back(1121);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3008375;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.31086875;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3587888889;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3693444444;
+    tri3_xyze(2, 2) = 0.3209;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, -1409512822, 1071052389, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {1298798110,1072484083,384829070,1071140936,178670640,1070851398};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {1298798110, 1072484083, -512341876, 1071096662, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 988 );
-    nids.push_back( 984 );
-    nids.push_back( 1125 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(984);
+    nids.push_back(980);
+    nids.push_back(1121);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3209;
-    tri3_xyze(0,1) = 0.9103;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3209;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.31086875;
-
-    {
-      int data[] = {597859447,1072463033,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
-    }
-    {
-      int data[] = {1999736773,1072505133,384829070,1071140936,659706977,1070893472};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
-    }
-    {
-      int data[] = {1298798110,1072484083,384829070,1071140936,178670640,1070851398};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
-    }
-
-    nids.clear();
-    nids.push_back( 984 );
-    nids.push_back( 1120 );
-    nids.push_back( 1125 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
-  }
-  {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
-
-    tri3_xyze(0,0) = 0.9103;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3008375;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3008375;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.31086875;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3008375;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.31086875;
 
     {
-      int data[] = {1999736773,1072505133,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {1298798110,1072484083,384829070,1071140936,178670640,1070851398};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {1298798110, 1072484083, 384829070, 1071140936, 178670640, 1070851398};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 1124 );
-    nids.push_back( 988 );
-    nids.push_back( 1125 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(988);
+    nids.push_back(984);
+    nids.push_back(1125);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.280775;
-    tri3_xyze(0,1) = 0.890225;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3008375;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.29080625;
-
-    {
-      int data[] = {597859447,1072463033,384829070,1071140936,-1264438372,1070725175};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
-    }
-    {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
-    }
-    {
-      int data[] = {1298798110,1072484083,384829070,1071140936,-783402035,1070767249};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
-    }
-
-    nids.clear();
-    nids.push_back( 990 );
-    nids.push_back( 988 );
-    nids.push_back( 1127 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
-  }
-  {
-    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
-
-    tri3_xyze(0,0) = 0.890225;
-    tri3_xyze(1,0) = 0.3799;
-    tri3_xyze(2,0) = 0.3008375;
-    tri3_xyze(0,1) = 0.9103;
-    tri3_xyze(1,1) = 0.3799;
-    tri3_xyze(2,1) = 0.3008375;
-    tri3_xyze(0,2) = 0.9002625;
-    tri3_xyze(1,2) = 0.3799;
-    tri3_xyze(2,2) = 0.29080625;
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3209;
+    tri3_xyze(0, 1) = 0.9103;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3209;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.31086875;
 
     {
-      int data[] = {597859447,1072463033,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
     }
     {
-      int data[] = {1999736773,1072505133,384829070,1071140936,-302365698,1070809323};
-      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+      int data[] = {1999736773, 1072505133, 384829070, 1071140936, 659706977, 1070893472};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
     }
     {
-      int data[] = {1298798110,1072484083,384829070,1071140936,-783402035,1070767249};
-      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+      int data[] = {1298798110, 1072484083, 384829070, 1071140936, 178670640, 1070851398};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
     }
 
     nids.clear();
-    nids.push_back( 988 );
-    nids.push_back( 1124 );
-    nids.push_back( 1127 );
-    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );
+    nids.push_back(984);
+    nids.push_back(1120);
+    nids.push_back(1125);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
-  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+  {
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
 
-  hex8_xyze(0,0) = 0.8955223881;
-  hex8_xyze(1,0) = 0.3851851852;
-  hex8_xyze(2,0) = 0.2941176471;
-  hex8_xyze(0,1) = 0.8880597015;
-  hex8_xyze(1,1) = 0.3851851852;
-  hex8_xyze(2,1) = 0.2941176471;
-  hex8_xyze(0,2) = 0.8880597015;
-  hex8_xyze(1,2) = 0.3777777778;
-  hex8_xyze(2,2) = 0.2941176471;
-  hex8_xyze(0,3) = 0.8955223881;
-  hex8_xyze(1,3) = 0.3777777778;
-  hex8_xyze(2,3) = 0.2941176471;
-  hex8_xyze(0,4) = 0.8955223881;
-  hex8_xyze(1,4) = 0.3851851852;
-  hex8_xyze(2,4) = 0.3235294118;
-  hex8_xyze(0,5) = 0.8880597015;
-  hex8_xyze(1,5) = 0.3851851852;
-  hex8_xyze(2,5) = 0.3235294118;
-  hex8_xyze(0,6) = 0.8880597015;
-  hex8_xyze(1,6) = 0.3777777778;
-  hex8_xyze(2,6) = 0.3235294118;
-  hex8_xyze(0,7) = 0.8955223881;
-  hex8_xyze(1,7) = 0.3777777778;
-  hex8_xyze(2,7) = 0.3235294118;
+    tri3_xyze(0, 0) = 0.9103;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3008375;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3008375;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.31086875;
+
+    {
+      int data[] = {1999736773, 1072505133, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
+    }
+    {
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
+    }
+    {
+      int data[] = {1298798110, 1072484083, 384829070, 1071140936, 178670640, 1070851398};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
+    }
+
+    nids.clear();
+    nids.push_back(1124);
+    nids.push_back(988);
+    nids.push_back(1125);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+  }
+  {
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.280775;
+    tri3_xyze(0, 1) = 0.890225;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3008375;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.29080625;
+
+    {
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -1264438372, 1070725175};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
+    }
+    {
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
+    }
+    {
+      int data[] = {1298798110, 1072484083, 384829070, 1071140936, -783402035, 1070767249};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
+    }
+
+    nids.clear();
+    nids.push_back(990);
+    nids.push_back(988);
+    nids.push_back(1127);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+  }
+  {
+    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+
+    tri3_xyze(0, 0) = 0.890225;
+    tri3_xyze(1, 0) = 0.3799;
+    tri3_xyze(2, 0) = 0.3008375;
+    tri3_xyze(0, 1) = 0.9103;
+    tri3_xyze(1, 1) = 0.3799;
+    tri3_xyze(2, 1) = 0.3008375;
+    tri3_xyze(0, 2) = 0.9002625;
+    tri3_xyze(1, 2) = 0.3799;
+    tri3_xyze(2, 2) = 0.29080625;
+
+    {
+      int data[] = {597859447, 1072463033, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 0), data, 3 * sizeof(double));
+    }
+    {
+      int data[] = {1999736773, 1072505133, 384829070, 1071140936, -302365698, 1070809323};
+      std::memcpy(&tri3_xyze(0, 1), data, 3 * sizeof(double));
+    }
+    {
+      int data[] = {1298798110, 1072484083, 384829070, 1071140936, -783402035, 1070767249};
+      std::memcpy(&tri3_xyze(0, 2), data, 3 * sizeof(double));
+    }
+
+    nids.clear();
+    nids.push_back(988);
+    nids.push_back(1124);
+    nids.push_back(1127);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+  }
+  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+
+  hex8_xyze(0, 0) = 0.8955223881;
+  hex8_xyze(1, 0) = 0.3851851852;
+  hex8_xyze(2, 0) = 0.2941176471;
+  hex8_xyze(0, 1) = 0.8880597015;
+  hex8_xyze(1, 1) = 0.3851851852;
+  hex8_xyze(2, 1) = 0.2941176471;
+  hex8_xyze(0, 2) = 0.8880597015;
+  hex8_xyze(1, 2) = 0.3777777778;
+  hex8_xyze(2, 2) = 0.2941176471;
+  hex8_xyze(0, 3) = 0.8955223881;
+  hex8_xyze(1, 3) = 0.3777777778;
+  hex8_xyze(2, 3) = 0.2941176471;
+  hex8_xyze(0, 4) = 0.8955223881;
+  hex8_xyze(1, 4) = 0.3851851852;
+  hex8_xyze(2, 4) = 0.3235294118;
+  hex8_xyze(0, 5) = 0.8880597015;
+  hex8_xyze(1, 5) = 0.3851851852;
+  hex8_xyze(2, 5) = 0.3235294118;
+  hex8_xyze(0, 6) = 0.8880597015;
+  hex8_xyze(1, 6) = 0.3777777778;
+  hex8_xyze(2, 6) = 0.3235294118;
+  hex8_xyze(0, 7) = 0.8955223881;
+  hex8_xyze(1, 7) = 0.3777777778;
+  hex8_xyze(2, 7) = 0.3235294118;
 
   {
-    int data[] = {-1859015696,1072474142,-1018066322,1071163103,-757935390,1070781138};
-    std::memcpy(&hex8_xyze(0,0),data,3*sizeof(double));
+    int data[] = {-1859015696, 1072474142, -1018066322, 1071163103, -757935390, 1070781138};
+    std::memcpy(&hex8_xyze(0, 0), data, 3 * sizeof(double));
   }
   {
-    int data[] = {769247873,1072458492,-1018066322,1071163103,-757935390,1070781138};
-    std::memcpy(&hex8_xyze(0,1),data,3*sizeof(double));
+    int data[] = {769247873, 1072458492, -1018066322, 1071163103, -757935390, 1070781138};
+    std::memcpy(&hex8_xyze(0, 1), data, 3 * sizeof(double));
   }
   {
-    int data[] = {769247873,1072458492,-668106024,1071132034,-757935390,1070781138};
-    std::memcpy(&hex8_xyze(0,2),data,3*sizeof(double));
+    int data[] = {769247873, 1072458492, -668106024, 1071132034, -757935390, 1070781138};
+    std::memcpy(&hex8_xyze(0, 2), data, 3 * sizeof(double));
   }
   {
-    int data[] = {-1859015696,1072474142,-668106024,1071132034,-757935390,1070781138};
-    std::memcpy(&hex8_xyze(0,3),data,3*sizeof(double));
+    int data[] = {-1859015696, 1072474142, -668106024, 1071132034, -757935390, 1070781138};
+    std::memcpy(&hex8_xyze(0, 3), data, 3 * sizeof(double));
   }
   {
-    int data[] = {-1859015696,1072474142,-1018066322,1071163103,-1263225696,1070904500};
-    std::memcpy(&hex8_xyze(0,4),data,3*sizeof(double));
+    int data[] = {-1859015696, 1072474142, -1018066322, 1071163103, -1263225696, 1070904500};
+    std::memcpy(&hex8_xyze(0, 4), data, 3 * sizeof(double));
   }
   {
-    int data[] = {769247873,1072458492,-1018066322,1071163103,-1263225696,1070904500};
-    std::memcpy(&hex8_xyze(0,5),data,3*sizeof(double));
+    int data[] = {769247873, 1072458492, -1018066322, 1071163103, -1263225696, 1070904500};
+    std::memcpy(&hex8_xyze(0, 5), data, 3 * sizeof(double));
   }
   {
-    int data[] = {769247873,1072458492,-668106024,1071132034,-1263225696,1070904500};
-    std::memcpy(&hex8_xyze(0,6),data,3*sizeof(double));
+    int data[] = {769247873, 1072458492, -668106024, 1071132034, -1263225696, 1070904500};
+    std::memcpy(&hex8_xyze(0, 6), data, 3 * sizeof(double));
   }
   {
-    int data[] = {-1859015696,1072474142,-668106024,1071132034,-1263225696,1070904500};
-    std::memcpy(&hex8_xyze(0,7),data,3*sizeof(double));
+    int data[] = {-1859015696, 1072474142, -668106024, 1071132034, -1263225696, 1070904500};
+    std::memcpy(&hex8_xyze(0, 7), data, 3 * sizeof(double));
   }
 
   nids.clear();
-  for ( int i=0; i<8; ++i )
-    nids.push_back( i );
+  for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
 
   intersection.Status();
-  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
 
-  std::vector<double> tessVol,momFitVol,dirDivVol;
+  std::vector<double> tessVol, momFitVol, dirDivVol;
 
   GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-        i!=other_cells.end();
-        ++i )
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
+  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+       i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell * vc = &**i;
+    GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
 
   intersection.Status();
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-              i!=other_cells.end();
-              ++i )
+  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+       i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell * vc = &**i;
-    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
+    GEO::CUT::VolumeCell* vc = &**i;
+    vc->MomentFitGaussWeights(
+        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
     momFitVol.push_back(vc->Volume());
   }
 
-  for(unsigned i=0;i<tessVol.size();i++)
+  for (unsigned i = 0; i < tessVol.size(); i++)
   {
-    if(fabs(tessVol[i]-momFitVol[i])>1e-5)
+    if (fabs(tessVol[i] - momFitVol[i]) > 1e-5)
       dserror("The volumes calculated by momentFitting and Tessellation are not the same");
   }
 
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-           i!=other_cells.end();
-           ++i )
-   {
-     GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
-     dirDivVol.push_back(vc->Volume());
-   }
-
-  std::cout<<"the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
-  for(unsigned i=0;i<tessVol.size();i++)
+  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+       i != other_cells.end(); ++i)
   {
-    std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
-    if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-9 )
+    GEO::CUT::VolumeCell* vc = &**i;
+    vc->DirectDivergenceGaussRule(
+        vc->ParentElement(), mesh, true, INPAR::CUT::BCellGaussPts_Tessellation);
+    dirDivVol.push_back(vc->Volume());
+  }
+
+  std::cout << "the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
+  for (unsigned i = 0; i < tessVol.size(); i++)
+  {
+    std::cout << tessVol[i] << "\t" << momFitVol[i] << "\t" << dirDivVol[i] << "\n";
+    if (fabs(tessVol[i] - momFitVol[i]) > 1e-9 || fabs(dirDivVol[i] - momFitVol[i]) > 1e-9)
       dserror("volume predicted by either one of the method is wrong");
   }
 }
-

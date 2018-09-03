@@ -39,8 +39,7 @@ namespace NLNSOL
    */
   class LineSearchFullStep : public NLNSOL::LineSearchBase
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -73,9 +72,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void ComputeLSParam(
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeLSParam(double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr  ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     /*! \brief Compute the step length / line search parameter
@@ -87,8 +85,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void ComputeLSParam(
-        double& lsparam ///< line search parameter (to be determined)
+    virtual void ComputeLSParam(double& lsparam  ///< line search parameter (to be determined)
         ) const;
 
     //@}
@@ -104,12 +101,10 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
-  }; // class LineSearchFullStep
-} // namespace NLNSOL
+   protected:
+   private:
+  };  // class LineSearchFullStep
+}  // namespace NLNSOL
 
 
 

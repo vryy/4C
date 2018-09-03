@@ -1,4 +1,4 @@
- /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file adapter_algorithmbase.H
 
@@ -21,7 +21,6 @@ Maintainer: Martin Kronbichler
 
 namespace ADAPTER
 {
-
   /// base class for algorithms
   /*!
 
@@ -32,11 +31,9 @@ namespace ADAPTER
    */
   class AlgorithmBase
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
-    explicit AlgorithmBase(const Epetra_Comm& comm,
-                           const Teuchos::ParameterList& timeparams);
+    explicit AlgorithmBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// virtual destruction
     virtual ~AlgorithmBase() {}
@@ -51,7 +48,7 @@ namespace ADAPTER
     const Epetra_Comm& Comm() const { return comm_; }
 
     /// tests if there are more time steps to do
-    bool NotFinished() const { return step_ < nstep_ and time_+1e-8*dt_ < maxtime_; }
+    bool NotFinished() const { return step_ < nstep_ and time_ + 1e-8 * dt_ < maxtime_; }
 
     /// time step size
     double Dt() const { return dt_; }
@@ -60,23 +57,22 @@ namespace ADAPTER
     void SetDt(const double stepsize) { dt_ = stepsize; }
 
     /// current time
-    double Time() const {return time_;}
+    double Time() const { return time_; }
 
     /// current time step number
     int Step() const { return step_; }
 
     /// set new time step in ReadRestart() or in a potential outer control
-    void SetTimeStep(const double time, ///< physical time to set
-                     const int step     ///< time step number to set
-                     );
+    void SetTimeStep(const double time,  ///< physical time to set
+        const int step                   ///< time step number to set
+    );
 
-  protected:
-
+   protected:
     /// total number of time steps
-    int NStep() const { return nstep_;}
+    int NStep() const { return nstep_; }
 
     /// maximum simulation time
-    double MaxTime() const { return maxtime_;}
+    double MaxTime() const { return maxtime_; }
 
     //! @name Time loop building blocks
 
@@ -105,10 +101,9 @@ namespace ADAPTER
     void PrintHeader();
 
     /// return printscreen_
-    int PrintScreenEvry(){ return printscreen_; }
+    int PrintScreenEvry() { return printscreen_; }
 
-  private:
-
+   private:
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
 
@@ -137,6 +132,6 @@ namespace ADAPTER
 
     //@}
   };
-}
+}  // namespace ADAPTER
 
 #endif

@@ -20,212 +20,213 @@
 
 namespace GEO
 {
-namespace CUT
-{
-class Point;
-class Node;
-class Edge;
-class Side;
-class Cycle;
-class Mesh;
+  namespace CUT
+  {
+    class Point;
+    class Node;
+    class Edge;
+    class Side;
+    class Cycle;
+    class Mesh;
 
-class SelfCut
-{
-public:
+    class SelfCut
+    {
+     public:
+      /// constructor
+      SelfCut(Mesh& cut_mesh);
 
-  /// constructor
-  SelfCut(Mesh & cut_mesh);
+      /*========================================================================*/
+      //! @name Main routines to run the self cut
+      /*========================================================================*/
 
-  /*========================================================================*/
-  //! @name Main routines to run the self cut
-  /*========================================================================*/
+      void PerformSelfCut();
 
-  void PerformSelfCut();
+      /// detects cutsides which cut each other by finding the respective cutpoints
+      bool CollisionDetection();
 
-  /// detects cutsides which cut each other by finding the respective cutpoints
-  bool CollisionDetection();
+      /// replaces cutted sides by creating new nodes, edges and sides
+      void MeshIntersection();
 
-  /// replaces cutted sides by creating new nodes, edges and sides
-  void MeshIntersection();
+      /// erases nodes, edges and sides which lies inside a structure body by locating there
+      /// position
+      void ElementSelection();
 
-  /// erases nodes, edges and sides which lies inside a structure body by locating there position
-  void ElementSelection();
+      /// repair the mesh from potential islands
+      void MeshCorrection();
 
-  /// repair the mesh from potential islands
-  void MeshCorrection();
+      /// represents the result by using text viewer or gmsh
+      void StatusInspection();
 
-  /// represents the result by using text viewer or gmsh
-  void StatusInspection();
+      /*========================================================================*/
+      //! @name Basic routines to run the collision detection
+      /*========================================================================*/
 
-  /*========================================================================*/
-  //! @name Basic routines to run the collision detection
-  /*========================================================================*/
+      /// finds cutsides which possibly cuts the considered side
+      void FindCuttingSides();
 
-  /// finds cutsides which possibly cuts the considered side
-  void FindCuttingSides();
+      /// if there are two nodes from cut sides are at the same position, we merge it into one node
+      bool MergeCoincidingNodes(Side* side1, Side* side2);
 
-  /// if there are two nodes from cut sides are at the same position, we merge it into one node
-  bool MergeCoincidingNodes( Side* side1, Side*  side2 );
+      /// opearations to modify the nodal ids of sides and corresponding edges are performed
+      void operationsForNodeMerging(
+          std::vector<std::pair<const Node*, const Node*>> repl, bool initial);
 
-  /// opearations to modify the nodal ids of sides and corresponding edges are performed
-  void operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl, bool initial );
+      /// templated function to delete "nod" by "replwith" in both edge and side data-structures
+      template <typename A, typename B>
+      void ModifyEdgeOrSideMap(std::map<A, B>& data, int nod, int replwith);
 
-  /// templated function to delete "nod" by "replwith" in both edge and side data-structures
-  template <typename A, typename B>
-  void ModifyEdgeOrSideMap( std::map<A,B>& data, int nod, int replwith );
+      /// finds cutpoints by searching the intersection between the edges of one side with the other
+      /// side and vice versa
+      void FindSelfCutPoints();
 
-  /// finds cutpoints by searching the intersection between the edges of one side with the other side and vice versa
-  void FindSelfCutPoints();
+      /// gets all cutted sides and there nodes and edges to store them as privat variables
+      void GetSelfCutObjects();
 
-  /// gets all cutted sides and there nodes and edges to store them as privat variables
-  void GetSelfCutObjects();
+      /*========================================================================*/
+      //! @name Basic routines to run the mesh intersection
+      /*========================================================================*/
 
-  /*========================================================================*/
-  //! @name Basic routines to run the mesh intersection
-  /*========================================================================*/
+      /// creates a node at every selfcutpoint with respect to the corresponding cutsides
+      void CreateSelfCutNodes();
 
-  /// creates a node at every selfcutpoint with respect to the corresponding cutsides
-  void CreateSelfCutNodes();
+      /// creates a edge between two selfcutnodes with respect to the corresponding cutsides
+      void CreateSelfCutEdges();
 
-  /// creates a edge between two selfcutnodes with respect to the corresponding cutsides
-  void CreateSelfCutEdges();
+      /// finds triangles with respect to the self cut by using a pointgraph and a triangulation
+      /// method
+      void FindSelfCutTriangulation();
 
-  /// finds triangles with respect to the self cut by using a pointgraph and a triangulation method
-  void FindSelfCutTriangulation();
+      /// creates triangular sides out of the self cut triangles
+      void CreateSelfCutSides();
 
-  /// creates triangular sides out of the self cut triangles
-  void CreateSelfCutSides();
+      /// erases all cutsides which are cut by another side
+      void EraseCuttedSides();
 
-  /// erases all cutsides which are cut by another side
-  void EraseCuttedSides();
+      /// erases all edges which are cut by a cutside
+      void EraseCuttedEdges();
 
-  /// erases all edges which are cut by a cutside
-  void EraseCuttedEdges();
+      /*========================================================================*/
+      //! @name Basic routines to run the element selection
+      /*========================================================================*/
 
-  /*========================================================================*/
-  //! @name Basic routines to run the element selection
-  /*========================================================================*/
+      /// locates the position of nodes, edges and sides of a structure body with respect to the
+      /// other bodys
+      void DetermineSelfCutPosition();
 
-  /// locates the position of nodes, edges and sides of a structure body with respect to the other bodys
-  void DetermineSelfCutPosition();
+      /// locates the position of nodes, edges and sides for special cases
+      void PropagateSelfCutPosition();
 
-  /// locates the position of nodes, edges and sides for special cases
-  void PropagateSelfCutPosition();
+      /// erases sides which lies inside a structure body by locating there position
+      void EraseInsideSides();
 
-  /// erases sides which lies inside a structure body by locating there position
-  void EraseInsideSides();
+      /// erases edges which lies inside a structure body by locating there position
+      void EraseInsideEdges();
 
-  /// erases edges which lies inside a structure body by locating there position
-  void EraseInsideEdges();
+      /// erases nodes which lies inside a structure body by locating there position
+      void EraseInsideNodes();
 
-  /// erases nodes which lies inside a structure body by locating there position
-  void EraseInsideNodes();
+      /// construct the connectivity of the nodes toi find potential islands in the cut mesh
+      void ConstructConnectivity();
 
-  /// construct the connectivity of the nodes toi find potential islands in the cut mesh
-  void ConstructConnectivity();
+      /// find the next node for the construction of the connectivity
+      void NextNode(Node* node, plain_node_set& remainingnodes, int count);
 
-  /// find the next node for the construction of the connectivity
-  void NextNode(Node * node, plain_node_set & remainingnodes, int count);
+      /// identify the islands
+      void FindIslands();
 
-  /// identify the islands
-  void FindIslands();
+      /*========================================================================*/
+      //! @name Basic routines to run the status inspection
+      /*========================================================================*/
 
-  /*========================================================================*/
-  //! @name Basic routines to run the status inspection
-  /*========================================================================*/
+      /// Status of the cutted sides for text viewer
+      void CuttedSideStatusText();
 
-  /// Status of the cutted sides for text viewer
-  void CuttedSideStatusText();
+      /// Status of the cutmesh for text viewer
+      void CutMeshStatusText();
 
-  /// Status of the cutmesh for text viewer
-  void CutMeshStatusText();
+      /// Status of one problematic side for text viewer
+      void ErrorStatusText(Side& cutside);
 
-  /// Status of one problematic side for text viewer
-  void ErrorStatusText(Side & cutside);
+      /// Status of the cutted sides for gmsh
+      void CuttedSideStatusGmsh(const std::string& name);
 
-  /// Status of the cutted sides for gmsh
-  void CuttedSideStatusGmsh(const std::string & name);
+      /// Status of the cutmesh in gmsh
+      void WallGmsh(const std::string& name);
 
-  /// Status of the cutmesh in gmsh
-  void WallGmsh(const std::string & name);
+      /// Status of the selfcut objects in gmsh
+      void SCObjectsGmsh(const std::string& name);
 
-  /// Status of the selfcut objects in gmsh
-  void SCObjectsGmsh(const std::string & name);
+      /// Status of the cutmesh in gmsh for my CMGM (old)
+      void SCmgmGmsh(const std::string& name);
 
-  /// Status of the cutmesh in gmsh for my CMGM (old)
-  void SCmgmGmsh(const std::string & name);
 
+      /// Status of all sides in separates files for gmsh
+      void AllSingleGmsh(const std::string& location);
 
-  /// Status of all sides in separates files for gmsh
-  void AllSingleGmsh( const std::string & location );
+      /// Status of one problematic side for gmsh
+      void ErrorGmsh(const std::string& name, Side& cutside);
 
-  /// Status of one problematic side for gmsh
-  void ErrorGmsh(const std::string & name, Side & cutside);
+      /*========================================================================*/
+      //! @name Auxiliary routines to run the self cut
+      /*========================================================================*/
 
-  /*========================================================================*/
-  //! @name Auxiliary routines to run the self cut
-  /*========================================================================*/
+      /// cuts the edges of the first cutside with the other cutside
+      void PerformSelfCut(Side& cutside, Side& otherside, PointSet& selfcutpoints);
 
-  /// cuts the edges of the first cutside with the other cutside
-  void PerformSelfCut(Side & cutside, Side & otherside,
-      PointSet & selfcutpoints);
+      /// gets the edges of the new created sides
+      void GetSelfCutEdges(Side& cutside);
 
-  /// gets the edges of the new created sides
-  void GetSelfCutEdges(Side & cutside);
+      /// checks if the direction of rotation of the cycle is correct
+      bool CheckNormal(std::vector<double> cutsideplane, Cycle& maincycle);
 
-  /// checks if the direction of rotation of the cycle is correct
-  bool CheckNormal(std::vector<double> cutsideplane, Cycle & maincycle);
+      /// deletes all pointers which are pointing to a soon to be erased side
+      void EraseSidePointer(Side& cutside);
 
-  /// deletes all pointers which are pointing to a soon to be erased side
-  void EraseSidePointer(Side & cutside);
+      /// erases a side
+      void EraseSide(std::vector<plain_int_set>& cutsideids);
 
-  /// erases a side
-  void EraseSide(std::vector<plain_int_set> & cutsideids);
+      /// deletes all pointers which are pointing to a soon to be erased edge
+      void EraseEdgePointer(Edge& cutsideedge);
 
-  /// deletes all pointers which are pointing to a soon to be erased edge
-  void EraseEdgePointer(Edge & cutsideedge);
+      /// erases an edge
+      void EraseEdge(std::vector<plain_int_set>& cutsideedgeids);
 
-  /// erases an edge
-  void EraseEdge(std::vector<plain_int_set> & cutsideedgeids);
+      void PlotAcross();
 
-  void PlotAcross();
+      void PointPlotHead();
 
-  void PointPlotHead();
+      void NodePlotHead();
 
-  void NodePlotHead();
+      void EdgePlotHead();
 
-  void EdgePlotHead();
+      void SidePlotHead();
 
-  void SidePlotHead();
+      void PointPlot(Point& point);
 
-  void PointPlot(Point & point);
+      void NodePlot(Node& node);
 
-  void NodePlot(Node & node);
+      void EdgePlot(Edge& edge);
 
-  void EdgePlot(Edge & edge);
+      void SidePlot(Side& side);
 
-  void SidePlot(Side & side);
+      void SideNodePlot(Side& side);
 
-  void SideNodePlot(Side & side);
+      void Debug(const std::string& viewname);
 
-  void Debug(const std::string & viewname);
 
+     private:
+      GEO::CUT::Mesh& mesh_;
 
-private:
+      std::map<plain_int_set, Teuchos::RCP<Side>> selfcut_sides_;
 
-  GEO::CUT::Mesh & mesh_;
+      std::map<plain_int_set, Teuchos::RCP<Edge>> selfcut_edges_;
 
-  std::map<plain_int_set, Teuchos::RCP<Side> > selfcut_sides_;
+      std::map<int, Teuchos::RCP<Node>> selfcut_nodes_;
 
-  std::map<plain_int_set, Teuchos::RCP<Edge> > selfcut_edges_;
+      std::map<int, plain_node_set> selfcut_connectivity_;
+    };
 
-  std::map<int, Teuchos::RCP<Node> > selfcut_nodes_;
-
-  std::map<int, plain_node_set > selfcut_connectivity_;
-
-};
-
-}
-}
+  }  // namespace CUT
+}  // namespace GEO
 
 #endif

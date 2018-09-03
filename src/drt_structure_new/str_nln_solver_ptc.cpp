@@ -13,7 +13,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "str_nln_solver_ptc.H"   // class definition
+#include "str_nln_solver_ptc.H"  // class definition
 #include "str_nln_solver_utils.H"
 #include "str_timint_base.H"
 
@@ -38,8 +38,7 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
   // Note, that the issetup_ flag is also updated during this call.
   Nox::Setup();
 
-  if (not IsSetup())
-    dserror("issetup_ should be \"true\" at this point!");
+  if (not IsSetup()) dserror("issetup_ should be \"true\" at this point!");
 
   return;
 }
@@ -58,27 +57,26 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
   // Set-up the pseudo transient method
   // ---------------------------------------------------------------------------
   // Non-linear solver
-  pnox.set("Nonlinear Solver","Pseudo Transient");
+  pnox.set("Nonlinear Solver", "Pseudo Transient");
 
   // Direction
-  Teuchos::ParameterList& pdir = pnox.sublist("Direction",true);
-  pdir.set("Method","Newton");
+  Teuchos::ParameterList& pdir = pnox.sublist("Direction", true);
+  pdir.set("Method", "Newton");
 
   // Line Search
-  Teuchos::ParameterList& plinesearch = pnox.sublist("Line Search",true);
+  Teuchos::ParameterList& plinesearch = pnox.sublist("Line Search", true);
 
   // Line Search/Full Step (line search is deactivated)
-  Teuchos::ParameterList& pfullstep = plinesearch.sublist("Full Step",true);
+  Teuchos::ParameterList& pfullstep = plinesearch.sublist("Full Step", true);
   // check if the default value is set
   double fullstep = pfullstep.get<double>("Full Step");
-  if (fullstep!=1.0)
+  if (fullstep != 1.0)
   {
     std::string markerline;
-    markerline.assign(40,'!');
+    markerline.assign(40, '!');
     std::cout << markerline << std::endl
-        << "WARNING: The Full Step length is " << fullstep
-        << " (default=1.0)"<< std::endl
-        << markerline << std::endl;
+              << "WARNING: The Full Step length is " << fullstep << " (default=1.0)" << std::endl
+              << markerline << std::endl;
   }
   /* The following parameters create a NOX::NLN::Solver::PseudoTransient
    * solver which is equivalent to the old BACI implementation.
@@ -87,17 +85,16 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
    * input section "STRUCT NOX/Pseudo Transient" in your input file. */
   Teuchos::ParameterList& pptc = pnox.sublist("Pseudo Transient");
 
-  pptc.set<double>("deltaInit",DataSDyn().GetInitialPTCPseudoTimeStep());
-  pptc.set<double>("deltaMax",std::numeric_limits<double>::max());
-  pptc.set<double>("deltaMin",0.0);
-  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations",
-      (DataSDyn().GetIterMax()+1));
-  pptc.set<std::string>("Time Step Control","SER");
-  pptc.set<double>("SER_alpha",1.0);
-  pptc.set<double>("ScalingFactor",1.0);
-  pptc.set<std::string>("Norm Type for TSC","Max Norm");
-  pptc.set<std::string>("Build scaling operator","every timestep");
-  pptc.set<std::string>("Scaling Type","Identity");
+  pptc.set<double>("deltaInit", DataSDyn().GetInitialPTCPseudoTimeStep());
+  pptc.set<double>("deltaMax", std::numeric_limits<double>::max());
+  pptc.set<double>("deltaMin", 0.0);
+  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations", (DataSDyn().GetIterMax() + 1));
+  pptc.set<std::string>("Time Step Control", "SER");
+  pptc.set<double>("SER_alpha", 1.0);
+  pptc.set<double>("ScalingFactor", 1.0);
+  pptc.set<std::string>("Norm Type for TSC", "Max Norm");
+  pptc.set<std::string>("Build scaling operator", "every timestep");
+  pptc.set<std::string>("Scaling Type", "Identity");
 
   // ---------------------------------------------------------------------------
   // STATUS TEST
@@ -108,9 +105,9 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
   if (not IsXMLStatusTestFile(DataSDyn().GetNoxParams().sublist("Status Test")))
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
-    CreateQuantityTypes(qtypes,DataSDyn());
-    SetStatusTestParams(DataSDyn().GetMutableNoxParams().sublist("Status Test"),
-        DataSDyn(),qtypes);
+    CreateQuantityTypes(qtypes, DataSDyn());
+    SetStatusTestParams(
+        DataSDyn().GetMutableNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
 
   return;

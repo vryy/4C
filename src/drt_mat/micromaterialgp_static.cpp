@@ -25,44 +25,43 @@
 #include "../linalg/linalg_utils.H"
 
 
-std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic> > MAT::MicroMaterialGP::microstaticmap_;
+std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic>> MAT::MicroMaterialGP::microstaticmap_;
 std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;
 
 
 /// construct an instance of MicroMaterial for a given Gauss point and
 /// microscale discretization
 
-MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner,
-                                      const int microdisnum, const double V0)
-  : gp_(gp),
-    ele_ID_(ele_ID),
-    microdisnum_(microdisnum)
+MAT::MicroMaterialGP::MicroMaterialGP(
+    const int gp, const int ele_ID, const bool eleowner, const int microdisnum, const double V0)
+    : gp_(gp), ele_ID_(ele_ID), microdisnum_(microdisnum)
 {
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
-  dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  disn_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
-  oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
-  oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
-  oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
-  oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+  dis_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
+  disn_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
+  lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
 
   // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& sdyn_micro = microproblem->StructuralDynamicParams();
 
-  dt_    = sdyn_macro.get<double>("TIMESTEP");
+  dt_ = sdyn_macro.get<double>("TIMESTEP");
   microdis->Comm().Broadcast(&dt_, 1, 0);
-  step_  = 0;
+  step_ = 0;
   stepn_ = step_ + 1;
-  time_  = 0.;
+  time_ = 0.;
   timen_ = time_ + dt_;
 
   // if class handling microscale simulations is not yet initialized
   // -> set up
 
-  if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or microstaticmap_[microdisnum_] == Teuchos::null)
+  if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or
+      microstaticmap_[microdisnum_] == Teuchos::null)
   {
     // create "time integration" class for this microstructure
     microstaticmap_[microdisnum_] = Teuchos::rcp(new STRUMULTI::MicroStatic(microdisnum_, V0));
@@ -80,15 +79,16 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   std::string newfilename;
   NewResultFile(eleowner, newfilename);
 
-  // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
-  // Note that this has to be done _after_ finding the output file name!
-  // Note also that we are using the macroscale parameterlist here
-  // because the SurfStressManager needs to know alphaf here
+  // Initialize SurfStressManager for handling surface stress conditions due to interfacial
+  // phenomena Note that this has to be done _after_ finding the output file name! Note also that we
+  // are using the macroscale parameterlist here because the SurfStressManager needs to know alphaf
+  // here
   surf_stress_man_ = Teuchos::rcp(new UTILS::SurfStressManager(microdis, sdyn_micro, newfilename));
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_micro,"NLNSOL")==INPAR::STR::soltech_newtonmod)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
+      INPAR::STR::soltech_newtonmod)
     mod_newton_ = true;
   else
     mod_newton_ = false;
@@ -101,8 +101,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 MAT::MicroMaterialGP::~MicroMaterialGP()
 {
   microstaticcounter_[microdisnum_] -= 1;
-  if (microstaticcounter_[microdisnum_]==0)
-    microstaticmap_[microdisnum_] = Teuchos::null;
+  if (microstaticcounter_[microdisnum_] == 0) microstaticmap_[microdisnum_] = Teuchos::null;
 }
 
 
@@ -111,11 +110,12 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 void MAT::MicroMaterialGP::ReadRestart()
 {
   step_ = DRT::Problem::Instance()->Restart();
-  microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, surf_stress_man_, restartname_);
+  microstaticmap_[microdisnum_]->ReadRestart(
+      step_, dis_, lastalpha_, surf_stress_man_, restartname_);
 
   *oldalpha_ = *lastalpha_;
 
-  disn_->Update(1.0,*dis_,0.0);
+  disn_->Update(1.0, *dis_, 0.0);
 }
 
 
@@ -137,14 +137,14 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
 
-  if(microdis->Comm().MyPID() == 0)
+  if (microdis->Comm().MyPID() == 0)
   {
-      // figure out how the file we restart from is called on the microscale
+    // figure out how the file we restart from is called on the microscale
     size_t pos = microprefix.rfind('-');
-    if (pos!=std::string::npos)
+    if (pos != std::string::npos)
     {
-      std::string number = microprefix.substr(pos+1);
-      std::string prefix = microprefix.substr(0,pos);
+      std::string number = microprefix.substr(pos + 1);
+      std::string prefix = microprefix.substr(0, pos);
       std::ostringstream s;
       s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
       microprefix = s.str();
@@ -161,10 +161,10 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
     // figure out how the new output file is called on the microscale
     // note: the trailing number must be the same as on the macroscale
     size_t posn = micronewprefix.rfind('-');
-    if (posn!=std::string::npos)
+    if (posn != std::string::npos)
     {
-      std::string number = micronewprefix.substr(posn+1);
-      std::string prefix = micronewprefix.substr(0,posn);
+      std::string number = micronewprefix.substr(posn + 1);
+      std::string prefix = micronewprefix.substr(0, posn);
       std::ostringstream s;
       s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
       newfilename = s.str();
@@ -175,38 +175,33 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
       s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
       newfilename = s.str();
     }
-
   }
 
   // restart file name and new output file name are sent to supporting procs
-  if (microdis->Comm().NumProc()>1)
+  if (microdis->Comm().NumProc() > 1)
   {
     {
       // broadcast restartname_ for micro scale
       int length = restartname_.length();
-      std::vector<int> name(restartname_.begin(),restartname_.end());
+      std::vector<int> name(restartname_.begin(), restartname_.end());
       int err = microdis->Comm().Broadcast(&length, 1, 0);
-      if (err)
-        dserror("communication error");
+      if (err) dserror("communication error");
       name.resize(length);
       err = microdis->Comm().Broadcast(&name[0], length, 0);
-      if (err)
-        dserror("communication error");
-      restartname_.assign(name.begin(),name.end());
+      if (err) dserror("communication error");
+      restartname_.assign(name.begin(), name.end());
     }
 
     {
       // broadcast newfilename for micro scale
       int length = newfilename.length();
-      std::vector<int> name(newfilename.begin(),newfilename.end());
+      std::vector<int> name(newfilename.begin(), newfilename.end());
       int err = microdis->Comm().Broadcast(&length, 1, 0);
-      if (err)
-        dserror("communication error");
+      if (err) dserror("communication error");
       name.resize(length);
       err = microdis->Comm().Broadcast(&name[0], length, 0);
-      if (err)
-        dserror("communication error");
-      newfilename.assign(name.begin(),name.end());
+      if (err) dserror("communication error");
+      newfilename.assign(name.begin(), name.end());
     }
   }
 
@@ -216,21 +211,13 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
     const int restart = DRT::Problem::Instance()->Restart();
     bool adaptname = true;
     // in case of restart, the new output file name is already adapted
-    if(restart)
-      adaptname = false;
+    if (restart) adaptname = false;
 
     Teuchos::RCP<IO::OutputControl> microcontrol =
-      Teuchos::rcp(new IO::OutputControl(microdis->Comm(),
-                            "Structure",
-                            microproblem->SpatialApproximation(),
-                            "micro-input-file-not-known",
-                            restartname_,
-                            newfilename,
-                            ndim,
-                            restart,
-                            macrocontrol->FileSteps(),
-                            DRT::INPUT::IntegralValue<int>(microproblem->IOParams(),"OUTPUT_BIN"),
-                            adaptname));
+        Teuchos::rcp(new IO::OutputControl(microdis->Comm(), "Structure",
+            microproblem->SpatialApproximation(), "micro-input-file-not-known", restartname_,
+            newfilename, ndim, restart, macrocontrol->FileSteps(),
+            DRT::INPUT::IntegralValue<int>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
     micro_output_->SetOutput(microcontrol);
@@ -244,19 +231,20 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
 void MAT::MicroMaterialGP::EasInit()
 {
-  Teuchos::RCP<DRT::Discretization> discret = (DRT::Problem::Instance(microdisnum_))->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> discret =
+      (DRT::Problem::Instance(microdisnum_))->GetDis("structure");
 
-  for (int lid=0; lid<discret->ElementRowMap()->NumMyElements(); ++lid)
+  for (int lid = 0; lid < discret->ElementRowMap()->NumMyElements(); ++lid)
   {
     DRT::Element* actele = discret->lRowElement(lid);
 
-    if (actele->ElementType()==DRT::ELEMENTS::So_hex8Type::Instance() or
-        actele->ElementType()==DRT::ELEMENTS::So_shw6Type::Instance())
+    if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;
       // action for elements
-      p.set("action","multi_eas_init");
+      p.set("action", "multi_eas_init");
       p.set("lastalpha", lastalpha_);
       p.set("oldalpha", oldalpha_);
       p.set("oldfeas", oldfeas_);
@@ -270,7 +258,7 @@ void MAT::MicroMaterialGP::EasInit()
       Epetra_SerialDenseVector elevector3;
       std::vector<int> lm;
 
-      actele->Evaluate(p,*discret,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+      actele->Evaluate(p, *discret, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
     }
   }
 
@@ -281,24 +269,24 @@ void MAT::MicroMaterialGP::EasInit()
 
 void MAT::MicroMaterialGP::ResetTimeAndStep()
 {
-  time_  = 0.0;
+  time_ = 0.0;
   timen_ = time_ + dt_;
-  step_  = 0;
+  step_ = 0;
   stepn_ = step_ + 1;
 }
 
 
 /// perform microscale simulation
 
-void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
-                                                  LINALG::Matrix<6,1>* stress,
-                                                  LINALG::Matrix<6,6>* cmat)
+void MAT::MicroMaterialGP::PerformMicroSimulation(
+    LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat)
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_,disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_,
+      oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
   // set current time, time step size and step number
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
@@ -322,12 +310,12 @@ void MAT::MicroMaterialGP::Update()
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
-  time_  = timen_;
+  time_ = timen_;
   timen_ += dt_;
-  step_  = stepn_;
+  step_ = stepn_;
   stepn_++;
 
-  dis_->Update(1.0,*disn_,0.0);
+  dis_->Update(1.0, *disn_, 0.0);
 
   if (surf_stress_man_->HaveSurfStress())
   {
@@ -338,8 +326,7 @@ void MAT::MicroMaterialGP::Update()
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
   const Epetra_Map* elemap = microdis->ElementRowMap();
 
-  for (int i=0;i<elemap->NumMyElements();++i)
-    (*lastalpha_)[i] = (*oldalpha_)[i];
+  for (int i = 0; i < elemap->NumMyElements(); ++i) (*lastalpha_)[i] = (*oldalpha_)[i];
 
   // in case of modified Newton, the stiffness matrix needs to be rebuilt at
   // the beginning of the new time step
@@ -356,7 +343,8 @@ void MAT::MicroMaterialGP::PrepareOutput()
   strain_ = Teuchos::rcp(new std::vector<char>());
   plstrain_ = Teuchos::rcp(new std::vector<char>());
 
-  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_,
+      oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
   microstatic->PrepareOutput();
 }
@@ -368,7 +356,8 @@ void MAT::MicroMaterialGP::Output()
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_,
+      oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   microstatic->Output(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore

@@ -19,20 +19,15 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
     class ScatraMat : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      ScatraMat(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ScatraMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ScatraMat() { ; }
@@ -42,33 +37,37 @@ namespace MAT
 
       void OptParams(std::map<std::string, int>* pnames);
 
-      enum matparamnames_{diff, reac, densific, first=diff, last=densific};
+      enum matparamnames_
+      {
+        diff,
+        reac,
+        densific,
+        first = diff,
+        last = densific
+      };
 
     };  // class Scatra
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class ScatraMatType : public DRT::ParObjectType
-{
-public:
+  class ScatraMatType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ScatraMatType"; }
 
-  std::string Name() const { return "ScatraMatType"; }
+    static ScatraMatType& Instance() { return instance_; };
 
-  static ScatraMatType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ScatraMatType instance_;
-};
+   private:
+    static ScatraMatType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
   class ScatraMat : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     ScatraMat();
 
@@ -117,27 +116,28 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ScatraMat( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ScatraMat(*this)); }
 
     /// diffusivity
-    double Diffusivity(int eleid=-1) const { return params_->GetParameter(params_->diff,eleid); }
+    double Diffusivity(int eleid = -1) const { return params_->GetParameter(params_->diff, eleid); }
 
     /// reaction coefficient
-    double ReaCoeff(int eleid=-1) const { return params_->GetParameter(params_->reac,eleid); }
+    double ReaCoeff(int eleid = -1) const { return params_->GetParameter(params_->reac, eleid); }
 
     /// densification coefficient
-    double Densification(int eleid=-1) const { return params_->GetParameter(params_->densific,eleid); }
+    double Densification(int eleid = -1) const
+    {
+      return params_->GetParameter(params_->densific, eleid);
+    }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::ScatraMat* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif

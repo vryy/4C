@@ -52,33 +52,32 @@ Maintainer: Jonas Biehler
 
 void dyn_uq()
 {
-  //get list for multi level monte carlo
-   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
-   INPAR::MLMC::FWDProblem fwdprb = DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp,"FWDPROBLEM");
+  // get list for multi level monte carlo
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  INPAR::MLMC::FWDProblem fwdprb =
+      DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp, "FWDPROBLEM");
 
-   // quick check whether to read in structure or airways
-   if (fwdprb==INPAR::MLMC::structure)
-   {
-       IO::cout << "setup " << IO::endl;
-      structure_uq();
-   }
-   else if (fwdprb==INPAR::MLMC::red_airways)
-   {
-     redairways_uq();
-   }
-   else
-     dserror("Unknown forward problem type fix your input file");
-
+  // quick check whether to read in structure or airways
+  if (fwdprb == INPAR::MLMC::structure)
+  {
+    IO::cout << "setup " << IO::endl;
+    structure_uq();
+  }
+  else if (fwdprb == INPAR::MLMC::red_airways)
+  {
+    redairways_uq();
+  }
+  else
+    dserror("Unknown forward problem type fix your input file");
 }
 
 
 void redairways_uq()
 {
-
-  if(DRT::Problem::Instance()->DoesExistDis("red_airway")==false)
+  if (DRT::Problem::Instance()->DoesExistDis("red_airway") == false)
   {
     dserror("Red Airways do not exist");
-          //return Teuchos::null;
+    // return Teuchos::null;
   }
   // -------------------------------------------------------------------
   // access the discretization
@@ -97,7 +96,7 @@ void redairways_uq()
   // -------------------------------------------------------------------
   // If discretization is empty, then return empty time integration
   // -------------------------------------------------------------------
-  if (actdis->NumGlobalElements()<1)
+  if (actdis->NumGlobalElements() < 1)
   {
     dserror("Red Airways Dis is empty");
   }
@@ -105,37 +104,39 @@ void redairways_uq()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  //Teuchos::RCP<IO::DiscretizationWriter>  output = actdis->Writer();
-  //output->WriteMesh(0,0.0);
+  // Teuchos::RCP<IO::DiscretizationWriter>  output = actdis->Writer();
+  // output->WriteMesh(0,0.0);
   // get input lists
-   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
 
-   INPAR::MLMC::UQStrategy uqstrat = DRT::INPUT::IntegralValue<INPAR::MLMC::UQStrategy>(mlmcp,"UQSTRATEGY");
-   UQ::UQ_REDAIRWAYS mc(actdis);
+  INPAR::MLMC::UQStrategy uqstrat =
+      DRT::INPUT::IntegralValue<INPAR::MLMC::UQStrategy>(mlmcp, "UQSTRATEGY");
+  UQ::UQ_REDAIRWAYS mc(actdis);
 
-  switch(uqstrat){
-  case INPAR::MLMC::mc_plain:
+  switch (uqstrat)
   {
-    mc.Integrate();
-  }
-  break;
-  case INPAR::MLMC::mc_paracont:
-  {
-    dserror("Unknown UQ Strategy for redairways problem fix your input file ");
-  }
-  break;
-  case INPAR::MLMC::mc_scaledthick:
-  {
-    dserror("Unknown UQ Strategy for redairways problem fix your input file ");
-  }
-  break;
-  default:
-    dserror("Unknown UQ Strategy for redairways problem fix your input file ");
-    break;
+    case INPAR::MLMC::mc_plain:
+    {
+      mc.Integrate();
     }
+    break;
+    case INPAR::MLMC::mc_paracont:
+    {
+      dserror("Unknown UQ Strategy for redairways problem fix your input file ");
+    }
+    break;
+    case INPAR::MLMC::mc_scaledthick:
+    {
+      dserror("Unknown UQ Strategy for redairways problem fix your input file ");
+    }
+    break;
+    default:
+      dserror("Unknown UQ Strategy for redairways problem fix your input file ");
+      break;
+  }
 
-} // end of redairways_uq()
+}  // end of redairways_uq()
 
 
 /*======================================================================*/
@@ -153,24 +154,26 @@ void structure_uq()
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
 
   // input parameters for structural dynamics
-  const Teuchos::ParameterList& sdyn
-    = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // show default parameters
-  if (actdis->Comm().MyPID() == 0)
-    DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
+  if (actdis->Comm().MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
 
   // create a solver
   // get the solver number used for structural solver
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+    dserror(
+        "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
+        "DYNAMIC to a valid number!");
 
-  INPAR::MLMC::UQStrategy uqstrat = DRT::INPUT::IntegralValue<INPAR::MLMC::UQStrategy>(mlmcp,"UQSTRATEGY");
+  INPAR::MLMC::UQStrategy uqstrat =
+      DRT::INPUT::IntegralValue<INPAR::MLMC::UQStrategy>(mlmcp, "UQSTRATEGY");
   UQ::MLMC mc(actdis);
 
-  switch(uqstrat){
+  switch (uqstrat)
+  {
     case INPAR::MLMC::mc_plain:
     {
       mc.Integrate();
@@ -188,11 +191,11 @@ void structure_uq()
     break;
     default:
       dserror("Unknown UQ Strategy for Structure problem fix your input file ");
-    break;
+      break;
   }
 
 
-} // end of structure_uq()
+}  // end of structure_uq()
 
 
-#endif // FFTW
+#endif  // FFTW

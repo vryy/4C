@@ -21,36 +21,42 @@
 
 // forward declaration ...
 class Epetra_Vector;
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 class Epetra_Map;
-namespace DRT {
+namespace DRT
+{
   class DiscretizationInterface;
   class Discretization;
   class Condition;
-namespace UTILS {
-  class LocsysManager;
-} // namespace UTILS
-} // namespace DRT
-namespace LINALG {
+  namespace UTILS
+  {
+    class LocsysManager;
+  }  // namespace UTILS
+}  // namespace DRT
+namespace LINALG
+{
   class SparseOperator;
   class SparseMatrix;
   class MapExtractor;
-} // namespace LINALG
-namespace STR {
-namespace TIMINT {
-  class Base;
-  class BaseDataGlobalState;
-} // namespace TIMINT
+}  // namespace LINALG
+namespace STR
+{
+  namespace TIMINT
+  {
+    class Base;
+    class BaseDataGlobalState;
+  }  // namespace TIMINT
   class Dbc
   {
-  public:
+   public:
     //! Constructor
     Dbc();
 
     //! Destructor
-    virtual ~Dbc() {};
+    virtual ~Dbc(){};
 
     //! Initialize class variables
     virtual void Init(const Teuchos::RCP<DRT::DiscretizationInterface>& discret,
@@ -63,8 +69,8 @@ namespace TIMINT {
     /*! \brief Apply the DBC to system of equations
      *
      *  Note: Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
-    void ApplyDirichletToLocalSystem(Teuchos::RCP<LINALG::SparseOperator> A,
-        Teuchos::RCP<Epetra_Vector>& b) const;
+    void ApplyDirichletToLocalSystem(
+        Teuchos::RCP<LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! \brief Apply the DBC to a vector
      *
@@ -85,16 +91,12 @@ namespace TIMINT {
     /*! \brief Evaluate and apply the DBC
      *
      * Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    virtual void ApplyDirichletBC(
-        const double& time,
-        Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> vel,
-        Teuchos::RCP<Epetra_Vector> acc,
-        bool recreatemap);
+    virtual void ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap);
 
     //! Insert non-dbc dof values of the source vector into the non-dbc dofs of the target vector
-    void InsertVectorInNonDbcDofs(Teuchos::RCP<const Epetra_Vector> source_ptr,
-        Teuchos::RCP<Epetra_Vector> target_ptr) const;
+    void InsertVectorInNonDbcDofs(
+        Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const;
 
     //! @name Access functions
     //!@{
@@ -110,37 +112,33 @@ namespace TIMINT {
     //!@}
 
     //! Allows to expand dbc map with provided maptoadd
-    void AddDirichDofs(
-        const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     //! Allows to contract dbc map with provided maptoremove
-    void RemoveDirichDofs(
-        const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     /*! Rotate the system matrix from a global to a local coordinate system,
      *  if the locsysman_ is defined.
      *
      *  Works only for LINALG::SparseMatrices! */
-    bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator> & A) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator>& A) const;
 
     /*! Rotate the rhs vector from the global to the local coordinate system, if
      *  the locsysman_ is defined. */
-    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v) const;
-    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
 
     /*! Rotate a vector from the local to the global coordinate system, if
      *  the locsysman_ is defined. */
-    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v) const;
-    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
+    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const;
+    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
 
-  protected:
+   protected:
     //! Returns the initialization status
-    const bool& IsInit() const
-    { return isinit_; };
+    const bool& IsInit() const { return isinit_; };
 
     //! Returns the setup status
-    const bool& IsSetup() const
-    { return issetup_; };
+    const bool& IsSetup() const { return issetup_; };
 
     //! Checks the initialization status
     void CheckInit() const;
@@ -153,15 +151,14 @@ namespace TIMINT {
     Teuchos::RCP<const DRT::Discretization> DiscretPtr() const;
 
     //! Access the reaction force
-    Epetra_Vector & Freact() const;
+    Epetra_Vector& Freact() const;
 
     //! Get the locsys transformation matrix
     Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     const STR::TIMINT::BaseDataGlobalState& GState() const;
 
-    bool IsLocSys() const
-    { return islocsys_; };
+    bool IsLocSys() const { return islocsys_; };
 
     //! Extract the reaction forces
     void ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const;
@@ -174,7 +171,7 @@ namespace TIMINT {
      *  do not rotate it back to the global coordinate system. */
     void ApplyDirichletToLocalJacobian(Teuchos::RCP<LINALG::SparseOperator> A) const;
 
-  protected:
+   protected:
     //! Flag indicating the initialization status.
     bool isinit_;
 
@@ -199,47 +196,50 @@ namespace TIMINT {
     //! Dirichlet boundary condition map extractor.
     Teuchos::RCP<LINALG::MapExtractor> dbcmap_ptr_;
 
-  private:
+   private:
     //! Reaction force
-    Epetra_Vector * freact_ptr_;
+    Epetra_Vector* freact_ptr_;
   };  // class  Dbc
-} // namespace STR
+}  // namespace STR
 
-namespace NOX {
-namespace NLN {
-namespace LinSystem {
-namespace PrePostOp {
-  /*! \brief PrePostOperator class to modify the linear system before the linear system is going to be solved.
-   *
-   * We use this pre/post operator to apply the DBC on the linear system of equations before the
-   * linear system is going to be solved. This gives us the opportunity to rotate the matrix only
-   * once, if locSys is defined and to apply possible modifications to the linear system at different
-   * places without the need to re-apply the DBC (see PTC for an example).
-   *
-   * \author Hiermeier */
-  class Dbc : public NOX::NLN::Abstract::PrePostOperator
+namespace NOX
+{
+  namespace NLN
   {
-  public:
-    //! constructor
-    Dbc(const Teuchos::RCP<const ::STR::Dbc>& dbc_ptr);
+    namespace LinSystem
+    {
+      namespace PrePostOp
+      {
+        /*! \brief PrePostOperator class to modify the linear system before the linear system is
+         * going to be solved.
+         *
+         * We use this pre/post operator to apply the DBC on the linear system of equations before
+         * the linear system is going to be solved. This gives us the opportunity to rotate the
+         * matrix only once, if locSys is defined and to apply possible modifications to the linear
+         * system at different places without the need to re-apply the DBC (see PTC for an example).
+         *
+         * \author Hiermeier */
+        class Dbc : public NOX::NLN::Abstract::PrePostOperator
+        {
+         public:
+          //! constructor
+          Dbc(const Teuchos::RCP<const ::STR::Dbc>& dbc_ptr);
 
-    //! destructor
-    virtual ~Dbc() {};
+          //! destructor
+          virtual ~Dbc(){};
 
-    //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
-    virtual void runPreApplyJacobianInverse(
-        NOX::Abstract::Vector& rhs,
-        LINALG::SparseOperator& jac,
-        const NOX::NLN::LinearSystem& linsys);
+          //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
+          virtual void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+              LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys);
 
-  private:
-    //! pointer to the underlying class, which provides the whole functionality
-    Teuchos::RCP<const ::STR::Dbc> dbc_ptr_;
-  };  // class Dbc (pre/post operator)
-} // namespace PrePostOp
-} // namespace LinSystem
-} // namespace NLN
-} // namespace NOX
+         private:
+          //! pointer to the underlying class, which provides the whole functionality
+          Teuchos::RCP<const ::STR::Dbc> dbc_ptr_;
+        };  // class Dbc (pre/post operator)
+      }     // namespace PrePostOp
+    }       // namespace LinSystem
+  }         // namespace NLN
+}  // namespace NOX
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_DBC_H_ */

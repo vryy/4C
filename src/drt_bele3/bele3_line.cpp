@@ -18,26 +18,20 @@
 
 DRT::ELEMENTS::Bele3LineType DRT::ELEMENTS::Bele3LineType::instance_;
 
-DRT::ELEMENTS::Bele3LineType& DRT::ELEMENTS::Bele3LineType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::Bele3LineType& DRT::ELEMENTS::Bele3LineType::Instance() { return instance_; }
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::Bele3* parent,
-                              const int lline) :
-DRT::FaceElement(id,owner)
+DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::ELEMENTS::Bele3* parent, const int lline)
+    : DRT::FaceElement(id, owner)
 {
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent,lline);
+  SetParentMasterElement(parent, lline);
   SetNumDofPerNode(parent->NumDofPerNode(*nodes[0]));
   return;
 }
@@ -45,9 +39,8 @@ DRT::FaceElement(id,owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Line::Bele3Line(const DRT::ELEMENTS::Bele3Line& old) :
-DRT::FaceElement(old),
-numdofpernode_(old.numdofpernode_)
+DRT::ELEMENTS::Bele3Line::Bele3Line(const DRT::ELEMENTS::Bele3Line& old)
+    : DRT::FaceElement(old), numdofpernode_(old.numdofpernode_)
 {
   return;
 }
@@ -70,11 +63,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Bele3Line::Shape() const
 {
   switch (NumNode())
   {
-  case 2: return line2;
-  case 3: return line3;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
-    break;
+    case 2:
+      return line2;
+    case 3:
+      return line3;
+    default:
+      dserror("unexpected number of nodes %d", NumNode());
+      break;
   }
   return dis_none;
 }
@@ -103,10 +98,7 @@ void DRT::ELEMENTS::Bele3Line::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Bele3Line::~Bele3Line()
-{
-  return;
-}
+DRT::ELEMENTS::Bele3Line::~Bele3Line() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -118,6 +110,3 @@ void DRT::ELEMENTS::Bele3Line::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-
-

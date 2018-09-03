@@ -12,8 +12,9 @@
             089 - 289-10363
 </pre>
 
-An arterial 0D flow model derived from physical considerations of mass and momentum balance in the proximal and distal
-arterial part, incl. valves (formulation proposed by Cristobal Bertoglio) (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
+An arterial 0D flow model derived from physical considerations of mass and momentum balance in the
+proximal and distal arterial part, incl. valves (formulation proposed by Cristobal Bertoglio)
+(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
 
 -> variables are p_v, p_arp, q_arp, p_ard
 
@@ -22,8 +23,9 @@ Res = [C_arp * d(p_arp)/dt + q_arp - (p_v - p_arp)/R_arv                      ] 
       [(L_arp/R_arp) * d(q_arp)/dt + q_arp + (p_ard - p_arp)/R_arp            ] = [ 0 ]
       [C_ard * d(p_ard)/dt + (p_ard - p_ref)/R_ard - q_arp                    ]   [ 0 ]
 
-with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted
-by the code author! - reproduce classical piecewise linear valves with k_p -> 0
+with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since
+its physical correctness is doubted by the code author! - reproduce classical piecewise linear
+valves with k_p -> 0
 
 *----------------------------------------------------------------------*/
 
@@ -42,80 +44,77 @@ by the code author! - reproduce classical piecewise linear valves with k_p -> 0
 #include "cardiovascular0d.H"
 
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
   class Condition;
   class Discretization;
-}
+}  // namespace DRT
 namespace LINALG
 {
   class SparseMatrix;
   class SparseOperator;
-}
+}  // namespace LINALG
 
 
 namespace UTILS
 {
-
   class Cardiovascular0DArterialProxDist : public Cardiovascular0D
 
   {
-  public:
-
+   public:
     /*!
     \brief Constructor of a Cardiovascular0D based on conditions with a given name. It also
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0DArterialProxDist
-    (
-      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization where Cardiovascular0D lives on
-      const std::string& CondName, ///< Name of condition to create Cardiovascular0D from
-      std::vector<int>& curID ///< current ID
+    Cardiovascular0DArterialProxDist(Teuchos::RCP<DRT::Discretization>
+                                         discr,  ///< Discretization where Cardiovascular0D lives on
+        const std::string& CondName,  ///< Name of condition to create Cardiovascular0D from
+        std::vector<int>& curID       ///< current ID
     );
 
     /*!
         \brief Destructor
 
      */
-    virtual ~Cardiovascular0DArterialProxDist()
-    {
-      return;
-    };
+    virtual ~Cardiovascular0DArterialProxDist() { return; };
 
-    /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
-    virtual void Initialize
-    (
-      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    sysvec2  ///< distributed vector that may be filled by assembly of element contributions
+    /// initialization routine called by the manager ctor to get correct reference base values and
+    /// activating the right conditions at the beginning
+    virtual void Initialize(
+        Teuchos::ParameterList&
+            params,  ///< parameter list to communicate between elements and discretization
+        Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vector that may be filled by assembly
+                                              ///< of element contributions
+        Teuchos::RCP<Epetra_Vector>
+            sysvec2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
-    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateCardiovascular0D routine is called
-    virtual void Evaluate
-    (
-      Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Cardiovascular0D stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Cardiovascular0D offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Cardiovascular0D offdiagonal matrix dfext/dp
-      Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector> sysvec2,
-      Teuchos::RCP<Epetra_Vector> sysvec3,
-      const Teuchos::RCP<Epetra_Vector> sysvec4,
-      Teuchos::RCP<Epetra_Vector> sysvec5
-    );
+    //! Evaluate routine to call from outside. In here the right action is determined and the
+    //! #EvaluateCardiovascular0D routine is called
+    virtual void Evaluate(
+        Teuchos::ParameterList&
+            params,  ///< parameter list to communicate between elements and discretization
+        Teuchos::RCP<LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        Teuchos::RCP<LINALG::SparseOperator>
+            sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
+        Teuchos::RCP<LINALG::SparseOperator>
+            sysmat3,                          ///< Cardiovascular0D offdiagonal matrix dfext/dp
+        Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
+                                              ///< assembly of element contributions
+        Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
+        const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5);
 
-  private:
-
+   private:
     // don't want = operator, cctor and destructor
 
-    Cardiovascular0DArterialProxDist operator = (const Cardiovascular0DArterialProxDist& old);
+    Cardiovascular0DArterialProxDist operator=(const Cardiovascular0DArterialProxDist& old);
     Cardiovascular0DArterialProxDist(const Cardiovascular0DArterialProxDist& old);
 
 
 
-  }; //class
-} //namespace
+  };  // class
+}  // namespace UTILS
 
 #endif /*CARDIOVASCULAR0DARTERIALPROXDIST_H*/

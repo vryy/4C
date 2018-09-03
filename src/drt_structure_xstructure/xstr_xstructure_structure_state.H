@@ -21,23 +21,25 @@
 #include "xstr_xstructure_state.H"
 
 // forward declarations
-namespace XFEM {
+namespace XFEM
+{
   class MultiFieldMapExtractor;
-} // namespace XFEM
-namespace XSTR {
+}  // namespace XFEM
+namespace XSTR
+{
   class XStructureStructureState : public XStructureState
   {
-  public:
+   public:
     /// constructor
     XStructureStructureState();
 
     /// destructor
-    virtual ~XStructureStructureState() {};
+    virtual ~XStructureStructureState(){};
 
     virtual void Setup();
 
   };  // class XStructureStructureState
-} // namespace XSTR
+}  // namespace XSTR
 
 
 #endif /* SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_XSTRUCTURE_STRUCTURE_STATE_H_ */

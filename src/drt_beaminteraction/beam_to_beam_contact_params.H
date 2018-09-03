@@ -19,16 +19,16 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   class BeamToBeamContactParams
   {
-  public:
+   public:
     //! constructor
     BeamToBeamContactParams();
 
     //! destructor
-    virtual ~BeamToBeamContactParams() {};
+    virtual ~BeamToBeamContactParams(){};
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -37,36 +37,26 @@ namespace BEAMINTERACTION {
     void Setup();
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const
-    { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const
-    { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! Checks the init and setup status
     inline void CheckInitSetup() const
     {
-      if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
+      if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
     inline void CheckInit() const
     {
-      if (!IsInit())
-        dserror("Init() has not been called yet!");
+      if (!IsInit()) dserror("Init() has not been called yet!");
     }
 
-    inline enum INPAR::BEAMCONTACT::Strategy Strategy() const
-    {
-      return strategy_;
-    }
+    inline enum INPAR::BEAMCONTACT::Strategy Strategy() const { return strategy_; }
 
-    inline enum INPAR::BEAMCONTACT::PenaltyLaw PenaltyLaw() const
-    {
-      return penalty_law_;
-    }
+    inline enum INPAR::BEAMCONTACT::PenaltyLaw PenaltyLaw() const { return penalty_law_; }
 
     inline double BeamToBeamPenaltyLawRegularizationG0() const
     {
@@ -83,63 +73,29 @@ namespace BEAMINTERACTION {
       return BTB_penalty_law_regularization_C0_;
     }
 
-    inline double GapShift() const
-    {
-      return gap_shift_;
-    }
+    inline double GapShift() const { return gap_shift_; }
 
-    inline double BeamToBeamPointPenaltyParam() const
-    {
-      return BTB_point_penalty_param_;
-    }
+    inline double BeamToBeamPointPenaltyParam() const { return BTB_point_penalty_param_; }
 
-    inline double BeamToBeamLinePenaltyParam() const
-    {
-      return BTB_line_penalty_param_;
-    }
+    inline double BeamToBeamLinePenaltyParam() const { return BTB_line_penalty_param_; }
 
-    inline double BeamToBeamPerpShiftingAngle1() const
-    {
-      return BTB_perp_shifting_angle1_;
-    }
+    inline double BeamToBeamPerpShiftingAngle1() const { return BTB_perp_shifting_angle1_; }
 
-    inline double BeamToBeamPerpShiftingAngle2() const
-    {
-      return BTB_perp_shifting_angle2_;
-    }
+    inline double BeamToBeamPerpShiftingAngle2() const { return BTB_perp_shifting_angle2_; }
 
-    inline double BeamToBeamParallelShiftingAngle1() const
-    {
-      return BTB_parallel_shifting_angle1_;
-    }
+    inline double BeamToBeamParallelShiftingAngle1() const { return BTB_parallel_shifting_angle1_; }
 
-    inline double BeamToBeamParallelShiftingAngle2() const
-    {
-      return BTB_parallel_shifting_angle2_;
-    }
+    inline double BeamToBeamParallelShiftingAngle2() const { return BTB_parallel_shifting_angle2_; }
 
-    inline double SegmentationAngle() const
-    {
-      return segangle_;
-    }
+    inline double SegmentationAngle() const { return segangle_; }
 
-    inline int NumIntegrationIntervals() const
-    {
-      return num_integration_intervals_;
-    }
+    inline int NumIntegrationIntervals() const { return num_integration_intervals_; }
 
-    inline double BasicStiffGap() const
-    {
-      return BTB_basicstiff_gap_;
-    }
+    inline double BasicStiffGap() const { return BTB_basicstiff_gap_; }
 
-    inline bool EndPointPenalty() const
-    {
-      return BTB_endpoint_penalty_;
-    }
+    inline bool EndPointPenalty() const { return BTB_endpoint_penalty_; }
 
-  private:
-
+   private:
     bool isinit_;
 
     bool issetup_;
@@ -186,9 +142,8 @@ namespace BEAMINTERACTION {
     //! flag indicating if the integration should take special care of physical
     //  end points of beams in order to avoid strong discontinuities
     bool BTB_endpoint_penalty_;
-
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

@@ -35,13 +35,13 @@ class Epetra_MultiVector;
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 namespace NLNSOL
 {
   class NlnOperator;
   class NlnProblemBase;
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -59,8 +59,7 @@ namespace NLNSOL
    */
   class LineSearchBase : public Teuchos::VerboseObject<LineSearchBase>
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -76,14 +75,15 @@ namespace NLNSOL
     //@{
 
     //! Initialize some member variables
-    virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem, ///< nonlinear problem to solve
-        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
-        const std::string listname, ///< name of sublist with configuration of this operator
-        const Epetra_MultiVector& xold, ///< last iterate
-        const Epetra_MultiVector& fold, ///< residual at last iterate
-        const Epetra_MultiVector& inc, ///< the Newton direction (full step)
-        const double resnormold ///< residual norm of last iterate
-        );
+    virtual void Init(
+        Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem,  ///< nonlinear problem to solve
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,    ///< configuration
+        const std::string listname,      ///< name of sublist with configuration of this operator
+        const Epetra_MultiVector& xold,  ///< last iterate
+        const Epetra_MultiVector& fold,  ///< residual at last iterate
+        const Epetra_MultiVector& inc,   ///< the Newton direction (full step)
+        const double resnormold          ///< residual norm of last iterate
+    );
 
     //! Setup the line search object
     virtual void Setup() = 0;
@@ -94,14 +94,12 @@ namespace NLNSOL
     //@{
 
     //! Compute the step length / line search parameter
-    virtual void ComputeLSParam(
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decreas? (to be determined)
+    virtual void ComputeLSParam(double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr  ///< achieved sufficient decreas? (to be determined)
         ) const = 0;
 
     //! Compute the step length / line search parameter
-    virtual void ComputeLSParam(
-        double& lsparam ///< line search parameter (to be determined)
+    virtual void ComputeLSParam(double& lsparam  ///< line search parameter (to be determined)
         ) const;
 
     //@}
@@ -128,8 +126,7 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
+   protected:
     /*! \brief Check sufficient decrease condition
      *
      *  <h3> References </h3>
@@ -140,8 +137,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual bool IsSufficientDecrease(const double fnorm2, ///< current L2-norm of residual
-        const double lsparam ///< current line search parameter
+    virtual bool IsSufficientDecrease(const double fnorm2,  ///< current L2-norm of residual
+        const double lsparam                                ///< current line search parameter
         ) const;
 
     /*! \brief Safeguard strategy for line search parameter
@@ -157,8 +154,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual void Safeguard(double& lsparam, ///< current line search parameter
-        const double lsparamold ///< previous line search parameter
+    virtual void Safeguard(double& lsparam,  ///< current line search parameter
+        const double lsparamold              ///< previous line search parameter
         ) const;
 
     /*! \brief Compute nonlinear residual \f$F(x)\f$
@@ -168,8 +165,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
-        Epetra_MultiVector& f  ///< residual (to be filled)
+    virtual void ComputeF(const Epetra_MultiVector& x,  ///< current solution
+        Epetra_MultiVector& f                           ///< residual (to be filled)
         ) const;
 
     /*! \brief Evaluate residual
@@ -181,7 +178,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 05/2014
      */
-    virtual bool ConvergenceCheck(const Epetra_MultiVector& f, ///< current residual
+    virtual bool ConvergenceCheck(const Epetra_MultiVector& f,  ///< current residual
         double& fnorm2  ///< L2-norm of residual (to be filled)
         ) const;
 
@@ -204,8 +201,8 @@ namespace NLNSOL
     virtual Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> Configuration() const;
 
     //! Access to a parameter of my configuration
-    template <typename ParamType> ParamType MyGetParameter(
-        const std::string param) const
+    template <typename ParamType>
+    ParamType MyGetParameter(const std::string param) const
     {
       return Configuration()->GetParameter<ParamType>(MyListName(), param);
     }
@@ -219,15 +216,22 @@ namespace NLNSOL
     //@{
 
     //! Init() has been called.
-    virtual void SetIsInit() { isinit_ = true; return; }
+    virtual void SetIsInit()
+    {
+      isinit_ = true;
+      return;
+    }
 
     //! SetupLineSearch() has been called.
-    virtual void SetIsSetup() { issetup_ = true; return; }
+    virtual void SetIsSetup()
+    {
+      issetup_ = true;
+      return;
+    }
 
     //@}
 
-  private:
-
+   private:
     /*! \brief Test for sufficient decrease using Armijo's rule
      *
      *  <h3> References </h3>
@@ -243,8 +247,8 @@ namespace NLNSOL
      *  \author mayr.mt \date 02/2015
      */
     virtual bool SufficientDecreaseArmijo(
-        const double fnorm2, ///< L2-norm of residual at trial solution
-        const double lsparam ///< current line search parameter
+        const double fnorm2,  ///< L2-norm of residual at trial solution
+        const double lsparam  ///< current line search parameter
         ) const;
 
     /*! \brief Test for sufficient decrease using actual and predicted reductions
@@ -267,7 +271,7 @@ namespace NLNSOL
      *  \author mayr.mt \date 02/2015
      */
     virtual bool SufficientDecreaseARedPRed(
-        const double fnorm2 ///< L2-norm of residual at trial solution
+        const double fnorm2  ///< L2-norm of residual at trial solution
         ) const;
 
     /*! \brief Test for sufficient decrease very loosely
@@ -275,7 +279,7 @@ namespace NLNSOL
      *  \author mayr.mt \date 02/2015
      */
     virtual bool SufficientDecreaseLoose(
-        const double fnorm2 ///< L2-norm of residual at trial solution
+        const double fnorm2  ///< L2-norm of residual at trial solution
         ) const;
 
     //! nonlinear operator that has initiated this line search
@@ -318,7 +322,7 @@ namespace NLNSOL
 
     //@}
 
-  }; // class LineSearchBase
-} // namespace NLNSOL
+  };  // class LineSearchBase
+}  // namespace NLNSOL
 
 #endif /* LINESEARCH_BASE_H */

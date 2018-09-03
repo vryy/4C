@@ -16,14 +16,14 @@
 #include "Epetra_Vector.h"
 #include "../drt_inpar/inpar_contact.H"
 #include "Epetra_Comm.h"
-#include "../drt_mortar/mortar_manager_base.H" // TODO forward declaration!!!
+#include "../drt_mortar/mortar_manager_base.H"  // TODO forward declaration!!!
 #include "../drt_lib/drt_dserror.H"
 
 namespace DRT
 {
- class Discretization;
- class Condition;
-}
+  class Discretization;
+  class Condition;
+}  // namespace DRT
 
 namespace LINALG
 {
@@ -37,157 +37,151 @@ namespace MORTAR
 
 namespace CONTACT
 {
-//class CoManager;
-//class MtManager;
+  // class CoManager;
+  // class MtManager;
 
-class MeshtyingContactBridge
-{
-public:
-
-  //@}
-
-  MeshtyingContactBridge(DRT::Discretization& dis,
-                         std::vector<DRT::Condition*>& mtcond,
-                         std::vector<DRT::Condition*>& ccond,
-                         double alphaf,
-                         bool smoothing = false);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~MeshtyingContactBridge() {};
-
-  //! @name Access methods
-
-  /*!
-  \brief Get Epetra communicator
-
-  */
-  const Epetra_Comm& Comm() const
-  { if (cman_!=Teuchos::null)  return cman_ ->Comm();
-    if (mtman_!=Teuchos::null) return mtman_->Comm();
-    dserror("can't get comm()");
-    return cman_ ->Comm();
-  }
-
-  /*!
-  \brief Get contact manager
-
-  */
-  Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
+  class MeshtyingContactBridge
   {
-    if(sman_!=Teuchos::null)
-      return sman_;
-    else
-      return cman_;
-  }
+   public:
+    //@}
 
-  /*!
-  \brief Get meshtying manager
+    MeshtyingContactBridge(DRT::Discretization& dis, std::vector<DRT::Condition*>& mtcond,
+        std::vector<DRT::Condition*>& ccond, double alphaf, bool smoothing = false);
 
-  */
-  Teuchos::RCP<MORTAR::ManagerBase> MtManager() {return mtman_;}
+    /*!
+    \brief Destructor
 
-  /*!
-  \brief Get smoothing manager
+    */
+    virtual ~MeshtyingContactBridge(){};
 
-  */
-  Teuchos::RCP<MORTAR::ManagerBase> SManager() {return sman_;}
+    //! @name Access methods
 
-  /*!
-  \brief Get strategy of mt/contact problem
+    /*!
+    \brief Get Epetra communicator
 
-  */
-  MORTAR::StrategyBase& GetStrategy();
+    */
+    const Epetra_Comm& Comm() const
+    {
+      if (cman_ != Teuchos::null) return cman_->Comm();
+      if (mtman_ != Teuchos::null) return mtman_->Comm();
+      dserror("can't get comm()");
+      return cman_->Comm();
+    }
 
-  /*!
-  \brief return bool indicating if contact is defined
+    /*!
+    \brief Get contact manager
 
-  */
-  bool HaveContact()
-  {
-    if(sman_ != Teuchos::null)
-      return true;
-    else
-      return (cman_ != Teuchos::null);
-  }
+    */
+    Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
+    {
+      if (sman_ != Teuchos::null)
+        return sman_;
+      else
+        return cman_;
+    }
 
-  /*!
-  \brief return bool indicating if meshtying is defined
+    /*!
+    \brief Get meshtying manager
 
-  */
-  bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
+    */
+    Teuchos::RCP<MORTAR::ManagerBase> MtManager() { return mtman_; }
 
-  /*!
-  \brief return bool indicating if smoothing is defined
+    /*!
+    \brief Get smoothing manager
 
-  */
-  bool HaveSmoothing() { return (sman_ != Teuchos::null); }
+    */
+    Teuchos::RCP<MORTAR::ManagerBase> SManager() { return sman_; }
 
-  /*!
-  \brief postprocess tractions for mesht/contact
+    /*!
+    \brief Get strategy of mt/contact problem
 
-  */
-  void PostprocessQuantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
+    */
+    MORTAR::StrategyBase& GetStrategy();
 
-  /*!
-  \brief read restart
+    /*!
+    \brief return bool indicating if contact is defined
 
-  */
-  void ReadRestart(IO::DiscretizationReader& reader,
-                   Teuchos::RCP<Epetra_Vector> dis,
-                   Teuchos::RCP<Epetra_Vector> zero);
-  /*!
-  \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
+    */
+    bool HaveContact()
+    {
+      if (sman_ != Teuchos::null)
+        return true;
+      else
+        return (cman_ != Teuchos::null);
+    }
 
-  */
-  void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    /*!
+    \brief return bool indicating if meshtying is defined
 
-  /*!
-  \brief set state vector
+    */
+    bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
 
-  */
-  void SetState(Teuchos::RCP<Epetra_Vector> zeros);
+    /*!
+    \brief return bool indicating if smoothing is defined
 
-  /*!
-  \brief store dirichlet status
+    */
+    bool HaveSmoothing() { return (sman_ != Teuchos::null); }
 
-  */
-  void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+    /*!
+    \brief postprocess tractions for mesht/contact
 
-  /*!
-  \brief update
+    */
+    void PostprocessQuantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
 
-  */
-  void Update(Teuchos::RCP<Epetra_Vector> dis);
+    /*!
+    \brief read restart
 
-  /*!
-  \brief visualize stuff with gmsh
+    */
+    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<Epetra_Vector> zero);
+    /*!
+    \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
 
-  */
-  void VisualizeGmsh(const int istep, const int iter = -1);
+    */
+    void Recover(Teuchos::RCP<Epetra_Vector> disi);
 
-  /*!
-  \brief write restart
+    /*!
+    \brief set state vector
 
-  */
-  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output,
-                    bool forcedrestart = false);
-  //@}
+    */
+    void SetState(Teuchos::RCP<Epetra_Vector> zeros);
 
-protected:
+    /*!
+    \brief store dirichlet status
 
-  // don't want cctor (= operator impossible anyway for abstract class)
-  MeshtyingContactBridge(const MeshtyingContactBridge& old);
+    */
+    void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
 
-  // internal variables:
+    /*!
+    \brief update
 
-  Teuchos::RCP<MORTAR::ManagerBase>   cman_;   //! contact manager
-  Teuchos::RCP<MORTAR::ManagerBase>   mtman_;  //! meshtying manager
-  Teuchos::RCP<MORTAR::ManagerBase>   sman_;   //! smoothing manager
+    */
+    void Update(Teuchos::RCP<Epetra_Vector> dis);
 
-}; // class MeshtyingContactBridge
-} // namespace CONTACT
+    /*!
+    \brief visualize stuff with gmsh
+
+    */
+    void VisualizeGmsh(const int istep, const int iter = -1);
+
+    /*!
+    \brief write restart
+
+    */
+    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>& output, bool forcedrestart = false);
+    //@}
+
+   protected:
+    // don't want cctor (= operator impossible anyway for abstract class)
+    MeshtyingContactBridge(const MeshtyingContactBridge& old);
+
+    // internal variables:
+
+    Teuchos::RCP<MORTAR::ManagerBase> cman_;   //! contact manager
+    Teuchos::RCP<MORTAR::ManagerBase> mtman_;  //! meshtying manager
+    Teuchos::RCP<MORTAR::ManagerBase> sman_;   //! smoothing manager
+
+  };  // class MeshtyingContactBridge
+}  // namespace CONTACT
 
 #endif /* MESHTYING_CONTACT_BRIDGE_H_ */

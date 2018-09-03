@@ -37,22 +37,20 @@ namespace LINALG
 
 namespace CONTACT
 {
+  /*! \brief Main abstract class for meshtying solution strategies
 
-/*! \brief Main abstract class for meshtying solution strategies
+  This is the templating abstract class for all meshtying solution algorithms.
+  Every solution algorithm has to fit into the set of functions and calls defined herein
+  and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
 
-This is the templating abstract class for all meshtying solution algorithms.
-Every solution algorithm has to fit into the set of functions and calls defined herein
-and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
+  This class it itself derived from the MORTAR::StrategyBase class, which is an even
+  more abstract framework for any solution strategies involving mortar coupling.
 
-This class it itself derived from the MORTAR::StrategyBase class, which is an even
-more abstract framework for any solution strategies involving mortar coupling.
-
-\author popp (popp@lnm.mw.tum.de)
-*/
-class MtAbstractStrategy : public MORTAR::StrategyBase
-{
-  public:
-
+  \author popp (popp@lnm.mw.tum.de)
+  */
+  class MtAbstractStrategy : public MORTAR::StrategyBase
+  {
+   public:
     /*!
     \brief Standard Constructor
 
@@ -60,21 +58,15 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     all necessary Epetra_Maps and global vector and matrix quantities.
 
     */
-    MtAbstractStrategy(
-        const Epetra_Map* DofRowMap,
-        const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-        int dim,
-        Teuchos::RCP<Epetra_Comm> comm,
-        double alphaf,
-        int maxdof);
+    MtAbstractStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
+        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MtAbstractStrategy() {};
+    virtual ~MtAbstractStrategy(){};
 
     //! @name Access methods
 
@@ -112,7 +104,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief provides maps needed for contact/meshtying specific multigrid preconditioners
 
     */
-    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap );
+    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
+        Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
+        Teuchos::RCP<Epetra_Map>& ActiveDofMap);
 
     /*!
     \brief Return mortar matrix D
@@ -141,9 +135,12 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     bool ParRedist()
     {
-      INPAR::MORTAR::ParRedist partype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(),"PARALLEL_REDIST");
-      if (partype!=INPAR::MORTAR::parredist_none) return true;
-      else return false;
+      INPAR::MORTAR::ParRedist partype =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(), "PARALLEL_REDIST");
+      if (partype != INPAR::MORTAR::parredist_none)
+        return true;
+      else
+        return false;
     }
 
     //@}
@@ -160,12 +157,12 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief Global evaluation method called from time integrator
 
     */
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt,
-                            Teuchos::RCP<Epetra_Vector>& f,
-                            const int step, const int iter,
-                            bool predictor = false);
+    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
+        const int iter, bool predictor = false);
 
-    /*! \brief Reset call at the beginning of the ApplyForce(), ApplyStiff() and ApplyForceStiff() [derived]
+    /*! \brief Reset call at the beginning of the ApplyForce(), ApplyStiff() and ApplyForceStiff()
+     * [derived]
      *
      *  \date 02/2016
      *  \author hiermeier */
@@ -178,24 +175,33 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual bool ApplyForce() { dserror("Not yet considered for msht!"); return false; };
+    virtual bool ApplyForce()
+    {
+      dserror("Not yet considered for msht!");
+      return false;
+    };
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class [derived]
      *
-     *  Evaluation of the mesh-tying right-hand-side and the mesh-tying jacobian. We call this method also,
-     *  when we are only interested in the jacobian, since the created overhead is negligible.
+     *  Evaluation of the mesh-tying right-hand-side and the mesh-tying jacobian. We call this
+     * method also, when we are only interested in the jacobian, since the created overhead is
+     * negligible.
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual bool ApplyForceStiff() { dserror("Not yet considered for msht!"); return false; };
+    virtual bool ApplyForceStiff()
+    {
+      dserror("Not yet considered for msht!");
+      return false;
+    };
 
     /*!
     \brief Set current deformation state
 
     All interfaces are called to set the current deformation state.
 
-    \param statename (in): std::string defining which quantity to set (only "displacement" applicable)
-    \param vec (in): current global state of the quantity defined by statename
+    \param statename (in): std::string defining which quantity to set (only "displacement"
+    applicable) \param vec (in): current global state of the quantity defined by statename
 
     */
     void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec);
@@ -273,8 +279,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     for short: here's the right place.
 
     */
-    void DoReadRestart(IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Epetra_Vector> dis);
+    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis);
 
     //@}
 
@@ -339,13 +344,11 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      * (3) activeDofMap
      *
      * \author hiermeier */
-    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map> >& maps) const;
+    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const;
 
     //! compute the preconditioner operator
     virtual bool computePreconditioner(
-        const Epetra_Vector& x,
-        Epetra_Operator& M,
-        Teuchos::ParameterList* precParams = 0);
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
 
     //! @}
 
@@ -357,14 +360,21 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // (time integrator), these functions need to be defined purely virtual here.
 
     virtual double ConstraintNorm() const = 0;
-    virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+    virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void InitializeUzawa(
+        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
     virtual void ModifyPenalty() = 0;
-    virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
-    virtual void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
+    virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
+        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
+        Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
+    virtual void UpdateDisplacementsAndLMincrements(
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 
@@ -376,47 +386,54 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // are defined as empty here in the case of meshtying. They can be called from the
     // control routine (time integrator), whenever you like.
 
-    bool ActiveSetConverged() {return true;}
-    bool ActiveSetSemiSmoothConverged() const {return true;}
-    bool Friction() const {return false;}
-    bool WearBothDiscrete() const {return false;}
+    bool ActiveSetConverged() { return true; }
+    bool ActiveSetSemiSmoothConverged() const { return true; }
+    bool Friction() const { return false; }
+    bool WearBothDiscrete() const { return false; }
     bool IsInContact() const { return true; }
     bool WasInContact() const { return true; }
     bool WasInContactLastTimeStep() const { return true; }
-    Teuchos::RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
-    Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
-    Teuchos::RCP<Epetra_Vector> ContactNorForce() {return Teuchos::null;}
-    Teuchos::RCP<Epetra_Vector> ContactTanForce() {return Teuchos::null;}
+    Teuchos::RCP<Epetra_Vector> ContactNorStress() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> ContactTanStress() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> ContactNorForce() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> ContactTanForce() { return Teuchos::null; }
     void AssembleMortar() {}
     void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) {}
-    virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) const {}
+    virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+        bool forcedrestart = false) const
+    {
+    }
     void InitEvalInterface() {}
     void InitMortar() {}
     void Initialize() {}
-    double Inttime() {return inttime_;};
-    void Inttime_init(){inttime_=0.0;};
-    int NumberOfActiveNodes() const {return 0;}
-    int NumberOfSlipNodes() const {return 0;}
+    double Inttime() { return inttime_; };
+    void Inttime_init() { inttime_ = 0.0; };
+    int NumberOfActiveNodes() const { return 0; }
+    int NumberOfSlipNodes() const { return 0; }
     void OutputStresses() {}
-    void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g){};
+    void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
+        Epetra_Vector& augfm_g){};
     void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) {}
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
-    Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) {return Teuchos::null;}
-    void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec){}
+    Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis)
+    {
+      return Teuchos::null;
+    }
+    void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) {}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
     const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
-    const Teuchos::RCP<Epetra_Map> ActiveRowNodes() {return Teuchos::null;}
-    const Teuchos::RCP<Epetra_Map> ActiveRowDofs() {return Teuchos::null;}
+    const Teuchos::RCP<Epetra_Map> ActiveRowNodes() { return Teuchos::null; }
+    const Teuchos::RCP<Epetra_Map> ActiveRowDofs() { return Teuchos::null; }
     const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
-    const Teuchos::RCP<Epetra_Map> SlipRowNodes() {return Teuchos::null;}
+    const Teuchos::RCP<Epetra_Map> SlipRowNodes() { return Teuchos::null; }
     //@}
 
-  protected:
+   protected:
     /*!
     \brief Assemble global coordinate vector
 
@@ -425,10 +442,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param vec (in/out)):  empty global vetcor to be assembled to
 
     */
-    void AssembleCoords(
-        const std::string& sidename,
-        bool ref,
-        Teuchos::RCP<Epetra_Vector> vec);
+    void AssembleCoords(const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec);
 
     /*!
     \brief Do mesh intialization for rotational invariance
@@ -448,10 +462,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param Xslavemod (in): modified slave reference configuration
 
     */
-    virtual void MeshInitialization(
-        Teuchos::RCP<Epetra_Vector> Xslavemod);
+    virtual void MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
 
-  private:
+   private:
     /*!
     \brief Evaluate contact
 
@@ -467,9 +480,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param feff (in/out): effective residual / force vector (without -> with contact)
 
     */
-    void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-                  Teuchos::RCP<Epetra_Vector>& feff,
-                  Teuchos::RCP<Epetra_Vector> dis);
+    void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+        Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
     \brief Restrict slave boundary to actual meshtying zone
@@ -499,50 +511,60 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     */
     void Setup(bool redistributed);
 
-  protected:
-
+   protected:
     // don't want cctor (= operator impossible anyway for abstract class)
     MtAbstractStrategy(const MtAbstractStrategy& old);
 
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface_; // meshtying interfaces
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;  // meshtying interfaces
 
-    Teuchos::RCP<Epetra_Map> glmdofrowmap_;         // global Lagrange mult. dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmdofrowmap_;          // global master dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gndofrowmap_;          // global internal dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;         // global slave and master dof row map (s+m map)
-    Teuchos::RCP<Epetra_Map> gdisprowmap_;          // global displacement dof row map (s+m+n map)
+    Teuchos::RCP<Epetra_Map>
+        glmdofrowmap_;                      // global Lagrange mult. dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsdofrowmap_;  // global slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmdofrowmap_;  // global master dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gndofrowmap_;  // global internal dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;  // global slave and master dof row map (s+m map)
+    Teuchos::RCP<Epetra_Map> gdisprowmap_;   // global displacement dof row map (s+m+n map)
 
-    Teuchos::RCP<Epetra_Map> gsnoderowmap_;         // global slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmnoderowmap_;         // global master node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmnoderowmap_;  // global master node row map (of all interfaces)
 
-    Teuchos::RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgmdofrowmap_;         // global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;   // global dirichlet toggle of all slave dofs (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map>
+        pglmdofrowmap_;  // global LM dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map>
+        pgsdofrowmap_;  // global slave dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map>
+        pgmdofrowmap_;  // global master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map>
+        pgsmdofrowmap_;  // global slave and master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;  // global dirichlet toggle of all slave dofs
+                                                   // (before parallel redistribution)
 
-    std::vector<Teuchos::RCP<Epetra_Map> > initial_elecolmap_; // init a col ele map for binning strategy (s m)
+    std::vector<Teuchos::RCP<Epetra_Map>>
+        initial_elecolmap_;  // init a col ele map for binning strategy (s m)
 
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
-    Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
-    Teuchos::RCP<Epetra_Vector> constrrhs_;         // global constraint rhs vector (only for saddlepoint problems)
+    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;  // global Mortar matrix D
+    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;  // global Mortar matrix M
+    Teuchos::RCP<Epetra_Vector> g_;               // global weighted gap vector g
+    Teuchos::RCP<Epetra_Vector>
+        constrrhs_;  // global constraint rhs vector (only for saddlepoint problems)
 
-    Teuchos::RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
-    Teuchos::RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
-    Teuchos::RCP<Epetra_Vector> zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
+    Teuchos::RCP<Epetra_Vector> z_;     // current vector of Lagrange multipliers at t_n+1
+    Teuchos::RCP<Epetra_Vector> zold_;  // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector>
+        zincr_;  // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the
+                 // increment of z_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> zuzawa_;  // vector of Lagrange multipliers from last Uzawa step
 
-    bool dualquadslavetrafo_;                       // flag indicating whether trafo should be applied
-    Teuchos::RCP<LINALG::SparseMatrix> trafo_;      // transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix> invtrafo_;   // inverse trafo matrix T^(-1) for dual quad 3D case
-    double inttime_;                                // Integration time
+    bool dualquadslavetrafo_;                   // flag indicating whether trafo should be applied
+    Teuchos::RCP<LINALG::SparseMatrix> trafo_;  // transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix>
+        invtrafo_;    // inverse trafo matrix T^(-1) for dual quad 3D case
+    double inttime_;  // Integration time
 
-}; // class MtAbstractStrategy
-} // namespace CONTACT
+  };  // class MtAbstractStrategy
+}  // namespace CONTACT
 
 // << operator
-std::ostream& operator << (std::ostream& os, const CONTACT::MtAbstractStrategy& strategy);
+std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& strategy);
 
 #endif  // #ifndef MESHTYING_ABSTRACT_STRATEGY_H

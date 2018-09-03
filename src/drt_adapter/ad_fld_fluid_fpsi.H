@@ -21,14 +21,14 @@ Maintainer: Andreas Rauch
 
 namespace FPSI
 {
-namespace UTILS
+  namespace UTILS
+  {
+    class MapExtractor;
+  }
+}  // namespace FPSI
+
+namespace ADAPTER
 {
-  class MapExtractor;
-}
-}
-
-namespace ADAPTER {
-
   /*! \brief Fluid field adapter for fpsi
    *
    *
@@ -36,37 +36,32 @@ namespace ADAPTER {
    */
   class FluidFPSI : public FluidFSI
   {
-
-  public:
-
+   public:
     /// Constructor
-    FluidFPSI(Teuchos::RCP<Fluid> fluid,
-        Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale,
-        bool dirichletcond);
+    FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     virtual void Init();
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const
+    {
+      return fpsiinterface_;
+    }
 
     virtual void SetupInterface();
 
     virtual void UseBlockMatrix(bool splitmatrix);
     virtual void UseBlockMatrix(
-        bool splitmatrix,
-        Teuchos::RCP<FPSI::UTILS::MapExtractor>const& shapederivSplitter);
+        bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter);
 
-  protected:
-
+   protected:
     /// the interface map setup for fpsi interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
 
-  }; // class FluidFPSI
-} // namespace ADAPTER
+  };  // class FluidFPSI
+}  // namespace ADAPTER
 
 #endif

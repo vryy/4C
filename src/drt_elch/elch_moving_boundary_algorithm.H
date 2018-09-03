@@ -28,7 +28,6 @@
 */
 namespace ELCH
 {
-
   /// ELCH algorithm with support for deforming meshes
   /*!
 
@@ -39,15 +38,13 @@ namespace ELCH
    */
   class MovingBoundaryAlgorithm : public ADAPTER::ScaTraFluidAleCouplingAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    MovingBoundaryAlgorithm(
-        const Epetra_Comm& comm,                     ///< communicator
-        const Teuchos::ParameterList& elchcontrol,   ///< elch parameter list
-        const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
-        const Teuchos::ParameterList& solverparams   ///< solver parameter list
-        );
+    MovingBoundaryAlgorithm(const Epetra_Comm& comm,  ///< communicator
+        const Teuchos::ParameterList& elchcontrol,    ///< elch parameter list
+        const Teuchos::ParameterList& scatradyn,      ///< scatra parameter list
+        const Teuchos::ParameterList& solverparams    ///< solver parameter list
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~MovingBoundaryAlgorithm();
@@ -56,12 +53,12 @@ namespace ELCH
     virtual void Setup();
 
     /// init
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
     );
 
     /// outer level ELCH time loop
@@ -70,8 +67,7 @@ namespace ELCH
     /// read restart data
     void ReadRestart(int step);
 
-  protected:
-
+   protected:
     /// start a new time step
     void PrepareTimeStep();
 
@@ -83,8 +79,7 @@ namespace ELCH
 
     /// compute interface displacement and velocity
     void ComputeInterfaceVectors(
-        Teuchos::RCP<Epetra_Vector> idispnp_,
-        Teuchos::RCP<Epetra_Vector> iveln_);
+        Teuchos::RCP<Epetra_Vector> idispnp_, Teuchos::RCP<Epetra_Vector> iveln_);
 
     /// take current results for converged and save for next time step
     void Update();
@@ -92,8 +87,7 @@ namespace ELCH
     /// write output
     void Output();
 
-  private:
-
+   private:
     bool pseudotransient_;
 
     /// molar volume for flux to shape change conversion (unit: m^3/mol )
@@ -124,9 +118,8 @@ namespace ELCH
     const double theta_;
 
     const Teuchos::ParameterList& elch_params_;
-
   };
 
-} // namespace ELCH
+}  // namespace ELCH
 
-#endif // ELCH_MOVING_BOUNDARY_ALGORITHM_H
+#endif  // ELCH_MOVING_BOUNDARY_ALGORITHM_H

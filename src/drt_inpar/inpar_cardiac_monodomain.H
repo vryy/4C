@@ -27,7 +27,7 @@ namespace DRT
   {
     class ConditionDefinition;
   }
-}
+}  // namespace DRT
 
 namespace INPAR
 {
@@ -45,8 +45,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific elch conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace EP
 }  // namespace INPAR
 #endif  // #ifndef INPAR_CARDIAC_MONODOMAIN_H
-

@@ -21,12 +21,10 @@
 
 namespace LINALG
 {
-
   /// Base class of sparse matrix that provides the simple functions
   class SparseMatrixBase : public SparseOperator
   {
-  public:
-
+   public:
     /// return the internal Epetra_Operator
     /*!
       The internal Epetra_Operator here is the internal Epetra_CrsMatrix or Epetra_FECrsMatrix. This
@@ -72,9 +70,8 @@ namespace LINALG
      *  rows.
      *
      *  \author hiermeier \date 01/2018 */
-    virtual bool IsDbcApplied(const Epetra_Map& dbcmap,
-        bool diagonalblock=true,
-        const LINALG::SparseMatrix* trafo=NULL ) const;
+    virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
+        const LINALG::SparseMatrix* trafo = NULL) const;
 
     //@}
 
@@ -82,10 +79,10 @@ namespace LINALG
     //@{
 
     /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Returns the infinity norm of the global matrix.
     double NormInf() const;
@@ -107,7 +104,8 @@ namespace LINALG
     /// Returns the Epetra_Map object associated with the rows of this matrix.
     const Epetra_Map& RowMap() const { return sysmat_->RowMap(); }
 
-    /// Returns the Epetra_Map object that describes the set of column-indices that appear in each processor's locally owned matrix rows.
+    /// Returns the Epetra_Map object that describes the set of column-indices that appear in each
+    /// processor's locally owned matrix rows.
     const Epetra_Map& ColMap() const { return sysmat_->ColMap(); }
 
     /// Returns the Epetra_Map object associated with the domain of this matrix operator.
@@ -137,16 +135,16 @@ namespace LINALG
     //@{
 
     /// Returns the result of a matrix multiplied by a Epetra_Vector x in y.
-    int Multiply(bool TransA, const Epetra_Vector &x, Epetra_Vector &y) const;
+    int Multiply(bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const;
 
     /// Returns the result of a Epetra_CrsMatrix multiplied by a Epetra_MultiVector X in Y.
-    int Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Scales the Epetra_CrsMatrix on the left with a Epetra_Vector x.
-    int LeftScale(const Epetra_Vector &x);
+    int LeftScale(const Epetra_Vector& x);
 
     /// Scales the Epetra_CrsMatrix on the right with a Epetra_Vector x.
-    int RightScale(const Epetra_Vector &x);
+    int RightScale(const Epetra_Vector& x);
 
     //@}
 
@@ -160,7 +158,7 @@ namespace LINALG
     virtual int Scale(double ScalarConstant);
 
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
-    int ReplaceDiagonalValues(const Epetra_Vector &Diagonal);
+    int ReplaceDiagonalValues(const Epetra_Vector& Diagonal);
 
     /** \brief Replace the row map of the underlying Epetra_CrsMatrix
      *
@@ -178,25 +176,27 @@ namespace LINALG
     //@{
 
     /// Returns a copy of the main diagonal in a user-provided vector.
-    int ExtractDiagonalCopy(Epetra_Vector &Diagonal) const;
+    int ExtractDiagonalCopy(Epetra_Vector& Diagonal) const;
 
     //@}
 
     /// Add one operator to another
-    virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,  const double scalarB);
+    virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,
+        const double scalarB);
 
     /// Add one SparseMatrixBase to another
-    virtual void AddOther(LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA,  const double scalarB) const;
+    virtual void AddOther(LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA,
+        const double scalarB) const;
 
     /// Add one BlockSparseMatrix to another
-    virtual void AddOther(LINALG::BlockSparseMatrixBase& B, const bool transposeA, const double scalarA,  const double scalarB) const;
+    virtual void AddOther(LINALG::BlockSparseMatrixBase& B, const bool transposeA,
+        const double scalarA, const double scalarB) const;
 
-  protected:
-
+   protected:
     /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix)
     Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
   };
 
-}
+}  // namespace LINALG
 
 #endif

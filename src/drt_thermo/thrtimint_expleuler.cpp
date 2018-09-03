@@ -25,30 +25,19 @@
 /*----------------------------------------------------------------------*
  | constructor                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-THR::TimIntExplEuler::TimIntExplEuler(
-  const Teuchos::ParameterList& ioparams,
-  const Teuchos::ParameterList& tdynparams,
-  const Teuchos::ParameterList& xparams,
-  Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::RCP<LINALG::Solver> solver,
-  Teuchos::RCP<IO::DiscretizationWriter> output
-  )
-: TimIntExpl(
-    ioparams,
-    tdynparams,
-    xparams,
-    actdis,
-    solver,
-    output
-    ),
-  fextn_(Teuchos::null),
-  fintn_(Teuchos::null)
+THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
+    const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+    : TimIntExpl(ioparams, tdynparams, xparams, actdis, solver, output),
+      fextn_(Teuchos::null),
+      fintn_(Teuchos::null)
 {
   // info to user
   if (myrank_ == 0)
   {
     std::cout << "with forward Euler" << std::endl
-              << "lumping activated: " << (lumpcapa_?"true":"false") << std::endl
+              << "lumping activated: " << (lumpcapa_ ? "true" : "false") << std::endl
               << std::endl;
   }
 
@@ -56,8 +45,8 @@ THR::TimIntExplEuler::TimIntExplEuler(
   DetermineCapaConsistTempRate();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  fintn_  = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // let it rain
   return;
@@ -88,7 +77,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   fextn_->Update(1.0, *fifc_, 1.0);
 
   // TIMING
-  //double dtcpu = timer_->WallTime();
+  // double dtcpu = timer_->WallTime();
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
@@ -115,7 +104,8 @@ void THR::TimIntExplEuler::IntegrateStep()
     raten_->PutScalar(0.0);
   }
 
-  if ( (lumpcapa_ == false) or (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_) == Teuchos::null) )
+  if ((lumpcapa_ == false) or
+      (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_) == Teuchos::null))
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised
@@ -126,8 +116,8 @@ void THR::TimIntExplEuler::IntegrateStep()
   else
   {
     // extract the diagonal values of the mass matrix
-    Teuchos::RCP<Epetra_Vector> diag
-      = LINALG::CreateVector((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(),false);
+    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(
+        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(), false);
     (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
     // R_{n+1} = C^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
@@ -174,8 +164,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
   // --> be careful: this action does nothing
   p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements and do nothing
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 }  // UpdateStepElement()
 
@@ -194,9 +183,7 @@ void THR::TimIntExplEuler::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::WriteRestartForce(
-  Teuchos::RCP<IO::DiscretizationWriter> output
-  )
+void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

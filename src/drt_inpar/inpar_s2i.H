@@ -26,7 +26,7 @@ namespace DRT
   {
     class ConditionDefinition;
   }
-}
+}  // namespace DRT
 
 namespace INPAR
 {
@@ -111,7 +111,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     //! set valid conditions for scatra-scatra interface coupling
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
-  } // namespace S2I
-} // namespace INPAR
-#endif // #ifndef INPAR_S2I_H
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+  }  // namespace S2I
+}  // namespace INPAR
+#endif  // #ifndef INPAR_S2I_H

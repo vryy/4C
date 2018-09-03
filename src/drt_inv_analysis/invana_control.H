@@ -29,7 +29,7 @@ namespace INVANA
 {
   class InvanaBase;
   class OptimizerBase;
-}
+}  // namespace INVANA
 
 namespace Teuchos
 {
@@ -51,7 +51,6 @@ class Epetra_MultiVector;
 /*----------------------------------------------------------------------------*/
 namespace INVANA
 {
-
   /*! \class InvanaControl
    *  \brief Class to control an inverse problem and its solution
    *
@@ -61,8 +60,7 @@ namespace INVANA
    */
   class InvanaControl
   {
-  public:
-
+   public:
     //! @name Construction/destruction
     //@{
 
@@ -70,7 +68,7 @@ namespace INVANA
     InvanaControl();
 
     //! Destructor
-    virtual ~InvanaControl(){}
+    virtual ~InvanaControl() {}
 
     //@}
 
@@ -103,10 +101,10 @@ namespace INVANA
     //@{
 
     //! Get the gradient
-    const Epetra_MultiVector& GetGradient(){return *f_;}
+    const Epetra_MultiVector& GetGradient() { return *f_; }
 
     //! Get functional value
-    const double& GetValue(){return val_;}
+    const double& GetValue() { return val_; }
     //@}
 
     //! add invana specific result test to the global problem field tests
@@ -116,16 +114,15 @@ namespace INVANA
     //@{
 
     //! the inverse problem pointer
-    Teuchos::RCP<INVANA::InvanaBase> InverseProblem(){return invprob_;}
+    Teuchos::RCP<INVANA::InvanaBase> InverseProblem() { return invprob_; }
     //@}
 
-  private:
-
+   private:
     //!@name Internal Access wrapper
     //@{
 
     //! The INVANA optimizer
-    Teuchos::RCP<INVANA::OptimizerBase> InvanaOpti(){return invanaopt_;}
+    Teuchos::RCP<INVANA::OptimizerBase> InvanaOpti() { return invanaopt_; }
 
     //@}
 
@@ -169,7 +166,7 @@ namespace INVANA
     double val_;
     //@}
 
-  }; // class InvanaControl
-} // namespace INVANA
+  };  // class InvanaControl
+}  // namespace INVANA
 
 #endif /* INVANA_CONTROL_H */

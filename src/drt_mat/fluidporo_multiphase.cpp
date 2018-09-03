@@ -13,7 +13,6 @@
 
 
 
-
 #include <vector>
 #include "fluidporo_multiphase.H"
 #include "fluidporo_singlephase.H"
@@ -28,16 +27,14 @@
 /*----------------------------------------------------------------------*
  | constructor of paramter class                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: MatList(matdata),
-  permeability_(matdata->GetDouble("PERMEABILITY")),
-  numfluidphases_(matdata->GetInt("NUMFLUIDPHASES")),
-  numvolfrac_(-1),
-  dof2pres_(Teuchos::null),
-  constraintphaseID_(-1),
-  isinit_(false)
+MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : MatList(matdata),
+      permeability_(matdata->GetDouble("PERMEABILITY")),
+      numfluidphases_(matdata->GetInt("NUMFLUIDPHASES")),
+      numvolfrac_(-1),
+      dof2pres_(Teuchos::null),
+      constraintphaseID_(-1),
+      isinit_(false)
 {
 }
 
@@ -55,88 +52,112 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhase::CreateMaterial()
 void MAT::PAR::FluidPoroMultiPhase::Initialize()
 {
   //  matrix holding the conversion from pressures and dofs
-  dof2pres_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases_,numfluidphases_));
+  dof2pres_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases_, numfluidphases_));
 
   //  matrix holding the conversion from pressures and dofs
   // reset
   dof2pres_->Scale(0.0);
 
   // get number of volume fractions
-  numvolfrac_ = (int)(((int)matids_->size() - numfluidphases_)/2);
+  numvolfrac_ = (int)(((int)matids_->size() - numfluidphases_) / 2);
 
   // safety check
-  if((int)matids_->size()!=(int)(numvolfrac_*2+numfluidphases_))
-    dserror("You have chosen %i materials, %i fluidphases and %f volume fractions, check your input definition\n"
+  if ((int)matids_->size() != (int)(numvolfrac_ * 2 + numfluidphases_))
+    dserror(
+        "You have chosen %i materials, %i fluidphases and %f volume fractions, check your input "
+        "definition\n"
         "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
-                    "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
-                    "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-                    "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
-                    "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
-                    (int)matids_->size(), numfluidphases_, (double)(((double)matids_->size() - (double)numfluidphases_)/2.0));
+        "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 "
+        "8 NUMFLUIDPHASES 4 END\n"
+        "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
+        "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
+        "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   "
+        "^^^",
+        (int)matids_->size(), numfluidphases_,
+        (double)(((double)matids_->size() - (double)numfluidphases_) / 2.0));
 
-  for(int iphase=0;iphase<(int)matids_->size();iphase++)
+  for (int iphase = 0; iphase < (int)matids_->size(); iphase++)
   {
     // get the single phase material by its ID
     const int matid = (*matids_)[iphase];
-    Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
+    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
 
     // fluidphases at [0...numfluidphases-1]
-    if(iphase < numfluidphases_)
+    if (iphase < numfluidphases_)
     {
       // safety check and cast
-      if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-        dserror("You have chosen %i fluidphases, however your material number %i is no poro singlephase material\n"
-            "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
-            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+      if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+        dserror(
+            "You have chosen %i fluidphases, however your material number %i is no poro "
+            "singlephase material\n"
+            "Your Input should always look like (for example: 4 fluid phases, 2 volume "
+            "fractions):\n"
+            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 "
+            "6 7 8 NUMFLUIDPHASES 4 END\n"
             "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
-            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
-            numfluidphases_, iphase+1);
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          "
+            "^^^\n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure  "
+            " ^^^",
+            numfluidphases_, iphase + 1);
 
-      const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
+      const MAT::FluidPoroSinglePhase& singlephase =
+          static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
-      if(singlephase.PoroPhaseLawType() == INPAR::MAT::m_fluidporo_phaselaw_constraint)
+      if (singlephase.PoroPhaseLawType() == INPAR::MAT::m_fluidporo_phaselaw_constraint)
       {
-        if(constraintphaseID_!=-1)
+        if (constraintphaseID_ != -1)
           dserror("More than one constraint phase law defined. Are you sure this makes sense?");
         constraintphaseID_ = iphase;
       }
 
       // fill the coefficients into matrix
-      singlephase.FillDoFMatrix(*dof2pres_,iphase);
+      singlephase.FillDoFMatrix(*dof2pres_, iphase);
     }
     // volume fractions at [numfluidphases-1...numfluidphases-1+numvolfrac]
-    else if(iphase < numfluidphases_ + numvolfrac_)
+    else if (iphase < numfluidphases_ + numvolfrac_)
     {
       // safety check
-      if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-        dserror("You have chosen %i fluid phases and %i volume fractions, however your material number %i is no poro volume fraction material\n"
-            "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
-            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+      if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+        dserror(
+            "You have chosen %i fluid phases and %i volume fractions, however your material number "
+            "%i is no poro volume fraction material\n"
+            "Your Input should always look like (for example: 4 fluid phases, 2 volume "
+            "fractions):\n"
+            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 "
+            "6 7 8 NUMFLUIDPHASES 4 END\n"
             "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
-            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
-            numfluidphases_,(int)matids_->size()-numfluidphases_, iphase+1);
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          "
+            "^^^\n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure  "
+            " ^^^",
+            numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
     }
     // volume fraction pressures at [numfluidphases-1+numvolfrac...numfluidphases-1+2*numvolfrac]
-    else if(iphase < numfluidphases_ + 2*numvolfrac_)
+    else if (iphase < numfluidphases_ + 2 * numvolfrac_)
     {
       // safety check
-      if(singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
-        dserror("You have chosen %i fluid phases and %i volume fractions, however your material number %i is no poro volume fraction pressure material\n"
-            "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
-            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 6 7 8 NUMFLUIDPHASES 4 END\n"
+      if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
+        dserror(
+            "You have chosen %i fluid phases and %i volume fractions, however your material number "
+            "%i is no poro volume fraction pressure material\n"
+            "Your Input should always look like (for example: 4 fluid phases, 2 volume "
+            "fractions):\n"
+            "MAT 0 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 8 MATIDS    1 2 3 4 5 "
+            "6 7 8 NUMFLUIDPHASES 4 END\n"
             "with: 4 fluid phases: materials have to be MAT_FluidPoroSinglePhase        ^^^^^^^\n"
-            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          ^^^\n"
-            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure   ^^^",
-            numfluidphases_,(int)matids_->size()-numfluidphases_, iphase+1);
+            "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac          "
+            "^^^\n"
+            "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure  "
+            " ^^^",
+            numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
     }
     else
       dserror("something went wrong here, why is iphase = %i", iphase);
   }
 
   // check
-  if(constraintphaseID_==-1)
+  if (constraintphaseID_ == -1)
     dserror("No constraint phase law defined. Are you sure this makes sense?");
 
   // invert dof2pres_ to get conversion from dofs to prbessures
@@ -145,10 +166,13 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     inverse.SetMatrix(*dof2pres_);
     int err = inverse.Invert();
     if (err != 0)
-      dserror("Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs linear independent?",err);
+      dserror(
+          "Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs "
+          "linear independent?",
+          err);
   }
 
-  isinit_=true;
+  isinit_ = true;
   return;
 }
 
@@ -160,7 +184,7 @@ MAT::FluidPoroMultiPhaseType MAT::FluidPoroMultiPhaseType::instance_;
 /*----------------------------------------------------------------------*
  | create material from data                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::FluidPoroMultiPhaseType::Create( const std::vector<char> & data )
+DRT::ParObject* MAT::FluidPoroMultiPhaseType::Create(const std::vector<char>& data)
 {
   MAT::FluidPoroMultiPhase* FluidPoroMultiPhase = new MAT::FluidPoroMultiPhase();
   FluidPoroMultiPhase->Unpack(data);
@@ -171,18 +195,13 @@ DRT::ParObject* MAT::FluidPoroMultiPhaseType::Create( const std::vector<char> & 
 /*----------------------------------------------------------------------*
  | construct empty material object                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroMultiPhase::FluidPoroMultiPhase()
-  : MatList(),
-    paramsporo_(NULL)
-{
-}
+MAT::FluidPoroMultiPhase::FluidPoroMultiPhase() : MatList(), paramsporo_(NULL) {}
 
 /*----------------------------------------------------------------------*
  | construct the material object given material parameter   vuong 08/16 |
  *----------------------------------------------------------------------*/
 MAT::FluidPoroMultiPhase::FluidPoroMultiPhase(MAT::PAR::FluidPoroMultiPhase* params)
-  : MatList(params),
-    paramsporo_(params)
+    : MatList(params), paramsporo_(params)
 {
 }
 
@@ -200,25 +219,24 @@ void MAT::FluidPoroMultiPhase::Clear()
  *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::Initialize()
 {
-  std::map<int,Teuchos::RCP<MAT::Material> >* materials;
+  std::map<int, Teuchos::RCP<MAT::Material>>* materials;
 
-  if (Parameter() != NULL) // params is null pointer in post-process mode
+  if (Parameter() != NULL)  // params is null pointer in post-process mode
   {
-    if(Parameter()->local_)
+    if (Parameter()->local_)
       materials = MaterialMapWrite();
     else
       materials = Parameter()->MaterialMapWrite();
 
-    std::map<int,Teuchos::RCP<MAT::Material> >::iterator it;
-    for(it=materials->begin();it!=materials->end();it++)
+    std::map<int, Teuchos::RCP<MAT::Material>>::iterator it;
+    for (it = materials->begin(); it != materials->end(); it++)
     {
       Teuchos::RCP<MAT::FluidPoroSinglePhaseBase> actphase =
-          Teuchos::rcp_dynamic_cast<FluidPoroSinglePhaseBase>(it->second,true);
+          Teuchos::rcp_dynamic_cast<FluidPoroSinglePhaseBase>(it->second, true);
       actphase->Initialize();
     }
 
-    if(not paramsporo_->isinit_)
-      paramsporo_->Initialize();
+    if (not paramsporo_->isinit_) paramsporo_->Initialize();
   }
   return;
 }
@@ -228,18 +246,18 @@ void MAT::FluidPoroMultiPhase::Initialize()
  *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
 
   // matid
   int matid = -1;
   if (paramsporo_ != NULL) matid = paramsporo_->Id();  // in case we are in post-process mode
 
-  AddtoPack(data,matid);
+  AddtoPack(data, matid);
 
   // Pack base class material
   MAT::MatList::Pack(data);
@@ -256,80 +274,79 @@ void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // matid and recover paramsporo_
   int matid(-1);
-  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, matid);
   paramsporo_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
-        //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+        // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction
+        // are in a diamond inheritance structure
         paramsporo_ = dynamic_cast<MAT::PAR::FluidPoroMultiPhase*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+            MaterialType());
     }
 
   // extract base class material
   std::vector<char> basedata(0);
-  MAT::MatList::ExtractfromPack(position,data,basedata);
+  MAT::MatList::ExtractfromPack(position, data, basedata);
   MAT::MatList::Unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
  *  Evaluate generalized pressure of all phases            vuong 08/16 |
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateGenPressure(
-    std::vector<double>& genpressure,
-    const std::vector<double>& phinp) const
+    std::vector<double>& genpressure, const std::vector<double>& phinp) const
 {
   // evaluate the pressures
-  for(int iphase=0; iphase<NumFluidPhases(); iphase++)
+  for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
   {
-    //get the single phase material
+    // get the single phase material
     const MAT::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(*this,iphase);
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(*this, iphase);
 
     // evaluate generalized pressure (i.e. some kind of linear combination of the true pressures)
-    genpressure[iphase] = singlephasemat.EvaluateGenPressure(iphase,phinp);
+    genpressure[iphase] = singlephasemat.EvaluateGenPressure(iphase, phinp);
   }
   return;
 }
 
 /*----------------------------------------------------------------------*
  *   Evaluate saturation of the phase                       vuong 08/16 |
-*----------------------------------------------------------------------*/
-void MAT::FluidPoroMultiPhase::EvaluateSaturation(
-    std::vector<double>& saturation,
-    const std::vector<double>& phinp,
-    const std::vector<double>& pressure) const
+ *----------------------------------------------------------------------*/
+void MAT::FluidPoroMultiPhase::EvaluateSaturation(std::vector<double>& saturation,
+    const std::vector<double>& phinp, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;
 
   // the constraint saturation is calculated from 1- sum(all other saturations)
   saturation[constraintsaturationphase] = 1.0;
-  for(int iphase=0; iphase<NumFluidPhases(); iphase++)
+  for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
   {
-    if(iphase != constraintsaturationphase)
+    if (iphase != constraintsaturationphase)
     {
       // get the single phase material
       const MAT::FluidPoroSinglePhase& singlephasemat =
-          POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(*this,iphase);
+          POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMultiMaterial(*this, iphase);
 
-      saturation[iphase] = singlephasemat.EvaluateSaturation(iphase,phinp,pressure);
+      saturation[iphase] = singlephasemat.EvaluateSaturation(iphase, phinp, pressure);
       // the saturation of the last phase is 1.0- (sum of all saturations)
       saturation[constraintsaturationphase] -= saturation[iphase];
     }
@@ -341,36 +358,34 @@ void MAT::FluidPoroMultiPhase::EvaluateSaturation(
  | transform generalized pressures to true pressures        vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::TransformGenPresToTruePres(
-    const std::vector<double>& phinp,
-    std::vector<double>& phi_transformed) const
+    const std::vector<double>& phinp, std::vector<double>& phi_transformed) const
 {
   // get trafo matrix
   const Epetra_SerialDenseMatrix& dof2pres = *paramsporo_->dof2pres_;
-  //simple matrix vector product
+  // simple matrix vector product
   phi_transformed.resize(phinp.size());
-  for(int i=0;i<NumFluidPhases();i++)
-    for(int j=0;j<NumFluidPhases();j++)
-      phi_transformed[i] += dof2pres(i,j)*phinp[j];
+  for (int i = 0; i < NumFluidPhases(); i++)
+    for (int j = 0; j < NumFluidPhases(); j++) phi_transformed[i] += dof2pres(i, j) * phinp[j];
   return;
 }
 
 /*----------------------------------------------------------------------------------------*
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
-*----------------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
-    Epetra_SerialDenseMatrix& derivs,
-    const std::vector<double>& state) const
+    Epetra_SerialDenseMatrix& derivs, const std::vector<double>& state) const
 {
-  for(int iphase=0; iphase<NumFluidPhases(); iphase++)
+  for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
   {
     // get the single phase material by its ID
     const int matid = MatID(iphase);
-    Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
-    const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
+    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    const MAT::FluidPoroSinglePhase& singlephase =
+        static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
-    for(int jphase=0; jphase<NumFluidPhases(); jphase++)
+    for (int jphase = 0; jphase < NumFluidPhases(); jphase++)
     {
-      derivs(iphase,jphase)   = singlephase.EvaluateDerivOfDofWrtPressure(iphase,jphase,state);
+      derivs(iphase, jphase) = singlephase.EvaluateDerivOfDofWrtPressure(iphase, jphase, state);
     }
   }
   return;
@@ -378,32 +393,32 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
 
 /*--------------------------------------------------------------------------*
  *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
-*---------------------------------------------------------------------------*/
+ *---------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
-    Epetra_SerialDenseMatrix& derivs,
-    const std::vector<double>& pressure) const
+    Epetra_SerialDenseMatrix& derivs, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;
 
-  for(int iphase=0; iphase<NumFluidPhases(); iphase++)
+  for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
   {
     // skip constraint saturation phase
-    if(iphase == constraintsaturationphase)
-      continue;
+    if (iphase == constraintsaturationphase) continue;
 
     // get the single phase material by its ID
     const int matid = MatID(iphase);
-    Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
-    const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
+    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    const MAT::FluidPoroSinglePhase& singlephase =
+        static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
-    for(int jphase=0; jphase<NumFluidPhases(); jphase++)
+    for (int jphase = 0; jphase < NumFluidPhases(); jphase++)
     {
-      const double saturationderiv = singlephase.EvaluateDerivOfSaturationWrtPressure(iphase,jphase,pressure);
-      derivs(iphase,jphase) = saturationderiv;
+      const double saturationderiv =
+          singlephase.EvaluateDerivOfSaturationWrtPressure(iphase, jphase, pressure);
+      derivs(iphase, jphase) = saturationderiv;
       // the saturation of the last phase is 1.0- (sum of all saturations)
       // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)
-      derivs(constraintsaturationphase,jphase) += -1.0*saturationderiv;
+      derivs(constraintsaturationphase, jphase) += -1.0 * saturationderiv;
     }
   }
   return;
@@ -411,38 +426,36 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
 
 /*--------------------------------------------------------------------------*
  *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
-*---------------------------------------------------------------------------*/
+ *---------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
-    std::vector<Epetra_SerialDenseMatrix>& derivs,
-    const std::vector<double>& pressure) const
+    std::vector<Epetra_SerialDenseMatrix>& derivs, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;
 
-  for(int iphase=0; iphase<NumFluidPhases(); iphase++)
+  for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
   {
     // skip constraint saturation phase
-    if(iphase == constraintsaturationphase)
-      continue;
+    if (iphase == constraintsaturationphase) continue;
 
     // get the single phase material by its ID
     const int matid = MatID(iphase);
-    Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
-    const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
+    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    const MAT::FluidPoroSinglePhase& singlephase =
+        static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
-    for(int jphase=0; jphase<NumFluidPhases(); jphase++)
+    for (int jphase = 0; jphase < NumFluidPhases(); jphase++)
     {
-      for(int kphase=0; kphase<NumFluidPhases(); kphase++)
+      for (int kphase = 0; kphase < NumFluidPhases(); kphase++)
       {
-        const double saturationderivderiv
-                    = singlephase.EvaluateSecondDerivOfSaturationWrtPressure(iphase,jphase,kphase,pressure);
-        derivs[iphase](jphase,kphase) = saturationderivderiv;
+        const double saturationderivderiv = singlephase.EvaluateSecondDerivOfSaturationWrtPressure(
+            iphase, jphase, kphase, pressure);
+        derivs[iphase](jphase, kphase) = saturationderivderiv;
         // the saturation of the last phase is 1.0- (sum of all saturations)
         // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)
-        derivs[constraintsaturationphase](jphase,kphase) += -1.0*saturationderivderiv;
+        derivs[constraintsaturationphase](jphase, kphase) += -1.0 * saturationderivderiv;
       }
     }
   }
   return;
 }
-

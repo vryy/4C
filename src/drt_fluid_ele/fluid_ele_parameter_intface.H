@@ -32,301 +32,324 @@ be set in problem specific parameter lists derived from this class.
 
 namespace DRT
 {
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
+    class FluidEleParameterIntFace : public SingletonDestruction
+    {
+     public:
+      //! Singleton access method
+      static FluidEleParameterIntFace* Instance(bool create = true);
 
-class FluidEleParameterIntFace : public SingletonDestruction
-{
+      //! called upon destruction
+      void Done();
 
-public:
 
-  //! Singleton access method
-  static FluidEleParameterIntFace* Instance(bool create=true);
+      ~FluidEleParameterIntFace() {}
 
-  //! called upon destruction
-  void Done();
 
 
-  ~FluidEleParameterIntFace() {}
+      /*========================================================================*/
+      //! @name set-routines, individually for each face
+      /*========================================================================*/
+
+      //! set the EOS pressure stabilization flag
+      void Set_Face_EOS_Pres(const bool is_face_EOS_Pres) { is_face_EOS_Pres_ = is_face_EOS_Pres; };
+
+      //! set the EOS convective streamline stabilization flag
+      void Set_Face_EOS_Conv_Stream(const bool is_face_EOS_Conv_Stream)
+      {
+        is_face_EOS_Conv_Stream_ = is_face_EOS_Conv_Stream;
+      };
+
+      //! set the EOS convective cross wind stabilization flag
+      void Set_Face_EOS_Conv_Cross(const bool is_face_EOS_Conv_Cross)
+      {
+        is_face_EOS_Conv_Cross_ = is_face_EOS_Conv_Cross;
+      };
+
+      //! set the EOS divergence vel-jump  flag
+      void Set_Face_EOS_Div_vel_jump(const bool is_face_EOS_Div_vel_jump)
+      {
+        is_face_EOS_Div_vel_jump_ = is_face_EOS_Div_vel_jump;
+      };
+
+      //! set the EOS divergence div-jump flag
+      void Set_Face_EOS_Div_div_jump(const bool is_face_EOS_Div_div_jump)
+      {
+        is_face_EOS_Div_div_jump_ = is_face_EOS_Div_div_jump;
+      };
+
+      //! set the viscous ghost-penalty stabilization flag
+      void Set_Face_GP_visc(const bool is_face_GP_visc) { is_face_GP_visc_ = is_face_GP_visc; };
+
+      //! set the transient ghost-penalty stabilization flag
+      void Set_Face_GP_trans(const bool is_face_GP_trans) { is_face_GP_trans_ = is_face_GP_trans; };
+
+      //! set the 2nd order derivatives ghost-penalty stabilization flag
+      void Set_Face_GP_u_p_2nd(const bool is_face_GP_u_p_2nd)
+      {
+        is_face_GP_u_p_2nd_ = is_face_GP_u_p_2nd;
+      };
+
+      //! set the EOS pattern for the assembly of the current face
+      void Set_Face_EOS_GP_Pattern(const INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern)
+      {
+        face_eos_gp_pattern_ = face_eos_gp_pattern;
+      };
+
+      //! general fluid parameters are set
+      void SetFaceGeneralFluidParameter(Teuchos::ParameterList& params,  //> parameter list
+          int myrank);                                                   //> proc id
+
+      //! general xfem (ghost-penalty) parameters are set
+      void SetFaceGeneralXFEMParameter(Teuchos::ParameterList& params,  //> parameter list
+          int myrank);                                                  //> proc id
+
+
+      //! specific fluid xfem (ghost-penalty) parameters are set for the face and return if
+      //! stabilization for current face is required
+      bool SetFaceSpecificFluidXFEMParameter(
+          const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
+          Teuchos::ParameterList& params           ///< parameter list
+      );
+
+      //! set flag if step is a ghost-penalty reconstruction step for xfluid time integration
+      void Set_GhostPenaltyReconstruction(const bool is_ghost_penalty_reconstruction_step)
+      {
+        is_ghost_penalty_reconstruction_step_ = is_ghost_penalty_reconstruction_step;
+      };
+
+
+
+      /*========================================================================*/
+      //! @name access-routines
+      /*========================================================================*/
 
+      /*----------------------------------------------------*/
+      //! @name general parameters
+      /*----------------------------------------------------*/
 
+      //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
+      //! Boussinesq, poro)
+      INPAR::FLUID::PhysicalType PhysicalType() const { return physicaltype_; };
 
-  /*========================================================================*/
-  //! @name set-routines, individually for each face
-  /*========================================================================*/
+      //! Return function number of Oseen advective field
+      int OseenFieldFuncNo() const { return oseenfieldfuncno_; };
 
-  //! set the EOS pressure stabilization flag
-  void Set_Face_EOS_Pres(const bool is_face_EOS_Pres){is_face_EOS_Pres_ = is_face_EOS_Pres;};
 
-  //! set the EOS convective streamline stabilization flag
-  void Set_Face_EOS_Conv_Stream(const bool is_face_EOS_Conv_Stream){is_face_EOS_Conv_Stream_ = is_face_EOS_Conv_Stream;};
+      /*----------------------------------------------------*/
+      //! @name general stabilization parameters (non-individually for each face, see below)
+      /*----------------------------------------------------*/
 
-  //! set the EOS convective cross wind stabilization flag
-  void Set_Face_EOS_Conv_Cross(const bool is_face_EOS_Conv_Cross){is_face_EOS_Conv_Cross_ = is_face_EOS_Conv_Cross;};
+      /// parameter for edge-based (EOS,CIP) stabilizations
+      //! Flag to (de)activate pressure stabilization
+      INPAR::FLUID::EOS_Pres EOS_Pres() const { return EOS_pres_; };
+      //! Flag to (de)activate convective streamline stabilization
+      INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream() const { return EOS_conv_stream_; };
+      //! Flag to (de)activate convective crosswind stabilization
+      INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross() const { return EOS_conv_cross_; };
+      //! Flag to (de)activate divergence stabilization
+      INPAR::FLUID::EOS_Div EOS_Div() const { return EOS_div_; };
+      //! Flag to define element length
+      INPAR::FLUID::EOS_ElementLength EOS_element_length() const { return EOS_element_length_; };
+      //! Flag to define tau for edge-based stabilization
+      INPAR::FLUID::EOS_TauType EOS_WhichTau() const { return EOS_whichtau_actual_; };
 
-  //! set the EOS divergence vel-jump  flag
-  void Set_Face_EOS_Div_vel_jump(const bool is_face_EOS_Div_vel_jump){is_face_EOS_Div_vel_jump_ = is_face_EOS_Div_vel_jump;};
+      bool Is_EOS_Pres() const { return EOS_pres_ != INPAR::FLUID::EOS_PRES_none; };
+      //! Flag to (de)activate convective streamline stabilization
+      bool Is_Conv_Stream() const { return EOS_conv_stream_; };
+      //! Flag to (de)activate convective crosswind stabilization
+      bool Is_Conv_Cross() const { return EOS_conv_cross_; };
+      //! Flag to (de)activate divergence stabilization
+      bool Is_Div() const { return EOS_div_; };
+      //! Flag to define element length
+      bool Is_element_length() const { return EOS_element_length_; };
+      //! Flag to define tau for edge-based stabilization
+      bool Is_WhichTau() const { return EOS_whichtau_actual_; };
 
-  //! set the EOS divergence div-jump flag
-  void Set_Face_EOS_Div_div_jump(const bool is_face_EOS_Div_div_jump){is_face_EOS_Div_div_jump_ = is_face_EOS_Div_div_jump;};
+      //! Flag to activate special least-squares condition for pseudo 2D examples where pressure
+      //! level is determined via Krylov-projection
+      bool presKrylov2Dz() const { return presKrylov2Dz_; };
 
-  //! set the viscous ghost-penalty stabilization flag
-  void Set_Face_GP_visc(const bool is_face_GP_visc){is_face_GP_visc_ = is_face_GP_visc;};
+      //! get the viscous ghost-penalty stabilization flag
+      bool Is_General_Ghost_Penalty_visc() { return ghost_penalty_visc_; };
 
-  //! set the transient ghost-penalty stabilization flag
-  void Set_Face_GP_trans(const bool is_face_GP_trans){is_face_GP_trans_ = is_face_GP_trans;};
+      //! get the transient ghost-penalty stabilization flag
+      bool Is_General_Ghost_Penalty_trans() { return ghost_penalty_trans_; };
 
-  //! set the 2nd order derivatives ghost-penalty stabilization flag
-  void Set_Face_GP_u_p_2nd(const bool is_face_GP_u_p_2nd){is_face_GP_u_p_2nd_ = is_face_GP_u_p_2nd;};
+      //! get the 2nd order derivatives ghost-penalty stabilization flag
+      bool Is_General_Ghost_Penalty_u_p_2nd() { return ghost_penalty_u_p_2nd_; };
 
-   //! set the EOS pattern for the assembly of the current face
-  void Set_Face_EOS_GP_Pattern(const INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern){face_eos_gp_pattern_ = face_eos_gp_pattern;};
+      //! get the 2nd order derivatives ghost-penalty stabilization flag - normal derivatives or
+      //! full derivatives
+      bool Is_General_Ghost_Penalty_u_p_2nd_Normal() { return ghost_penalty_u_p_2nd_normal_; };
 
-  //! general fluid parameters are set
-  void SetFaceGeneralFluidParameter(Teuchos::ParameterList& params,   //> parameter list
-                                    int myrank);                      //> proc id
+      //! get the viscous ghost-penalty stabilization factor
+      double Ghost_Penalty_visc_fac() { return ghost_penalty_visc_fac; };
 
-  //! general xfem (ghost-penalty) parameters are set
-  void SetFaceGeneralXFEMParameter(Teuchos::ParameterList& params,   //> parameter list
-                                   int myrank);                      //> proc id
+      //! get the transient ghost-penalty stabilization factor
+      double Ghost_Penalty_trans_fac() { return ghost_penalty_trans_fac; };
 
+      //! get the viscous ghost-penalty stabilization factor
+      double Ghost_Penalty_visc_2nd_fac() { return ghost_penalty_visc_2nd_fac; };
 
-  //! specific fluid xfem (ghost-penalty) parameters are set for the face and return if stabilization for current face is required
-  bool SetFaceSpecificFluidXFEMParameter(
-      const INPAR::XFEM::FaceType &    face_type,        ///< which type of face std, ghost, ghost-penalty
-      Teuchos::ParameterList&          params            ///< parameter list
-  );
+      //! get the viscous ghost-penalty stabilization factor
+      double Ghost_Penalty_press_2nd_fac() { return ghost_penalty_press_2nd_fac; };
+      //
+      /*----------------------------------------------------*/
+      //! @name stabilization parameters, individually set for each face
+      /*----------------------------------------------------*/
 
-  //! set flag if step is a ghost-penalty reconstruction step for xfluid time integration
-  void Set_GhostPenaltyReconstruction(const bool is_ghost_penalty_reconstruction_step){is_ghost_penalty_reconstruction_step_ = is_ghost_penalty_reconstruction_step;};
+      //! get the EOS pressure stabilization flag
+      bool Face_EOS_Pres() { return is_face_EOS_Pres_; };
 
+      //! get the EOS convective streamline stabilization flag
+      bool Face_EOS_Conv_Stream() { return is_face_EOS_Conv_Stream_; };
 
+      //! get the EOS convective cross wind stabilization flag
+      bool Face_EOS_Conv_Cross() { return is_face_EOS_Conv_Cross_; };
 
-  /*========================================================================*/
-  //! @name access-routines
-  /*========================================================================*/
+      //! get the EOS divergence vel-jump  flag
+      bool Face_EOS_Div_vel_jump() { return is_face_EOS_Div_vel_jump_; };
 
-  /*----------------------------------------------------*/
-  //! @name general parameters
-  /*----------------------------------------------------*/
+      //! get the EOS divergence div-jump flag
+      bool Face_EOS_Div_div_jump() { return is_face_EOS_Div_div_jump_; };
 
-  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, poro)
-  INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;};
+      //! get the viscous ghost-penalty stabilization flag
+      bool Face_GP_visc() { return is_face_GP_visc_; };
 
-  //! Return function number of Oseen advective field
-  int OseenFieldFuncNo() const {return oseenfieldfuncno_;};
+      //! get the transient ghost-penalty stabilization flag
+      bool Face_GP_trans() { return is_face_GP_trans_; };
 
+      //! get the 2nd order derivatives ghost-penalty stabilization flag
+      bool Face_GP_u_p_2nd() { return is_face_GP_u_p_2nd_; };
 
-  /*----------------------------------------------------*/
-  //! @name general stabilization parameters (non-individually for each face, see below)
-  /*----------------------------------------------------*/
+      //! get the EOS pattern for the assembly of the current face
+      INPAR::FLUID::EOS_GP_Pattern Face_EOS_GP_Pattern() { return face_eos_gp_pattern_; };
 
-  /// parameter for edge-based (EOS,CIP) stabilizations
-  //! Flag to (de)activate pressure stabilization
-  INPAR::FLUID::EOS_Pres EOS_Pres() const {return EOS_pres_;};
-  //! Flag to (de)activate convective streamline stabilization
-  INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream() const {return EOS_conv_stream_;};
-  //! Flag to (de)activate convective crosswind stabilization
-  INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross() const {return EOS_conv_cross_;};
-  //! Flag to (de)activate divergence stabilization
-  INPAR::FLUID::EOS_Div EOS_Div() const {return EOS_div_;};
-  //! Flag to define element length
-  INPAR::FLUID::EOS_ElementLength EOS_element_length() const {return EOS_element_length_;};
-  //! Flag to define tau for edge-based stabilization
-  INPAR::FLUID::EOS_TauType EOS_WhichTau() const {return EOS_whichtau_actual_;};
+      //! get flag if step is a ghost-penalty reconstruction step for xfluid time integration
+      bool Is_GhostPenaltyReconstruction() { return is_ghost_penalty_reconstruction_step_; };
 
-  bool Is_EOS_Pres() const {return EOS_pres_ != INPAR::FLUID::EOS_PRES_none;};
-  //! Flag to (de)activate convective streamline stabilization
-  bool Is_Conv_Stream() const {return EOS_conv_stream_;};
-  //! Flag to (de)activate convective crosswind stabilization
-  bool Is_Conv_Cross() const {return EOS_conv_cross_;};
-  //! Flag to (de)activate divergence stabilization
-  bool Is_Div() const {return EOS_div_;};
-  //! Flag to define element length
-  bool Is_element_length() const {return EOS_element_length_;};
-  //! Flag to define tau for edge-based stabilization
-  bool Is_WhichTau() const {return EOS_whichtau_actual_;};
 
-  //! Flag to activate special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
-  bool presKrylov2Dz() const {return presKrylov2Dz_;};
+     protected:
+      /*----------------------------------------------------*/
+      //! @name general parameters
+      /*----------------------------------------------------*/
 
-  //! get the viscous ghost-penalty stabilization flag
-  bool Is_General_Ghost_Penalty_visc(){return ghost_penalty_visc_;};
+      //! Flag SetFaceGeneralFluidParameter was called
+      bool set_face_general_fluid_parameter_;
 
-  //! get the transient ghost-penalty stabilization flag
-  bool Is_General_Ghost_Penalty_trans(){return ghost_penalty_trans_;};
+      //! Flag SetFaceGeneralXFEMParameter was called
+      bool set_face_general_XFEM_parameter_;
 
-  //! get the 2nd order derivatives ghost-penalty stabilization flag
-  bool Is_General_Ghost_Penalty_u_p_2nd(){return ghost_penalty_u_p_2nd_;};
+      //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
+      //! Boussinesq, Poro)
+      INPAR::FLUID::PhysicalType physicaltype_;
 
-  //! get the 2nd order derivatives ghost-penalty stabilization flag - normal derivatives or full derivatives
-  bool Is_General_Ghost_Penalty_u_p_2nd_Normal(){return ghost_penalty_u_p_2nd_normal_;};
+      //! Which stabilization type
+      INPAR::FLUID::StabType stabtype_;
 
-  //! get the viscous ghost-penalty stabilization factor
-  double Ghost_Penalty_visc_fac(){return ghost_penalty_visc_fac;};
+      //! function number for advective velocity for Oseen problems
+      int oseenfieldfuncno_;
 
-  //! get the transient ghost-penalty stabilization factor
-  double Ghost_Penalty_trans_fac(){return ghost_penalty_trans_fac;};
 
-  //! get the viscous ghost-penalty stabilization factor
-  double Ghost_Penalty_visc_2nd_fac(){return ghost_penalty_visc_2nd_fac;};
+      /*----------------------------------------------------*/
+      //! @name general edge-based/face-oriented fluid stabilization parameters (not indiviually set
+      //! for each face, see below)
+      /*----------------------------------------------------*/
 
-  //! get the viscous ghost-penalty stabilization factor
-  double Ghost_Penalty_press_2nd_fac(){return ghost_penalty_press_2nd_fac;};
-  //
-  /*----------------------------------------------------*/
-  //! @name stabilization parameters, individually set for each face
-  /*----------------------------------------------------*/
+      //! which EOS pressure stabilization
+      INPAR::FLUID::EOS_Pres EOS_pres_;
 
-  //! get the EOS pressure stabilization flag
-  bool Face_EOS_Pres(){return is_face_EOS_Pres_;};
+      //! which EOS convective streamline stabilization
+      INPAR::FLUID::EOS_Conv_Stream EOS_conv_stream_;
 
-  //! get the EOS convective streamline stabilization flag
-  bool Face_EOS_Conv_Stream(){return is_face_EOS_Conv_Stream_;};
+      //! which EOS convective crosswind stabilization
+      INPAR::FLUID::EOS_Conv_Cross EOS_conv_cross_;
 
-  //! get the EOS convective cross wind stabilization flag
-  bool Face_EOS_Conv_Cross(){return is_face_EOS_Conv_Cross_;};
+      //! which EOS divergence stabilization
+      INPAR::FLUID::EOS_Div EOS_div_;
 
-  //! get the EOS divergence vel-jump  flag
-  bool Face_EOS_Div_vel_jump(){return is_face_EOS_Div_vel_jump_;};
 
-  //! get the EOS divergence div-jump flag
-  bool Face_EOS_Div_div_jump(){return is_face_EOS_Div_div_jump_;};
+      //! which EOS stabilization parameter definition
+      INPAR::FLUID::EOS_TauType EOS_whichtau_;
+      INPAR::FLUID::EOS_TauType EOS_whichtau_actual_;
 
-  //! get the viscous ghost-penalty stabilization flag
-  bool Face_GP_visc(){return is_face_GP_visc_;};
+      //! which EOS characteristic element length definition
+      INPAR::FLUID::EOS_ElementLength EOS_element_length_;
 
-  //! get the transient ghost-penalty stabilization flag
-  bool Face_GP_trans(){return is_face_GP_trans_;};
+      //! flag to active special least-squares condition for pseudo 2D examples where pressure level
+      //! is determined via Krylov-projection
+      bool presKrylov2Dz_;
 
-  //! get the 2nd order derivatives ghost-penalty stabilization flag
-  bool Face_GP_u_p_2nd(){return is_face_GP_u_p_2nd_;};
 
-  //! get the EOS pattern for the assembly of the current face
-  INPAR::FLUID::EOS_GP_Pattern Face_EOS_GP_Pattern(){return face_eos_gp_pattern_;};
+      /*----------------------------------------------------*/
+      //! @name general XFEM ghost penalty stabilization parameters (not indiviually set for each
+      //! face, see below)
+      /*----------------------------------------------------*/
 
-  //! get flag if step is a ghost-penalty reconstruction step for xfluid time integration
-  bool Is_GhostPenaltyReconstruction(){return is_ghost_penalty_reconstruction_step_; };
+      //! factor for viscous ghost penalty XFEM stabilization terms
+      double ghost_penalty_visc_fac;
 
+      //! factor for transient ghost penalty XFEM stabilization terms
+      double ghost_penalty_trans_fac;
 
-protected:
+      //! general flag for viscous ghost-penalty stabilization terms
+      bool ghost_penalty_visc_;
 
-  /*----------------------------------------------------*/
-  //! @name general parameters
-  /*----------------------------------------------------*/
+      //! general flag for transient ghost-penalty stabilization terms
+      bool ghost_penalty_trans_;
 
-  //! Flag SetFaceGeneralFluidParameter was called
-  bool set_face_general_fluid_parameter_;
+      //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
+      bool ghost_penalty_u_p_2nd_;
 
-  //! Flag SetFaceGeneralXFEMParameter was called
-  bool set_face_general_XFEM_parameter_;
+      //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
+      bool ghost_penalty_u_p_2nd_normal_;
 
-  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, Poro)
-  INPAR::FLUID::PhysicalType physicaltype_;
+      //! factor for viscous ghost penalty XFEM stabilization terms
+      double ghost_penalty_visc_2nd_fac;
 
-  //! Which stabilization type
-  INPAR::FLUID::StabType stabtype_;
+      //! factor for pressure ghost penalty XFEM stabilization terms
+      double ghost_penalty_press_2nd_fac;
 
-  //! function number for advective velocity for Oseen problems
-  int oseenfieldfuncno_;
+      /*----------------------------------------------------*/
+      //! @name EOS stabilization parameter, individually set for each face
+      /*----------------------------------------------------*/
 
+      bool is_face_EOS_Pres_;
+      bool is_face_EOS_Conv_Stream_;
+      bool is_face_EOS_Conv_Cross_;
+      bool is_face_EOS_Div_vel_jump_;
+      bool is_face_EOS_Div_div_jump_;
 
-  /*----------------------------------------------------*/
-  //! @name general edge-based/face-oriented fluid stabilization parameters (not indiviually set for each face, see below)
-  /*----------------------------------------------------*/
+      /*----------------------------------------------------*/
+      //! @name Ghost-Penalty parameter, individually set for each face
+      /*----------------------------------------------------*/
+      bool is_face_GP_visc_;
+      bool is_face_GP_trans_;
+      bool is_face_GP_u_p_2nd_;
 
-  //! which EOS pressure stabilization
-  INPAR::FLUID::EOS_Pres          EOS_pres_;
 
-  //! which EOS convective streamline stabilization
-  INPAR::FLUID::EOS_Conv_Stream   EOS_conv_stream_;
+      /*----------------------------------------------------*/
+      //! @name Combined EOS/Ghost-Penalty parameters, individually set for each face
+      /*----------------------------------------------------*/
 
-  //! which EOS convective crosswind stabilization
-  INPAR::FLUID::EOS_Conv_Cross    EOS_conv_cross_;
+      INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern_;
 
-  //! which EOS divergence stabilization
-  INPAR::FLUID::EOS_Div           EOS_div_;
+      /*----------------------------------------------------*/
+      //! @name Flag for ghost-penalty reconstruction steps
+      /*----------------------------------------------------*/
+      bool is_ghost_penalty_reconstruction_step_;
 
+      /// private Constructor since we are a Singleton.
+      FluidEleParameterIntFace();
 
-  //! which EOS stabilization parameter definition
-  INPAR::FLUID::EOS_TauType       EOS_whichtau_;
-  INPAR::FLUID::EOS_TauType       EOS_whichtau_actual_;
+     private:
+      //! access time-integration parameters
+      DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+    };
 
-  //! which EOS characteristic element length definition
-  INPAR::FLUID::EOS_ElementLength EOS_element_length_;
-
-  //! flag to active special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
-  bool presKrylov2Dz_;
-
-
-  /*----------------------------------------------------*/
-  //! @name general XFEM ghost penalty stabilization parameters (not indiviually set for each face, see below)
-  /*----------------------------------------------------*/
-
-  //! factor for viscous ghost penalty XFEM stabilization terms
-  double ghost_penalty_visc_fac;
-
-  //! factor for transient ghost penalty XFEM stabilization terms
-  double ghost_penalty_trans_fac;
-
-  //! general flag for viscous ghost-penalty stabilization terms
-  bool ghost_penalty_visc_;
-
-  //! general flag for transient ghost-penalty stabilization terms
-  bool ghost_penalty_trans_;
-
-  //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
-  bool ghost_penalty_u_p_2nd_;
-
-  //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
-  bool ghost_penalty_u_p_2nd_normal_;
-
-  //! factor for viscous ghost penalty XFEM stabilization terms
-  double ghost_penalty_visc_2nd_fac;
-
-  //! factor for pressure ghost penalty XFEM stabilization terms
-  double ghost_penalty_press_2nd_fac;
-
-  /*----------------------------------------------------*/
-  //! @name EOS stabilization parameter, individually set for each face
-  /*----------------------------------------------------*/
-
-  bool is_face_EOS_Pres_;
-  bool is_face_EOS_Conv_Stream_;
-  bool is_face_EOS_Conv_Cross_;
-  bool is_face_EOS_Div_vel_jump_;
-  bool is_face_EOS_Div_div_jump_;
-
-  /*----------------------------------------------------*/
-  //! @name Ghost-Penalty parameter, individually set for each face
-  /*----------------------------------------------------*/
-  bool is_face_GP_visc_;
-  bool is_face_GP_trans_;
-  bool is_face_GP_u_p_2nd_;
-
-
-  /*----------------------------------------------------*/
-  //! @name Combined EOS/Ghost-Penalty parameters, individually set for each face
-  /*----------------------------------------------------*/
-
-  INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern_;
-
-  /*----------------------------------------------------*/
-  //! @name Flag for ghost-penalty reconstruction steps
-  /*----------------------------------------------------*/
-  bool is_ghost_penalty_reconstruction_step_;
-
-  /// private Constructor since we are a Singleton.
-  FluidEleParameterIntFace();
-
-private:
-
-  //! access time-integration parameters
-  DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
-
-};
-
-}
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif

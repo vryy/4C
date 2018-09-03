@@ -33,18 +33,16 @@
  | constructor                                              vuong 08/16  |
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
-    const Epetra_Comm& comm,
-    const Teuchos::ParameterList& globaltimeparams):
-    AlgorithmBase(comm, globaltimeparams),
-    poromulti_(Teuchos::null),
-    scatra_(Teuchos::null),
-    fluxreconmethod_(INPAR::POROFLUIDMULTIPHASE::gradreco_none),
-    ndsporofluid_scatra_(-1),
-    timertimestep_(comm),
-    dttimestep_(0.0),
-    artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams,"ARTERY_COUPLING"))
+    const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
+    : AlgorithmBase(comm, globaltimeparams),
+      poromulti_(Teuchos::null),
+      scatra_(Teuchos::null),
+      fluxreconmethod_(INPAR::POROFLUIDMULTIPHASE::gradreco_none),
+      ndsporofluid_scatra_(-1),
+      timertimestep_(comm),
+      dttimestep_(0.0),
+      artery_coupl_(DRT::INPUT::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
-
 }
 
 
@@ -52,23 +50,15 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
  | initialize algorithm                                    vuong 08/16  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
-    const Teuchos::ParameterList& globaltimeparams,
-    const Teuchos::ParameterList& algoparams,
-    const Teuchos::ParameterList& poroparams,
-    const Teuchos::ParameterList& structparams,
-    const Teuchos::ParameterList& fluidparams,
-    const Teuchos::ParameterList& scatraparams,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    bool isale,
-    int nds_disp,
-    int nds_vel,
-    int nds_solidpressure,
+    const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
+    const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
+    const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
+    const std::string& struct_disname, const std::string& fluid_disname,
+    const std::string& scatra_disname, bool isale, int nds_disp, int nds_vel, int nds_solidpressure,
     int ndsporofluid_scatra)
 {
-  //save the dofset number of the scatra on the fluid dis
-  ndsporofluid_scatra_ =ndsporofluid_scatra;
+  // save the dofset number of the scatra on the fluid dis
+  ndsporofluid_scatra_ = ndsporofluid_scatra;
 
   // access the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -81,53 +71,56 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   // -------------------------------------------------------------------
   // first of all check for possible couplings
   INPAR::POROMULTIPHASE::SolutionSchemeOverFields solschemeporo =
-    DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(poroparams,"COUPALGO");
+      DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(
+          poroparams, "COUPALGO");
   INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solschemescatraporo =
-    DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(algoparams,"COUPALGO");
+      DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(
+          algoparams, "COUPALGO");
 
   // partitioned -- monolithic not possible --> error
-  if(solschemeporo != INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
-      solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic)
-    dserror("Your requested coupling is not available: possible couplings are:\n"
+  if (solschemeporo !=
+          INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+      solschemescatraporo ==
+          INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic)
+    dserror(
+        "Your requested coupling is not available: possible couplings are:\n"
         "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
         "                                    monolithic  -- partitioned_nested\n"
         "                                    monolithic  -- monolithic\n"
         "YOUR CHOICE                       : partitioned -- monolithic");
 
   // monolithic -- partitioned sequential not possible
-  if(solschemeporo == INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
-      solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_partitioned_sequential)
-    dserror("Your requested coupling is not available: possible couplings are:\n"
+  if (solschemeporo ==
+          INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+      solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::
+                                 solscheme_twoway_partitioned_sequential)
+    dserror(
+        "Your requested coupling is not available: possible couplings are:\n"
         "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
         "                                    monolithic  -- partitioned_nested\n"
         "                                    monolithic  -- monolithic\n"
         "YOUR CHOICE                       : monolithic  -- partitioned_sequential");
 
   fluxreconmethod_ =
-    DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(fluidparams,"FLUX_PROJ_METHOD");
+      DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+          fluidparams, "FLUX_PROJ_METHOD");
 
-  if(solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+  if (solschemescatraporo ==
+          INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
       fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
   {
-    dserror("Monolithic porofluidmultiphase-scatra coupling does not work with L2-projection!\n"
-        "Set FLUX_PROJ_METHOD to none if you want to use monolithic coupling or use partitioned approach instead.");
+    dserror(
+        "Monolithic porofluidmultiphase-scatra coupling does not work with L2-projection!\n"
+        "Set FLUX_PROJ_METHOD to none if you want to use monolithic coupling or use partitioned "
+        "approach instead.");
   }
 
-  poromulti_ = POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solschemeporo,globaltimeparams,Comm());
+  poromulti_ =
+      POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solschemeporo, globaltimeparams, Comm());
 
   // initialize
-  poromulti_->Init(
-                globaltimeparams,
-                poroparams,
-                structparams,
-                fluidparams,
-                struct_disname,
-                fluid_disname,
-                isale,
-                nds_disp,
-                nds_vel,
-                nds_solidpressure,
-                ndsporofluid_scatra);
+  poromulti_->Init(globaltimeparams, poroparams, structparams, fluidparams, struct_disname,
+      fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra);
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
@@ -138,20 +131,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   // initialize the base algo.
   // scatra time integrator is constructed and initialized inside.
   scatra_->Init(
-      globaltimeparams,
-      scatraparams,
-      problem->SolverParams(linsolvernumber),
-      scatra_disname,
-      true);
+      globaltimeparams, scatraparams, problem->SolverParams(linsolvernumber), scatra_disname, true);
 
   // do we perform coupling with 1D artery
-  if(artery_coupl_)
+  if (artery_coupl_)
   {
     // get mesh tying strategy
-    scatramsht_ =
-        Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(scatra_->ScaTraField()->Strategy());
-    if(scatramsht_ == Teuchos::null)
-      dserror("cast to Meshtying strategy failed!");
+    scatramsht_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(
+        scatra_->ScaTraField()->Strategy());
+    if (scatramsht_ == Teuchos::null) dserror("cast to Meshtying strategy failed!");
 
     scatramsht_->SetArteryTimeIntegrator(PoroField()->FluidField()->ArtNetTimInt());
   }
@@ -163,20 +151,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   scatra_->ScaTraField()->Setup();
 
   // do we perform coupling with 1D artery
-  if(artery_coupl_)
+  if (artery_coupl_)
   {
     // this check can only be performed after calling setup
     scatramsht_->CheckInitialFields();
   }
 
-  //done.
+  // done.
   return;
 }
 
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 08/16  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart( int restart )
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart(int restart)
 {
   if (restart)
   {
@@ -185,8 +173,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ReadRestart( int restart )
 
     // read restart data for scatra field (will set time and step internally)
     scatra_->ScaTraField()->ReadRestart(restart);
-    if(artery_coupl_)
-      scatramsht_->ArtScatraField()->ReadRestart(restart);
+    if (artery_coupl_) scatramsht_->ArtScatraField()->ReadRestart(restart);
 
     // reset time and step for the global algorithm
     SetTimeStep(scatra_->ScaTraField()->Time(), restart);
@@ -214,14 +201,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
     TimeStep();
     // *********** time measurement ***********
     double mydttimestep = timertimestep_.WallTime() - dtcpu;
-    Comm().MaxAll(&mydttimestep,&dttimestep_,1);
+    Comm().MaxAll(&mydttimestep, &dttimestep_, 1);
     // *********** time measurement ***********
 
     UpdateAndOutput();
-
   }
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -233,17 +218,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeStep(bool printh
   // keep them in sync!
   IncrementTimeAndStep();
 
-  if(printheader)
-    PrintHeader();
+  if (printheader) PrintHeader();
 
   SetPoroSolution();
   scatra_->ScaTraField()->PrepareTimeStep();
-  if(artery_coupl_)
-    scatramsht_->ArtScatraField()->PrepareTimeStep();
+  if (artery_coupl_) scatramsht_->ArtScatraField()->PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();
 
-  poromulti_-> PrepareTimeStep();
+  poromulti_->PrepareTimeStep();
   SetPoroSolution();
 
   return;
@@ -260,8 +243,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PrepareTimeLoop()
   // initial output for scatra field
   SetPoroSolution();
   scatra_->ScaTraField()->Output();
-  if(artery_coupl_)
-    scatramsht_->ArtScatraField()->Output();
+  if (artery_coupl_) scatramsht_->ArtScatraField()->Output();
 
   return;
 }
@@ -278,16 +260,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::UpdateAndOutput()
   scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   scatra_->ScaTraField()->Output();
   // artery scatra field
-  if(artery_coupl_)
+  if (artery_coupl_)
   {
     scatramsht_->ArtScatraField()->Update();
     scatramsht_->ArtScatraField()->EvaluateErrorComparedToAnalyticalSol();
     scatramsht_->ArtScatraField()->Output();
   }
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
-    std::cout<<"Finished POROMULTIPHASESCATRA STEP " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
-        << std::setw(5) << std::setprecision(4) << std::scientific << NStep() << ": dtstep = " << dttimestep_ << std::endl;
+    std::cout << "Finished POROMULTIPHASESCATRA STEP " << std::setw(5) << std::setprecision(4)
+              << std::scientific << Step() << "/" << std::setw(5) << std::setprecision(4)
+              << std::scientific << NStep() << ": dtstep = " << dttimestep_ << std::endl;
   }
 }
 
@@ -310,34 +293,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
   // safety check
   Teuchos::RCP<SCATRA::ScaTraTimIntPoroMulti> poroscatra =
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntPoroMulti>(scatra_->ScaTraField());
-  if(poroscatra==Teuchos::null)
-    dserror("cast to ScaTraTimIntPoroMulti failed!");
+  if (poroscatra == Teuchos::null) dserror("cast to ScaTraTimIntPoroMulti failed!");
 
   // set displacements
-  poroscatra->ApplyMeshMovement(
-      poromulti_->StructDispnp(),
-      1
-      );
+  poroscatra->ApplyMeshMovement(poromulti_->StructDispnp(), 1);
 
   // set the fluid solution
-  poroscatra->SetSolutionFieldOfMultiFluid(
-      poromulti_->RelaxedFluidPhinp(),
-      2
-      );
+  poroscatra->SetSolutionFieldOfMultiFluid(poromulti_->RelaxedFluidPhinp(), 2);
 
   // additionally, set nodal flux if L2-projection is desired
-  if(fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
-    poroscatra->SetL2FluxOfMultiFluid(
-        poromulti_->FluidFlux(),
-        1
-        );
+  if (fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
+    poroscatra->SetL2FluxOfMultiFluid(poromulti_->FluidFlux(), 1);
 
-  if(artery_coupl_)
+  if (artery_coupl_)
   {
     scatramsht_->SetArteryPressure();
     scatramsht_->ApplyMeshMovement(poromulti_->StructDispnp());
   }
-
 }
 
 /*----------------------------------------------------------------------*
@@ -345,16 +317,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
-  poromulti_->SetScatraSolution(ndsporofluid_scatra_,scatra_->ScaTraField()->Phinp());
-  if(artery_coupl_)
-    poromulti_->FluidField()->ArtNetTimInt()->Discretization()->SetState(2, "one_d_artery_phinp",scatramsht_->ArtScatraField()->Phinp());
+  poromulti_->SetScatraSolution(ndsporofluid_scatra_, scatra_->ScaTraField()->Phinp());
+  if (artery_coupl_)
+    poromulti_->FluidField()->ArtNetTimInt()->Discretization()->SetState(
+        2, "one_d_artery_phinp", scatramsht_->ArtScatraField()->Phinp());
   return;
 }
 
 /*------------------------------------------------------------------------*
  | dof map of vector of unknowns of scatra field        kremheller 06/17  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ScatraDofRowMap() const
+Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ScatraDofRowMap()
+    const
 {
   return scatra_->ScaTraField()->DofRowMap();
 }

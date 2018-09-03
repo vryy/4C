@@ -20,49 +20,47 @@ Maintainer: Rui Fang
 
 namespace SCATRA
 {
+  /*!
+  \brief Standard solution strategy for electrochemistry problems (without meshtying)
 
-/*!
-\brief Standard solution strategy for electrochemistry problems (without meshtying)
+  To keep the scalar transport time integrator class and derived classes as plain as possible,
+  several algorithmic parts have been encapsulated within separate meshtying strategy classes.
+  These algorithmic parts include initializing the system matrix and other relevant objects,
+  computing meshtying residual terms and their linearizations, and solving the resulting
+  linear system of equations. By introducing a hierarchy of strategies for these algorithmic
+  parts, a bunch of unhandy if-else selections within the time integrator classes themselves
+  can be circumvented. This class contains the standard solution strategy for electrochemistry
+  problems without meshtying.
 
-To keep the scalar transport time integrator class and derived classes as plain as possible,
-several algorithmic parts have been encapsulated within separate meshtying strategy classes.
-These algorithmic parts include initializing the system matrix and other relevant objects,
-computing meshtying residual terms and their linearizations, and solving the resulting
-linear system of equations. By introducing a hierarchy of strategies for these algorithmic
-parts, a bunch of unhandy if-else selections within the time integrator classes themselves
-can be circumvented. This class contains the standard solution strategy for electrochemistry
-problems without meshtying.
+  \author fang (fang@lnm.mw.tum.de)
+  */
 
-\author fang (fang@lnm.mw.tum.de)
-*/
-
-class MeshtyingStrategyStdElch : public MeshtyingStrategyStd
-{
-  public:
-
+  class MeshtyingStrategyStdElch : public MeshtyingStrategyStd
+  {
+   public:
     //! constructor
-    explicit MeshtyingStrategyStdElch(
-        SCATRA::ScaTraTimIntElch* elchtimint
-        );
+    explicit MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
     // destructor
-    virtual ~MeshtyingStrategyStdElch(){return;};
+    virtual ~MeshtyingStrategyStdElch() { return; };
 
     //! initialize system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
     //@}
 
-  private:
-
+   private:
     //! copy constructor
     MeshtyingStrategyStdElch(const MeshtyingStrategyStdElch& old);
 
     //! return pointer to elch time integrator after cast
-    SCATRA::ScaTraTimIntElch* ElchTimInt() const {return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);};
+    SCATRA::ScaTraTimIntElch* ElchTimInt() const
+    {
+      return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);
+    };
 
     //! instantiate strategy for Newton-Raphson convergence check
     void InitConvCheckStrategy();
-}; // class MeshtyingStrategyStdElch
-} // namespace SCATRA
+  };  // class MeshtyingStrategyStdElch
+}  // namespace SCATRA
 
-#endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_H
+#endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_STD_ELCH_H

@@ -21,40 +21,26 @@
 /*======================================================================*/
 /* constructor */
 ADAPTER::StructureTimIntAda::StructureTimIntAda(
-  Teuchos::RCP<STR::TimAda> sta,
-  Teuchos::RCP<Structure> sti
-)
-: StructureWrapper(sti),
-  structure_(sta)
+    Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
+    : StructureWrapper(sti), structure_(sta)
 {
   // make sure
-  if (structure_ == Teuchos::null)
-    dserror("Failed to create structural integrator");
-
+  if (structure_ == Teuchos::null) dserror("Failed to create structural integrator");
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::StructureTimIntAda::Integrate()
-{
-  return structure_->Integrate();
-}
+int ADAPTER::StructureTimIntAda::Integrate() { return structure_->Integrate(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::PrepareOutput()
-{
-  structure_->PrepareOutputPeriod();
-}
+void ADAPTER::StructureTimIntAda::PrepareOutput() { structure_->PrepareOutputPeriod(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::Output()
-{
-  structure_->OutputPeriod();
-}
+void ADAPTER::StructureTimIntAda::Output() { structure_->OutputPeriod(); }
 
 
 /*----------------------------------------------------------------------*/

@@ -42,120 +42,115 @@ namespace IO
 
 namespace MAT
 {
+  /// one Gauss point of the micro material
+  class MicroMaterialGP
+  {
+   public:
+    /// construct an instance of MicroMaterial for a given Gauss point
+    /// and microscale discretization
+    MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner, const int microdisnum,
+        const double V0);
 
-/// one Gauss point of the micro material
-class MicroMaterialGP
-{
-public:
+    /// destructor
+    ~MicroMaterialGP();
 
-  /// construct an instance of MicroMaterial for a given Gauss point
-  /// and microscale discretization
-  MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner,
-                  const int microdisnum, const double V0);
+    /// Read restart
+    void ReadRestart();
 
-  /// destructor
-  ~MicroMaterialGP();
+    /// New result file
+    void NewResultFile(bool eleowner, std::string& newfilename);
 
-  /// Read restart
-  void ReadRestart();
+    /// Perform microscale simulation
+    void PerformMicroSimulation(
+        LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat);
 
-  /// New result file
-  void NewResultFile(bool eleowner, std::string& newfilename);
+    void Update();
 
-  /// Perform microscale simulation
-  void PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
-                              LINALG::Matrix<6,1>* stress,
-                              LINALG::Matrix<6,6>* cmat);
+    /// Calculate stresses and strains on the micro-scale
+    void PrepareOutput();
 
-  void Update();
+    void Output();
 
-  /// Calculate stresses and strains on the micro-scale
-  void PrepareOutput();
+    /// Create and initialize "empty" EAS history map
+    void EasInit();
 
-  void Output();
+    /// Reset global time and step number (needed for multi-scale inverse
+    /// analyses with multiple runs)
+    void ResetTimeAndStep();
 
-  /// Create and initialize "empty" EAS history map
-  void EasInit();
+    /// get ele id
+    int eleID() { return ele_ID_; }
 
-  /// Reset global time and step number (needed for multi-scale inverse
-  /// analyses with multiple runs)
-  void ResetTimeAndStep();
-
-  /// get ele id
-  int eleID() {return ele_ID_; }
-
-  /// get density
-  double Density() const {return density_;}
+    /// get density
+    double Density() const { return density_; }
 
 
-private:
+   private:
+    /// corresponding macroscale Gauss point
+    const int gp_;
 
-  /// corresponding macroscale Gauss point
-  const int gp_;
+    /// corresponding macroscale element
+    const int ele_ID_;
 
-  /// corresponding macroscale element
-  const int ele_ID_;
+    /// corresponding microstructure discretization number
+    const int microdisnum_;
 
-  /// corresponding microstructure discretization number
-  const int microdisnum_;
+    /// microstructure "time integration" classes (one for each micro-discretization)
+    static std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic>> microstaticmap_;
 
-  /// microstructure "time integration" classes (one for each micro-discretization)
-  static std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic> > microstaticmap_;
+    static std::map<int, int> microstaticcounter_;
 
-  static std::map<int, int> microstaticcounter_;
+    /// microstructure discretization writer
+    Teuchos::RCP<IO::DiscretizationWriter> micro_output_;
 
-  /// microstructure discretization writer
-  Teuchos::RCP<IO::DiscretizationWriter> micro_output_;
+    /// homogenized density
+    double density_;
 
-  /// homogenized density
-  double density_;
+    /// my vector of old displacements
+    Teuchos::RCP<Epetra_Vector> dis_;
 
-  /// my vector of old displacements
-  Teuchos::RCP<Epetra_Vector> dis_;
+    /// my vector of new displacements
+    Teuchos::RCP<Epetra_Vector> disn_;
 
-  /// my vector of new displacements
-  Teuchos::RCP<Epetra_Vector> disn_;
+    /// my manager of surface stresses
+    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
 
-  /// my manager of surface stresses
-  Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
+    // my EAS history data -> note that microstructure is not parallel
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda_;
 
-  // my EAS history data -> note that microstructure is not parallel
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda_;
+    /// my stresses and strains
+    Teuchos::RCP<std::vector<char>> stress_;
+    Teuchos::RCP<std::vector<char>> strain_;
+    Teuchos::RCP<std::vector<char>> plstrain_;
 
-  /// my stresses and strains
-  Teuchos::RCP<std::vector<char> > stress_;
-  Teuchos::RCP<std::vector<char> > strain_;
-  Teuchos::RCP<std::vector<char> > plstrain_;
+    /// old absolute time
+    double time_;
 
-  /// old absolute time
-  double time_;
+    /// current absolute time
+    double timen_;
 
-  /// current absolute time
-  double timen_;
+    /// old step
+    int step_;
 
-  /// old step
-  int step_;
+    /// current step
+    int stepn_;
 
-  /// current step
-  int stepn_;
+    /// timestep size
+    double dt_;
 
-  /// timestep size
-  double dt_;
+    /// restart name
+    std::string restartname_;
 
-  /// restart name
-  std::string restartname_;
+    /// flag for modified Newton on macroscale
+    bool mod_newton_;
 
-  /// flag for modified Newton on macroscale
-  bool mod_newton_;
-
-  /// flag for build of stiffness matrix
-  bool build_stiff_;
-
-};
-}
+    /// flag for build of stiffness matrix
+    bool build_stiff_;
+  };
+}  // namespace MAT
 
 #endif

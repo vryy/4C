@@ -19,34 +19,35 @@
 
 #include "str_model_evaluator_beaminteraction.H"  // typedef
 
-namespace BEAMINTERACTION {
-namespace SUBMODELEVALUATOR {
-  class Generic;
-
-  /*! Factory to build the desired model evaluator std::map
-   *
-   *  \author Jonas Eichinger */
-  class Factory
+namespace BEAMINTERACTION
+{
+  namespace SUBMODELEVALUATOR
   {
-  public:
-    //! constructor
-    Factory();
+    class Generic;
 
-    //! destructor
-    virtual ~Factory() {};
+    /*! Factory to build the desired model evaluator std::map
+     *
+     *  \author Jonas Eichinger */
+    class Factory
+    {
+     public:
+      //! constructor
+      Factory();
 
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map>
-    BuildModelEvaluators(const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes) const;
+      //! destructor
+      virtual ~Factory(){};
 
-  private:
+      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BuildModelEvaluators(
+          const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes) const;
 
-  };
+     private:
+    };
 
-  //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
-  Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map>
-  BuildModelEvaluators(const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes);
+    //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
+    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BuildModelEvaluators(
+        const std::set<enum INPAR::BEAMINTERACTION::SubModelType>& submodeltypes);
 
-}
-}
+  }  // namespace SUBMODELEVALUATOR
+}  // namespace BEAMINTERACTION
 
 #endif

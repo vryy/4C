@@ -8,7 +8,8 @@ aortic aneurysm under static and pulsating mechanical load", Journal of Vascular
 Surgery Volume 48, Number 1, July 2008.
 
 the input line should read:
-  MAT 1 MAT_Struct_AAAGasser DENS 0.0001 VOL OgSiMi NUE 0.49 BETA -2.0 CLUM 2.62e-3 CMED 2.13e-3 CABLUM 1.98e-3
+  MAT 1 MAT_Struct_AAAGasser DENS 0.0001 VOL OgSiMi NUE 0.49 BETA -2.0 CLUM 2.62e-3 CMED 2.13e-3
+CABLUM 1.98e-3
 
 <pre>
 Maintainer: goe
@@ -24,20 +25,15 @@ Maintainer: goe
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for thrombus material acc. to Gasser [2008]
     class AAAgasser : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      AAAgasser(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      AAAgasser(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~AAAgasser() { ; }
@@ -47,7 +43,8 @@ namespace MAT
 
       /// mass density
       const double density_;
-      /// Type of volumetric Strain Energy Density ('OgSiMi' for Ogden-Simo-Miehe, 'SuBa' for Sussman-Bathe, 'SiTa' for Simo-Taylor)
+      /// Type of volumetric Strain Energy Density ('OgSiMi' for Ogden-Simo-Miehe, 'SuBa' for
+      /// Sussman-Bathe, 'SiTa' for Simo-Taylor)
       const std::string* vol_;
       /// poisson's ratio
       const double nue_;
@@ -69,20 +66,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class AAAgasserType : public DRT::ParObjectType
-{
-public:
+  class AAAgasserType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "AAAgasserType"; }
 
-  std::string Name() const { return "AAAgasserType"; }
+    static AAAgasserType& Instance() { return instance_; };
 
-  static AAAgasserType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static AAAgasserType instance_;
-};
+   private:
+    static AAAgasserType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Be sure to include 'AAA' in your BACI configurations file!!! <br>
@@ -96,21 +91,25 @@ private:
   ///\f[
   ///   \Psi_{iso} = c \sum\limits_{\alpha = 1}^{3} (\bar{\lambda}_{\alpha}^{4} - 1) = \ldots =
   ///          c \left[ (\bar{I}_{\boldsymbol C})^2 - 2 \, \bar{II}_{\boldsymbol C} - 3 \right] =
-  ///          c \left[ (I_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{1}{3}})^2 - 2 \, II_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{2}{3}} - 3 \right]
+  ///          c \left[ (I_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{1}{3}})^2 - 2 \,
+  ///          II_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{2}{3}} - 3 \right]
   ///\f]
   ///
   /// ... and modified to slight compressibility !
   ///
-  /// with: \f$ \bar{I}_{\boldsymbol C} = I_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{1}{3}}, \, \bar{II}_{\boldsymbol C} = II_{\boldsymbol C} \cdot III_{\boldsymbol C}^{-\frac{2}{3}}\f$
+  /// with: \f$ \bar{I}_{\boldsymbol C} = I_{\boldsymbol C} \cdot III_{\boldsymbol
+  /// C}^{-\frac{1}{3}}, \, \bar{II}_{\boldsymbol C} = II_{\boldsymbol C} \cdot III_{\boldsymbol
+  /// C}^{-\frac{2}{3}}\f$
   ///
   /// symbols:
   /// <pre>
   /// \f$c\f$ .. position dependend stiffness parameter <br>
   /// \f$\Psi\f$  .. strain energy function <br>
   /// \f$\mathbf{C}\f$  .. right CAUCHY-GREEN tensor <br>
-  /// \f$\bar{\lambda}_{\alpha}\f$  .. modified principle streches \f$(\alpha = 1, \ldots ,3)\f$ <br>
-  /// \f$I_{\mathbf{C}}, II_{\mathbf{C}}, III_{\mathbf{C}}\f$ .. principle invariants of the right CG tensor <br>
-  /// \f$\bar{I}_{\mathbf{C}}, \bar{II}_{\mathbf{C}}\f$ .. modified invariants <br>
+  /// \f$\bar{\lambda}_{\alpha}\f$  .. modified principle streches \f$(\alpha = 1, \ldots ,3)\f$
+  /// <br> \f$I_{\mathbf{C}}, II_{\mathbf{C}}, III_{\mathbf{C}}\f$ .. principle invariants of the
+  /// right CG tensor <br> \f$\bar{I}_{\mathbf{C}}, \bar{II}_{\mathbf{C}}\f$ .. modified invariants
+  /// <br>
   /// </pre>
   ///
   /// <h3>Volumetric Material Description:</h3>
@@ -154,18 +153,18 @@ private:
   ///     Failure properties of intraluminal thrombus in abdominal aortic
   ///     aneurysm under static and pulsating mechanical load, Journal of
   ///     Vascular Surgery, Volume 48, Number 1, July 2008 </li>
-  /// <li>[2] Holzapfel G. A.: Nonlinear Solid Mechanics - A Continuum Approach For Engineering, (reprint) 2007</li>
-  /// <li>[3] Doll, S. ; Schweizerhof, K.: On the Development of Volumetric Strain Energy Functions. In: Journal of Applied Mechanics 67 (2000), March</li>
-  /// <li>[4] Bonet, Javier ; Wood, Richard D.: Nonlinear Continuum Mechanics for Finite Element Analysis. 2. Cambridge University Press, 2008</li>
+  /// <li>[2] Holzapfel G. A.: Nonlinear Solid Mechanics - A Continuum Approach For Engineering,
+  /// (reprint) 2007</li> <li>[3] Doll, S. ; Schweizerhof, K.: On the Development of Volumetric
+  /// Strain Energy Functions. In: Journal of Applied Mechanics 67 (2000), March</li> <li>[4] Bonet,
+  /// Javier ; Wood, Richard D.: Nonlinear Continuum Mechanics for Finite Element Analysis. 2.
+  /// Cambridge University Press, 2008</li>
   /// </ul>
   ///
   /// \author goe
   /// \date 11/09
   class AAAgasser : public So3Material
   {
-
-  public:
-
+   public:
     /// empty constructor
     AAAgasser();
 
@@ -209,20 +208,27 @@ private:
     virtual double Density() const { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { dserror("Cannot provide shear modulus equivalent"); return 0.0; }
+    double ShearMod() const
+    {
+      dserror("Cannot provide shear modulus equivalent");
+      return 0.0;
+    }
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaagasser; }
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAgasser( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new AAAgasser(*this)); }
 
-    /// <h2>Calculation of location dependent stiffness parameter c in GASSER material formulation:</h2>
+    /// <h2>Calculation of location dependent stiffness parameter c in GASSER material
+    /// formulation:</h2>
     ///
     /// follows...
     ///
@@ -234,28 +240,28 @@ private:
     /// \f$c\f$ .. position dependend stiffness parameter acc. to GASSER <br>
     /// \f$\Psi\f$ .. strain energy function <br>
     /// \f$\mathbf{C}\f$ .. right CAUCHY-GREEN tensor <br>
-    /// \f$I_{\mathbf{C}}, II_{\mathbf{C}}, III_{\mathbf{C}}\f$ .. invariants of the right CG tensor <br>
-    /// \f$\mathbf{I}\f$ .. identity second order <br>
-    /// \f$\mathbf{S}\f$ .. second PIOLA-KIRCHHOFF stress tensor <br>
-    /// \f$\mathbb{C}\f$ .. fourth order elasticity tensor <br>
+    /// \f$I_{\mathbf{C}}, II_{\mathbf{C}}, III_{\mathbf{C}}\f$ .. invariants of the right CG tensor
+    /// <br> \f$\mathbf{I}\f$ .. identity second order <br> \f$\mathbf{S}\f$ .. second
+    /// PIOLA-KIRCHHOFF stress tensor <br> \f$\mathbb{C}\f$ .. fourth order elasticity tensor <br>
     /// \f$\mathbb{S}\f$ .. fourth order identity (see Holzapfel p. 261) <br>
-    /// \f$J\f$ .. volume ratio (JACOBIAN determinant) (\f$= III_{\mathbf{C}}^{-\frac{1}{2}}\f$) <br>
-    /// \f$\kappa\f$ .. dilatational modulus <br>
-    /// \f$\beta\f$ .. material parameter acc. to OGDEN <br>
+    /// \f$J\f$ .. volume ratio (JACOBIAN determinant) (\f$= III_{\mathbf{C}}^{-\frac{1}{2}}\f$)
+    /// <br> \f$\kappa\f$ .. dilatational modulus <br> \f$\beta\f$ .. material parameter acc. to
+    /// OGDEN <br>
     /// </pre>
     ///
     /// <h3>Isochoric Part:</h3>
     ///
-    /// Determine isochoric PK2 stress response \f$\mathbf{S}_{iso}\f$ and isochoric material elasticity tensor
-    /// \f$\mathbb{C}_{iso}\f$ due to strain energy function according to GASSER [2008] described in principal invariants.
+    /// Determine isochoric PK2 stress response \f$\mathbf{S}_{iso}\f$ and isochoric material
+    /// elasticity tensor \f$\mathbb{C}_{iso}\f$ due to strain energy function according to GASSER
+    /// [2008] described in principal invariants.
     ///
     /// The stress response is achieved by collecting the coefficients
     /// \f$\gamma_i \, (i=1, \ldots ,3)\f$ (see Holzapfel p.248):
     ///
     ///\f[
     ///   \gamma_1
-    ///   = 2 \, \left( \frac{\partial \Psi_{iso}}{\partial I_{\mathbf{C}}} + I_{\mathbf{C}} \, \frac{\partial \Psi_{iso}}{\partial II_{\mathbf{C}}} \right) = \ldots
-    ///   = 0
+    ///   = 2 \, \left( \frac{\partial \Psi_{iso}}{\partial I_{\mathbf{C}}} + I_{\mathbf{C}} \,
+    ///   \frac{\partial \Psi_{iso}}{\partial II_{\mathbf{C}}} \right) = \ldots = 0
     ///\f]
     ///
     ///\f[
@@ -267,64 +273,75 @@ private:
     ///\f[
     ///   \gamma_3
     ///   = 2 \, III_{\mathbf{C}} \, \frac{\partial \Psi_{iso}}{\partial III_{\mathbf{C}}} = \ldots
-    ///   = \frac{4}{3}c \, III_{\mathbf{C}}^{-\frac{2}{3}} \, \left(-I_{\mathbf{C}}^2 + 2 \, II_{\mathbf{C}}\right)
+    ///   = \frac{4}{3}c \, III_{\mathbf{C}}^{-\frac{2}{3}} \, \left(-I_{\mathbf{C}}^2 + 2 \,
+    ///   II_{\mathbf{C}}\right)
     ///\f]
     ///
     /// entering Holzapfel Eq (6.32) results:
     ///\f[
-    ///   \mathbf{S}_{iso} = 2 \, \frac{\partial \Psi_{iso}(I_{\mathbf{C}},II_{\mathbf{C}},III_{\mathbf{C}})}{\partial \mathbf{C}}
-    ///   = \gamma_1\mathbf{I} + \gamma_2\mathbf{C} + \gamma_3\mathbf{C}^{-1}
+    ///   \mathbf{S}_{iso} = 2 \, \frac{\partial
+    ///   \Psi_{iso}(I_{\mathbf{C}},II_{\mathbf{C}},III_{\mathbf{C}})}{\partial \mathbf{C}} =
+    ///   \gamma_1\mathbf{I} + \gamma_2\mathbf{C} + \gamma_3\mathbf{C}^{-1}
     ///\f]
     ///
-    /// The isochoric elasticity tensor is reached in the same fashion. Firstly, the coefficients \f$\delta_j \, (j=1, \ldots ,8)\f$
-    /// are calculated:
+    /// The isochoric elasticity tensor is reached in the same fashion. Firstly, the coefficients
+    /// \f$\delta_j \, (j=1, \ldots ,8)\f$ are calculated:
     ///
     ///\f[
     ///   \delta_{1}
     ///   = 4 \, \left( \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial I_{\mathbf{C}}}
-    ///           + 2 \, I_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial II_{\mathbf{C}}}
+    ///           + 2 \, I_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial
+    ///           I_{\mathbf{C}}\partial II_{\mathbf{C}}}
     ///           + \frac{\partial \Psi_{iso}}{\partial II_{\mathbf{C}}}
-    ///           + I_{\mathbf{C}}^2 \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial II_{\mathbf{C}}} \right) = \ldots
+    ///           + I_{\mathbf{C}}^2 \, \frac{\partial^2 \Psi_{iso}}{\partial
+    ///           II_{\mathbf{C}}\partial II_{\mathbf{C}}} \right) = \ldots
     ///   = 0
     ///\f]
     ///
     ///\f[
     ///   \delta_{2}
-    ///   = -4 \, \left( \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial II_{\mathbf{C}}}
-    ///           + I_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial II_{\mathbf{C}}} \right) = \ldots
+    ///   = -4 \, \left( \frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial
+    ///   II_{\mathbf{C}}}
+    ///           + I_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial
+    ///           II_{\mathbf{C}}} \right) = \ldots
     ///   = 0
     ///\f]
     ///
     ///\f[
     ///   \delta_{3}
-    ///   = 4 \, \left( III_{\mathbf{C}}\frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial III_{\mathbf{C}}}
-    ///           + I_{\mathbf{C}}III_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial III_{\mathbf{C}}} \right) = \ldots
+    ///   = 4 \, \left( III_{\mathbf{C}}\frac{\partial^2 \Psi_{iso}}{\partial I_{\mathbf{C}}\partial
+    ///   III_{\mathbf{C}}}
+    ///           + I_{\mathbf{C}}III_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial
+    ///           II_{\mathbf{C}}\partial III_{\mathbf{C}}} \right) = \ldots
     ///   = 0
     ///\f]
     ///
     ///\f[
     ///   \delta_{4}
-    ///   = 4 \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial II_{\mathbf{C}}} = \ldots
-    ///   = 0
+    ///   = 4 \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial II_{\mathbf{C}}} =
+    ///   \ldots = 0
     ///\f]
     ///
     ///\f[
     ///   \delta_{5}
-    ///   = -4 III_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial III_{\mathbf{C}}} = \ldots
-    ///   = -\frac{16}{3}c \, III_{\mathbf{C}}^{-\frac{2}{3}}
+    ///   = -4 III_{\mathbf{C}} \, \frac{\partial^2 \Psi_{iso}}{\partial II_{\mathbf{C}}\partial
+    ///   III_{\mathbf{C}}} = \ldots = -\frac{16}{3}c \, III_{\mathbf{C}}^{-\frac{2}{3}}
     ///\f]
     ///
     ///\f[
     ///   \delta_{6}
     ///   = 4 \, \left( III_{\mathbf{C}}\frac{\partial \Psi_{iso}}{\partial III_{\mathbf{C}}}
-    ///           + III_{\mathbf{C}}^2 \, \frac{\partial^2 \Psi_{iso}}{\partial III_{\mathbf{C}}\partial III_{\mathbf{C}}} \right) = \ldots
-    ///   =  \frac{16}{9}c \, III_{\mathbf{C}}^{-\frac{2}{3}} \, \left(I_{\mathbf{C}}^2 - 2 \, II_{\mathbf{C}}\right)
+    ///           + III_{\mathbf{C}}^2 \, \frac{\partial^2 \Psi_{iso}}{\partial
+    ///           III_{\mathbf{C}}\partial III_{\mathbf{C}}} \right) = \ldots
+    ///   =  \frac{16}{9}c \, III_{\mathbf{C}}^{-\frac{2}{3}} \, \left(I_{\mathbf{C}}^2 - 2 \,
+    ///   II_{\mathbf{C}}\right)
     ///\f]
     ///
     ///\f[
     ///   \delta_{7}
     ///   = -4 III_{\mathbf{C}} \, \frac{\partial \Psi_{iso}}{\partial III_{\mathbf{C}}} = \ldots
-    ///   = \frac{8}{3}c \, III_{\mathbf{C}}^{-\frac{2}{3}} \, \left(I_{\mathbf{C}}^2 - 2 \, II_{\mathbf{C}}\right)
+    ///   = \frac{8}{3}c \, III_{\mathbf{C}}^{-\frac{2}{3}} \, \left(I_{\mathbf{C}}^2 - 2 \,
+    ///   II_{\mathbf{C}}\right)
     ///\f]
     ///
     ///\f[
@@ -336,20 +353,24 @@ private:
     /// then Holzapfel Eq (6.193) is evaluated:
     ///
     ///\f[
-    ///   \mathbb{C}_{iso} = 2 \, \frac{\partial \mathbf{S}_{iso}}{\partial \mathbf{C}} = 4 \, \frac{\partial^2 \Psi_{iso}}{\partial \mathbf{C}\partial \mathbf{C}} =
+    ///   \mathbb{C}_{iso} = 2 \, \frac{\partial \mathbf{S}_{iso}}{\partial \mathbf{C}} = 4 \,
+    ///   \frac{\partial^2 \Psi_{iso}}{\partial \mathbf{C}\partial \mathbf{C}} =
     ///\f]
     ///\f[
-    ///   = \delta_1\mathbf{I}\otimes\mathbf{I} + \delta_2\left(\mathbf{I}\otimes\mathbf{C}+\mathbf{C}\otimes\mathbf{I}\right)
-    ///   + \delta_3\left(\mathbf{I}\otimes\mathbf{C}^{-1}+\mathbf{C}^{-1}\otimes\mathbf{I}\right) + \delta_4\mathbf{C}\otimes\mathbf{C}
-    ///   + \delta_5\left(\mathbf{C}\otimes\mathbf{C}^{-1}+\mathbf{C}^{-1}\otimes\mathbf{C}\right) + \delta_6\mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
+    ///   = \delta_1\mathbf{I}\otimes\mathbf{I} +
+    ///   \delta_2\left(\mathbf{I}\otimes\mathbf{C}+\mathbf{C}\otimes\mathbf{I}\right)
+    ///   + \delta_3\left(\mathbf{I}\otimes\mathbf{C}^{-1}+\mathbf{C}^{-1}\otimes\mathbf{I}\right) +
+    ///   \delta_4\mathbf{C}\otimes\mathbf{C}
+    ///   + \delta_5\left(\mathbf{C}\otimes\mathbf{C}^{-1}+\mathbf{C}^{-1}\otimes\mathbf{C}\right) +
+    ///   \delta_6\mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
     ///   + \delta_7\mathbf{C}^{-1}\odot\mathbf{C}^{-1} + \delta_8\mathbb{S}
     ///\f]
     ///
     ///
     /// <h3>Dilatational Part:</h3>
     ///
-    /// Determine volumetric PK2 stress response \f$\mathbf{S}_{vol}\f$ and volumetric material elasticity tensor
-    /// \f$\mathbb{C}_{vol}\f$ due to selected strain energy function.
+    /// Determine volumetric PK2 stress response \f$\mathbf{S}_{vol}\f$ and volumetric material
+    /// elasticity tensor \f$\mathbb{C}_{vol}\f$ due to selected strain energy function.
     ///
     /// The stress response is achieved by deriving the hydrostatic pressure
     /// \f$p\f$ (see Holzapfel p.230, 6.91):
@@ -396,8 +417,9 @@ private:
     ///
     /// from Holzapfel Eq (6.166) follows:
     ///\f[
-    ///   \mathbb{C}_{vol} = 2 \, \frac{\partial \mathbf{S}_{vol}}{\partial \mathbf{C}} = 2 \, \frac{\partial (Jp\mathbf{C}^{-1})}{\partial \mathbf{C}}
-    ///   = J\tilde{p}\mathbf{C}^{-1}\otimes\mathbf{C}^{-1} - 2Jp\mathbf{C}^{-1}\odot\mathbf{C}^{-1}
+    ///   \mathbb{C}_{vol} = 2 \, \frac{\partial \mathbf{S}_{vol}}{\partial \mathbf{C}} = 2 \,
+    ///   \frac{\partial (Jp\mathbf{C}^{-1})}{\partial \mathbf{C}} =
+    ///   J\tilde{p}\mathbf{C}^{-1}\otimes\mathbf{C}^{-1} - 2Jp\mathbf{C}^{-1}\odot\mathbf{C}^{-1}
     ///\f]
     ///
     /// <h3>Summation:</h3>
@@ -413,28 +435,23 @@ private:
     ///\f]
     ///
     /// <h3>References</h3>
-    /// Holzapfel G. A., Nonlinear Solid Mechanics - A Continuum Approach For Engineering, (reprint) [2007]
+    /// Holzapfel G. A., Nonlinear Solid Mechanics - A Continuum Approach For Engineering, (reprint)
+    /// [2007]
     ///
     /// \author goe
     /// \date 11/09
-    virtual void Evaluate(
-      const LINALG::Matrix<3,3>* defgrd,
-      const LINALG::Matrix<6,1>* glstrain,
-      Teuchos::ParameterList& params,
-      LINALG::Matrix<6,1>* stress,
-      LINALG::Matrix<6,6>* cmat,
-      const int eleGID );
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        const int eleGID);
 
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::AAAgasser* params_;
-
   };
-}
+}  // namespace MAT
 
 #endif  // AAAGASSER_H_

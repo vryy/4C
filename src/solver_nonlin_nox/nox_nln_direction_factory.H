@@ -17,58 +17,63 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
 }
 
-namespace NOX {
+namespace NOX
+{
   class GlobalData;
-namespace Direction {
-  class Generic;
-}
-namespace NLN {
-namespace Direction {
-  /*!
-   \brief Factory to build direction objects derived from NOX::Direction::Generic.
-
-   This factory class is closely related to the NOX_Direction_Factory.H. The main
-   difference is, that derived class objects are build and a small amount of directions
-   is supported at the moment.
-
-   \author Michael Hiermeier
-   */
-  class Factory
+  namespace Direction
   {
-  public:
-    //! Constructor
-    Factory();
+    class Generic;
+  }
+  namespace NLN
+  {
+    namespace Direction
+    {
+      /*!
+       \brief Factory to build direction objects derived from NOX::Direction::Generic.
 
-    //! Destructor
-    virtual ~Factory() {};
+       This factory class is closely related to the NOX_Direction_Factory.H. The main
+       difference is, that derived class objects are build and a small amount of directions
+       is supported at the moment.
 
-    /*! \brief Factory to build a direction object.
+       \author Michael Hiermeier
+       */
+      class Factory
+      {
+       public:
+        //! Constructor
+        Factory();
 
-        @param gd A global data pointer that contains the top level parameter list.  Without storing this inside the direction object, there is no guarantee that the second parameter \c params will still exist.  It can be deleted by the top level RCP.
-        @param params Sublist with direction construction parameters.
+        //! Destructor
+        virtual ~Factory(){};
 
-    */
-    Teuchos::RCP<NOX::Direction::Generic> BuildDirection(
-        const Teuchos::RCP<NOX::GlobalData>& gd,
-        Teuchos::ParameterList& params);
-  };
+        /*! \brief Factory to build a direction object.
 
-  /*! Nonmember function to build a direction object.
+            @param gd A global data pointer that contains the top level parameter list.  Without
+           storing this inside the direction object, there is no guarantee that the second parameter
+           \c params will still exist.  It can be deleted by the top level RCP.
+            @param params Sublist with direction construction parameters.
 
-  \relates NOX::NLN::Direction::Factory
+        */
+        Teuchos::RCP<NOX::Direction::Generic> BuildDirection(
+            const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      };
 
-  */
-  Teuchos::RCP<NOX::Direction::Generic>
-  BuildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
-         Teuchos::ParameterList& params);
+      /*! Nonmember function to build a direction object.
 
-} // namespace Direction
-} // namespace NLN
-} // namespace NOX
+      \relates NOX::NLN::Direction::Factory
+
+      */
+      Teuchos::RCP<NOX::Direction::Generic> BuildDirection(
+          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+
+    }  // namespace Direction
+  }    // namespace NLN
+}  // namespace NOX
 
 
 #endif /* NOX_NLN_DIRECTION_FACTORY_H_ */

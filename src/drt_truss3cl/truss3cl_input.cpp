@@ -18,32 +18,30 @@ Maintainer: Dhrubajyoti Mukherjee
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Truss3CL::ReadElement(const std::string& eletype,
-                                        const std::string& distype,
-                                        DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Truss3CL::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  linedef->ExtractDouble("CROSS",crosssec_);
+  linedef->ExtractDouble("CROSS", crosssec_);
 
   std::string buffer;
-  linedef->ExtractString("KINEM",buffer);
+  linedef->ExtractString("KINEM", buffer);
 
   // geometrically non-linear with Total Lagrangean approach
-  if (buffer=="totlag")
-    kintype_ = tr3_totlag;
+  if (buffer == "totlag") kintype_ = tr3_totlag;
 
   // geometrically non-linear approach with engineering strains
-  else if (buffer=="engstr")
+  else if (buffer == "engstr")
     kintype_ = tr3_engstrain;
 
   else
     dserror("Reading of Torsion2 element failed because of unknown kinematic type!");
 
-  linedef->ExtractDoubleVector("BPOS",mybindingposition_);
+  linedef->ExtractDoubleVector("BPOS", mybindingposition_);
 
   return true;
 }
@@ -60,11 +58,11 @@ void DRT::ELEMENTS::Truss3CL::SetCrossSec(const double& crosssec)
 /*------------------------------------------------------------------------*
  | Set internodal Binding Position                (public) mukherjee 01/14|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3CL::SetBindingPosition(const double& pos1,const double& pos2)
+void DRT::ELEMENTS::Truss3CL::SetBindingPosition(const double& pos1, const double& pos2)
 {
   mybindingposition_.resize(2);
-  mybindingposition_[0]= pos1;
-  mybindingposition_[1]= pos2;
+  mybindingposition_[0] = pos1;
+  mybindingposition_[1] = pos2;
 
   return;
 }

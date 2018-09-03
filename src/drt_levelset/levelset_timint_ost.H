@@ -23,70 +23,65 @@
 
 namespace SCATRA
 {
+  class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public TimIntOneStepTheta
+  {
+   public:
+    /// standard Constructor
+    LevelSetTimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public TimIntOneStepTheta
-{
+    /// destructor
+    virtual ~LevelSetTimIntOneStepTheta();
 
-public:
+    /// initialize time-integration scheme
+    virtual void Init();
 
-  /// standard Constructor
-  LevelSetTimIntOneStepTheta(Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    /// setup time-integration scheme
+    virtual void Setup();
 
-  /// destructor
-  virtual ~LevelSetTimIntOneStepTheta();
+    /// read restart data
+    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  /// initialize time-integration scheme
-  virtual void Init();
+    /// redistribute the scatra discretization and vectors according to nodegraph
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
-  /// setup time-integration scheme
-  virtual void Setup();
+    /// interpolate phi to intermediate time n+theta with 0<theta<1
+    Teuchos::RCP<Epetra_Vector> Phinptheta(const double theta_inter);
 
-  /// read restart data
-  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    /// interpolate phidt to intermediate time n+theta with 0<theta<1
+    Teuchos::RCP<Epetra_Vector> Phidtnptheta(const double theta_inter);
 
-  /// redistribute the scatra discretization and vectors according to nodegraph
-  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph);
+   protected:
+    /// Print information about current time step to screen (reimplementation for OST)
+    void PrintTimeStepInfo();
 
-  /// interpolate phi to intermediate time n+theta with 0<theta<1
-  Teuchos::RCP<Epetra_Vector> Phinptheta(const double theta_inter);
+    /// calculate consistent initial scalar time derivatives in compliance with initial scalar field
+    void CalcInitialTimeDerivative();
 
-  /// interpolate phidt to intermediate time n+theta with 0<theta<1
-  Teuchos::RCP<Epetra_Vector> Phidtnptheta(const double theta_inter);
+    /// additional predictor not intended for level-set methods
+    void ExplicitPredictor() const { return; };
 
-protected:
+    /// Set the part of the righthandside belonging to the last timestep.
+    void SetOldPartOfRighthandside();
 
-  /// Print information about current time step to screen (reimplementation for OST)
-  void PrintTimeStepInfo();
+    /// update state vectors
+    /// current solution becomes old solution of next time step
+    void UpdateState();
 
-  /// calculate consistent initial scalar time derivatives in compliance with initial scalar field
-  void CalcInitialTimeDerivative();
+    /// update the solution after Solve()
+    /// extended version for coupled level-set problems including reinitialization and particle
+    /// correction if required
+    void Update(const int num = 0);
 
-  /// additional predictor not intended for level-set methods
-  void ExplicitPredictor() const {return;};
+    /// update phi within the reinitialization loop
+    void UpdateReinit();
 
-  /// Set the part of the righthandside belonging to the last timestep.
-  void SetOldPartOfRighthandside();
+   private:
+  };  // class LevelSetTimIntOneStepTheta
 
-  /// update state vectors
-  /// current solution becomes old solution of next time step
-  void UpdateState();
-
-  /// update the solution after Solve()
-  /// extended version for coupled level-set problems including reinitialization and particle correction if required
-  void Update(const int num=0);
-
-  /// update phi within the reinitialization loop
-  void UpdateReinit();
-
-private:
-
-}; // class LevelSetTimIntOneStepTheta
-
-} // namespace SCATRA
+}  // namespace SCATRA
 
 #endif  // #ifndef LEVELSET_TIMINT_OST_H

@@ -31,14 +31,14 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 11/17 |
  *----------------------------------------------------------------------*/
-SSI::SSIResultTest::SSIResultTest(
-    const Teuchos::RCP<const SSI::SSI_Base>   ssi_base   //!< time integrator for scalar-structure interaction
+SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSI_Base>
+        ssi_base  //!< time integrator for scalar-structure interaction
     )
     // call base class constructor
-  : DRT::ResultTest("SSI"),
+    : DRT::ResultTest("SSI"),
 
-    // store pointer to time integrator for scalar-structure interaction
-    ssi_base_(ssi_base)
+      // store pointer to time integrator for scalar-structure interaction
+      ssi_base_(ssi_base)
 {
   return;
 }
@@ -48,36 +48,37 @@ SSI::SSIResultTest::SSIResultTest(
  | get nodal result to be tested                             fang 12/17 |
  *----------------------------------------------------------------------*/
 double SSI::SSIResultTest::ResultNode(
-    const std::string   quantity,   //!< name of quantity to be tested
-    DRT::Node*          node        //!< node carrying the result to be tested
+    const std::string quantity,  //!< name of quantity to be tested
+    DRT::Node* node              //!< node carrying the result to be tested
     ) const
 {
   // initialize variable for result
   double result(0.);
 
   // extract result
-  if(!quantity.compare(0,6,"stress"))
+  if (!quantity.compare(0, 6, "stress"))
   {
     // extract nodal stresses
-    const Epetra_MultiVector& stresses = dynamic_cast<const STR::MODELEVALUATOR::MonolithicSSI&>(ssi_base_->StructureField()->ModelEvaluator(INPAR::STR::model_monolithic_coupling)).Stresses();
+    const Epetra_MultiVector& stresses = dynamic_cast<const STR::MODELEVALUATOR::MonolithicSSI&>(
+        ssi_base_->StructureField()->ModelEvaluator(INPAR::STR::model_monolithic_coupling))
+                                             .Stresses();
 
     // extract local node ID
     const int lid = stresses.Map().LID(node->Id());
-    if(lid < 0)
-      dserror("Invalid node ID!");
+    if (lid < 0) dserror("Invalid node ID!");
 
     // extract desired value
-    if(quantity == "stress_xx")
+    if (quantity == "stress_xx")
       result = (*stresses(0))[lid];
-    else if(quantity == "stress_yy")
+    else if (quantity == "stress_yy")
       result = (*stresses(1))[lid];
-    else if(quantity == "stress_zz")
+    else if (quantity == "stress_zz")
       result = (*stresses(2))[lid];
-    else if(quantity == "stress_xy")
+    else if (quantity == "stress_xy")
       result = (*stresses(3))[lid];
-    else if(quantity == "stress_yz")
+    else if (quantity == "stress_yz")
       result = (*stresses(4))[lid];
-    else if(quantity == "stress_xz")
+    else if (quantity == "stress_xz")
       result = (*stresses(5))[lid];
     else
       dserror("Invalid stress specification!");
@@ -88,42 +89,48 @@ double SSI::SSIResultTest::ResultNode(
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-} // SSI::SSIResultTest::ResultNode
+}  // SSI::SSIResultTest::ResultNode
 
 
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 11/17 |
  *----------------------------------------------------------------------*/
 double SSI::SSIResultTest::ResultSpecial(
-    const std::string&   quantity   //!< name of quantity to be tested
+    const std::string& quantity  //!< name of quantity to be tested
     ) const
 {
   // initialize variable for result
   double result(0.);
 
-  // number of outer coupling iterations (partitioned SSI) or Newton-Raphson iterations (monolithic SSI) in last time step
-  if(quantity == "numiterlastnonlinearsolve")
-    result = (double) ssi_base_->Iter();
+  // number of outer coupling iterations (partitioned SSI) or Newton-Raphson iterations (monolithic
+  // SSI) in last time step
+  if (quantity == "numiterlastnonlinearsolve") result = (double)ssi_base_->Iter();
 
-  // number of iterations performed by linear solver during last Newton-Raphson iteration (monolithic SSI only)
-  else if(quantity == "numiterlastlinearsolve")
+  // number of iterations performed by linear solver during last Newton-Raphson iteration
+  // (monolithic SSI only)
+  else if (quantity == "numiterlastlinearsolve")
   {
     // safety check
-    if(SSI_Mono().Solver().Params().get("solver","none") != "aztec")
-      dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
-    result = (double) SSI_Mono().Solver().getNumIters();
+    if (SSI_Mono().Solver().Params().get("solver", "none") != "aztec")
+      dserror(
+          "Must have Aztec solver for result test involving number of solver iterations during "
+          "last Newton-Raphson iteration!");
+    result = (double)SSI_Mono().Solver().getNumIters();
   }
 
   // test total number of time steps
-  else if(!quantity.compare(0,7,"numstep"))
-    result = (double) ssi_base_->Step();
+  else if (!quantity.compare(0, 7, "numstep"))
+    result = (double)ssi_base_->Step();
 
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported by result testing functionality for scalar-structure interaction!",quantity.c_str());
+    dserror(
+        "Quantity '%s' not supported by result testing functionality for scalar-structure "
+        "interaction!",
+        quantity.c_str());
 
   return result;
-} // SSI::SSIResultTest::ResultSpecial
+}  // SSI::SSIResultTest::ResultSpecial
 
 
 /*---------------------------------------------------------------------------------*
@@ -132,7 +139,7 @@ double SSI::SSIResultTest::ResultSpecial(
 const SSI::SSI_Mono& SSI::SSIResultTest::SSI_Mono() const
 {
   const SSI::SSI_Mono* const ssi_mono = dynamic_cast<const SSI::SSI_Mono* const>(ssi_base_.get());
-  if(ssi_mono == NULL)
+  if (ssi_mono == NULL)
     dserror("Couldn't access time integrator for monolithic scalar-structure interaction!");
   return *ssi_mono;
 }
@@ -142,74 +149,74 @@ const SSI::SSI_Mono& SSI::SSIResultTest::SSI_Mono() const
  | test quantity associated with a particular node                          fang 12/17 |
  *-------------------------------------------------------------------------------------*/
 void SSI::SSIResultTest::TestNode(
-    DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-    int&                          nerr,        //!< number of failed result tests
-    int&                          test_count   //!< number of result tests
-    )
+    DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+    int& nerr,                        //!< number of failed result tests
+    int& test_count                   //!< number of result tests
+)
 {
   // determine discretization
   std::string dis;
-  res.ExtractString("DIS",dis);
+  res.ExtractString("DIS", dis);
   const DRT::Discretization* discretization(NULL);
-  if(dis == ssi_base_->ScaTraField()->ScaTraField()->Discretization()->Name())
+  if (dis == ssi_base_->ScaTraField()->ScaTraField()->Discretization()->Name())
     discretization = ssi_base_->ScaTraField()->ScaTraField()->Discretization().get();
-  else if(dis == ssi_base_->StructureField()->Discretization()->Name())
+  else if (dis == ssi_base_->StructureField()->Discretization()->Name())
     discretization = ssi_base_->StructureField()->Discretization().get();
   else
     dserror("Invalid discretization name!");
 
   // extract global node ID
   int node(-1);
-  res.ExtractInt("NODE",node);
+  res.ExtractInt("NODE", node);
   --node;
 
   // check global node ID
-  int isowner(discretization->HaveGlobalNode(node) and discretization->gNode(node)->Owner() == discretization->Comm().MyPID());
+  int isowner(discretization->HaveGlobalNode(node) and
+              discretization->gNode(node)->Owner() == discretization->Comm().MyPID());
   int hasowner(-1);
-  discretization->Comm().SumAll(&isowner,&hasowner,1);
-  if(hasowner != 1)
-    dserror("Node must have exactly one owner!");
+  discretization->Comm().SumAll(&isowner, &hasowner, 1);
+  if (hasowner != 1) dserror("Node must have exactly one owner!");
 
   // result test performed by node owner
-  if(isowner)
+  if (isowner)
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY",quantity);
+    res.ExtractString("QUANTITY", quantity);
 
     // perform result test
-    nerr += CompareValues(ResultNode(quantity,discretization->gNode(node)),"NODE",res);
+    nerr += CompareValues(ResultNode(quantity, discretization->gNode(node)), "NODE", res);
     ++test_count;
   }
 
   return;
-} // SSI::SSIResultTest::TestNode
+}  // SSI::SSIResultTest::TestNode
 
 
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node   fang 11/17 |
  *-------------------------------------------------------------------------------------*/
 void SSI::SSIResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-    int&                          nerr,        //!< number of failed result tests
-    int&                          test_count   //!< number of result tests
-    )
+    DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+    int& nerr,                        //!< number of failed result tests
+    int& test_count                   //!< number of result tests
+)
 {
   // make sure that quantity is tested only by one processor
-  if(ssi_base_->Comm().MyPID() == 0)
+  if (ssi_base_->Comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;
-    res.ExtractString("QUANTITY",quantity);
+    res.ExtractString("QUANTITY", quantity);
 
     // get result to be tested
     const double result = ResultSpecial(quantity);
 
     // compare values
-    const int err = CompareValues(result,"SPECIAL",res);
+    const int err = CompareValues(result, "SPECIAL", res);
     nerr += err;
     ++test_count;
   }
 
   return;
-} // SSI::SSIResultTest::TestSpecial
+}  // SSI::SSIResultTest::TestSpecial

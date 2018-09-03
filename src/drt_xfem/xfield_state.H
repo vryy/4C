@@ -20,35 +20,36 @@
 
 class Epetra_Map;
 
-namespace DRT {
+namespace DRT
+{
   class DiscretizationInterface;
-} // namespace DRT
-namespace GEO {
+}  // namespace DRT
+namespace GEO
+{
   class CutWizard;
-} // namespace GEO
+}  // namespace GEO
 
-namespace XFEM {
+namespace XFEM
+{
   class ConditionManager;
   class XFEMDofSet;
 
   class XFieldState
   {
-  public:
+   public:
     /// constructor
     XFieldState();
 
     /// destructor
-    virtual ~XFieldState() {};
+    virtual ~XFieldState(){};
 
     /** \brief initialize member variables for xfield<-->field couplings
      *
      *  Examples are the XFluidFluid problem and the XContact problem. */
-    void Init(
-        const Teuchos::RCP<XFEM::ConditionManager> &  condition_manager,
-        const Teuchos::RCP<GEO::CutWizard> &          wizard,
-        const Teuchos::RCP<XFEM::XFEMDofSet> &        xdofset,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret);
+    void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+        const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+        const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
+        const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret);
 
     /// setup the stored state objects
     virtual void Setup() = 0;
@@ -58,12 +59,11 @@ namespace XFEM {
 
     /// transfer the old to a new state object
     virtual void TransferToNewState(
-        const DRT::DiscretizationInterface& new_discret,
-        XFEM::XFieldState & new_xstate ) const = 0;
+        const DRT::DiscretizationInterface& new_discret, XFEM::XFieldState& new_xstate) const = 0;
 
-    virtual void ResetNonStandardDofs( const DRT::DiscretizationInterface & full_discret ) = 0;
+    virtual void ResetNonStandardDofs(const DRT::DiscretizationInterface& full_discret) = 0;
 
-    virtual void SetNewState( const XFEM::XFieldState & xstate );
+    virtual void SetNewState(const XFEM::XFieldState& xstate);
 
     /// @name Accessors
     /// @{
@@ -71,8 +71,7 @@ namespace XFEM {
     GEO::CutWizard& CutWizard()
     {
       CheckInit();
-      if (wizard_.is_null())
-        dserror( "The CutWizard was not initialized! (Teuchos::null)" );
+      if (wizard_.is_null()) dserror("The CutWizard was not initialized! (Teuchos::null)");
       return *wizard_;
     }
 
@@ -81,7 +80,7 @@ namespace XFEM {
     {
       CheckInit();
       if (condition_manager_.is_null())
-        dserror( "The condition_manager was not initialized! (Teuchos::null)" );
+        dserror("The condition_manager was not initialized! (Teuchos::null)");
       return *condition_manager_;
     }
 
@@ -89,86 +88,66 @@ namespace XFEM {
     XFEM::XFEMDofSet& XDofSet()
     {
       CheckInit();
-      if (xdofset_.is_null())
-        dserror( "The xDoF set was not initialized! (Teuchos::null)" );
+      if (xdofset_.is_null()) dserror("The xDoF set was not initialized! (Teuchos::null)");
       return *xdofset_;
     }
 
-  protected:
+   protected:
     /// Get cut wizard pointer
-    Teuchos::RCP<GEO::CutWizard>& CutWizardPtr()
-    {
-      return wizard_;
-    }
+    Teuchos::RCP<GEO::CutWizard>& CutWizardPtr() { return wizard_; }
 
     /// Get condition manager pointer
-    Teuchos::RCP<XFEM::ConditionManager>& ConditionManagerPtr()
-    {
-      return condition_manager_;
-    }
+    Teuchos::RCP<XFEM::ConditionManager>& ConditionManagerPtr() { return condition_manager_; }
 
     /// Get pointer to the dofset of the cut discretization
-    Teuchos::RCP<XFEM::XFEMDofSet>& XDofSetPtr()
-    {
-      return xdofset_;
-    }
+    Teuchos::RCP<XFEM::XFEMDofSet>& XDofSetPtr() { return xdofset_; }
 
     /// Returns the xFEM field discretizaton
     DRT::DiscretizationInterface& XFieldDiscret()
     {
-      if (xfield_discret_ptr_.is_null())
-        dserror("xfield_discret_ptr_ is NULL!");
+      if (xfield_discret_ptr_.is_null()) dserror("xfield_discret_ptr_ is NULL!");
 
       return *xfield_discret_ptr_;
     }
 
     /// Returns a pointer to the xFEM discretization
-    Teuchos::RCP<DRT::DiscretizationInterface>& XFieldDiscretPtr()
-    {
-      return xfield_discret_ptr_;
-    }
+    Teuchos::RCP<DRT::DiscretizationInterface>& XFieldDiscretPtr() { return xfield_discret_ptr_; }
 
     /// Returns the standard field discretizaton
     DRT::DiscretizationInterface& FieldDiscret()
     {
-      if (field_discret_ptr_.is_null())
-        dserror("field_discret_ptr_ is NULL!");
+      if (field_discret_ptr_.is_null()) dserror("field_discret_ptr_ is NULL!");
 
       return *field_discret_ptr_;
     }
 
     /// Returns a pointer to the standard discretization
-    Teuchos::RCP<DRT::DiscretizationInterface>& FieldDiscretPtr()
-    {
-      return field_discret_ptr_;
-    }
+    Teuchos::RCP<DRT::DiscretizationInterface>& FieldDiscretPtr() { return field_discret_ptr_; }
 
     /// @}
 
 
-  protected:
+   protected:
     //! check the initialization indicator
     inline void CheckInit() const
     {
-      if (not isinit_)
-        dserror("Call XFEM::XFieldState::Init() first!");
+      if (not isinit_) dserror("Call XFEM::XFieldState::Init() first!");
     }
 
     //! check the initialization and setup indicators
     inline void CheckInitSetup() const
     {
-      if (not issetup_ or not isinit_)
-        dserror("Call Init() and Setup() first!");
+      if (not issetup_ or not isinit_) dserror("Call Init() and Setup() first!");
     }
 
-  protected:
+   protected:
     /// init indicator
     bool isinit_;
 
     /// setup indicator
     bool issetup_;
 
-  private:
+   private:
     /// cut wizard
     Teuchos::RCP<GEO::CutWizard> wizard_;
 
@@ -184,7 +163,7 @@ namespace XFEM {
     /// field discretization pointer
     Teuchos::RCP<DRT::DiscretizationInterface> field_discret_ptr_;
   };  // class XFieldState
-} // namespace XFEM
+}  // namespace XFEM
 
 
 #endif /* SRC_DRT_XFEM_XFIELD_STATE_H_ */

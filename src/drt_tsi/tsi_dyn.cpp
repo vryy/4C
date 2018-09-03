@@ -46,19 +46,17 @@ void tsi_dyn_drt()
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
 
   // print TSI-Logo to screen
-  if (comm.MyPID()==0) TSI::printlogo();
+  if (comm.MyPID() == 0) TSI::printlogo();
 
   // setup of the discretizations, including clone strategy
   TSI::UTILS::SetupTSI(comm);
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn
-    = DRT::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& sdynparams
-    = DRT::Problem::Instance()->StructuralDynamicParams();
-  const INPAR::TSI::SolutionSchemeOverFields coupling
-    = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  const INPAR::TSI::SolutionSchemeOverFields coupling =
+      DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // create an empty TSI::Algorithm instance
   Teuchos::RCP<TSI::Algorithm> tsi;
@@ -66,27 +64,27 @@ void tsi_dyn_drt()
   // choose algorithm depending on solution type
   switch (coupling)
   {
-  case INPAR::TSI::Monolithic :
-  {
-    // create an TSI::Monolithic instance
-    tsi = Teuchos::rcp(new TSI::Monolithic(comm,sdynparams));
-    break;
-  }
-  case INPAR::TSI::OneWay :
-  case INPAR::TSI::SequStagg :
-  case INPAR::TSI::IterStagg :
-  case INPAR::TSI::IterStaggAitken :
-  case INPAR::TSI::IterStaggAitkenIrons :
-  case INPAR::TSI::IterStaggFixedRel :
-  {
-    // Any partitioned algorithm. Stable of working horses.
-    // create an TSI::Algorithm instance
-    tsi = Teuchos::rcp(new TSI::Partitioned(comm));
-    break;
-  }
-  default:
-     dserror("Unknown solutiontype for thermo-structure interaction: %d",coupling);
-     break;
+    case INPAR::TSI::Monolithic:
+    {
+      // create an TSI::Monolithic instance
+      tsi = Teuchos::rcp(new TSI::Monolithic(comm, sdynparams));
+      break;
+    }
+    case INPAR::TSI::OneWay:
+    case INPAR::TSI::SequStagg:
+    case INPAR::TSI::IterStagg:
+    case INPAR::TSI::IterStaggAitken:
+    case INPAR::TSI::IterStaggAitkenIrons:
+    case INPAR::TSI::IterStaggFixedRel:
+    {
+      // Any partitioned algorithm. Stable of working horses.
+      // create an TSI::Algorithm instance
+      tsi = Teuchos::rcp(new TSI::Partitioned(comm));
+      break;
+    }
+    default:
+      dserror("Unknown solutiontype for thermo-structure interaction: %d", coupling);
+      break;
   }  // end switch
 
   const int restart = DRT::Problem::Instance()->Restart();

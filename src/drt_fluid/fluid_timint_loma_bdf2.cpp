@@ -21,17 +21,13 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntLomaBDF2::TimIntLomaBDF2(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntBDF2(actdis,solver,params,output,alefluid),
-      TimIntLoma(actdis,solver,params,output,alefluid)
+FLD::TimIntLomaBDF2::TimIntLomaBDF2(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntBDF2(actdis, solver, params, output, alefluid),
+      TimIntLoma(actdis, solver, params, output, alefluid)
 {
-
   std::cout << "\nWARNING: Loma has never been tested with BDF2 time integration!!\n" << std::endl;
   return;
 }
@@ -54,8 +50,4 @@ void FLD::TimIntLomaBDF2::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntLomaBDF2::~TimIntLomaBDF2()
-{
-  return;
-}
-
+FLD::TimIntLomaBDF2::~TimIntLomaBDF2() { return; }

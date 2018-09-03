@@ -18,17 +18,16 @@
 
 #include "../drt_inpar/inpar_beamcontact.H"
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   class BeamToSolidVolumeMeshtyingParams
   {
-  public:
-
+   public:
     //! constructor
     BeamToSolidVolumeMeshtyingParams();
 
     //! destructor
-    virtual ~BeamToSolidVolumeMeshtyingParams() {};
+    virtual ~BeamToSolidVolumeMeshtyingParams(){};
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -37,44 +36,34 @@ namespace BEAMINTERACTION {
     void Setup();
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const
-    { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const
-    { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! Checks the init and setup status
     inline void CheckInitSetup() const
     {
-      if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
+      if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
     inline void CheckInit() const
     {
-      if (!IsInit())
-        dserror("Init() has not been called, yet!");
+      if (!IsInit()) dserror("Init() has not been called, yet!");
     }
 
-    inline double BeamToSolidVolumeMeshtyingPenaltyParam() const
-    {
-      return BTSVOLMT_penalty_param_;
-    }
+    inline double BeamToSolidVolumeMeshtyingPenaltyParam() const { return BTSVOLMT_penalty_param_; }
 
 
-  private:
-
+   private:
     bool isinit_;
 
     bool issetup_;
 
     double BTSVOLMT_penalty_param_;
-
-
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

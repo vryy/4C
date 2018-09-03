@@ -25,30 +25,30 @@ namespace LINALG
     /// linear solver type base class
     class SolverType
     {
-    public:
-
+     public:
       virtual ~SolverType() {}
 
       /// solve the linear system
-      virtual void Setup( Teuchos::RCP<Epetra_Operator>     matrix             ,
-                          Teuchos::RCP<Epetra_MultiVector>       x             ,
-                          Teuchos::RCP<Epetra_MultiVector>       b             ,
-                          bool                             refactor            ,
-                          bool                             reset               ,
-                          Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
+      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+          Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
+          Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
 
       virtual int Solve() = 0;
 
       virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
 
       /// preconditioner used within this solver
-      virtual PreconditionerType * Preconditioner() = 0;
+      virtual PreconditionerType* Preconditioner() = 0;
 
       /// return number of iterations performed by solver
-      virtual int getNumIters() const { dserror("Not implemented in base class!"); return -1; };
+      virtual int getNumIters() const
+      {
+        dserror("Not implemented in base class!");
+        return -1;
+      };
     };
-  }
-}
+  }  // namespace SOLVER
+}  // namespace LINALG
 
 
 #endif /* SOLVER_SOLVERTYPE_H_ */

@@ -43,4 +43,3 @@ MORTAR::ManagerBase::ManagerBase()
 
   return;
 }
-

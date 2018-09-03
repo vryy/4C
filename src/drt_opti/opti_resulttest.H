@@ -32,19 +32,18 @@ namespace OPTI
 {
   class GCMMA;
 
-/*!
-\brief Optimization specific result test class
+  /*!
+  \brief Optimization specific result test class
 
-\author winklmaier
-*/
-class OptiResultTest : public DRT::ResultTest
-{
-public:
-
+  \author winklmaier
+  */
+  class OptiResultTest : public DRT::ResultTest
+  {
+   public:
     /*!
     \brief constructor
     */
-  OptiResultTest(const OPTI::GCMMA& optimizer);
+    OptiResultTest(const OPTI::GCMMA& optimizer);
 
 
     /// our version of nodal value tests
@@ -52,20 +51,11 @@ public:
     Possible position flags are "velx", "vely", "velz" and
     "pressure". With the obvious meaning.
     */
-    virtual void TestNode(
-        DRT::INPUT::LineDefinition& res,
-        int& nerr,
-        int& test_count
-    );
+    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    virtual void TestElement(
-        DRT::INPUT::LineDefinition& res,
-        int& nerr,
-        int& test_count
-    );
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-private:
-
+   private:
     /// pointer to fluid discretization
     const Teuchos::RCP<const DRT::Discretization> optidis_;
 
@@ -79,8 +69,8 @@ private:
     const Teuchos::RCP<const Epetra_SerialDenseVector> constr_;
     /// spatial derivative of constraint value(s)
     const Teuchos::RCP<const Epetra_MultiVector> constr_deriv_;
-};
-}
+  };
+}  // namespace OPTI
 
 
 #endif /* OPTI_RESULTTEST_H_ */

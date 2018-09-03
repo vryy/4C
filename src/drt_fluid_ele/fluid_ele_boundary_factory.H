@@ -16,31 +16,30 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    class FluidBoundaryInterface;
 
-namespace ELEMENTS
-{
-  class FluidBoundaryInterface;
+    class FluidBoundaryFactory
+    {
+     public:
+      //! ctor
+      FluidBoundaryFactory() { return; };
 
-class FluidBoundaryFactory
-{
-public:
-  //! ctor
-  FluidBoundaryFactory(){ return; };
+      //! dtor
+      virtual ~FluidBoundaryFactory() { return; };
 
-  //! dtor
-  virtual ~FluidBoundaryFactory(){ return; };
+      //! ProvideImpl
+      static FluidBoundaryInterface* ProvideImpl(
+          DRT::Element::DiscretizationType distype, std::string problem);
 
-  //! ProvideImpl
-  static FluidBoundaryInterface* ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem);
+     private:
+      //! define FluidEleBoundaryCalc instances dependent on problemtype
+      template <DRT::Element::DiscretizationType distype>
+      static FluidBoundaryInterface* DefineProblemType(std::string problem);
+    };
 
-private:
-  //! define FluidEleBoundaryCalc instances dependent on problemtype
-  template<DRT::Element::DiscretizationType distype>
-  static FluidBoundaryInterface* DefineProblemType(std::string problem);
-
-};
-
-}
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif

@@ -27,162 +27,150 @@
 
 namespace SCATRA
 {
+  class TimIntCardiacMonodomainOST : public virtual TimIntCardiacMonodomain,
+                                     public virtual TimIntOneStepTheta
+  {
+   public:
+    //! Standard Constructor
+    TimIntCardiacMonodomainOST(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-class TimIntCardiacMonodomainOST : public virtual TimIntCardiacMonodomain, public virtual TimIntOneStepTheta
-{
+    //! Destructor
+    virtual ~TimIntCardiacMonodomainOST();
 
-public:
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! Standard Constructor
-  TimIntCardiacMonodomainOST(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! Destructor
-  virtual ~TimIntCardiacMonodomainOST();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! setup time integration scheme
-  virtual void Setup();
+   protected:
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+    /// add parameters specific for time-integration scheme
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    //! do not calculate initial scalar time derivatives for ep
+    virtual void CalcInitialTimeDerivative() { return; };
 
-protected:
-
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-  /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
-
-  //! do not calculate initial scalar time derivatives for ep
-  virtual void CalcInitialTimeDerivative() {return;};
-
-}; // class TimIntCardiacMonodomainOST
+  };  // class TimIntCardiacMonodomainOST
 
 
-class TimIntCardiacMonodomainBDF2 : public virtual TimIntCardiacMonodomain, public virtual TimIntBDF2
-{
+  class TimIntCardiacMonodomainBDF2 : public virtual TimIntCardiacMonodomain,
+                                      public virtual TimIntBDF2
+  {
+   public:
+    //! Standard Constructor
+    TimIntCardiacMonodomainBDF2(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-public:
+    //! Destructor
+    virtual ~TimIntCardiacMonodomainBDF2();
 
-  //! Standard Constructor
-  TimIntCardiacMonodomainBDF2(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! Destructor
-  virtual ~TimIntCardiacMonodomainBDF2();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! setup time integration scheme
-  virtual void Setup();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+   protected:
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    //! do not calculate initial scalar time derivatives for ep
+    virtual void CalcInitialTimeDerivative() { return; };
 
-protected:
-
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-  //! do not calculate initial scalar time derivatives for ep
-  virtual void CalcInitialTimeDerivative() {return;};
-
-}; // class TimIntCardiacMonodomainBDF2
+  };  // class TimIntCardiacMonodomainBDF2
 
 
-class TimIntCardiacMonodomainGenAlpha : public virtual TimIntCardiacMonodomain, public virtual TimIntGenAlpha
-{
+  class TimIntCardiacMonodomainGenAlpha : public virtual TimIntCardiacMonodomain,
+                                          public virtual TimIntGenAlpha
+  {
+   public:
+    //! Standard Constructor
+    TimIntCardiacMonodomainGenAlpha(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-public:
+    //! Destructor
+    virtual ~TimIntCardiacMonodomainGenAlpha();
 
-  //! Standard Constructor
-  TimIntCardiacMonodomainGenAlpha(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! Setup time integration scheme
+    virtual void Setup();
 
-  //! Destructor
-  virtual ~TimIntCardiacMonodomainGenAlpha();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! Setup time integration scheme
-  virtual void Setup();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+    /// add parameters specific for time-integration scheme
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+   protected:
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-  /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
+    //! do not calculate initial scalar time derivatives for ep
+    virtual void CalcInitialTimeDerivative() { return; };
 
-protected:
+  };  // class TimIntCardiacMonodomainGenAlpha
 
-  //! write additional data required for restart
-  void OutputRestart() const;
+  /*
+  class TimIntCardiacMonodomainStationary : public virtual TimIntCardiacMonodomain, public virtual
+  TimIntStationary
+  {
 
-  //! do not calculate initial scalar time derivatives for ep
-  virtual void CalcInitialTimeDerivative() {return;};
+  public:
 
-}; // class TimIntCardiacMonodomainGenAlpha
+    //! Standard Constructor
+    TimIntCardiacMonodomainStationary(
+      Teuchos::RCP<DRT::Discretization>       dis,
+      Teuchos::RCP<LINALG::Solver>            solver,
+      Teuchos::RCP<Teuchos::ParameterList>    params,
+      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
+      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
+      Teuchos::RCP<IO::DiscretizationWriter>  output);
 
-/*
-class TimIntCardiacMonodomainStationary : public virtual TimIntCardiacMonodomain, public virtual TimIntStationary
-{
+    //! Destructor
+    virtual ~TimIntCardiacMonodomainStationary();
 
-public:
+    //! initialize time integration scheme
+    virtual void Init();
 
-  //! Standard Constructor
-  TimIntCardiacMonodomainStationary(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num=0);
 
-  //! Destructor
-  virtual ~TimIntCardiacMonodomainStationary();
+    //! read restart data
+    void ReadRestart(int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! initialize time integration scheme
-  virtual void Init();
+  protected:
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-  //! read restart data
-  void ReadRestart(int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+  }; // class TimIntCardiacMonodomainStatationary
+  */
 
-protected:
-
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-}; // class TimIntCardiacMonodomainStatationary
-*/
-
-} // namespace SCATRA
+}  // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_H

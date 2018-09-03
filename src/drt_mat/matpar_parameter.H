@@ -38,17 +38,15 @@ namespace MAT
   {
     class StructuralTensorStrategyBase;
   }
-}
+}  // namespace MAT
 
 /*----------------------------------------------------------------------*/
 /* declarations */
 namespace MAT
 {
-
   /// Namespace of objects holding the material input parameters.
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// Base object to hold 'quick' access material parameters
     ///
@@ -63,13 +61,11 @@ namespace MAT
     /// \date 02/09
     class Parameter
     {
-
-    public:
-
+     public:
       /// construct the material object given material parameters
-      Parameter(
-        Teuchos::RCP<const MAT::PAR::Material> matdata  ///< read and validated material data (of 'slow' access)
-        );
+      Parameter(Teuchos::RCP<const MAT::PAR::Material>
+              matdata  ///< read and validated material data (of 'slow' access)
+      );
 
       /// destructor
       virtual ~Parameter() { ; }
@@ -87,34 +83,39 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
 
       /// return number of parameters being optimizable
-      virtual void OptParams(std::map<std::string, int>* pnames){dserror("This material does not implement OptParams()");};
+      virtual void OptParams(std::map<std::string, int>* pnames)
+      {
+        dserror("This material does not implement OptParams()");
+      };
 
-      //! \brief set element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
-      void SetParameter(int parametername,Teuchos::RCP<Epetra_Vector> myparameter);
+      //! \brief set element specific or global material parameter using enum parametername which is
+      //! defined in respective MAT::PAR classes
+      void SetParameter(int parametername, Teuchos::RCP<Epetra_Vector> myparameter);
 
-      //! \brief set element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
-      void SetParameter(int parametername,const double val, const int eleGID);
+      //! \brief set element specific or global material parameter using enum parametername which is
+      //! defined in respective MAT::PAR classes
+      void SetParameter(int parametername, const double val, const int eleGID);
 
       //! brief extend all RCP<Epetra_Vectors> which have length one to element colmap layout
       void ExpandParametersToEleColLayout();
 
-      //! \brief return element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
-      double GetParameter(int parametername ,const int EleId);
+      //! \brief return element specific or global material parameter using enum parametername which
+      //! is defined in respective MAT::PAR classes
+      double GetParameter(int parametername, const int EleId);
 
       /// return matparams_
-      virtual std::vector< Teuchos::RCP<Epetra_Vector> >& ReturnMatparams() { return matparams_;}
+      virtual std::vector<Teuchos::RCP<Epetra_Vector>>& ReturnMatparams() { return matparams_; }
 
-    protected:
+     protected:
       /*! \brief
        * data structure to store all material parameters in.
-       * By default all elements with the same mat share the same material properties, hence the Epetra_Vector has length 1
-       * However for elementwise material properties the Epetra_Vector has EleColMap layout.
+       * By default all elements with the same mat share the same material properties, hence the
+       * Epetra_Vector has length 1 However for elementwise material properties the Epetra_Vector
+       * has EleColMap layout.
        */
-      std::vector< Teuchos::RCP<Epetra_Vector> > matparams_;
+      std::vector<Teuchos::RCP<Epetra_Vector>> matparams_;
 
-    private:
-
-
+     private:
       /// material ID, as defined in input file
       int id_;
 
@@ -134,20 +135,17 @@ namespace MAT
     /// \date 10/17
     class ParameterAniso : public Parameter
     {
-
-    public:
-
+     public:
       /// construct the material object given material parameters
-      ParameterAniso(
-          Teuchos::RCP<const MAT::PAR::Material> matdata
-      );
+      ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> matdata);
 
       /// return pointer to strategy
-      const Teuchos::RCP <MAT::ELASTIC::StructuralTensorStrategyBase>&
-      StructuralTensorStrategy(){return structural_tensor_strategy_;};
+      const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& StructuralTensorStrategy()
+      {
+        return structural_tensor_strategy_;
+      };
 
-    private:
-
+     private:
       /// structural tensor strategy
       Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase> structural_tensor_strategy_;
 
@@ -155,7 +153,7 @@ namespace MAT
 
   }  // namespace PAR
 
-}  // namespace DRT
+}  // namespace MAT
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef MATPAR_PARAMETER_H

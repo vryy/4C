@@ -20,9 +20,11 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-namespace XFEM {
+namespace XFEM
+{
   /// supported field names
-  enum FieldName {
+  enum FieldName
+  {
     unknown = -1,
     structure = 0,
     xstructure = 1
@@ -40,24 +42,25 @@ namespace XFEM {
         return "XSTRUCTURE";
         break;
       default:
-        dserror("Unknown FieldName enumerator (enum = %d)!",
-            field);
+        dserror("Unknown FieldName enumerator (enum = %d)!", field);
         break;
     }
     return "";
   }
 
   /// map field name enumerator to string
-  static inline enum FieldName String2FieldName(const std::string & name)
+  static inline enum FieldName String2FieldName(const std::string& name)
   {
     enum FieldName field = unknown;
-    if (boost::iequals(name,"structure"))
+    if (boost::iequals(name, "structure"))
       field = structure;
-    else if (boost::iequals(name,"xstructure"))
+    else if (boost::iequals(name, "xstructure"))
       field = xstructure;
     else
-      dserror("No known conversion for the given discretization "
-          "name \"%s\"!",name.c_str());
+      dserror(
+          "No known conversion for the given discretization "
+          "name \"%s\"!",
+          name.c_str());
 
     return field;
   }
@@ -65,19 +68,20 @@ namespace XFEM {
   /// map types
   enum MapType
   {
-    map_dofs = 0,                ///< extract/insert DoF's
-    map_nodes = 1                ///< extract/insert nodes
+    map_dofs = 0,  ///< extract/insert DoF's
+    map_nodes = 1  ///< extract/insert nodes
   };
 
-namespace MULTIFIELD {
-  /// block type enumerator
-  enum BlockType
+  namespace MULTIFIELD
   {
-    block_interface = 0,        ///< interface block
-    block_non_interface = 1     ///< non-interface block
-  };
-} // namespace MULTIFIELD
-} // namespace XFEM
+    /// block type enumerator
+    enum BlockType
+    {
+      block_interface = 0,     ///< interface block
+      block_non_interface = 1  ///< non-interface block
+    };
+  }  // namespace MULTIFIELD
+}  // namespace XFEM
 
 
 #endif /* SRC_DRT_XFEM_XFEM_ENUM_LISTS_H_ */

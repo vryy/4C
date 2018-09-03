@@ -42,8 +42,7 @@ namespace NLNSOL
    */
   class LineSearchBruteForce : public NLNSOL::LineSearchBase
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -84,9 +83,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual void ComputeLSParam(
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeLSParam(double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr  ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //@}
@@ -102,15 +100,13 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! increment for trial line search parameters
     double trialstepsize_;
 
-  }; // class LineSearchBruteForce
-} // namespace NLNSOL
+  };  // class LineSearchBruteForce
+}  // namespace NLNSOL
 
 
 

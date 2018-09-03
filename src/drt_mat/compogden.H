@@ -24,34 +24,29 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for compress. Ogden
     class CompOgden : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      CompOgden(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      CompOgden(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~CompOgden() { ; }
 
       /// @name material parameters
       //@{
-      int init_;              /* init flag */
-      double nue_;            /* Possion ratio */
-      double beta_;           /* the unphysical material constant called beta */
-      double alfap_[3];       /* three parameters alfap */
-      double mup_[3];         /* three parameters nuep */
-      double density_;        /* material specific weight */
-      double lambda_;         /* 1. lame constant */
-      double kappa_;          /* bulkmodulus */
+      int init_;        /* init flag */
+      double nue_;      /* Possion ratio */
+      double beta_;     /* the unphysical material constant called beta */
+      double alfap_[3]; /* three parameters alfap */
+      double mup_[3];   /* three parameters nuep */
+      double density_;  /* material specific weight */
+      double lambda_;   /* 1. lame constant */
+      double kappa_;    /* bulkmodulus */
       double l_[3];
       //@}
 
@@ -62,27 +57,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class CompOgdenType : public DRT::ParObjectType
-{
-public:
+  class CompOgdenType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "CompOgdenType"; }
 
-  std::string Name() const { return "CompOgdenType"; }
+    static CompOgdenType& Instance() { return instance_; };
 
-  static CompOgdenType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static CompOgdenType instance_;
-};
+   private:
+    static CompOgdenType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for compressible Ogden material
   class CompOgden : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     CompOgden();
 
@@ -131,7 +123,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_compogden; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CompOgden( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new CompOgden(*this)); }
 
     /// get parameters
     int Init() const { return params_->init_; }
@@ -147,13 +139,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::CompOgden* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif /*COMPOGDEN_H_*/

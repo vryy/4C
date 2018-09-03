@@ -28,7 +28,8 @@
 #include "../drt_inpar/inpar_problemtype.H"
 
 #include "../pss_full/pss_cpp.h"
-extern "C" {
+extern "C"
+{
 #include "../pss_full/pss_table_iter.h"
 }
 
@@ -40,12 +41,11 @@ extern "C" {
 /*----------------------------------------------------------------------*
  * the Constructor of PostProblem
  *----------------------------------------------------------------------*/
-PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
-                         int argc, char** argv)
-  : start_(0),end_(-1),step_(1)
+PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv)
+    : start_(0), end_(-1), step_(1)
 {
 #ifdef PARALLEL
-  MPI_Init(&argc,&argv);
+  MPI_Init(&argc, &argv);
 #endif
 
   std::string file = "xxx";
@@ -58,29 +58,41 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   int printparobjecttypes = 0;
 
   CLP.throwExceptions(false);
-  CLP.setOption("filter",&filter_,"filter to run [ensight, gid, vtu, vtu_node_based, vti]");
-  CLP.setOption("start",&start_,"first time step to read");
-  CLP.setOption("end",&end_,"last time step to read");
-  CLP.setOption("step",&step_,"number of time steps to jump");
-  CLP.setOption("file",&file,"control file to open");
-  CLP.setOption("output",&output,"output file name [defaults to control file name]");
-  CLP.setOption("stresstype",&stresstype_,"stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("stress",&stresstype_,"stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("straintype",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("strain",&straintype_,"strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("optquantitytype",&optquantitytype_,"optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
-  CLP.setOption("optquantity",&optquantitytype_,"optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
-  CLP.setOption("heatfluxtype",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("heatflux",&heatfluxtype_,"heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("tempgradtype",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("tempgrad",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
-  CLP.setOption("structvelacc",&struct_vel_acc_,"structural velocity and acceleration output [yes]");
-  CLP.setOption("rotation",&struct_rot_,"structural rotation matrix R [yes]");
-  CLP.setOption("structmatdisp",&struct_mat_disp_,"material displacement output output [yes]");
-  CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
-  CLP.setOption("outputtype",&outputtype_,"binary (bin) or ascii (ascii) output, option works for vtu filter only");
-  Teuchos::CommandLineProcessor::EParseCommandLineReturn
-    parseReturn = CLP.parse(argc,argv);
+  CLP.setOption("filter", &filter_, "filter to run [ensight, gid, vtu, vtu_node_based, vti]");
+  CLP.setOption("start", &start_, "first time step to read");
+  CLP.setOption("end", &end_, "last time step to read");
+  CLP.setOption("step", &step_, "number of time steps to jump");
+  CLP.setOption("file", &file, "control file to open");
+  CLP.setOption("output", &output, "output file name [defaults to control file name]");
+  CLP.setOption("stresstype", &stresstype_,
+      "stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("stress", &stresstype_,
+      "stress output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("straintype", &straintype_,
+      "strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("strain", &straintype_,
+      "strain output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("optquantitytype", &optquantitytype_,
+      "optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
+  CLP.setOption(
+      "optquantity", &optquantitytype_, "optional quantity output type [cxyz, ndxyz, cxyz_ndxyz]");
+  CLP.setOption("heatfluxtype", &heatfluxtype_,
+      "heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("heatflux", &heatfluxtype_,
+      "heatflux output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("tempgradtype", &tempgradtype_,
+      "tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption("tempgrad", &tempgradtype_,
+      "tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
+  CLP.setOption(
+      "structvelacc", &struct_vel_acc_, "structural velocity and acceleration output [yes]");
+  CLP.setOption("rotation", &struct_rot_, "structural rotation matrix R [yes]");
+  CLP.setOption("structmatdisp", &struct_mat_disp_, "material displacement output output [yes]");
+  CLP.setOption("printparobjecttypes", &printparobjecttypes,
+      "print names of parobject types (registration hack)");
+  CLP.setOption("outputtype", &outputtype_,
+      "binary (bin) or ascii (ascii) output, option works for vtu filter only");
+  Teuchos::CommandLineProcessor::EParseCommandLineReturn parseReturn = CLP.parse(argc, argv);
 
   if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
   {
@@ -94,48 +106,48 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     exit(0);
   }
 
-  if (file=="")
+  if (file == "")
   {
-    CLP.printHelpMessage(argv[0],std::cout);
+    CLP.printHelpMessage(argv[0], std::cout);
     exit(1);
   }
 
-  if (file.length()<=8 or file.substr(file.length()-8,8)!=".control")
+  if (file.length() <= 8 or file.substr(file.length() - 8, 8) != ".control")
   {
     file += ".control";
   }
 
-  if (output=="")
+  if (output == "")
   {
-    output = file.substr(0,file.length()-8);
+    output = file.substr(0, file.length() - 8);
   }
 
-  if (stresstype_=="")
+  if (stresstype_ == "")
   {
     stresstype_ = "none";
   }
 
-  if (straintype_=="")
+  if (straintype_ == "")
   {
     straintype_ = "none";
   }
 
-  if (optquantitytype_=="")
+  if (optquantitytype_ == "")
   {
     optquantitytype_ = "none";
   }
 
-  if (heatfluxtype_=="")
+  if (heatfluxtype_ == "")
   {
     heatfluxtype_ = "none";
   }
 
-  if (tempgradtype_=="")
+  if (tempgradtype_ == "")
   {
     tempgradtype_ = "none";
   }
 
-  if (outputtype_=="")
+  if (outputtype_ == "")
   {
     outputtype_ = "bin";
   }
@@ -152,10 +164,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
 
   spatial_approx_ = map_read_string(&control_table_, "spatial_approximation");
 
-  if (spatial_approx_!="Nurbs" and
-      spatial_approx_!="Polynomial" and
-      spatial_approx_!="Meshfree" and
-      spatial_approx_!="HDG")
+  if (spatial_approx_ != "Nurbs" and spatial_approx_ != "Polynomial" and
+      spatial_approx_ != "Meshfree" and spatial_approx_ != "HDG")
   {
     dserror("unknown type of spatial approximation '%s'", spatial_approx_.c_str());
   }
@@ -195,8 +205,9 @@ PostField* PostProblem::get_discretization(const int num)
 {
   if (num >= static_cast<int>(fields_.size()))
   {
-    std::cout << "You asked for discretization " << num << " (counting from zero), but there are only "
-         << fields_.size() << " discretization(s)!";
+    std::cout << "You asked for discretization " << num
+              << " (counting from zero), but there are only " << fields_.size()
+              << " discretization(s)!";
     dserror("This is a bug!");
   }
   return &fields_[num];
@@ -207,11 +218,9 @@ PostField* PostProblem::get_discretization(const int num)
  *----------------------------------------------------------------------*/
 int PostProblem::field_pos(const PostField* field) const
 {
-  for (std::vector<PostField>::const_iterator i = fields_.begin();
-       i!=fields_.end();
-       ++i)
+  for (std::vector<PostField>::const_iterator i = fields_.begin(); i != fields_.end(); ++i)
   {
-    if (&*i==field)
+    if (&*i == field)
     {
       return field - &fields_[0];
     }
@@ -224,10 +233,7 @@ int PostProblem::field_pos(const PostField* field) const
 /*----------------------------------------------------------------------*
  * returns the Epetra Communicator object
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Comm> PostProblem::comm()
-{
-  return comm_;
-}
+Teuchos::RCP<Epetra_Comm> PostProblem::comm() { return comm_; }
 
 
 /*----------------------------------------------------------------------*
@@ -242,7 +248,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
-  basename_ = control_file_name.substr(0,control_file_name.length()-8);
+  basename_ = control_file_name.substr(0, control_file_name.length() - 8);
   outname_ = output_name;
 
   parse_control_file(&control_table_, control_file_name.c_str(), MPI_COMM_WORLD);
@@ -264,7 +270,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
   std::string::size_type separator = basename_.rfind('/', std::string::npos);
   if (separator != std::string::npos)
   {
-    input_dir_ = basename_.substr(0,separator+1);
+    input_dir_ = basename_.substr(0, separator + 1);
   }
   else
   {
@@ -273,7 +279,6 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
   while (map_symbol_count(table, "restarted_run") > 0)
   {
-
     /* copy directory information */
     control_file_name = input_dir_;
 
@@ -286,7 +291,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
     if (f == NULL)
     {
       printf("Restarted control file '%s' does not exist. Skip previous results.\n",
-             control_file_name.c_str());
+          control_file_name.c_str());
       break;
     }
     fclose(f);
@@ -322,8 +327,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
     /* read the previous control file */
     parse_control_file(table, control_file_name.c_str(), MPI_COMM_WORLD);
-    if(comm_->MyPID() == 0)
-      printf("read restarted control file: %s\n", control_file_name.c_str());
+    if (comm_->MyPID() == 0) printf("read restarted control file: %s\n", control_file_name.c_str());
 
     /* find the previous results */
     {
@@ -348,8 +352,8 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
           /* found it */
           /* Now we simply switch all previous results to our main
            * map. The assumption is a perfect ordering */
-          map_prepend_symbols(&control_table_, "result", result,
-                              map_symbol_count(table, "result") - counter);
+          map_prepend_symbols(
+              &control_table_, "result", result, map_symbol_count(table, "result") - counter);
           previous_results->next = NULL;
 
           /*
@@ -391,8 +395,8 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
           /* found it */
           /* Now we simply switch all previous fields to our main
            * map. The assumption is a perfect ordering */
-          map_prepend_symbols(&control_table_, "field", field,
-                              map_symbol_count(table, "field") - counter);
+          map_prepend_symbols(
+              &control_table_, "field", field, map_symbol_count(table, "field") - counter);
           previous_fields->next = NULL;
 
           /*
@@ -420,9 +424,8 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
  *----------------------------------------------------------------------*/
 void PostProblem::read_meshes()
 {
-  SYMBOL* mesh = map_find_symbol(&control_table_,"field");
-  if (mesh == NULL)
-    dserror("No field found.");
+  SYMBOL* mesh = map_find_symbol(&control_table_, "field");
+  if (mesh == NULL) dserror("No field found.");
 
   // We have to reverse the traversal of meshes we get from the control file
   // in order to get the same dof numbers in all discretizations as we had
@@ -436,7 +439,7 @@ void PostProblem::read_meshes()
   {
     // only those fields with a mesh file entry are readable here
     // (each control file is bound to include at least one of those)
-    if (map_find_symbol(symbol_map(mesh), "mesh_file")!=NULL)
+    if (map_find_symbol(symbol_map(mesh), "mesh_file") != NULL)
     {
       meshstack.push(symbol_map(mesh));
     }
@@ -452,9 +455,9 @@ void PostProblem::read_meshes()
     std::string name = map_read_string(meshmap, "field");
 
     bool havefield = false;
-    for (unsigned i=0; i<fields_.size(); ++i)
+    for (unsigned i = 0; i < fields_.size(); ++i)
     {
-      if (fields_[i].name()==name)
+      if (fields_[i].name() == name)
       {
         havefield = true;
         break;
@@ -468,79 +471,75 @@ void PostProblem::read_meshes()
     if (not havefield)
     {
       int step;
-      if (!map_find_int(meshmap,"step",&step))
-        dserror("No step information in field.");
+      if (!map_find_int(meshmap, "step", &step)) dserror("No step information in field.");
 
       PostField currfield = getfield(meshmap);
 
       int num_output_procs;
-      if (!map_find_int(meshmap,"num_output_proc",&num_output_procs))
+      if (!map_find_int(meshmap, "num_output_proc", &num_output_procs))
       {
         num_output_procs = 1;
       }
       currfield.set_num_output_procs(num_output_procs);
       char* fn;
-      if (!map_find_string(meshmap,"mesh_file",&fn))
-        dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
+      if (!map_find_string(meshmap, "mesh_file", &fn))
+        dserror(
+            "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
       std::string filename = fn;
       IO::HDFReader reader = IO::HDFReader(input_dir_);
-      reader.Open(filename,num_output_procs,comm_->NumProc(),comm_->MyPID());
+      reader.Open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
 
-      if(currfield.num_nodes()!=0)
+      if (currfield.num_nodes() != 0)
       {
-        Teuchos::RCP<std::vector<char> > node_data =
-          reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
+        Teuchos::RCP<std::vector<char>> node_data =
+            reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
         currfield.discretization()->UnPackMyNodes(node_data);
       }
 
-      if(currfield.num_elements()!=0)
+      if (currfield.num_elements() != 0)
       {
-        Teuchos::RCP<std::vector<char> > element_data =
-          reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
+        Teuchos::RCP<std::vector<char>> element_data =
+            reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
         currfield.discretization()->UnPackMyElements(element_data);
       }
 
-      Teuchos::RCP<std::vector<char> > cond_pbcsline;
-      Teuchos::RCP<std::vector<char> > cond_pbcssurf;
+      Teuchos::RCP<std::vector<char>> cond_pbcsline;
+      Teuchos::RCP<std::vector<char>> cond_pbcssurf;
 
-      for (SYMBOL* condition = map_find_symbol(meshmap,"condition");
-           condition!=NULL;
+      for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != NULL;
            condition = condition->next)
       {
         char* condname;
-        if (not symbol_get_string(condition,&condname))
-          dserror("condition name expected");
+        if (not symbol_get_string(condition, &condname)) dserror("condition name expected");
 
         // read periodic boundary conditions if available
-        if (std::string(condname)=="LinePeriodic")
+        if (std::string(condname) == "LinePeriodic")
         {
-
           DRT::Exporter exporter(*comm_);
 
           cond_pbcsline = Teuchos::rcp(new std::vector<char>());
 
-          if (comm_->MyPID()==0)
+          if (comm_->MyPID() == 0)
           {
-            cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
+            cond_pbcsline =
+                reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
 
 #ifdef PARALLEL
             // distribute condition to all procs
-            if (comm_->NumProc()>1)
+            if (comm_->NumProc() > 1)
             {
               MPI_Request request;
-              int         tag    =-1;
-              int         frompid= 0;
-              int         topid  =-1;
+              int tag = -1;
+              int frompid = 0;
+              int topid = -1;
 
-              for(int np=1;np<comm_->NumProc();++np)
+              for (int np = 1; np < comm_->NumProc(); ++np)
               {
-                tag   = np;
+                tag = np;
                 topid = np;
 
-                exporter.ISend(frompid,topid,
-                               &((*cond_pbcsline)[0]),
-                               (*cond_pbcsline).size(),
-                               tag,request);
+                exporter.ISend(
+                    frompid, topid, &((*cond_pbcsline)[0]), (*cond_pbcsline).size(), tag, request);
               }
             }
 #endif
@@ -548,48 +547,47 @@ void PostProblem::read_meshes()
           else
           {
 #ifdef PARALLEL
-            int length =-1;
-            int frompid= 0;
-            int mypid  =comm_->MyPID();
+            int length = -1;
+            int frompid = 0;
+            int mypid = comm_->MyPID();
 
             std::vector<char> rblock;
 
-            exporter.ReceiveAny(frompid,mypid,rblock,length);
+            exporter.ReceiveAny(frompid, mypid, rblock, length);
 
-            *cond_pbcsline=rblock;
+            *cond_pbcsline = rblock;
 #endif
           }
 
           currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
         }
-        else if (std::string(condname)=="SurfacePeriodic")
+        else if (std::string(condname) == "SurfacePeriodic")
         {
           DRT::Exporter exporter(*comm_);
 
           cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
 
-          if (comm_->MyPID()==0)
+          if (comm_->MyPID() == 0)
           {
-            cond_pbcssurf = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
+            cond_pbcssurf =
+                reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
 
             // distribute condition to all procs
-            if (comm_->NumProc()>1)
+            if (comm_->NumProc() > 1)
             {
 #ifdef PARALLEL
               MPI_Request request;
-              int         tag    =-1;
-              int         frompid= 0;
-              int         topid  =-1;
+              int tag = -1;
+              int frompid = 0;
+              int topid = -1;
 
-              for(int np=1;np<comm_->NumProc();++np)
+              for (int np = 1; np < comm_->NumProc(); ++np)
               {
-                tag   = np;
+                tag = np;
                 topid = np;
 
-                exporter.ISend(frompid,topid,
-                               &((*cond_pbcssurf)[0]),
-                               (*cond_pbcssurf).size(),
-                               tag,request);
+                exporter.ISend(
+                    frompid, topid, &((*cond_pbcssurf)[0]), (*cond_pbcssurf).size(), tag, request);
               }
 #endif
             }
@@ -597,138 +595,137 @@ void PostProblem::read_meshes()
           else
           {
 #ifdef PARALLEL
-            int length =-1;
-            int frompid= 0;
-            int mypid  =comm_->MyPID();
+            int length = -1;
+            int frompid = 0;
+            int mypid = comm_->MyPID();
 
             std::vector<char> rblock;
 
-            exporter.ReceiveAny(frompid,mypid,rblock,length);
+            exporter.ReceiveAny(frompid, mypid, rblock, length);
 
-            *cond_pbcssurf=rblock;
+            *cond_pbcssurf = rblock;
 #endif
           }
           currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
         }
         else
         {
-          if(comm_->MyPID() == 0)
+          if (comm_->MyPID() == 0)
             printf("condition name '%s' not supported, continue anyway", condname);
-//          dserror("condition name '%s' not supported", condname);
+          //          dserror("condition name '%s' not supported", condname);
         }
       }
 
-      if ((currfield.problem()->Problemtype()==prb_particle
-          or currfield.problem()->Problemtype()==prb_cavitation
-          or currfield.problem()->Problemtype()==prb_pasi
-          or currfield.problem()->Problemtype()==prb_level_set
-          or currfield.problem()->Problemtype()==prb_two_phase_flow
-          or currfield.problem()->Problemtype()==prb_fluid_xfem_ls)
-          and currfield.discretization()->Name() == "particle")
+      if ((currfield.problem()->Problemtype() == prb_particle or
+              currfield.problem()->Problemtype() == prb_cavitation or
+              currfield.problem()->Problemtype() == prb_pasi or
+              currfield.problem()->Problemtype() == prb_level_set or
+              currfield.problem()->Problemtype() == prb_two_phase_flow or
+              currfield.problem()->Problemtype() == prb_fluid_xfem_ls) and
+          currfield.discretization()->Name() == "particle")
       {
         Teuchos::RCP<DRT::Discretization> particledis = currfield.discretization();
         // replace dof set to have an IndependentDofSet for particles
-        Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
+        Teuchos::RCP<DRT::IndependentDofSet> independentdofset =
+            Teuchos::rcp(new DRT::IndependentDofSet(true));
         particledis->ReplaceDofSet(independentdofset);
-        if(comm_->MyPID()==0)
+        if (comm_->MyPID() == 0)
         {
           // find maximum number of possible particles during simulation
           int maxnodeid = get_max_nodeid("particle");
           // insert maxnodeid+1 particles into discret (on proc 0) placed at the origin
           double coords[] = {0.0, 0.0, 0.0};
-          for(int id=0; id<=maxnodeid; ++id)
+          for (int id = 0; id <= maxnodeid; ++id)
           {
             // add a rigid shpere element for each particle (element id euqal to node id)
-            Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("RIGIDSPHERE","dummy", id, 0);
+            Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("RIGIDSPHERE", "dummy", id, 0);
             particledis->AddElement(ele);
 
             Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new DRT::Node(id, coords, 0));
             particledis->AddNode(particle);
             ele->SetNodeIds(1, &id);
           }
-          currfield.set_num_nodes(maxnodeid+1);
+          currfield.set_num_nodes(maxnodeid + 1);
         }
       }
 
       // read knot vectors for nurbs discretisations
-      if(spatial_approx_=="Nurbs")
+      if (spatial_approx_ == "Nurbs")
       {
         // try a dynamic cast of the discretisation to a nurbs discretisation
-        DRT::NURBS::NurbsDiscretization* nurbsdis
-        =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+        DRT::NURBS::NurbsDiscretization* nurbsdis =
+            dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
-        if(nurbsdis==NULL)
-          dserror("Discretization %s is not a NurbsDiscretization",currfield.discretization()->Name().c_str());
+        if (nurbsdis == NULL)
+          dserror("Discretization %s is not a NurbsDiscretization",
+              currfield.discretization()->Name().c_str());
 
-        Teuchos::RCP<std::vector<char> > packed_knots;
-        if (comm_->MyPID()==0)
+        Teuchos::RCP<std::vector<char>> packed_knots;
+        if (comm_->MyPID() == 0)
           packed_knots = reader.ReadKnotvector(step);
         else
           packed_knots = Teuchos::rcp(new std::vector<char>());
 
         // distribute knots to all procs
-        if (comm_->NumProc()>1)
+        if (comm_->NumProc() > 1)
         {
           DRT::Exporter exporter(nurbsdis->Comm());
 
-          if(comm_->MyPID()==0)
+          if (comm_->MyPID() == 0)
           {
 #ifdef PARALLEL
             MPI_Request request;
-            int         tag    =-1;
-            int         frompid= 0;
-            int         topid  =-1;
+            int tag = -1;
+            int frompid = 0;
+            int topid = -1;
 
-            for(int np=1;np<comm_->NumProc();++np)
+            for (int np = 1; np < comm_->NumProc(); ++np)
             {
-              tag   = np;
+              tag = np;
               topid = np;
 
-              exporter.ISend(frompid,topid,
-                             &((*packed_knots)[0]),
-                             (*packed_knots).size(),
-                             tag,request);
+              exporter.ISend(
+                  frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
             }
 #endif
           }
           else
           {
 #ifdef PARALLEL
-            int length =-1;
-            int frompid= 0;
-            int mypid  =comm_->MyPID();
+            int length = -1;
+            int frompid = 0;
+            int mypid = comm_->MyPID();
 
             std::vector<char> rblock;
 
-            exporter.ReceiveAny(frompid,mypid,rblock,length);
+            exporter.ReceiveAny(frompid, mypid, rblock, length);
 
-            *packed_knots=rblock;
+            *packed_knots = rblock;
 #endif
           }
         }
 
-        Teuchos::RCP<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+        Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
 
         knots->Unpack(*packed_knots);
 
-        if(nurbsdis==NULL)
+        if (nurbsdis == NULL)
         {
           dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
         }
 
         if (nurbsdis->Comm().NumProc() != 1)
-          nurbsdis->SetupGhostingWrongNameDoNotUse(false,false,false);
+          nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
         else
-          nurbsdis->FillComplete(false,false,false);
+          nurbsdis->FillComplete(false, false, false);
 
 
-        if(!(nurbsdis->Filled()))
+        if (!(nurbsdis->Filled()))
         {
           dserror("nurbsdis was not fc\n");
         }
 
-        int smallest_gid_in_dis=nurbsdis->ElementRowMap()->MinAllGID();
+        int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
 
         knots->FinishKnots(smallest_gid_in_dis);
 
@@ -752,8 +749,8 @@ void PostProblem::read_meshes()
       // connect degrees of freedom for periodic boundary conditions
       // -------------------------------------------------------------------
       // parallel execution?!
-      if ((cond_pbcssurf!=Teuchos::null and not cond_pbcssurf->empty()) or
-          (cond_pbcsline!=Teuchos::null and not cond_pbcsline->empty()))
+      if ((cond_pbcssurf != Teuchos::null and not cond_pbcssurf->empty()) or
+          (cond_pbcsline != Teuchos::null and not cond_pbcsline->empty()))
       {
         PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -769,9 +766,8 @@ void PostProblem::read_meshes()
  *----------------------------------------------------------------------*/
 void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputstep)
 {
-  SYMBOL* mesh = map_find_symbol(&control_table_,"field");
-  if (mesh == NULL)
-    dserror("No field found.");
+  SYMBOL* mesh = map_find_symbol(&control_table_, "field");
+  if (mesh == NULL) dserror("No field found.");
 
   // We have to reverse the traversal of meshes we get from the control file
   // in order to get the same dof numbers in all discretizations as we had
@@ -784,18 +780,17 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
   bool found = false;
 
   // search for the desired time step
-  while (found == false and mesh!=NULL)
+  while (found == false and mesh != NULL)
   {
     // only those fields with a mesh file entry are readable here
-    if (map_find_symbol(meshmap, "mesh_file")!=NULL)
+    if (map_find_symbol(meshmap, "mesh_file") != NULL)
     {
       int step;
-      if (!map_find_int(meshmap,"step",&step))
-        dserror("No step information in field.");
+      if (!map_find_int(meshmap, "step", &step)) dserror("No step information in field.");
 
       std::string name = map_read_string(meshmap, "field");
 
-      if(step == outputstep and not name.compare(fieldname))
+      if (step == outputstep and not name.compare(fieldname))
       {
         found = true;
       }
@@ -807,53 +802,50 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     }
   }
   mesh = NULL;
-  if(found == false)
-    dserror("mesh for desired time step (%d) not found", outputstep);
+  if (found == false) dserror("mesh for desired time step (%d) not found", outputstep);
 
   {
     int step;
-    if (!map_find_int(meshmap,"step",&step))
-      dserror("No step information in field.");
+    if (!map_find_int(meshmap, "step", &step)) dserror("No step information in field.");
 
     PostField currfield = getfield(meshmap);
 
     int num_output_procs;
-    if (!map_find_int(meshmap,"num_output_proc",&num_output_procs))
+    if (!map_find_int(meshmap, "num_output_proc", &num_output_procs))
     {
       num_output_procs = 1;
     }
     currfield.set_num_output_procs(num_output_procs);
     char* fn;
-    if (!map_find_string(meshmap,"mesh_file",&fn))
-      dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
+    if (!map_find_string(meshmap, "mesh_file", &fn))
+      dserror(
+          "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
     std::string filename = fn;
     IO::HDFReader reader = IO::HDFReader(input_dir_);
-    reader.Open(filename,num_output_procs,comm_->NumProc(),comm_->MyPID());
+    reader.Open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
 
-    Teuchos::RCP<std::vector<char> > node_data =
-      reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
+    Teuchos::RCP<std::vector<char>> node_data =
+        reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
     currfield.discretization()->UnPackMyNodes(node_data);
 
-    if(currfield.num_elements()!=0)
+    if (currfield.num_elements() != 0)
     {
-      Teuchos::RCP<std::vector<char> > element_data =
-        reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
+      Teuchos::RCP<std::vector<char>> element_data =
+          reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
     }
 
-    Teuchos::RCP<std::vector<char> > cond_pbcsline;
-    Teuchos::RCP<std::vector<char> > cond_pbcssurf;
+    Teuchos::RCP<std::vector<char>> cond_pbcsline;
+    Teuchos::RCP<std::vector<char>> cond_pbcssurf;
 
-    for (SYMBOL* condition = map_find_symbol(meshmap,"condition");
-         condition!=NULL;
+    for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != NULL;
          condition = condition->next)
     {
       char* condname;
-      if (not symbol_get_string(condition,&condname))
-        dserror("condition name expected");
+      if (not symbol_get_string(condition, &condname)) dserror("condition name expected");
 
       // read periodic boundary conditions if available
-      if (std::string(condname)=="LinePeriodic")
+      if (std::string(condname) == "LinePeriodic")
       {
         dserror("periodic boundary conditions with changing geometries have never been tested");
 
@@ -861,28 +853,27 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
 
         cond_pbcsline = Teuchos::rcp(new std::vector<char>());
 
-        if (comm_->MyPID()==0)
+        if (comm_->MyPID() == 0)
         {
-          cond_pbcsline = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
+          cond_pbcsline =
+              reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
 
 #ifdef PARALLEL
           // distribute condition to all procs
-          if (comm_->NumProc()>1)
+          if (comm_->NumProc() > 1)
           {
             MPI_Request request;
-            int         tag    =-1;
-            int         frompid= 0;
-            int         topid  =-1;
+            int tag = -1;
+            int frompid = 0;
+            int topid = -1;
 
-            for(int np=1;np<comm_->NumProc();++np)
+            for (int np = 1; np < comm_->NumProc(); ++np)
             {
-              tag   = np;
+              tag = np;
               topid = np;
 
-              exporter.ISend(frompid,topid,
-                             &((*cond_pbcsline)[0]),
-                             (*cond_pbcsline).size(),
-                             tag,request);
+              exporter.ISend(
+                  frompid, topid, &((*cond_pbcsline)[0]), (*cond_pbcsline).size(), tag, request);
             }
           }
 #endif
@@ -890,48 +881,47 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
         else
         {
 #ifdef PARALLEL
-          int length =-1;
-          int frompid= 0;
-          int mypid  =comm_->MyPID();
+          int length = -1;
+          int frompid = 0;
+          int mypid = comm_->MyPID();
 
           std::vector<char> rblock;
 
-          exporter.ReceiveAny(frompid,mypid,rblock,length);
+          exporter.ReceiveAny(frompid, mypid, rblock, length);
 
-          *cond_pbcsline=rblock;
+          *cond_pbcsline = rblock;
 #endif
         }
 
         currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
       }
-      else if (std::string(condname)=="SurfacePeriodic")
+      else if (std::string(condname) == "SurfacePeriodic")
       {
         DRT::Exporter exporter(*comm_);
 
         cond_pbcssurf = Teuchos::rcp(new std::vector<char>());
 
-        if (comm_->MyPID()==0)
+        if (comm_->MyPID() == 0)
         {
-          cond_pbcssurf = reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
+          cond_pbcssurf =
+              reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
 
           // distribute condition to all procs
-          if (comm_->NumProc()>1)
+          if (comm_->NumProc() > 1)
           {
 #ifdef PARALLEL
             MPI_Request request;
-            int         tag    =-1;
-            int         frompid= 0;
-            int         topid  =-1;
+            int tag = -1;
+            int frompid = 0;
+            int topid = -1;
 
-            for(int np=1;np<comm_->NumProc();++np)
+            for (int np = 1; np < comm_->NumProc(); ++np)
             {
-              tag   = np;
+              tag = np;
               topid = np;
 
-              exporter.ISend(frompid,topid,
-                             &((*cond_pbcssurf)[0]),
-                             (*cond_pbcssurf).size(),
-                             tag,request);
+              exporter.ISend(
+                  frompid, topid, &((*cond_pbcssurf)[0]), (*cond_pbcssurf).size(), tag, request);
             }
 #endif
           }
@@ -939,106 +929,104 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
         else
         {
 #ifdef PARALLEL
-          int length =-1;
-          int frompid= 0;
-          int mypid  =comm_->MyPID();
+          int length = -1;
+          int frompid = 0;
+          int mypid = comm_->MyPID();
 
           std::vector<char> rblock;
 
-          exporter.ReceiveAny(frompid,mypid,rblock,length);
+          exporter.ReceiveAny(frompid, mypid, rblock, length);
 
-          *cond_pbcssurf=rblock;
+          *cond_pbcssurf = rblock;
 #endif
         }
         currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
       }
       else
       {
-        if(comm_->MyPID() == 0)
+        if (comm_->MyPID() == 0)
           printf("condition name '%s' not supported, continue anyway", condname);
-//          dserror("condition name '%s' not supported", condname);
+        //          dserror("condition name '%s' not supported", condname);
       }
     }
 
     // read knot vectors for nurbs discretisations
-    if(spatial_approx_=="Nurbs")
+    if (spatial_approx_ == "Nurbs")
     {
       // try a dynamic cast of the discretisation to a nurbs discretisation
-      DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+      DRT::NURBS::NurbsDiscretization* nurbsdis =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
-      if(nurbsdis==NULL)
-        dserror("Discretization %s is not a NurbsDiscretization",currfield.discretization()->Name().c_str());
+      if (nurbsdis == NULL)
+        dserror("Discretization %s is not a NurbsDiscretization",
+            currfield.discretization()->Name().c_str());
 
-      Teuchos::RCP<std::vector<char> > packed_knots;
-      if (comm_->MyPID()==0)
+      Teuchos::RCP<std::vector<char>> packed_knots;
+      if (comm_->MyPID() == 0)
         packed_knots = reader.ReadKnotvector(step);
       else
         packed_knots = Teuchos::rcp(new std::vector<char>());
 
       // distribute knots to all procs
-      if (comm_->NumProc()>1)
+      if (comm_->NumProc() > 1)
       {
         DRT::Exporter exporter(nurbsdis->Comm());
 
-        if(comm_->MyPID()==0)
+        if (comm_->MyPID() == 0)
         {
 #ifdef PARALLEL
           MPI_Request request;
-          int         tag    =-1;
-          int         frompid= 0;
-          int         topid  =-1;
+          int tag = -1;
+          int frompid = 0;
+          int topid = -1;
 
-          for(int np=1;np<comm_->NumProc();++np)
+          for (int np = 1; np < comm_->NumProc(); ++np)
           {
-            tag   = np;
+            tag = np;
             topid = np;
 
-            exporter.ISend(frompid,topid,
-                           &((*packed_knots)[0]),
-                           (*packed_knots).size(),
-                           tag,request);
+            exporter.ISend(
+                frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
           }
 #endif
         }
         else
         {
 #ifdef PARALLEL
-          int length =-1;
-          int frompid= 0;
-          int mypid  =comm_->MyPID();
+          int length = -1;
+          int frompid = 0;
+          int mypid = comm_->MyPID();
 
           std::vector<char> rblock;
 
-          exporter.ReceiveAny(frompid,mypid,rblock,length);
+          exporter.ReceiveAny(frompid, mypid, rblock, length);
 
-          *packed_knots=rblock;
+          *packed_knots = rblock;
 #endif
         }
       }
 
-      Teuchos::RCP<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+      Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
 
       knots->Unpack(*packed_knots);
 
-      if(nurbsdis==NULL)
+      if (nurbsdis == NULL)
       {
         dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
       }
 
       if (nurbsdis->Comm().NumProc() != 1)
-        nurbsdis->SetupGhostingWrongNameDoNotUse(false,false,false);
+        nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
       else
-        nurbsdis->FillComplete(false,false,false);
+        nurbsdis->FillComplete(false, false, false);
 
 
-      if(!(nurbsdis->Filled()))
+      if (!(nurbsdis->Filled()))
       {
         dserror("nurbsdis was not fc\n");
       }
 
-      int smallest_gid_in_dis=nurbsdis->ElementRowMap()->MinAllGID();
+      int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
 
       knots->FinishKnots(smallest_gid_in_dis);
 
@@ -1062,8 +1050,8 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     // connect degrees of freedom for periodic boundary conditions
     // -------------------------------------------------------------------
     // parallel execution?!
-    if ((cond_pbcssurf!=Teuchos::null and not cond_pbcssurf->empty()) or
-        (cond_pbcsline!=Teuchos::null and not cond_pbcsline->empty()))
+    if ((cond_pbcssurf != Teuchos::null and not cond_pbcssurf->empty()) or
+        (cond_pbcsline != Teuchos::null and not cond_pbcsline->empty()))
     {
       PeriodicBoundaryConditions pbc(currfield.discretization());
       pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -1085,13 +1073,13 @@ PostField PostProblem::getfield(MAP* field_info)
 
   Teuchos::RCP<DRT::Discretization> dis;
 
-  if(spatial_approx_=="Polynomial" or spatial_approx_=="Meshfree" or spatial_approx_=="HDG")
+  if (spatial_approx_ == "Polynomial" or spatial_approx_ == "Meshfree" or spatial_approx_ == "HDG")
   {
-    dis=Teuchos::rcp(new DRT::Discretization(field_name,comm_));
+    dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_));
   }
-  else if(spatial_approx_=="Nurbs")
+  else if (spatial_approx_ == "Nurbs")
   {
-    dis=Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name,comm_));
+    dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_));
   }
   else
   {
@@ -1106,24 +1094,22 @@ PostField PostProblem::getfield(MAP* field_info)
  *--------------------------------------------------------------------------*/
 int PostProblem::get_max_nodeid(const std::string& fieldname)
 {
-  SYMBOL* mesh = map_find_symbol(&control_table_,"field");
+  SYMBOL* mesh = map_find_symbol(&control_table_, "field");
 
-  if (mesh == NULL)
-    dserror("No field found.");
+  if (mesh == NULL) dserror("No field found.");
 
   int maxnodeid = -1;
-  while (mesh!=NULL)
+  while (mesh != NULL)
   {
     MAP* meshmap = symbol_map(mesh);
     mesh = mesh->next;
 
     std::string name = map_read_string(meshmap, "field");
 
-    if(name == fieldname)
+    if (name == fieldname)
     {
       const int stepmaxnodeid = map_read_int(meshmap, "max_nodeid");
-      if(stepmaxnodeid > maxnodeid)
-        maxnodeid = stepmaxnodeid;
+      if (stepmaxnodeid > maxnodeid) maxnodeid = stepmaxnodeid;
     }
   }
 
@@ -1134,36 +1120,23 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(
-    Teuchos::RCP<DRT::Discretization> dis,
-    PostProblem* problem,
-    std::string field_name,
-    const int numnd,
-    const int numele)
-: dis_(dis),
-  problem_(problem),
-  field_name_(field_name),
-  numnd_(numnd),
-  numele_(numele)
+PostField::PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem,
+    std::string field_name, const int numnd, const int numele)
+    : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {
 }
 
 /*----------------------------------------------------------------------*
  * The Destructor
  *----------------------------------------------------------------------*/
-PostField::~PostField()
-{
-}
+PostField::~PostField() {}
 
 
 /*----------------------------------------------------------------------*
  * The Constructor of PostResult
  *----------------------------------------------------------------------*/
-PostResult::PostResult(PostField* field):
-  field_(field),
-  pos_(-1),
-  group_(NULL),
-  file_((field->problem()->input_dir()))
+PostResult::PostResult(PostField* field)
+    : field_(field), pos_(-1), group_(NULL), file_((field->problem()->input_dir()))
 {
 }
 
@@ -1171,17 +1144,14 @@ PostResult::PostResult(PostField* field):
 /*----------------------------------------------------------------------*
  * The Destructor of PostResult
  *----------------------------------------------------------------------*/
-PostResult::~PostResult()
-{
-  close_result_files();
-}
+PostResult::~PostResult() { close_result_files(); }
 
 /*----------------------------------------------------------------------*
  * get timesteps when the solution is written
  *----------------------------------------------------------------------*/
 std::vector<double> PostResult::get_result_times(const std::string& fieldname)
 {
-    std::vector<double> times; // timesteps when the solution is written
+  std::vector<double> times;  // timesteps when the solution is written
 
 #if 0
     if (this->next_result())
@@ -1190,15 +1160,17 @@ std::vector<double> PostResult::get_result_times(const std::string& fieldname)
         dserror("no solution found in field '%s'", fieldname.c_str());
 #endif
 
-    while (this->next_result())
-        times.push_back(this->time());
+  while (this->next_result()) times.push_back(this->time());
 
-    if (times.size() == 0)
-    {
-      dserror("PostResult::get_result_times(fieldname='%s'):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.", fieldname.c_str());
-    }
+  if (times.size() == 0)
+  {
+    dserror(
+        "PostResult::get_result_times(fieldname='%s'):\n  no solution steps found in specified "
+        "timestep range! Check --start, --end, --step parameters.",
+        fieldname.c_str());
+  }
 
-    return times;
+  return times;
 }
 
 /*----------------------------------------------------------------------*
@@ -1206,46 +1178,49 @@ std::vector<double> PostResult::get_result_times(const std::string& fieldname)
  *                                                               gjb02/08
  *----------------------------------------------------------------------*/
 std::vector<double> PostResult::get_result_times(
-        const std::string& fieldname,
-        const std::string& groupname)
+    const std::string& fieldname, const std::string& groupname)
 {
-    std::vector<double> times; // timesteps when the solution is written
+  std::vector<double> times;  // timesteps when the solution is written
 
-    if (this->next_result(groupname))
-        times.push_back(this->time());
-    else
-        dserror("no solution found in field '%s'", fieldname.c_str());
+  if (this->next_result(groupname))
+    times.push_back(this->time());
+  else
+    dserror("no solution found in field '%s'", fieldname.c_str());
 
-    while (this->next_result(groupname))
-        times.push_back(this->time());
+  while (this->next_result(groupname)) times.push_back(this->time());
 
-    if (times.size() == 0)
-    {
-      dserror("PostResult::get_result_times(fieldname='%s', groupname='%s'):\n  no solution steps found in specified timestep range! Check --start, --end, --step parameters.", fieldname.c_str(), groupname.c_str());
-    }
+  if (times.size() == 0)
+  {
+    dserror(
+        "PostResult::get_result_times(fieldname='%s', groupname='%s'):\n  no solution steps found "
+        "in specified timestep range! Check --start, --end, --step parameters.",
+        fieldname.c_str(), groupname.c_str());
+  }
 
-    return times;
+  return times;
 }
 
 /*----------------------------------------------------------------------*
  * get times and steps when the solution is written
  *----------------------------------------------------------------------*/
-void PostResult::get_result_timesandsteps(const std::string& fieldname,
-    std::vector<double>& times,
-    std::vector<int>& steps)
+void PostResult::get_result_timesandsteps(
+    const std::string& fieldname, std::vector<double>& times, std::vector<int>& steps)
 {
-    while (this->next_result())
-    {
-      times.push_back(this->time());
-      steps.push_back(this->step());
-    }
+  while (this->next_result())
+  {
+    times.push_back(this->time());
+    steps.push_back(this->step());
+  }
 
-    if (times.size() == 0 or steps.size() == 0)
-    {
-      dserror("PostResult::get_result_timesandsteps(fieldname='%s'):\n  no solution steps found in specified range! Check --start, --end, --step parameters.", fieldname.c_str());
-    }
+  if (times.size() == 0 or steps.size() == 0)
+  {
+    dserror(
+        "PostResult::get_result_timesandsteps(fieldname='%s'):\n  no solution steps found in "
+        "specified range! Check --start, --end, --step parameters.",
+        fieldname.c_str());
+  }
 
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1258,13 +1233,12 @@ int PostResult::next_result()
   PostProblem* problem = field_->problem();
   int ret = 0;
 
-  for (int i=pos_+1; i<problem->num_results(); ++i)
+  for (int i = pos_ + 1; i < problem->num_results(); ++i)
   {
-    MAP* map = (*problem->result_groups())[problem->num_results()-1-i];
+    MAP* map = (*problem->result_groups())[problem->num_results() - 1 - i];
 
     if (match_field_result(map))
     {
-
       /*
        * Open the new files if there are any.
        *
@@ -1284,8 +1258,7 @@ int PostResult::next_result()
       const INT step = map_read_int(map, "step");
 
       /* we are only interessted if the result matches the slice */
-      if ((step >= problem->start()) &&
-          ((step <= problem->end()) || (problem->end() == -1)) &&
+      if ((step >= problem->start()) && ((step <= problem->end()) || (problem->end() == -1)) &&
           ((step - problem->start()) % problem->step() == 0))
       {
         pos_ = i;
@@ -1306,13 +1279,13 @@ int PostResult::next_result()
  *----------------------------------------------------------------------*/
 int PostResult::next_result(const std::string& groupname)
 {
-    int ret = next_result();
-    // go on, until the specified result is contained or end of time slice reached
-    while((!map_has_map(group_, groupname.c_str())) && (ret == 1))
-    {
-        ret = next_result();
-    }
-    return ret;
+  int ret = next_result();
+  // go on, until the specified result is contained or end of time slice reached
+  while ((!map_has_map(group_, groupname.c_str())) && (ret == 1))
+  {
+    ret = next_result();
+  }
+  return ret;
 }
 
 
@@ -1326,16 +1299,13 @@ int PostResult::next_result(const std::string& groupname)
 /*----------------------------------------------------------------------*/
 int PostResult::match_field_result(MAP* result_group) const
 {
-  return field_->name()==map_read_string(result_group, "field");
+  return field_->name() == map_read_string(result_group, "field");
 }
 
 /*----------------------------------------------------------------------*
  * closes all the currently open result files
  *----------------------------------------------------------------------*/
-void PostResult::close_result_files()
-{
-  file_.Close();
-}
+void PostResult::close_result_files() { file_.Close(); }
 
 /*----------------------------------------------------------------------*
  * opens result files. The name is taken from the "result_file" entry
@@ -1344,14 +1314,14 @@ void PostResult::close_result_files()
 void PostResult::open_result_files(MAP* field_info)
 {
   int num_output_procs;
-  if (!map_find_int(field_info,"num_output_proc",&num_output_procs))
+  if (!map_find_int(field_info, "num_output_proc", &num_output_procs))
   {
     num_output_procs = 1;
   }
-  const std::string basename = map_read_string(field_info,"result_file");
-  //field_->problem()->set_basename(basename);
+  const std::string basename = map_read_string(field_info, "result_file");
+  // field_->problem()->set_basename(basename);
   Epetra_Comm& comm = *field_->problem()->comm();
-  file_.Open(basename,num_output_procs,comm.NumProc(),comm.MyPID());
+  file_.Open(basename, num_output_procs, comm.NumProc(), comm.MyPID());
 }
 
 /*----------------------------------------------------------------------*
@@ -1362,10 +1332,9 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
 {
   MAP* result = map_read_map(group_, name.c_str());
   int columns;
-  if (map_find_int(result,"columns",&columns))
+  if (map_find_int(result, "columns", &columns))
   {
-    if (columns != 1)
-      dserror("got multivector with name '%s', vector expected", name.c_str());
+    if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
   }
   return Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
 }
@@ -1375,15 +1344,15 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > >
+Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
   Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
-  int columns = map_find_int(result,"columns",&columns);
-  if (not map_find_int(result,"columns",&columns))
+  int columns = map_find_int(result, "columns", &columns);
+  if (not map_find_int(result, "columns", &columns))
   {
     columns = 1;
   }
@@ -1391,18 +1360,19 @@ PostResult::read_result_serialdensematrix(const std::string name)
     dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
   Teuchos::RCP<Epetra_Map> elemap;
-  Teuchos::RCP<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
-                                                                     *comm, elemap);
+  Teuchos::RCP<std::vector<char>> data =
+      file_.ReadResultDataVecChar(id_path, value_path, columns, *comm, elemap);
 
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
-  std::vector<char>::size_type position=0;
-//   std::cout << "elemap:\n" << *elemap << std::endl;
-//   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
-  for (int i=0;i<elemap->NumMyElements();++i)
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata =
+      Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  std::vector<char>::size_type position = 0;
+  //   std::cout << "elemap:\n" << *elemap << std::endl;
+  //   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
+  for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
-    (*mapdata)[elemap->GID(i)]=gpstress;
+    (*mapdata)[elemap->GID(i)] = gpstress;
   }
 
   const Epetra_Map& elecolmap = *field_->discretization()->ElementColMap();
@@ -1423,7 +1393,7 @@ Teuchos::RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string
   const std::string id_path = map_read_string(result, "ids");
   const std::string value_path = map_read_string(result, "values");
   int columns;
-  if (not map_find_int(result,"columns",&columns))
+  if (not map_find_int(result, "columns", &columns))
   {
     columns = 1;
   }
@@ -1438,7 +1408,5 @@ int PostResult::step() const { return map_read_int(group_, "step"); }
 
 
 
-
 //! returns the number of global Dof-Ids
 int PostField::global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
-

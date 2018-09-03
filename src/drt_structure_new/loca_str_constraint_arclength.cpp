@@ -17,7 +17,7 @@ LOCA::STR::MultiContinuation::ArcLengthConstraint::ArcLengthConstraint()
       isvalid_constraints_(false),
       isvalid_dx_(false),
       numconstraints_(0),
-      constraints_(0,0),
+      constraints_(0, 0),
       loca_param_vec_(),
       gstate_ptr_(Teuchos::null),
       xvector_ptr_(Teuchos::null)
@@ -69,7 +69,7 @@ void LOCA::STR::MultiContinuation::ArcLengthConstraint::Setup()
   CheckInit();
 
   numconstraints_ = 1;
-  constraints_ = NOX::Abstract::MultiVector::DenseMatrix(1,1);
+  constraints_ = NOX::Abstract::MultiVector::DenseMatrix(1, 1);
 
   issetup_ = true;
 }
@@ -78,8 +78,7 @@ void LOCA::STR::MultiContinuation::ArcLengthConstraint::Setup()
  *----------------------------------------------------------------------------*/
 void LOCA::STR::MultiContinuation::ArcLengthConstraint::CheckInitSetup() const
 {
-  if(!IsInit() or !IsSetup())
-    dserror("Call first Init() and Setup()!");
+  if (!IsInit() or !IsSetup()) dserror("Call first Init() and Setup()!");
 
   return;
 }
@@ -88,22 +87,18 @@ void LOCA::STR::MultiContinuation::ArcLengthConstraint::CheckInitSetup() const
  *----------------------------------------------------------------------------*/
 void LOCA::STR::MultiContinuation::ArcLengthConstraint::CheckInit() const
 {
-  if(!IsInit())
-    dserror("Call first Init()!");
+  if (!IsInit()) dserror("Call first Init()!");
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LOCA::STR::MultiContinuation::ArcLengthConstraint::copy(
-    const ConstraintInterface& src)
+void LOCA::STR::MultiContinuation::ArcLengthConstraint::copy(const ConstraintInterface& src)
 {
-  const ArcLengthConstraint& source =
-      dynamic_cast<const ArcLengthConstraint&>(src);
+  const ArcLengthConstraint& source = dynamic_cast<const ArcLengthConstraint&>(src);
 
-  if (this == &source)
-    return;
+  if (this == &source) return;
 
   isinit_ = source.isinit_;
   issetup_ = source.issetup_;
@@ -120,10 +115,10 @@ void LOCA::STR::MultiContinuation::ArcLengthConstraint::copy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LOCA::MultiContinuation::ConstraintInterface> LOCA::STR::
-MultiContinuation::ArcLengthConstraint::clone(NOX::CopyType type) const
+Teuchos::RCP<LOCA::MultiContinuation::ConstraintInterface>
+LOCA::STR::MultiContinuation::ArcLengthConstraint::clone(NOX::CopyType type) const
 {
-  return ArcLengthConstraint(*this,type);
+  return ArcLengthConstraint(*this, type);
 }
 
 /*----------------------------------------------------------------------------*
@@ -143,8 +138,7 @@ int LOCA::STR::MultiContinuation::ArcLengthConstraint::numConstraints() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LOCA::STR::MultiContinuation::ArcLengthConstraint::setX(
-    const NOX::Abstract::Vector& y)
+void LOCA::STR::MultiContinuation::ArcLengthConstraint::setX(const NOX::Abstract::Vector& y)
 {
   (*xvector_ptr_)[0] = y;
   resetIsValid();
@@ -152,8 +146,7 @@ void LOCA::STR::MultiContinuation::ArcLengthConstraint::setX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LOCA::STR::MultiContinuation::ArcLengthConstraint::setParam(
-    int paramID, double val)
+void LOCA::STR::MultiContinuation::ArcLengthConstraint::setParam(int paramID, double val)
 {
   loca_param_vec_[paramID] = val;
   resetIsValid();
@@ -162,21 +155,17 @@ void LOCA::STR::MultiContinuation::ArcLengthConstraint::setParam(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LOCA::STR::MultiContinuation::ArcLengthConstraint::setParams(
-    const std::vector<int>& paramIDs,
-    const NOX::Abstract::MultiVector::DenseMatrix& vals)
+    const std::vector<int>& paramIDs, const NOX::Abstract::MultiVector::DenseMatrix& vals)
 {
-  for (std::size_t i=0;i<paramIDs.size();++i)
-    loca_param_vec_[paramIDs[i]] = vals(i,0);
+  for (std::size_t i = 0; i < paramIDs.size(); ++i) loca_param_vec_[paramIDs[i]] = vals(i, 0);
   resetIsValid();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType LOCA::STR::MultiContinuation::
-ArcLengthConstraint::computeConstraints()
+NOX::Abstract::Group::ReturnType
+LOCA::STR::MultiContinuation::ArcLengthConstraint::computeConstraints()
 {
-
-
   return NOX::Abstract::Group::Ok;
 }
 
@@ -189,10 +178,7 @@ bool LOCA::STR::MultiContinuation::ArcLengthConstraint::isConstraints() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool LOCA::STR::MultiContinuation::ArcLengthConstraint::isDX() const
-{
-  return isvalid_dx_;
-}
+bool LOCA::STR::MultiContinuation::ArcLengthConstraint::isDX() const { return isvalid_dx_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

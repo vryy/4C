@@ -28,31 +28,23 @@ The input line should read
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  c_(matdata->GetDouble("C")),
-  d_(matdata->GetInt("D"))
+MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
 
 /*----------------------------------------------------------------------*
  *            Constructor Material Class                                *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params)
-  : params_(params)
-{
-}
+MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*
  * copy matparmas to summands
  *----------------------------------------------------------------------*/
-void MAT::ELASTIC::Coup1Pow::CopyStatInvAnaMatParams(
-    std::vector< Teuchos::RCP<Epetra_Vector> > input)
+void MAT::ELASTIC::Coup1Pow::CopyStatInvAnaMatParams(std::vector<Teuchos::RCP<Epetra_Vector>> input)
 {
-  params_->ReturnMatparams()=input;
+  params_->ReturnMatparams() = input;
 }
 
 /*----------------------------------------------------------------------*
@@ -67,21 +59,16 @@ void MAT::ELASTIC::Coup1Pow::SetStatInvAnaSummandMatParams()
 /*----------------------------------------------------------------------*
  * Add parameters of elasthyper-summand for stat inverse analysis
  *----------------------------------------------------------------------*/
-void MAT::ELASTIC::Coup1Pow::AddElastOptParams(
-    std::map<std::string,int>* pnames)
+void MAT::ELASTIC::Coup1Pow::AddElastOptParams(std::map<std::string, int>* pnames)
 {
-  pnames->insert(std::pair<std::string,int>("Coup1Pow_C", MAT::ELASTIC::PAR::coup1pow_c));
-  pnames->insert(std::pair<std::string,int>("Coup1Pow_D", MAT::ELASTIC::PAR::coup1pow_d));
+  pnames->insert(std::pair<std::string, int>("Coup1Pow_C", MAT::ELASTIC::PAR::coup1pow_c));
+  pnames->insert(std::pair<std::string, int>("Coup1Pow_D", MAT::ELASTIC::PAR::coup1pow_d));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(
-    double& psi,
-    const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv,
-    const LINALG::Matrix<6,1>& glstrain,
-    const int eleGID)
+void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
+    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int eleGID)
 {
   // material Constants c and beta
   const double c = params_->c_;
@@ -89,37 +76,33 @@ void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(
 
   // strain energy: Psi = C (I_{\boldsymbol{C}}-3)^D
   // add to overall strain energy
-  psi += c * pow((prinv(0) - 3.),d);
-
+  psi += c * pow((prinv(0) - 3.), d);
 }
 
 
 /*----------------------------------------------------------------------
  *                                                       birzle 12/2014 */
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(
-    LINALG::Matrix<3,1>& dPI,
-    LINALG::Matrix<6,1>& ddPII,
-    const LINALG::Matrix<3,1>& prinv,
-    const int eleGID )
+void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
+    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int eleGID)
 {
-
   double c = 0.;
   int d = 0;
 
   // in case of stat inverse analysis use getparameter
-  if (params_->ReturnMatparams().size()!=0)
+  if (params_->ReturnMatparams().size() != 0)
   {
-    c = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_c,eleGID);
-    d = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_d,eleGID);
-    dserror("Stat Inverse Analysis is not correct implemented with elasthyper-materials in the moment. "
+    c = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_c, eleGID);
+    d = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_d, eleGID);
+    dserror(
+        "Stat Inverse Analysis is not correct implemented with elasthyper-materials in the moment. "
         "See comments in elast_coup1pow.cpp -> AddDerivativesPrincipal.");
   }
   // in other cases (e.g. gen-inv-analysis) matparams_ does not exist
   else
   {
-    c = params_ -> c_;
-    d = params_ -> d_;
+    c = params_->c_;
+    d = params_->d_;
   }
 
   /*
@@ -157,15 +140,17 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(
 
   /* Correct implementation for stat inverse analysis replaces this part*/
   // If d<2 the material model is not stress free in the reference configuration
-  if (d<2)
-    dserror("The Elast_Coup1Pow - material only works for positive integer exponents, which are larger than two.");
+  if (d < 2)
+    dserror(
+        "The Elast_Coup1Pow - material only works for positive integer exponents, which are larger "
+        "than two.");
 
-  dPI(0) += c*d*pow((prinv(0)-3.),d-1.);
+  dPI(0) += c * d * pow((prinv(0) - 3.), d - 1.);
 
-  if (d==2)
-    ddPII(0) += (c*d*d-c*d);
+  if (d == 2)
+    ddPII(0) += (c * d * d - c * d);
   else
-    ddPII(0) += (c*d*d-c*d)*pow((prinv(0)-3.),d-2.);
+    ddPII(0) += (c * d * d - c * d) * pow((prinv(0) - 3.), d - 2.);
 
   return;
 }

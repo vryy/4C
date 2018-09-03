@@ -34,8 +34,8 @@ namespace DRT
   {
     class LocsysManager;
     class PlastSsnManager;
-  }
-}
+  }  // namespace UTILS
+}  // namespace DRT
 
 namespace IO
 {
@@ -49,7 +49,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
-}
+}  // namespace LINALG
 
 namespace CONTACT
 {
@@ -61,17 +61,24 @@ namespace UTILS
   class ConstrManager;
   class SpringDashpotManager;
   class Cardiovascular0DManager;
-}
+}  // namespace UTILS
 
 namespace TIMINT
 {
-  template <typename> class TimIntMStep;
+  template <typename>
+  class TimIntMStep;
 }
 
-namespace STR { namespace MODELEVALUATOR { class Generic ;}}
+namespace STR
+{
+  namespace MODELEVALUATOR
+  {
+    class Generic;
+  }
+}  // namespace STR
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /// general structural field interface
   /*!
 
@@ -117,8 +124,7 @@ namespace ADAPTER {
   */
   class Structure : public Field
   {
-  public:
-
+   public:
     /// virtual to get polymorph destruction
     virtual ~Structure();
 
@@ -210,11 +216,13 @@ namespace ADAPTER {
 
     /// do we have this model
     virtual bool HaveModel(INPAR::STR::ModelType model)
-    { dserror("new time integration only"); return false;}
+    {
+      dserror("new time integration only");
+      return false;
+    }
 
     /// return model evaluator
-    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        INPAR::STR::ModelType mtype) = 0 ;
+    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
@@ -295,7 +303,8 @@ namespace ADAPTER {
     virtual int Integrate() = 0;
 
     //! do something in case nonlinear solution does not converge for some reason
-    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv) = 0;
+    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(
+        INPAR::STR::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
     virtual bool NotFinished() const = 0;
@@ -333,8 +342,8 @@ namespace ADAPTER {
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> disiterinc ///< displacement increment between Newton iteration i and i+1
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+            disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
@@ -361,16 +370,10 @@ namespace ADAPTER {
     virtual void PrepareOutput() = 0;
 
     // Get restart data
-    virtual void GetRestartData
-    (
-      Teuchos::RCP<int> step,
-      Teuchos::RCP<double> time,
-      Teuchos::RCP<Epetra_Vector> disn,
-      Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata,
-      Teuchos::RCP<std::vector<char> > nodedata
-    ) = 0;
+    virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+        Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
+        Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
+        Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
@@ -391,22 +394,15 @@ namespace ADAPTER {
     \author mayr.mt
     \date 08/2013
     */
-    virtual void ResetStep () = 0;
+    virtual void ResetStep() = 0;
 
     /// set restart information for parameter continuation
-    virtual void SetRestart
-    (
-      int step,
-      double time,
-      Teuchos::RCP<Epetra_Vector> disn,
-      Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata,
-      Teuchos::RCP<std::vector<char> > nodedata
-    ) = 0;
+    virtual void SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
+        Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
+        Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// set the state of the nox group and the global state data container (implicit only)
-    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x) = 0;
 
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict() = 0;
@@ -531,17 +527,16 @@ namespace ADAPTER {
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;
-
   };
 
 
   /// structure field solver
   class StructureBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn,const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
+        Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm();
@@ -550,51 +545,58 @@ namespace ADAPTER {
     Teuchos::RCP<Structure> StructureField() { return structure_; }
 
     /// structural field solver
-    //Teuchos::RCP<STR::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
+    // Teuchos::RCP<STR::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
 
-  private:
-
+   private:
     /// Create structure algorithm
-    void CreateStructure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    void CreateStructure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
+        Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup structure algorithm of STR::TimIntImpl type
-    void CreateTimInt(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    void CreateTimInt(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
+        Teuchos::RCP<DRT::Discretization> actdis);
 
     /// create linear solver for contact/meshtying problems
-    /** \param Teuchos::RCP<DRT::Discretization> the discretization class with the corresponding structural elements
+    /** \param Teuchos::RCP<DRT::Discretization> the discretization class with the corresponding
+     * structural elements
      *
      * returns a contact solver object.
      *
-     * Per default the CONTACT SOLVER block from the dat file is used for generating the solver object.
-     * The idea is, that this linear solver object is used whenever there is contact between (two) structures.
-     * Otherwise the standard structural solver block is used (generated by <tt>CreateLinearSolver</tt>. So we can
-     * use highly optimized solvers for symmetric pure structural problems, but choose a different solver for the
-     * hard nonsymmetric contact case. We automatically switch from CONTACT SOLVER (in case of contact) to STRUCT SOLVER
-     * (pure structural problem, no contact) and back again.
+     * Per default the CONTACT SOLVER block from the dat file is used for generating the solver
+     * object. The idea is, that this linear solver object is used whenever there is contact between
+     * (two) structures. Otherwise the standard structural solver block is used (generated by
+     * <tt>CreateLinearSolver</tt>. So we can use highly optimized solvers for symmetric pure
+     * structural problems, but choose a different solver for the hard nonsymmetric contact case. We
+     * automatically switch from CONTACT SOLVER (in case of contact) to STRUCT SOLVER (pure
+     * structural problem, no contact) and back again.
      *
-     * \note For contact/meshtying problems in the saddlepoint formulation (not condensed) this routines requires a block preconditioner
-     * (eg <tt>CheapSIMPLE</tt> as preconditioner for the CONTACT SOLVER. The STRUCT SOLVER block is used for the primary
-     * (structural) variables and the CONTACT CONSTRAINT SOLVER block is used for the Lagrange multiplier block.
+     * \note For contact/meshtying problems in the saddlepoint formulation (not condensed) this
+     * routines requires a block preconditioner (eg <tt>CheapSIMPLE</tt> as preconditioner for the
+     * CONTACT SOLVER. The STRUCT SOLVER block is used for the primary (structural) variables and
+     * the CONTACT CONSTRAINT SOLVER block is used for the Lagrange multiplier block.
      *
-     * \note ATTENTION: condensed meshtying problems use the standard STRUCT SOLVER block (generated by <tt>CreateLinearSolver</tt>).
-     * We assume that in contrary to contact problems the domain configuration is not changing for meshtying over the time.
+     * \note ATTENTION: condensed meshtying problems use the standard STRUCT SOLVER block (generated
+     * by <tt>CreateLinearSolver</tt>). We assume that in contrary to contact problems the domain
+     * configuration is not changing for meshtying over the time.
      */
-    Teuchos::RCP<LINALG::Solver> CreateContactMeshtyingSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+    Teuchos::RCP<LINALG::Solver> CreateContactMeshtyingSolver(
+        Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// create linear solver for pure structure problems
     /** returns linear solver object for pure structural problems
      *
-     *  uses the parameters from the STRUCT SOLVER block in the BACI dat file. This solver is used for pure structural problems,
-     *  whenever there is no contact. For contact/meshtying problems in saddlepoint formulation the STRUCT SOLVER parameters are
-     *  also used for the block preconditioner (structural block).
+     *  uses the parameters from the STRUCT SOLVER block in the BACI dat file. This solver is used
+     * for pure structural problems, whenever there is no contact. For contact/meshtying problems in
+     * saddlepoint formulation the STRUCT SOLVER parameters are also used for the block
+     * preconditioner (structural block).
      */
-    Teuchos::RCP<LINALG::Solver> CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+    Teuchos::RCP<LINALG::Solver> CreateLinearSolver(
+        Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;
-
   };
 
-}
+}  // namespace ADAPTER
 
 #endif

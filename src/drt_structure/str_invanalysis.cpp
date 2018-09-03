@@ -73,49 +73,52 @@ void STR::invanalysis()
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
 
   // input parameters for structural dynamics
-  const Teuchos::ParameterList& sdyn
-    = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // show default parameters
-  if (actdis->Comm().MyPID() == 0)
-    DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
+  if (actdis->Comm().MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
 
   // create a solver
   // get the solver number used for structural solver
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+    dserror(
+        "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
+        "DYNAMIC to a valid number!");
 
-  Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                                      actdis->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<LINALG::Solver> solver =
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  switch(DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS"))
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap, "INV_ANALYSIS"))
   {
-// lung inverse analysis deleted (birzle 12/2016)
+      // lung inverse analysis deleted (birzle 12/2016)
     case INPAR::STR::inv_generalized:
     {
       int ngroup = DRT::Problem::Instance()->GetNPGroup()->NumGroups();
       // check whether there is a micro scale which is equivalent to have a subcomm
       Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
-      if(subcomm!=Teuchos::null and ngroup>2)
-        dserror("Nested parallelism with more than two groups not yet available for inverse multiscale problems");
-      STR::GenInvAnalysis ia(actdis,solver,output);
-      if (ngroup==1 or (subcomm!=Teuchos::null and ngroup==2)) ia.Integrate();
-      else                                                     ia.NPIntegrate();
+      if (subcomm != Teuchos::null and ngroup > 2)
+        dserror(
+            "Nested parallelism with more than two groups not yet available for inverse multiscale "
+            "problems");
+      STR::GenInvAnalysis ia(actdis, solver, output);
+      if (ngroup == 1 or (subcomm != Teuchos::null and ngroup == 2))
+        ia.Integrate();
+      else
+        ia.NPIntegrate();
     }
     break;
     default:
       dserror("Unknown type of inverse analysis");
-    break;
+      break;
   }
 
   // done
   return;
-} // end str_invanalysis()
+}  // end str_invanalysis()
 
 
 /*----------------------------------------------------------------------*/

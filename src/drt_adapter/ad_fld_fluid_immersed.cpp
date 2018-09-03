@@ -20,12 +20,11 @@ Maintainer:  Andreas Rauch
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidImmersed::FluidImmersed(
-        const Teuchos::ParameterList& prbdyn,
-        std::string condname)
+ADAPTER::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  fluid_=Teuchos::rcp(new FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false));
-  fluidadapter_=fluid_->FluidField();
+  fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
+      prbdyn, DRT::Problem::Instance()->FluidDynamicParams(), "fluid", false));
+  fluidadapter_ = fluid_->FluidField();
 
   return;
 }
@@ -41,7 +40,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImmersed::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor>const& ADAPTER::FluidImmersed::Interface() const
+Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FluidImmersed::Interface() const
 {
   return fluidadapter_->Interface();
 }
@@ -49,26 +48,17 @@ Teuchos::RCP<FLD::UTILS::MapExtractor>const& ADAPTER::FluidImmersed::Interface()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::PrepareTimeStep()
-{
-  FluidField()->PrepareTimeStep();
-}
+void ADAPTER::FluidImmersed::PrepareTimeStep() { FluidField()->PrepareTimeStep(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::Update()
-{
-  FluidField()->Update();
-}
+void ADAPTER::FluidImmersed::Update() { FluidField()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::Output()
-{
-  FluidField()->StatisticsAndOutput();
-}
+void ADAPTER::FluidImmersed::Output() { FluidField()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/
@@ -82,8 +72,8 @@ double ADAPTER::FluidImmersed::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImmersed::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                            Teuchos::RCP<Epetra_Vector> ivel)
+void ADAPTER::FluidImmersed::NonlinearSolve(
+    Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   FluidField()->Solve();
 }
@@ -91,11 +81,11 @@ void ADAPTER::FluidImmersed::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                                      double dt)
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   // the displacement -> velocity conversion at the interface
-  idisp->Scale(1./dt);
+  idisp->Scale(1. / dt);
 
   return FluidField()->RelaxationSolve(idisp);
 }

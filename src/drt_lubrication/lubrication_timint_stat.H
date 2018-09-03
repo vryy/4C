@@ -20,65 +20,61 @@ Maintainer: Andy Wirtz
 
 namespace LUBRICATION
 {
-class TimIntStationary : public TimIntImpl
-{
+  class TimIntStationary : public TimIntImpl
+  {
+   public:
+    /// Standard Constructor
+    TimIntStationary(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-public:
+    /// Destructor
+    virtual ~TimIntStationary();
 
-  /// Standard Constructor
-  TimIntStationary(Teuchos::RCP<DRT::Discretization>      dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    /// initialize time integration scheme
+    virtual void Init();
 
-  /// Destructor
-  virtual ~TimIntStationary();
+    /// Update the solution after convergence of the nonlinear iteration.
+    /// Current solution becomes old solution of next timestep.
+    virtual void Update(const int num = 0);
 
-  /// initialize time integration scheme
-  virtual void Init();
+    /// read restart data
+    void ReadRestart(int step);
 
-  /// Update the solution after convergence of the nonlinear iteration.
-  /// Current solution becomes old solution of next timestep.
-  virtual void Update(const int num=0);
+    //! Update iteration incrementally
+    //!
+    //! This update is carried out by computing the new #raten_
+    //! from scratch by using the newly updated #prenp_. The method
+    //! respects the Dirichlet DOFs which are not touched.
+    //! This method is necessary for certain predictors
+    //! (like #PredictConstTempConsistRate)
+    void UpdateIterIncrementally();
 
-  /// read restart data
-  void ReadRestart(int step);
+   protected:
+    /// don't want = operator and cctor
+    TimIntStationary operator=(const TimIntStationary& old);
 
-  //! Update iteration incrementally
-  //!
-  //! This update is carried out by computing the new #raten_
-  //! from scratch by using the newly updated #prenp_. The method
-  //! respects the Dirichlet DOFs which are not touched.
-  //! This method is necessary for certain predictors
-  //! (like #PredictConstTempConsistRate)
-  void UpdateIterIncrementally();
+    /// copy constructor
+    TimIntStationary(const TimIntStationary& old);
 
-protected:
+    /// set time parameter for element evaluation
+    void SetElementTimeParameter() const;
 
-  /// don't want = operator and cctor
-  TimIntStationary operator = (const TimIntStationary& old);
+    //! set time for evaluation of Neumann boundary conditions
+    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-  /// copy constructor
-  TimIntStationary (const TimIntStationary& old);
+    /// add actual Neumann loads with time factor
+    void AddNeumannToResidual();
 
-  /// set time parameter for element evaluation
-  void SetElementTimeParameter() const;
+    /// add parameters specific for time-integration scheme
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
 
-  //! set time for evaluation of Neumann boundary conditions
-  void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    /// return the right time-scaling-factor for the true residual
+    double ResidualScaling() const { return 1.0; }
 
-  /// add actual Neumann loads with time factor
-  void AddNeumannToResidual();
+  };  // class TimIntStationary
 
-  /// add parameters specific for time-integration scheme
-  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
-
-  /// return the right time-scaling-factor for the true residual
-  double ResidualScaling() const { return 1.0; }
-
-}; // class TimIntStationary
-
-} // namespace LUBRICATION
+}  // namespace LUBRICATION
 
 #endif /* SRC_DRT_LUBRICATION_LUBRICATION_TIMINT_STAT_H_ */

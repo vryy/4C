@@ -39,13 +39,13 @@
 
 
 /*----------------------------------------------------------------------------*/
-INVANA::InvanaControl::InvanaControl() :
-invprob_(Teuchos::null),
-invanaopt_(Teuchos::null),
-input_(Teuchos::null),
-x_(Teuchos::null),
-f_(Teuchos::null),
-val_(0.0)
+INVANA::InvanaControl::InvanaControl()
+    : invprob_(Teuchos::null),
+      invanaopt_(Teuchos::null),
+      input_(Teuchos::null),
+      x_(Teuchos::null),
+      f_(Teuchos::null),
+      val_(0.0)
 {
   return;
 }
@@ -77,14 +77,13 @@ int INVANA::InvanaControl::Solve(int restart)
 /*----------------------------------------------------------------------*/
 void INVANA::InvanaControl::invanasolve(int restart)
 {
-
   // solve
   if (restart) InvanaOpti()->ReadRestart(restart);
   InvanaOpti()->Integrate();
 
   // store solution
-  f_=Teuchos::rcp(new Epetra_MultiVector(InvanaOpti()->GetGradientView()));
-  val_=InvanaOpti()->GetObjFunctValView();
+  f_ = Teuchos::rcp(new Epetra_MultiVector(InvanaOpti()->GetGradientView()));
+  val_ = InvanaOpti()->GetObjFunctValView();
   return;
 }
 

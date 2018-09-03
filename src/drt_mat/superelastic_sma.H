@@ -49,16 +49,13 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
     class SuperElasticSMA : public Parameter
     {
-    public:
-
+     public:
       //! standard constructor
       SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matdata);
 
@@ -84,9 +81,11 @@ namespace MAT
       const double T_SA_s_;
       //! finish temperature of the phase transformation from single variant martensite to austenite
       const double T_SA_f_;
-      //! Pressure dependence of the phase transformation from austenite to single variant martensite
+      //! Pressure dependence of the phase transformation from austenite to single variant
+      //! martensite
       const double C_AS_;
-      //! Pressure dependence of the phase transformation from single varinat martensite to austenite
+      //! Pressure dependence of the phase transformation from single varinat martensite to
+      //! austenite
       const double C_SA_;
       //! start stress of the phase transformation from austenite to single variant martensite
       const double sigma_AS_s_;
@@ -103,9 +102,11 @@ namespace MAT
       const int model_;
 
       // The following material parameters are only necessary for the exponential model
-      //! material parameter measuring the speed of transformation from austenite to single variant martensite
+      //! material parameter measuring the speed of transformation from austenite to single variant
+      //! martensite
       const double beta_AS_;
-      //! material parameter measuring the speed of transformation from single variant martensite to austenite
+      //! material parameter measuring the speed of transformation from single variant martensite to
+      //! austenite
       const double beta_SA_;
 
       //@}
@@ -121,16 +122,14 @@ namespace MAT
 
   class SuperElasticSMAType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "SuperElasticSMAType"; }
 
-    static SuperElasticSMAType & Instance() { return instance_; };
+    static SuperElasticSMAType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static SuperElasticSMAType instance_;
 
   };  // class SuperElasticSMAType
@@ -139,8 +138,7 @@ namespace MAT
   //! wrapper for finite strain elasto-plastic material
   class SuperElasticSMA : public So3Material
   {
-  public:
-
+   public:
     //! construct empty material object
     SuperElasticSMA();
 
@@ -195,11 +193,16 @@ namespace MAT
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new SuperElasticSMA( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new SuperElasticSMA(*this));
+    }
 
     //! density
     virtual double Density() const { return params_->density_; }
@@ -208,13 +211,10 @@ namespace MAT
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     //! check if history variables are already initialized
-    bool Initialized() const
-    {
-      return ( isinit_ and (xi_s_curr_!=Teuchos::null) );
-    }
+    bool Initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     //! return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
@@ -233,25 +233,22 @@ namespace MAT
     virtual void Update();
 
     //! evaluate material law
-    virtual void Evaluate(
-      const LINALG::Matrix<3,3>* defgrd,  //!< input deformation gradient for multiplicative split
-      const LINALG::Matrix<6,1>* glstrain, //!<input temperature> --> delete maybe for isothermal version
-      Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
-      LINALG::Matrix<6,1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-      LINALG::Matrix<6,6>* cmat,  //!< output (mandatory) material stiffness matrix
-      const int eleGID
-      );
+    virtual void Evaluate(const LINALG::Matrix<3, 3>*
+                              defgrd,  //!< input deformation gradient for multiplicative split
+        const LINALG::Matrix<6, 1>*
+            glstrain,  //!< input temperature> --> delete maybe for isothermal version
+        Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
+        LINALG::Matrix<6, 1>* stress,    //!< output (mandatory) second Piola-Kirchhoff stress
+        LINALG::Matrix<6, 6>* cmat,      //!< output (mandatory) material stiffness matrix
+        const int eleGID);
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                              double& psi,
-                              const int eleGID);
+    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, const int eleGID);
 
 
     //@}
 
-  private:
-
+   private:
     struct loadingData;
     struct material;
 
@@ -259,36 +256,40 @@ namespace MAT
     MAT::PAR::SuperElasticSMA* params_;
 
     //! Drucker-Prager-type loading of last time step
-    Teuchos::RCP<std::vector<double> > druckerpragerloadinglast_;
-    Teuchos::RCP<std::vector<double> > druckerpragerloadingcurr_;
+    Teuchos::RCP<std::vector<double>> druckerpragerloadinglast_;
+    Teuchos::RCP<std::vector<double>> druckerpragerloadingcurr_;
 
     //! single variant martensitic fraction
-    Teuchos::RCP<std::vector<double> > xi_s_last_;
-    Teuchos::RCP<std::vector<double> > xi_s_curr_;
+    Teuchos::RCP<std::vector<double>> xi_s_last_;
+    Teuchos::RCP<std::vector<double>> xi_s_curr_;
 
     //! Calculates the kronecker delta. Returns 1 for i==j otherwise 0
     virtual int Kron(int i, int j);
 
     //! Caluclates the non-voigt-index pair out of a voigt index
-    virtual void VoigtIndex(int p, int *i, int *j);
+    virtual void VoigtIndex(int p, int* i, int* j);
 
     //! Calculates the voigt-index out of a non-voigt index pair
-    virtual void VoigtIndex(int i, int j, int *p);
+    virtual void VoigtIndex(int i, int j, int* p);
 
     //! Returns the pullback of the 4th order tensor in voigt notation
-    virtual void Pullback4thTensorVoigt(const double jacobian, const LINALG::Matrix<3,3>& defgr, const LINALG::Matrix<6,6>& cmat_eul, LINALG::Matrix<6,6>* cmat_lag);
+    virtual void Pullback4thTensorVoigt(const double jacobian, const LINALG::Matrix<3, 3>& defgr,
+        const LINALG::Matrix<6, 6>& cmat_eul, LINALG::Matrix<6, 6>* cmat_lag);
 
     //! Returns the 4th order identity tensor in tensor notation
     virtual double Idev(int i, int j, int k, int l);
 
     //! Returns the residual of the local Newton step
-    virtual LINALG::Matrix<2,1> ComputeLocalNewtonResidual(LINALG::Matrix<2,1> lambda_s, double xi_s, loadingData loading, material mat_data);
+    virtual LINALG::Matrix<2, 1> ComputeLocalNewtonResidual(
+        LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
 
     //! Returns the system matrix of the local Newton step
-    virtual LINALG::Matrix<2,2> ComputeLocalNewtonJacobian(LINALG::Matrix<2,1> lambda_s, double xi_s, loadingData loading, material mat_data);
+    virtual LINALG::Matrix<2, 2> ComputeLocalNewtonJacobian(
+        LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
 
     //! Returns the loading in the local Newton step, without historical data.
-    virtual loadingData ComputeLocalNewtonLoading(double xi_s, double log_strain_vol, double log_strain_dev_norm, material mat_data);
+    virtual loadingData ComputeLocalNewtonLoading(
+        double xi_s, double log_strain_vol, double log_strain_dev_norm, material mat_data);
 
     //! indicator if #Initialize routine has been called
     bool isinit_;

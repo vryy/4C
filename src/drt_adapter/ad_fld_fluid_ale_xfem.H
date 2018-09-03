@@ -28,12 +28,9 @@ namespace ADAPTER
   /// fluid with moving interfaces implemented by the XFEM
   class FluidAleXFEM : public FluidAle
   {
-  public:
-
+   public:
     /// constructor
-    explicit FluidAleXFEM(const Teuchos::ParameterList& prbdyn,
-                       std::string condname
-                       );
+    explicit FluidAleXFEM(const Teuchos::ParameterList& prbdyn, std::string condname);
 
     /*========================================================================*/
     //! @name Misc
@@ -43,7 +40,7 @@ namespace ADAPTER
     Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& StructInterface();
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface();
 
     //@}
 
@@ -52,11 +49,12 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// nonlinear solve
-    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void NonlinearSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
 
     /// relaxation solve
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                        double dt);
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, double dt);
     //@}
 
     /*========================================================================*/
@@ -80,6 +78,6 @@ namespace ADAPTER
     //@}
   };
 
-}
+}  // namespace ADAPTER
 
 #endif

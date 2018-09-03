@@ -22,34 +22,29 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    template <DRT::Element::DiscretizationType distype>
+    class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype>
+    {
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
 
-namespace ELEMENTS
-{
+     public:
+      /// Singleton access method
+      static ScaTraEleBoundaryCalcStd<distype>* Instance(const int numdofpernode, const int numscal,
+          const std::string& disname, const ScaTraEleBoundaryCalcStd* delete_me = NULL);
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype>
-{
-  typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+      /// Empty destructor
+      virtual ~ScaTraEleBoundaryCalcStd() { return; };
 
-public:
+      /// called upon destruction
+      virtual void Done();
 
-  /// Singleton access method
-  static ScaTraEleBoundaryCalcStd<distype> * Instance(
-      const int numdofpernode,
-      const int numscal,
-      const std::string& disname,
-      const ScaTraEleBoundaryCalcStd* delete_me = NULL );
-
-  /// Empty destructor
-  virtual ~ScaTraEleBoundaryCalcStd(){return;};
-
-  /// called upon destruction
-  virtual void Done();
-
-private:
-  /// private constructor since we are singleton
-  ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal, const std::string& disname);
-}; // class ScaTraEleBoundaryCalcStd
-} //namsepace ELEMENTS
-} // namespace DRT
+     private:
+      /// private constructor since we are singleton
+      ScaTraEleBoundaryCalcStd(
+          const int numdofpernode, const int numscal, const std::string& disname);
+    };  // class ScaTraEleBoundaryCalcStd
+  }     // namespace ELEMENTS
+}  // namespace DRT
 #endif

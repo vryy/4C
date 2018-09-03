@@ -35,7 +35,7 @@ namespace STR
   {
     class MapExtractor;
   }
-}
+}  // namespace STR
 
 namespace LINALG
 {
@@ -44,8 +44,8 @@ namespace LINALG
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /*====================================================================*/
   /*!
    * \brief Adapter to constrained structural time integration.
@@ -57,13 +57,9 @@ namespace ADAPTER {
    */
   class StructureConstrMerged : public FSIStructureWrapper
   {
-  public:
-
+   public:
     /// Constructor
-    StructureConstrMerged
-    (
-      Teuchos::RCP<Structure> stru
-    );
+    StructureConstrMerged(Teuchos::RCP<Structure> stru);
 
     /// setup this object
     virtual void Setup();
@@ -112,8 +108,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// update displacement and evaluate elements
-    virtual void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> dispstepinc  ///< solution increment between time step n and n+1
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
+            dispstepinc  ///< solution increment between time step n and n+1
     );
 
     //! Return MapExtractor for Dirichlet boundary conditions
@@ -126,19 +122,15 @@ namespace ADAPTER {
     virtual const Epetra_Map& DomainMap() const;
 
     /// are there any algebraic constraints?
-     virtual bool HaveConstraint()
-     {
-       return structure_->HaveConstraint();
-     };
+    virtual bool HaveConstraint() { return structure_->HaveConstraint(); };
 
     /// Return bool indicating if constraints are defined
-    virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
+    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
     {
       return structure_->GetConstraintManager();
     };
 
-    virtual INPAR::STR::STC_Scale GetSTCAlgo()
-    { return structure_->GetSTCAlgo(); };
+    virtual INPAR::STR::STC_Scale GetSTCAlgo() { return structure_->GetSTCAlgo(); };
 
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     {
@@ -148,9 +140,8 @@ namespace ADAPTER {
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr
-    (
-        Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    virtual void UpdateIterIncrConstr(
+        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
     )
     {
       structure_->UpdateIterIncrConstr(lagrincr);
@@ -163,21 +154,22 @@ namespace ADAPTER {
     /// Integrate from t1 to t2
     virtual int Integrate() { return structure_->Integrate(); }
 
-  private:
-
+   private:
     /// the constraint map setup for full <-> stuct+constr transition
     Teuchos::RCP<LINALG::MapExtractor> conmerger_;
 
-    /// the complete non-overlapping degree of freedom row map for structure and lagrange multipliers
+    /// the complete non-overlapping degree of freedom row map for structure and lagrange
+    /// multipliers
     Teuchos::RCP<Epetra_Map> dofrowmap_;
 
     /// @name local copies of input parameters
     //{@
-    Teuchos::RCP<DRT::Discretization> discret_;       ///< the discretization
-    Teuchos::RCP<Teuchos::ParameterList> sdynparams_; ///< dynamic control flags ... used, but could/should be circumvented
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;    ///< eXtra input parameters
-    Teuchos::RCP<LINALG::Solver> solver_;             ///< the linear solver
-    Teuchos::RCP<IO::DiscretizationWriter> output_;   ///< the output writer
+    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretization
+    Teuchos::RCP<Teuchos::ParameterList>
+        sdynparams_;  ///< dynamic control flags ... used, but could/should be circumvented
+    Teuchos::RCP<Teuchos::ParameterList> xparams_;   ///< eXtra input parameters
+    Teuchos::RCP<LINALG::Solver> solver_;            ///< the linear solver
+    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
 
     //@}
 

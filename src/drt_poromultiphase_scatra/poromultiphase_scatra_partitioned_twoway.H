@@ -19,36 +19,24 @@
 
 namespace POROMULTIPHASESCATRA
 {
-
   //! Base class of all partitioned solid-scatra algorithms --> virtual
   class PoroMultiPhaseScaTraPartitionedTwoWay : public PoroMultiPhaseScaTraPartitioned
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseScaTraPartitionedTwoWay(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraPartitionedTwoWay(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& algoparams,
-        const Teuchos::ParameterList& poroparams,
-        const Teuchos::ParameterList& structparams,
-        const Teuchos::ParameterList& fluidparams,
-        const Teuchos::ParameterList& scatraparams,
-        const std::string& struct_disname,
-        const std::string& fluid_disname,
-        const std::string& scatra_disname,
-        bool isale,
-        int nds_disp,
-        int nds_vel,
-        int nds_solidpressure,
-        int ndsporofluid_scatra);
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
+        const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
+        const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
+        const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra);
 
     /// setup
     virtual void SetupSystem();
@@ -57,7 +45,7 @@ namespace POROMULTIPHASESCATRA
     virtual void SetupSolver();
 
     /// time step of coupled problem
-    void TimeStep() {return Solve();};
+    void TimeStep() { return Solve(); };
 
     /// print header
     void PrintHeaderPartitioned();
@@ -69,8 +57,7 @@ namespace POROMULTIPHASESCATRA
     virtual void Solve() = 0;
 
 
-  protected:
-
+   protected:
     //! perform iteration step of structure-fluid field
     void DoPoroStep();
 
@@ -93,7 +80,7 @@ namespace POROMULTIPHASESCATRA
     double ittol_;
 
 
-  }; //PoroMultiPhaseScatraPartitionedTwoWay
+  };  // PoroMultiPhaseScatraPartitionedTwoWay
 
   //! Nested partitioned solution algorithm
   // +--------------------------+           +----------+
@@ -104,37 +91,26 @@ namespace POROMULTIPHASESCATRA
 
   class PoroMultiPhaseScaTraPartitionedTwoWayNested : public PoroMultiPhaseScaTraPartitionedTwoWay
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseScaTraPartitionedTwoWayNested(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraPartitionedTwoWayNested(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& algoparams,
-        const Teuchos::ParameterList& poroparams,
-        const Teuchos::ParameterList& structparams,
-        const Teuchos::ParameterList& fluidparams,
-        const Teuchos::ParameterList& scatraparams,
-        const std::string& struct_disname,
-        const std::string& fluid_disname,
-        const std::string& scatra_disname,
-        bool isale,
-        int nds_disp,
-        int nds_vel,
-        int nds_solidpressure,
-        int ndsporofluid_scatra);
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
+        const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
+        const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
+        const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra);
 
     //! perform iteration loop between fields
     virtual void Solve();
 
-  }; // PoroMultiPhaseScatraPartitionedTwoWayNested
+  };  // PoroMultiPhaseScatraPartitionedTwoWayNested
 
   //! Sequential partitioned solution algorithm
   // +-----------+          +-----------+           +-----------+
@@ -145,42 +121,32 @@ namespace POROMULTIPHASESCATRA
   //      ^                                              |
   //      |----------------------------------------------+
 
-  class PoroMultiPhaseScaTraPartitionedTwoWaySequential : public PoroMultiPhaseScaTraPartitionedTwoWay
+  class PoroMultiPhaseScaTraPartitionedTwoWaySequential
+      : public PoroMultiPhaseScaTraPartitionedTwoWay
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     PoroMultiPhaseScaTraPartitionedTwoWaySequential(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraPartitionedTwoWaySequential(){};
 
     /// initialization
-    virtual void Init(
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& algoparams,
-        const Teuchos::ParameterList& poroparams,
-        const Teuchos::ParameterList& structparams,
-        const Teuchos::ParameterList& fluidparams,
-        const Teuchos::ParameterList& scatraparams,
-        const std::string& struct_disname,
-        const std::string& fluid_disname,
-        const std::string& scatra_disname,
-        bool isale,
-        int nds_disp,
-        int nds_vel,
-        int nds_solidpressure,
-        int ndsporofluid_scatra);
+    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
+        const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
+        const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
+        const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
+        int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra);
 
     //! perform iteration loop between fields
     virtual void Solve();
 
-  }; // PoroMultiPhaseScatraPartitionedTwoWayNested
+  };  // PoroMultiPhaseScatraPartitionedTwoWayNested
 
 
-}
+}  // namespace POROMULTIPHASESCATRA
 
 
 

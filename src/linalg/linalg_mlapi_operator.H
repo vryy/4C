@@ -44,200 +44,197 @@
 
 namespace LINALG
 {
-/*!
-\brief A multipurpose experimental multigrid operator
-
-This operator based on the ml advanced programming interface is a
-multipurpose development object for amg ideas that shall be tested in
-the baci framework
-
-\author gee (gee@lnm.mw.tum.de)
-*/
-class  AMG_Operator : public virtual Epetra_Operator
-{
-public:
-
   /*!
-  \brief Standard Constructor
+  \brief A multipurpose experimental multigrid operator
+
+  This operator based on the ml advanced programming interface is a
+  multipurpose development object for amg ideas that shall be tested in
+  the baci framework
+
+  \author gee (gee@lnm.mw.tum.de)
   */
-  explicit AMG_Operator(Teuchos::RCP<Epetra_RowMatrix> A,
-                        Teuchos::ParameterList& params,
-                        const bool compute);
-
-  /*!
-  \brief Destructor
-  */
-  virtual ~AMG_Operator() {}
-
-  /*!
-  \brief Returns the label of this class.
-  */
-  const char* Label() const { return &label_[0]; }
-
-  /*!
-  \brief get Comm of this class
-
-  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
-
-  */
-  const Epetra_Comm & Comm() const {return(Ainput_->Comm());}
-
-  /*!
-  \brief get reference to parameter list
-
-  */
-  Teuchos::ParameterList& Params() const {return params_;}
-
-  /*!
-  \brief get input matrix
-
-  */
-  Teuchos::RCP<Epetra_CrsMatrix> A() {return Ainput_;}
-
-  /*!
-  \brief Get fine level OperatorDomainMap
-
-  Derived from Epetra_Operator, get fine level OperatorDomainMap
-
-  */
-  const Epetra_Map & OperatorDomainMap() const {return Ainput_->OperatorDomainMap();}
-
-  /*!
-  \brief Get fine level OperatorRangeMap
-
-  Derived from Epetra_Operator, get fine level OperatorRangeMap
-
-  */
-  const Epetra_Map & OperatorRangeMap() const {return Ainput_->OperatorRangeMap();}
-
-  /*!
-  \brief ApplyInverse the preconditioner
-
-   ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
-
-
-   \param X   (In) : Epetra_MultiVector matching the fine level map of this
-                     preconditioner
-   \param Y (Out)  : Epetra_MultiVector containing the result on output
-  */
-  int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const ;
-
-  /*!
-  \brief not implemented
-  */
-  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+  class AMG_Operator : public virtual Epetra_Operator
   {
-    dserror("Apply does not make sense for LINALG::AMG_Operator");
-    return(-1);
-  }
+   public:
+    /*!
+    \brief Standard Constructor
+    */
+    explicit AMG_Operator(
+        Teuchos::RCP<Epetra_RowMatrix> A, Teuchos::ParameterList& params, const bool compute);
 
-  /*!
-  \brief not implemented
-  */
-  int SetUseTranspose(bool UseTranspose)
-  {
-    dserror("SetUseTranspose not impl.");
-    return -1;
-  }
+    /*!
+    \brief Destructor
+    */
+    virtual ~AMG_Operator() {}
 
-  /*!
-  \brief not implemented
-  */
-  double NormInf() const
-  {
-    dserror("NormInf not impl.");
-    return(-1.0);
-  }
+    /*!
+    \brief Returns the label of this class.
+    */
+    const char* Label() const { return &label_[0]; }
 
+    /*!
+    \brief get Comm of this class
 
-  /*!
-  \brief not implemented
-  */
-  bool UseTranspose() const
-  {
-    dserror("UseTranspose not impl.");
-    return false;
-  }
+    Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
 
-  /*!
-  \brief not implemented
-  */
-  bool HasNormInf() const
-  {
-    dserror("HasNormInf not impl.");
-    return false;
-  }
+    */
+    const Epetra_Comm& Comm() const { return (Ainput_->Comm()); }
 
-private:
+    /*!
+    \brief get reference to parameter list
 
-  // don't want copy-ctor and = operator
-  AMG_Operator(AMG_Operator& old);
-  AMG_Operator operator = (const AMG_Operator& old);
+    */
+    Teuchos::ParameterList& Params() const { return params_; }
 
-  /*!
-  \brief Compute the preconditioner
-  */
-  void SetupNonSymStab();
+    /*!
+    \brief get input matrix
 
-  /*!
-  \brief Compute row wise 1-norm of a matrix
-  */
-  MLAPI::MultiVector Row1Norm(MLAPI::Operator& A);
+    */
+    Teuchos::RCP<Epetra_CrsMatrix> A() { return Ainput_; }
 
-  /*!
-  \brief Get number of levels in hierarchy
-  */
-  inline int NLevel() const { return nlevel_; }
+    /*!
+    \brief Get fine level OperatorDomainMap
 
-  /*!
-  \brief Multigrid vcycle
-  */
-  void Vcycle(const MLAPI::MultiVector& b_f, MLAPI::MultiVector& x_f, const int level) const;
+    Derived from Epetra_Operator, get fine level OperatorDomainMap
 
-  /*!
-  \brief Get smoother on a certain level
-  */
-  inline const MLAPI::InverseOperator& S(const int level) const { return S_[level]; }
+    */
+    const Epetra_Map& OperatorDomainMap() const { return Ainput_->OperatorDomainMap(); }
 
-  /*!
-  \brief Get prolongation on a certain level
-  */
-  inline const MLAPI::Operator& P(const int level) const { return P_[level]; }
+    /*!
+    \brief Get fine level OperatorRangeMap
 
-  /*!
-  \brief Get restruction on a certain level
-  */
-  inline const MLAPI::Operator& R(const int level) const { return R_[level]; }
+    Derived from Epetra_Operator, get fine level OperatorRangeMap
 
-  /*!
-  \brief Get matrix on a certain level
-  */
-  inline const MLAPI::Operator& A(const int level) const { return A_[level]; }
+    */
+    const Epetra_Map& OperatorRangeMap() const { return Ainput_->OperatorRangeMap(); }
 
-  /*!
-  \brief Get stabilization matrix on a certain level
-  */
-  inline const MLAPI::Operator& Astab(const int level) const { return Astab_[level]; }
+    /*!
+    \brief ApplyInverse the preconditioner
 
-  /*!
-  \brief Get original nonstab matrix on a certain level
-  */
-  inline const MLAPI::Operator& Anonstab(const int level) const { return Anonstab_[level]; }
-
-  std::string                      label_;      // name of this operator
-  Teuchos::ParameterList&          params_;     // ml parameter list (intput)
-  Teuchos::RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix
-  int                              nlevel_;     // no. of grids in hierarchy
-  std::vector<MLAPI::Operator>        P_;          // the matrix hierarchy
-  std::vector<MLAPI::Operator>        R_;          // the matrix hierarchy
-  std::vector<MLAPI::Operator>        A_;          // the matrix hierarchy
-  std::vector<MLAPI::Operator>        Astab_;      // the matrix hierarchy
-  std::vector<MLAPI::Operator>        Anonstab_;   // the matrix hierarchy
-  std::vector<MLAPI::InverseOperator> S_;          // the matrix hierarchy
+     ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
 
 
-}; // class  AMG_Operator : public virtual Epetra_Operator
+     \param X   (In) : Epetra_MultiVector matching the fine level map of this
+                       preconditioner
+     \param Y (Out)  : Epetra_MultiVector containing the result on output
+    */
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+
+    /*!
+    \brief not implemented
+    */
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+    {
+      dserror("Apply does not make sense for LINALG::AMG_Operator");
+      return (-1);
+    }
+
+    /*!
+    \brief not implemented
+    */
+    int SetUseTranspose(bool UseTranspose)
+    {
+      dserror("SetUseTranspose not impl.");
+      return -1;
+    }
+
+    /*!
+    \brief not implemented
+    */
+    double NormInf() const
+    {
+      dserror("NormInf not impl.");
+      return (-1.0);
+    }
+
+
+    /*!
+    \brief not implemented
+    */
+    bool UseTranspose() const
+    {
+      dserror("UseTranspose not impl.");
+      return false;
+    }
+
+    /*!
+    \brief not implemented
+    */
+    bool HasNormInf() const
+    {
+      dserror("HasNormInf not impl.");
+      return false;
+    }
+
+   private:
+    // don't want copy-ctor and = operator
+    AMG_Operator(AMG_Operator& old);
+    AMG_Operator operator=(const AMG_Operator& old);
+
+    /*!
+    \brief Compute the preconditioner
+    */
+    void SetupNonSymStab();
+
+    /*!
+    \brief Compute row wise 1-norm of a matrix
+    */
+    MLAPI::MultiVector Row1Norm(MLAPI::Operator& A);
+
+    /*!
+    \brief Get number of levels in hierarchy
+    */
+    inline int NLevel() const { return nlevel_; }
+
+    /*!
+    \brief Multigrid vcycle
+    */
+    void Vcycle(const MLAPI::MultiVector& b_f, MLAPI::MultiVector& x_f, const int level) const;
+
+    /*!
+    \brief Get smoother on a certain level
+    */
+    inline const MLAPI::InverseOperator& S(const int level) const { return S_[level]; }
+
+    /*!
+    \brief Get prolongation on a certain level
+    */
+    inline const MLAPI::Operator& P(const int level) const { return P_[level]; }
+
+    /*!
+    \brief Get restruction on a certain level
+    */
+    inline const MLAPI::Operator& R(const int level) const { return R_[level]; }
+
+    /*!
+    \brief Get matrix on a certain level
+    */
+    inline const MLAPI::Operator& A(const int level) const { return A_[level]; }
+
+    /*!
+    \brief Get stabilization matrix on a certain level
+    */
+    inline const MLAPI::Operator& Astab(const int level) const { return Astab_[level]; }
+
+    /*!
+    \brief Get original nonstab matrix on a certain level
+    */
+    inline const MLAPI::Operator& Anonstab(const int level) const { return Anonstab_[level]; }
+
+    std::string label_;                      // name of this operator
+    Teuchos::ParameterList& params_;         // ml parameter list (intput)
+    Teuchos::RCP<Epetra_CrsMatrix> Ainput_;  // input matrix
+    int nlevel_;                             // no. of grids in hierarchy
+    std::vector<MLAPI::Operator> P_;         // the matrix hierarchy
+    std::vector<MLAPI::Operator> R_;         // the matrix hierarchy
+    std::vector<MLAPI::Operator> A_;         // the matrix hierarchy
+    std::vector<MLAPI::Operator> Astab_;     // the matrix hierarchy
+    std::vector<MLAPI::Operator> Anonstab_;  // the matrix hierarchy
+    std::vector<MLAPI::InverseOperator> S_;  // the matrix hierarchy
+
+
+  };  // class  AMG_Operator : public virtual Epetra_Operator
 }  // namespace LINALG
 
 
-#endif // LINALG_MLAPI_OPERATOR_H
+#endif  // LINALG_MLAPI_OPERATOR_H

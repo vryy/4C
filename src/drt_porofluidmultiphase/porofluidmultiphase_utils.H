@@ -33,65 +33,61 @@ namespace ADAPTER
 
 namespace POROFLUIDMULTIPHASE
 {
-/// POROFLUIDMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase problems
-namespace UTILS
-{
-
-/// setup second materials for porosity evaluation within solid phase
-void SetupMaterial(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& fluid_disname);
+  /// POROFLUIDMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with
+  /// poromultiphase problems
+  namespace UTILS
+  {
+    /// setup second materials for porosity evaluation within solid phase
+    void SetupMaterial(const Epetra_Comm& comm, const std::string& struct_disname,
+        const std::string& fluid_disname);
 
 
-/// convert a dof based vector to a node based multi vector
-/*!
-  For postprocessing, only vectors based on the primary dof set
-  of the discretization can be used. Hence, all other EpetraVectors
-  based on secondary dof sets are copied to EpetraMultiVectors with one
-  node based vector for each component.
+    /// convert a dof based vector to a node based multi vector
+    /*!
+      For postprocessing, only vectors based on the primary dof set
+      of the discretization can be used. Hence, all other EpetraVectors
+      based on secondary dof sets are copied to EpetraMultiVectors with one
+      node based vector for each component.
 
-  This method can be deleted, if the post processors would be adapted to
-  handle secondary dof sets.
+      This method can be deleted, if the post processors would be adapted to
+      handle secondary dof sets.
 
-  \param dis              : discretization, the vector is based on
-  \param vector           : vector to convert
-  \param nds              : number of the dof set the map of the vector corresponds to
-  \param numdofpernode    : number of dofs per node of the vector (assumed to be equal for all nodes)
- */
-Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToNodeBasedMultiVector(
-    const DRT::Discretization& dis,
-    const Epetra_Vector& vector,
-    const int nds,
-    const int numdofpernode);
+      \param dis              : discretization, the vector is based on
+      \param vector           : vector to convert
+      \param nds              : number of the dof set the map of the vector corresponds to
+      \param numdofpernode    : number of dofs per node of the vector (assumed to be equal for all
+      nodes)
+     */
+    Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToNodeBasedMultiVector(
+        const DRT::Discretization& dis, const Epetra_Vector& vector, const int nds,
+        const int numdofpernode);
 
-/// create solution algorithm depending on input file
-Teuchos::RCP<ADAPTER::PoroFluidMultiphase> CreateAlgorithm(
-    INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,       //!< time discretization scheme
-    Teuchos::RCP<DRT::Discretization>                 dis,                //!< discretization
-    const int                                         linsolvernumber,    //!< number of linear solver
-    const Teuchos::ParameterList&                     probparams,         //!< parameter list of global problem
-    const Teuchos::ParameterList&                     poroparams,         //!< paramter list of poro problem
-    FILE*                                             errfile,            //!< error file
-    Teuchos::RCP<IO::DiscretizationWriter>            output              //!< output writer
+    /// create solution algorithm depending on input file
+    Teuchos::RCP<ADAPTER::PoroFluidMultiphase> CreateAlgorithm(
+        INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme
+            timintscheme,                              //!< time discretization scheme
+        Teuchos::RCP<DRT::Discretization> dis,         //!< discretization
+        const int linsolvernumber,                     //!< number of linear solver
+        const Teuchos::ParameterList& probparams,      //!< parameter list of global problem
+        const Teuchos::ParameterList& poroparams,      //!< paramter list of poro problem
+        FILE* errfile,                                 //!< error file
+        Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
     );
 
-/// redistribute the continous and artery-discretization
-void RedistributeDiscretizations(
-    Teuchos::RCP<DRT::Discretization>                 contdis,
-    Teuchos::RCP<DRT::Discretization>                 artdis,
-    const bool                                        ghost_artdis
+    /// redistribute the continous and artery-discretization
+    void RedistributeDiscretizations(Teuchos::RCP<DRT::Discretization> contdis,
+        Teuchos::RCP<DRT::Discretization> artdis, const bool ghost_artdis);
+
+    //! Determine norm of vector
+    double CalculateVectorNorm(
+        const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,  //!< norm to use
+        const Teuchos::RCP<const Epetra_Vector> vect             //!< the vector of interest
     );
 
-//! Determine norm of vector
-double CalculateVectorNorm(const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm, //!< norm to use
-    const Teuchos::RCP<const Epetra_Vector> vect //!< the vector of interest
-    );
-
-} // UTILS
-// Print the logo
-void PrintLogo();
-}
+  }  // namespace UTILS
+  // Print the logo
+  void PrintLogo();
+}  // namespace POROFLUIDMULTIPHASE
 
 
 #endif /* SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_UTILS_H_ */

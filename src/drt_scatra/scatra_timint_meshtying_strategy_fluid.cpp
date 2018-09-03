@@ -26,15 +26,13 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
-SCATRA::MeshtyingStrategyFluid::MeshtyingStrategyFluid(
-    SCATRA::ScaTraTimIntImpl* scatratimint
-    ) :
-MeshtyingStrategyBase(scatratimint),
-meshtying_(Teuchos::null),
-type_(INPAR::FLUID::no_meshtying)
+SCATRA::MeshtyingStrategyFluid::MeshtyingStrategyFluid(SCATRA::ScaTraTimIntImpl* scatratimint)
+    : MeshtyingStrategyBase(scatratimint),
+      meshtying_(Teuchos::null),
+      type_(INPAR::FLUID::no_meshtying)
 {
   return;
-} // SCATRA::MeshtyingStrategyFluid::MeshtyingStrategyFluid
+}  // SCATRA::MeshtyingStrategyFluid::MeshtyingStrategyFluid
 
 
 /*-----------------------------------------------------------------------*
@@ -51,15 +49,15 @@ const Epetra_Map& SCATRA::MeshtyingStrategyFluid::DofRowMap() const
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying()
 {
-
   // need to complete system matrix due to subsequent matrix-matrix multiplications
   scatratimint_->SystemMatrixOperator()->Complete();
 
   // evaluate fluid-fluid meshtying
-  meshtying_->PrepareMeshtyingSystem(scatratimint_->SystemMatrixOperator(),scatratimint_->Residual(),scatratimint_->Phinp());
+  meshtying_->PrepareMeshtyingSystem(
+      scatratimint_->SystemMatrixOperator(), scatratimint_->Residual(), scatratimint_->Phinp());
 
   return;
-} // SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying
+}  // SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying
 
 
 /*----------------------------------------------------------------------*
@@ -67,10 +65,10 @@ void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying()
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
 {
-  meshtying_->IncludeDirichletInCondensation(scatratimint_->Phinp(),scatratimint_->Phin());
+  meshtying_->IncludeDirichletInCondensation(scatratimint_->Phinp(), scatratimint_->Phin());
 
   return;
-} // SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation()
+}  // SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation()
 
 
 /*----------------------------------------------------------------------*
@@ -79,7 +77,7 @@ void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
 void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
 {
   return;
-} // SCATRA::MeshtyingStrategyFluid::SetupMeshtying
+}  // SCATRA::MeshtyingStrategyFluid::SetupMeshtying
 
 
 /*----------------------------------------------------------------------*
@@ -92,17 +90,21 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 
   // Important: Meshtying for scalar transport is not well tested!
   // get meshtying type
-  type_ = DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),"MESHTYING");
+  type_ = DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(
+      *(scatratimint_->ScatraParameterList()), "MESHTYING");
 
   // safety checks
-  if(type_ == INPAR::FLUID::condensed_bmat)
-    dserror("The 2x2 block solver algorithm for a block matrix system has not been activated yet. Just do it!");
+  if (type_ == INPAR::FLUID::condensed_bmat)
+    dserror(
+        "The 2x2 block solver algorithm for a block matrix system has not been activated yet. Just "
+        "do it!");
 
   // setup meshtying
-  meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->Discretization(),*(scatratimint_->Solver()),type_,DRT::Problem::Instance()->NDim()));
+  meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->Discretization(),
+      *(scatratimint_->Solver()), type_, DRT::Problem::Instance()->NDim()));
 
   return;
-} // SCATRA::MeshtyingStrategyFluid::InitMeshtying
+}  // SCATRA::MeshtyingStrategyFluid::InitMeshtying
 
 
 /*----------------------------------------------------------------------*
@@ -111,33 +113,32 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemMatrix() const
 {
   // safety check
-  if(scatratimint_->NumScal() < 1)
-    dserror("Number of transported scalars not correctly set!");
+  if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
 
   // define coupling and initialize system matrix
-  std::vector<int> coupleddof(scatratimint_->NumScal(),1);
+  std::vector<int> coupleddof(scatratimint_->NumScal(), 1);
 
   return meshtying_->Setup(coupleddof);
-} // SCATRA::MeshtyingStrategyFluid::InitSystemMatrix
+}  // SCATRA::MeshtyingStrategyFluid::InitSystemMatrix
 
 
 /*-------------------------------------------------------------------------*
  | solve linear system of equations for fluid-fluid meshtying   fang 12/14 |
  *-------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluid::Solve(
-    const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
-    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
-    const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
-    const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
-    const int&                                     iteration,      //!< number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
+void SCATRA::MeshtyingStrategyFluid::Solve(const Teuchos::RCP<LINALG::Solver>& solver,  //!< solver
+    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+    const int& iteration,  //!< number of current Newton-Raphson iteration
+    const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
     ) const
 {
-  meshtying_->SolveMeshtying(*solver,systemmatrix,increment,residual,phinp,iteration,projector);
+  meshtying_->SolveMeshtying(
+      *solver, systemmatrix, increment, residual, phinp, iteration, projector);
 
   return;
-} // SCATRA::MeshtyingStrategyFluid::Solve
+}  // SCATRA::MeshtyingStrategyFluid::Solve
 
 
 /*-------------------------------------------------------------------------*
@@ -145,8 +146,7 @@ void SCATRA::MeshtyingStrategyFluid::Solve(
  *-------------------------------------------------------------------------*/
 const LINALG::Solver& SCATRA::MeshtyingStrategyFluid::Solver() const
 {
-  if(scatratimint_->Solver() == Teuchos::null)
-    dserror("Invalid linear solver!");
+  if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
   return *scatratimint_->Solver();
 }
 
@@ -156,7 +156,8 @@ const LINALG::Solver& SCATRA::MeshtyingStrategyFluid::Solver() const
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  convcheckstrategy_ = Teuchos::rcp(
+      new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
-} // SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy
+}  // SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy

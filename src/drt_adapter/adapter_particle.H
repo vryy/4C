@@ -37,7 +37,7 @@ namespace DRT
 {
   class Discretization;
   class ResultTest;
-}
+}  // namespace DRT
 
 namespace LINALG
 {
@@ -53,18 +53,16 @@ namespace PARTICLE
 {
   class Algorithm;
   class TimIntStrategyBase;
-}
+}  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*
  | adapting adapter                                         ghamm 12/13 |
  *----------------------------------------------------------------------*/
 namespace ADAPTER
 {
-
   class Particle
   {
-  public:
-
+   public:
     /// virtual to get polymorph destruction
     virtual ~Particle() { ; }
 
@@ -211,7 +209,8 @@ namespace ADAPTER
     virtual bool HaveInterHandler() = 0;
 
     //! check state vector
-    virtual void CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec) = 0;
+    virtual void CheckStateVector(
+        std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec) = 0;
 
     //! access time integration strategy
     virtual const Teuchos::RCP<const PARTICLE::TimIntStrategyBase>& Strategy() const = 0;
@@ -291,7 +290,8 @@ namespace ADAPTER
     /// Get time step size \f$\Delta t_n\f$
     virtual double Dt() const = 0;
 
-    //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to erase outdated vectors
+    //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to
+    //! erase outdated vectors
     virtual void UpdateExtActions(bool init = false) = 0;
 
     virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector) = 0;
@@ -306,13 +306,10 @@ namespace ADAPTER
   /// particle field solver
   class ParticleBaseAlgorithm
   {
-  public:
-
+   public:
     /// constructor
     explicit ParticleBaseAlgorithm(
-      const Teuchos::ParameterList& prbdyn,
-      Teuchos::RCP<DRT::Discretization> actdis
-      );
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~ParticleBaseAlgorithm() { ; }
@@ -320,13 +317,10 @@ namespace ADAPTER
     /// return particle field
     Teuchos::RCP<Particle> ParticleField() { return particle_; }
 
-  private:
-
+   private:
     /// setup particle time integrator
     void SetupTimInt(
-      const Teuchos::ParameterList& prbdyn,
-      Teuchos::RCP<DRT::Discretization> actdis
-      );
+        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
     /// particle field
     Teuchos::RCP<Particle> particle_;
@@ -337,4 +331,4 @@ namespace ADAPTER
 
 
 /*----------------------------------------------------------------------*/
-#endif // ADAPTER_PARTICLE_H
+#endif  // ADAPTER_PARTICLE_H

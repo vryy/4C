@@ -25,11 +25,10 @@
 /*----------------------------------------------------------------------*
  |                                                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
-ACOU::AcouResultTest::AcouResultTest(AcouTimeInt&  acoualgo)
-  : DRT::ResultTest("ACOUSTIC")
+ACOU::AcouResultTest::AcouResultTest(AcouTimeInt& acoualgo) : DRT::ResultTest("ACOUSTIC")
 {
   dis_ = acoualgo.Discretization();
-  mysol_ =  LINALG::CreateVector(*(dis_->NodeRowMap()),true);
+  mysol_ = LINALG::CreateVector(*(dis_->NodeRowMap()), true);
   acoualgo.NodalPressureField(mysol_);
 }
 
@@ -40,21 +39,20 @@ void ACOU::AcouResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
-  if (dis != dis_->Name())
-    return;
+  res.ExtractString("DIS", dis);
+  if (dis != dis_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE",node);
+  res.ExtractInt("NODE", node);
   node -= 1;
 
   int havenode(dis_->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  dis_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  dis_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
-  if (isnodeofanybody==0)
+  if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s",node+1,dis_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
   }
   else
   {
@@ -63,21 +61,22 @@ void ACOU::AcouResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
       DRT::Node* actnode = dis_->gNode(node);
 
       // Here, we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != dis_->Comm().MyPID())
-        return;
+      if (actnode->Owner() != dis_->Comm().MyPID()) return;
 
       double result = 0.;
       const Epetra_BlockMap& map = mysol_->Map();
       std::string position;
-      res.ExtractString("QUANTITY",position);
+      res.ExtractString("QUANTITY", position);
 
-      if (position=="pressure")
+      if (position == "pressure")
       {
-        result = (*mysol_)[map.LID(actnode->Id())]; // Here, we got a node map, not a dof map with dofs based on nodes!
+        result = (*mysol_)[map.LID(
+            actnode->Id())];  // Here, we got a node map, not a dof map with dofs based on nodes!
       }
       else
       {
-        dserror("Quantity '%s' not supported in result-test of acoustic transport problems", position.c_str());
+        dserror("Quantity '%s' not supported in result-test of acoustic transport problems",
+            position.c_str());
       }
 
       nerr += CompareValues(result, "NODE", res);

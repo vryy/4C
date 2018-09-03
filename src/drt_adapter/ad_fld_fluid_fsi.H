@@ -34,7 +34,7 @@ namespace LINALG
 {
   class Solver;
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace IO
 {
@@ -48,10 +48,10 @@ namespace FLD
   {
     class MapExtractor;
   }
-}
+}  // namespace FLD
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /*! \brief Fluid field adapter for fsi
    *
    *
@@ -59,16 +59,11 @@ namespace ADAPTER {
    */
   class FluidFSI : public FluidWrapper
   {
-  public:
-
+   public:
     /// Constructor
-    FluidFSI(Teuchos::RCP<Fluid> fluid,
-        Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
-        bool isale,
-        bool dirichletcond);
+    FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     virtual void Init();
@@ -89,7 +84,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const { return interface_; }
 
     /// update slave dofs for multifield simulations with fluid mesh tying
     virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
@@ -110,10 +105,13 @@ namespace ADAPTER {
 
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
-    ///Update fluid griv velocity via FD approximation
+    /// Update fluid griv velocity via FD approximation
     void UpdateGridv();
 
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc){dserror("not implemented!");};
+    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc)
+    {
+      dserror("not implemented!");
+    };
 
     virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);
 
@@ -121,18 +119,20 @@ namespace ADAPTER {
 
     //! @name Conversion between displacement and velocity at interface
 
-    //! Conversion of displacement to velocity at the interface without predictors or inhomogeneous DBCs
+    //! Conversion of displacement to velocity at the interface without predictors or inhomogeneous
+    //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
     virtual void DisplacementToVelocity(
-        Teuchos::RCP<Epetra_Vector> fcx     ///< interface displacement step increment
+        Teuchos::RCP<Epetra_Vector> fcx  ///< interface displacement step increment
     );
 
-    //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
+    //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous
+    //! DBCs
     //!
     //! All input vectors have to live on the fluid field map.
     virtual void VelocityToDisplacement(
-        Teuchos::RCP<Epetra_Vector> fcx     ///< interface velocity step increment at interface
+        Teuchos::RCP<Epetra_Vector> fcx  ///< interface velocity step increment at interface
     );
 
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
@@ -141,7 +141,7 @@ namespace ADAPTER {
 
     //@}
 
-    virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
+    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
 
     virtual void UseBlockMatrix(bool splitmatrix);
 
@@ -160,10 +160,7 @@ namespace ADAPTER {
     void ProjVelToDivZero();
 
     /// reset state vectors
-    virtual void Reset(
-        bool completeReset = false,
-        int numsteps = 1,
-        int iter = -1);
+    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1);
 
     /// calculate error in comparison to analytical solution
     virtual void CalculateError();
@@ -186,13 +183,14 @@ namespace ADAPTER {
      *  \author mayr.mt \date 12/2013
      */
     virtual void IndicateErrorNorms(
-        double& err, ///< L2-norm of temporal discretization error based on all DOFs
-        double& errcond, ///< L2-norm of temporal discretization error based on interface DOFs
-        double& errother, ///< L2-norm of temporal discretization error based on interior DOFs
-        double& errinf, ///< L-inf-norm of temporal discretization error based on all DOFs
-        double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
-        double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
-        );
+        double& err,       ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf,    ///< L-inf-norm of temporal discretization error based on all DOFs
+        double&
+            errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
+        double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
+    );
 
     /*! \brief Error order for adaptive fluid time integration
      *
@@ -209,19 +207,21 @@ namespace ADAPTER {
     //! Type of adaptivity algorithm
     enum ETimAdaAux
     {
-      ada_none, ///< no time step size adaptivity
-      ada_upward, ///< of upward type, i.e. auxiliary scheme has \b higher order of accuracy than marching scheme
-      ada_downward, ///< of downward type, i.e. auxiliary scheme has \b lower order of accuracy than marching scheme
-      ada_orderequal ///< of equal order type, i.e. auxiliary scheme has the \b same order of accuracy like the marching method
+      ada_none,      ///< no time step size adaptivity
+      ada_upward,    ///< of upward type, i.e. auxiliary scheme has \b higher order of accuracy than
+                     ///< marching scheme
+      ada_downward,  ///< of downward type, i.e. auxiliary scheme has \b lower order of accuracy
+                     ///< than marching scheme
+      ada_orderequal  ///< of equal order type, i.e. auxiliary scheme has the \b same order of
+                      ///< accuracy like the marching method
     };
 
     //@}
 
-    ///Calculate WSS vector
+    /// Calculate WSS vector
     virtual Teuchos::RCP<Epetra_Vector> CalculateWallShearStresses();
 
-  protected:
-
+   protected:
     /// create conditioned dof-map extractor for the fluid
     virtual void SetupInterface();
 
@@ -238,8 +238,8 @@ namespace ADAPTER {
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 
     //! @name local copies of input parameters
-    Teuchos::RCP<DRT::Discretization>      dis_;
-    Teuchos::RCP<Teuchos::ParameterList>   params_;
+    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Teuchos::ParameterList> params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     bool dirichletcond_;
     //@}
@@ -250,16 +250,15 @@ namespace ADAPTER {
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
 
     /// interface force at old time level t_n
-    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;
+    Teuchos::RCP<Epetra_Vector> interfaceforcen_;
 
     /// ALE dof map
-    Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
+    Teuchos::RCP<LINALG::MapExtractor> meshmap_;
 
     /// all velocity dofs not at the interface
-    Teuchos::RCP<Epetra_Map>               innervelmap_;
+    Teuchos::RCP<Epetra_Map> innervelmap_;
 
-  private:
-
+   private:
     //! Time step size adaptivity in monolithic FSI
     //@{
 
@@ -275,9 +274,9 @@ namespace ADAPTER {
      *
      *  \author mayr.mt \date 10/2013
      */
-    void ExplicitEuler(const Epetra_Vector& veln, ///< velocity at \f$t_n\f$
-        const Epetra_Vector& accn, ///< acceleration at \f$t_n\f$
-        Epetra_Vector& velnp ///< velocity at \f$t_{n+1}\f$
+    void ExplicitEuler(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
+        const Epetra_Vector& accn,                 ///< acceleration at \f$t_n\f$
+        Epetra_Vector& velnp                       ///< velocity at \f$t_{n+1}\f$
         ) const;
 
     /*! \brief Do a single Adams-Bashforth 2 step as auxiliary time integrator
@@ -310,15 +309,15 @@ namespace ADAPTER {
      *
      *  \author mayr.mt \date 11/2013
      */
-    void AdamsBashforth2(const Epetra_Vector& veln, ///< velocity at \f$t_n\f$
-        const Epetra_Vector& accn, ///< acceleration at \f$t_n\f$
-        const Epetra_Vector& accnm, ///< acceleration at \f$t_{n-1}\f$
-        Epetra_Vector& velnp ///< velocity at \f$t_{n+1}\f$
+    void AdamsBashforth2(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
+        const Epetra_Vector& accn,                   ///< acceleration at \f$t_n\f$
+        const Epetra_Vector& accnm,                  ///< acceleration at \f$t_{n-1}\f$
+        Epetra_Vector& velnp                         ///< velocity at \f$t_{n+1}\f$
         ) const;
 
     //! Compute length-scaled L2-norm of a vector
-    virtual double CalculateErrorNorm(const Epetra_Vector& vec, ///< vector to compute norm of
-        const int numneglect = 0 ///< number of DOFs that have to be neglected for length scaling
+    virtual double CalculateErrorNorm(const Epetra_Vector& vec,  ///< vector to compute norm of
+        const int numneglect = 0  ///< number of DOFs that have to be neglected for length scaling
         ) const;
 
     //! return order of accuracy of auxiliary integrator
@@ -327,17 +326,16 @@ namespace ADAPTER {
     //! return leading error coefficient of velocity of auxiliary integrator
     double AuxMethodLinErrCoeffVel() const;
 
-    Teuchos::RCP<Epetra_Vector> locerrvelnp_; ///< vector of temporal local discretization error
+    Teuchos::RCP<Epetra_Vector> locerrvelnp_;  ///< vector of temporal local discretization error
 
-    INPAR::FSI::FluidMethod auxintegrator_; ///< auxiliary time integrator in fluid field
+    INPAR::FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field
 
-    int numfsidbcdofs_; ///< number of interface DOFs with Dirichlet boundary condition
+    int numfsidbcdofs_;  ///< number of interface DOFs with Dirichlet boundary condition
 
-    ETimAdaAux methodadapt_; ///< type of adaptive method
+    ETimAdaAux methodadapt_;  ///< type of adaptive method
 
     //@}
-
   };
-}
+}  // namespace ADAPTER
 
 #endif

@@ -18,12 +18,12 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Ale2::ReadElement(const std::string& eletype,
-    const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::Ale2::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
   // get gauss rule
@@ -39,4 +39,3 @@ bool DRT::ELEMENTS::Ale2::ReadElement(const std::string& eletype,
   so3mat->Setup(numgp, linedef);
   return true;
 }
-

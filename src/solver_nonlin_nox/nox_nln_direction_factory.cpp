@@ -25,8 +25,8 @@ NOX::NLN::Direction::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::Factory::BuildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
-    Teuchos::ParameterList& params)
+Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::Factory::BuildDirection(
+    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Teuchos::RCP<NOX::Direction::Generic> direction;
 
@@ -37,7 +37,8 @@ Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::Factory::BuildDirecti
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::Direction::Facotry::buildDirection() - Invalid choice for \"Method\" in \"Direction\" sublist!\n";
+    msg << "Error - NOX::NLN::Direction::Facotry::buildDirection() - Invalid choice for \"Method\" "
+           "in \"Direction\" sublist!\n";
     msg << "The \"Direction\"-\"Method\" = " << method << " is not (yet) supported!";
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg.str());
   }
@@ -48,9 +49,8 @@ Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::Factory::BuildDirecti
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Direction::Generic> NOX::NLN::Direction::BuildDirection(
-    const Teuchos::RCP<NOX::GlobalData>& gd,
-    Teuchos::ParameterList& params)
+    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Factory factory;
-  return factory.BuildDirection(gd,params);
+  return factory.BuildDirection(gd, params);
 }

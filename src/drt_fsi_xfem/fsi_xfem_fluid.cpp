@@ -23,13 +23,13 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
-  : FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams(),"FSICoupling"),
-    comm_(comm)
+    : FluidMovingBoundaryBaseAlgorithm(
+          DRT::Problem::Instance()->FluidDynamicParams(), "FSICoupling"),
+      comm_(comm)
 {
-  const Teuchos::ParameterList& fluiddyn   = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
 
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(IO::cout, fluiddyn);
+  if (comm_.MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, fluiddyn);
 
   step_ = 0;
   time_ = 0.;
@@ -41,9 +41,7 @@ FSI::FluidXFEMAlgorithm::FluidXFEMAlgorithm(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidXFEMAlgorithm::~FluidXFEMAlgorithm()
-{
-}
+FSI::FluidXFEMAlgorithm::~FluidXFEMAlgorithm() {}
 
 
 
@@ -51,9 +49,11 @@ FSI::FluidXFEMAlgorithm::~FluidXFEMAlgorithm()
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Timeloop()
 {
-  if(DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem)
+  if (DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem)
   {
-    if(Comm().MyPID()==0) std::cout << YELLOW_LIGHT << "Integrate routine for MOVING INTERFACES" << END_COLOR << "\n" << std::endl;
+    if (Comm().MyPID() == 0)
+      std::cout << YELLOW_LIGHT << "Integrate routine for MOVING INTERFACES" << END_COLOR << "\n"
+                << std::endl;
 
 
     while (NotFinished())
@@ -64,8 +64,6 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
       Output();
     }
   }
-
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -74,7 +72,6 @@ void FSI::FluidXFEMAlgorithm::ReadRestart(int step)
 {
   time_ = MBFluidField()->ReadRestart(step);
   step_ = step;
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -91,24 +88,14 @@ void FSI::FluidXFEMAlgorithm::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Solve()
-{
-  MBFluidField()->NonlinearSolve();
-}
+void FSI::FluidXFEMAlgorithm::Solve() { MBFluidField()->NonlinearSolve(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Update()
-{
-  MBFluidField()->Update();
-}
+void FSI::FluidXFEMAlgorithm::Update() { MBFluidField()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidXFEMAlgorithm::Output()
-{
-  MBFluidField()->Output();
-}
-
+void FSI::FluidXFEMAlgorithm::Output() { MBFluidField()->Output(); }

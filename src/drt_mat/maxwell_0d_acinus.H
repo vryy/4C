@@ -18,22 +18,19 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for Maxwell 0D acinar material
     ///
     class Maxwell_0d_acinus : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
       Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Maxwell_0d_acinus() { }
+      virtual ~Maxwell_0d_acinus() {}
 
       /// @name material parameters
       //@{
@@ -56,16 +53,14 @@ namespace MAT
 
   class Maxwell_0d_acinusType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "maxwell_0d_acinusType"; }
 
-    static Maxwell_0d_acinusType & Instance() { return instance_; };
+    static Maxwell_0d_acinusType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static Maxwell_0d_acinusType instance_;
   };
 
@@ -75,8 +70,7 @@ namespace MAT
   /// This object exists (several times) at every element
   class Maxwell_0d_acinus : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Maxwell_0d_acinus();
 
@@ -91,7 +85,10 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return Maxwell_0d_acinusType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return Maxwell_0d_acinusType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -124,48 +121,50 @@ namespace MAT
     */
     virtual void Setup(DRT::INPUT::LineDefinition* linedef)
     {
-      dserror("Setup not implemented yet! Check your material type, "
+      dserror(
+          "Setup not implemented yet! Check your material type, "
           "maybe you are still using the base class MAT_0D_MAXWELL_ACINUS.");
     }
 
     /*!
        \brief
      */
-     virtual void Evaluate(
-         Epetra_SerialDenseVector& epnp,
-         Epetra_SerialDenseVector& epn,
-         Epetra_SerialDenseVector& epnm,
-         Epetra_SerialDenseMatrix& sysmat,
-         Epetra_SerialDenseVector& rhs,
-         Teuchos::ParameterList & params,
-         const double          NumOfAcini,
-         const double           Vo,
-         double time,
-         double dt)
-       {dserror("Evaluate not implemented yet !");}
+    virtual void Evaluate(Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
+        Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
+        Epetra_SerialDenseVector& rhs, Teuchos::ParameterList& params, const double NumOfAcini,
+        const double Vo, double time, double dt)
+    {
+      dserror("Evaluate not implemented yet !");
+    }
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_0d_maxwell_acinus; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_0d_maxwell_acinus;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Maxwell_0d_acinus( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new Maxwell_0d_acinus(*this));
+    }
 
     /// return density
     virtual double Density() const { return -1; }
 
     /// return first stiffness of the Maxwell model
-    double Stiffness1() const { return params_->stiffness1_;}
+    double Stiffness1() const { return params_->stiffness1_; }
 
     /// return first stiffness of the Maxwell model
-    double Stiffness2() const { return params_->stiffness2_;}
+    double Stiffness2() const { return params_->stiffness2_; }
 
     /// return first viscosity of the Maxwell model
-    double Viscosity1() const { return params_->viscosity1_;}
+    double Viscosity1() const { return params_->viscosity1_; }
 
     /// return first viscosity of the Maxwell model
-    double Viscosity2() const { return params_->viscosity2_;}
+    double Viscosity2() const { return params_->viscosity2_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -177,20 +176,20 @@ namespace MAT
     virtual void SetParams(std::string parametername, double new_value);
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names)
-    { /* do nothing for simple material models */ };
+    virtual void VisNames(std::map<std::string, int>& names){
+        /* do nothing for simple material models */};
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data , int eleID)
-    { /* do nothing for simple material models */ return false; };
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int eleID)
+    { /* do nothing for simple material models */
+      return false;
+    };
 
-  protected:
+   protected:
     /// my material parameters
     MAT::PAR::Maxwell_0d_acinus* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif
-

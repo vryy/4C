@@ -31,7 +31,8 @@ namespace SSI
   /*!
   \brief strategy for cloning scatra discretization from structure discretization
 
-  For some scatra-structure interaction problems, the scatra discretization is obtained through cloning from the structure discretization.
+  For some scatra-structure interaction problems, the scatra discretization is obtained through
+  cloning from the structure discretization.
 
   \author schmidt (schmidt@lnm.mw.tum.de)
   \date 09/17
@@ -39,43 +40,41 @@ namespace SSI
 
   class ScatraStructureCloneStrategy
   {
-    public:
+   public:
+    //! constructor
+    explicit ScatraStructureCloneStrategy() { return; };
 
-      //! constructor
-      explicit ScatraStructureCloneStrategy(){return;};
+    //! destructor
+    virtual ~ScatraStructureCloneStrategy() { return; };
 
-      //! destructor
-      virtual ~ScatraStructureCloneStrategy(){return;};
+    //! return map with original names of conditions to be cloned as key values, and final names of
+    //! cloned conditions as mapped values
+    virtual std::map<std::string, std::string> ConditionsToCopy();
 
-      //! return map with original names of conditions to be cloned as key values, and final names of cloned conditions as mapped values
-      virtual std::map<std::string,std::string> ConditionsToCopy();
+    //! return SCATRA::ImplType of the element
+    virtual INPAR::SCATRA::ImplType GetImplType(
+        DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
+    );
 
-      //! return SCATRA::ImplType of the element
-      virtual INPAR::SCATRA::ImplType GetImplType(
-          DRT::Element*                ele        //! element whose SCATRA::ImplType shall be determined
-          );
+   protected:
+    //! check material of cloned element
+    void CheckMaterialType(const int matid  //! material of cloned element
+    );
 
-    protected:
+    //! decide whether element should be cloned or not, and if so, determine type of cloned element
+    virtual bool DetermineEleType(
+        DRT::Element* actele,              //! current element on source discretization
+        const bool ismyele,                //! ownership flag
+        std::vector<std::string>& eletype  //! vector storing types of cloned elements
+    );
 
-      //! check material of cloned element
-      void CheckMaterialType(
-          const int matid   //! material of cloned element
-          );
-
-      //! decide whether element should be cloned or not, and if so, determine type of cloned element
-      virtual bool DetermineEleType(
-          DRT::Element*               actele,    //! current element on source discretization
-          const bool                  ismyele,   //! ownership flag
-          std::vector<std::string>&   eletype    //! vector storing types of cloned elements
-          );
-
-      //! provide cloned element with element specific data (material etc.)
-      virtual void SetElementData(
-          Teuchos::RCP<DRT::Element>   newele,   //! current cloned element on target discretization
-          DRT::Element*                oldele,   //! current element on source discretization
-          const int                    matid,    //! material of cloned element
-          const bool                   isnurbs   //! nurbs flag
-          );
-  }; // class ScatraStructureCloneStrategy
-} // namespace SSI
+    //! provide cloned element with element specific data (material etc.)
+    virtual void SetElementData(
+        Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
+        DRT::Element* oldele,               //! current element on source discretization
+        const int matid,                    //! material of cloned element
+        const bool isnurbs                  //! nurbs flag
+    );
+  };  // class ScatraStructureCloneStrategy
+}  // namespace SSI
 #endif

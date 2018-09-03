@@ -33,7 +33,7 @@ namespace ADAPTER
 {
   class StructurePoroWrapper;
   class AleFpsiWrapper;
-}
+}  // namespace ADAPTER
 
 namespace FLD
 {
@@ -54,9 +54,7 @@ namespace FSI
   //!  \date 08/14
   class AlgorithmXFEM : public ADAPTER::AlgorithmBase
   {
-
-  public:
-
+   public:
     //! create using a Epetra_Comm
     AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
         const ADAPTER::FieldWrapper::Fieldtype type);
@@ -74,32 +72,30 @@ namespace FSI
     virtual void SetupSystem() = 0;
 
     //! read restart data
-    virtual void ReadRestart(
-      int step  //!< step number where the calculation is continued
-      ) = 0;
+    virtual void ReadRestart(int step  //!< step number where the calculation is continued
+        ) = 0;
 
     //--------------------------------------------------------------------------//
     //! @name Access to single fields
 
     //! access to structural & poro field
-    const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro(){return structureporo_;}
+    const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro() { return structureporo_; }
 
     //! access to fluid field
-    const Teuchos::RCP< ::FLD::XFluid>& FluidField(){return fluid_;}
+    const Teuchos::RCP<::FLD::XFluid>& FluidField() { return fluid_; }
 
     //! access to ale field
-    const Teuchos::RCP< ::ADAPTER::AleFpsiWrapper>& AleField(){return ale_;}
+    const Teuchos::RCP<::ADAPTER::AleFpsiWrapper>& AleField() { return ale_; }
 
     //! is an monolithic ale computations
-    bool HaveAle() {return (AleField() != Teuchos::null);}
+    bool HaveAle() { return (AleField() != Teuchos::null); }
 
     //! number of physical fields to solve involved
-    int NumFields(){return num_fields_;}
+    int NumFields() { return num_fields_; }
 
     //@}
 
-  protected:
-
+   protected:
     //--------------------------------------------------------------------------//
     //! @name Time loop building blocks
 
@@ -121,13 +117,13 @@ namespace FSI
     //! @name Underlying fields
 
     //! underlying structure / poro of the FSI/FPSI problem
-    Teuchos::RCP< ::ADAPTER::StructurePoroWrapper> structureporo_;
+    Teuchos::RCP<::ADAPTER::StructurePoroWrapper> structureporo_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP< ::FLD::XFluid> fluid_;
+    Teuchos::RCP<::FLD::XFluid> fluid_;
 
     // underlying ale of the FSI problem
-    Teuchos::RCP<ADAPTER::AleFpsiWrapper>     ale_;
+    Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
 
     //@}
 
@@ -141,8 +137,7 @@ namespace FSI
 
     //@}
 
-  private:
-
+   private:
   };  // Algorithm
 }  // namespace FSI
 

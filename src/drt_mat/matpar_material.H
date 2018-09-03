@@ -35,27 +35,24 @@ namespace MAT
   {
     class Parameter;
   }
-}
+}  // namespace MAT
 
 /*----------------------------------------------------------------------*/
 /* declarations */
 namespace MAT
 {
-
   namespace PAR
   {
     class ParMaterialType : public DRT::ParObjectType
     {
-    public:
-
+     public:
       std::string Name() const { return "ParMaterialType"; }
 
-      static ParMaterialType & Instance() { return instance_; };
+      static ParMaterialType& Instance() { return instance_; };
 
-    private:
-
+     private:
       static ParMaterialType instance_;
-};
+    };
 
     /// Container for read-in materials
     ///
@@ -66,17 +63,15 @@ namespace MAT
     /// \date 02/09
     class Material : public DRT::Container
     {
-    public:
-
+     public:
       /// @name life span
       //@{
 
       /// standard constructor
-      Material(
-        const int id,  ///< unique material ID
-        const INPAR::MAT::MaterialType type,  ///< type of material
-        const std::string name  ///< name of material
-        );
+      Material(const int id,                    ///< unique material ID
+          const INPAR::MAT::MaterialType type,  ///< type of material
+          const std::string name                ///< name of material
+      );
 
 
       /// Empty Constructor with type condition_none
@@ -95,7 +90,10 @@ namespace MAT
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      virtual int UniqueParObjectId() const { return ParMaterialType::Instance().UniqueParObjectId(); }
+      virtual int UniqueParObjectId() const
+      {
+        return ParMaterialType::Instance().UniqueParObjectId();
+      }
 
       /// Pack this class so it can be communicated
       ///
@@ -112,9 +110,8 @@ namespace MAT
       /// This function is called by the material factory MAT::Material::Factory.
       /// To circumvent more than this single major switch of material type to
       /// object, #params_ are allocated externally.
-      inline void SetParameter(
-        MAT::PAR::Parameter* matparam  ///< the pointer
-        )
+      inline void SetParameter(MAT::PAR::Parameter* matparam  ///< the pointer
+      )
       {
         params_ = Teuchos::rcp(matparam);
       }
@@ -143,14 +140,13 @@ namespace MAT
       ///
       /// These quick access parameters are stored in separate member #params_;
       /// whereas the originally read ones are stored in DRT::Container base
-      inline MAT::PAR::Parameter* Parameter() const { return params_.get();}
+      inline MAT::PAR::Parameter* Parameter() const { return params_.get(); }
 
       //@}
 
-    protected:
-
+     protected:
       /// don't want = operator
-      Material operator = (const Material& old);
+      Material operator=(const Material& old);
 
       /// Unique ID of this material, no second material of same ID may exist
       int id_;
@@ -169,13 +165,13 @@ namespace MAT
 
     };  // class Material
 
-  }  // namespec PAR
+  }  // namespace PAR
 
 }  // namespace MAT
 
 
 /// out stream operator
-std::ostream& operator << (std::ostream& os, const MAT::PAR::Material& node);
+std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& node);
 
 
 #endif  // #ifndef MATPAR_MATERIAL_H

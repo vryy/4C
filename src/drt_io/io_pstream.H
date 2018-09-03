@@ -35,11 +35,11 @@ namespace IO
   /// enum for verbosity level
   enum verbositylevel
   {
-    undef = -1, ///< do not use!
-    minimal,    ///< one line per time step should be enough
-    standard,   ///< a few lines per time step is okay
-    verbose,    ///< detailed information, e.g. nonlinear convergence output, execution steps
-    debug       ///< to be used for permanent debugging information (not for temporary hacks)
+    undef = -1,  ///< do not use!
+    minimal,     ///< one line per time step should be enough
+    standard,    ///< a few lines per time step is okay
+    verbose,     ///< detailed information, e.g. nonlinear convergence output, execution steps
+    debug        ///< to be used for permanent debugging information (not for temporary hacks)
   };
 
 
@@ -58,8 +58,7 @@ namespace IO
    */
   class Pstream
   {
-
-  public :
+   public:
     /// This empty constructor is called when the global object is instantiated.
     Pstream();
 
@@ -69,19 +68,18 @@ namespace IO
     /// configure the output. Must be called before IO::cout can be used. Is
     /// currently called in the global problem using the params specified in the
     /// IO section of the .dat-file.
-    void setup(
-      const bool writetoscreen,       ///< bool whether output is written to screen
-      const bool writetofile,         ///< bool whether output is written to file
-      const bool prefixgroupID,       ///< bool whether group ID is prefixed in each line
-      const IO::verbositylevel level, ///< verbosity level
-      Teuchos::RCP<Epetra_Comm> comm, ///< MPI communicator
-      const int targetpid,            ///< target processor ID from which to print
-      const int groupID,              ///< the ID
-      const std::string fileprefix    ///< prefix for the output file
+    void setup(const bool writetoscreen,  ///< bool whether output is written to screen
+        const bool writetofile,           ///< bool whether output is written to file
+        const bool prefixgroupID,         ///< bool whether group ID is prefixed in each line
+        const IO::verbositylevel level,   ///< verbosity level
+        Teuchos::RCP<Epetra_Comm> comm,   ///< MPI communicator
+        const int targetpid,              ///< target processor ID from which to print
+        const int groupID,                ///< the ID
+        const std::string fileprefix      ///< prefix for the output file
     );
 
-    /// must be called to close open file handles and resets the IO::cout object to a pristine state.
-    /// This is currently called by the destructor of the global problem singleton.
+    /// must be called to close open file handles and resets the IO::cout object to a pristine
+    /// state. This is currently called by the destructor of the global problem singleton.
     void close();
 
     /// writes the buffer to screen
@@ -98,8 +96,7 @@ namespace IO
       {
         // store formatting in this semi persistent buffer
         fmt_tmp_ << s;
-        if (fmt_tmp_.str().size() <= 0)
-          return *this;
+        if (fmt_tmp_.str().size() <= 0) return *this;
 
         // actual content goes into the string str
         std::string str = fmt_tmp_.str();
@@ -108,38 +105,38 @@ namespace IO
         // write to file
         if (writetofile_)
         {
-    #ifdef DEBUG
+#ifdef DEBUG
           if (!outfile_) dserror("outputfile does not exist - file handle lost");
-    #endif
+#endif
           (*outfile_) << str;
         }
 
         // write to screen
-        if(writetoscreen_)
+        if (writetoscreen_)
         {
           size_t oldpos = 0;
-          size_t pos    = 0;
+          size_t pos = 0;
           while (true)
           {
-            pos = str.find('\n',oldpos); // do include the carriage return itself
+            pos = str.find('\n', oldpos);  // do include the carriage return itself
 
-            if(pos == std::string::npos)
+            if (pos == std::string::npos)
             {
-              buffer_ << str.substr(oldpos, str.size()-oldpos);
+              buffer_ << str.substr(oldpos, str.size() - oldpos);
               break;
             }
 
-            buffer_ << str.substr(oldpos ,pos-oldpos+1);
+            buffer_ << str.substr(oldpos, pos - oldpos + 1);
 
-            oldpos = pos+1;
+            oldpos = pos + 1;
 
-            // we are using a hard coded std::cout here, as writing to screen means std::cout by definition
+            // we are using a hard coded std::cout here, as writing to screen means std::cout by
+            // definition
             std::cout << buffer_.str();
             std::flush(std::cout);
             buffer_.str(std::string());
 
-            if (prefixgroupID_)
-              buffer_ << groupID_ << ": ";
+            if (prefixgroupID_) buffer_ << groupID_ << ": ";
           }
         }
       }
@@ -147,10 +144,7 @@ namespace IO
       return *this;
     }
 
-    std::stringstream& cout_replacement()
-    {
-      return fmt_tmp_;
-    }
+    std::stringstream& cout_replacement() { return fmt_tmp_; }
 
     /// Set verbosity level
     Level& operator()(const verbositylevel level);
@@ -161,15 +155,12 @@ namespace IO
      *  typically expect a std::ostream object as input argument.
      *
      *  \author hiermeier 12/17 */
-    std::ostream& os(const verbositylevel level  = undef ) const;
+    std::ostream& os(const verbositylevel level = undef) const;
 
     /// Return verbosity level
-    inline verbositylevel RequestedOutputLevel() const
-    {
-      return requestedoutputlevel_;
-    }
+    inline verbositylevel RequestedOutputLevel() const { return requestedoutputlevel_; }
 
-  private :
+   private:
     /// Return whether this is a target processor for output
     bool OnPid();
 
@@ -238,12 +229,8 @@ namespace IO
    */
   class Level
   {
-  public:
-
-    Level(Pstream* pstream):
-      pstream_(pstream),
-      level_(undef)
-    {}
+   public:
+    Level(Pstream* pstream) : pstream_(pstream), level_(undef) {}
 
     /// set verbosity level for data to be written
     Level& SetLevel(const verbositylevel level)
@@ -256,16 +243,14 @@ namespace IO
     template <typename CharT>
     Level& stream(CharT s)  ///< text to be added
     {
-      if(level_ <= pstream_->RequestedOutputLevel())
-        pstream_->stream(s);
+      if (level_ <= pstream_->RequestedOutputLevel()) pstream_->stream(s);
       return *this;
     }
 
     /// writes the buffer to screen
     void flush();
 
-  private:
-
+   private:
     /// Shelter copy constructor
     Level(const Level& old);
 
@@ -282,17 +267,17 @@ namespace IO
   /// Imitate the std::flush behavior
   Level& flush(Level& out);
 
-}  // namspace IO
+}  // namespace IO
 
 /// Handle streaming to Pstream objects
-template<typename charT>
+template <typename charT>
 IO::Pstream& operator<<(IO::Pstream& out, charT s)
 {
   return out.stream(s);
 }
 
 /// Handle streaming to Level objects
-template<typename charT>
+template <typename charT>
 IO::Level& operator<<(IO::Level& out, charT s)
 {
   return out.stream(s);
@@ -305,4 +290,4 @@ IO::Pstream& operator<<(IO::Pstream& out, IO::Pstream& (*pf)(IO::Pstream&));
 IO::Level& operator<<(IO::Level& out, IO::Level& (*pf)(IO::Level&));
 
 /*----------------------------------------------------------------------*/
-#endif // IO_PSTREAM_H
+#endif  // IO_PSTREAM_H

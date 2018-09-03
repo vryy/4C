@@ -18,11 +18,11 @@
 
 namespace FLD
 {
-
-/*--------------------------------------------------------------------------
- | enum that provides all possible fluid actions
- *--------------------------------------------------------------------------*/
-enum Action {
+  /*--------------------------------------------------------------------------
+   | enum that provides all possible fluid actions
+   *--------------------------------------------------------------------------*/
+  enum Action
+  {
     none,
     calc_fluid_systemmat_and_residual,
     calc_porousflow_fluid_coupling,
@@ -60,7 +60,7 @@ enum Action {
     set_general_fluid_xfem_parameter,
     set_topopt_parameter,
     calc_adjoint_systemmat_and_residual,
-//    calc_adjoint_neumann,
+    //    calc_adjoint_neumann,
     set_general_adjoint_parameter,
     set_adjoint_time_parameter,
     calc_volume,
@@ -89,12 +89,13 @@ enum Action {
     reset_immersed_ele,
     calc_velgrad_ele_center,
     calc_pressure_average
-}; // enum Action
+  };  // enum Action
 
-/*--------------------------------------------------------------------------
- | enum that provides all possible fluid actions on a boundary
- *--------------------------------------------------------------------------*/
-enum BoundaryAction {
+  /*--------------------------------------------------------------------------
+   | enum that provides all possible fluid actions on a boundary
+   *--------------------------------------------------------------------------*/
+  enum BoundaryAction
+  {
     ba_none,
     integrate_Shapefunction,
     calc_area,
@@ -127,16 +128,17 @@ enum BoundaryAction {
     poro_splitnopenetration_ODdisp,
     ba_calc_adjoint_neumann,
     fpsi_coupling
-}; // enum BoundaryAction
+  };  // enum BoundaryAction
 
-/*--------------------------------------------------------------------------
- | enum that provides all possible fluid actions on a element interfaces
- *--------------------------------------------------------------------------*/
-enum IntFaceAction {
+  /*--------------------------------------------------------------------------
+   | enum that provides all possible fluid actions on a element interfaces
+   *--------------------------------------------------------------------------*/
+  enum IntFaceAction
+  {
     ifa_none,
     EOS_and_GhostPenalty_stabilization
-}; // enum IntFaceAction
+  };  // enum IntFaceAction
 
-}
+}  // namespace FLD
 
 #endif

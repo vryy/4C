@@ -16,17 +16,15 @@ Maintainers: Andreas Rauch
 #include "immersed_partitioned.H"
 #include "../drt_fsi/fsi_partitioned.H"
 
-namespace IMMERSED {
-
-class ImmersedPartitionedFSI : public ImmersedPartitioned
+namespace IMMERSED
 {
+  class ImmersedPartitionedFSI : public ImmersedPartitioned
+  {
+   public:
+    /// setup partitioned ImmersedFSI algorithm
+    explicit ImmersedPartitionedFSI(const Epetra_Comm& comm);
 
-public:
-
-  /// setup partitioned ImmersedFSI algorithm
-  explicit ImmersedPartitionedFSI(const Epetra_Comm& comm);
-
-};// class ImmersedFSI
-} // namspace IMMERSED
+  };  // class ImmersedFSI
+}  // namespace IMMERSED
 
 #endif

@@ -28,10 +28,8 @@ namespace CONTACT
   \param uanalyt (out)  : analytical displacement solution
   \param epsanalyt (out): analytical strain solution
   */
-  void AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
-                             LINALG::Matrix<2,1>& uanalyt,
-                             LINALG::Matrix<4,1>& epsanalyt,
-                             LINALG::Matrix<2,2>& derivanalyt);
+  void AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<2, 1>& uanalyt,
+      LINALG::Matrix<4, 1>& epsanalyt, LINALG::Matrix<2, 2>& derivanalyt);
 
   /*!
   \brief Analytical solutions for 3D elasticity problems
@@ -40,11 +38,9 @@ namespace CONTACT
   \param uanalyt (out)  : analytical displacement solution
   \param epsanalyt (out): analytical strain solution
   */
-  void AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
-                             LINALG::Matrix<3,1>& uanalyt,
-                             LINALG::Matrix<6,1>& epsanalyt,
-                             LINALG::Matrix<3,3>& derivanalyt);
+  void AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Matrix<3, 1>& uanalyt,
+      LINALG::Matrix<6, 1>& epsanalyt, LINALG::Matrix<3, 3>& derivanalyt);
 
-} // namespace CONTACT
+}  // namespace CONTACT
 
 #endif  // #ifndef CONTACT_ANALYTICAL_H

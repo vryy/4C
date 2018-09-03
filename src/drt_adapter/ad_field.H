@@ -27,7 +27,7 @@ Maintainer: Ager Christoph
 #ifndef AD_FIELD_H
 #define AD_FIELD_H
 
-//includes
+// includes
 #include <Teuchos_RCP.hpp>
 
 #include <Epetra_Vector.h>
@@ -43,16 +43,15 @@ namespace LINALG
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
-}
+}  // namespace LINALG
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   /// general field interface
 
   class Field
   {
-  public:
-
+   public:
     /*!
     \brief Type of Field hold by the adapter
 
@@ -62,7 +61,7 @@ namespace ADAPTER {
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~Field(){}
+    virtual ~Field() {}
 
     //! @name Vector access
 
@@ -107,14 +106,19 @@ namespace ADAPTER {
     which is then transformed into an iteration increment
     */
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> iterinc ///< dof increment between Newton iteration i and i+1 or between timestep n and n+1
-       ) = 0;
+        Teuchos::RCP<const Epetra_Vector> iterinc  ///< dof increment between Newton iteration i and
+                                                   ///< i+1 or between timestep n and n+1
+        ) = 0;
 
-    ///Evaluate with different eval. for first iteration, has to be overload by relevant fields (coupled fields)
+    /// Evaluate with different eval. for first iteration, has to be overload by relevant fields
+    /// (coupled fields)
     virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> iterinc, ///< dof increment between Newton iteration i and i+1 or between timestep n and n+1
+        Teuchos::RCP<const Epetra_Vector> iterinc,  ///< dof increment between Newton iteration i
+                                                    ///< and i+1 or between timestep n and n+1
         bool firstiter)
-        {Evaluate(iterinc);}
+    {
+      Evaluate(iterinc);
+    }
 
     /// update at time step end
     virtual void Update() = 0;
@@ -131,6 +135,6 @@ namespace ADAPTER {
     //@}
   };
 
-}
+}  // namespace ADAPTER
 
 #endif

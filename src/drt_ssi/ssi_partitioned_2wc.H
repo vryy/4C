@@ -19,16 +19,15 @@
 
 namespace SSI
 {
-  //! base class to deal with partioned 2WC SSI. Mainly it is the same as for thermo-structure interaction (TSI)
+  //! base class to deal with partioned 2WC SSI. Mainly it is the same as for thermo-structure
+  //! interaction (TSI)
   class SSI_Part2WC : public SSI_Part
   {
-  public:
-
+   public:
     //! constructor
-    SSI_Part2WC(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //!virtual destructor
+    //! virtual destructor
     virtual ~SSI_Part2WC(){};
 
     /*! \brief Initialize this object
@@ -52,14 +51,9 @@ namespace SSI
     \return int
     \date 08/16
     \author rauch  */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
     /*! \brief Setup all class internal objects and members
 
@@ -85,12 +79,10 @@ namespace SSI
 
     \date 08/16
     \author rauch  */
-    virtual void InitDiscretizations(
-        const Epetra_Comm& comm,
-        const std::string& struct_disname,
+    virtual void InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
         const std::string& scatra_disname);
 
-    //!full time loop
+    //! full time loop
     virtual void Timeloop();
 
     //! perform iteration loop between fields
@@ -105,13 +97,12 @@ namespace SSI
     //! update time step and print to screen
     virtual void UpdateAndOutput();
 
-  protected:
-
+   protected:
     //! solve field 1
-    virtual void Operator1(){DoStructStep();};
+    virtual void Operator1() { DoStructStep(); };
 
     //! solve field 2
-    virtual void Operator2(){DoScatraStep();};
+    virtual void Operator2() { DoScatraStep(); };
 
     //! pre operator called before first field operator
     virtual void PreOperator1();
@@ -125,7 +116,8 @@ namespace SSI
     //! post operator called after second field operator
     virtual void PostOperator2(){};
 
-    //! perform iteration step of structure field and set the new disp and vel states in the scatra field
+    //! perform iteration step of structure field and set the new disp and vel states in the scatra
+    //! field
     virtual void DoStructStep();
 
     //! perform iteration step of scatra field and set the new phi state in the structure field
@@ -139,7 +131,7 @@ namespace SSI
     virtual bool ConvergenceCheck(int itnum);
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Epetra_Vector> CalcVelocity( Teuchos::RCP<const Epetra_Vector> dispnp );
+    Teuchos::RCP<Epetra_Vector> CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp);
 
     //! scalar increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnp_;
@@ -155,13 +147,12 @@ namespace SSI
   //! class to deal with displacement relaxated partioned 2WC SSI. Relaxation parameter is constant
   class SSI_Part2WC_SolidToScatra_Relax : public SSI_Part2WC
   {
-  public:
-
+   public:
     //! constructor
-    SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part2WC_SolidToScatra_Relax(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //!virtual destructor
+    //! virtual destructor
     virtual ~SSI_Part2WC_SolidToScatra_Relax(){};
 
     /*!
@@ -177,36 +168,31 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
-  protected:
+   protected:
     //! perform iteration loop between fields with relaxed displacements
     void OuterLoop();
 
     //! //! calculate relaxation parameter
-    virtual void CalcOmega( double& omega , const int itnum );
+    virtual void CalcOmega(double& omega, const int itnum);
 
     //! relaxation parameter
     double omega_;
   };
 
-  //! class to deal with displacement relaxated 2WC partioned SSI. Relaxation parameter is calculated via Aitken
+  //! class to deal with displacement relaxated 2WC partioned SSI. Relaxation parameter is
+  //! calculated via Aitken
   class SSI_Part2WC_SolidToScatra_Relax_Aitken : public SSI_Part2WC_SolidToScatra_Relax
   {
-  public:
-
+   public:
     //! constructor
-    SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part2WC_SolidToScatra_Relax_Aitken(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //!virtual destructor
+    //! virtual destructor
     virtual ~SSI_Part2WC_SolidToScatra_Relax_Aitken(){};
 
     /*!
@@ -231,26 +217,23 @@ namespace SSI
     */
     void Setup();
 
-  protected:
-
+   protected:
     //! Calculate relaxation parameter via Aitken
-    virtual void CalcOmega( double& omega , const int itnum );
+    virtual void CalcOmega(double& omega, const int itnum);
 
     //! old displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnpold_;
-
   };
 
   //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is constant
   class SSI_Part2WC_ScatraToSolid_Relax : public SSI_Part2WC
   {
-  public:
-
+   public:
     //! constructor
-    SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part2WC_ScatraToSolid_Relax(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //!virtual destructor
+    //! virtual destructor
     virtual ~SSI_Part2WC_ScatraToSolid_Relax(){};
 
     /*!
@@ -266,36 +249,31 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
-  protected:
+   protected:
     //! perform iteration loop between fields with relaxed scalar
     void OuterLoop();
 
     //! calculate relaxation parameter
-    virtual void CalcOmega( double& omega , const int itnum );
+    virtual void CalcOmega(double& omega, const int itnum);
 
     //! relaxation parameter
     double omega_;
   };
 
-  //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is calculated via Aitken
+  //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is calculated via
+  //! Aitken
   class SSI_Part2WC_ScatraToSolid_Relax_Aitken : public SSI_Part2WC_ScatraToSolid_Relax
   {
-  public:
-
+   public:
     //! constructor
-    SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+    SSI_Part2WC_ScatraToSolid_Relax_Aitken(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //!virtual destructor
+    //! virtual destructor
     virtual ~SSI_Part2WC_ScatraToSolid_Relax_Aitken(){};
 
     /*!
@@ -320,17 +298,15 @@ namespace SSI
     */
     void Setup();
 
-  protected:
-
+   protected:
     //! Calculate relaxation parameter via Aitken
-    virtual void CalcOmega( double& omega , const int itnum );
+    virtual void CalcOmega(double& omega, const int itnum);
 
     //! old scatra increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnpold_;
-
   };
 
 
-}
+}  // namespace SSI
 
 #endif /* SSI_PARTITIONED2_WC_H_ */

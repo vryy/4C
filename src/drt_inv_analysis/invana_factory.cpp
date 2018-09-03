@@ -32,7 +32,7 @@
 // Input
 #include "../drt_inpar/inpar_statinvanalysis.H"
 
-//Baci
+// Baci
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -42,26 +42,23 @@
 #include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*/
-INVANA::InvanaFactory::InvanaFactory()
-{;}
+INVANA::InvanaFactory::InvanaFactory() { ; }
 
-Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
-    const Teuchos::ParameterList& invp)
+Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(const Teuchos::ParameterList& invp)
 {
   // get the discretizatio to work with
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // check for a proper status of the discretization
-  if (!actdis->Filled() or !actdis->HaveDofs())
-    actdis->FillComplete();
+  if (!actdis->Filled() or !actdis->HaveDofs()) actdis->FillComplete();
 
   // initialize the basic inverse problem
-  Teuchos::RCP<InvanaBase> optprob=Teuchos::null;
+  Teuchos::RCP<InvanaBase> optprob = Teuchos::null;
 
   // similarity measure
-  Teuchos::RCP<INVANA::ObjectiveFunct> objfunct=Teuchos::null;
-  switch (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvObjFunctType>(invp,"OBJECTIVEFUNCT"))
+  Teuchos::RCP<INVANA::ObjectiveFunct> objfunct = Teuchos::null;
+  switch (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvObjFunctType>(invp, "OBJECTIVEFUNCT"))
   {
     case INPAR::INVANA::stat_inv_obj_disp:
     {
@@ -70,7 +67,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
     break;
     case INPAR::INVANA::stat_inv_obj_surfcurr:
     {
-#if defined( HAVE_Kokkos )
+#if defined(HAVE_Kokkos)
       objfunct = Teuchos::rcp(new INVANA::SurfCurrentGroup(actdis));
 #else
       dserror("You need Kokkos for Surface Current based objective functions");
@@ -86,7 +83,8 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
 
   // parametrization
   Teuchos::RCP<INVANA::MatParManager> matman = Teuchos::null;
-  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMatParametrization>(invp,"PARAMETRIZATION"))
+  switch (
+      DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMatParametrization>(invp, "PARAMETRIZATION"))
   {
     case INPAR::INVANA::stat_inv_mp_elementwise:
     {
@@ -112,17 +110,16 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
       dserror("choose a valid method of parametrizing the material parameter field");
       break;
   }
-  matman->Init(invp,objfunct);
+  matman->Init(invp, objfunct);
   matman->Setup();
 
   // initial guess
   Teuchos::RCP<InitialGuess> guess = Teuchos::rcp(new InitialGuess(invp));
-  guess->Compute(actdis,matman,objfunct);
+  guess->Compute(actdis, matman, objfunct);
 
   // regularization
   Teuchos::RCP<INVANA::RegularizationBase> regman = Teuchos::null;
-  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvRegularization>(
-      invp,"REGULARIZATION"))
+  switch (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvRegularization>(invp, "REGULARIZATION"))
   {
     case INPAR::INVANA::stat_inv_reg_none:
       break;
@@ -137,9 +134,9 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
     }
     break;
   }
-  if (regman!=Teuchos::null)
+  if (regman != Teuchos::null)
   {
-    regman->Init(invp,matman->GetConnectivityData(),guess);
+    regman->Init(invp, matman->GetConnectivityData(), guess);
     regman->Setup(invp);
   }
 
@@ -151,9 +148,8 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
   // parametrizations and regularizations should come here.
 
   // initialize optimization problem
-  optprob->Init(actdis,objfunct,matman,regman,guess);
+  optprob->Init(actdis, objfunct, matman, regman, guess);
   optprob->Setup();
 
   return optprob;
-
 }

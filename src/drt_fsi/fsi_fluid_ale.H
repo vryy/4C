@@ -7,11 +7,10 @@
 
 namespace FSI
 {
-
   /// Fluid on Ale test algorithm
   class FluidAleAlgorithm : public ::ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
-  public:
+   public:
     explicit FluidAleAlgorithm(const Epetra_Comm& comm);
 
     virtual ~FluidAleAlgorithm();
@@ -25,8 +24,7 @@ namespace FSI
     /// read restart data
     virtual void ReadRestart(int step);
 
-  protected:
-
+   protected:
     /// time step size
     double Dt() const { return dt_; }
 
@@ -52,8 +50,7 @@ namespace FSI
 
     //@}
 
-  private:
-
+   private:
     /// comunication (mainly for screen output)
     const Epetra_Comm& comm_;
 
@@ -66,6 +63,6 @@ namespace FSI
     //@}
   };
 
-}
+}  // namespace FSI
 
 #endif

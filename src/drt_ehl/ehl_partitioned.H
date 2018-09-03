@@ -15,61 +15,55 @@
 
 #include "ehl_base.H"
 
-namespace EHL {
-
-class Partitioned : public Base
+namespace EHL
 {
-public:
+  class Partitioned : public Base
+  {
+   public:
+    /// setup EHL algorithm
+    explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string lubrication_disname);  // Problem builder
 
-  /// setup EHL algorithm
-  explicit Partitioned(const Epetra_Comm& comm,
-      const Teuchos::ParameterList& globaltimeparams,
-      const Teuchos::ParameterList& lubricationparams,
-      const Teuchos::ParameterList& structparams,
-      const std::string struct_disname,
-      const std::string lubrication_disname);// Problem builder
+    /// virtual destructor
+    virtual ~Partitioned(){};
 
-  /// virtual destructor
-  virtual ~Partitioned(){};
+    /// setup of single fields (if needed)
+    void SetupSystem(){};
 
-  /// setup of single fields (if needed)
-  void SetupSystem(){};
+    /// time loop of coupled problem
+    virtual void Timeloop();
 
-  /// time loop of coupled problem
-  virtual void Timeloop();
+   protected:
+    /// prepare time step of single fields
+    void PrepareTimeStep();
 
-protected:
+    //! perform iteration loop between fields
+    void OuterLoop();
 
-  ///prepare time step of single fields
-  void PrepareTimeStep();
+    //! update time step and print to screen
+    void UpdateAndOutput();
 
-  //! perform iteration loop between fields
-  void OuterLoop();
+    //! convergence check of outer loop
+    bool ConvergenceCheck(int itnum);
 
-  //! update time step and print to screen
-  void UpdateAndOutput();
+    /// do one inner iteration loop step of the structure
+    void DoStructStep();
 
-  //! convergence check of outer loop
-  bool ConvergenceCheck(int itnum);
+    /// do one inner iteration loop step of the lubrication
+    void DoLubricationStep();
 
-  ///do one inner iteration loop step of the structure
-  void DoStructStep();
+    //! pressure increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> preincnp_;
+    //! displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> dispincnp_;
 
-  ///do one inner iteration loop step of the lubrication
-  void DoLubricationStep();
-
-  //! pressure increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> preincnp_;
-  //! displacement increment of the outer loop
-  Teuchos::RCP<Epetra_Vector> dispincnp_;
-
-  //! maximum iteration steps
-  int itmax_;
-  //! convergence tolerance
-  double ittol_;
-
-
-};
-}
+    //! maximum iteration steps
+    int itmax_;
+    //! convergence tolerance
+    double ittol_;
+  };
+}  // namespace EHL
 
 #endif /* SRC_DRT_EHL_EHL_PARTITIONED_H_ */

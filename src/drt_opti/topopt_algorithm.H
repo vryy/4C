@@ -22,7 +22,6 @@ Maintainer: Martin Winklmaier
 
 namespace TOPOPT
 {
-
   /*!
 
     \brief topology optimization algorithm class
@@ -43,16 +42,12 @@ namespace TOPOPT
    */
   class Algorithm : public ADAPTER::FluidTopOptCouplingAlgorithm
   {
-  public:
-
+   public:
     /// constructor using a Epetra_Comm
-    explicit Algorithm(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& topoptdyn
-    );
+    explicit Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& topoptdyn);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm() {return;};
+    virtual ~Algorithm() { return; };
 
     /// unused time loop
     void TimeLoop();
@@ -63,8 +58,7 @@ namespace TOPOPT
     /// restart topology optimization problem
     void Restart(const int step, const INPAR::TOPOPT::Restart type);
 
-  protected:
-
+   protected:
     /// prepare the optimization process
     void PrepareOptimization();
 
@@ -101,19 +95,18 @@ namespace TOPOPT
     /// update optimization procedure
     void Update();
 
-  private:
-
+   private:
     /// topology optimization input parameter list
     const Teuchos::ParameterList& topopt_;
 
     /// optimization algorithm
     Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
 
-    bool doGradient_; /// compute gradient(s) in current optimization step
-    const INPAR::TOPOPT::GradientType gradienttype_; /// type of gradient computation
-    INPAR::TOPOPT::Restart restarttype_; /// type of restart
+    bool doGradient_;  /// compute gradient(s) in current optimization step
+    const INPAR::TOPOPT::GradientType gradienttype_;  /// type of gradient computation
+    INPAR::TOPOPT::Restart restarttype_;              /// type of restart
   };
 
-} // namespace TOPOPT
+}  // namespace TOPOPT
 
 #endif /* TOPOPT_ALGORITHM_H_ */

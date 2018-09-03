@@ -40,10 +40,9 @@ NOX::NLN::INNER::StatusTest::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(
-    Teuchos::ParameterList& p,
+NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(Teuchos::ParameterList& p,
     const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> >* tagged_tests) const
+    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> status_test;
 
@@ -53,11 +52,12 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(
     test_type = Teuchos::get<std::string>(p, "Test Type");
   else
   {
-    dserror("Error - The \"Test Type\" is a required parameter in the NOX::NLN::StatusTest::Factory!");
+    dserror(
+        "Error - The \"Test Type\" is a required parameter in the NOX::NLN::StatusTest::Factory!");
   }
 
   if (test_type == "Combo")
-    status_test =  this->BuildComboTest(p, u, tagged_tests);
+    status_test = this->BuildComboTest(p, u, tagged_tests);
   else if (test_type == "Armijo")
     status_test = this->BuildArmijoTest(p, u);
   else if (test_type == "Filter")
@@ -65,18 +65,16 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(
   else if (test_type == "UpperBound")
     status_test = this->BuildUpperBoundTest(p, u);
   // supported StatusTests of the NOX::StatusTest classes for the inner check
-  else if (test_type == "Stagnation" or
-           test_type == "Divergence" or
-           test_type == "MaxIters"   or
+  else if (test_type == "Stagnation" or test_type == "Divergence" or test_type == "MaxIters" or
            test_type == "FiniteValue")
   {
-    throwError("BuildInnerStatusTests()","Not yet supported");
+    throwError("BuildInnerStatusTests()", "Not yet supported");
   }
   else
   {
     std::ostringstream msg;
     msg << "The test type \"" << test_type << "\" is invalid!";
-    throwError("BuildInnerStatusTests()",msg.str());
+    throwError("BuildInnerStatusTests()", msg.str());
   }
 
   this->CheckAndTagTest(p, status_test, tagged_tests);
@@ -88,8 +86,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
-    Teuchos::ParameterList& p,
-    const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const NOX::Utils& u) const
 {
   // ------------------------------------------
   // Get c_1
@@ -101,26 +98,25 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
   // to use the (strong) Wolfe conditions,
   // or the Goldstein rule.
   // ------------------------------------------
-  const double c_1 = p.get<double>("c_1",1.0e-4);
+  const double c_1 = p.get<double>("c_1", 1.0e-4);
 
   // ------------------------------------------
   // Switch monotone behavior on and off
   // ------------------------------------------
-  const bool isMonotone = p.get<bool>("Monotone",true);
+  const bool isMonotone = p.get<bool>("Monotone", true);
 
   // ------------------------------------------
   // Get the maximal length of the history
   // vector for a non-monotone Armijo rule
   // ------------------------------------------
-  std::size_t maxHistSize = static_cast<unsigned>(p.get<int>("Maximal History Length",1));
+  std::size_t maxHistSize = static_cast<unsigned>(p.get<int>("Maximal History Length", 1));
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Armijo> status_test = Teuchos::null;
   if (isMonotone)
-    status_test =
-        Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1));
+    status_test = Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1));
   else
     status_test =
-        Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1,isMonotone,maxHistSize));
+        Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1, isMonotone, maxHistSize));
 
   return status_test;
 }
@@ -129,70 +125,58 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
-    Teuchos::ParameterList& p,
-    const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const NOX::Utils& u) const
 {
-  std::vector<Teuchos::RCP<NOX::MeritFunction::Generic> > infeasibility_vec;
+  std::vector<Teuchos::RCP<NOX::MeritFunction::Generic>> infeasibility_vec;
 
   unsigned count = 0;
   std::ostringstream infeasibility_count;
 
   infeasibility_count << "Infeasibility Function " << count;
-  while ( p.isSublist( infeasibility_count.str() ) )
+  while (p.isSublist(infeasibility_count.str()))
   {
-    const Teuchos::ParameterList& p_infeasibility = p.sublist( infeasibility_count.str() );
+    const Teuchos::ParameterList& p_infeasibility = p.sublist(infeasibility_count.str());
 
     // build infeasibility function object
     infeasibility_vec.push_back(
-        Teuchos::rcp( new NOX::NLN::MeritFunction::Infeasibility( p_infeasibility, u ) ) );
+        Teuchos::rcp(new NOX::NLN::MeritFunction::Infeasibility(p_infeasibility, u)));
 
     /// clear and increase infeasibility function count string
     infeasibility_count.str("");
     infeasibility_count << "Infeasibility Function " << ++count;
   }
 
-  const double weight_objective_func = p.get<double>( "Objective Function Weight" );
-  const double weight_infeasibility_func = p.get<double>( "Infeasibility Function Weight" );
+  const double weight_objective_func = p.get<double>("Objective Function Weight");
+  const double weight_infeasibility_func = p.get<double>("Infeasibility Function Weight");
 
-  const double sf = p.get<double>( "Ftype Condition Exponent s_f" );
-  const double st = p.get<double>( "Ftype Condition Exponent s_t" );
+  const double sf = p.get<double>("Ftype Condition Exponent s_f");
+  const double st = p.get<double>("Ftype Condition Exponent s_t");
 
   /* Safety factor gamma_alpha to compensate for the neglected higher order
    * terms in the chosen model equation during the minimal step length
    * approximation. */
-  const double gamma_alpha = p.get<double>( "Gamma Alpha" );
+  const double gamma_alpha = p.get<double>("Gamma Alpha");
 
   // read second order correction parameters
-  const bool use_soc = p.get<bool>( "Second Order Correction" );
+  const bool use_soc = p.get<bool>("Second Order Correction");
   NOX::NLN::CorrectionType soc_type = NOX::NLN::CorrectionType::vague;
-  if ( use_soc )
+  if (use_soc)
   {
     // setup validator
-    soc_type = NOX::NLN::PUTILS::SetAndValidate<NOX::NLN::CorrectionType>(
-        p, "SOC Type","auto","Second order correction type. Per default the "
+    soc_type = NOX::NLN::PUTILS::SetAndValidate<NOX::NLN::CorrectionType>(p, "SOC Type", "auto",
+        "Second order correction type. Per default the "
         "SOC type is set to \"auto\".",
-        Teuchos::tuple<std::string>( "auto", "cheap", "full" ),
-        Teuchos::tuple<NOX::NLN::CorrectionType>(
-            NOX::NLN::CorrectionType::soc_automatic,
-            NOX::NLN::CorrectionType::soc_cheap,
-            NOX::NLN::CorrectionType::soc_full ) );
+        Teuchos::tuple<std::string>("auto", "cheap", "full"),
+        Teuchos::tuple<NOX::NLN::CorrectionType>(NOX::NLN::CorrectionType::soc_automatic,
+            NOX::NLN::CorrectionType::soc_cheap, NOX::NLN::CorrectionType::soc_full));
   }
 
   // build internal Armijo test
-  Teuchos::RCP<Generic> armijo = BuildArmijoTest( p.sublist("Filter-Armijo"), u );
+  Teuchos::RCP<Generic> armijo = BuildArmijoTest(p.sublist("Filter-Armijo"), u);
 
-  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr =
-      Teuchos::rcp( new NOX::NLN::INNER::StatusTest::Filter(
-          armijo,
-          infeasibility_vec,
-          weight_objective_func,
-          weight_infeasibility_func,
-          sf,
-          st,
-          gamma_alpha,
-          use_soc,
-          soc_type,
-          u ) );
+  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr = Teuchos::rcp(
+      new NOX::NLN::INNER::StatusTest::Filter(armijo, infeasibility_vec, weight_objective_func,
+          weight_infeasibility_func, sf, st, gamma_alpha, use_soc, soc_type, u));
 
   return status_test_ptr;
 }
@@ -201,26 +185,28 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
 NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
-    Teuchos::ParameterList& p,
-    const NOX::Utils& u) const
+    Teuchos::ParameterList& p, const NOX::Utils& u) const
 {
   // Get upper bound as specified in xml file
-  double upperboundval = p.get("Value",1.0e10);
+  double upperboundval = p.get("Value", 1.0e10);
   if (upperboundval < 1e-14)
   {
-    std::string msg = "\"Value\" for Inner Status Test \"UpperBound\" must be "
+    std::string msg =
+        "\"Value\" for Inner Status Test \"UpperBound\" must be "
         "greater than zero!";
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg);
   }
 
-  const std::string& quantity_type_string = p.get("Quantity Type","???");
+  const std::string& quantity_type_string = p.get("Quantity Type", "???");
   const NOX::NLN::StatusTest::QuantityType qtype =
       NOX::NLN::StatusTest::String2QuantityType(quantity_type_string);
   if (qtype == NOX::NLN::StatusTest::quantity_unknown)
   {
     std::ostringstream msg;
-    dserror( "The \"Quantity Type\" is a required parameter "
-        "and the chosen option \"%s\" is invalid!", quantity_type_string.c_str() );
+    dserror(
+        "The \"Quantity Type\" is a required parameter "
+        "and the chosen option \"%s\" is invalid!",
+        quantity_type_string.c_str());
   }
 
   // Norm Type
@@ -232,14 +218,14 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
     norm_type = NOX::Abstract::Vector::OneNorm;
   else if (norm_type_string == "Max Norm")
     norm_type = NOX::Abstract::Vector::MaxNorm;
-  else {
+  else
+  {
     std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg);
   }
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::UpperBound> status_test =
-      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::UpperBound(upperboundval,
-          norm_type,qtype));
+      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::UpperBound(upperboundval, norm_type, qtype));
 
   return status_test;
 }
@@ -247,25 +233,22 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(
-    Teuchos::ParameterList& p,
-    const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> >* tagged_tests) const
+NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
+    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
-  throwError("BuildComboTest()","Not yet implemented!");
+  throwError("BuildComboTest()", "Not yet implemented!");
 
   return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Factory::CheckAndTagTest(
-    const Teuchos::ParameterList& p,
+bool NOX::NLN::INNER::StatusTest::Factory::CheckAndTagTest(const Teuchos::ParameterList& p,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& test,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> >*
-    tagged_tests) const
+    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
-  if ( (Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != NULL) ) {
+  if ((Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != NULL))
+  {
     (*tagged_tests)[Teuchos::getParameter<std::string>(p, "Tag")] = test;
     return true;
   }
@@ -276,23 +259,20 @@ bool NOX::NLN::INNER::StatusTest::Factory::CheckAndTagTest(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Factory::throwError(
-    const std::string& functionName,
-    const std::string& errorMsg) const
+    const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::INNER::StatusTest::Factory::" << functionName
-      << " - " << errorMsg << std::endl;
+  msg << "ERROR - NOX::NLN::INNER::StatusTest::Factory::" << functionName << " - " << errorMsg
+      << std::endl;
   dserror(msg.str());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(
-    Teuchos::ParameterList& p,
-    const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> >* tagged_tests)
+NOX::NLN::INNER::StatusTest::BuildInnerStatusTests(Teuchos::ParameterList& p, const NOX::Utils& u,
+    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests)
 {
   Factory factory;
-  return factory.BuildInnerStatusTests(p,u,tagged_tests);
+  return factory.BuildInnerStatusTests(p, u, tagged_tests);
 }

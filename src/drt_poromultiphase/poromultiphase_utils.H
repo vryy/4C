@@ -31,42 +31,36 @@ namespace ADAPTER
 
 namespace POROMULTIPHASE
 {
+  /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase
+  /// problems
+  namespace UTILS
+  {
+    /// setup discretizations and dofsets
+    void SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
+        const std::string& struct_disname, const std::string& fluid_disname, int& nds_disp,
+        int& nds_vel, int& nds_solidpressure);
 
-/// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase problems
-namespace UTILS
-{
+    //! exchange material pointers of both discretizations
+    void AssignMaterialPointers(
+        const std::string& struct_disname, const std::string& fluid_disname);
 
-/// setup discretizations and dofsets
-void SetupDiscretizationsAndFieldCoupling(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    int& nds_disp,
-    int& nds_vel,
-    int& nds_solidpressure);
-
-//! exchange material pointers of both discretizations
-void AssignMaterialPointers(
-    const std::string& struct_disname,
-    const std::string& fluid_disname
+    /// create solution algorithm depending on input file
+    Teuchos::RCP<ADAPTER::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
+        INPAR::POROMULTIPHASE::SolutionSchemeOverFields
+            solscheme,                             //!< solution scheme to build (i)
+        const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
+        const Epetra_Comm& comm                    //!< communicator(i)
     );
 
-/// create solution algorithm depending on input file
-Teuchos::RCP<ADAPTER::PoroMultiPhase> CreatePoroMultiPhaseAlgorithm(
-    INPAR::POROMULTIPHASE::SolutionSchemeOverFields solscheme, //!< solution scheme to build (i)
-    const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
-    const Epetra_Comm& comm //!< communicator(i)
+    //! Determine norm of vector
+    double CalculateVectorNorm(const enum INPAR::POROMULTIPHASE::VectorNorm norm,  //!< norm to use
+        const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
     );
 
-//! Determine norm of vector
-double CalculateVectorNorm(const enum INPAR::POROMULTIPHASE::VectorNorm norm, //!< norm to use
-    const Teuchos::RCP<const Epetra_Vector> vect //!< the vector of interest
-    );
-
-} // UTILS
-// Print the logo
-void PrintLogo();
-}
+  }  // namespace UTILS
+  // Print the logo
+  void PrintLogo();
+}  // namespace POROMULTIPHASE
 
 
 

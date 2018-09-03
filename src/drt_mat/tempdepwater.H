@@ -25,20 +25,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// parameters for temperature-dependent water
     class TempDepWater : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      TempDepWater(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      TempDepWater(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~TempDepWater() { ; }
@@ -62,27 +57,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class TempDepWaterType : public DRT::ParObjectType
-{
-public:
+  class TempDepWaterType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "TempDepWaterType"; }
 
-  std::string Name() const { return "TempDepWaterType"; }
+    static TempDepWaterType& Instance() { return instance_; };
 
-  static TempDepWaterType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static TempDepWaterType instance_;
-};
+   private:
+    static TempDepWaterType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// temperature-dependent water
   class TempDepWater : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     TempDepWater();
 
@@ -98,7 +90,10 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return TempDepWaterType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return TempDepWaterType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -132,7 +127,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_tempdepwater; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new TempDepWater( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new TempDepWater(*this)); }
 
     /// compute viscosity
     double ComputeViscosity(const double temp) const;
@@ -158,13 +153,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::TempDepWater* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

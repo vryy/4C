@@ -22,7 +22,8 @@
 
 // forward declarations
 
-namespace LINALG {
+namespace LINALG
+{
   class SparseOperator;
 }
 
@@ -30,58 +31,60 @@ namespace LINALG {
  *
  * \date 12/2016
  * \author rauch (rauch@lnm.mw.tum.de)    */
-namespace ADAPTER {
-
-class AdapterScatraWrapper : public ScatraInterface
+namespace ADAPTER
 {
+  class AdapterScatraWrapper : public ScatraInterface
+  {
+   public:
+    /// constructor
+    explicit AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra);
 
-public:
+    /// virtual to get polymorph destruction
+    virtual ~AdapterScatraWrapper(){};
 
-  /// constructor
-  explicit AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra);
-
-  /// virtual to get polymorph destruction
-  virtual ~AdapterScatraWrapper() {};
-
-  /// compute contribution of mechanical state to eq. system
-  virtual void EvaluateAdditionalSolutionDependingModels(
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-      Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
-  );
+    /// compute contribution of mechanical state to eq. system
+    virtual void EvaluateAdditionalSolutionDependingModels(
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
+    );
 
 
-protected:
+   protected:
+    //! return discretization
+    virtual Teuchos::RCP<DRT::Discretization> Discretization() const
+    {
+      return scatra_timint_->Discretization();
+    };
 
-  //! return discretization
-  virtual Teuchos::RCP<DRT::Discretization> Discretization() const
-  {return scatra_timint_ -> Discretization(); };
+    //! add parameters specific for time-integration scheme
+    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false)
+    {
+      scatra_timint_->AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+    };
 
-  //! add parameters specific for time-integration scheme
-  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false)
-  {scatra_timint_ -> AddTimeIntegrationSpecificVectors(forcedincrementalsolver); };
+    //! return number of dofset associated with displacement dofs
+    virtual int NdsDisp() { return scatra_timint_->NdsDisp(); };
 
-  //! return number of dofset associated with displacement dofs
-  virtual int NdsDisp()
-  {return scatra_timint_ -> NdsDisp(); };
+    /// return rcp ptr to neumann loads vector
+    virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr()
+    {
+      return scatra_timint_->GetNeumannLoadsPtr();
+    };
 
-  /// return rcp ptr to neumann loads vector
-  virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr()
-  {return scatra_timint_->GetNeumannLoadsPtr();};
+    //! return meshtying strategy (includes standard case without meshtying)
+    virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const
+    {
+      return scatra_timint_->Strategy();
+    };
 
-  //! return meshtying strategy (includes standard case without meshtying)
-  virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const
-  {return scatra_timint_->Strategy();};
+    //! return scalar field phi at time n
+    Teuchos::RCP<Epetra_Vector> Phin() { return scatra_timint_->Phin(); }
 
-  //! return scalar field phi at time n
-  Teuchos::RCP<Epetra_Vector> Phin()
-  { return scatra_timint_->Phin(); }
+   private:
+    Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration
 
-private:
-
-  Teuchos::RCP<ScatraInterface> scatra_timint_; ///< underlying structural time integration
-
-}; // class AdapterScatraWrapper
-} // namespace ADAPTER
+  };  // class AdapterScatraWrapper
+}  // namespace ADAPTER
 
 
 #endif /* AD_SCATRA_WRAPPER_ */

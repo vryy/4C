@@ -42,8 +42,7 @@
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::BeamPotential()
-    : beam_potential_params_ptr_(Teuchos::null),
-      beam_potential_element_pairs_(Teuchos::null)
+    : beam_potential_params_ptr_(Teuchos::null), beam_potential_element_pairs_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -56,15 +55,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
   CheckInit();
 
   // init and setup beam to beam contact data container
-  beam_potential_params_ptr_ =Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams() );
+  beam_potential_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams());
   BeamPotentialParams().Init();
   BeamPotentialParams().Setup();
 
   PrintConsoleWelcomeMessage(std::cout);
 
   // build runtime vtp writer if desired
-  if ( BeamPotentialParams().VtkRuntimeOutput() )
-    InitOutputRuntimeVtpBeamPotential();
+  if (BeamPotentialParams().VtkRuntimeOutput()) InitOutputRuntimeVtpBeamPotential();
 
   // set flag
   issetup_ = true;
@@ -84,7 +82,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostSetup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitSubmodelDependencies(
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map>  const submodelmap)
+    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
   CheckInitSetup();
   // no active influence on other submodels
@@ -96,8 +94,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
 {
   CheckInitSetup();
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> >::const_iterator iter;
-  for (iter=beam_potential_element_pairs_.begin(); iter!=beam_potential_element_pairs_.end(); ++iter)
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
+       ++iter)
   {
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
@@ -107,25 +106,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
     element_ptr[1] = elepairptr->Element2();
 
     // element Dof values relevant for centerline interpolation
-    std::vector< std::vector<double> > element_posdofvec_absolutevalues(2);
+    std::vector<std::vector<double>> element_posdofvec_absolutevalues(2);
 
-    for ( unsigned int ielement = 0; ielement < 2; ++ielement )
+    for (unsigned int ielement = 0; ielement < 2; ++ielement)
     {
       // extract the Dof values of this element from displacement vector
-      BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
-          Discret(),
-          element_ptr[ielement],
+      BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(Discret(), element_ptr[ielement],
           BeamInteractionDataStatePtr()->GetMutableDisColNp(),
           element_posdofvec_absolutevalues[ielement]);
     }
 
     // update the Dof values in the interaction element pair object
-    elepairptr->ResetState(
-        GState().GetTimeNp(),
-        element_posdofvec_absolutevalues[0],
+    elepairptr->ResetState(GState().GetTimeNp(), element_posdofvec_absolutevalues[0],
         element_posdofvec_absolutevalues[1]);
   }
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -135,13 +129,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
   CheckInitSetup();
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector< LINALG::SerialDenseVector > eleforce(2);
+  std::vector<LINALG::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector< LINALG::SerialDenseVector > eleforce_centerlineDOFs(2);
+  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
 
-  std::vector< std::vector<LINALG::SerialDenseMatrix> > dummystiff;
+  std::vector<std::vector<LINALG::SerialDenseMatrix>> dummystiff;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -150,8 +144,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamPotentialPair > >::const_iterator iter;
-  for ( iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end(); ++iter )
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
+       ++iter)
   {
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
@@ -159,13 +154,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
     std::vector<DRT::Condition*> conditions_element1;
     std::vector<DRT::Condition*> conditions_element2;
     GetBeamPotentialConditionsAppliedToThisElementPair(
-        *elepairptr,conditions_element1,conditions_element2);
+        *elepairptr, conditions_element1, conditions_element2);
 
-    for (unsigned int k=0; k<conditions_element1.size(); ++k)
+    for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
       int npotlaw1 = conditions_element1[k]->GetInt("potlaw");
 
-      for (unsigned int j=0; j<conditions_element2.size(); ++j)
+      for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
         int npotlaw2 = conditions_element2[j]->GetInt("potlaw");
 
@@ -177,21 +172,15 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
           currconds.push_back(conditions_element2[j]);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
-          if(npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
-            dserror("number of potential law specified in line charge condition exceeds"
+          if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
+            dserror(
+                "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
-          pair_is_active = elepairptr->Evaluate(
-              &eleforce_centerlineDOFs[0],
-              &eleforce_centerlineDOFs[1],
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              currconds,
-              BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1-1),
-              BeamPotentialParams().PotentialLawExponents().at(npotlaw1-1)
-              );
+          pair_is_active = elepairptr->Evaluate(&eleforce_centerlineDOFs[0],
+              &eleforce_centerlineDOFs[1], NULL, NULL, NULL, NULL, currconds,
+              BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
+              BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication
@@ -203,23 +192,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
             // assemble force vector affecting the centerline DoFs only
             // into element force vector ('all DoFs' format, as usual)
             BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-                Discret(),
-                elegids,
-                eleforce_centerlineDOFs,
-                dummystiff,
-                &eleforce,
-                NULL);
+                Discret(), elegids, eleforce_centerlineDOFs, dummystiff, &eleforce, NULL);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
-                eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
+            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(),
+                elegids, eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
+                Teuchos::null);
           }
-
         }
       }
     }
-
   }
   return true;
 }
@@ -231,14 +214,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
   CheckInitSetup();
 
   // linearizations
-  std::vector< std::vector<LINALG::SerialDenseMatrix> > elestiff( 2,
-      std::vector<LINALG::SerialDenseMatrix>(2) );
+  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<LINALG::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector< std::vector< LINALG::SerialDenseMatrix > > elestiff_centerlineDOFs ( 2,
-      std::vector<LINALG::SerialDenseMatrix>(2) );
+  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<LINALG::SerialDenseMatrix>(2));
 
-  std::vector< LINALG::SerialDenseVector > dummyforce;
+  std::vector<LINALG::SerialDenseVector> dummyforce;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -247,8 +230,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamPotentialPair > >::const_iterator iter;
-  for ( iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end(); ++iter )
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
+       ++iter)
   {
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
@@ -256,13 +240,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
     std::vector<DRT::Condition*> conditions_element1;
     std::vector<DRT::Condition*> conditions_element2;
     GetBeamPotentialConditionsAppliedToThisElementPair(
-        *elepairptr,conditions_element1,conditions_element2);
+        *elepairptr, conditions_element1, conditions_element2);
 
-    for (unsigned int k=0; k<conditions_element1.size(); ++k)
+    for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
       int npotlaw1 = conditions_element1[k]->GetInt("potlaw");
 
-      for (unsigned int j=0; j<conditions_element2.size(); ++j)
+      for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
         int npotlaw2 = conditions_element2[j]->GetInt("potlaw");
 
@@ -274,22 +258,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
           currconds.push_back(conditions_element2[j]);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
-          if(npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
-            dserror("number of potential law specified in line charge condition exceeds"
+          if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
+            dserror(
+                "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(
-              NULL,
-              NULL,
-              &elestiff_centerlineDOFs[0][0],
-              &elestiff_centerlineDOFs[0][1],
-              &elestiff_centerlineDOFs[1][0],
-              &elestiff_centerlineDOFs[1][1],
-              currconds,
-              BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1-1),
-              BeamPotentialParams().PotentialLawExponents().at(npotlaw1-1)
-              );
+          pair_is_active = elepairptr->Evaluate(NULL, NULL, &elestiff_centerlineDOFs[0][0],
+              &elestiff_centerlineDOFs[0][1], &elestiff_centerlineDOFs[1][0],
+              &elestiff_centerlineDOFs[1][1], currconds,
+              BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
+              BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication
@@ -301,23 +280,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
             // assemble stiffness matrix affecting the centerline DoFs only
             // into element stiffness matrix ('all DoFs' format, as usual)
             BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-                Discret(),
-                elegids,
-                dummyforce,
-                elestiff_centerlineDOFs,
-                NULL,
-                &elestiff);
+                Discret(), elegids, dummyforce, elestiff_centerlineDOFs, NULL, &elestiff);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
-                elegids, dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
+            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(),
+                elegids, dummyforce, elestiff, Teuchos::null,
+                BeamInteractionDataStatePtr()->GetMutableStiff());
           }
-
         }
       }
     }
-
   }
   return true;
 }
@@ -329,19 +302,19 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
   CheckInitSetup();
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector< LINALG::SerialDenseVector > eleforce(2);
+  std::vector<LINALG::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector< LINALG::SerialDenseVector > eleforce_centerlineDOFs(2);
+  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
 
   // linearizations
-  std::vector< std::vector<LINALG::SerialDenseMatrix> > elestiff( 2,
-      std::vector<LINALG::SerialDenseMatrix>(2) );
+  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<LINALG::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector< std::vector< LINALG::SerialDenseMatrix > > elestiff_centerlineDOFs ( 2,
-      std::vector<LINALG::SerialDenseMatrix>(2) );
+  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<LINALG::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -350,8 +323,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamPotentialPair > >::const_iterator iter;
-  for ( iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end(); ++iter )
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
+       ++iter)
   {
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> elepairptr = *iter;
 
@@ -362,13 +336,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
     std::vector<DRT::Condition*> conditions_element1;
     std::vector<DRT::Condition*> conditions_element2;
     GetBeamPotentialConditionsAppliedToThisElementPair(
-        *elepairptr,conditions_element1,conditions_element2);
+        *elepairptr, conditions_element1, conditions_element2);
 
-    for (unsigned int k=0; k<conditions_element1.size(); ++k)
+    for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
       int npotlaw1 = conditions_element1[k]->GetInt("potlaw");
 
-      for (unsigned int j=0; j<conditions_element2.size(); ++j)
+      for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
         int npotlaw2 = conditions_element2[j]->GetInt("potlaw");
 
@@ -380,22 +354,18 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
           currconds.push_back(conditions_element2[j]);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
-          if(npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
-            dserror("number of potential law specified in line charge condition exceeds"
+          if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
+            dserror(
+                "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(
-              &eleforce_centerlineDOFs[0],
-              &eleforce_centerlineDOFs[1],
-              &elestiff_centerlineDOFs[0][0],
-              &elestiff_centerlineDOFs[0][1],
-              &elestiff_centerlineDOFs[1][0],
-              &elestiff_centerlineDOFs[1][1],
-              currconds,
-              BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1-1),
-              BeamPotentialParams().PotentialLawExponents().at(npotlaw1-1)
-              );
+          pair_is_active =
+              elepairptr->Evaluate(&eleforce_centerlineDOFs[0], &eleforce_centerlineDOFs[1],
+                  &elestiff_centerlineDOFs[0][0], &elestiff_centerlineDOFs[0][1],
+                  &elestiff_centerlineDOFs[1][0], &elestiff_centerlineDOFs[1][1], currconds,
+                  BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
+                  BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication
@@ -406,37 +376,28 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
             // assemble force vector and stiffness matrix affecting the centerline DoFs only
             // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-            BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-                Discret(),
-                elegids,
-                eleforce_centerlineDOFs,
-                elestiff_centerlineDOFs,
-                &eleforce,
-                &elestiff);
+            BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(Discret(),
+                elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce, &elestiff);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(),
                 elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
-                BeamInteractionDataStatePtr()->GetMutableStiff() );
+                BeamInteractionDataStatePtr()->GetMutableStiff());
           }
-
         }
       }
     }
-
-
   }
 
-//  PrintActiveBeamPotentialSet(std::cout);
+  //  PrintActiveBeamPotentialSet(std::cout);
 
   return true;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepState(
-    const double& timefac_n)
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepState(const double& timefac_n)
 {
   CheckInitSetup();
 
@@ -445,8 +406,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepState(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreUpdateStepElement(
-    bool beam_redist )
+bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreUpdateStepElement(bool beam_redist)
 {
   CheckInitSetup();
   // not repartition of binning discretization necessary
@@ -455,8 +415,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreUpdateStepElement(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(
-    bool repartition_was_done )
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(bool repartition_was_done)
 {
   CheckInitSetup();
 
@@ -465,15 +424,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(
    * element pairs)
    * move this to RuntimeOutputStepState as soon as we keep element pairs
    * from previous time step */
-  if ( vtp_writer_ptr_ != Teuchos::null and
+  if (vtp_writer_ptr_ != Teuchos::null and
       GState().GetStepNp() %
-      BeamPotentialParams().GetBeamPotentialVtkParams()->OutputIntervalInSteps() == 0 )
+              BeamPotentialParams().GetBeamPotentialVtkParams()->OutputIntervalInSteps() ==
+          0)
     WriteTimeStepOutputRuntimeVtpBeamPotential();
 
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamPotentialElementPairs();
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -487,14 +446,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostUpdateStepElement()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-std::map< STR::EnergyType, double >
-BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetEnergy() const
+std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetEnergy()
+    const
 {
   CheckInitSetup();
 
-  std::map< STR::EnergyType, double > beam_interaction_potential;
+  std::map<STR::EnergyType, double> beam_interaction_potential;
 
-  for ( auto& elepairptr : beam_potential_element_pairs_ )
+  for (auto& elepairptr : beam_potential_element_pairs_)
   {
     beam_interaction_potential[STR::beam_interaction_potential] += elepairptr->GetEnergy();
   }
@@ -509,7 +468,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::OutputStepState(
 {
   CheckInitSetup();
   // nothing to do (so far)
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -518,22 +476,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RuntimeOutputStepState()
 {
   CheckInitSetup();
   // nothing to do (so far)
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState()
-{
-  CheckInitSetup();
-
-}
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState() { CheckInitSetup(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteRestart(
-    IO::DiscretizationWriter & ia_writer,
-    IO::DiscretizationWriter & bin_writer) const
+    IO::DiscretizationWriter& ia_writer, IO::DiscretizationWriter& bin_writer) const
 {
   // empty
 }
@@ -548,8 +500,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PreReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ReadRestart(
-    IO::DiscretizationReader & ia_reader,
-    IO::DiscretizationReader & bin_reader)
+    IO::DiscretizationReader& ia_reader, IO::DiscretizationReader& bin_reader)
 {
   // empty
 }
@@ -567,19 +518,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
-    const NOX::Solver::Generic& solver )
+    const NOX::Solver::Generic& solver)
 {
   CheckInitSetup();
 
-  if ( vtp_writer_ptr_ != Teuchos::null and
-      BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
-    WriteIterationOutputRuntimeVtpBeamPotential( solver.getNumIterations() );
+  if (vtp_writer_ptr_ != Teuchos::null and
+      BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
+    WriteIterationOutputRuntimeVtpBeamPotential(solver.getNumIterations());
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::AddBinsToBinColMap(
-    std::set< int >& colbins)
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::AddBinsToBinColMap(std::set<int>& colbins)
 {
   CheckInitSetup();
   // nothing to do
@@ -588,7 +538,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::AddBinsToBinColMap(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-    AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins ) const
+    AddBinsWithRelevantContentForIaDiscretColMap(std::set<int>& colbins) const
 {
   CheckInitSetup();
   // nothing to do
@@ -596,22 +546,23 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-    GetHalfInteractionDistance( double & half_interaction_distance )
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetHalfInteractionDistance(
+    double& half_interaction_distance)
 {
   CheckInitSetup();
 
-  if ( BeamPotentialParams().CutoffRadius() > 0.0 )
+  if (BeamPotentialParams().CutoffRadius() > 0.0)
   {
     half_interaction_distance = 0.5 * BeamPotentialParams().CutoffRadius();
 
-    if ( GState().GetMyRank() == 0 )
+    if (GState().GetMyRank() == 0)
       IO::cout(IO::verbose) << " beam potential half interaction distance "
-          << half_interaction_distance << IO::endl;
+                            << half_interaction_distance << IO::endl;
   }
   else
   {
-    dserror("You have to set a cutoff radius for beam-to-? potential-based interactions in order "
+    dserror(
+        "You have to set a cutoff radius for beam-to-? potential-based interactions in order "
         "to use REPARTITIONSTRATEGY = Adaptive!");
   }
 }
@@ -623,11 +574,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
   CheckInit();
 
   // measure time for evaluating this function
-  TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringElements");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringElements");
 
   // loop over all row elements
   int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
-  for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
+  for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
     DRT::Element* currele = DiscretPtr()->gElement(elegid);
@@ -637,30 +589,27 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
 
     // loop over all bind touched by currele
     std::set<int>::const_iterator biniter;
-    for( biniter = BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
-        biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter )
+    for (biniter = BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
+         biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter)
     {
       std::vector<int> loc_neighboring_binIds;
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      BinStrategyPtr()->GetNeighborAndOwnBinIds(
-          *biniter,loc_neighboring_binIds);
+      BinStrategyPtr()->GetNeighborAndOwnBinIds(*biniter, loc_neighboring_binIds);
 
       // build up comprehensive unique set of neighboring bins
-      neighboring_binIds.insert(loc_neighboring_binIds.begin(),
-          loc_neighboring_binIds.end());
+      neighboring_binIds.insert(loc_neighboring_binIds.begin(), loc_neighboring_binIds.end());
     }
     // get unique vector of comprehensive neighboring bins
-    std::vector<int> glob_neighboring_binIds(neighboring_binIds.begin(),
-        neighboring_binIds.end());
+    std::vector<int> glob_neighboring_binIds(neighboring_binIds.begin(), neighboring_binIds.end());
 
     // set of elements that lie in neighboring bins
     std::set<DRT::Element*> neighboring_elements;
-    std::vector< BINSTRATEGY::UTILS::BinContentType > bc(2);
+    std::vector<BINSTRATEGY::UTILS::BinContentType> bc(2);
     bc[0] = BINSTRATEGY::UTILS::Beam;
     bc[1] = BINSTRATEGY::UTILS::RigidSphere;
-    BinStrategyPtr()->GetBinContent( neighboring_elements, bc, glob_neighboring_binIds );
+    BinStrategyPtr()->GetBinContent(neighboring_elements, bc, glob_neighboring_binIds);
 
     // sort out elements that should not be considered in contact evaluation
     SelectElesToBeConsideredForPotentialEvaluation(currele, neighboring_elements);
@@ -673,14 +622,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     SelectElesToBeConsideredForPotentialEvaluation(
-    DRT::Element*            currele,
-    std::set<DRT::Element*>& neighbors) const
+        DRT::Element* currele, std::set<DRT::Element*>& neighbors) const
 {
   CheckInit();
 
   // sort out elements that should not be considered in potential evaluation
   std::set<DRT::Element*>::iterator eiter;
-  for( eiter = neighbors.begin(); eiter != neighbors.end();)
+  for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
 
@@ -688,7 +636,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
     // 1) ensure each interaction is only evaluated once (keep in mind that we are
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
-    if ( not ( currele->Id() < currneighborele->Id() ) )
+    if (not(currele->Id() < currneighborele->Id()))
     {
       toerase = true;
     }
@@ -697,11 +645,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     //    TODO introduce flag for self-interaction in input file
     else
     {
-      // get the conditions applied to both elements of the pair and decide whether they need to be evaluated
+      // get the conditions applied to both elements of the pair and decide whether they need to be
+      // evaluated
       std::vector<DRT::Condition*> conds1, conds2;
 
       // since only the nodes know about their conditions, we need this workaround
-      // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
+      // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
+      // it is sufficient to check only one node
       DRT::Node** nodes1;
       DRT::Node** nodes2;
       nodes1 = currele->Nodes();
@@ -713,73 +663,71 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
       // get correct condition for beam or rigid sphere element
-      if ( BEAMCONTACT::BeamElement(*currneighborele) )
+      if (BEAMCONTACT::BeamElement(*currneighborele))
         nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-      else if(BEAMCONTACT::RigidsphereElement(*currneighborele) )
+      else if (BEAMCONTACT::RigidsphereElement(*currneighborele))
         nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
       else
-        dserror("Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
+        dserror(
+            "Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
             "No other types of elements allowed!");
 
-      // validinteraction == true includes: both eles "loaded" by a charge condition of same potential law
+      // validinteraction == true includes: both eles "loaded" by a charge condition of same
+      // potential law
       bool validinteraction = false;
 
-      for (unsigned int i=0; i<conds1.size(); ++i)
+      for (unsigned int i = 0; i < conds1.size(); ++i)
       {
         int npotlaw1 = conds1[i]->GetInt("potlaw");
 
-        for (unsigned int j=0; j<conds2.size(); ++j)
+        for (unsigned int j = 0; j < conds2.size(); ++j)
         {
           int npotlaw2 = conds2[j]->GetInt("potlaw");
 
-          // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical beam
+          // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
+          // beam
           // TODO introduce flag for self-interaction in input file
-          if (conds1[i] != conds2[j] and npotlaw1 == npotlaw2)
-            validinteraction = true;
+          if (conds1[i] != conds2[j] and npotlaw1 == npotlaw2) validinteraction = true;
         }
       }
 
-      if (not validinteraction)
-        toerase = true;
+      if (not validinteraction) toerase = true;
     }
 
 
-    if( toerase )
+    if (toerase)
       neighbors.erase(eiter++);
     else
       ++eiter;
   }
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-    CreateBeamPotentialElementPairs()
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::CreateBeamPotentialElementPairs()
 {
   // Todo maybe keep existing pairs and reuse them ?
   beam_potential_element_pairs_.clear();
 
-  std::map<int, std::set<DRT::Element*> >::const_iterator nearbyeleiter;
+  std::map<int, std::set<DRT::Element*>>::const_iterator nearbyeleiter;
 
-  for (nearbyeleiter=nearby_elements_map_.begin(); nearbyeleiter!=nearby_elements_map_.end(); ++nearbyeleiter)
+  for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
+       ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    std::vector< DRT::Element const *> ele_ptrs(2);
+    std::vector<DRT::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
     std::set<DRT::Element*>::const_iterator secondeleiter;
-    for (secondeleiter=nearbyeleiter->second.begin(); secondeleiter!=nearbyeleiter->second.end(); ++secondeleiter)
+    for (secondeleiter = nearbyeleiter->second.begin();
+         secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
       ele_ptrs[1] = *secondeleiter;
 
       Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamPotentialPair::Create( ele_ptrs, BeamPotentialParams() );
+          BEAMINTERACTION::BeamPotentialPair::Create(ele_ptrs, BeamPotentialParams());
 
-      newbeaminteractionpair->Init(
-          BeamPotentialParamsPtr(),
-          ele_ptrs[0],
-          ele_ptrs[1]);
+      newbeaminteractionpair->Init(BeamPotentialParamsPtr(), ele_ptrs[0], ele_ptrs[1]);
 
       newbeaminteractionpair->Setup();
 
@@ -787,37 +735,40 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     }
   }
 
-  if( static_cast<int>( beam_potential_element_pairs_.size() ) > 0 )
+  if (static_cast<int>(beam_potential_element_pairs_.size()) > 0)
   {
     IO::cout(IO::standard) << "PID " << std::setw(2) << std::right << GState().GetMyRank()
-        << " currently monitors " << std::setw(5) << std::right <<
-        beam_potential_element_pairs_.size() << " beam potential pairs" << IO::endl;
+                           << " currently monitors " << std::setw(5) << std::right
+                           << beam_potential_element_pairs_.size() << " beam potential pairs"
+                           << IO::endl;
   }
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-    PrintAllBeamPotentialElementPairs( std::ostream& out ) const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintAllBeamPotentialElementPairs(
+    std::ostream& out) const
 {
   out << "\n\nCurrent BeamPotentialElementPairs: ";
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> >::const_iterator iter;
-  for (iter=beam_potential_element_pairs_.begin(); iter!=beam_potential_element_pairs_.end(); ++iter)
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
+       ++iter)
     (*iter)->Print(out);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-    PrintActiveBeamPotentialSet( std::ostream& out ) const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintActiveBeamPotentialSet(
+    std::ostream& out) const
 {
   // Todo
-  out << "\n    Active BeamToBeam Potential Set (PID " << GState().GetMyRank() <<
-      "):-----------------------------------------\n";
+  out << "\n    Active BeamToBeam Potential Set (PID " << GState().GetMyRank()
+      << "):-----------------------------------------\n";
   out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> >::const_iterator iter;
-  for (iter=beam_potential_element_pairs_.begin(); iter!=beam_potential_element_pairs_.end(); ++iter)
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
+  for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
+       ++iter)
     (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
 
   out << std::endl;
@@ -827,12 +778,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     GetBeamPotentialConditionsAppliedToThisElementPair(
-    BEAMINTERACTION::BeamPotentialPair const& elementpair,
-    std::vector<DRT::Condition*>& conditions_element1,
-    std::vector<DRT::Condition*>& conditions_element2) const
+        BEAMINTERACTION::BeamPotentialPair const& elementpair,
+        std::vector<DRT::Condition*>& conditions_element1,
+        std::vector<DRT::Condition*>& conditions_element2) const
 {
   // since only the nodes know about their conditions, we need this workaround
-  // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
+  // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is
+  // sufficient to check only one node
   const DRT::Element* ele1 = elementpair.Element1();
   const DRT::Element* ele2 = elementpair.Element2();
 
@@ -847,14 +799,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   nodes1[0]->GetCondition("BeamPotentialLineCharge", conditions_element1);
 
   // get correct condition for beam or rigid sphere element
-  if ( BEAMCONTACT::BeamElement(*ele2) )
+  if (BEAMCONTACT::BeamElement(*ele2))
     nodes2[0]->GetCondition("BeamPotentialLineCharge", conditions_element2);
-  else if ( BEAMCONTACT::RigidsphereElement(*ele2) )
+  else if (BEAMCONTACT::RigidsphereElement(*ele2))
     nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conditions_element2);
   else
-    dserror("Only beam-to-beam or beam-to-sphere potential-based interaction is implemented yet. "
+    dserror(
+        "Only beam-to-beam or beam-to-sphere potential-based interaction is implemented yet. "
         "No other types of elements allowed!");
-
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -884,13 +836,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintConsoleWelcomeMessa
     }
 
     std::cout << "Potential Law:       Phi(r) = ";
-    for (unsigned int isummand=0; isummand<BeamPotentialParams().PotentialLawPrefactors().size(); ++isummand)
+    for (unsigned int isummand = 0;
+         isummand < BeamPotentialParams().PotentialLawPrefactors().size(); ++isummand)
     {
-      if (isummand>0)
-        std::cout << " + ";
+      if (isummand > 0) std::cout << " + ";
 
       std::cout << "(" << BeamPotentialParams().PotentialLawPrefactors().at(isummand) << ") * r^(-"
-          << BeamPotentialParams().PotentialLawExponents().at(isummand) << ")";
+                << BeamPotentialParams().PotentialLawExponents().at(isummand) << ")";
     }
     std::cout << std::endl;
 
@@ -904,17 +856,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeam
 {
   CheckInit();
 
-  vtp_writer_ptr_ = Teuchos::rcp( new RuntimeVtpWriter() );
+  vtp_writer_ptr_ = Teuchos::rcp(new RuntimeVtpWriter());
 
   // Todo: we need a better upper bound for total number of time steps here
   // however, this 'only' affects the number of leading zeros in the vtk file names
   unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
 
-  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
+  if (BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
     num_timesteps_in_simulation_upper_bound *= 10000;
 
   // determine path of output directory
-  const std::string outputfilename( DRT::Problem::Instance()->OutputControlFile()->FileName() );
+  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
   size_t pos = outputfilename.find_last_of("/");
 
@@ -923,167 +875,162 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeam
   else
     pos++;
 
-  const std::string output_directory_path( outputfilename.substr(0ul, pos) );
+  const std::string output_directory_path(outputfilename.substr(0ul, pos));
 
 
   // initialize the writer object
-  vtp_writer_ptr_->Initialize(
-      Discret().Comm().MyPID(),
-      Discret().Comm().NumProc(),
-      num_timesteps_in_simulation_upper_bound,
-      output_directory_path,
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-      "beam-potential",
-      DRT::Problem::Instance()->OutputControlFile()->RestartName(),
-      GState().GetTimeN(),
-      BeamPotentialParams().GetBeamPotentialVtkParams()->WriteBinaryOutput() );
+  vtp_writer_ptr_->Initialize(Discret().Comm().MyPID(), Discret().Comm().NumProc(),
+      num_timesteps_in_simulation_upper_bound, output_directory_path,
+      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), "beam-potential",
+      DRT::Problem::Instance()->OutputControlFile()->RestartName(), GState().GetTimeN(),
+      BeamPotentialParams().GetBeamPotentialVtkParams()->WriteBinaryOutput());
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-WriteTimeStepOutputRuntimeVtpBeamPotential() const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRuntimeVtpBeamPotential()
+    const
 {
   CheckInitSetup();
 
-  if ( not BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration() )
-    WriteOutputRuntimeVtpBeamPotential( GState().GetStepN(), GState().GetTimeN() );
+  if (not BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
+    WriteOutputRuntimeVtpBeamPotential(GState().GetStepN(), GState().GetTimeN());
   else
-    WriteOutputRuntimeVtpBeamPotential( 10000 * GState().GetStepN(), GState().GetTimeN() );
+    WriteOutputRuntimeVtpBeamPotential(10000 * GState().GetStepN(), GState().GetTimeN());
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
-WriteIterationOutputRuntimeVtpBeamPotential( int iteration_number ) const
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRuntimeVtpBeamPotential(
+    int iteration_number) const
 {
   CheckInitSetup();
 
   const int augmented_timestep_number_incl_iteration_count =
-      10000 * GState().GetStepN() +
-      1 * iteration_number;
+      10000 * GState().GetStepN() + 1 * iteration_number;
 
-  const double augmented_time_incl_iteration_count =
-      GState().GetTimeN() +
-      1e-8 * iteration_number;
+  const double augmented_time_incl_iteration_count = GState().GetTimeN() + 1e-8 * iteration_number;
 
-  WriteOutputRuntimeVtpBeamPotential( augmented_timestep_number_incl_iteration_count,
-      augmented_time_incl_iteration_count );
+  WriteOutputRuntimeVtpBeamPotential(
+      augmented_timestep_number_incl_iteration_count, augmented_time_incl_iteration_count);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBeamPotential(
-    int timestep_number, double time ) const
+    int timestep_number, double time) const
 {
   CheckInitSetup();
 
   const unsigned int num_spatial_dimensions = 3;
 
   // reset time and time step and geometry name in the writer object
-  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry( time, timestep_number, "beam-potential" );
+  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry(time, timestep_number, "beam-potential");
 
   // estimate for number of interacting Gauss points = number of row points for writer object
   unsigned int num_row_points = 0;
 
-  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair() )
+  if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair())
   {
-    num_row_points = 2 * beam_potential_element_pairs_.size()
-        * BeamPotentialParams().NumberIntegrationSegments() * BeamPotentialParams().NumberGaussPoints();
+    num_row_points = 2 * beam_potential_element_pairs_.size() *
+                     BeamPotentialParams().NumberIntegrationSegments() *
+                     BeamPotentialParams().NumberGaussPoints();
   }
   else
   {
     // Todo: this won't perfectly work in parallel yet since some communication would be required
-//    if ( GState().GetMyRank() != 0 )
-//      dserror("visualization of resulting forces not implemented in parallel yet!");
+    //    if ( GState().GetMyRank() != 0 )
+    //      dserror("visualization of resulting forces not implemented in parallel yet!");
 
-    num_row_points = Discret().NumGlobalElements() * BeamPotentialParams().NumberIntegrationSegments()
-        * BeamPotentialParams().NumberGaussPoints();
+    num_row_points = Discret().NumGlobalElements() *
+                     BeamPotentialParams().NumberIntegrationSegments() *
+                     BeamPotentialParams().NumberGaussPoints();
   }
 
   // get and prepare storage for point coordinate values
   std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
   point_coordinates.clear();
-  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
+  point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
   // force values: collect data and append to visualization results if desired
   std::vector<double> potential_force_vector(0);
-  potential_force_vector.reserve( num_spatial_dimensions * num_row_points );
+  potential_force_vector.reserve(num_spatial_dimensions * num_row_points);
 
   // moment values: collect data and append to visualization results if desired
   std::vector<double> potential_moment_vector(0);
-  potential_moment_vector.reserve( num_spatial_dimensions * num_row_points );
+  potential_moment_vector.reserve(num_spatial_dimensions * num_row_points);
 
 
   // loop over my points and collect the geometry/grid data, i.e. interacting points
-  std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double,3,1> > coordinates_ele2_this_pair;
+  std::vector<LINALG::TMatrix<double, 3, 1>> coordinates_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double, 3, 1>> coordinates_ele2_this_pair;
 
-  std::vector<LINALG::TMatrix<double,3,1> > potential_forces_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double,3,1> > potential_forces_ele2_this_pair;
+  std::vector<LINALG::TMatrix<double, 3, 1>> potential_forces_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double, 3, 1>> potential_forces_ele2_this_pair;
 
-  std::vector<LINALG::TMatrix<double,3,1> > potential_moments_ele1_this_pair;
-  std::vector<LINALG::TMatrix<double,3,1> > potential_moments_ele2_this_pair;
+  std::vector<LINALG::TMatrix<double, 3, 1>> potential_moments_ele1_this_pair;
+  std::vector<LINALG::TMatrix<double, 3, 1>> potential_moments_ele2_this_pair;
 
   // loop over contact pairs and retrieve all active contact point coordinates
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> >::const_iterator pair_iter;
-  for ( pair_iter=beam_potential_element_pairs_.begin();
-      pair_iter!=beam_potential_element_pairs_.end(); ++pair_iter )
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator pair_iter;
+  for (pair_iter = beam_potential_element_pairs_.begin();
+       pair_iter != beam_potential_element_pairs_.end(); ++pair_iter)
   {
-
     // retrieve data for interacting points of element 1 and element 2
-    (*pair_iter)->GetAllInteractingPointCoordsElement1( coordinates_ele1_this_pair );
-    (*pair_iter)->GetAllInteractingPointCoordsElement2( coordinates_ele2_this_pair );
-    (*pair_iter)->GetForcesAtAllInteractingPointsElement1( potential_forces_ele1_this_pair );
-    (*pair_iter)->GetForcesAtAllInteractingPointsElement2( potential_forces_ele2_this_pair );
-    (*pair_iter)->GetMomentsAtAllInteractingPointsElement1( potential_moments_ele1_this_pair );
-    (*pair_iter)->GetMomentsAtAllInteractingPointsElement2( potential_moments_ele2_this_pair );
+    (*pair_iter)->GetAllInteractingPointCoordsElement1(coordinates_ele1_this_pair);
+    (*pair_iter)->GetAllInteractingPointCoordsElement2(coordinates_ele2_this_pair);
+    (*pair_iter)->GetForcesAtAllInteractingPointsElement1(potential_forces_ele1_this_pair);
+    (*pair_iter)->GetForcesAtAllInteractingPointsElement2(potential_forces_ele2_this_pair);
+    (*pair_iter)->GetMomentsAtAllInteractingPointsElement1(potential_moments_ele1_this_pair);
+    (*pair_iter)->GetMomentsAtAllInteractingPointsElement2(potential_moments_ele2_this_pair);
 
     const unsigned int num_interacting_points_per_element =
-       (unsigned int) coordinates_ele1_this_pair.size();
+        (unsigned int)coordinates_ele1_this_pair.size();
 
-    dsassert( num_interacting_points_per_element == (unsigned int) coordinates_ele2_this_pair.size(),
-       "number of interacting points on element 1 does not match number of interacting points "
-       "on element 2!" );
+    dsassert(num_interacting_points_per_element == (unsigned int)coordinates_ele2_this_pair.size(),
+        "number of interacting points on element 1 does not match number of interacting points "
+        "on element 2!");
 
-    dsassert( num_interacting_points_per_element == (unsigned int) potential_forces_ele1_this_pair.size(),
-       "number of interacting points on element 1 does not match number of potential forces!" );
+    dsassert(
+        num_interacting_points_per_element == (unsigned int)potential_forces_ele1_this_pair.size(),
+        "number of interacting points on element 1 does not match number of potential forces!");
 
-    dsassert( num_interacting_points_per_element == (unsigned int) potential_forces_ele2_this_pair.size(),
-       "number of interacting points on element 2 does not match number of potential forces!" );
+    dsassert(
+        num_interacting_points_per_element == (unsigned int)potential_forces_ele2_this_pair.size(),
+        "number of interacting points on element 2 does not match number of potential forces!");
 
 
-    for ( unsigned int ipoint=0; ipoint < num_interacting_points_per_element; ++ipoint )
+    for (unsigned int ipoint = 0; ipoint < num_interacting_points_per_element; ++ipoint)
     {
       // ignore point pairs with zero forces
       /* (e.g. if no valid point-to-curve projection in master-slave approach or
        * contribution is neglected on element pair level due to cutoff value) */
-      if ( potential_forces_ele1_this_pair[ipoint].Norm2() < 1e-16 and
+      if (potential_forces_ele1_this_pair[ipoint].Norm2() < 1e-16 and
           potential_forces_ele2_this_pair[ipoint].Norm2() < 1e-16 and
           potential_moments_ele1_this_pair[ipoint].Norm2() < 1e-16 and
-          potential_moments_ele2_this_pair[ipoint].Norm2() < 1e-16 )
+          potential_moments_ele2_this_pair[ipoint].Norm2() < 1e-16)
       {
         continue;
       }
 
 
       // this is easier, since data is computed and stored in this 'element-pairwise' format
-      if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair() )
+      if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForcesMomentsPerElementPair())
       {
-        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
         {
-          point_coordinates.push_back( coordinates_ele1_this_pair[ipoint](idim) );
+          point_coordinates.push_back(coordinates_ele1_this_pair[ipoint](idim));
 
-          potential_force_vector.push_back( potential_forces_ele1_this_pair[ipoint](idim) );
-          potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipoint](idim) );
+          potential_force_vector.push_back(potential_forces_ele1_this_pair[ipoint](idim));
+          potential_moment_vector.push_back(potential_moments_ele1_this_pair[ipoint](idim));
         }
 
-        for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+        for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
         {
-          point_coordinates.push_back( coordinates_ele2_this_pair[ipoint](idim) );
+          point_coordinates.push_back(coordinates_ele2_this_pair[ipoint](idim));
 
-          potential_force_vector.push_back( potential_forces_ele2_this_pair[ipoint](idim) );
-          potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipoint](idim) );
+          potential_force_vector.push_back(potential_forces_ele2_this_pair[ipoint](idim));
+          potential_moment_vector.push_back(potential_moments_ele2_this_pair[ipoint](idim));
         }
       }
       /* in this case, we need to identify unique Gauss points based on their coordinate values and
@@ -1095,29 +1042,29 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
         std::vector<double>::iterator xcoord_iter = point_coordinates.begin();
 
         // try to find data point with identical coordinates
-        while ( point_coordinates.size()>=3 and xcoord_iter != point_coordinates.end()-2 )
+        while (point_coordinates.size() >= 3 and xcoord_iter != point_coordinates.end() - 2)
         {
           // find identical x-coordinate value
-          xcoord_iter = std::find( xcoord_iter, point_coordinates.end()-2,
-              coordinates_ele1_this_pair[ipoint](0) );
+          xcoord_iter = std::find(
+              xcoord_iter, point_coordinates.end() - 2, coordinates_ele1_this_pair[ipoint](0));
 
           // check whether we've reached the end -> no match
-          if ( xcoord_iter == point_coordinates.end()-2 )
+          if (xcoord_iter == point_coordinates.end() - 2)
           {
             break;
           }
           // we have a match -> check whether also y- and z-coordinate value are identical
-          else if ( (xcoord_iter - point_coordinates.begin()) % 3 == 0 and
-                    *(xcoord_iter+1) == coordinates_ele1_this_pair[ipoint](1) and
-                    *(xcoord_iter+2) == coordinates_ele1_this_pair[ipoint](2) )
+          else if ((xcoord_iter - point_coordinates.begin()) % 3 == 0 and
+                   *(xcoord_iter + 1) == coordinates_ele1_this_pair[ipoint](1) and
+                   *(xcoord_iter + 2) == coordinates_ele1_this_pair[ipoint](2))
           {
             int offset = xcoord_iter - point_coordinates.begin();
 
-            for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+            for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
             {
-              *(potential_force_vector.begin()+offset+idim) +=
+              *(potential_force_vector.begin() + offset + idim) +=
                   potential_forces_ele1_this_pair[ipoint](idim);
-              *(potential_moment_vector.begin()+offset+idim) +=
+              *(potential_moment_vector.begin() + offset + idim) +=
                   potential_moments_ele1_this_pair[ipoint](idim);
             }
 
@@ -1128,18 +1075,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
           {
             xcoord_iter++;
           }
-
         }
 
         // add as a new point if not found above
-        if ( xcoord_iter == point_coordinates.end()-2 or point_coordinates.empty() )
+        if (xcoord_iter == point_coordinates.end() - 2 or point_coordinates.empty())
         {
-          for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+          for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
           {
-            point_coordinates.push_back( coordinates_ele1_this_pair[ipoint](idim) );
+            point_coordinates.push_back(coordinates_ele1_this_pair[ipoint](idim));
 
-            potential_force_vector.push_back( potential_forces_ele1_this_pair[ipoint](idim) );
-            potential_moment_vector.push_back( potential_moments_ele1_this_pair[ipoint](idim) );
+            potential_force_vector.push_back(potential_forces_ele1_this_pair[ipoint](idim));
+            potential_moment_vector.push_back(potential_moments_ele1_this_pair[ipoint](idim));
           }
         }
 
@@ -1148,29 +1094,29 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
         xcoord_iter = point_coordinates.begin();
 
         // try to find data point with identical coordinates
-        while ( xcoord_iter != point_coordinates.end()-2 )
+        while (xcoord_iter != point_coordinates.end() - 2)
         {
           // find identical x-coordinate value
-          xcoord_iter = std::find( xcoord_iter, point_coordinates.end()-2,
-              coordinates_ele2_this_pair[ipoint](0) );
+          xcoord_iter = std::find(
+              xcoord_iter, point_coordinates.end() - 2, coordinates_ele2_this_pair[ipoint](0));
 
           // check whether we've reached the end -> no match
-          if ( xcoord_iter == point_coordinates.end()-2 )
+          if (xcoord_iter == point_coordinates.end() - 2)
           {
             break;
           }
           // we have a match -> check whether also y- and z-coordinate value are identical
-          else if ( (xcoord_iter - point_coordinates.begin()) % 3 == 0 and
-                    *(xcoord_iter+1) == coordinates_ele2_this_pair[ipoint](1) and
-                    *(xcoord_iter+2) == coordinates_ele2_this_pair[ipoint](2) )
+          else if ((xcoord_iter - point_coordinates.begin()) % 3 == 0 and
+                   *(xcoord_iter + 1) == coordinates_ele2_this_pair[ipoint](1) and
+                   *(xcoord_iter + 2) == coordinates_ele2_this_pair[ipoint](2))
           {
             int offset = xcoord_iter - point_coordinates.begin();
 
-            for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+            for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
             {
-              *(potential_force_vector.begin()+offset+idim) +=
+              *(potential_force_vector.begin() + offset + idim) +=
                   potential_forces_ele2_this_pair[ipoint](idim);
-              *(potential_moment_vector.begin()+offset+idim) +=
+              *(potential_moment_vector.begin() + offset + idim) +=
                   potential_moments_ele2_this_pair[ipoint](idim);
             }
 
@@ -1181,40 +1127,35 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
           {
             xcoord_iter++;
           }
-
         }
 
         // add as a new point if not found above
-        if ( xcoord_iter == point_coordinates.end()-2 )
+        if (xcoord_iter == point_coordinates.end() - 2)
         {
-          for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+          for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
           {
-            point_coordinates.push_back( coordinates_ele2_this_pair[ipoint](idim) );
+            point_coordinates.push_back(coordinates_ele2_this_pair[ipoint](idim));
 
-            potential_force_vector.push_back( potential_forces_ele2_this_pair[ipoint](idim) );
-            potential_moment_vector.push_back( potential_moments_ele2_this_pair[ipoint](idim) );
+            potential_force_vector.push_back(potential_forces_ele2_this_pair[ipoint](idim));
+            potential_moment_vector.push_back(potential_moments_ele2_this_pair[ipoint](idim));
           }
         }
-
-
       }
-
     }
-
   }
 
 
   // append all desired output data to the writer object's storage
-  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces() )
+  if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces())
   {
-    vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_force_vector,
-        num_spatial_dimensions, "force" );
+    vtp_writer_ptr_->AppendVisualizationPointDataVector(
+        potential_force_vector, num_spatial_dimensions, "force");
   }
 
-  if ( BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments() )
+  if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments())
   {
-    vtp_writer_ptr_->AppendVisualizationPointDataVector( potential_moment_vector,
-        num_spatial_dimensions, "moment" );
+    vtp_writer_ptr_->AppendVisualizationPointDataVector(
+        potential_moment_vector, num_spatial_dimensions, "moment");
   }
 
   // finalize everything and write all required vtk files to filesystem
@@ -1223,6 +1164,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
 
   // write a collection file summarizing all previously written files
   vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(
-     DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() +
-     "-beam-potential" );
+      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-beam-potential");
 }

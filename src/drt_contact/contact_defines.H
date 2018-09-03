@@ -16,18 +16,19 @@
 /************************************************************************/
 
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
-//#define CONSISTENTSTICK           /* flag for consistent stick branch of the complementarity function */
-//#define CONSISTENTSLIP            /* flag for consistent slip branch of the complementarity function */
+//#define CONSISTENTSTICK           /* flag for consistent stick branch of the complementarity
+//function */ #define CONSISTENTSLIP            /* flag for consistent slip branch of the
+//complementarity function */
 
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-//#define CONTACTEXPORT             /* flag for export of inttime, active set... to textfiles. USE WITH CONTACTASOUTPUT AND CONTACTFORCEOUTPUT */
-//#define CONTACTASOUTPUT           /* flag for detailed active set output */
-//#define CONTACTFORCEOUTPUT        /* flag for output of contact forces */
-//#define CHECKCONSERVATIONLAWS     /* check linear and angular conservation laws */
+//#define CONTACTEXPORT             /* flag for export of inttime, active set... to textfiles. USE
+//WITH CONTACTASOUTPUT AND CONTACTFORCEOUTPUT */ #define CONTACTASOUTPUT           /* flag for
+//detailed active set output */ #define CONTACTFORCEOUTPUT        /* flag for output of contact
+//forces */ #define CHECKCONSERVATIONLAWS     /* check linear and angular conservation laws */
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTSTATUS             /* flag for contact segmentation measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
@@ -57,13 +58,15 @@
 //#define CONTACTFDE_D              /* flag for FD check of mortar matrix E lin for wear cond */
 //#define CONTACTFDMORTART          /* flag for FD check of mortar matrix T */
 //#define CONTACTFDMORTARE          /* flag for FD check of mortar matrix E */
-//#define CONTACTFDT_D_MASTER       /* flag for FD check of mortar matrix T lin for wear cond (Master side)*/
-//#define CONTACTFDE_D_MASTER       /* flag for FD check of mortar matrix E lin for wear cond (Master side)*/
-//#define CONTACTFDMORTART_MASTER   /* flag for FD check of mortar matrix T (Master side) */
-//#define CONTACTFDMORTARE_MASTER   /* flag for FD check of mortar matrix E (Master side) */
+//#define CONTACTFDT_D_MASTER       /* flag for FD check of mortar matrix T lin for wear cond
+//(Master side)*/ #define CONTACTFDE_D_MASTER       /* flag for FD check of mortar matrix E lin for
+//wear cond (Master side)*/ #define CONTACTFDMORTART_MASTER   /* flag for FD check of mortar matrix
+//T (Master side) */ #define CONTACTFDMORTARE_MASTER   /* flag for FD check of mortar matrix E
+//(Master side) */
 
 // PRINTING OF SPECIFIC INFORMATION
-//#define MASTERNODESINCONTACT           /* flag for printing master nodes in contact - CONTACTFORCEOUTPUT also has to be switched on*/
-//#define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag for printing all nodes and xspatial in current configuration - only works for 1 processor*/
+//#define MASTERNODESINCONTACT           /* flag for printing master nodes in contact -
+//CONTACTFORCEOUTPUT also has to be switched on*/ #define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag for
+//printing all nodes and xspatial in current configuration - only works for 1 processor*/
 
 #endif  // #ifndef CONTACT_DEFINES_H

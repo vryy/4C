@@ -22,58 +22,60 @@
 #include "MueLu_SingleLevelFactoryBase.hpp"
 #include "MueLu_ThresholdAFilterFactory_fwd.hpp"
 
-#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
+#include <Xpetra_MapExtractorFactory.hpp>  // why no forward declarations in Xpetra?
 
-namespace MueLu {
+namespace MueLu
+{
+  /*!
+    @class ContactAFilterFactory class.
+    @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying
+    problems
 
-/*!
-  @class ContactAFilterFactory class.
-  @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
+  */
 
-*/
-
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-class ContactAFilterFactory : public SingleLevelFactoryBase {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  class ContactAFilterFactory : public SingleLevelFactoryBase
+  {
 #undef MUELU_CONTACTAFILTERFACTORY_SHORT
-  #include "MueLu_UseShortNames.hpp"
+#include "MueLu_UseShortNames.hpp"
 
-public:
-  //! @name Constructors/Destructors.
-  //@{
+   public:
+    //! @name Constructors/Destructors.
+    //@{
 
-  //! Constructor.
-  ContactAFilterFactory(/*const std::string& ename, const FactoryBase* fac*/);
+    //! Constructor.
+    ContactAFilterFactory(/*const std::string& ename, const FactoryBase* fac*/);
 
-  //! Destructor.
-  virtual ~ContactAFilterFactory();
+    //! Destructor.
+    virtual ~ContactAFilterFactory();
 
-  //! define valid factory parameters
-  Teuchos::RCP<const Teuchos::ParameterList> GetValidParameterList(const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
+    //! define valid factory parameters
+    Teuchos::RCP<const Teuchos::ParameterList> GetValidParameterList(
+        const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
 
-  //@}
+    //@}
 
-  //! Input
-  //@{
+    //! Input
+    //@{
 
-  void DeclareInput(Level &currentLevel) const;
+    void DeclareInput(Level& currentLevel) const;
 
-  //@}
+    //@}
 
-  //@{
-  //! @name Build methods.
+    //@{
+    //! @name Build methods.
 
-  //! Build an object with this factory.
-  void Build(Level & currentLevel) const;
+    //! Build an object with this factory.
+    void Build(Level& currentLevel) const;
 
-  //@}
+    //@}
 
-private:
+   private:
+  };  // class ContactAFilterFactory
 
-}; // class ContactAFilterFactory
-
-} // namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
 
-#endif // HAVE_MueLu
-#endif /* MUELU_CONTACTAFILTERFACTORY_DECL_HPP_ */
+#endif  // HAVE_MueLu
+#endif  /* MUELU_CONTACTAFILTERFACTORY_DECL_HPP_ */

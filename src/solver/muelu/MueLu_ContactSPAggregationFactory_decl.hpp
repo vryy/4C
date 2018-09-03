@@ -20,8 +20,8 @@
 
 //#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
 
-namespace MueLu {
-
+namespace MueLu
+{
   /*!
     @class ContactSPAggregationFactory class.
     @brief special factory
@@ -29,18 +29,21 @@ namespace MueLu {
   */
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  class ContactSPAggregationFactory : public SingleLevelFactoryBase {
+  class ContactSPAggregationFactory : public SingleLevelFactoryBase
+  {
 #undef MUELU_CONTACTSPAGGREGATIONFACTORY_SHORT
-    #include "MueLu_UseShortNames.hpp"
+#include "MueLu_UseShortNames.hpp"
 
-    //typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
+    // typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; //
+    // TODO move me to ShortNames...
 
-  public:
+   public:
     //! @name Constructors/Destructors.
     //@{
 
     //! Constructor.
-    ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact = Teuchos::null, Teuchos::RCP<const FactoryBase> amalgFact = Teuchos::null);
+    ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact = Teuchos::null,
+        Teuchos::RCP<const FactoryBase> amalgFact = Teuchos::null);
 
     //! Destructor.
     virtual ~ContactSPAggregationFactory();
@@ -49,9 +52,10 @@ namespace MueLu {
     //! Input
     //@{
 
-    Teuchos::RCP<const Teuchos::ParameterList> GetValidParameterList(const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
+    Teuchos::RCP<const Teuchos::ParameterList> GetValidParameterList(
+        const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
 
-    void DeclareInput(Level &currentLevel) const;
+    void DeclareInput(Level& currentLevel) const;
 
     //@}
 
@@ -59,26 +63,26 @@ namespace MueLu {
     //! @name Build methods.
 
     //! Build an object with this factory.
-    void Build(Level & currentLevel) const;
+    void Build(Level& currentLevel) const;
 
     //@}
 
-  private:
+   private:
+    Teuchos::RCP<const FactoryBase> aggregatesFact_;  //! Factory that creates aggregates
+    Teuchos::RCP<const FactoryBase> amalgFact_;       //! Factory that (Un)Amalgamation info from A
+    Teuchos::RCP<const FactoryBase> AFact_;  //! Define which matrix A is used in this factory
 
-    Teuchos::RCP<const FactoryBase> aggregatesFact_; //! Factory that creates aggregates
-    Teuchos::RCP<const FactoryBase> amalgFact_;      //! Factory that (Un)Amalgamation info from A
-    Teuchos::RCP<const FactoryBase> AFact_;          //! Define which matrix A is used in this factory
+    // bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
 
-    //bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
-
-    //Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    // Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for
+    // finest level only)
 
 
-  }; // class ContactSPAggregationFactory
+  };  // class ContactSPAggregationFactory
 
-} // namespace MueLu
+}  // namespace MueLu
 
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_SHORT
-#endif // HAVE_MueLu
+#endif  // HAVE_MueLu
 
 #endif /* MUELU_CONTACTSPAGGREGATIONFACTORY_DECL_HPP_ */

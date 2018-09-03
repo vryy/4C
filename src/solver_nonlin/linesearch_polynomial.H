@@ -53,9 +53,7 @@ namespace NLNSOL
    */
   class LineSearchPolynomial : public NLNSOL::LineSearchBase
   {
-
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -136,9 +134,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void ComputeLSParam(
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeLSParam(double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr  ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //@}
@@ -154,14 +151,12 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! maximum number of recursive polynomial evaluations
     int itermax_;
 
-  }; // class LineSearchPolynomial
-} // namespace NLNSOL
+  };  // class LineSearchPolynomial
+}  // namespace NLNSOL
 
 #endif /* LINESEARCH_POLYNOMIAL_H */

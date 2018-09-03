@@ -16,9 +16,8 @@
 
 
 /*! entry point for the solution of Lubrication problems */
-void porofluidmultiphase_dyn(
-    int restart        /* do we have to perform a restart?  */
-    );
+void porofluidmultiphase_dyn(int restart /* do we have to perform a restart?  */
+);
 
 
 #endif /* SRC_DRT_POROFLUIDMULTIPHASE_POROFLUIDMULTIPHASE_DYN_H_ */

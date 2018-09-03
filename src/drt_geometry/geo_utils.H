@@ -24,21 +24,26 @@ header file
 #include "../drt_geometry/integrationcell.H"
 
 
-//forward declarations
+// forward declarations
 namespace GEO
 {
   //! shortcut for a vector of BoundaryIntCells
-  typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
+  typedef std::vector<GEO::BoundaryIntCell> BoundaryIntCells;
 
   //! shortcut for a vector of BoundaryCell pointers
-  typedef std::vector< Teuchos::RCP<GEO::BoundaryIntCell> > BoundaryIntCellPtrs;
+  typedef std::vector<Teuchos::RCP<GEO::BoundaryIntCell>> BoundaryIntCellPtrs;
 
   //! shortcut for a vector of DomainIntCells
-  typedef std::vector<GEO::DomainIntCell > DomainIntCells;
+  typedef std::vector<GEO::DomainIntCell> DomainIntCells;
 
 
   //! based on this element property, one can speed up geometry algorithms
-  enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
-}
+  enum EleGeoType
+  {
+    CARTESIAN,
+    LINEAR,
+    HIGHERORDER
+  };
+}  // namespace GEO
 
 #endif /* GEO_UTILS_H_ */

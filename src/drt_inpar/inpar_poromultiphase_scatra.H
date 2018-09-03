@@ -22,81 +22,79 @@
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-
-/// Input parameters for poroelasticity with scalar transport
-namespace POROMULTIPHASESCATRA
-{
-
-  /// Type of coupling strategy for poro scatra problems
-  enum SolutionSchemeOverFields
+  /// Input parameters for poroelasticity with scalar transport
+  namespace POROMULTIPHASESCATRA
   {
-    solscheme_twoway_partitioned_nested,
-    solscheme_twoway_partitioned_sequential,
-    solscheme_twoway_monolithic
-  };
-
-  /// type of finite difference check
-  enum FDCheck
-  {
-    fdcheck_none,
-    fdcheck_global
-  };
-
-  /// type of norm to be calculated
-  enum VectorNorm
-  {
-    norm_undefined,
-    norm_l1,  //!< L1/linear norm
-    norm_l1_scaled,  //!< L1/linear norm scaled by length of vector
-    norm_l2,  //!< L2/Euclidean norm
-    norm_rms,  //!< root mean square (RMS) norm
-    norm_inf  //!< Maximum/infinity norm
-  };
-
-  //! equilibration methods for global system of equations (monolithic)
-  enum EquilibrationMethods
-  {
-    equilibration_none,
-    equilibration_rows_full,
-    equilibration_rows_maindiag,
-    equilibration_columns_full,
-    equilibration_columns_maindiag,
-    equilibration_rowsandcolumns_full,
-    equilibration_rowsandcolumns_maindiag
-  };
-
-  //! map enum term to std::string
-  static inline const std::string VectorNormString(
-    const enum VectorNorm norm  //!< input enum term
-    )
-  {
-    switch (norm)
+    /// Type of coupling strategy for poro scatra problems
+    enum SolutionSchemeOverFields
     {
-    case INPAR::POROMULTIPHASESCATRA::norm_l1 :
-      return "L1";
-      break;
-    case INPAR::POROMULTIPHASESCATRA::norm_l1_scaled :
-      return "L1_scaled";
-      break;
-    case INPAR::POROMULTIPHASESCATRA::norm_l2 :
-      return "L2";
-      break;
-    case INPAR::POROMULTIPHASESCATRA::norm_rms :
-      return "Rms";
-      break;
-    case INPAR::POROMULTIPHASESCATRA::norm_inf :
-      return "Inf";
-      break;
-    default:
-      dserror("Cannot make std::string to vector norm %d", norm);
-      return "";
+      solscheme_twoway_partitioned_nested,
+      solscheme_twoway_partitioned_sequential,
+      solscheme_twoway_monolithic
+    };
+
+    /// type of finite difference check
+    enum FDCheck
+    {
+      fdcheck_none,
+      fdcheck_global
+    };
+
+    /// type of norm to be calculated
+    enum VectorNorm
+    {
+      norm_undefined,
+      norm_l1,         //!< L1/linear norm
+      norm_l1_scaled,  //!< L1/linear norm scaled by length of vector
+      norm_l2,         //!< L2/Euclidean norm
+      norm_rms,        //!< root mean square (RMS) norm
+      norm_inf         //!< Maximum/infinity norm
+    };
+
+    //! equilibration methods for global system of equations (monolithic)
+    enum EquilibrationMethods
+    {
+      equilibration_none,
+      equilibration_rows_full,
+      equilibration_rows_maindiag,
+      equilibration_columns_full,
+      equilibration_columns_maindiag,
+      equilibration_rowsandcolumns_full,
+      equilibration_rowsandcolumns_maindiag
+    };
+
+    //! map enum term to std::string
+    static inline const std::string VectorNormString(
+        const enum VectorNorm norm  //!< input enum term
+    )
+    {
+      switch (norm)
+      {
+        case INPAR::POROMULTIPHASESCATRA::norm_l1:
+          return "L1";
+          break;
+        case INPAR::POROMULTIPHASESCATRA::norm_l1_scaled:
+          return "L1_scaled";
+          break;
+        case INPAR::POROMULTIPHASESCATRA::norm_l2:
+          return "L2";
+          break;
+        case INPAR::POROMULTIPHASESCATRA::norm_rms:
+          return "Rms";
+          break;
+        case INPAR::POROMULTIPHASESCATRA::norm_inf:
+          return "Inf";
+          break;
+        default:
+          dserror("Cannot make std::string to vector norm %d", norm);
+          return "";
+      }
     }
-  }
 
-  /// set the poroscatra parameters
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    /// set the poroscatra parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}  // namespace PORO_SCATRA
+  }  // namespace POROMULTIPHASESCATRA
 
 }  // namespace INPAR
 

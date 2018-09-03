@@ -22,21 +22,20 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-namespace IO_RUNTIME_VTK
-{
-
-  /// data format for written numeric data
-  enum OutputDataFormat
+  namespace IO_RUNTIME_VTK
   {
-    binary,
-    ascii,
-    vague
-  };
+    /// data format for written numeric data
+    enum OutputDataFormat
+    {
+      binary,
+      ascii,
+      vague
+    };
 
-  /// set the valid parameters related to writing of VTK output at runtime
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    /// set the valid parameters related to writing of VTK output at runtime
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}
-}
+  }  // namespace IO_RUNTIME_VTK
+}  // namespace INPAR
 
 #endif

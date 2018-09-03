@@ -33,28 +33,25 @@ namespace DRT
 {
   class Element;
   class ImmersedFieldExchangeManager;
-}
+}  // namespace DRT
 
 namespace SSI
 {
+  /*!
+  \brief Specialized class to deal with partitioned 2WC SSI during cell contraction in cell
+  migration.
 
-/*!
-\brief Specialized class to deal with partitioned 2WC SSI during cell contraction in cell migration.
-
-\date 12/2016
-\author rauch (rauch@lnm.mw.tum.de)
-*/
+  \date 12/2016
+  \author rauch (rauch@lnm.mw.tum.de)
+  */
   class SSI_Part2WC_BIOCHEMOMECHANO : public SSI_Part2WC
   {
-
-  public:
-
+   public:
     //! constructor
     SSI_Part2WC_BIOCHEMOMECHANO(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams);
+        const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //!virtual destructor
+    //! virtual destructor
     virtual ~SSI_Part2WC_BIOCHEMOMECHANO(){};
 
     /*! \brief Initialize this object
@@ -67,14 +64,9 @@ namespace SSI
     \return int
     \date 08/16
     \author rauch      */
-    virtual int Init(
-        const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams,
-        const std::string struct_disname,
-        const std::string scatra_disname,
-        bool isAle);
+    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string struct_disname, const std::string scatra_disname, bool isAle);
 
     //! setup this class
     virtual void Setup();
@@ -83,8 +75,7 @@ namespace SSI
     virtual void PrepareTimeStep(bool printheader = true);
 
 
-  protected:
-
+   protected:
     //! update Phinp
     void UpdateScalars();
 
@@ -97,16 +88,15 @@ namespace SSI
     //! check convergence (absolute OR relative increments)
     virtual bool ConvergenceCheck(int itnum);
 
-  private:
-
+   private:
     //! communicator
     int myrank_;
 
     //! underlying structure of the SSI problem
-    Teuchos::RCP< ::ADAPTER::SSIStructureWrapper> ssi_wrapper_;
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> ssi_wrapper_;
 
     //! pointer to ImmersedFieldExchangeManager singleton object
-    DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+    DRT::ImmersedFieldExchangeManager* exchange_manager_;
 
     //! vector containing rate of change in actin concentration
     Teuchos::RCP<Epetra_MultiVector> ratesactin_;
@@ -118,7 +108,7 @@ namespace SSI
     Teuchos::RCP<Epetra_MultiVector> phi_;
 
 
-  }; // class
-} // namespace SSI
+  };  // class
+}  // namespace SSI
 
 #endif /* SSI_PARTITIONED2_WC_BIOCHEMOMECHANO_H_ */

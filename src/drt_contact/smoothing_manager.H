@@ -23,95 +23,94 @@ namespace DRT
 
 namespace CONTACT
 {
+  class SmoothingManager : public MORTAR::ManagerBase
+  {
+   public:
+    /*!
+    \brief Constructor
 
-class SmoothingManager : public MORTAR::ManagerBase
-{
-public:
+    */
+    SmoothingManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-  /*!
-  \brief Constructor
+    /*!
+    \brief Destructor
 
-  */
-  SmoothingManager(DRT::Discretization& discret, double alphaf = 0.0);
+    */
+    virtual ~SmoothingManager(){};
 
-  /*!
-  \brief Destructor
+    //! @name Access methods
 
-  */
-  virtual ~SmoothingManager() {};
+    /*!
+    \brief Get discretization
 
-  //! @name Access methods
+    */
+    DRT::Discretization& Discret() const { return discret_; };
 
-  /*!
-  \brief Get discretization
+    //@}
 
-  */
-  DRT::Discretization& Discret() const { return discret_;};
+    //! @name Evaluation methods
 
-  //@}
+    /*!
+    \brief Write restart information for contact
 
-  //! @name Evaluation methods
+    The additionally necessary restart information in the contact
+    case are the current Lagrange multiplier values and the current
+    active set status of each slave node.
 
-  /*!
-  \brief Write restart information for contact
+    \param output (in): IO::Discretization writer for restart
 
-  The additionally necessary restart information in the contact
-  case are the current Lagrange multiplier values and the current
-  active set status of each slave node.
+    */
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) { return; };
 
-  \param output (in): IO::Discretization writer for restart
+    /*!
+    \brief Read restart information for contact
 
-  */
-  void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false){return;};
+    This method has the inverse functionality of WriteRestart, as
+    it reads the activetoggle / lmold vectors and stores the restart
+    status into each slave node. Moreover, all global maps concerning
+    the active set and the old mortar matrices D,M are rebuilt based
+    on the restart information.
 
-  /*!
-  \brief Read restart information for contact
+    \param reader (in): IO::Discretization reader for restart
+    \param dis (in)   : global dof displacement vector
+    \param zero (in)  : global dof zero vector
 
-  This method has the inverse functionality of WriteRestart, as
-  it reads the activetoggle / lmold vectors and stores the restart
-  status into each slave node. Moreover, all global maps concerning
-  the active set and the old mortar matrices D,M are rebuilt based
-  on the restart information.
+    */
+    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<Epetra_Vector> zero)
+    {
+      return;
+    };
 
-  \param reader (in): IO::Discretization reader for restart
-  \param dis (in)   : global dof displacement vector
-  \param zero (in)  : global dof zero vector
+    /*!
+    \brief Write interface tractions for postprocessing
 
-  */
-  void ReadRestart(IO::DiscretizationReader& reader,
-                   Teuchos::RCP<Epetra_Vector> dis,
-                   Teuchos::RCP<Epetra_Vector> zero){return;};
+    \param output (in): IO::Discretization writer for restart
 
-  /*!
-  \brief Write interface tractions for postprocessing
-
-  \param output (in): IO::Discretization writer for restart
-
-  */
-  void PostprocessQuantities(IO::DiscretizationWriter& output);
-  //@}
+    */
+    void PostprocessQuantities(IO::DiscretizationWriter& output);
+    //@}
 
 
-private:
+   private:
+    /*!
+    \brief Read and check contact input parameters
 
-  /*!
-  \brief Read and check contact input parameters
+    All specified contact-related input parameters are read from the
+    DRT::Problem::Instance() and stored into a local variable of
+    type Teuchos::ParameterList. Invalid parameter combinations are
+    sorted out and throw a dserror.
 
-  All specified contact-related input parameters are read from the
-  DRT::Problem::Instance() and stored into a local variable of
-  type Teuchos::ParameterList. Invalid parameter combinations are
-  sorted out and throw a dserror.
+    */
+    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
-  */
-  bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
+    // don't want = operator and cctor
+    SmoothingManager operator=(const SmoothingManager& old);
+    SmoothingManager(const SmoothingManager& old);
 
-  // don't want = operator and cctor
-  SmoothingManager operator = (const SmoothingManager& old);
-  SmoothingManager(const SmoothingManager& old);
+    DRT::Discretization& discret_;  // the underlying problem discretization
 
-  DRT::Discretization&  discret_; // the underlying problem discretization
-
-}; // class SmoothingManager
-} // namespace CONTACT
+  };  // class SmoothingManager
+}  // namespace CONTACT
 
 #endif /* SMOOTHING_MANAGER_H_ */

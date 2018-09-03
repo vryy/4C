@@ -16,8 +16,7 @@
  |  ctor                                               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
 template <typename ELEMENT>
-DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner)
-  : ELEMENT(id,owner)
+DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner) : ELEMENT(id, owner)
 {
   return;
 }
@@ -27,7 +26,7 @@ DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner)
  *--------------------------------------------------------------------------*/
 template <typename ELEMENT>
 DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(const DRT::MESHFREE::MeshfreeBin<ELEMENT>& old)
-  : ELEMENT(old)
+    : ELEMENT(old)
 {
   return;
 }
@@ -47,10 +46,12 @@ DRT::MESHFREE::MeshfreeBin<ELEMENT>::~MeshfreeBin()
 template <typename ELEMENT>
 void DRT::MESHFREE::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
 {
-  for (unsigned int i = 0; i<ELEMENT::nodeid_.size(); i++){
-    if (ELEMENT::nodeid_[i]==gid){
-      ELEMENT::nodeid_.erase(ELEMENT::nodeid_.begin()+i);
-      ELEMENT::node_.erase(ELEMENT::node_.begin()+i);
+  for (unsigned int i = 0; i < ELEMENT::nodeid_.size(); i++)
+  {
+    if (ELEMENT::nodeid_[i] == gid)
+    {
+      ELEMENT::nodeid_.erase(ELEMENT::nodeid_.begin() + i);
+      ELEMENT::node_.erase(ELEMENT::node_.begin() + i);
       return;
     }
   }

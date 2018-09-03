@@ -32,10 +32,8 @@
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> actdis,
-                                           const DRT::Condition *condition,
-                                           Teuchos::ParameterList & params)
+    const DRT::Condition* condition, Teuchos::ParameterList& params)
 {
-
   // define BC name std::string (e.g: BC   = "flow")
   std::string BC;
   // define BC type std::string (e.g: Type = "forced")
@@ -53,7 +51,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
   // -------------------------------------------------------------------
   // Read in global time
   // -------------------------------------------------------------------
-    double time = params.get<double>("total time");
+  double time = params.get<double>("total time");
 
   // -------------------------------------------------------------------
   // Check whether the condition is prescribed from the input file
@@ -65,61 +63,60 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // Read in Condition type and name
     // -----------------------------------------------------------------
     Type = *(condition->Get<std::string>("type"));
-    BC   = *(condition->Get<std::string>("boundarycond"));
+    BC = *(condition->Get<std::string>("boundarycond"));
 
     // -----------------------------------------------------------------
     // Read in the bc curve information
     // -----------------------------------------------------------------
-    const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+    const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
     double curvefac = 1.0;
-    const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
+    const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
 
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
     // -----------------------------------------------------------------
-    if(Type == "absorbing")  // => without Reflection
+    if (Type == "absorbing")  // => without Reflection
     {
       Rf = 0.0;
     }
-    else if(Type == "forced")// => with Reflection
+    else if (Type == "forced")  // => with Reflection
     {
       // If forced curve exists => Rf = curve
-      if ((*curve)[1]>=0)
+      if ((*curve)[1] >= 0)
       {
-      curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
-      Rf = (*vals)[1]*curvefac;
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
+        Rf = (*vals)[1] * curvefac;
       }
       // else the BC is totally forced
       else
       {
         Rf = 1.0;
       }
-      if (Rf <0.0 || Rf > 1.0)
+      if (Rf < 0.0 || Rf > 1.0)
       {
-        dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]",Rf);
+        dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]", Rf);
         exit(1);
       }
     }
     else
     {
-      dserror("%s is not defined as a 1D artery's inlet BC type",Type.c_str());
+      dserror("%s is not defined as a 1D artery's inlet BC type", Type.c_str());
       exit(1);
     }
 
     // -----------------------------------------------------------------
     // Read in the value of the applied BC
     // -----------------------------------------------------------------
-    if((*curve)[0]>=0)
+    if ((*curve)[0] >= 0)
     {
       curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
-      BCin = (*vals)[0]*curvefac;
+      BCin = (*vals)[0] * curvefac;
     }
     else
     {
       dserror("no inlet boundary condition defined!");
       exit(1);
     }
-
   }
   else if (params.get<std::string>("Condition Name") == "Art_redD_3D_CouplingCond")
   {
@@ -127,14 +124,16 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // Read in the 3D parameters exported to the reduced D problem
     // -------------------------------------------------------------------
     CoupledTo3DParams =
-      params.get<Teuchos::RCP<Teuchos::ParameterList > >("coupling with 3D fluid params");
+        params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
 
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
     // -----------------------------------------------------------------
-    if (CoupledTo3DParams.get()==NULL)
+    if (CoupledTo3DParams.get() == NULL)
     {
-      dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
+      dserror(
+          "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed "
+          "don't exist");
       exit(1);
     }
 
@@ -164,26 +163,27 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
 
     int ID = condition->GetInt("ConditionID");
-    Teuchos::RCP<std::map<std::string,double> > map3D;
-    map3D   = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string,double > > >("3D map of values");
+    Teuchos::RCP<std::map<std::string, double>> map3D;
+    map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>("3D map of values");
 
     // find the applied boundary variable
     std::stringstream stringID;
-    stringID<< "_"<<ID;
-    for (std::map<std::string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
+    stringID << "_" << ID;
+    for (std::map<std::string, double>::iterator itr = map3D->begin(); itr != map3D->end(); itr++)
     {
       std::string VariableWithId = itr->first;
       size_t found;
-      found= VariableWithId.rfind(stringID.str());
-      if (found!=std::string::npos)
+      found = VariableWithId.rfind(stringID.str());
+      if (found != std::string::npos)
       {
-        BC   = std::string(VariableWithId,0,found);
+        BC = std::string(VariableWithId, 0, found);
         BCin = itr->second;
         break;
       }
     }
 
-    std::cout<<"Return ["<<BC<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<std::endl;
+    std::cout << "Return [" << BC << "] form 3D problem to 1D POINT of ID[" << ID << "]: " << BCin
+              << std::endl;
     if (Type == "forced")
     {
       Rf = 1.0;
@@ -194,7 +194,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     }
     else
     {
-      dserror("%s, is an unimplimented type of coupling",Type.c_str());
+      dserror("%s, is an unimplimented type of coupling", Type.c_str());
       exit(1);
     }
   }
@@ -213,25 +213,24 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
   double Wbnp = 0.0;
   // IO = -1 if terminal is an inlet
   // IO =  1 if terminal is an outlet
-  const int    IO    =  params.get<int>("in out flag");
-  const double beta  =  params.get<double>("artery beta");
-  const double Ao    =  params.get<double>("artery area");
-  const double dens  =  params.get<double>("blood density");
-  const double pext  =  params.get<double>("external pressure");
+  const int IO = params.get<int>("in out flag");
+  const double beta = params.get<double>("artery beta");
+  const double Ao = params.get<double>("artery area");
+  const double dens = params.get<double>("blood density");
+  const double pext = params.get<double>("external pressure");
 
-  if(IO == -1) // If BC is prescribed at the inlet
+  if (IO == -1)  // If BC is prescribed at the inlet
   {
     // read in backward characteristic wave speed
-    Wbnp  =  params.get<double>("backward characteristic wave speed");
+    Wbnp = params.get<double>("backward characteristic wave speed");
 
     // Initial backward characteristic speed at terminal 1
-    const double Wbo   = -4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
+    const double Wbo = -4.0 * sqrt(beta / (2.0 * dens * sqrt(Ao)));
     // backward characteristic wave,
-    const double Wb    = (Rf*Wbnp + (1.0-Rf)*Wbo);
+    const double Wb = (Rf * Wbnp + (1.0 - Rf) * Wbo);
 
-    if(BC=="flow")
+    if (BC == "flow")
     {
-
       /*
        Prescribed Volumetric flow rate:
 
@@ -260,55 +259,54 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       double dfdw;
       int itrs;
       itrs = 0;
-      //step 1
-      Wfnp   = 2.0*BCin/Ao - Wb;
-      f      = std::pow(2.0*dens*Ao/beta,2)
-              *pow((Wfnp - Wb)/8.0,4)*(  Wfnp +   Wb)/2.0;
-      while(fabs(f)>0.00000001)
+      // step 1
+      Wfnp = 2.0 * BCin / Ao - Wb;
+      f = std::pow(2.0 * dens * Ao / beta, 2) * pow((Wfnp - Wb) / 8.0, 4) * (Wfnp + Wb) / 2.0;
+      while (fabs(f) > 0.00000001)
       {
-        //step 2
-        dfdw   =  pow(2.0*dens*Ao/beta,2)
-                * pow((Wfnp - Wb)/8.0,3)*(5.0*Wfnp + 3.0*Wb)/16.0;
-        //step 3
-        Wfnp  = Wfnp - f/dfdw;
-        //step 4
-        f      =  pow(2.0*dens*Ao/beta,2)
-                * pow((Wfnp - Wb)/8.0,4)*(  Wfnp +   Wb)/2.0
-                - BCin;
+        // step 2
+        dfdw = pow(2.0 * dens * Ao / beta, 2) * pow((Wfnp - Wb) / 8.0, 3) *
+               (5.0 * Wfnp + 3.0 * Wb) / 16.0;
+        // step 3
+        Wfnp = Wfnp - f / dfdw;
+        // step 4
+        f = pow(2.0 * dens * Ao / beta, 2) * pow((Wfnp - Wb) / 8.0, 4) * (Wfnp + Wb) / 2.0 - BCin;
         // an escape routine to prevent infinit loop
         itrs++;
-        if(itrs>=100)
+        if (itrs >= 100)
         {
-          dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
+          dserror(
+              "Inflow boundary condition for Newton-Raphson exceeded the maximum allowed "
+              "iterations");
           exit(1);
         }
       }
     }
-    else if(BC == "velocity")
+    else if (BC == "velocity")
     {
       /*
        Prescribed Inlet Velocity
        Wf1 = 2*U - Wb1
       */
-      Wfnp = 2.0*BCin - Wb;
+      Wfnp = 2.0 * BCin - Wb;
     }
-    else if(BC == "pressure")
+    else if (BC == "pressure")
     {
       /*
        Prescribed Inlet Pressure
        Wf1 = Wb1 + 8*sqrt((p-pext) + beta/sqrt(Ao))/(2.rho))
       */
-      Wfnp = Wb + 8.0*sqrt((BCin-pext + beta/sqrt(Ao))/(2.0*dens));
+      Wfnp = Wb + 8.0 * sqrt((BCin - pext + beta / sqrt(Ao)) / (2.0 * dens));
     }
-    else if(BC == "area")
+    else if (BC == "area")
     {
       /*
        Prescribed Inlet Area
        Wf1 = Wb1 + 8*sqrt(beta.A/(2.rho.Ao))
       */
-      Wfnp = Wb + 8.0*sqrt(beta*sqrt(BCin)/(2.0*dens*Ao));
+      Wfnp = Wb + 8.0 * sqrt(beta * sqrt(BCin) / (2.0 * dens * Ao));
     }
-    else if(BC == "characteristicWave")
+    else if (BC == "characteristicWave")
     {
       /*
        Charachteristic wave
@@ -317,21 +315,21 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     }
     else
     {
-      dserror("%s is not defined!",BC.c_str());
+      dserror("%s is not defined!", BC.c_str());
       exit(1);
     }
-  }//If BC is prescribed at the inlet
-  else if(IO == 1) // If BC is prescribed at the outlet
+  }                  // If BC is prescribed at the inlet
+  else if (IO == 1)  // If BC is prescribed at the outlet
   {
-    Wfnp  =  params.get<double>("forward characteristic wave speed");
+    Wfnp = params.get<double>("forward characteristic wave speed");
     // Initial forward characteristic speed at terminal 2
-    const double Wfo   =  4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
+    const double Wfo = 4.0 * sqrt(beta / (2.0 * dens * sqrt(Ao)));
     // forward characteristic wave,
-    const double Wf    = (Rf*Wfnp + (1.0-Rf)*Wfo);
+    const double Wf = (Rf * Wfnp + (1.0 - Rf) * Wfo);
 
-    if(BC=="flow")
+    if (BC == "flow")
     {
-      BCin*=-1.0;
+      BCin *= -1.0;
       /*
        Prescribed Volumetric flow rate:
 
@@ -364,64 +362,63 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       double dfdw;
       int itrs;
       itrs = 0;
-      //step 1
-      Wbnp  = 2.0*BCin/Ao - Wf;
-      f     = std::pow(2.0*dens*Ao/beta,2)
-             *pow((Wf - Wbnp)/8.0,4)*(  Wf + Wbnp)/2.0;
-      while(fabs(f)>0.000001)
+      // step 1
+      Wbnp = 2.0 * BCin / Ao - Wf;
+      f = std::pow(2.0 * dens * Ao / beta, 2) * pow((Wf - Wbnp) / 8.0, 4) * (Wf + Wbnp) / 2.0;
+      while (fabs(f) > 0.000001)
       {
-        //step 2
-        dfdw   =-pow(2.0*dens*Ao/beta,2)
-                *pow((Wf - Wbnp)/8.0,3)*(3.0*Wf + 5.0*Wbnp)/16.0;
-        //step 3
-        Wbnp   = Wbnp - f/dfdw;
-        //step 4
-        f      =  pow(2.0*dens*Ao/beta,2)
-                * pow((Wf - Wbnp)/8.0,4)*( Wf +   Wbnp)/2.0
-                - BCin;
+        // step 2
+        dfdw = -pow(2.0 * dens * Ao / beta, 2) * pow((Wf - Wbnp) / 8.0, 3) *
+               (3.0 * Wf + 5.0 * Wbnp) / 16.0;
+        // step 3
+        Wbnp = Wbnp - f / dfdw;
+        // step 4
+        f = pow(2.0 * dens * Ao / beta, 2) * pow((Wf - Wbnp) / 8.0, 4) * (Wf + Wbnp) / 2.0 - BCin;
 
         // a small routine to prevent infinit loop
         itrs++;
-        if(itrs>=30)
+        if (itrs >= 30)
         {
-          dserror("Inflow boundary condition for Newton-Raphson exceeded the maximum allowed iterations");
+          dserror(
+              "Inflow boundary condition for Newton-Raphson exceeded the maximum allowed "
+              "iterations");
           exit(1);
         }
       }
     }
-    else if(BC == "velocity")
+    else if (BC == "velocity")
     {
-      BCin*=-1.0;
+      BCin *= -1.0;
       /*
        Prescribed Inlet Velocity
        Wb2 = 2*U - Wf2
       */
-      Wbnp = 2.0*BCin - Wf;
+      Wbnp = 2.0 * BCin - Wf;
     }
-    else if(BC == "pressure")
+    else if (BC == "pressure")
     {
       /*
        Prescribed Inlet Pressure
        Wb2 = Wf2 - 8*sqrt((p-pext) + beta/sqrt(Ao))/(2.rho))
       */
-      Wbnp = Wf - 8.0*sqrt((BCin-pext + beta/sqrt(Ao))/(2.0*dens));
+      Wbnp = Wf - 8.0 * sqrt((BCin - pext + beta / sqrt(Ao)) / (2.0 * dens));
     }
-    else if(BC == "area")
+    else if (BC == "area")
     {
       /*
        Prescribed Inlet Area
        Wb2 = Wf2 - 8*sqrt(beta.A/(2.rho.Ao))
       */
-      Wbnp = Wf - 8.0*sqrt(beta*sqrt(BCin)/(2.0*dens*Ao));
+      Wbnp = Wf - 8.0 * sqrt(beta * sqrt(BCin) / (2.0 * dens * Ao));
     }
-    else if(BC == "characteristicWave")
+    else if (BC == "characteristicWave")
     {
       /*
        Charachteristic wave
       */
-     Wbnp = BCin;
+      Wbnp = BCin;
     }
-  }//If BC is prescribed at the outlet
+  }  // If BC is prescribed at the outlet
   else
   {
     dserror("IO flag must be either 1 (for outlets) or 0 (for inlets)\n");
@@ -436,9 +433,11 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
     // -----------------------------------------------------------------
-    if (CoupledTo3DParams.get()==NULL)
+    if (CoupledTo3DParams.get() == NULL)
     {
-      dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
+      dserror(
+          "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed "
+          "don't exist");
       exit(1);
     }
 
@@ -464,35 +463,37 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
 
     int ID = condition->GetInt("ConditionID");
-    Teuchos::RCP<std::map<std::string,double> >  map1D;
-    map1D   = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string,double> > >("reducedD map of values");
+    Teuchos::RCP<std::map<std::string, double>> map1D;
+    map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
+        "reducedD map of values");
 
     std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
 
     double BC3d = 0.0;
-    if (returnedBC  == "flow")
+    if (returnedBC == "flow")
     {
-      double c = (Wfnp - Wbnp)/8.0;
-      double A = std::pow(c,4)*4.0*pow(dens*Ao/beta,2);
-      BC3d     = (Wfnp + Wbnp)/2.0*A;
-      std::cout<<"1D is returning flowrate = "<<BC3d<<std::endl;
+      double c = (Wfnp - Wbnp) / 8.0;
+      double A = std::pow(c, 4) * 4.0 * pow(dens * Ao / beta, 2);
+      BC3d = (Wfnp + Wbnp) / 2.0 * A;
+      std::cout << "1D is returning flowrate = " << BC3d << std::endl;
     }
     else if (returnedBC == "pressure")
     {
-      double c = (Wfnp - Wbnp)/8.0;
-      double A = std::pow(c,4)*4.0*pow(dens*Ao/beta,2);
-      BC3d     = beta*(sqrt(A)-sqrt(Ao))/Ao + pext;
+      double c = (Wfnp - Wbnp) / 8.0;
+      double A = std::pow(c, 4) * 4.0 * pow(dens * Ao / beta, 2);
+      BC3d = beta * (sqrt(A) - sqrt(Ao)) / Ao + pext;
     }
     else
     {
       std::string str = (*condition->Get<std::string>("ReturnedVariable"));
-      dserror("%s, is an unimplimented type of coupling",str.c_str());
+      dserror("%s, is an unimplimented type of coupling", str.c_str());
       exit(1);
     }
     std::stringstream returnedBCwithId;
-    returnedBCwithId << returnedBC <<"_" << ID;
+    returnedBCwithId << returnedBC << "_" << ID;
 
-    std::cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<std::endl;
+    std::cout << "Return [" << returnedBC << "] form 1D problem to 3D SURFACE of ID[" << ID
+              << "]: " << BC3d << std::endl;
     // -----------------------------------------------------------------
     // Check whether the coupling wrapper has already initialized this
     // map else wise we will have problems with parallelization, that's
@@ -500,26 +501,26 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // Thus we can use parallel addition
     // -----------------------------------------------------------------
 
-    std::map<std::string,double>::iterator itrMap1D;
+    std::map<std::string, double>::iterator itrMap1D;
     itrMap1D = map1D->find(returnedBCwithId.str());
     if (itrMap1D == map1D->end())
     {
-      dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",returnedBC.c_str(),ID );
+      dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
+          returnedBC.c_str(), ID);
       exit(1);
     }
 
     // update the 1D map
     (*map1D)[returnedBCwithId.str()] = BC3d;
-
   }
 
   // -------------------------------------------------------------------
   // finally return the updated value if the characteristic speeds
   // -------------------------------------------------------------------
-  params.set<double>("forward characteristic wave speed",Wfnp);
-  params.set<double>("backward characteristic wave speed",Wbnp);
+  params.set<double>("forward characteristic wave speed", Wfnp);
+  params.set<double>("backward characteristic wave speed", Wbnp);
 
-}// void ART::UTILS::SolvePrescribedTerminalBC
+}  // void ART::UTILS::SolvePrescribedTerminalBC
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -534,26 +535,24 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdis,
-                                         const DRT::Condition *condition,
-                                         Teuchos::ParameterList & params)
+    const DRT::Condition* condition, Teuchos::ParameterList& params)
 {
-
   // Define the reflection cooficient
   double Rf;
 
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+  const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
+  const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
 
   // if the curve exist => Rf = val*curve(time)
-  if ((*curve)[0]>=0)
+  if ((*curve)[0] >= 0)
   {
     double time = params.get<double>("total time");
     curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
-    Rf = (*vals)[0]*curvefac;
+    Rf = (*vals)[0] * curvefac;
   }
   // else Rf = val
   else
@@ -565,10 +564,10 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   // Read in the parameters asosciated with the artery terminal to whom
   // the BC will be applied
   // -------------------------------------------------------------------
-  const double beta  =  params.get<double>("artery beta");
-  const double Ao    =  params.get<double>("artery area");
-  const double dens  =  params.get<double>("blood density");
-  const double Wfnp  =  params.get<double>("forward characteristic wave speed");
+  const double beta = params.get<double>("artery beta");
+  const double Ao = params.get<double>("artery area");
+  const double dens = params.get<double>("blood density");
+  const double Wfnp = params.get<double>("forward characteristic wave speed");
 
 
   // -------------------------------------------------------------------
@@ -576,18 +575,18 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   // -------------------------------------------------------------------
 
   // Initial backward characteristic speed at terminal 1
-  const double Wbo  = -4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
-  const double Wfo  =  4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
+  const double Wbo = -4.0 * sqrt(beta / (2.0 * dens * sqrt(Ao)));
+  const double Wfo = 4.0 * sqrt(beta / (2.0 * dens * sqrt(Ao)));
   // backward characteristic wave,
-  const double Wbnp = -Rf*(Wfnp-Wfo) + Wbo;
+  const double Wbnp = -Rf * (Wfnp - Wfo) + Wbo;
 
   // -------------------------------------------------------------------
   // finally return the updated value if the characteristic speeds
   // -------------------------------------------------------------------
-  params.set<double>("forward characteristic wave speed",Wfnp);
-  params.set<double>("backward characteristic wave speed",Wbnp);
+  params.set<double>("forward characteristic wave speed", Wfnp);
+  params.set<double>("backward characteristic wave speed", Wbnp);
 
-} //void ART::UTILS::SolveReflectiveTerminal
+}  // void ART::UTILS::SolveReflectiveTerminal
 
 
 
@@ -611,35 +610,33 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
-                                       const DRT::Condition *condition,
-                                       Teuchos::ParameterList & params)
+    const DRT::Condition* condition, Teuchos::ParameterList& params)
 {
-
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")
   std::string int_type = *(condition->Get<std::string>("intigrationType"));
   // define windkessel BC type std::string (e.g: Type = "forced")
-  std::string wk_type  = *(condition->Get<std::string>("windkesselType"));
+  std::string wk_type = *(condition->Get<std::string>("windkesselType"));
 
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+  const std::vector<int>* curve = condition->Get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
+  const std::vector<double>* vals = condition->Get<std::vector<double>>("val");
 
   double Wb;
-  if(int_type == "ExplicitWindkessel")
+  if (int_type == "ExplicitWindkessel")
   {
     const double time = params.get<double>("total time");
-    const double Wf   = params.get<double>("forward characteristic wave speed");
-    const double Ao   = params.get<double>("artery area");
+    const double Wf = params.get<double>("forward characteristic wave speed");
+    const double Ao = params.get<double>("artery area");
     const double beta = params.get<double>("artery beta");
     const double dens = params.get<double>("blood density");
-    const double dt   = params.get<double>("time step size");
+    const double dt = params.get<double>("time step size");
     const double Pext = params.get<double>("external pressure");
-    double       Q    = params.get<double>("terminal volumetric flow rate");
-    double       A    = params.get<double>("terminal cross-sectional area");
-    double       P    = beta/Ao*(sqrt(A)-sqrt(Ao)) + Pext;
+    double Q = params.get<double>("terminal volumetric flow rate");
+    double A = params.get<double>("terminal cross-sectional area");
+    double P = beta / Ao * (sqrt(A) - sqrt(Ao)) + Pext;
 
 
     // calculate the initial wave speed
@@ -648,7 +645,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
     // Find the type of windkessel model
     // -----------------------------------------------------------------
-    if(wk_type == "R")  // a resister with a peripheral Pressure (Pout)
+    if (wk_type == "R")  // a resister with a peripheral Pressure (Pout)
     {
       dserror("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
@@ -656,30 +653,30 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the wind kessel parameters
       // ---------------------------------------------------------------
       // define a terminal resistance
-      double R    = 0.0;
+      double R = 0.0;
       double Pout = 0.0;
       double dFdA = 0.0;
       // read in the reflection value
-      if ((*curve)[1]>=0)
+      if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
-        R = (*vals)[1]*curvefac;
+        R = (*vals)[1] * curvefac;
       }
       else
       {
         R = (*vals)[1];
       }
 
-      if (R<0.0)
+      if (R < 0.0)
       {
         dserror("terminal resistance must be greater or equal to zero\n");
         exit(1);
       }
 
-      if ((*curve)[0]>=0)
+      if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
-        Pout = (*vals)[0]*curvefac;
+        Pout = (*vals)[0] * curvefac;
       }
       else
       {
@@ -697,20 +694,20 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Solve the nonlinear problem using Newton-Raphsn scheme
       // ---------------------------------------------------------------
 
-      const double Wo = 4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
+      const double Wo = 4.0 * sqrt(beta / (2.0 * dens * sqrt(Ao)));
       //  Calculate the residual
-      double F =  R*Wf*A - 4.0*R*sqrt(beta/(2.0*dens*Ao))*pow(A,5.0/4.0)
-                + beta/Ao*(sqrt(Ao) - sqrt(A)) + Pout - Pext;
+      double F = R * Wf * A - 4.0 * R * sqrt(beta / (2.0 * dens * Ao)) * pow(A, 5.0 / 4.0) +
+                 beta / Ao * (sqrt(Ao) - sqrt(A)) + Pout - Pext;
 
       // loop until convergence
       int count = 0;
-      while (fabs(F/(R*Ao*Wo)) > 0.0000000001)
+      while (fabs(F / (R * Ao * Wo)) > 0.0000000001)
       {
-
-        dFdA = R*Wf - 5.0*R*sqrt(beta/(2.0*dens*Ao) * sqrt(A)) - 0.5*beta/(Ao *sqrt(A));
-        A   -= F/dFdA;
-        F =  R*Wf*A - 4.0*R*sqrt(beta/(2.0*dens*Ao))*pow(A,5.0/4.0)
-           + beta/Ao*(sqrt(Ao) - sqrt(A)) + Pout - Pext;
+        dFdA = R * Wf - 5.0 * R * sqrt(beta / (2.0 * dens * Ao) * sqrt(A)) -
+               0.5 * beta / (Ao * sqrt(A));
+        A -= F / dFdA;
+        F = R * Wf * A - 4.0 * R * sqrt(beta / (2.0 * dens * Ao)) * pow(A, 5.0 / 4.0) +
+            beta / Ao * (sqrt(Ao) - sqrt(A)) + Pout - Pext;
 
         count++;
         if (count > 40)
@@ -721,10 +718,10 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       }
 
       // finally find evaluate Wb
-      Wb = Wf - 8.0*sqrt(beta/(2.0*dens*Ao)*sqrt(A));
+      Wb = Wf - 8.0 * sqrt(beta / (2.0 * dens * Ao) * sqrt(A));
 
-    }// if(wk_type == "R")
-    else if (wk_type == "RC") // an RC circuit with a peripheral Pressure (Pout)
+    }                          // if(wk_type == "R")
+    else if (wk_type == "RC")  // an RC circuit with a peripheral Pressure (Pout)
     {
       dserror("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
@@ -734,11 +731,11 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
       // define the 2 element windkessel parameters
       //      double Pout = 0.0;
-      double R    = 0.0;
-      double C    = 0.0;
+      double R = 0.0;
+      double C = 0.0;
 
       // Read in the periferal pressure of the wind kessel model
-      if ((*curve)[0]>=0)
+      if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         //        Pout = (*vals)[0]*curvefac;
@@ -748,20 +745,20 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         //        Pout = (*vals)[0];
       }
       // read in the resistance value
-      if ((*curve)[1]>=0)
+      if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
-        R = (*vals)[1]*curvefac;
+        R = (*vals)[1] * curvefac;
       }
       else
       {
         R = (*vals)[1];
       }
       // Read in the capacitance value
-      if ((*curve)[2]>=0)
+      if ((*curve)[2] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[2]).EvaluateTime(time);
-        C = (*vals)[2]*curvefac;
+        C = (*vals)[2] * curvefac;
       }
       else
       {
@@ -777,8 +774,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Calculate W2
 
 
-    }//if (wk_type == "RC")
-    else if (wk_type == "RCR") // The famous 3 element wind kessel model
+    }                           // if (wk_type == "RC")
+    else if (wk_type == "RCR")  // The famous 3 element wind kessel model
     {
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
@@ -786,62 +783,62 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       // define the 3 element windkessel parameters
       //      double Pout   = 0.0;
-      double R1     = 0.0;
-      double C      = 0.0;
-      double R2     = 0.0;
+      double R1 = 0.0;
+      double C = 0.0;
+      double R2 = 0.0;
       double Poutnm = 0.0;
 
       // Read in the periferal pressure of the windkessel model
-      if ((*curve)[0]>=0)
+      if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         //        Pout = (*vals)[0]*curvefac;
-        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time-dt);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time - dt);
       }
       else
       {
         //        Pout = (*vals)[2];
       }
       // Read in Pout at time step n-1
-      if ((*curve)[0]>=0)
+      if ((*curve)[0] >= 0)
       {
         double t;
         if (time <= dt)
           t = time;
         else
-          t = time -dt;
+          t = time - dt;
         curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(t);
-        Poutnm = (*vals)[0]*curvefac;
+        Poutnm = (*vals)[0] * curvefac;
       }
       else
       {
         Poutnm = (*vals)[2];
       }
       // read in the source resistance value
-      if ((*curve)[1]>=0)
+      if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
-        R1 = (*vals)[1]*curvefac;
+        R1 = (*vals)[1] * curvefac;
       }
       else
       {
         R1 = (*vals)[1];
       }
       // Read in the capacitance value
-      if ((*curve)[2]>=0)
+      if ((*curve)[2] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[2]).EvaluateTime(time);
-        C = (*vals)[2]*curvefac;
+        C = (*vals)[2] * curvefac;
       }
       else
       {
         C = (*vals)[2];
       }
       // read in the periferal resistance value
-      if ((*curve)[3]>=0)
+      if ((*curve)[3] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[3]).EvaluateTime(time);
-        R2 = (*vals)[3]*curvefac;
+        R2 = (*vals)[3] * curvefac;
       }
       else
       {
@@ -859,35 +856,37 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // ---------------------------------------------------------------
 
       // define inportant valriable
-      double Pc   = 0.0;
+      double Pc = 0.0;
       double Qout = 0.0;
-      double F    = 0.0;
-      double F_A  = 0.0;
+      double F = 0.0;
+      double F_A = 0.0;
       double dFdA = 0.0;
 
       // find Pc at time step n
-      Pc   = P - Q*R1;
+      Pc = P - Q * R1;
 
       // find Qout at time step n
-      Qout = (Pc - Poutnm)/R2;
+      Qout = (Pc - Poutnm) / R2;
 
       // find Pc at n+1
-      Pc   = Pc + dt/C*(Q - Qout);
+      Pc = Pc + dt / C * (Q - Qout);
 
-      //solving the nonlinear equation F(A) = 0 using Newton-Raphson scheme
+      // solving the nonlinear equation F(A) = 0 using Newton-Raphson scheme
 
-      F    = R1*Wf*A  - 4.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(pow(A,5)))
-                      - Pext - beta/Ao*(sqrt(A)-sqrt(Ao)) + Pc;
+      F = R1 * Wf * A - 4.0 * R1 * sqrt(beta / (2.0 * dens * Ao) * sqrt(pow(A, 5))) - Pext -
+          beta / Ao * (sqrt(A) - sqrt(Ao)) + Pc;
       int i = 0;
-      F_A = std::pow(F*sqrt(Ao)/beta+1.0,2);
-      while(fabs(F_A)>0.0000001)
+      F_A = std::pow(F * sqrt(Ao) / beta + 1.0, 2);
+      while (fabs(F_A) > 0.0000001)
       {
-        dFdA = R1*Wf - 5.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(A)) - 0.5*beta/(Ao*sqrt(A));
-        A= A - F/dFdA;
-        F = R1*Wf*A  - 4.0*R1*sqrt(beta/(2.0*dens*Ao)*sqrt(pow(A,5))) - Pext - beta/Ao*(sqrt(A)-sqrt(Ao)) + Pc;
+        dFdA = R1 * Wf - 5.0 * R1 * sqrt(beta / (2.0 * dens * Ao) * sqrt(A)) -
+               0.5 * beta / (Ao * sqrt(A));
+        A = A - F / dFdA;
+        F = R1 * Wf * A - 4.0 * R1 * sqrt(beta / (2.0 * dens * Ao) * sqrt(pow(A, 5))) - Pext -
+            beta / Ao * (sqrt(A) - sqrt(Ao)) + Pc;
         i++;
-        F_A = std::pow(F*sqrt(Ao)/beta+1.0,2)-1.0;
-        if(i>40)
+        F_A = std::pow(F * sqrt(Ao) / beta + 1.0, 2) - 1.0;
+        if (i > 40)
         {
           dserror("3 element windkessel Newton Raphson is not converging\n");
           exit(1);
@@ -895,12 +894,11 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       }
 
       // finally find evaluate Wb
-      Wb = Wf - 8.0*sqrt(beta/(2.0*dens*Ao)*sqrt(A));
+      Wb = Wf - 8.0 * sqrt(beta / (2.0 * dens * Ao) * sqrt(A));
 
-    }// if (wk_type == "RCR")
-    else if (wk_type == "RCRL") // four element windkessel model
+    }                            // if (wk_type == "RCR")
+    else if (wk_type == "RCRL")  // four element windkessel model
     {
-
       dserror("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
       // ---------------------------------------------------------------
@@ -909,13 +907,13 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       // define the 4 element windkessel parameters
       //      double Pout = 0.0;
-      double R1   = 0.0;
-      double C    = 0.0;
-      double R2   = 0.0;
-      double L    = 0.0;
+      double R1 = 0.0;
+      double C = 0.0;
+      double R2 = 0.0;
+      double L = 0.0;
 
       // Read in the periferal pressure of the wind kessel model
-      if ((*curve)[0]>=0)
+      if ((*curve)[0] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         //        Pout = (*vals)[0]*curvefac;
@@ -925,54 +923,54 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         //        Pout = (*vals)[2];
       }
       // read in the source resistance value
-      if ((*curve)[1]>=0)
+      if ((*curve)[1] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
-        R1 = (*vals)[1]*curvefac;
+        R1 = (*vals)[1] * curvefac;
       }
       else
       {
         R1 = (*vals)[1];
       }
       // Read in the capacitance value
-      if ((*curve)[2]>=0)
+      if ((*curve)[2] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[2]).EvaluateTime(time);
-        C = (*vals)[2]*curvefac;
+        C = (*vals)[2] * curvefac;
       }
       else
       {
         C = (*vals)[2];
       }
       // read in the periferal resistance value
-      if ((*curve)[3]>=0)
+      if ((*curve)[3] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[3]).EvaluateTime(time);
-        R2 = (*vals)[3]*curvefac;
+        R2 = (*vals)[3] * curvefac;
       }
       else
       {
         R2 = (*vals)[3];
       }
       // read in the inductance value
-      if ((*curve)[4]>=0)
+      if ((*curve)[4] >= 0)
       {
         curvefac = DRT::Problem::Instance()->Funct((*curve)[4]).EvaluateTime(time);
-        L = (*vals)[4]*curvefac;
+        L = (*vals)[4] * curvefac;
       }
       else
       {
         L = (*vals)[4];
       }
 
-      if (R1 <= 0.0 || C <= 0.0 || R2 <=0.0 || L <=0.0)
+      if (R1 <= 0.0 || C <= 0.0 || R2 <= 0.0 || L <= 0.0)
       {
         dserror("terminal resistance and capacitance must be always greater than zero\n");
         exit(1);
       }
       // Calculate W2
 
-    }//if (wk_type == "RCRL")
+    }  // if (wk_type == "RCRL")
     else if (wk_type == "none")
     {
       dserror("So far, only the 3 element windkessel model is implimented\n");
@@ -980,15 +978,14 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     }
     else
     {
-      dserror("\"%s\" is not supported type of windkessel model\n",wk_type.c_str());
+      dserror("\"%s\" is not supported type of windkessel model\n", wk_type.c_str());
       exit(1);
     }
 
     // -----------------------------------------------------------------
     // return the calculated backward characteristic wave speed
     // -----------------------------------------------------------------
-    params.set<double>("backward characteristic wave speed",Wb);
-
+    params.set<double>("backward characteristic wave speed", Wb);
   }
   else
   {
@@ -996,6 +993,4 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     exit(1);
   }
 
-} //void ART::UTILS::SolveExplWindkesselBC
-
-
+}  // void ART::UTILS::SolveExplWindkesselBC

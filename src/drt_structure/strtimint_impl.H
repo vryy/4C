@@ -37,13 +37,12 @@ namespace LINALG
 {
   class MultiMapExtractor;
   class KrylovProjector;
-}
+}  // namespace LINALG
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-
   namespace AUX
   {
     class MapExtractor;
@@ -73,23 +72,19 @@ namespace STR
                      public NOX::Epetra::Interface::Jacobian,
                      public NOX::Epetra::Interface::Preconditioner
   {
-
-  public:
-
+   public:
     //! @name Construction
     //@{
 
     //! Constructor
-    TimIntImpl
-    (
-      const Teuchos::ParameterList& timeparams,
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntImpl(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& ioparams,        //!< ioflags
+        const Teuchos::ParameterList& sdynparams,      //!< input parameters
+        const Teuchos::ParameterList& xparams,         //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -116,12 +111,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -270,118 +262,108 @@ namespace STR
     virtual void EvaluateForceResidual() = 0;
 
     //! Apply external force, its stiffness at state
-    void ApplyForceStiffExternal
-    (
-      const double time, //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis, //!< old displacement state
-      const Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
-      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
-      Teuchos::RCP<Epetra_Vector>& fext, //!< external force
-      Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
+    void ApplyForceStiffExternal(const double time,    //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,         //!< old displacement state
+        const Teuchos::RCP<Epetra_Vector> disn,        //!< new displacement state
+        const Teuchos::RCP<Epetra_Vector> vel,         // velocity state
+        Teuchos::RCP<Epetra_Vector>& fext,             //!< external force
+        Teuchos::RCP<LINALG::SparseOperator>& fextlin  //!< linearization of external force
     );
 
     //! Evaluate ordinary internal force, its stiffness at state
-    void ApplyForceStiffInternal
-    (
-      const double time, //!< evaluation time
-      const double dt, //!< step size
-      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> disi, //!< residual displacements
-      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
-      Teuchos::RCP<Epetra_Vector> fint, //!< internal force
-      Teuchos::RCP<LINALG::SparseOperator> stiff, //!< stiffness matrix
-      Teuchos::ParameterList& params, //!< parameters from nonlinear solver
-      Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null //!< material damping matrix
+    void ApplyForceStiffInternal(const double time,  //!< evaluation time
+        const double dt,                             //!< step size
+        const Teuchos::RCP<Epetra_Vector> dis,       //!< displacement state
+        const Teuchos::RCP<Epetra_Vector> disi,      //!< residual displacements
+        const Teuchos::RCP<Epetra_Vector> vel,       // velocity state
+        Teuchos::RCP<Epetra_Vector> fint,            //!< internal force
+        Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
+        Teuchos::ParameterList& params,              //!< parameters from nonlinear solver
+        Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
     );
 
     //! Evaluate internal and inertia forces and their linearizations
-    void ApplyForceStiffInternalAndInertial
-    (
-      const double time, //!< evaluation time
-      const double dt, //!< step size
-      const double timintfac_dis, //!< time integration factor for d(Res) / d dis
-      const double timintfac_vel, //!< time integration factor for d(Res) / d vel
-      const Teuchos::RCP<Epetra_Vector> dis, //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> disi, //!< residual displacements
-      const Teuchos::RCP<Epetra_Vector> vel, //! velocity state
-      const Teuchos::RCP<Epetra_Vector> acc, //! acceleration state
-      Teuchos::RCP<Epetra_Vector> fint, //!< internal force
-      Teuchos::RCP<Epetra_Vector> finert, //!< inertia force
-      Teuchos::RCP<LINALG::SparseOperator> stiff, //!< stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> mass, //!< mass matrix
-      Teuchos::ParameterList& params, //!< parameters from nonlinear solver
-      const double beta=1000.0, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-      const double gamma=1000.0, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-      const double alphaf=1000.0, //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
-      const double alpham=1000.0 //!< time integration parameters for element-wise time integration (necessary for time integration of rotations)
+    void ApplyForceStiffInternalAndInertial(const double time,  //!< evaluation time
+        const double dt,                                        //!< step size
+        const double timintfac_dis,                  //!< time integration factor for d(Res) / d dis
+        const double timintfac_vel,                  //!< time integration factor for d(Res) / d vel
+        const Teuchos::RCP<Epetra_Vector> dis,       //!< displacement state
+        const Teuchos::RCP<Epetra_Vector> disi,      //!< residual displacements
+        const Teuchos::RCP<Epetra_Vector> vel,       //! velocity state
+        const Teuchos::RCP<Epetra_Vector> acc,       //! acceleration state
+        Teuchos::RCP<Epetra_Vector> fint,            //!< internal force
+        Teuchos::RCP<Epetra_Vector> finert,          //!< inertia force
+        Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
+        Teuchos::RCP<LINALG::SparseOperator> mass,   //!< mass matrix
+        Teuchos::ParameterList& params,              //!< parameters from nonlinear solver
+        const double beta = 1000.0,   //!< time integration parameters for element-wise time
+                                      //!< integration (necessary for time integration of rotations)
+        const double gamma = 1000.0,  //!< time integration parameters for element-wise time
+                                      //!< integration (necessary for time integration of rotations)
+        const double alphaf =
+            1000.0,  //!< time integration parameters for element-wise time integration (necessary
+                     //!< for time integration of rotations)
+        const double alpham = 1000.0  //!< time integration parameters for element-wise time
+                                      //!< integration (necessary for time integration of rotations)
     );
 
     //! Evaluate forces due to constraints
-    void ApplyForceStiffConstraint
-    (
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis, //!< last evaluated displacements
-      const Teuchos::RCP<Epetra_Vector> disn, //!< evaluation displacements
-      Teuchos::RCP<Epetra_Vector>& fint, //!< forces are added onto
-      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is added onto
-      Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
+    void ApplyForceStiffConstraint(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,         //!< last evaluated displacements
+        const Teuchos::RCP<Epetra_Vector> disn,        //!< evaluation displacements
+        Teuchos::RCP<Epetra_Vector>& fint,             //!< forces are added onto
+        Teuchos::RCP<LINALG::SparseOperator>& stiff,   //!< stiffness is added onto
+        Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
     //! Evaluate forces due to Cardiovascular0D BCs
-    void ApplyForceStiffCardiovascular0D
-    (
-      const double time, //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> disn, //!< evaluation displacements
-      Teuchos::RCP<Epetra_Vector>& fint, //!< forces are added onto
-      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is added onto
-      Teuchos::ParameterList pcon //!< parameter list containing scale factors for matrix entries
+    void ApplyForceStiffCardiovascular0D(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> disn,              //!< evaluation displacements
+        Teuchos::RCP<Epetra_Vector>& fint,                   //!< forces are added onto
+        Teuchos::RCP<LINALG::SparseOperator>& stiff,         //!< stiffness is added onto
+        Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
     //! Evaluate _certain_ surface stresses and stiffness
     //!
     //! The Evaluation happens internal-force-like.
-    void ApplyForceStiffSurfstress
-    (
-      const double time, //!< evaluation time
-      const double dt, //!< time step size
-      const Teuchos::RCP<Epetra_Vector> disn, //!< displacement state at n+1
-      Teuchos::RCP<Epetra_Vector>& fint, //!< internal force
-      Teuchos::RCP<LINALG::SparseOperator>& stiff //! stiffness
+    void ApplyForceStiffSurfstress(const double time,  //!< evaluation time
+        const double dt,                               //!< time step size
+        const Teuchos::RCP<Epetra_Vector> disn,        //!< displacement state at n+1
+        Teuchos::RCP<Epetra_Vector>& fint,             //!< internal force
+        Teuchos::RCP<LINALG::SparseOperator>& stiff    //! stiffness
     );
 
     //! Evaluate forces and stiffness due to contact / meshtying
-    void ApplyForceStiffContactMeshtying
-    (
-      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector>& fres, //!< residual forces are modified
-      Teuchos::RCP<Epetra_Vector>& dis, //!< current displacement state
-      bool predict //!< flag indicating predictor step
+    void ApplyForceStiffContactMeshtying(
+        Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+        Teuchos::RCP<Epetra_Vector>& fres,            //!< residual forces are modified
+        Teuchos::RCP<Epetra_Vector>& dis,             //!< current displacement state
+        bool predict                                  //!< flag indicating predictor step
     );
 
     //! Evaluate forces and stiffness due to beam contact
-    void ApplyForceStiffBeamContact
-    (
-      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector>& fres, //!< residual forces are modified
-      Teuchos::RCP<Epetra_Vector>& dis, //!< current displacement state
-      bool predict //!< flag indicating predictor step
+    void ApplyForceStiffBeamContact(
+        Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+        Teuchos::RCP<Epetra_Vector>& fres,            //!< residual forces are modified
+        Teuchos::RCP<Epetra_Vector>& dis,             //!< current displacement state
+        bool predict                                  //!< flag indicating predictor step
     );
 
     //! Check residual displacement and scale it if necessary
-    void LimitStepsizeBeamContact
-    (
-      Teuchos::RCP<Epetra_Vector>& disi //!< residual displacement vector
+    void LimitStepsizeBeamContact(
+        Teuchos::RCP<Epetra_Vector>& disi  //!< residual displacement vector
     );
 
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
-    void ApplyForceStiffSpringDashpot
-    (
-      Teuchos::RCP<LINALG::SparseOperator> stiff, //!< stiffness is modified
-      Teuchos::RCP<Epetra_Vector> fint, //!< internal forces are modified
-      Teuchos::RCP<Epetra_Vector> dis, //!< current displacement state
-      Teuchos::RCP<Epetra_Vector> vel, //!< current velocity state
-      bool predict, //!< flag indicating predictor step
-      Teuchos::ParameterList psprdash //!< parameter list containing scale factors for matrix entries
+    void ApplyForceStiffSpringDashpot(
+        Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness is modified
+        Teuchos::RCP<Epetra_Vector> fint,            //!< internal forces are modified
+        Teuchos::RCP<Epetra_Vector> dis,             //!< current displacement state
+        Teuchos::RCP<Epetra_Vector> vel,             //!< current velocity state
+        bool predict,                                //!< flag indicating predictor step
+        Teuchos::ParameterList
+            psprdash  //!< parameter list containing scale factors for matrix entries
     );
 
     //@}
@@ -415,7 +397,7 @@ namespace STR
     //!
     //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
-    //void NewtonFull();
+    // void NewtonFull();
     int NewtonFull();
 
     //! check for success of element evaluation in that no negative Jacobian
@@ -443,7 +425,7 @@ namespace STR
     int LsSolveNewtonStep();
 
     //! Update structural RHS and stiffness matrix (line search)
-    void LsUpdateStructuralRHSandStiff(bool& isexcept,double& merit_fct);
+    void LsUpdateStructuralRHSandStiff(bool& isexcept, double& merit_fct);
 
     //! Evaluate the specified merit function (line search)
     //! (for pure structural problems this routine is rather short.
@@ -459,15 +441,11 @@ namespace STR
     void LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red);
 
     //! Contains text to LsPrintLineSearchIter
-    void LsPrintLsIterText
-    (
-      FILE* ofile  //!< output file handle
+    void LsPrintLsIterText(FILE* ofile  //!< output file handle
     );
 
     //! Contains header to LsPrintLineSearchIter
-    void LsPrintLsIterHeader
-    (
-      FILE* ofile  //!< output file handle
+    void LsPrintLsIterHeader(FILE* ofile  //!< output file handle
     );
 
     /*! \brief Use nonlinear solver package NLNSOL
@@ -552,36 +530,33 @@ namespace STR
      *  Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by
      *  NOX. This method must be supplied by the user.
      */
-    bool computeF(
-      const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
-                               //!< i.e. total displacements
-      Epetra_Vector& RHS,  //!< to be filled with the \f$F\f$ values that correspond
-                           //!< to the input solution vector \f$x\f$.
-      const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated
-                                        //!< type (see NOX::Epetra::FillType)
-                                        //!< that tells a users interface why
-                                        //!< computeF() was called. NOX has
-                                        //!< the ability to generate
-                                        //!< Jacobians based on numerical
-                                        //!< differencing using calls to
-                                        //!< computeF(). In this case,
-                                        //!< the user may want to compute
-                                        //!< an inexact
-                                        //!< (and hopefully cheaper) \f$F\f$
-                                        //!< since it
-                                        //!< is only used in the Jacobian (or
-                                        //!< preconditioner).
-      );
+    bool computeF(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
+                                           //!< i.e. total displacements
+        Epetra_Vector& RHS,                //!< to be filled with the \f$F\f$ values that correspond
+                                           //!< to the input solution vector \f$x\f$.
+        const NOX::Epetra::Interface::Required::FillType flag  //!< enumerated
+                                                               //!< type (see NOX::Epetra::FillType)
+                                                               //!< that tells a users interface why
+                                                               //!< computeF() was called. NOX has
+                                                               //!< the ability to generate
+                                                               //!< Jacobians based on numerical
+                                                               //!< differencing using calls to
+                                                               //!< computeF(). In this case,
+                                                               //!< the user may want to compute
+                                                               //!< an inexact
+                                                               //!< (and hopefully cheaper) \f$F\f$
+                                                               //!< since it
+                                                               //!< is only used in the Jacobian (or
+                                                               //!< preconditioner).
+    );
 
     //! Compute effective dynamic stiffness matrix
-    bool computeJacobian
-    (
-      const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
-                               //!< i.e. total displacements
-      Epetra_Operator& Jac  //!< a reference to the Jacobian operator
-                            //!< \f$\frac{\partial F}{\partial x}\f$
-                            //!< that the user supplied in the
-                            //!< NOX::Epetra::Group constructor.
+    bool computeJacobian(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
+                                                  //!< i.e. total displacements
+        Epetra_Operator& Jac                      //!< a reference to the Jacobian operator
+                                                  //!< \f$\frac{\partial F}{\partial x}\f$
+                                                  //!< that the user supplied in the
+                                                  //!< NOX::Epetra::Group constructor.
     );
 
     /*! \brief Compute preconditioner
@@ -594,28 +569,25 @@ namespace STR
      *  Epetra_RowMatrix that can be used by internally constructed
      *  preconditioner objects such as AztecOO, Ifpack, and ML.
      */
-    bool computePreconditioner(
-      const Epetra_Vector& x, //!< solution vector \f$x\f$ specified from NOX
-                              //!< i.e. total displacements
-      Epetra_Operator& M, //!< a reference to the operator that is to be filled.
-                          //!< This operator should be updated to correspond to the current
-                          //!< solution vector x.
-      Teuchos::ParameterList* precParams //!< a pointer to a parameter list
-                                         //!< that can be used by the preconditioner.
-      );
+    bool computePreconditioner(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from
+                                                        //!< NOX i.e. total displacements
+        Epetra_Operator& M,  //!< a reference to the operator that is to be filled.
+                             //!< This operator should be updated to correspond to the current
+                             //!< solution vector x.
+        Teuchos::ParameterList* precParams  //!< a pointer to a parameter list
+                                            //!< that can be used by the preconditioner.
+    );
 
     //! Setup for solution with NOX
     void NoxSetup();
 
     //! Setup for solution with NOX
-    void NoxSetup(
-      const Teuchos::ParameterList& noxparams  //!< NOX parameters from read-in
+    void NoxSetup(const Teuchos::ParameterList& noxparams  //!< NOX parameters from read-in
     );
 
     //! Create status test for non-linear solution with NOX
-    Teuchos::RCP<NOX::StatusTest::Combo> NoxCreateStatusTest
-    (
-      Teuchos::RCP<NOX::Abstract::Group> grp  //!< NOX group
+    Teuchos::RCP<NOX::StatusTest::Combo> NoxCreateStatusTest(
+        Teuchos::RCP<NOX::Abstract::Group> grp  //!< NOX group
     );
 
     //! Create solver parameters for  non-linear solution with NOX
@@ -623,21 +595,22 @@ namespace STR
 
     //! Create printing parameters for non-linear solution with NOX
     Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters(
-      const bool verbose = false //!< verbosity level
-      ) const;
+        const bool verbose = false  //!< verbosity level
+        ) const;
 
     //! Create the linear system that is passed into NOX
     Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
-      Teuchos::ParameterList& nlParams, ///< parameter list
-      NOX::Epetra::Vector& noxSoln, ///< solution vector to operate on
-      Teuchos::RCP<NOX::Utils> utils ///< printing utilities
-      );
+        Teuchos::ParameterList& nlParams,  ///< parameter list
+        NOX::Epetra::Vector& noxSoln,      ///< solution vector to operate on
+        Teuchos::RCP<NOX::Utils> utils     ///< printing utilities
+    );
 
     //! Do non-linear solve with NOX
     int NoxSolve();
 
     //! check for success of nonlinear solve otherwise return error code
-    int NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
+    int NoxErrorCheck(
+        NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
     //@}
 
     //! @name Updates
@@ -648,9 +621,7 @@ namespace STR
     //! This handles the iterative update of the current
     //! displacements \f$D_{n+1}\f$ with the residual displacements
     //! The velocities and accelerations follow on par.
-    void UpdateIter
-    (
-      const int iter  //!< iteration counter
+    void UpdateIter(const int iter  //!< iteration counter
     );
 
     //! Update iteration incrementally
@@ -667,9 +638,8 @@ namespace STR
 
     //! Update iteration incrementally with prescribed residual
     //! displacements
-    void UpdateIterIncrementally
-    (
-      const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
+    void UpdateIterIncrementally(
+        const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
     );
 
     //! Update iteration iteratively
@@ -749,50 +719,41 @@ namespace STR
     bool HaveSpringDashpot();
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    const Teuchos::RCP< ::UTILS::ConstrManager> GetConstraintManager()
-    {
-      return conman_;
-    }
+    const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() { return conman_; }
 
     //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
-    const Teuchos::RCP< ::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    const Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
       return cardvasc0dman_;
     }
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    const Teuchos::RCP< ::UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    const Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager()
     {
       return springman_;
     }
 
     //! Get type of thickness scaling for thin shell structures
-    INPAR::STR::STC_Scale GetSTCAlgo()
-    {
-      return stcscale_;
-    }
+    INPAR::STR::STC_Scale GetSTCAlgo() { return stcscale_; }
 
     //! Access to scaling matrix for STC
     Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     {
-      if (!stccompl_)
-        ComputeSTCMatrix();
+      if (!stccompl_) ComputeSTCMatrix();
       stccompl_ = true;
       return stcmat_;
     }
 
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr
-    (
-      Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    virtual void UpdateIterIncrConstr(
+        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
     );
 
     //! Update iteration
     //! Add residual increment to pressures stored in Cardiovascular0D manager
-    virtual void UpdateIterIncrCardiovascular0D
-    (
-      Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
+    virtual void UpdateIterIncrCardiovascular0D(
+        Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
     );
 
     //@}
@@ -802,7 +763,7 @@ namespace STR
 
     //! switch structure field to block matrix in fsi simulations
     void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-                        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
@@ -824,9 +785,8 @@ namespace STR
      *  can be switched off when only the residual has been evaluated
      *  (\sa EvaluateForceResidual()).
      */
-    void PrepareSystemForNewtonSolve(
-        const bool preparejacobian = true ///< prepare Jacobian matrix
-        );
+    void PrepareSystemForNewtonSolve(const bool preparejacobian = true  ///< prepare Jacobian matrix
+    );
 
     //@}
 
@@ -869,7 +829,7 @@ namespace STR
       CheckIsSetup();
 
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-      SetTimen( (*time_)[0]+(*dt_)[0] );
+      SetTimen((*time_)[0] + (*dt_)[0]);
 
       // prepare contact for new time step
       PrepareStepContact();
@@ -879,9 +839,7 @@ namespace STR
     }
 
     //! Evaluate routine for coupled problems with monolithic approach
-    void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> disiterinc
-    )
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
     {
       UpdateIterIncrementally(disiterinc);
 
@@ -912,7 +870,7 @@ namespace STR
 
       timen_ = endtime;
 
-      //Update
+      // Update
       time_->UpdateSteps(timen_);
       step_ = stepn_;
       stepn_ += 1;
@@ -932,9 +890,8 @@ namespace STR
     }
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    void SetDisResidual
-    (
-      const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
+    void SetDisResidual(
+        const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
     )
     {
       if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);
@@ -945,8 +902,7 @@ namespace STR
 
     //@}
 
-  protected:
-
+   protected:
     //! @name Output to file or screen
     //@{
 
@@ -960,16 +916,12 @@ namespace STR
 
     //! Contains text to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterText
-    (
-      FILE* ofile  //!< output file handle
+    void PrintNewtonIterText(FILE* ofile  //!< output file handle
     );
 
     //! Contains header to PrintNewtonIter
     //! \author lw (originally) \date 12/07
-    void PrintNewtonIterHeader
-    (
-      FILE* ofile  //!< output file handle
+    void PrintNewtonIterHeader(FILE* ofile  //!< output file handle
     );
 
     //! print statistics of converged Newton-Raphson iteration
@@ -979,9 +931,7 @@ namespace STR
     void PrintStep();
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText
-    (
-      FILE* ofile  //!< output file handle
+    void PrintStepText(FILE* ofile  //!< output file handle
     );
 
     //@}
@@ -996,103 +946,120 @@ namespace STR
 
     //! @name Iterative solution technique
     //@{
-    enum INPAR::STR::NonlinSolTech itertype_;       //!< kind of iteration technique or non-linear solution technique
+    enum INPAR::STR::NonlinSolTech
+        itertype_;  //!< kind of iteration technique or non-linear solution technique
 
-    enum INPAR::STR::ConvNorm normtypedisi_;        //!< convergence check for residual displacements
-    enum INPAR::STR::ConvNorm normtypefres_;        //!< convergence check for residual forces
-    enum INPAR::STR::ConvNorm normtypepres_;        //!< convergence check for residual pressure
-    enum INPAR::STR::ConvNorm normtypepfres_;       //!< convergence check for residual pressure forces
-    enum INPAR::STR::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints (saddlepoint formulation only)
-    enum INPAR::STR::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier increment (saddlepoint formulation only)
-    enum INPAR::STR::BinaryOp combfresplconstr_; //!< binary operator to combine field norms (forces and plastic constraints, semi-smooth plasticity only)
-    enum INPAR::STR::BinaryOp combdisiLp_; //!< binary operator to combine field norms (displacement increments and Lp increments, semi-smooth plasticity only)
-    enum INPAR::STR::BinaryOp combfresEasres_; //!< binary operator to combine field norms (forces and EAS residuals, semi-smooth plasticity only)
-    enum INPAR::STR::BinaryOp combdisiEasIncr_; //!< binary operator to combine field norms (displacement increments and EAS increments, semi-smooth plasticity only)
+    enum INPAR::STR::ConvNorm normtypedisi_;   //!< convergence check for residual displacements
+    enum INPAR::STR::ConvNorm normtypefres_;   //!< convergence check for residual forces
+    enum INPAR::STR::ConvNorm normtypepres_;   //!< convergence check for residual pressure
+    enum INPAR::STR::ConvNorm normtypepfres_;  //!< convergence check for residual pressure forces
+    enum INPAR::STR::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints
+                                                    //!< (saddlepoint formulation only)
+    enum INPAR::STR::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier
+                                                    //!< increment (saddlepoint formulation only)
+    enum INPAR::STR::BinaryOp
+        combfresplconstr_;  //!< binary operator to combine field norms (forces and plastic
+                            //!< constraints, semi-smooth plasticity only)
+    enum INPAR::STR::BinaryOp
+        combdisiLp_;  //!< binary operator to combine field norms (displacement increments and Lp
+                      //!< increments, semi-smooth plasticity only)
+    enum INPAR::STR::BinaryOp combfresEasres_;  //!< binary operator to combine field norms (forces
+                                                //!< and EAS residuals, semi-smooth plasticity only)
+    enum INPAR::STR::BinaryOp
+        combdisiEasIncr_;  //!< binary operator to combine field norms (displacement increments and
+                           //!< EAS increments, semi-smooth plasticity only)
 
-    enum INPAR::STR::BinaryOp combdispre_;          //!< binary operator to combine field norms
-    enum INPAR::STR::BinaryOp combfrespfres_;       //!< binary operator to combine field norms
-    enum INPAR::STR::BinaryOp combdisifres_;        //!< binary operator to combine displacement and forces
-    enum INPAR::STR::BinaryOp combfrescontconstr_;  //!< binary operator to combine field norms (forces and contact constraints, contact/meshtying in saddlepoint formulation only)
-    enum INPAR::STR::BinaryOp combdisilagr_;        //!< binary operator to combine field norms (displacement increments and LM increments, contact/meshtying in saddlepoint formulation only)
+    enum INPAR::STR::BinaryOp combdispre_;     //!< binary operator to combine field norms
+    enum INPAR::STR::BinaryOp combfrespfres_;  //!< binary operator to combine field norms
+    enum INPAR::STR::BinaryOp
+        combdisifres_;  //!< binary operator to combine displacement and forces
+    enum INPAR::STR::BinaryOp
+        combfrescontconstr_;  //!< binary operator to combine field norms (forces and contact
+                              //!< constraints, contact/meshtying in saddlepoint formulation only)
+    enum INPAR::STR::BinaryOp
+        combdisilagr_;  //!< binary operator to combine field norms (displacement increments and LM
+                        //!< increments, contact/meshtying in saddlepoint formulation only)
 
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
-    int itermax_;  //!< maximally permitted iterations
-    int itermin_;  //!< minimally requested iterations
+    int itermax_;                           //!< maximally permitted iterations
+    int itermin_;                           //!< minimally requested iterations
 
     double toldisi_;        //!< tolerance residual displacements
     double tolfres_;        //!< tolerance force residual
     double tolpfres_;       //!< norm of residual pressure forces
     double tolpres_;        //!< norm of residual pressures
     double tolcontconstr_;  //!< norm of rhs for contact constraints (saddlepoint formulation only)
-    double tollagr_;        //!< tolerance of LM multiplier increments (saddlepoint formulation only)
+    double tollagr_;  //!< tolerance of LM multiplier increments (saddlepoint formulation only)
 
-    double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
-                         //!< with Lagrange multipliers
-    int uzawaitermax_;  //!< maximally permitted Uzawa iterations
-    double tolcon_;  //!< tolerance constraint
-    double tolcardvasc0d_;  //!< tolerance for 0D cardiovascular residual
-    double tolcardvasc0ddofincr_;  //!< tolerance for 0D cardiovascular dof increment
-    int iter_;  //!< iteration step
-    double normcharforce_;  //!< characteristic norm for residual force
-    double normchardis_;  //!< characteristic norm for residual displacements
-    double normfres_;  //!< norm of residual forces
-    double normfresr_;  //!< norm of reduced residual forces
-    double normdisi_;  //!< norm of residual displacements
-    double normdisir_;  //!< norm of reduced residual displacements
-    double normcon_;  //!< norm of constraint
-    double normcardvasc0d_;  //!< norm of 0D cardiovascular residual
+    double uzawaparam_;             //!< Parameter for Uzawa algorithm dealing
+                                    //!< with Lagrange multipliers
+    int uzawaitermax_;              //!< maximally permitted Uzawa iterations
+    double tolcon_;                 //!< tolerance constraint
+    double tolcardvasc0d_;          //!< tolerance for 0D cardiovascular residual
+    double tolcardvasc0ddofincr_;   //!< tolerance for 0D cardiovascular dof increment
+    int iter_;                      //!< iteration step
+    double normcharforce_;          //!< characteristic norm for residual force
+    double normchardis_;            //!< characteristic norm for residual displacements
+    double normfres_;               //!< norm of residual forces
+    double normfresr_;              //!< norm of reduced residual forces
+    double normdisi_;               //!< norm of residual displacements
+    double normdisir_;              //!< norm of reduced residual displacements
+    double normcon_;                //!< norm of constraint
+    double normcardvasc0d_;         //!< norm of 0D cardiovascular residual
     double normcardvasc0ddofincr_;  //!< norm of 0D cardiovascular dof increment
-    double normpfres_; //!< norm of residual pressure forces
-    double normpres_; //!< norm of residual pressures
-    double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in saddlepoint formulation only)
-    double normlagr_;     //!< norm of lagrange multipliers
-    double normw_;     //!< norm of wear
+    double normpfres_;              //!< norm of residual pressure forces
+    double normpres_;               //!< norm of residual pressures
+    double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in
+                             //!< saddlepoint formulation only)
+    double normlagr_;        //!< norm of lagrange multipliers
+    double normw_;           //!< norm of wear
     double normwrhs_;
-    double normwm_;     //!< norm of wear master
+    double normwm_;  //!< norm of wear master
     double normwmrhs_;
-    double alpha_ls_; //!< line search step reduction
-    double sigma_ls_; //!< line search sufficient descent factor
-    double ls_maxiter_; //!< maximum number of line search steps
-    double cond_res_; //!< residual norm of condensed variables (e.g. EAS) needed for line search
+    double alpha_ls_;    //!< line search step reduction
+    double sigma_ls_;    //!< line search sufficient descent factor
+    double ls_maxiter_;  //!< maximum number of line search steps
+    double cond_res_;    //!< residual norm of condensed variables (e.g. EAS) needed for line search
 
 
 
-
-    Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure) \f$\Delta{D}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>
+        disi_;  //!< residual displacements (and pressure) \f$\Delta{D}^{<k>}_{n+1}\f$
 
     //@}
 
     //! @name Various global forces
     //@{
-    Teuchos::RCP<Epetra_Vector> fres_;   //!< force residual used for solution
-    Teuchos::RCP<Epetra_Vector> freact_; //!< reaction force
+    Teuchos::RCP<Epetra_Vector> fres_;    //!< force residual used for solution
+    Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
     //@}
 
     //! @name NOX variables
     //@{
     Teuchos::RCP<NOX::StatusTest::Combo> noxstatustest_;  //!< NOX status test for convergence check
-    Teuchos::RCP<Teuchos::ParameterList> noxparams_;      //!< NOX parameter list to configure the NOX solver
-    Teuchos::RCP<NOX::Utils> noxutils_;                   //!< NOX utils for printing
+    Teuchos::RCP<Teuchos::ParameterList>
+        noxparams_;                      //!< NOX parameter list to configure the NOX solver
+    Teuchos::RCP<NOX::Utils> noxutils_;  //!< NOX utils for printing
     //@}
 
     //! @name Krylov projection variables
-    bool updateprojection_;                           //!< bool triggering update of Krylov projection
-    Teuchos::RCP<LINALG::KrylovProjector> projector_; //!< Krylov projector himself
+    bool updateprojection_;  //!< bool triggering update of Krylov projection
+    Teuchos::RCP<LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
     //@}
 
     //! @name STC Scaling for thin shell structures
     //@{
-    enum INPAR::STR::STC_Scale stcscale_;       //!< scale thickness of shells?
-    double stcfact_;                            //!< scaling factor for STC
-    int stclayer_;                              //! number of layers for multilayered case
-    Teuchos::RCP<LINALG::SparseMatrix> stcmat_; //!< scaling matrix for STC
-    bool stccompl_;                             //!< keep track if stc matrix has been evaluated
+    enum INPAR::STR::STC_Scale stcscale_;        //!< scale thickness of shells?
+    double stcfact_;                             //!< scaling factor for STC
+    int stclayer_;                               //! number of layers for multilayered case
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
+    bool stccompl_;                              //!< keep track if stc matrix has been evaluated
     //@}
 
     //! @name Pseudo Transient Continuation Parameters
     //@{
-    double ptcdt_; //!< pseudo time step size for PTC
-    double dti_;   //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
+    double ptcdt_;  //!< pseudo time step size for PTC
+    double dti_;    //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
     //@}
 
   };  // class TimIntImpl

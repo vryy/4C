@@ -27,77 +27,70 @@ namespace TOPOPT
 
 namespace FLD
 {
+  class TimIntTopOpt : public virtual FluidImplicitTimeInt
+  {
+   public:
+    /// Standard Constructor
+    TimIntTopOpt(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntTopOpt : public virtual FluidImplicitTimeInt
-{
-public:
-  /// Standard Constructor
-  TimIntTopOpt(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntTopOpt();
 
-  /// Destructor
-  virtual ~TimIntTopOpt();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
+    */
+    virtual void Init();
 
-  */
-  virtual void Init();
+    /*!
+    \brief import fluid data to optimizer
 
-  /*!
-  \brief import fluid data to optimizer
+    */
+    void ImportDataToOptimizer();
 
-  */
-  void ImportDataToOptimizer();
+    /*!
+    \brief reset density in topology optimization problems
 
-  /*!
-  \brief reset density in topology optimization problems
+    */
+    void SetTopOptData(
+        Teuchos::RCP<Epetra_Vector> density, Teuchos::RCP<TOPOPT::Optimizer>& optimizer);
 
-  */
-  void SetTopOptData(
-      Teuchos::RCP<Epetra_Vector> density,
-      Teuchos::RCP<TOPOPT::Optimizer>& optimizer
-  );
+    /*!
 
-  /*!
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element*/
+    void SetElementCustomParameter();
 
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element*/
-  void SetElementCustomParameter();
+    /*!
+    \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
-  /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
+    */
+    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
-  */
-  void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    /*!
+    \brief switched off in TopOpt
 
-  /*!
-  \brief switched off in TopOpt
+    */
+    void WriteOutputFluidFraction() { return; }
 
-  */
-  void WriteOutputFluidFraction(){return;}
+    /*!
+    \brief (multiple) corrector
 
-  /*!
-  \brief (multiple) corrector
+    */
+    void Solve();
 
-  */
-  void Solve();
+   protected:
+    /// optimizer for topology optimization
+    Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
 
-protected:
+   private:
+  };  // class TimIntTopOpt
 
-  /// optimizer for topology optimization
-  Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
-
-private:
-
-
-}; // class TimIntTopOpt
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_TOPOPT_H

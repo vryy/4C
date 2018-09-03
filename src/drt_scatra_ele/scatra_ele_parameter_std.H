@@ -2,14 +2,17 @@
 /*!
 \file scatra_ele_parameter_std.H
 
-\brief singleton class holding all static parameters required for the evaluation of a standard scalar transport element
+\brief singleton class holding all static parameters required for the evaluation of a standard
+scalar transport element
 
-This singleton class holds all static parameters required for the evaluation of a standard scalar transport element,
-e.g., stabilization parameters and finite difference check parameters. All parameters are usually set only once at
-the beginning of a simulation, namely during initialization of the global time integrator, and then never touched again
-throughout the simulation. Enhanced scalar transport problems, such as electrochemistry and levelset problems, instantiate
-additional, problem specific singleton classes holding additional static parameters required for element evaluation. These
-additional singleton classes are not meant to be derived from, but rather to coexist with this general class.
+This singleton class holds all static parameters required for the evaluation of a standard scalar
+transport element, e.g., stabilization parameters and finite difference check parameters. All
+parameters are usually set only once at the beginning of a simulation, namely during initialization
+of the global time integrator, and then never touched again throughout the simulation. Enhanced
+scalar transport problems, such as electrochemistry and levelset problems, instantiate additional,
+problem specific singleton classes holding additional static parameters required for element
+evaluation. These additional singleton classes are not meant to be derived from, but rather to
+coexist with this general class.
 
 <pre>
 \level 1
@@ -39,141 +42,139 @@ namespace DRT
     // class implementation
     class ScaTraEleParameterStd : public ScaTraEleParameterBase
     {
-      public:
+     public:
+      //! singleton access method
+      static ScaTraEleParameterStd* Instance(
+          const std::string& disname,                    //!< name of discretization
+          const ScaTraEleParameterStd* delete_me = NULL  //!< creation/destruction indication
+      );
 
-        //! singleton access method
-        static ScaTraEleParameterStd* Instance(
-            const std::string&           disname,            //!< name of discretization
-            const ScaTraEleParameterStd* delete_me = NULL  //!< creation/destruction indication
-            );
+      //! singleton destruction
+      virtual void Done();
 
-        //! singleton destruction
-        virtual void Done();
+      //! set parameters
+      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      );
 
-        //! set parameters
-        void SetParameters(
-            Teuchos::ParameterList& parameters   //!< parameter list
-            );
+      //! @name return general parameters
+      //! @{
+      bool IsAle() const { return is_ale_; };
+      bool IsConservative() const { return is_conservative_; };
+      bool SphericalCoords() const { return sphericalcoords_; };
+      INPAR::SCATRA::FluxType CalcFluxDomain() const { return calcflux_domain_; };
+      const Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
+      INPAR::SCATRA::FDCheck FDCheck() const { return fdcheck_; };
+      double FDCheckEps() const { return fdcheckeps_; };
+      double FDCheckTol() const { return fdchecktol_; };
+      int ProbNum() const { return probnum_; };
+      bool SemiImplicit() const { return semiimplicit_; };
+      double IntLayerGrowthConvTol() const { return intlayergrowth_convtol_; };
+      unsigned IntLayerGrowthIteMax() const { return intlayergrowth_itemax_; };
+      bool PartitionedMultiScale() const { return partitioned_multiscale_; };
+      //! @}
 
-        //! @name return general parameters
-        //! @{
-        bool IsAle() const {return is_ale_;};
-        bool IsConservative() const {return is_conservative_;};
-        bool SphericalCoords() const {return sphericalcoords_;};
-        INPAR::SCATRA::FluxType CalcFluxDomain() const {return calcflux_domain_;};
-        const Teuchos::RCP<std::vector<int> > WriteFluxIds() const {return writefluxids_;};
-        INPAR::SCATRA::FDCheck FDCheck() const {return fdcheck_;};
-        double FDCheckEps() const {return fdcheckeps_;};
-        double FDCheckTol() const {return fdchecktol_;};
-        int ProbNum() const {return probnum_;};
-        bool SemiImplicit() const {return semiimplicit_;};
-        double IntLayerGrowthConvTol() const {return intlayergrowth_convtol_;};
-        unsigned IntLayerGrowthIteMax() const {return intlayergrowth_itemax_;};
-        bool PartitionedMultiScale() const {return partitioned_multiscale_;};
-        //! @}
+      //! @name return stabilization parameters
+      //! @{
+      INPAR::SCATRA::StabType StabType() const { return stabtype_; };
+      INPAR::SCATRA::TauType TauDef() const { return whichtau_; };
+      INPAR::SCATRA::CharEleLength CharEleLength() const { return charelelength_; };
+      double USFEMGLSFac() const { return diffreastafac_; };
+      bool RBSubGrVel() const { return sgvel_; };
+      bool ASSGD() const { return assgd_; };
+      INPAR::SCATRA::AssgdType ASSGDType() const { return whichassgd_; };
+      bool TauGP() const { return tau_gp_; };
+      bool MatGP() const { return mat_gp_; };
+      double TauValue() const { return tau_value_; };
+      //! @}
 
-        //! @name return stabilization parameters
-        //! @{
-        INPAR::SCATRA::StabType StabType() const {return stabtype_;};
-        INPAR::SCATRA::TauType TauDef() const {return whichtau_;};
-        INPAR::SCATRA::CharEleLength CharEleLength() const {return charelelength_;};
-        double USFEMGLSFac() const {return diffreastafac_;};
-        bool RBSubGrVel() const {return sgvel_;};
-        bool ASSGD() const {return assgd_;};
-        INPAR::SCATRA::AssgdType ASSGDType() const {return whichassgd_;};
-        bool TauGP() const {return tau_gp_;};
-        bool MatGP() const {return mat_gp_;};
-        double TauValue() const {return tau_value_;};
-        //! @}
+     private:
+      //! private constructor for singletons
+      ScaTraEleParameterStd(const std::string& disname  //!< name of discretization
+      );
 
-      private:
+      //! private destructor for singletons
+      virtual ~ScaTraEleParameterStd() { return; };
 
-        //! private constructor for singletons
-        ScaTraEleParameterStd(
-            const std::string& disname   //!< name of discretization
-            );
+      //! @name general parameters
+      //! @{
+      //! flag for ALE
+      bool is_ale_;
 
-        //! private destructor for singletons
-        virtual ~ScaTraEleParameterStd(){return;};
+      //! flag for conservative form
+      bool is_conservative_;
 
-        //! @name general parameters
-        //! @{
-        //! flag for ALE
-        bool is_ale_;
+      //! flag for use of spherical coordinates
+      bool sphericalcoords_;
 
-        //! flag for conservative form
-        bool is_conservative_;
+      //! flag for writing the flux vector fields
+      INPAR::SCATRA::FluxType calcflux_domain_;
 
-        //! flag for use of spherical coordinates
-        bool sphericalcoords_;
+      //! ids of scalars for which flux vectors are written (starting with 1)
+      Teuchos::RCP<std::vector<int>> writefluxids_;
 
-        //! flag for writing the flux vector fields
-        INPAR::SCATRA::FluxType calcflux_domain_;
+      //! flag for finite difference check
+      INPAR::SCATRA::FDCheck fdcheck_;
 
-        //! ids of scalars for which flux vectors are written (starting with 1)
-        Teuchos::RCP<std::vector<int> > writefluxids_;
+      //! perturbation magnitude for finite difference check
+      double fdcheckeps_;
 
-        //! flag for finite difference check
-        INPAR::SCATRA::FDCheck fdcheck_;
+      //! relative tolerance for finite difference check
+      double fdchecktol_;
 
-        //! perturbation magnitude for finite difference check
-        double fdcheckeps_;
+      //! problem number
+      int probnum_;
 
-        //! relative tolerance for finite difference check
-        double fdchecktol_;
+      //! evaluation type
+      bool semiimplicit_;
 
-        //! problem number
-        int probnum_;
+      //! local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving
+      //! interface layer growth
+      double intlayergrowth_convtol_;
 
-        //! evaluation type
-        bool semiimplicit_;
+      //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling
+      //! involving interface layer growth
+      unsigned intlayergrowth_itemax_;
 
-        //! local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving interface layer growth
-        double intlayergrowth_convtol_;
+      // flag for truly partitioned multi-scale simulation
+      bool partitioned_multiscale_;
+      //! @}
 
-        //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
-        unsigned intlayergrowth_itemax_;
+      //! @name stabilization parameters
+      //! @{
+      //! type of stabilization
+      INPAR::SCATRA::StabType stabtype_;
 
-        // flag for truly partitioned multi-scale simulation
-        bool partitioned_multiscale_;
-        //! @}
+      //! definition of stabilization parameter
+      INPAR::SCATRA::TauType whichtau_;
 
-        //! @name stabilization parameters
-        //! @{
-        //! type of stabilization
-        INPAR::SCATRA::StabType stabtype_;
+      //! definition of characteristic element length
+      INPAR::SCATRA::CharEleLength charelelength_;
 
-        //! definition of stabilization parameter
-        INPAR::SCATRA::TauType whichtau_;
+      //! parameter to switch between SUPG, GLS and USFEM
+      double diffreastafac_;
 
-        //! definition of characteristic element length
-        INPAR::SCATRA::CharEleLength charelelength_;
+      //! flag to include residual-based subgrid-scale velocity
+      bool sgvel_;
 
-        //! parameter to switch between SUPG, GLS and USFEM
-        double diffreastafac_;
+      //! flag to active artificial diffusion
+      bool assgd_;
 
-        //! flag to include residual-based subgrid-scale velocity
-        bool sgvel_;
+      //! definition of artificial diffusion
+      INPAR::SCATRA::AssgdType whichassgd_;
 
-        //! flag to active artificial diffusion
-        bool assgd_;
+      //! flag for evaluation of tau at Gauss point
+      bool tau_gp_;
 
-        //! definition of artificial diffusion
-        INPAR::SCATRA::AssgdType whichassgd_;
+      //! flag for evaluation of material at Gauss point
+      bool mat_gp_;
 
-        //! flag for evaluation of tau at Gauss point
-        bool tau_gp_;
+      //! numerical value for stabilization parameter
+      double tau_value_;
+      //! @}
 
-        //! flag for evaluation of material at Gauss point
-        bool mat_gp_;
-
-        //! numerical value for stabilization parameter
-        double tau_value_;
-        //! @}
-
-        //! parameter class for time integration
-        DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
+      //! parameter class for time integration
+      DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
     };
-  }
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif

@@ -26,54 +26,51 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn,
-    std::string condname
-    )
+    const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-    const PROBLEM_TYP probtyp = DRT::Problem::Instance()->ProblemType();
+  const PROBLEM_TYP probtyp = DRT::Problem::Instance()->ProblemType();
 
-    // switch between moving domain fluid implementations
-    switch (probtyp)
-    {
+  // switch between moving domain fluid implementations
+  switch (probtyp)
+  {
     case prb_fsi:
     case prb_fluid_ale:
     case prb_freesurf:
     case prb_fsi_redmodels:
     {
-      //std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
-      fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
+      // std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
+      fluid_ = Teuchos::rcp(new FluidAle(prbdyn, condname));
       break;
     }
     case prb_fluid_xfem:
     case prb_fsi_xfem:
     {
       const Teuchos::ParameterList xfluid = DRT::Problem::Instance()->XFluidDynamicParams();
-      bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
-      if (!alefluid) //xfluid
+      bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
+      if (!alefluid)  // xfluid
       {
-        //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
-        fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
+        // std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
+        fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn, condname));
       }
-      else //xafluid
+      else  // xafluid
       {
-        fluid_ = Teuchos::rcp(new FluidAleXFEM(prbdyn,condname));
+        fluid_ = Teuchos::rcp(new FluidAleXFEM(prbdyn, condname));
       }
       break;
     }
     case prb_immersed_fsi:
     case prb_immersed_membrane_fsi:
     {
-      fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn,condname));
+      fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn, condname));
       break;
     }
     case prb_immersed_ale_fsi:
     {
-      fluid_ = Teuchos::rcp(new FluidAleImmersed(prbdyn,condname));
+      fluid_ = Teuchos::rcp(new FluidAleImmersed(prbdyn, condname));
       break;
     }
     default:
-      dserror("fsi type not supported"); break;
-    }
+      dserror("fsi type not supported");
+      break;
+  }
 }
-
-

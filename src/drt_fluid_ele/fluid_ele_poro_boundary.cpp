@@ -22,8 +22,9 @@ DRT::ELEMENTS::FluidPoroBoundaryType& DRT::ELEMENTS::FluidPoroBoundaryType::Inst
 }
 
 /*----------------------------------------------------------------------*
-*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Create( const int id, const int owner )
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Create(
+    const int id, const int owner)
 {
   return Teuchos::null;
 }
@@ -32,12 +33,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Create( const i
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::Fluid* parent,
-                              const int lsurface) :
-FluidBoundary(id,owner,nnode,nodeids,nodes,parent,lsurface)
+DRT::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(int id, int owner, int nnode,
+    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
+    : FluidBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
   return;
 }
@@ -45,8 +43,8 @@ FluidBoundary(id,owner,nnode,nodeids,nodes,parent,lsurface)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(const DRT::ELEMENTS::FluidPoroBoundary& old) :
-FluidBoundary(old)
+DRT::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(const DRT::ELEMENTS::FluidPoroBoundary& old)
+    : FluidBoundary(old)
 {
   return;
 }

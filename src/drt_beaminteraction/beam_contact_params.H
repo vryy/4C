@@ -22,8 +22,8 @@
 //#include "beam_contact_runtime_vtk_output_params.H"
 
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   class BeamToBeamContactParams;
   class BeamToSphereContactParams;
   class BeamToSolidVolumeMeshtyingParams;
@@ -33,12 +33,12 @@ namespace BEAMINTERACTION {
    *  */
   class BeamContactParams
   {
-  public:
+   public:
     //! constructor
     BeamContactParams();
 
     //! destructor
-    virtual ~BeamContactParams() {};
+    virtual ~BeamContactParams(){};
 
     //! builds a new BeamToBeamContactParams object
     void BuildBeamToBeamContactParams();
@@ -53,40 +53,36 @@ namespace BEAMINTERACTION {
     void BuildBeamContactRuntimeVtkOutputParams();
 
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams>
-        BeamToBeamContactParams() const
+    inline Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> BeamToBeamContactParams() const
     {
       return beam_to_beam_contact_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams>
-        BeamToSphereContactParams() const
+    inline Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams> BeamToSphereContactParams()
+        const
     {
       return beam_to_sphere_contact_params_;
     }
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
-        BeamToSolidVolumeMeshtyingParams() const
+    BeamToSolidVolumeMeshtyingParams() const
     {
       return beam_to_solid_volume_meshtying_params_;
     }
 
     inline Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVtkOutputParams>
-        BeamContactRuntimeVtkOutputParams() const
+    BeamContactRuntimeVtkOutputParams() const
     {
       return beam_contact_runtime_vtk_output_params_;
     }
 
 
-  private:
-
+   private:
     //! pointer to the parameter class of beam-to-beam contact
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams>
-        beam_to_beam_contact_params_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params_;
 
     //! pointer to the parameter class of beam-to-sphere contact
-    Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams>
-        beam_to_sphere_contact_params_;
+    Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams> beam_to_sphere_contact_params_;
 
     //! pointer to the parameter class of beam-to-solid-volume contact
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
@@ -95,10 +91,8 @@ namespace BEAMINTERACTION {
     //! pointer to the parameter class of beam contact vtk output
     Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVtkOutputParams>
         beam_contact_runtime_vtk_output_params_;
-
-
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

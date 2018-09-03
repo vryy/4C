@@ -39,11 +39,8 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannVolCoupl::DirichletNeumannVolCoupl(const Epetra_Comm& comm)
-  : DirichletNeumann(comm),
-    displacementcoupling_(false),
-    coupsa_(Teuchos::null)
+    : DirichletNeumann(comm), displacementcoupling_(false), coupsa_(Teuchos::null)
 {
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -56,12 +53,11 @@ void FSI::DirichletNeumannVolCoupl::Setup()
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
 
-  if(!displacementcoupling_)
-    dserror("Currently only displacement coupling is supported!");
+  if (!displacementcoupling_) dserror("Currently only displacement coupling is supported!");
 
-  SetupCouplingStructAle(fsidyn,Comm());
+  SetupCouplingStructAle(fsidyn, Comm());
 
-  SetupInterfaceCorrector(fsidyn,Comm());
+  SetupInterfaceCorrector(fsidyn, Comm());
 
   return;
 }
@@ -70,68 +66,57 @@ void FSI::DirichletNeumannVolCoupl::Setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannVolCoupl::SetupCouplingStructAle(
-    const Teuchos::ParameterList& fsidyn ,
-    const Epetra_Comm& comm)
+    const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-
   const int ndim = DRT::Problem::Instance()->NDim();
 
   coupsa_ = Teuchos::rcp(new ADAPTER::MortarVolCoupl());
 
-  //do a dynamic cast here
-  Teuchos::RCP< ADAPTER::FluidAle> fluidale =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>( fluid_ );
+  // do a dynamic cast here
+  Teuchos::RCP<ADAPTER::FluidAle> fluidale = Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(fluid_);
 
-  //projection
-  std::vector<int> coupleddof12 = std::vector<int>(ndim,1);
-  std::vector<int> coupleddof21 = std::vector<int>(ndim,1);
+  // projection
+  std::vector<int> coupleddof12 = std::vector<int>(ndim, 1);
+  std::vector<int> coupleddof21 = std::vector<int>(ndim, 1);
 
-  //define dof sets to be coupled for both projections
-  std::pair<int,int> dofsets12(0,0);
-  std::pair<int,int> dofsets21(0,0);
+  // define dof sets to be coupled for both projections
+  std::pair<int, int> dofsets12(0, 0);
+  std::pair<int, int> dofsets21(0, 0);
 
   // initialize coupling adapter
-  coupsa_->Init( StructureField()->Discretization(),
-      fluidale->AleField()->WriteAccessDiscretization(),
-      &coupleddof12,
-      &coupleddof21,
-      &dofsets12,
-      &dofsets21,
-      Teuchos::null,
-      false);
+  coupsa_->Init(StructureField()->Discretization(),
+      fluidale->AleField()->WriteAccessDiscretization(), &coupleddof12, &coupleddof21, &dofsets12,
+      &dofsets21, Teuchos::null, false);
 
-  //setup coupling adapter
+  // setup coupling adapter
   coupsa_->Setup();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannVolCoupl::SetupInterfaceCorrector(
-    const Teuchos::ParameterList& fsidyn ,
-    const Epetra_Comm& comm)
+    const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
   icorrector_ = Teuchos::rcp(new InterfaceCorrector());
 
-  icorrector_->Setup(Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>( fluid_ ));
+  icorrector_->Setup(Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(fluid_));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>
-FSI::DirichletNeumannVolCoupl::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
-                               const FillType fillFlag)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::FluidOp(
+    Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
 {
-  FSI::Partitioned::FluidOp(idisp,fillFlag);
+  FSI::Partitioned::FluidOp(idisp, fillFlag);
 
-  //TODO cant this be done better?
-  Teuchos::RCP<Epetra_Vector> vdisp =
-      Teuchos::rcp(new Epetra_Vector( *StructureField()->Dispnp() ));
+  // TODO cant this be done better?
+  Teuchos::RCP<Epetra_Vector> vdisp = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
 
-  if(fillFlag==User)
+  if (fillFlag == User)
   {
     // SD relaxation calculation
-    return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(idisp),Dt()));
+    return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(idisp), Dt()));
   }
   else
   {
@@ -141,16 +126,15 @@ FSI::DirichletNeumannVolCoupl::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
 
     // A rather simple hack. We need something better!
     const int itemax = MBFluidField()->Itemax();
-    if (fillFlag==MF_Res and mfresitemax_ > 0)
-      MBFluidField()->SetItemax(mfresitemax_ + 1);
+    if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
 
     Teuchos::RCP<ADAPTER::FluidAle> fluidale =
-        Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>( MBFluidField());
+        Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField());
 
-    icorrector_->SetInterfaceDisplacements(idisp,StructureFluidCoupling());
+    icorrector_->SetInterfaceDisplacements(idisp, StructureFluidCoupling());
 
-    //important difference to dirichletneumann.cpp: vdisp is mapped from structure to ale here
-    fluidale->NonlinearSolveVolCoupl(StructureToAle(vdisp),StructToFluid(ivel),icorrector_);
+    // important difference to dirichletneumann.cpp: vdisp is mapped from structure to ale here
+    fluidale->NonlinearSolveVolCoupl(StructureToAle(vdisp), StructToFluid(ivel), icorrector_);
 
     MBFluidField()->SetItemax(itemax);
 
@@ -163,7 +147,7 @@ FSI::DirichletNeumannVolCoupl::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
 /*----------------------------------------------------------------------------*/
 void FSI::DirichletNeumannVolCoupl::ExtractPreviousInterfaceSolution()
 {
-  iveln_  = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
+  iveln_ = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
   idispn_ = StructureField()->ExtractInterfaceDispn();
 }
 
@@ -188,12 +172,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::AleToStructure(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::InterfaceCorrector::Setup(Teuchos::RCP< ADAPTER::FluidAle> fluidale)
+void FSI::InterfaceCorrector::Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale)
 {
   fluidale_ = fluidale;
 
   volcorrector_ = Teuchos::rcp(new VolCorrector);
-  volcorrector_->Setup(DRT::Problem::Instance()->NDim(),fluidale);
+  volcorrector_->Setup(DRT::Problem::Instance()->NDim(), fluidale);
 
   return;
 }
@@ -202,47 +186,43 @@ void FSI::InterfaceCorrector::Setup(Teuchos::RCP< ADAPTER::FluidAle> fluidale)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::InterfaceCorrector::SetInterfaceDisplacements(
-    Teuchos::RCP<Epetra_Vector>& idisp_struct,
-    ADAPTER::Coupling& icoupfs)
+    Teuchos::RCP<Epetra_Vector>& idisp_struct, ADAPTER::Coupling& icoupfs)
 {
   idisp_ = idisp_struct;
   icoupfs_ = Teuchos::rcpFromRef(icoupfs);
 
-  deltadisp_= Teuchos::null;
+  deltadisp_ = Teuchos::null;
   return;
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface)
+void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  if(icoupfs_ == Teuchos::null)
-    dserror("Coupling adapter not set!");
-  if(idisp_ == Teuchos::null)
-    dserror("Interface displacements not set!");
+  if (icoupfs_ == Teuchos::null) dserror("Coupling adapter not set!");
+  if (idisp_ == Teuchos::null) dserror("Interface displacements not set!");
 
-  //std::cout<<*finterface->FullMap()<<std::endl;
-  //std::cout<<*disp_fluid<<std::endl;
-  deltadisp_ = LINALG::CreateVector(*finterface->FSICondMap(),true);
+  // std::cout<<*finterface->FullMap()<<std::endl;
+  // std::cout<<*disp_fluid<<std::endl;
+  deltadisp_ = LINALG::CreateVector(*finterface->FSICondMap(), true);
 
-  LINALG::Export(*disp_fluid,*deltadisp_);
- // deltadisp_ = finterface->ExtractFSICondVector(disp_fluid);
+  LINALG::Export(*disp_fluid, *deltadisp_);
+  // deltadisp_ = finterface->ExtractFSICondVector(disp_fluid);
 
-  //dserror("stop");
+  // dserror("stop");
 
   Teuchos::RCP<Epetra_Vector> idisp_fluid_corrected = icoupfs_->MasterToSlave(idisp_);
 
-  deltadisp_->Update(1.0,*idisp_fluid_corrected,-1.0);
+  deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 
-  LINALG::Export(*idisp_fluid_corrected,*disp_fluid);
-  //finterface->InsertFSICondVector(idisp_fluid_corrected,disp_fluid);
+  LINALG::Export(*idisp_fluid_corrected, *disp_fluid);
+  // finterface->InsertFSICondVector(idisp_fluid_corrected,disp_fluid);
 
-  volcorrector_->CorrectVolDisplacements(fluidale_,deltadisp_,disp_fluid,finterface);
+  volcorrector_->CorrectVolDisplacements(fluidale_, deltadisp_, disp_fluid, finterface);
 
-  //reset
+  // reset
   idisp_ = Teuchos::null;
   icoupfs_ = Teuchos::null;
 
@@ -252,25 +232,24 @@ void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::CorrectVolDisplacements(
-    Teuchos::RCP< ADAPTER::FluidAle> fluidale,
-    Teuchos::RCP<Epetra_Vector> deltadisp,
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface)
+void FSI::VolCorrector::CorrectVolDisplacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  if(fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
-    std::cout<<"******************   FSI Volume Correction Step   **********************"<<std::endl;
+  if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
+    std::cout << "******************   FSI Volume Correction Step   **********************"
+              << std::endl;
 
   // correction step in parameter space
-  if(true)
-    CorrectVolDisplacementsParaSpace(fluidale,deltadisp,disp_fluid,finterface);
+  if (true) CorrectVolDisplacementsParaSpace(fluidale, deltadisp, disp_fluid, finterface);
   // correction step in physical space
   else
-    CorrectVolDisplacementsPhysSpace(fluidale,deltadisp,disp_fluid,finterface);
+    CorrectVolDisplacementsPhysSpace(fluidale, deltadisp, disp_fluid, finterface);
 
   // output
-  if(fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
-    std::cout<<"******************FSI Volume Correction Step Done***********************"<<std::endl;
+  if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
+    std::cout << "******************FSI Volume Correction Step Done***********************"
+              << std::endl;
 
 
   return;
@@ -279,153 +258,146 @@ void FSI::VolCorrector::CorrectVolDisplacements(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(
-    Teuchos::RCP< ADAPTER::FluidAle> fluidale,
-    Teuchos::RCP<Epetra_Vector> deltadisp,
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface)
+void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  Teuchos::RCP<Epetra_Vector>  correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(),true));
-  Teuchos::RCP<Epetra_Vector>  DofColMapDummy = Teuchos::rcp(new Epetra_Vector(*fluidale->FluidField()->Discretization()->DofColMap(),true));
-  LINALG::Export(*deltadisp,*DofColMapDummy);
+  Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
+  Teuchos::RCP<Epetra_Vector> DofColMapDummy =
+      Teuchos::rcp(new Epetra_Vector(*fluidale->FluidField()->Discretization()->DofColMap(), true));
+  LINALG::Export(*deltadisp, *DofColMapDummy);
 
   const double tol = 1e-5;
 
   // loop over ale eles
-  for (std::map<int,std::vector<int> >::iterator it=fluidalenodemap_.begin(); it!=fluidalenodemap_.end(); ++it)
+  for (std::map<int, std::vector<int>>::iterator it = fluidalenodemap_.begin();
+       it != fluidalenodemap_.end(); ++it)
   {
     DRT::Element* aleele = fluidale->AleField()->Discretization()->gElement(it->first);
 
     // loop over fluid volume nodes within one ale FSI element
-   for(size_t i = 0; i < it->second.size() ; ++i)
-   {
-     int gid = it->second[i];
-     DRT::Node* fluidnode = fluidale->FluidField()->Discretization()->gNode(gid);
+    for (size_t i = 0; i < it->second.size(); ++i)
+    {
+      int gid = it->second[i];
+      DRT::Node* fluidnode = fluidale->FluidField()->Discretization()->gNode(gid);
 
-     if (fluidnode->Owner() != fluidale->AleField()->Discretization()->Comm().MyPID())
-       continue;
+      if (fluidnode->Owner() != fluidale->AleField()->Discretization()->Comm().MyPID()) continue;
 
-     double gpos[3] = {fluidnode->X()[0],fluidnode->X()[1],fluidnode->X()[2]};
-     double lpos[3] = {0.0, 0.0, 0.0};
-     if(aleele->Shape()==DRT::Element::quad4)
-       MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele,gpos,lpos);
-     else if(aleele->Shape()==DRT::Element::hex8)
-       MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele,gpos,lpos);
-     else
-       dserror("ERROR: element type not implemented!");
+      double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
+      double lpos[3] = {0.0, 0.0, 0.0};
+      if (aleele->Shape() == DRT::Element::quad4)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gpos, lpos);
+      else if (aleele->Shape() == DRT::Element::hex8)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gpos, lpos);
+      else
+        dserror("ERROR: element type not implemented!");
 
-     if(lpos[0]<-1.0-tol || lpos[1]<-1.0-tol || lpos[2]<-1.0-tol ||
-        lpos[0]> 1.0+tol || lpos[1]> 1.0+tol || lpos[2]> 1.0+tol)
-       continue;
+      if (lpos[0] < -1.0 - tol || lpos[1] < -1.0 - tol || lpos[2] < -1.0 - tol ||
+          lpos[0] > 1.0 + tol || lpos[1] > 1.0 + tol || lpos[2] > 1.0 + tol)
+        continue;
 
-     double dist = 1.0e12;
-     int id = -1;
-     for(size_t k = 0; k < fluidalenodeFSImap_[it->first].size() ; ++k)
-     {
-       int gidfsi = fluidalenodeFSImap_[it->first][k];
-       DRT::Node* fluidnodeFSI = fluidale->FluidField()->Discretization()->gNode(gidfsi);
+      double dist = 1.0e12;
+      int id = -1;
+      for (size_t k = 0; k < fluidalenodeFSImap_[it->first].size(); ++k)
+      {
+        int gidfsi = fluidalenodeFSImap_[it->first][k];
+        DRT::Node* fluidnodeFSI = fluidale->FluidField()->Discretization()->gNode(gidfsi);
 
-       double gposFSI[3] = {fluidnodeFSI->X()[0],fluidnodeFSI->X()[1],fluidnodeFSI->X()[2]};
-       double lposFSI[3] = {0.0, 0.0, 0.0};
-       if(aleele->Shape()==DRT::Element::quad4)
-         MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele,gposFSI,lposFSI);
-       else if(aleele->Shape()==DRT::Element::hex8)
-         MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele,gposFSI,lposFSI);
-       else
-         dserror("ERROR: element type not implemented!");
+        double gposFSI[3] = {fluidnodeFSI->X()[0], fluidnodeFSI->X()[1], fluidnodeFSI->X()[2]};
+        double lposFSI[3] = {0.0, 0.0, 0.0};
+        if (aleele->Shape() == DRT::Element::quad4)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gposFSI, lposFSI);
+        else if (aleele->Shape() == DRT::Element::hex8)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gposFSI, lposFSI);
+        else
+          dserror("ERROR: element type not implemented!");
 
-       if(lposFSI[0]<-1.0-tol || lposFSI[1]<-1.0-tol || lposFSI[2]<-1.0-tol ||
-          lposFSI[0]> 1.0+tol || lposFSI[1]> 1.0+tol || lposFSI[2]> 1.0+tol)
-         dserror("ERROR: wrong parameter space coordinates!");
+        if (lposFSI[0] < -1.0 - tol || lposFSI[1] < -1.0 - tol || lposFSI[2] < -1.0 - tol ||
+            lposFSI[0] > 1.0 + tol || lposFSI[1] > 1.0 + tol || lposFSI[2] > 1.0 + tol)
+          dserror("ERROR: wrong parameter space coordinates!");
 
-       // valc distance to fsi node
-       double vec0 = lposFSI[0]-lpos[0];
-       double vec1 = lposFSI[1]-lpos[1];
-       double vec2 = lposFSI[2]-lpos[2];
-       double actdist = sqrt(vec0*vec0 + vec1*vec1 + vec2*vec2);
+        // valc distance to fsi node
+        double vec0 = lposFSI[0] - lpos[0];
+        double vec1 = lposFSI[1] - lpos[1];
+        double vec2 = lposFSI[2] - lpos[2];
+        double actdist = sqrt(vec0 * vec0 + vec1 * vec1 + vec2 * vec2);
 
-       // check length
-       if(actdist<dist)
-       {
-         id = fluidnodeFSI->Id();
-         dist = actdist;
-       }
-     }// end loop
+        // check length
+        if (actdist < dist)
+        {
+          id = fluidnodeFSI->Id();
+          dist = actdist;
+        }
+      }  // end loop
 
-     //safety
-     if(id<0)
-       continue;
+      // safety
+      if (id < 0) continue;
 
-     double fac = 0.0;
+      double fac = 0.0;
 
-     if(aleele->Shape()==DRT::Element::quad4 or
-        aleele->Shape()==DRT::Element::hex8 )
-       fac = 1.0 - 0.5 * dist;
-     else
-       dserror("ERROR: element type not implemented!");
+      if (aleele->Shape() == DRT::Element::quad4 or aleele->Shape() == DRT::Element::hex8)
+        fac = 1.0 - 0.5 * dist;
+      else
+        dserror("ERROR: element type not implemented!");
 
-     // safety
-     if(dist>2.0)
-       fac = 0.0;
+      // safety
+      if (dist > 2.0) fac = 0.0;
 
-     DRT::Node* fluidnodeFSI = fluidale->FluidField()->Discretization()->gNode(id);
-     std::vector<int> temp   = fluidale->FluidField()->Discretization()->Dof(fluidnodeFSI);
-     std::vector<int> dofsFSI;
-     for (int idof=0; idof<dim_; idof++)
-       dofsFSI.push_back(temp[idof]);
+      DRT::Node* fluidnodeFSI = fluidale->FluidField()->Discretization()->gNode(id);
+      std::vector<int> temp = fluidale->FluidField()->Discretization()->Dof(fluidnodeFSI);
+      std::vector<int> dofsFSI;
+      for (int idof = 0; idof < dim_; idof++) dofsFSI.push_back(temp[idof]);
 
-     // extract local values of the global vectors
-     std::vector<double> FSIdisp(dofsFSI.size());
-     DRT::UTILS::ExtractMyValues(*DofColMapDummy,FSIdisp,dofsFSI);
+      // extract local values of the global vectors
+      std::vector<double> FSIdisp(dofsFSI.size());
+      DRT::UTILS::ExtractMyValues(*DofColMapDummy, FSIdisp, dofsFSI);
 
-     std::vector<int> temp2 = fluidale->FluidField()->Discretization()->Dof(fluidnode);
-     std::vector<int> dofs;
-     for (int idof=0; idof<dim_; idof++)
-       dofs.push_back(temp2[idof]);
+      std::vector<int> temp2 = fluidale->FluidField()->Discretization()->Dof(fluidnode);
+      std::vector<int> dofs;
+      for (int idof = 0; idof < dim_; idof++) dofs.push_back(temp2[idof]);
 
-     Epetra_SerialDenseVector gnode(dim_);
-     std::vector<int> lmowner(dim_);
-     for (int idof=0; idof<dim_; idof++)
-     {
-       gnode(idof) = fac * FSIdisp[idof];
-       lmowner[idof]=fluidnode->Owner();
-     }
+      Epetra_SerialDenseVector gnode(dim_);
+      std::vector<int> lmowner(dim_);
+      for (int idof = 0; idof < dim_; idof++)
+      {
+        gnode(idof) = fac * FSIdisp[idof];
+        lmowner[idof] = fluidnode->Owner();
+      }
 
-     LINALG::Assemble(*correction,gnode,dofs,lmowner);
-   } // end fluid volume node loop
-  } // end ale fsi element loop
+      LINALG::Assemble(*correction, gnode, dofs, lmowner);
+    }  // end fluid volume node loop
+  }    // end ale fsi element loop
 
   // do correction
-  disp_fluid->Update(1.0,*correction,1.0);
+  disp_fluid->Update(1.0, *correction, 1.0);
 
   // calc norm
   double norm = 0.0;
   correction->Norm2(&norm);
 
   // output
-  if(fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
-    std::cout<<"Norm of correction (parameter space): "<<norm<<std::endl;
+  if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
+    std::cout << "Norm of correction (parameter space): " << norm << std::endl;
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(
-    Teuchos::RCP< ADAPTER::FluidAle> fluidale,
-    Teuchos::RCP<Epetra_Vector> deltadisp,
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor>const& finterface)
+void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  Teuchos::RCP<Epetra_Vector>  correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(),true));
-  Teuchos::RCP<Epetra_Vector>  DofColMapDummy = Teuchos::rcp(new Epetra_Vector(*fluidale->FluidField()->Discretization()->DofColMap(),true));
-  LINALG::Export(*deltadisp,*DofColMapDummy);
+  Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
+  Teuchos::RCP<Epetra_Vector> DofColMapDummy =
+      Teuchos::rcp(new Epetra_Vector(*fluidale->FluidField()->Discretization()->DofColMap(), true));
+  LINALG::Export(*deltadisp, *DofColMapDummy);
 
-  std::map<int, LINALG::Matrix<9, 2> > CurrentDOPs = CalcBackgroundDops(
-      fluidale->FluidField()->Discretization());
+  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPs =
+      CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
-  Teuchos::RCP<std::set<int> > FSIaleeles=
-      DRT::UTILS::ConditionedElementMap(*fluidale->AleField()->Discretization(),"FSICoupling");
+  Teuchos::RCP<std::set<int>> FSIaleeles =
+      DRT::UTILS::ConditionedElementMap(*fluidale->AleField()->Discretization(), "FSICoupling");
 
   // evaluate search
   for (int i = 0; i < fluidale->AleField()->Discretization()->NumMyColElements(); ++i)
@@ -434,20 +406,19 @@ void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(
     int gid = fluidale->AleField()->Discretization()->ElementColMap()->GID(i);
     DRT::Element* aleele = fluidale->AleField()->Discretization()->gElement(gid);
 
-    if(FSIaleeles->find(aleele->Id()) == FSIaleeles->end())
-      continue;
+    if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
   }
 
   // do correction
-  disp_fluid->Update(1.0,*correction,1.0);
+  disp_fluid->Update(1.0, *correction, 1.0);
 
   // calc norm
   double norm = 0.0;
   correction->Norm2(&norm);
 
   // output
-  if(fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
-    std::cout<<"Norm of correction (physical space): "<<norm<<std::endl;
+  if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
+    std::cout << "Norm of correction (physical space): " << norm << std::endl;
 
   return;
 }
@@ -455,18 +426,17 @@ void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::VolCorrector::Setup(
-    const int dim,
-    Teuchos::RCP< ADAPTER::FluidAle> fluidale)
+void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale)
 {
-  if(fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
-    std::cout<<"******************FSI Volume Correction Setup***********************"<<std::endl;
+  if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
+    std::cout << "******************FSI Volume Correction Setup***********************"
+              << std::endl;
 
   dim_ = dim;
   InitDopNormals();
 
   // init current positions
-  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1>> currentpositions;
 
   for (int lid = 0; lid < fluidale->FluidField()->Discretization()->NumMyColElements(); ++lid)
   {
@@ -486,21 +456,21 @@ void FSI::VolCorrector::Setup(
     }
   }
 
-  //init of 3D search tree
-  searchTree_ = Teuchos::rcp(
-      new GEO::SearchTree(5));
+  // init of 3D search tree
+  searchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox = GEO::getXAABBofDis(*fluidale->FluidField()->Discretization(),
-      currentpositions);
-  searchTree_->initializeTree(rootBox, *fluidale->FluidField()->Discretization(), GEO::TreeType(GEO::OCTTREE));
+  const LINALG::Matrix<3, 2> rootBox =
+      GEO::getXAABBofDis(*fluidale->FluidField()->Discretization(), currentpositions);
+  searchTree_->initializeTree(
+      rootBox, *fluidale->FluidField()->Discretization(), GEO::TreeType(GEO::OCTTREE));
 
 
-  std::map<int, LINALG::Matrix<9, 2> > CurrentDOPs = CalcBackgroundDops(
-      fluidale->FluidField()->Discretization());
+  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPs =
+      CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
-  Teuchos::RCP<std::set<int> > FSIaleeles=
-      DRT::UTILS::ConditionedElementMap(*fluidale->AleField()->Discretization(),"FSICoupling");
+  Teuchos::RCP<std::set<int>> FSIaleeles =
+      DRT::UTILS::ConditionedElementMap(*fluidale->AleField()->Discretization(), "FSICoupling");
 
   // evaluate search
   for (int i = 0; i < fluidale->AleField()->Discretization()->NumMyColElements(); ++i)
@@ -509,20 +479,19 @@ void FSI::VolCorrector::Setup(
     int gid = fluidale->AleField()->Discretization()->ElementColMap()->GID(i);
     DRT::Element* aleele = fluidale->AleField()->Discretization()->gElement(gid);
 
-    if(FSIaleeles->find(aleele->Id()) == FSIaleeles->end())
-      continue;
+    if (FSIaleeles->find(aleele->Id()) == FSIaleeles->end()) continue;
 
     // get found elements from other discr.
-    fluidaleelemap_[gid] =
-        Search(*aleele, CurrentDOPs);
-  } // end node loop
+    fluidaleelemap_[gid] = Search(*aleele, CurrentDOPs);
+  }  // end node loop
 
-  Teuchos::RCP<Epetra_Map> FSIfluidnodes=
-      DRT::UTILS::ConditionNodeColMap(*fluidale->FluidField()->Discretization(),"FSICoupling");
+  Teuchos::RCP<Epetra_Map> FSIfluidnodes =
+      DRT::UTILS::ConditionNodeColMap(*fluidale->FluidField()->Discretization(), "FSICoupling");
 
   std::set<int> globalnodeids;
   // loop over ale eles
-  for (std::map<int,std::vector<int> >::iterator it=fluidaleelemap_.begin(); it!=fluidaleelemap_.end(); ++it)
+  for (std::map<int, std::vector<int>>::iterator it = fluidaleelemap_.begin();
+       it != fluidaleelemap_.end(); ++it)
   {
     DRT::Element* aleele = fluidale->AleField()->Discretization()->gElement(it->first);
 
@@ -530,50 +499,50 @@ void FSI::VolCorrector::Setup(
     std::vector<int> localnodeidsFSI;
 
     // loop over fluid eles
-   for(size_t i = 0; i < it->second.size() ; ++i)
-   {
-     int gid = it->second[i];
-     DRT::Element* fluidele = fluidale->FluidField()->Discretization()->gElement(gid);
+    for (size_t i = 0; i < it->second.size(); ++i)
+    {
+      int gid = it->second[i];
+      DRT::Element* fluidele = fluidale->FluidField()->Discretization()->gElement(gid);
 
-     for(int j=0; j<fluidele->NumNode(); ++j)
-     {
-       const int nodegid = fluidele->NodeIds()[j];
-       DRT::Node* fluidnode =  fluidele->Nodes()[j];
+      for (int j = 0; j < fluidele->NumNode(); ++j)
+      {
+        const int nodegid = fluidele->NodeIds()[j];
+        DRT::Node* fluidnode = fluidele->Nodes()[j];
 
-       double gpos[3] = {fluidnode->X()[0],fluidnode->X()[1],fluidnode->X()[2]};
-       double lpos[3] = {0.0, 0.0, 0.0};
-       if(aleele->Shape()==DRT::Element::quad4)
-         MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele,gpos,lpos);
-       else if(aleele->Shape()==DRT::Element::hex8)
-         MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele,gpos,lpos);
-       else
-         dserror("ERROR: element type not implemented!");
+        double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
+        double lpos[3] = {0.0, 0.0, 0.0};
+        if (aleele->Shape() == DRT::Element::quad4)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gpos, lpos);
+        else if (aleele->Shape() == DRT::Element::hex8)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gpos, lpos);
+        else
+          dserror("ERROR: element type not implemented!");
 
-       double tol = 1e-5;
-       if(lpos[0]<-1.0-tol || lpos[1]<-1.0-tol || lpos[2]<-1.0-tol ||
-          lpos[0]> 1.0+tol || lpos[1]> 1.0+tol || lpos[2]> 1.0+tol)
-         continue;
+        double tol = 1e-5;
+        if (lpos[0] < -1.0 - tol || lpos[1] < -1.0 - tol || lpos[2] < -1.0 - tol ||
+            lpos[0] > 1.0 + tol || lpos[1] > 1.0 + tol || lpos[2] > 1.0 + tol)
+          continue;
 
-       if(FSIfluidnodes->MyGID(nodegid))
-       {
-         localnodeidsFSI.push_back(nodegid);
-         continue;
-       }
-       if(globalnodeids.find(nodegid) != globalnodeids.end())
-         continue;
+        if (FSIfluidnodes->MyGID(nodegid))
+        {
+          localnodeidsFSI.push_back(nodegid);
+          continue;
+        }
+        if (globalnodeids.find(nodegid) != globalnodeids.end()) continue;
 
-       globalnodeids.insert(nodegid);
-       localnodeids.push_back(nodegid);
-     }
-   }
-   fluidalenodemap_[it->first]= localnodeids;
-   fluidalenodeFSImap_[it->first]= localnodeidsFSI;
+        globalnodeids.insert(nodegid);
+        localnodeids.push_back(nodegid);
+      }
+    }
+    fluidalenodemap_[it->first] = localnodeids;
+    fluidalenodeFSImap_[it->first] = localnodeidsFSI;
   }
 
-  std::cout<<"ALE elements found: "<<fluidaleelemap_.size()<<std::endl;
+  std::cout << "ALE elements found: " << fluidaleelemap_.size() << std::endl;
 
-  if(fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
-    std::cout<<"******************FSI Volume Correction Setup Done***********************"<<std::endl;
+  if (fluidale->AleField()->Discretization()->Comm().MyPID() == 0)
+    std::cout << "******************FSI Volume Correction Setup Done***********************"
+              << std::endl;
 
   return;
 }
@@ -583,40 +552,40 @@ void FSI::VolCorrector::Setup(
  *----------------------------------------------------------------------*/
 void FSI::VolCorrector::InitDopNormals()
 {
-  dopnormals_(0, 0) =  1.0;
-  dopnormals_(0, 1) =  0.0;
-  dopnormals_(0, 2) =  0.0;
+  dopnormals_(0, 0) = 1.0;
+  dopnormals_(0, 1) = 0.0;
+  dopnormals_(0, 2) = 0.0;
 
-  dopnormals_(1, 0) =  0.0;
-  dopnormals_(1, 1) =  1.0;
-  dopnormals_(1, 2) =  0.0;
+  dopnormals_(1, 0) = 0.0;
+  dopnormals_(1, 1) = 1.0;
+  dopnormals_(1, 2) = 0.0;
 
-  dopnormals_(2, 0) =  0.0;
-  dopnormals_(2, 1) =  0.0;
-  dopnormals_(2, 2) =  1.0;
+  dopnormals_(2, 0) = 0.0;
+  dopnormals_(2, 1) = 0.0;
+  dopnormals_(2, 2) = 1.0;
 
-  dopnormals_(3, 0) =  1.0;
-  dopnormals_(3, 1) =  1.0;
-  dopnormals_(3, 2) =  0.0;
+  dopnormals_(3, 0) = 1.0;
+  dopnormals_(3, 1) = 1.0;
+  dopnormals_(3, 2) = 0.0;
 
-  dopnormals_(4, 0) =  1.0;
-  dopnormals_(4, 1) =  0.0;
-  dopnormals_(4, 2) =  1.0;
+  dopnormals_(4, 0) = 1.0;
+  dopnormals_(4, 1) = 0.0;
+  dopnormals_(4, 2) = 1.0;
 
-  dopnormals_(5, 0) =  0.0;
-  dopnormals_(5, 1) =  1.0;
-  dopnormals_(5, 2) =  1.0;
+  dopnormals_(5, 0) = 0.0;
+  dopnormals_(5, 1) = 1.0;
+  dopnormals_(5, 2) = 1.0;
 
-  dopnormals_(6, 0) =  1.0;
-  dopnormals_(6, 1) =  0.0;
+  dopnormals_(6, 0) = 1.0;
+  dopnormals_(6, 1) = 0.0;
   dopnormals_(6, 2) = -1.0;
 
-  dopnormals_(7, 0) =  1.0;
+  dopnormals_(7, 0) = 1.0;
   dopnormals_(7, 1) = -1.0;
-  dopnormals_(7, 2) =  0.0;
+  dopnormals_(7, 2) = 0.0;
 
-  dopnormals_(8, 0) =  0.0;
-  dopnormals_(8, 1) =  1.0;
+  dopnormals_(8, 0) = 0.0;
+  dopnormals_(8, 1) = 1.0;
   dopnormals_(8, 2) = -1.0;
 
   return;
@@ -626,10 +595,10 @@ void FSI::VolCorrector::InitDopNormals()
 /*----------------------------------------------------------------------*
  |  Calculate Dops for background mesh                       farah 05/16|
  *----------------------------------------------------------------------*/
-std::map<int, LINALG::Matrix<9, 2> > FSI::VolCorrector::CalcBackgroundDops(
+std::map<int, LINALG::Matrix<9, 2>> FSI::VolCorrector::CalcBackgroundDops(
     Teuchos::RCP<DRT::Discretization> searchdis)
 {
-  std::map<int, LINALG::Matrix<9, 2> > currentKDOPs;
+  std::map<int, LINALG::Matrix<9, 2>> currentKDOPs;
 
   for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
   {
@@ -662,27 +631,22 @@ LINALG::Matrix<9, 2> FSI::VolCorrector::CalcDop(DRT::Element& ele)
     DRT::Node* node = ele.Nodes()[k];
 
     // get current node position
-    double pos[3] =
-    { 0.0, 0.0, 0.0 };
-    for (int j = 0; j < dim_; ++j)
-      pos[j] = node->X()[j];
+    double pos[3] = {0.0, 0.0, 0.0};
+    for (int j = 0; j < dim_; ++j) pos[j] = node->X()[j];
 
     // calculate slabs
     for (int j = 0; j < 9; j++)
     {
       //= ax+by+cz=d/sqrt(aa+bb+cc)
-      double num = dopnormals_(j, 0) * pos[0] + dopnormals_(j, 1) * pos[1]
-          + dopnormals_(j, 2) * pos[2];
-      double denom = sqrt(
-          (dopnormals_(j, 0) * dopnormals_(j, 0))
-              + (dopnormals_(j, 1) * dopnormals_(j, 1))
-              + (dopnormals_(j, 2) * dopnormals_(j, 2)));
+      double num =
+          dopnormals_(j, 0) * pos[0] + dopnormals_(j, 1) * pos[1] + dopnormals_(j, 2) * pos[2];
+      double denom =
+          sqrt((dopnormals_(j, 0) * dopnormals_(j, 0)) + (dopnormals_(j, 1) * dopnormals_(j, 1)) +
+               (dopnormals_(j, 2) * dopnormals_(j, 2)));
       double dcurrent = num / denom;
 
-      if (dcurrent > dop(j, 1))
-        dop(j, 1) = dcurrent;
-      if (dcurrent < dop(j, 0))
-        dop(j, 0) = dcurrent;
+      if (dcurrent > dop(j, 1)) dop(j, 1) = dcurrent;
+      if (dcurrent < dop(j, 0)) dop(j, 0) = dcurrent;
     }
   }
 
@@ -694,8 +658,7 @@ LINALG::Matrix<9, 2> FSI::VolCorrector::CalcDop(DRT::Element& ele)
  |  Perform searching procedure                              farah 05/16|
  *----------------------------------------------------------------------*/
 std::vector<int> FSI::VolCorrector::Search(
-    DRT::Element& ele,
-    std::map<int, LINALG::Matrix<9, 2> >& currentKDOPs)
+    DRT::Element& ele, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
   std::vector<int> gids;
@@ -709,16 +672,10 @@ std::vector<int> FSI::VolCorrector::Search(
   queryKDOP = CalcDop(ele);
 
   //**********************************************************
-  //search for near elements to the background node's coord
-  searchTree_->searchCollisions(currentKDOPs,queryKDOP,0,gid);
+  // search for near elements to the background node's coord
+  searchTree_->searchCollisions(currentKDOPs, queryKDOP, 0, gid);
 
-  for (std::set<int>::iterator iter = gid.begin(); iter != gid.end(); ++iter)
-    gids.push_back(*iter);
+  for (std::set<int>::iterator iter = gid.begin(); iter != gid.end(); ++iter) gids.push_back(*iter);
 
   return gids;
 }
-
-
-
-
-

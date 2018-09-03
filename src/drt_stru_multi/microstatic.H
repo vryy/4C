@@ -39,7 +39,7 @@ namespace LINALG
 {
   class Solver;
   class SparseMatrix;
-}
+}  // namespace LINALG
 
 namespace IO
 {
@@ -54,305 +54,289 @@ namespace IO
 */
 namespace STRUMULTI
 {
-
-/*!
-\brief Stop nested parallelism support by sending a message to the
-supporting procs
-
-*/
-void stop_np_multiscale();
-
-/*!
-\brief Quasi-static control for microstructural analysis
-in case of multi-scale problems
-
-Note that implementation currently only holds for imr-like generalized
-alpha time integration. Corresponding functions (e.g. UpdateNewTimeStep,
-but also calls to SurfaceStressManager!) need to be adapted accordingly
-if usage of other time integration schemes should be enabled.
-
-\author yoshihara (yoshihara@lnm.mw.tum.de)
-*/
-
-class MicroStatic
-{
-public:
-
   /*!
-  \brief Standard Constructor
+  \brief Stop nested parallelism support by sending a message to the
+  supporting procs
 
   */
-  MicroStatic(const int microdisnum, const double V0);
+  void stop_np_multiscale();
 
   /*!
-  \brief Destructor
+  \brief Quasi-static control for microstructural analysis
+  in case of multi-scale problems
 
+  Note that implementation currently only holds for imr-like generalized
+  alpha time integration. Corresponding functions (e.g. UpdateNewTimeStep,
+  but also calls to SurfaceStressManager!) need to be adapted accordingly
+  if usage of other time integration schemes should be enabled.
+
+  \author yoshihara (yoshihara@lnm.mw.tum.de)
   */
-  virtual ~MicroStatic(){};
 
-  /*!
-  \brief Read restart
-
-  */
-  void ReadRestart(int step,
-                   Teuchos::RCP<Epetra_Vector> dis,
-                   Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                   Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man,
-                   std::string name);
-
-  /*!
-  \brief Return time from parameter list
-
-  */
-  double TimeOld()
+  class MicroStatic
   {
-    return time_;
-  }
+   public:
+    /*!
+    \brief Standard Constructor
 
-  /*!
-  \brief Predictor step
+    */
+    MicroStatic(const int microdisnum, const double V0);
 
-  */
-  void Predictor(LINALG::Matrix<3,3>* defgrd);
+    /*!
+    \brief Destructor
 
-  /*!
-  \brief Predictor step
+    */
+    virtual ~MicroStatic(){};
 
-  */
-  void PredictConstDis(LINALG::Matrix<3,3>* defgrd);
+    /*!
+    \brief Read restart
 
-   /*!
-  \brief Predictor step
+    */
+    void ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha,
+        Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man, std::string name);
 
-  */
-  void PredictTangDis(LINALG::Matrix<3,3>* defgrd);
+    /*!
+    \brief Return time from parameter list
 
-  /*!
-  \brief Full Newton iteration
+    */
+    double TimeOld() { return time_; }
 
-  */
-  void FullNewton();
+    /*!
+    \brief Predictor step
 
-  /*!
-  \brief Calculate stresses and strains
+    */
+    void Predictor(LINALG::Matrix<3, 3>* defgrd);
 
-  */
-  void PrepareOutput();
+    /*!
+    \brief Predictor step
 
-  /*!
-  \brief Write output and (possibly) restart
+    */
+    void PredictConstDis(LINALG::Matrix<3, 3>* defgrd);
 
-  */
-  void Output(Teuchos::RCP<IO::DiscretizationWriter> output,
-              const double time,
-              const int istep,
-              const double dt);
+    /*!
+   \brief Predictor step
 
-  /*!
-  \brief Determine toggle vector identifying prescribed boundary dofs
+   */
+    void PredictTangDis(LINALG::Matrix<3, 3>* defgrd);
 
-  */
-  void DetermineToggle();
+    /*!
+    \brief Full Newton iteration
 
-  /*!
-  \brief Evaluate microscale boundary displacement according to
-  associated macroscale deformation gradient
+    */
+    void FullNewton();
 
-  */
-  void EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
+    /*!
+    \brief Calculate stresses and strains
 
-  /*!
-  \brief Set old state given from micromaterialgp
+    */
+    void PrepareOutput();
 
-  */
-  void SetState(Teuchos::RCP<Epetra_Vector> dis,
-                Teuchos::RCP<Epetra_Vector> disn,
-                Teuchos::RCP<UTILS::SurfStressManager> surfman,
-                Teuchos::RCP<std::vector<char> > stress,
-                Teuchos::RCP<std::vector<char> > strain,
-                Teuchos::RCP<std::vector<char> > plstrain,
-                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
-                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
-                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas,
-                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv,
-                Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda);
+    /*!
+    \brief Write output and (possibly) restart
 
-  /*!
-  \brief Set time and step
+    */
+    void Output(Teuchos::RCP<IO::DiscretizationWriter> output, const double time, const int istep,
+        const double dt);
 
-  */
-  void SetTime(const double time, const double timen, const double dt, const int step, const int stepn);
+    /*!
+    \brief Determine toggle vector identifying prescribed boundary dofs
 
-  /*!
-  \brief Clear all displacement states
+    */
+    void DetermineToggle();
 
-  */
-  void ClearState();
+    /*!
+    \brief Evaluate microscale boundary displacement according to
+    associated macroscale deformation gradient
 
-  /*!
-  \brief Set up everything for homogenization
-  (e.g. calculation of matrix D containing reference boundary coordinates)
+    */
+    void EvaluateMicroBC(LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
 
-  */
-  void SetUpHomogenization();
+    /*!
+    \brief Set old state given from micromaterialgp
 
-  /*!
-  \brief Perform homogenization, i.e. calculate second Piola-Kirchhoff
-  stresses and constitutive tensor by averaging over RVE
+    */
+    void SetState(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> disn,
+        Teuchos::RCP<UTILS::SurfStressManager> surfman, Teuchos::RCP<std::vector<char>> stress,
+        Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda);
 
-  */
-  void StaticHomogenization(LINALG::Matrix<6,1>* stress,
-                            LINALG::Matrix<6,6>* cmat,
-                            LINALG::Matrix<3,3>* defgrd,
-                            const bool mod_newton,
-                            bool& build_stiff);
+    /*!
+    \brief Set time and step
 
-  /*!
-  \brief Convert constitutive tensor relating first Piola-Kirchhoff
-  stresses and deformation gradient to tensor relating second
-  Piola-Kirchhoff stresses and Green-Lagrange strains
+    */
+    void SetTime(
+        const double time, const double timen, const double dt, const int step, const int stepn);
 
-  For details cf.
+    /*!
+    \brief Clear all displacement states
 
-  Marsden and Hughes, Mathematical Foundations of Elasticity,
-  Dover, pg. 215
-  */
-  void ConvertMat(const Epetra_MultiVector& cmatpf,
-                  const LINALG::Matrix<3,3>&  inv_defgrd,
-                  const LINALG::Matrix<6,1>& S,
-                  LINALG::Matrix<6,6>& cmat);
+    */
+    void ClearState();
 
+    /*!
+    \brief Set up everything for homogenization
+    (e.g. calculation of matrix D containing reference boundary coordinates)
 
-  /*!
-  \brief Check for Newton convergence
-  */
+    */
+    void SetUpHomogenization();
 
-  bool Converged();
+    /*!
+    \brief Perform homogenization, i.e. calculate second Piola-Kirchhoff
+    stresses and constitutive tensor by averaging over RVE
 
-  /*!
-  \brief Calculate reference norms for relative convergence checks
-
-  */
-  void CalcRefNorms();
+    */
+    void StaticHomogenization(LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        LINALG::Matrix<3, 3>* defgrd, const bool mod_newton, bool& build_stiff);
 
-  /*!
-  \brief Output of Newton details
+    /*!
+    \brief Convert constitutive tensor relating first Piola-Kirchhoff
+    stresses and deformation gradient to tensor relating second
+    Piola-Kirchhoff stresses and Green-Lagrange strains
 
-  Note that this is currently disabled for the sake of clearness
-  */
-  void PrintNewton(bool print_unconv, Epetra_Time timer);
+    For details cf.
 
-  /*!
-  \brief Output of predictor details
+    Marsden and Hughes, Mathematical Foundations of Elasticity,
+    Dover, pg. 215
+    */
+    void ConvertMat(const Epetra_MultiVector& cmatpf, const LINALG::Matrix<3, 3>& inv_defgrd,
+        const LINALG::Matrix<6, 1>& S, LINALG::Matrix<6, 6>& cmat);
+
+
+    /*!
+    \brief Check for Newton convergence
+    */
+
+    bool Converged();
+
+    /*!
+    \brief Calculate reference norms for relative convergence checks
+
+    */
+    void CalcRefNorms();
+
+    /*!
+    \brief Output of Newton details
+
+    Note that this is currently disabled for the sake of clearness
+    */
+    void PrintNewton(bool print_unconv, Epetra_Time timer);
+
+    /*!
+    \brief Output of predictor details
+
+    Note that this is currently disabled for the sake of clearness
+    */
+    void PrintPredictor();
+
+    /*!
+    \brief Set EAS internal data if necessary
+
+    */
+    void SetEASData();
 
-  Note that this is currently disabled for the sake of clearness
-  */
-  void PrintPredictor();
-
-  /*!
-  \brief Set EAS internal data if necessary
-
-  */
-  void SetEASData();
+    double Density() const { return density_; };
 
-  double Density() const { return density_; };
+   protected:
+    // don't want = operator and cctor
+    MicroStatic operator=(const MicroStatic& old);
+    MicroStatic(const MicroStatic& old);
 
-protected:
+    Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
 
-  // don't want = operator and cctor
-  MicroStatic operator = (const MicroStatic& old);
-  MicroStatic(const MicroStatic& old);
+    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<LINALG::Solver> solver_;
+    int myrank_;
+    int maxentriesperrow_;
 
-  Teuchos::RCP<UTILS::SurfStressManager>   surf_stress_man_;
+    double dt_;
+    double time_;
+    double timen_;
 
-  Teuchos::RCP<DRT::Discretization>      discret_;
-  Teuchos::RCP<LINALG::Solver>           solver_;
-  int                           myrank_;
-  int                           maxentriesperrow_;
+    INPAR::STR::PredEnum pred_;  //!< predictor
 
-  double                        dt_;
-  double                        time_;
-  double                        timen_;
+    bool isadapttol_;
+    double adaptolbetter_;
 
-  INPAR::STR::PredEnum          pred_;  //!< predictor
+    int maxiter_;
+    int numiter_;
+    int numstep_;
+    int step_;
+    int stepn_;
 
-  bool                          isadapttol_;
-  double                        adaptolbetter_;
+    bool iodisp_;
+    int resevrydisp_;
+    INPAR::STR::StressType iostress_;
+    int resevrystrs_;
+    INPAR::STR::StrainType iostrain_;
+    INPAR::STR::StrainType ioplstrain_;
+    bool iosurfactant_;
+    int restart_;
+    int restartevry_;
+    int printscreen_;
 
-  int                           maxiter_;
-  int                           numiter_;
-  int                           numstep_;
-  int                           step_;
-  int                           stepn_;
+    INPAR::STR::VectorNorm iternorm_;
+    double tolfres_;
+    double toldisi_;
 
-  bool                          iodisp_;
-  int                           resevrydisp_;
-  INPAR::STR::StressType        iostress_;
-  int                           resevrystrs_;
-  INPAR::STR::StrainType        iostrain_;
-  INPAR::STR::StrainType        ioplstrain_;
-  bool                          iosurfactant_;
-  int                           restart_;
-  int                           restartevry_;
-  int                           printscreen_;
 
-  INPAR::STR::VectorNorm        iternorm_;
-  double                        tolfres_;
-  double                        toldisi_;
+    enum INPAR::STR::BinaryOp combdisifres_;  //!< binary operator to
+                                              // combine displacement and forces
+    enum INPAR::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
+    enum INPAR::STR::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    double normcharforce_;
+    double normfres_;
+    double normchardis_;
+    double normdisi_;
 
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_dirich_;
 
-  enum INPAR::STR::BinaryOp     combdisifres_; //!< binary operator to
-					     //combine displacement and forces
-  enum INPAR::STR::ConvNorm     normtypedisi_; //!< convergence check for residual displacements
-  enum INPAR::STR::ConvNorm     normtypefres_; //!< convergence check for residual forces
-  double                        normcharforce_;
-  double                        normfres_;
-  double                        normchardis_;
-  double                        normdisi_;
+    Teuchos::RCP<Epetra_Vector> dirichtoggle_;
+    Teuchos::RCP<Epetra_Vector> invtoggle_;
+    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Epetra_Vector>
+        dis_;  //!< displacements at t_{n} (needed for convergence check only)
+    Teuchos::RCP<Epetra_Vector> disn_;  //!< displacements at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> disi_;
+    Teuchos::RCP<Epetra_Vector> fintn_;
+    Teuchos::RCP<Epetra_Vector> fresn_;
+    Teuchos::RCP<Epetra_Vector> freactn_;
 
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_;
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_dirich_;
+    Teuchos::RCP<std::vector<char>> stress_;
+    Teuchos::RCP<std::vector<char>> strain_;
+    Teuchos::RCP<std::vector<char>> plstrain_;
 
-  Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
-  Teuchos::RCP<Epetra_Vector>    invtoggle_;
-  Teuchos::RCP<Epetra_Vector>    zeros_;
-  Teuchos::RCP<Epetra_Vector>    dis_;  //!< displacements at t_{n} (needed for convergence check only)
-  Teuchos::RCP<Epetra_Vector>    disn_; //!< displacements at t_{n+1}
-  Teuchos::RCP<Epetra_Vector>    disi_;
-  Teuchos::RCP<Epetra_Vector>    fintn_;
-  Teuchos::RCP<Epetra_Vector>    fresn_;
-  Teuchos::RCP<Epetra_Vector>    freactn_;
+    // EAS history data
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda_;
 
-  Teuchos::RCP<std::vector<char> > stress_;
-  Teuchos::RCP<std::vector<char> > strain_;
-  Teuchos::RCP<std::vector<char> > plstrain_;
+    Teuchos::RCP<Epetra_MultiVector> D_;    //!< D Matrix following Miehe et al., 2002
+    Teuchos::RCP<Epetra_MultiVector> rhs_;  //!< exported transpose of D (pdof -> dofrowmap)
 
-  //EAS history data
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv_;
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda_;
+    int microdisnum_;  //!< number of RVE
 
-  Teuchos::RCP<Epetra_MultiVector> D_;  //!< D Matrix following Miehe et al., 2002
-  Teuchos::RCP<Epetra_MultiVector> rhs_; //!< exported transpose of D (pdof -> dofrowmap)
+    double V0_;       //!< initial volume of RVE
+    double density_;  //!< initial density of RVE
 
-  int                   microdisnum_;  //!< number of RVE
+    int ndof_;                        //!< number of dofs overall
+    int np_;                          //!< number of boundary dofs
+    Teuchos::RCP<Epetra_Vector> Xp_;  //!< vector containing material
+                                      //!< coordinates of boundary nodes
+    Teuchos::RCP<Epetra_Map> pdof_;   //!< prescribed dofs
+    Teuchos::RCP<Epetra_Map> fdof_;   //!< free dofs
+    Teuchos::RCP<Epetra_Import> importp_;
+    Teuchos::RCP<Epetra_Import> importf_;
+  };
 
-  double                         V0_;  //!< initial volume of RVE
-  double                    density_;  //!< initial density of RVE
 
-  int                          ndof_;  //!< number of dofs overall
-  int                            np_;  //!< number of boundary dofs
-  Teuchos::RCP<Epetra_Vector>     Xp_;  //!< vector containing material
-                                       //!< coordinates of boundary nodes
-  Teuchos::RCP<Epetra_Map>      pdof_;  //!< prescribed dofs
-  Teuchos::RCP<Epetra_Map>      fdof_;  //!< free dofs
-  Teuchos::RCP<Epetra_Import> importp_;
-  Teuchos::RCP<Epetra_Import> importf_;
-};
 
-
-
-} // namespace STRUMULTI
+}  // namespace STRUMULTI
 #endif

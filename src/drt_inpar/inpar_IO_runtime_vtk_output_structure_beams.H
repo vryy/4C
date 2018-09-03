@@ -23,16 +23,15 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-namespace IO_RUNTIME_VTK
-{
-namespace BEAMS
-{
+  namespace IO_RUNTIME_VTK
+  {
+    namespace BEAMS
+    {
+      /// set the valid parameters related to writing of VTK output at runtime
+      void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  /// set the valid parameters related to writing of VTK output at runtime
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
-
-}
-}
-}
+    }  // namespace BEAMS
+  }    // namespace IO_RUNTIME_VTK
+}  // namespace INPAR
 
 #endif

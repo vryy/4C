@@ -17,25 +17,25 @@
 
 #include <string>
 
-namespace STR {
-
+namespace STR
+{
   //! Supported types of energy contributions
   enum EnergyType : int
   {
-    internal_energy,                     ///< internal, i.e. strain energy
-    kinetic_energy,                      ///< kinetic energy
-    beam_contact_penalty_potential,      ///< penalty potential for beam-to-? contact
-    beam_interaction_potential,          ///< interaction potential for beam-to-? molecular interactions
-    beam_to_beam_link_internal_energy,   ///< internal energy of beam to beam links
-    beam_to_beam_link_kinetic_energy,    ///< kinetic energy of beam to beam links
-    beam_to_sphere_link_internal_energy, ///< internal energy of beam to sphere links
-    beam_to_sphere_link_kinetic_energy   ///< kinetic energy of beam to shpere links
+    internal_energy,                 ///< internal, i.e. strain energy
+    kinetic_energy,                  ///< kinetic energy
+    beam_contact_penalty_potential,  ///< penalty potential for beam-to-? contact
+    beam_interaction_potential,      ///< interaction potential for beam-to-? molecular interactions
+    beam_to_beam_link_internal_energy,    ///< internal energy of beam to beam links
+    beam_to_beam_link_kinetic_energy,     ///< kinetic energy of beam to beam links
+    beam_to_sphere_link_internal_energy,  ///< internal energy of beam to sphere links
+    beam_to_sphere_link_kinetic_energy    ///< kinetic energy of beam to shpere links
   };
 
   //! Map energy type to std::string
-  inline std::string EnergyType2String( const enum EnergyType type )
+  inline std::string EnergyType2String(const enum EnergyType type)
   {
-    switch ( type )
+    switch (type)
     {
       case internal_energy:
         return "internal_energy";
@@ -59,6 +59,6 @@ namespace STR {
     exit(EXIT_FAILURE);
   };
 
-}
+}  // namespace STR
 
 #endif

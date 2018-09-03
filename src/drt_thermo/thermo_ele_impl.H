@@ -32,418 +32,404 @@
  *----------------------------------------------------------------------*/
 namespace DRT
 {
-namespace ELEMENTS
-{
-
-  //! Interface base class for TemperImpl
-  //!
-  //!  This class exists to provide a common interface for all template
-  //!  versions of TemperImpl. The only function
-  //!  this class actually defines is Impl, which returns a pointer to
-  //!  the appropriate version of TemperImpl.
-  class TemperImplInterface : SingletonDestruction
+  namespace ELEMENTS
   {
-
-  public:
-    //! Empty constructor
-    TemperImplInterface() {}
-    //! Empty destructor
-    virtual ~TemperImplInterface() {}
-
-    //! Evaluate the element
-    //!  This class does not provide a definition for this function, it
-    //!  must be defined in TemperImpl.
-    virtual int Evaluate(
-      DRT::Element* ele,  //!< current element
-      Teuchos::ParameterList& params,  //!< parameter list, containing e.g., dt
-      DRT::Discretization& discretization,  //!< current discretisation
-      DRT::Element::LocationArray& la,  //!< location array
-      Epetra_SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
-      Epetra_SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
-      Epetra_SerialDenseVector& elevec1_epetra,  //!< internal force, view on heat flux in x-direction
-      Epetra_SerialDenseVector& elevec2_epetra,  //!< external force, view on heat flux in y-direction
-      Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
-      ) = 0;
-
-    //! Evaluate the element
+    //! Interface base class for TemperImpl
     //!
-    //!  This class does not provide a definition for this function, it
-    //!  must be defined in TemperImpl.
-    virtual int EvaluateNeumann(
-      DRT::Element* ele,  //!< current element
-      Teuchos::ParameterList& params,  //!< parameter list
-      DRT::Discretization&  discretization,  //!< current discretisation
-      std::vector<int>& lm,  //!< location vector, EvalNeumann is called only on own discretisation
-      Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
-      Epetra_SerialDenseMatrix* elemat1_epetra  //!< matrix is not needed
-      ) = 0;
+    //!  This class exists to provide a common interface for all template
+    //!  versions of TemperImpl. The only function
+    //!  this class actually defines is Impl, which returns a pointer to
+    //!  the appropriate version of TemperImpl.
+    class TemperImplInterface : SingletonDestruction
+    {
+     public:
+      //! Empty constructor
+      TemperImplInterface() {}
+      //! Empty destructor
+      virtual ~TemperImplInterface() {}
 
-    //! Internal implementation class for thermo elements
-    static TemperImplInterface* Impl(DRT::Element* ele);
+      //! Evaluate the element
+      //!  This class does not provide a definition for this function, it
+      //!  must be defined in TemperImpl.
+      virtual int Evaluate(DRT::Element* ele,        //!< current element
+          Teuchos::ParameterList& params,            //!< parameter list, containing e.g., dt
+          DRT::Discretization& discretization,       //!< current discretisation
+          DRT::Element::LocationArray& la,           //!< location array
+          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
+          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
+          Epetra_SerialDenseVector&
+              elevec1_epetra,  //!< internal force, view on heat flux in x-direction
+          Epetra_SerialDenseVector&
+              elevec2_epetra,  //!< external force, view on heat flux in y-direction
+          Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
+          ) = 0;
 
-  };  // class TemperImplInterface
+      //! Evaluate the element
+      //!
+      //!  This class does not provide a definition for this function, it
+      //!  must be defined in TemperImpl.
+      virtual int EvaluateNeumann(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,             //!< parameter list
+          DRT::Discretization& discretization,        //!< current discretisation
+          std::vector<int>&
+              lm,  //!< location vector, EvalNeumann is called only on own discretisation
+          Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
+          Epetra_SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
+          ) = 0;
+
+      //! Internal implementation class for thermo elements
+      static TemperImplInterface* Impl(DRT::Element* ele);
+
+    };  // class TemperImplInterface
 
 
-  //! Internal Thermo element implementation
-  //!
-  //!  This internal class keeps all the working arrays needed to
-  //!  calculate the thermo element. Additionally the method Sysmat()
-  //!  provides a clean and fast element implementation.
-  //!
-  //!  <h3>Purpose</h3>
-  //!
-  //!  The idea is to separate the element maintenance (class Thermo)
-  //!  from the mathematical contents (this class). Of course there are
-  //!  different implementations of the Thermo element, this is just one
-  //!  such implementation.
-  //!
-  //!  The Thermo element will allocate exactly one object of this class
-  //!  for all thermo elements with the same number of nodes in the mesh.
-  //!  This allows us to use exactly matching working arrays (and keep them
-  //!  around.)
-  //!
-  //!  The code is meant to be as clean as possible. This is the only way
-  //!  to keep it fast. The number of working arrays has to be reduced to
-  //!  a minimum so that the element fits into the cache. (There might be
-  //!  room for improvements.)
-  //!
-  //!  <h3>History</h3>
-  //!
-  //!  \author dano
-  //!  \date 09/09
-  //!
-  template<DRT::Element::DiscretizationType distype>
-  class TemperImpl: public TemperImplInterface
-  {
-  public:
+    //! Internal Thermo element implementation
+    //!
+    //!  This internal class keeps all the working arrays needed to
+    //!  calculate the thermo element. Additionally the method Sysmat()
+    //!  provides a clean and fast element implementation.
+    //!
+    //!  <h3>Purpose</h3>
+    //!
+    //!  The idea is to separate the element maintenance (class Thermo)
+    //!  from the mathematical contents (this class). Of course there are
+    //!  different implementations of the Thermo element, this is just one
+    //!  such implementation.
+    //!
+    //!  The Thermo element will allocate exactly one object of this class
+    //!  for all thermo elements with the same number of nodes in the mesh.
+    //!  This allows us to use exactly matching working arrays (and keep them
+    //!  around.)
+    //!
+    //!  The code is meant to be as clean as possible. This is the only way
+    //!  to keep it fast. The number of working arrays has to be reduced to
+    //!  a minimum so that the element fits into the cache. (There might be
+    //!  room for improvements.)
+    //!
+    //!  <h3>History</h3>
+    //!
+    //!  \author dano
+    //!  \date 09/09
+    //!
+    template <DRT::Element::DiscretizationType distype>
+    class TemperImpl : public TemperImplInterface
+    {
+     public:
+      //! Constructor
+      TemperImpl();
 
-    //! Constructor
-    TemperImpl();
+      //! Singleton access method
+      static TemperImpl<distype>* Instance(bool create = true);
 
-    //! Singleton access method
-    static TemperImpl<distype> * Instance(bool create=true);
+      //! called upon destruction
+      virtual void Done();
 
-    //! called upon destruction
-    virtual void Done();
+      //! number of nodes
+      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-    //! number of nodes
-    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+      //! number of space dimensions
+      static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-    //! number of space dimensions
-    static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      //! number of dof per node
+      static const int numdofpernode_ = 1;
 
-    //! number of dof per node
-    static const int numdofpernode_ = 1;
+      //! number of Gauss points
+      static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
-    //! number of Gauss points
-    static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
-
-    // new method for volume coupling
-    //! Evaluate for multiple dofsets
-    virtual int Evaluate(
-      DRT::Element* ele,  //!< current element
-      Teuchos::ParameterList& params,  //!< parameter list, containing e.g., dt
-      DRT::Discretization& discretization,  //!< current discretisation
-      DRT::Element::LocationArray& la,  //!< location array
-      Epetra_SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
-      Epetra_SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
-      Epetra_SerialDenseVector& elevec1_epetra,  //!< internal force, view on heat flux in x-direction
-      Epetra_SerialDenseVector& elevec2_epetra,  //!< external force, view on heat flux in y-direction
-      Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
+      // new method for volume coupling
+      //! Evaluate for multiple dofsets
+      virtual int Evaluate(DRT::Element* ele,        //!< current element
+          Teuchos::ParameterList& params,            //!< parameter list, containing e.g., dt
+          DRT::Discretization& discretization,       //!< current discretisation
+          DRT::Element::LocationArray& la,           //!< location array
+          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
+          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
+          Epetra_SerialDenseVector&
+              elevec1_epetra,  //!< internal force, view on heat flux in x-direction
+          Epetra_SerialDenseVector&
+              elevec2_epetra,  //!< external force, view on heat flux in y-direction
+          Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
       );
 
-    //! Evaluate the element
-    virtual int EvaluateNeumann(
-      DRT::Element* ele,  //!< current element
-      Teuchos::ParameterList& params,  //!< parameter list
-      DRT::Discretization&  discretization,  //!< current discretisation
-      std::vector<int>& lm,  //!< location vector, EvalNeumann is called only on own discretisation
-      Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
-      Epetra_SerialDenseMatrix* elemat1_epetra  //!< matrix is not needed
+      //! Evaluate the element
+      virtual int EvaluateNeumann(DRT::Element* ele,  //!< current element
+          Teuchos::ParameterList& params,             //!< parameter list
+          DRT::Discretization& discretization,        //!< current discretisation
+          std::vector<int>&
+              lm,  //!< location vector, EvalNeumann is called only on own discretisation
+          Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
+          Epetra_SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
       );
 
-  private:
+     private:
+      //! @name general thermal functions
 
-    //! @name general thermal functions
-
-    //! Calculate element vectors (internal/external) and a few matrices
-    void CalculateFintCondCapa(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      const double& time,  //!< current time
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  //!< capacity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      LINALG::Matrix<nen_*numdofpernode_,1>* efext,  //!< external force
-      LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
-      LINALG::Matrix<nquad_,nsd_>* etempgrad  //!< temperature gradients at Gauss points
+      //! Calculate element vectors (internal/external) and a few matrices
+      void CalculateFintCondCapa(DRT::Element* ele,  //!< the element whose matrix is calculated
+          const double& time,                        //!< current time
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              econd,  //!< conductivity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      //!< internal force
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,                      //!< external force
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,  //!< heat fluxes at Gauss points
+          LINALG::Matrix<nquad_, nsd_>* etempgrad   //!< temperature gradients at Gauss points
       );
 
-    //! get the body force
-    virtual void Radiation(
-      DRT::Element* ele,  //!< current element we are dealing with
-      const double time  //!< current times
+      //! get the body force
+      virtual void Radiation(DRT::Element* ele,  //!< current element we are dealing with
+          const double time                      //!< current times
       );
 
-    //! determine heat flux and conductivity tensor
-    //! based on material law
-    virtual void Materialize(
-      const DRT::Element* ele  //!< current element
+      //! determine heat flux and conductivity tensor
+      //! based on material law
+      virtual void Materialize(const DRT::Element* ele  //!< current element
       );
 
-    //! evaluate shape functions and their derivatives at current integration point
-    virtual void EvalShapeFuncAndDerivsAtIntPoint(
-      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
-      const int iquad,  //!< id of current Gauss point
-      const int eleid  //!< the element id
+      //! evaluate shape functions and their derivatives at current integration point
+      virtual void EvalShapeFuncAndDerivsAtIntPoint(
+          const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+          const int iquad,                                         //!< id of current Gauss point
+          const int eleid                                          //!< the element id
       );
 
-    //! prepare the evaluation of NURBS shape functions
-    virtual void PrepareNurbsEval(
-        DRT::Element* ele,                   //!< the element whose matrix is calculated
-        DRT::Discretization& discretization  //!< current discretisation
+      //! prepare the evaluation of NURBS shape functions
+      virtual void PrepareNurbsEval(DRT::Element* ele,  //!< the element whose matrix is calculated
+          DRT::Discretization& discretization           //!< current discretisation
       );
 
-    //! integral of shape functions over the element
-    void IntegrateShapeFunctions(
-      const DRT::Element* ele,  //!< current element
-      Epetra_SerialDenseVector& elevec1,  //!< result vector (to be assembled)
-      const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
+      //! integral of shape functions over the element
+      void IntegrateShapeFunctions(const DRT::Element* ele,  //!< current element
+          Epetra_SerialDenseVector& elevec1,                 //!< result vector (to be assembled)
+          const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
       );
 
-    //! extrapolate from Gauss points to nodes, needed for postprocessing
-    void ExtrapolateFromGaussPointsToNodes(
-      DRT::Element* ele,  //!< the actual element
-      const LINALG::Matrix<nquad_,nsd_>& gpheatflux,  //!< heat flux at each Gauss Point
-      LINALG::Matrix<nen_*numdofpernode_,1>& efluxx,  //!< element heat flux in x-direction
-      LINALG::Matrix<nen_*numdofpernode_,1>& efluxy,  //!< element heat flux in y-direction
-      LINALG::Matrix<nen_*numdofpernode_,1>& efluxz  //!< element heat flux in z-direction
+      //! extrapolate from Gauss points to nodes, needed for postprocessing
+      void ExtrapolateFromGaussPointsToNodes(DRT::Element* ele,  //!< the actual element
+          const LINALG::Matrix<nquad_, nsd_>& gpheatflux,        //!< heat flux at each Gauss Point
+          LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxx,  //!< element heat flux in x-direction
+          LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxy,  //!< element heat flux in y-direction
+          LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxz   //!< element heat flux in z-direction
       );
 
-    //! calculate lumped capacity matrix in case of explicit time integration
-    void CalculateLumpMatrix(LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa);
+      //! calculate lumped capacity matrix in case of explicit time integration
+      void CalculateLumpMatrix(LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa);
 
-    //! calculate characteristic element length
-    double CalculateCharEleLength();
+      //! calculate characteristic element length
+      double CalculateCharEleLength();
 
-    /// Evaluate element ERROR
-    /*!
-        general function to compute the error (analytical solution from input file)
-     */
-    virtual void ComputeError(
-        DRT::Element*                          ele,      //!< current element whose terms are calculated
-        LINALG::Matrix<nen_*numdofpernode_,1>& evector,  //!< element vectorr
-        Teuchos::ParameterList&                params    //!< parameter list, containing e.g., dt,theta
-        );
-    //@}
+      /// Evaluate element ERROR
+      /*!
+          general function to compute the error (analytical solution from input file)
+       */
+      virtual void ComputeError(DRT::Element* ele,  //!< current element whose terms are calculated
+          LINALG::Matrix<nen_ * numdofpernode_, 1>& evector,  //!< element vectorr
+          Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
+      );
+      //@}
 
-    //! @name geometrically linear TSI
+      //! @name geometrically linear TSI
 
-    //! Calculate element vectors (internal/external) and a few matrices
-    //! considering current displacement solution
-    void CalculateCouplFintCond(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      const double& time,  //!< current time
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      LINALG::Matrix<nen_*numdofpernode_,1>* efext,  //!< external force
-      LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
-      LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
-      Teuchos::ParameterList& params
+      //! Calculate element vectors (internal/external) and a few matrices
+      //! considering current displacement solution
+      void CalculateCouplFintCond(DRT::Element* ele,  //!< the element whose matrix is calculated
+          const double& time,                         //!< current time
+          std::vector<double>& disp,                  //!< current displacements
+          std::vector<double>& vel,                   //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              econd,                                        //!< conductivity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,  //!< external force
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
+          LINALG::Matrix<nquad_, nsd_>* etempgrad,  //!< temperature gradients at Gauss points
+          Teuchos::ParameterList& params);
+
+      //! calculate thermal-mechanical system matrix term needed in monolithic TSI
+      void CalculateCouplCond(DRT::Element* ele,  //!< the element whose matrix is calculated
+          std::vector<double>& disp,              //!< current displacements
+          std::vector<double>& vel,               //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
+              etangcoupl,  //!< k_Tu matrix
+          Teuchos::ParameterList& params);
+
+      //! build linear B-operator
+      void CalculateBoplin(
+          LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,  //!< linear B-operator
+          LINALG::Matrix<nsd_, nen_>* N_XYZ                         //!< gradient-operator
       );
 
-    //! calculate thermal-mechanical system matrix term needed in monolithic TSI
-    void CalculateCouplCond(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  //!< k_Tu matrix
-      Teuchos::ParameterList& params
+      //! get corresponding structural material
+      Teuchos::RCP<MAT::Material> GetSTRMaterial(
+          DRT::Element* ele  //!< the element whose matrix is calculated
       );
 
-    //! build linear B-operator
-    void CalculateBoplin(
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,  //!< linear B-operator
-      LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
+      //! calculate reactive term
+      void CalculateReactiveTerm(
+          LINALG::Matrix<6, 1>* ctemp,     //!< temperature-dependent material tangent
+          LINALG::Matrix<6, 1>* strainvel  //!< strain rate
       );
 
-    //! get corresponding structural material
-    Teuchos::RCP<MAT::Material> GetSTRMaterial(
-      DRT::Element* ele  //!< the element whose matrix is calculated
+      //@}
+
+      //! @name linear, small strain thermoplasticity solved with TSI
+
+      //! calculate internal dissipation arising when a thermo-elasto-plastic
+      //! material is used
+      //! Clausius-Duhem inequality is no longer = 0, but > 0:
+      //! mechanical energy dissipates as heat
+      void CalculateCouplDissipation(DRT::Element* ele,  //!< the element whose matrix is calculated
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
+          Teuchos::ParameterList& params);
+
+      //! calculate terms of dissipation for thermo-mechanical
+      //! system matrix k_Td used in case of plastic material
+      void CalculateCouplDissipationCond(
+          DRT::Element* ele,  // the element whose matrix is calculated
+          LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
+          Teuchos::ParameterList& params);
+
+      //@}
+
+      //! @name geometrically nonlinear TSI analysis
+
+      //! calculate element vectors (internal/external) and a few matrices
+      //! considering current displacement solution
+      //! no routine CalculateNlnFintCondCapa(): only capacity matrix is independent
+      //! of the displacments
+      //! --> all terms are coupled to the displacements/velocities
+      void CalculateCouplNlnFintCondCapa(
+          DRT::Element* ele,          //!< the element whose matrix is calculated
+          const double& time,         //!< current time
+          std::vector<double>& disp,  //!< current displacements
+          std::vector<double>& vel,   //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              econd,  //!< conductivity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      //!< internal force
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,    //!< heat fluxes at Gauss points
+          LINALG::Matrix<nquad_, nsd_>* etempgrad,    //!< temperature gradients at Gauss points
+          const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
+          const INPAR::THR::TempGradType iotempgrad,  // tempgrad output option
+          Teuchos::ParameterList& params);
+
+      //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
+      void CalculateCouplNlnCond(DRT::Element* ele,  //!< current element whose terms are calculated
+          std::vector<double>& disp,                 //!< current displacements
+          std::vector<double>& vel,                  //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
+              etangcoupl,                 //!< k_Tu matrix
+          Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
       );
 
-    //! calculate reactive term
-    void CalculateReactiveTerm(
-      LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
-      LINALG::Matrix<6,1>* strainvel  //!< strain rate
+      //! build nonlinear B-operator
+      void CalculateBop(
+          LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,  //!< nonlinear B-operator
+          LINALG::Matrix<nsd_, nsd_>* defgrd,                    //!< deformation gradient
+          LINALG::Matrix<nsd_, nen_>* N_XYZ                      //!< gradient-operator
       );
 
-    //@}
-
-    //! @name linear, small strain thermoplasticity solved with TSI
-
-    //! calculate internal dissipation arising when a thermo-elasto-plastic
-    //! material is used
-    //! Clausius-Duhem inequality is no longer = 0, but > 0:
-    //! mechanical energy dissipates as heat
-    void CalculateCouplDissipation(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      Teuchos::ParameterList& params
+      //! build linearisation of Jacobian w.r.t. d: dJ_dd
+      void CalculateLinearisationOfJacobian(
+          LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd,  //  (o) dJ_dd
+          const double& J,                                         // Jacobian
+          const LINALG::Matrix<nsd_, nen_>& N_XYZ,      // linear gradient of shape functions
+          const LINALG::Matrix<nsd_, nsd_>& defgrd_inv  // inverse of F
       );
 
-    //! calculate terms of dissipation for thermo-mechanical
-    //! system matrix k_Td used in case of plastic material
-    void CalculateCouplDissipationCond(
-      DRT::Element* ele,  // the element whose matrix is calculated
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
-      Teuchos::ParameterList& params
+      //! build derivatives of right Cauchy-Green deformation tensor C
+      //! build the inverse of C^{-1} and the time derivative C'
+      void CalculateCauchyGreens(
+          LINALG::Matrix<6, 1>& Cratevct,          //!< right Cauchy-Green rate vector
+          LINALG::Matrix<6, 1>& invCvct,           //!< inverse of right Cauchy-Green vector
+          LINALG::Matrix<nsd_, nsd_>& invC,        //!< inverse right Cauchy-Green tensor
+          LINALG::Matrix<nsd_, nsd_>* defgrd,      //!< deformation gradient tensor
+          LINALG::Matrix<nsd_, nsd_>* defgrdrate,  //!< velocity gradient tensor
+          LINALG::Matrix<nsd_, nsd_>* invdefgrd    //!< inverse deformation gradient tensor
       );
 
-    //@}
+      //@}
 
-    //! @name geometrically nonlinear TSI analysis
+      //! @name finite strain thermoplasticity solved with TSI
 
-    //! calculate element vectors (internal/external) and a few matrices
-    //! considering current displacement solution
-    //! no routine CalculateNlnFintCondCapa(): only capacity matrix is independent
-    //! of the displacments
-    //! --> all terms are coupled to the displacements/velocities
-    void CalculateCouplNlnFintCondCapa(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      const double& time,  //!< current time
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  //!< capacity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
-      LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
-      const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
-      const INPAR::THR::TempGradType iotempgrad,  // tempgrad output option
-      Teuchos::ParameterList& params
-      );
+      //! calculate internal dissipation arising when a thermo-elasto-plastic
+      //! material is used within geometrically nonlinear analysis
+      //! Clausius-Duhem inequality is no longer = 0, but > 0:
+      //! mechanical energy dissipates as heat
+      void CalculateCouplNlnDissipation(
+          DRT::Element* ele,          //!< the element whose matrix is calculated
+          std::vector<double>& disp,  // current displacements
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              econd,                                        // conductivity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
+          Teuchos::ParameterList& params);
 
-    //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
-    void CalculateCouplNlnCond(
-      DRT::Element* ele,  //!< current element whose terms are calculated
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  //!< k_Tu matrix
-      Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
-      );
+      //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
+      //! used in case of plastic material within geometrically nonlinear analysis
+      void CalculateCouplNlnDissipationCond(
+          DRT::Element* ele,          // the element whose matrix is calculated
+          std::vector<double>& disp,  //!< current displacements
+          std::vector<double>& vel,   //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
+          Teuchos::ParameterList& params);
 
-    //! build nonlinear B-operator
-    void CalculateBop(
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* bop,  //!< nonlinear B-operator
-      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< deformation gradient
-      LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
-      );
+      //@}
 
-    //! build linearisation of Jacobian w.r.t. d: dJ_dd
-    void CalculateLinearisationOfJacobian(
-      LINALG::Matrix<1,nsd_*nen_*numdofpernode_>& dJ_dd,  //  (o) dJ_dd
-      const double& J,  // Jacobian
-      const LINALG::Matrix<nsd_,nen_>& N_XYZ,  // linear gradient of shape functions
-      const LINALG::Matrix<nsd_,nsd_>& defgrd_inv  // inverse of F
-      );
+      //! actual values of temperatures
+      LINALG::Matrix<nen_, 1> etemp_;
+      //! capacity matrix
+      LINALG::Matrix<nen_, nen_> ecapa_;
 
-    //! build derivatives of right Cauchy-Green deformation tensor C
-    //! build the inverse of C^{-1} and the time derivative C'
-    void CalculateCauchyGreens(
-      LINALG::Matrix<6,1>& Cratevct,  //!< right Cauchy-Green rate vector
-      LINALG::Matrix<6,1>& invCvct,  //!< inverse of right Cauchy-Green vector
-      LINALG::Matrix<nsd_,nsd_>& invC,  //!< inverse right Cauchy-Green tensor
-      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< deformation gradient tensor
-      LINALG::Matrix<nsd_,nsd_>* defgrdrate,  //!< velocity gradient tensor
-      LINALG::Matrix<nsd_,nsd_>* invdefgrd  //!< inverse deformation gradient tensor
-      );
+      //! node reference coordinates
+      LINALG::Matrix<nsd_, nen_> xyze_;
+      //! radiation in element nodes
+      LINALG::Matrix<numdofpernode_, 1> radiation_;
+      //! coordinates of current integration point in reference coordinates
+      LINALG::Matrix<nsd_, 1> xsi_;
+      //! array for shape functions
+      LINALG::Matrix<nen_, 1> funct_;
+      //! array for shape function derivatives w.r.t r,s,t
+      LINALG::Matrix<nsd_, nen_> deriv_;
+      //! transposed jacobian "dx/ds"
+      LINALG::Matrix<nsd_, nsd_> xjm_;
+      //! inverse of transposed jacobian "ds/dx"
+      LINALG::Matrix<nsd_, nsd_> xij_;
+      //! global derivatives of shape functions w.r.t x,y,z
+      LINALG::Matrix<nsd_, nen_> derxy_;
+      //! global temperature rate derivatives in gausspoint w.r.t x,y,z
+      LINALG::Matrix<nsd_, nsd_> rderxy_;
+      //! integration factor for current GP: fac = GaussWeight * det(J)
+      double fac_;
+      //! (global) gradient of temperature at integration point
+      LINALG::Matrix<nsd_, 1> gradtemp_;
+      //! (global) gradient of temperature at integration point
+      LINALG::Matrix<nsd_, 1> heatflux_;
+      //! (global) conductivity 2-tensor
+      LINALG::Matrix<nsd_, nsd_> cmat_;
+      //! capacity density
+      double capacoeff_;
 
-    //@}
+      //! @name material related stuff
 
-    //! @name finite strain thermoplasticity solved with TSI
+      //! material tangent of the structure
+      LINALG::Matrix<6, 1> ctemp_;
 
-    //! calculate internal dissipation arising when a thermo-elasto-plastic
-    //! material is used within geometrically nonlinear analysis
-    //! Clausius-Duhem inequality is no longer = 0, but > 0:
-    //! mechanical energy dissipates as heat
-    void CalculateCouplNlnDissipation(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      std::vector<double>& disp,  // current displacements
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      Teuchos::ParameterList& params
-      );
+      //! flag plastic material is used
+      bool plasticmat_;
 
-    //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
-    //! used in case of plastic material within geometrically nonlinear analysis
-    void CalculateCouplNlnDissipationCond(
-      DRT::Element* ele,  // the element whose matrix is calculated
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
-      Teuchos::ParameterList& params
-      );
+      //! nurbs specific: element knots
+      std::vector<Epetra_SerialDenseVector> myknots_;
+      //! nurbs specific: control point weights
+      LINALG::Matrix<nen_, 1> weights_;
 
-    //@}
+      //@}
 
-    //! actual values of temperatures
-    LINALG::Matrix<nen_,1> etemp_;
-    //! capacity matrix
-    LINALG::Matrix<nen_,nen_> ecapa_;
+    };  // class TemperImpl
 
-    //! node reference coordinates
-    LINALG::Matrix<nsd_,nen_> xyze_;
-    //! radiation in element nodes
-    LINALG::Matrix<numdofpernode_,1> radiation_;
-    //! coordinates of current integration point in reference coordinates
-    LINALG::Matrix<nsd_,1> xsi_;
-    //! array for shape functions
-    LINALG::Matrix<nen_,1> funct_;
-    //! array for shape function derivatives w.r.t r,s,t
-    LINALG::Matrix<nsd_,nen_> deriv_;
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<nsd_,nsd_> xjm_;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<nsd_,nsd_> xij_;
-    //! global derivatives of shape functions w.r.t x,y,z
-    LINALG::Matrix<nsd_,nen_> derxy_;
-    //! global temperature rate derivatives in gausspoint w.r.t x,y,z
-    LINALG::Matrix<nsd_,nsd_> rderxy_;
-    //! integration factor for current GP: fac = GaussWeight * det(J)
-    double fac_;
-    //! (global) gradient of temperature at integration point
-    LINALG::Matrix<nsd_,1> gradtemp_;
-    //! (global) gradient of temperature at integration point
-    LINALG::Matrix<nsd_,1> heatflux_;
-    //! (global) conductivity 2-tensor
-    LINALG::Matrix<nsd_,nsd_> cmat_;
-    //! capacity density
-    double capacoeff_;
-
-    //! @name material related stuff
-
-    //! material tangent of the structure
-    LINALG::Matrix<6,1> ctemp_;
-
-    //! flag plastic material is used
-    bool plasticmat_;
-
-    //! nurbs specific: element knots
-    std::vector<Epetra_SerialDenseVector> myknots_;
-    //! nurbs specific: control point weights
-    LINALG::Matrix<nen_,1> weights_;
-
-    //@}
-
-  };  // class TemperImpl
-
-}  // namespace ELEMENTS
+  }  // namespace ELEMENTS
 
 }  // namespace DRT
 
 
 /*----------------------------------------------------------------------*/
-#endif // THERMO_ELE_IMPL_H
-#endif // D_THERMO
+#endif  // THERMO_ELE_IMPL_H
+#endif  // D_THERMO

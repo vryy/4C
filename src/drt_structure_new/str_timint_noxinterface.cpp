@@ -51,17 +51,16 @@ STR::TIMINT::NoxInterface::NoxInterface()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::Init(
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
-    const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+    const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
   // reset the setup flag
   issetup_ = false;
 
-  gstate_ptr_  = gstate_ptr;
-  timint_ptr_  = timint_ptr;
+  gstate_ptr_ = gstate_ptr;
+  timint_ptr_ = timint_ptr;
   implint_ptr_ = implint_ptr;
-  dbc_ptr_     = dbc_ptr;
+  dbc_ptr_ = dbc_ptr;
 
   // set the initialization flag
   isinit_ = true;
@@ -80,15 +79,13 @@ void STR::TIMINT::NoxInterface::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::CheckInit() const
 {
-  if (not IsInit())
-    dserror("Call Init() first!");
+  if (not IsInit()) dserror("Call Init() first!");
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup())
-    dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -101,17 +98,16 @@ STR::IMPLICIT::Generic& STR::TIMINT::NoxInterface::ImplInt()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::NoxInterface::computeF(const Epetra_Vector& x,
-    Epetra_Vector& F, const FillType fillFlag)
+bool STR::TIMINT::NoxInterface::computeF(
+    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   CheckInitSetup();
 
-  if (not implint_ptr_->ApplyForce(x,F))
-    return false;
+  if (not implint_ptr_->ApplyForce(x, F)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
-  Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&F,false);
+  Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&F, false);
   dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
 
   return true;
@@ -119,76 +115,63 @@ bool STR::TIMINT::NoxInterface::computeF(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x,
+bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_Operator& jac)
+{
+  CheckInitSetup();
+
+  LINALG::SparseOperator* jac_ptr = dynamic_cast<LINALG::SparseOperator*>(&jac);
+  if (jac_ptr == NULL) dserror("Dynamic cast failed.");
+
+  if (not implint_ptr_->ApplyStiff(x, *jac_ptr)) return false;
+
+  /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
+   * are applied inside the NOX::NLN::LinearSystem::applyJacobianInverse()
+   * routine, instead. See the runPreApplyJacobianInverse() implementation
+   * for more information.                               hiermeier 01/15/2016 */
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::NoxInterface::computeFandJacobian(
+    const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac)
+{
+  CheckInitSetup();
+
+  LINALG::SparseOperator* jac_ptr = dynamic_cast<LINALG::SparseOperator*>(&jac);
+  if (jac_ptr == NULL) dserror("Dynamic cast failed!");
+
+  if (not implint_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
+
+  /* Apply the DBC on the right hand side, since we need the Dirchilet free
+   * right hand side inside NOX for the convergence check, etc.               */
+  Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs, false);
+  dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
+
+  /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
+   * are applied inside the NOX::NLN::LinearSystem::applyJacobianInverse()
+   * routine, instead. See the runPreApplyJacobianInverse() implementation
+   * for more information.                               hiermeier 01/15/2016 */
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+    const NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
     Epetra_Operator& jac)
 {
   CheckInitSetup();
 
-  LINALG::SparseOperator* jac_ptr =
-      dynamic_cast<LINALG::SparseOperator*>(&jac);
-  if (jac_ptr == NULL)
-    dserror("Dynamic cast failed.");
-
-  if (not implint_ptr_->ApplyStiff(x,*jac_ptr))
-    return false;
-
-  /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
-   * are applied inside the NOX::NLN::LinearSystem::applyJacobianInverse()
-   * routine, instead. See the runPreApplyJacobianInverse() implementation
-   * for more information.                               hiermeier 01/15/2016 */
-
-  return true;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool STR::TIMINT::NoxInterface::computeFandJacobian(const Epetra_Vector& x,
-    Epetra_Vector& rhs, Epetra_Operator& jac)
-{
-  CheckInitSetup();
-
-  LINALG::SparseOperator* jac_ptr =
-      dynamic_cast<LINALG::SparseOperator*>(&jac);
-  if (jac_ptr==NULL)
-    dserror("Dynamic cast failed!");
-
-  if (not implint_ptr_->ApplyForceStiff(x,rhs,*jac_ptr))
-    return false;
-
-  /* Apply the DBC on the right hand side, since we need the Dirchilet free
-   * right hand side inside NOX for the convergence check, etc.               */
-  Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs,false);
-  dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
-
-  /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
-   * are applied inside the NOX::NLN::LinearSystem::applyJacobianInverse()
-   * routine, instead. See the runPreApplyJacobianInverse() implementation
-   * for more information.                               hiermeier 01/15/2016 */
-
-  return true;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool STR::TIMINT::NoxInterface::computeCorrectionSystem(
-    const enum NOX::NLN::CorrectionType type,
-    const NOX::Abstract::Group& grp,
-    const Epetra_Vector& x,
-    Epetra_Vector& rhs,
-    Epetra_Operator& jac )
-{
-  CheckInitSetup();
-
-  LINALG::SparseOperator* jac_ptr =
-      dynamic_cast<LINALG::SparseOperator*>(&jac);
-  if (jac_ptr==NULL)
-    dserror("Dynamic cast failed!");
+  LINALG::SparseOperator* jac_ptr = dynamic_cast<LINALG::SparseOperator*>(&jac);
+  if (jac_ptr == NULL) dserror("Dynamic cast failed!");
 
   std::vector<INPAR::STR::ModelType> constraint_models;
-  FindConstraintModels( &grp, constraint_models );
+  FindConstraintModels(&grp, constraint_models);
 
-  if ( not implint_ptr_->ApplyCorrectionSystem(type,constraint_models,x,rhs,
-      *jac_ptr) )
+  if (not implint_ptr_->ApplyCorrectionSystem(type, constraint_models, x, rhs, *jac_ptr))
     return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirchilet free
@@ -196,14 +179,13 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcpFromRef(rhs);
   dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
 
-   return true;
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::NoxInterface::computePreconditioner(
-    const Epetra_Vector& x,
-    Epetra_Operator& M, Teuchos::ParameterList* precParams)
+    const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   CheckInitSetup();
   // currently not supported
@@ -212,18 +194,15 @@ bool STR::TIMINT::NoxInterface::computePreconditioner(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
-    const Epetra_Vector& F,
+double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isscaled) const
+    const NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
   CheckInitSetup();
   double rhsnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const INPAR::STR::ModelType mt =
-      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+  const INPAR::STR::ModelType mt = STR::NLN::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -231,28 +210,26 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
       // export the model specific solution if necessary
-      Teuchos::RCP<Epetra_Vector> rhs_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,F);
+      Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->ExtractModelEntries(mt, F);
 
       // remove entries specific to element technology
       gstate_ptr_->RemoveElementTechnologies(rhs_ptr);
 
       implint_ptr_->RemoveCondensedContributionsFromRhs(*rhs_ptr);
 
-      rhsnorm = CalculateNorm(rhs_ptr,type,isscaled);
+      rhsnorm = CalculateNorm(rhs_ptr, type, isscaled);
 
       break;
     }
     case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the model specific solution if necessary
-      Teuchos::RCP<Epetra_Vector> rhs_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,F);
+      Teuchos::RCP<Epetra_Vector> rhs_ptr = gstate_ptr_->ExtractModelEntries(mt, F);
 
       // extract entries specific to element technology
-      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure,rhs_ptr);
+      gstate_ptr_->ExtractElementTechnologies(NOX::NLN::StatusTest::quantity_pressure, rhs_ptr);
 
-      rhsnorm = CalculateNorm(rhs_ptr,type,isscaled);
+      rhsnorm = CalculateNorm(rhs_ptr, type, isscaled);
 
       break;
     }
@@ -268,9 +245,8 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
-    const Epetra_Vector& xnew, const Epetra_Vector& xold,
-    const double& atol, const double& rtol,
+double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(const Epetra_Vector& xnew,
+    const Epetra_Vector& xold, const double& atol, const double& rtol,
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
     const bool& disable_implicit_weighting) const
 {
@@ -279,8 +255,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
   double rms = -1.0;
 
   // convert the given quantity type to a model type
-  const INPAR::STR::ModelType mt =
-      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+  const INPAR::STR::ModelType mt = STR::NLN::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -289,17 +264,16 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
-          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt,xold)));
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xnew);
+          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt, xold)));
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
 
       // remove entries specific to element technology
       gstate_ptr_->RemoveElementTechnologies(model_incr_ptr);
       gstate_ptr_->RemoveElementTechnologies(model_xnew_ptr);
 
-      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
-      rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,model_xnew_ptr,model_incr_ptr,
-          disable_implicit_weighting);
+      model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
+      rms = NOX::NLN::AUX::RootMeanSquareNorm(
+          atol, rtol, model_xnew_ptr, model_incr_ptr, disable_implicit_weighting);
 
       break;
     }
@@ -307,19 +281,18 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
-          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt,xold)));
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xnew);
+          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExtractModelEntries(mt, xold)));
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
 
       // extract entries specific to element technology
       gstate_ptr_->ExtractElementTechnologies(
-          NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
+          NOX::NLN::StatusTest::quantity_pressure, model_incr_ptr);
       gstate_ptr_->ExtractElementTechnologies(
-          NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
+          NOX::NLN::StatusTest::quantity_pressure, model_xnew_ptr);
 
-      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
-      rms = NOX::NLN::AUX::RootMeanSquareNorm(atol,rtol,model_xnew_ptr,model_incr_ptr,
-          disable_implicit_weighting);
+      model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
+      rms = NOX::NLN::AUX::RootMeanSquareNorm(
+          atol, rtol, model_xnew_ptr, model_incr_ptr, disable_implicit_weighting);
       break;
     }
     case NOX::NLN::StatusTest::quantity_eas:
@@ -340,19 +313,16 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
-    const Epetra_Vector& xnew, const Epetra_Vector& xold,
-    const NOX::NLN::StatusTest::QuantityType& checkquantity,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isscaled) const
+double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(const Epetra_Vector& xnew,
+    const Epetra_Vector& xold, const NOX::NLN::StatusTest::QuantityType& checkquantity,
+    const NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
   CheckInitSetup();
 
   double updatenorm = -1.0;
 
   // convert the given quantity type to a model type
-  const INPAR::STR::ModelType mt =
-      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+  const INPAR::STR::ModelType mt = STR::NLN::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -360,36 +330,32 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xold);
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xnew);
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
 
       // remove entries specific to element technology
       gstate_ptr_->RemoveElementTechnologies(model_incr_ptr);
       gstate_ptr_->RemoveElementTechnologies(model_xnew_ptr);
 
-      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
-      updatenorm = CalculateNorm(model_incr_ptr,type,isscaled);
+      model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
+      updatenorm = CalculateNorm(model_incr_ptr, type, isscaled);
 
       break;
     }
     case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xold);
-      Teuchos::RCP<Epetra_Vector> model_xnew_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xnew);
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
+      Teuchos::RCP<Epetra_Vector> model_xnew_ptr = gstate_ptr_->ExtractModelEntries(mt, xnew);
 
       // extract entries specific to element technology
       gstate_ptr_->ExtractElementTechnologies(
-          NOX::NLN::StatusTest::quantity_pressure,model_incr_ptr);
+          NOX::NLN::StatusTest::quantity_pressure, model_incr_ptr);
       gstate_ptr_->ExtractElementTechnologies(
-          NOX::NLN::StatusTest::quantity_pressure,model_xnew_ptr);
+          NOX::NLN::StatusTest::quantity_pressure, model_xnew_ptr);
 
-      model_incr_ptr->Update(1.0,*model_xnew_ptr,-1.0);
-      updatenorm = CalculateNorm(model_incr_ptr,type,isscaled);
+      model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
+      updatenorm = CalculateNorm(model_incr_ptr, type, isscaled);
 
       break;
     }
@@ -397,8 +363,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
     case NOX::NLN::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
-      updatenorm =
-          implint_ptr_->GetCondensedUpdateNorm(checkquantity);
+      updatenorm = implint_ptr_->GetCondensedUpdateNorm(checkquantity);
       // do the scaling if desired
       if (isscaled)
       {
@@ -419,19 +384,16 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
-    const Epetra_Vector& xold,
+double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(const Epetra_Vector& xold,
     const NOX::NLN::StatusTest::QuantityType& checkquantity,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isscaled) const
+    const NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
   CheckInitSetup();
 
   double xoldnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const INPAR::STR::ModelType mt =
-      STR::NLN::ConvertQuantityType2ModelType(checkquantity);
+  const INPAR::STR::ModelType mt = STR::NLN::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -439,27 +401,25 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_xold_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xold);
+      Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
 
       // remove entries specific to element technology
       gstate_ptr_->RemoveElementTechnologies(model_xold_ptr);
 
-      xoldnorm = CalculateNorm(model_xold_ptr,type,isscaled);
+      xoldnorm = CalculateNorm(model_xold_ptr, type, isscaled);
 
       break;
     }
     case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_xold_ptr =
-          gstate_ptr_->ExtractModelEntries(mt,xold);
+      Teuchos::RCP<Epetra_Vector> model_xold_ptr = gstate_ptr_->ExtractModelEntries(mt, xold);
 
       // extract entries specific to element technology
       gstate_ptr_->ExtractElementTechnologies(
-          NOX::NLN::StatusTest::quantity_pressure,model_xold_ptr);
+          NOX::NLN::StatusTest::quantity_pressure, model_xold_ptr);
 
-      xoldnorm = CalculateNorm(model_xold_ptr,type,isscaled);
+      xoldnorm = CalculateNorm(model_xold_ptr, type, isscaled);
 
       break;
     }
@@ -467,8 +427,7 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
     case NOX::NLN::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
-      xoldnorm =
-          implint_ptr_->GetCondensedPreviousSolNorm(checkquantity);
+      xoldnorm = implint_ptr_->GetCondensedPreviousSolNorm(checkquantity);
       if (isscaled)
       {
         int gdofnumber = implint_ptr_->GetCondensedDofNumber(checkquantity);
@@ -488,56 +447,47 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::CalculateNorm(
-    Teuchos::RCP<Epetra_Vector> quantity,
-    const NOX::Abstract::Vector::NormType type,
-    const bool isscaled ) const
+double STR::TIMINT::NoxInterface::CalculateNorm(Teuchos::RCP<Epetra_Vector> quantity,
+    const NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
   Teuchos::RCP<const NOX::Epetra::Vector> quantity_nox =
-      Teuchos::rcp(new NOX::Epetra::Vector(quantity,
-          NOX::Epetra::Vector::CreateView));
+      Teuchos::rcp(new NOX::Epetra::Vector(quantity, NOX::Epetra::Vector::CreateView));
 
   double norm = quantity_nox->norm(type);
   // do the scaling if desired
-  if (isscaled)
-    norm /= static_cast<double>(quantity_nox->length());
+  if (isscaled) norm /= static_cast<double>(quantity_nox->length());
 
   return norm;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetModelValue(
-    const Epetra_Vector& x,
-    const Epetra_Vector& F,
-    const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type ) const
+double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Epetra_Vector& F,
+    const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const
 {
   CheckInitSetup();
 
   double omval = 0.0;
 
-  switch ( merit_func_type )
+  switch (merit_func_type)
   {
     case NOX::NLN::MeritFunction::mrtfct_lagrangian_active:
     case NOX::NLN::MeritFunction::mrtfct_lagrangian:
     case NOX::NLN::MeritFunction::mrtfct_energy:
     {
       // get the current displacement vector
-      Teuchos::RCP<const Epetra_Vector> disnp =
-          gstate_ptr_->ExtractDisplEntries(x);
+      Teuchos::RCP<const Epetra_Vector> disnp = gstate_ptr_->ExtractDisplEntries(x);
 
       Teuchos::ParameterList p;
       // parameter needed by the elements
       p.set("action", "calc_struct_energy");
 
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr =
-          gstate_ptr_->GetMutableDiscret();
+      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr = gstate_ptr_->GetMutableDiscret();
       // set vector values needed by elements
       discret_ptr->ClearState();
       discret_ptr->SetState("displacement", disnp);
       // get internal structural energy
-      Teuchos::RCP<Epetra_SerialDenseVector> energy
-        = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      Teuchos::RCP<Epetra_SerialDenseVector> energy = Teuchos::rcp(new Epetra_SerialDenseVector(1));
       discret_ptr->EvaluateScalars(p, energy);
       discret_ptr->ClearState();
 
@@ -558,9 +508,8 @@ double STR::TIMINT::NoxInterface::GetModelValue(
     default:
     {
       dserror("There is no objective model value for %s | %d.",
-          NOX::NLN::MeritFunction::MeritFuncName2String( merit_func_type ).c_str(),
-          merit_func_type );
-      exit( EXIT_FAILURE );
+          NOX::NLN::MeritFunction::MeritFuncName2String(merit_func_type).c_str(), merit_func_type);
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -569,19 +518,17 @@ double STR::TIMINT::NoxInterface::GetModelValue(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(
-    const NOX::Abstract::Group* group,
-    const Epetra_Vector& dir,
-    const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(const NOX::Abstract::Group* group,
+    const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
-    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+    const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
-  switch ( mf_type )
+  switch (mf_type)
   {
     case NOX::NLN::MeritFunction::mrtfct_lagrangian:
     case NOX::NLN::MeritFunction::mrtfct_lagrangian_active:
     {
-      return GetLinearizedEnergyModelTerms( group, dir, linorder, lintype );
+      return GetLinearizedEnergyModelTerms(group, dir, linorder, lintype);
     }
     case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm:
     case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm_active:
@@ -589,41 +536,38 @@ double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(
     default:
     {
       dserror("There is no linearization for the objective model %s | %d.",
-          NOX::NLN::MeritFunction::MeritFuncName2String(mf_type).c_str(),
-          mf_type );
-      exit( EXIT_FAILURE );
+          NOX::NLN::MeritFunction::MeritFuncName2String(mf_type).c_str(), mf_type);
+      exit(EXIT_FAILURE);
     }
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(
-    const NOX::Abstract::Group* group,
-    const Epetra_Vector& dir,
-    const enum NOX::NLN::MeritFunction::LinOrder linorder,
-    const enum NOX::NLN::MeritFunction::LinType lintype ) const
+double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(const NOX::Abstract::Group* group,
+    const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::LinOrder linorder,
+    const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
   double lin_val = 0.0;
 
-  switch ( linorder )
+  switch (linorder)
   {
     case NOX::NLN::MeritFunction::linorder_first:
     case NOX::NLN::MeritFunction::linorder_all:
     {
-      switch( lintype )
+      switch (lintype)
       {
         case NOX::NLN::MeritFunction::lin_wrt_all_dofs:
         case NOX::NLN::MeritFunction::lin_wrt_primary_dofs:
         {
-          Epetra_Vector str_gradient( dir.Map(), true );
+          Epetra_Vector str_gradient(dir.Map(), true);
 
           std::vector<INPAR::STR::ModelType> constraint_models;
-          FindConstraintModels( group, constraint_models );
+          FindConstraintModels(group, constraint_models);
 
           // assemble the force and exclude all constraint models
-          implint_ptr_->AssembleForce( str_gradient, &constraint_models );
-          str_gradient.Dot( dir, &lin_val );
+          implint_ptr_->AssembleForce(str_gradient, &constraint_models);
+          str_gradient.Dot(dir, &lin_val);
 
           break;
         }
@@ -649,26 +593,24 @@ double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::FindConstraintModels(
-    const NOX::Abstract::Group* grp,
-    std::vector<INPAR::STR::ModelType>& constraint_models ) const
+    const NOX::Abstract::Group* grp, std::vector<INPAR::STR::ModelType>& constraint_models) const
 {
   const NOX::NLN::CONSTRAINT::Group* constr_grp =
-      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>( grp );
+      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(grp);
 
   // direct return if this is no constraint problem
-  if ( not constr_grp )
-    return;
+  if (not constr_grp) return;
 
   // find the constraint model types
   const auto& imap = constr_grp->GetConstrInterfaces();
-  constraint_models.reserve( imap.size() );
+  constraint_models.reserve(imap.size());
 
-  for ( auto cit = imap.begin(); cit != imap.end(); ++cit )
+  for (auto cit = imap.begin(); cit != imap.end(); ++cit)
   {
     const enum NOX::NLN::SolutionType soltype = cit->first;
-    const enum INPAR::STR::ModelType mtype = STR::NLN::ConvertSolType2ModelType( soltype );
+    const enum INPAR::STR::ModelType mtype = STR::NLN::ConvertSolType2ModelType(soltype);
 
-    constraint_models.push_back( mtype );
+    constraint_models.push_back(mtype);
   }
 }
 
@@ -678,8 +620,7 @@ void STR::TIMINT::NoxInterface::FindConstraintModels(
 double STR::TIMINT::NoxInterface::CalcRefNormForce()
 {
   CheckInitSetup();
-  const NOX::Epetra::Vector::NormType& nox_normtype =
-      timint_ptr_->GetDataSDyn().GetNoxNormType();
+  const NOX::Epetra::Vector::NormType& nox_normtype = timint_ptr_->GetDataSDyn().GetNoxNormType();
   return implint_ptr_->CalcRefNormForce(nox_normtype);
 }
 
@@ -690,7 +631,7 @@ STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
 {
   CheckInitSetup();
   Teuchos::RCP<LINALG::SparseMatrix> scalingMatrixOpPtr =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(),81,true,true));
+      Teuchos::rcp(new LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(), 81, true, true));
   implint_ptr_->ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 
   return scalingMatrixOpPtr;
@@ -698,8 +639,7 @@ STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::NoxInterface::CreateBackupState(
-    const Epetra_Vector& dir )
+void STR::TIMINT::NoxInterface::CreateBackupState(const Epetra_Vector& dir)
 {
   CheckInitSetup();
   implint_ptr_->CreateBackupState(dir);

@@ -24,7 +24,7 @@ namespace DRT
   {
     class ConditionDefinition;
   }
-}
+}  // namespace DRT
 
 namespace INPAR
 {
@@ -80,10 +80,10 @@ namespace INPAR
 
     enum CCCVCyclingMode
     {
-      cccv_undefined,   //!< undefined mode
-      cccv_cc,          //!< constant-current (CC) mode
-      cccv_cv,          //!< constant-voltage (CV) mode
-      cccv_rx           //!< relaxation (RX) mode
+      cccv_undefined,  //!< undefined mode
+      cccv_cc,         //!< constant-current (CC) mode
+      cccv_cv,         //!< constant-voltage (CV) mode
+      cccv_rx          //!< relaxation (RX) mode
     };
 
     // permittivität (not a general definition, but only once used)
@@ -93,7 +93,7 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific elch conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
   }  // namespace ELCH
 }  // namespace INPAR
 #endif  // #ifndef INPAR_ELCH_H

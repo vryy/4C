@@ -26,132 +26,130 @@
 
 namespace MAT
 {
+  namespace PAR
+  {
+    /*----------------------------------------------------------------------*/
+    /// material parameters for sound propagation
+    class AcousticMat : public Parameter
+    {
+     public:
+      /// standard constructor
+      AcousticMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-namespace PAR
-{
+      /// destructor
+      virtual ~AcousticMat() { ; }
 
-/*----------------------------------------------------------------------*/
-/// material parameters for sound propagation
-class AcousticMat : public Parameter
-{
-public:
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-  /// standard constructor
-  AcousticMat(
-      Teuchos::RCP<MAT::PAR::Material> matdata
-  );
+      void OptParams(std::map<std::string, int>* pnames);
 
-  /// destructor
-  virtual ~AcousticMat() { ; }
+      enum matparamnames_
+      {
+        density,
+        c,
+        first = density,
+        last = c
+      };
 
-  /// create material instance of matching type with my parameters
-  virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+    };  // class AcousticMat
 
-  void OptParams(std::map<std::string, int>* pnames);
+  }  // namespace PAR
 
-  enum matparamnames_{density, c, first=density, last=c};
+  class AcousticMatType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "AcousticMatType"; }
 
-}; // class AcousticMat
+    static AcousticMatType& Instance() { return instance_; };
 
-} // namespace PAR
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-class AcousticMatType : public DRT::ParObjectType
-{
-public:
+   private:
+    static AcousticMatType instance_;
 
-  std::string Name() const { return "AcousticMatType"; }
+  };  // class AcousticMatType
 
-  static AcousticMatType & Instance() { return instance_; };
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for Sound propagation material
+  class AcousticMat : public Material
+  {
+   public:
+    /// construct empty material object
+    AcousticMat();
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+    /// construct the material object given material parameters
+    explicit AcousticMat(MAT::PAR::AcousticMat* params);
 
-private:
+    //! @name Packing and Unpacking
 
-  static AcousticMatType instance_;
+    /*!
+        \brief Return unique ParObject id
 
-}; // class AcousticMatType
+        every class implementing ParObject needs a unique id defined at the
+        top of drt_parobject.H (this file) and should return it in this method.
+     */
+    virtual int UniqueParObjectId() const
+    {
+      return AcousticMatType::Instance().UniqueParObjectId();
+    }
 
-/*----------------------------------------------------------------------*/
-/// Wrapper for Sound propagation material
-class AcousticMat : public Material
-{
-public:
+    /*!
+        \brief Pack this class so it can be communicated
 
-  /// construct empty material object
-  AcousticMat();
+        Resizes the vector data and stores all information of a class in it.
+        The first information to be stored in data has to be the
+        unique parobject id delivered by UniqueParObjectId() which will then
+        identify the exact class on the receiving processor.
 
-  /// construct the material object given material parameters
-  explicit AcousticMat(MAT::PAR::AcousticMat* params);
+        \param data (in/out): char vector to store class information
+     */
+    virtual void Pack(DRT::PackBuffer& data) const;
 
-  //! @name Packing and Unpacking
+    /*!
+        \brief Unpack data from a char vector into this class
 
-  /*!
-      \brief Return unique ParObject id
+        The vector data contains all information to rebuild the
+        exact copy of an instance of a class on a different processor.
+        The first entry in data has to be an integer which is the unique
+        parobject id defined at the top of this file and delivered by
+        UniqueParObjectId().
 
-      every class implementing ParObject needs a unique id defined at the
-      top of drt_parobject.H (this file) and should return it in this method.
-   */
-  virtual int UniqueParObjectId() const { return AcousticMatType::Instance().UniqueParObjectId(); }
+        \param data (in) : vector storing all data to be unpacked into this
+        instance.
+     */
+    virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-      \brief Pack this class so it can be communicated
+    //@}
 
-      Resizes the vector data and stores all information of a class in it.
-      The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
-      identify the exact class on the receiving processor.
+    //! @name Access methods
 
-      \param data (in/out): char vector to store class information
-   */
-  virtual void Pack(DRT::PackBuffer& data) const;
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_acousticmat; }
 
-  /*!
-      \brief Unpack data from a char vector into this class
+    /// return copy of this material object
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new AcousticMat(*this)); }
 
-      The vector data contains all information to rebuild the
-      exact copy of an instance of a class on a different processor.
-      The first entry in data has to be an integer which is the unique
-      parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+    /// density
+    double Density(int eleid = -1) const { return params_->GetParameter(params_->density, eleid); }
 
-      \param data (in) : vector storing all data to be unpacked into this
-      instance.
-   */
-  virtual void Unpack(const std::vector<char>& data);
-
-  //@}
-
-  //! @name Access methods
-
-  /// material type
-  virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_acousticmat; }
-
-  /// return copy of this material object
-  virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AcousticMat( *this ) ); }
-
-  /// density
-  double Density(int eleid=-1) const { return params_->GetParameter(params_->density,eleid); }
-
-  /// reaction coefficient
-  double SpeedofSound(int eleid=-1) const { return params_->GetParameter(params_->c,eleid); }
-
-
-
-
-  /// Return quick accessible material parameter data
-  virtual MAT::PAR::Parameter* Parameter() const { return params_; }
-
-  //@}
+    /// reaction coefficient
+    double SpeedofSound(int eleid = -1) const { return params_->GetParameter(params_->c, eleid); }
 
 
-private:
 
-  /// my material parameters
-  MAT::PAR::AcousticMat* params_;
+    /// Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-};
+    //@}
 
-} // namespace MAT
+
+   private:
+    /// my material parameters
+    MAT::PAR::AcousticMat* params_;
+  };
+
+}  // namespace MAT
 
 
 

@@ -42,56 +42,48 @@
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>
 POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
     INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solscheme,
-    const Teuchos::ParameterList& timeparams,
-    const Epetra_Comm& comm)
+    const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
   Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase> algo;
 
-  switch(solscheme)
+  switch (solscheme)
   {
-  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned_nested:
-  {
-    // call constructor
-    algo =
-        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested(
-                comm,
-                timeparams));
-    break;
-  }
-  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned_sequential:
-  {
-    // call constructor
-    algo =
-        Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential(
-                comm,
-                timeparams));
-    break;
-  }
-  case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_monolithic:
-  {
-    const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams,"ARTERY_COUPLING");
-    if(!artery_coupl)
+    case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned_nested:
     {
       // call constructor
-      algo =
-          Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay(
-                        comm,
-                        timeparams));
+      algo = Teuchos::rcp(
+          new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested(comm, timeparams));
+      break;
     }
-    else
+    case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_partitioned_sequential:
     {
       // call constructor
-      algo =
-          Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
-                        comm,
-                        timeparams));
+      algo = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential(
+          comm, timeparams));
+      break;
     }
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
-    break;
+    case INPAR::POROMULTIPHASESCATRA::solscheme_twoway_monolithic:
+    {
+      const bool artery_coupl = DRT::INPUT::IntegralValue<int>(timeparams, "ARTERY_COUPLING");
+      if (!artery_coupl)
+      {
+        // call constructor
+        algo = Teuchos::rcp(
+            new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay(comm, timeparams));
+      }
+      else
+      {
+        // call constructor
+        algo = Teuchos::rcp(
+            new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
+                comm, timeparams));
+      }
+      break;
+    }
+    default:
+      dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+      break;
   }
 
   return algo;
@@ -102,73 +94,52 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
 POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
-    Teuchos::RCP<DRT::Discretization>  arterydis,
-    Teuchos::RCP<DRT::Discretization>  contdis,
-    const Teuchos::ParameterList&      meshtyingparams,
-    const std::string&                 condname,
-    const std::string&                 artcoupleddofname,
-    const std::string&                 contcoupleddofname
-    )
+    Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
+    const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
+    const std::string& artcoupleddofname, const std::string& contcoupleddofname)
 {
-
   // Creation of coupling strategy.
   Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> strategy;
 
   INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-    DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(meshtyingparams,"ARTERY_COUPLING_METHOD");
+      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+          meshtyingparams, "ARTERY_COUPLING_METHOD");
 
-  switch(arterycoupl)
+  switch (arterycoupl)
   {
-  case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-  case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-  {
-    strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased(
-        arterydis,
-        contdis,
-        meshtyingparams,
-        condname,
-        artcoupleddofname,
-        contcoupleddofname));
-    break;
-  }
-  case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal:
-  {
-    strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased(
-        arterydis,
-        contdis,
-        meshtyingparams,
-        condname,
-        artcoupleddofname,
-        contcoupleddofname));
-    break;
-  }
-  default:
-  {
-    dserror("Wrong type of artery-coupling strategy");
-    break;
-  }
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+    {
+      strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased(
+          arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
+      break;
+    }
+    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal:
+    {
+      strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased(
+          arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
+      break;
+    }
+    default:
+    {
+      dserror("Wrong type of artery-coupling strategy");
+      break;
+    }
   }
 
   strategy->Init();
 
   return strategy;
-
 }
 
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    int& ndsporo_disp,
-    int& ndsporo_vel,
-    int& ndsporo_solidpressure,
-    int& ndsporofluid_scatra,
-    const bool artery_coupl)
+void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
+    const std::string& struct_disname, const std::string& fluid_disname,
+    const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
+    int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl)
 {
   // Scheme   : the structure discretization is received from the input.
   //            Then, a poro fluid disc. is cloned.
@@ -178,21 +149,16 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
   // artery_scatra discretization is cloned from artery discretization
 
   POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
-      comm,
-      struct_disname,
-      fluid_disname,
-      ndsporo_disp,
-      ndsporo_vel,
-      ndsporo_solidpressure);
+      comm, struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<DRT::Discretization> fluiddis  = problem->GetDis(fluid_disname);
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
-  DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,scatradis);
+  DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis, scatradis);
   scatradis->FillComplete();
 
   // the problem is two way coupled, thus each discretization must know the other discretization
@@ -205,41 +171,36 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
   // check if ScatraField has 2 discretizations, so that coupling is possible
-  if (scatradis->AddDofSet(structdofset) != 1)
-    dserror("unexpected dof sets in scatra field");
-  if (scatradis->AddDofSet(fluiddofset) != 2)
-    dserror("unexpected dof sets in scatra field");
+  if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
+  if (scatradis->AddDofSet(fluiddofset) != 2) dserror("unexpected dof sets in scatra field");
   if (scatradis->AddDofSet(fluiddis->GetDofSetProxy(ndsporo_solidpressure)) != 3)
     dserror("unexpected dof sets in scatra field");
-  if (structdis->AddDofSet(scatradofset)!=3)
-    dserror("unexpected dof sets in structure field");
+  if (structdis->AddDofSet(scatradofset) != 3) dserror("unexpected dof sets in structure field");
 
   ndsporofluid_scatra = fluiddis->AddDofSet(scatradofset);
-  if (ndsporofluid_scatra!=3)
-    dserror("unexpected dof sets in fluid field");
+  if (ndsporofluid_scatra != 3) dserror("unexpected dof sets in fluid field");
 
-  structdis->FillComplete(true,false,false);
-  fluiddis->FillComplete(true,false,false);
-  scatradis->FillComplete(true,false,false);
+  structdis->FillComplete(true, false, false);
+  fluiddis->FillComplete(true, false, false);
+  scatradis->FillComplete(true, false, false);
 
-  if(artery_coupl)
+  if (artery_coupl)
   {
-    Teuchos::RCP<DRT::Discretization> artdis       = problem->GetDis("artery");
+    Teuchos::RCP<DRT::Discretization> artdis = problem->GetDis("artery");
     Teuchos::RCP<DRT::Discretization> artscatradis = problem->GetDis("artery_scatra");
 
-    if(!artdis->Filled())
-      dserror("artery discretization should be filled at this point");
+    if (!artdis->Filled()) dserror("artery discretization should be filled at this point");
 
     // fill artery scatra discretization by cloning artery discretization
-    DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis,artscatradis);
+    DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis, artscatradis);
     artscatradis->FillComplete();
 
-    Teuchos::RCP<DRT::DofSetInterface> arterydofset    = artdis->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
     Teuchos::RCP<DRT::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
 
     // curr_ele_length: defined as element-wise quantity
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber( 0, 1, 0, false ));
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, 1, 0, false));
     // add it to artery-scatra discretization
     artscatradis->AddDofSet(dofsetaux);
 
@@ -248,30 +209,31 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
       dserror("unexpected dof sets in artscatra field");
 
     // check if ArteryField has 2 discretizations, so that coupling is possible
-    if (artdis->AddDofSet(artscatradofset) != 2)
-      dserror("unexpected dof sets in artery field");
+    if (artdis->AddDofSet(artscatradofset) != 2) dserror("unexpected dof sets in artery field");
 
-    artscatradis->FillComplete(true,false,false);
+    artscatradis->FillComplete(true, false, false);
 
     // get coupling method
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-      DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(problem->ScalarTransportDynamicParams().sublist("ARTERY COUPLING"),"ARTERY_COUPLING_METHOD");
+        DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
+            problem->ScalarTransportDynamicParams().sublist("ARTERY COUPLING"),
+            "ARTERY_COUPLING_METHOD");
 
-    switch(arterycoupl)
+    switch (arterycoupl)
     {
-    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
-    case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
-    {
-      // TODO: this is necessary to find all possible interactions.
-      //       presently, the artery discretization is much smaller than the
-      //       others, so it is not that much of a performance issue
-      //       is there a better way to do this?
-      DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
-      DRT::UTILS::GhostDiscretizationOnAllProcs(artscatradis);
-      break;
-    }
-    default:
-      break;
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
+      case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
+      {
+        // TODO: this is necessary to find all possible interactions.
+        //       presently, the artery discretization is much smaller than the
+        //       others, so it is not that much of a performance issue
+        //       is there a better way to do this?
+        DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
+        DRT::UTILS::GhostDiscretizationOnAllProcs(artscatradis);
+        break;
+      }
+      default:
+        break;
     }
   }
 
@@ -281,31 +243,26 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(
 /*----------------------------------------------------------------------*
  | exchange material pointers of both discretizations       vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    const bool artery_coupl)
+void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(const std::string& struct_disname,
+    const std::string& fluid_disname, const std::string& scatra_disname, const bool artery_coupl)
 {
-  POROMULTIPHASE::UTILS::AssignMaterialPointers(
-      struct_disname,
-      fluid_disname);
+  POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname, fluid_disname);
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<DRT::Discretization> fluiddis  = problem->GetDis(fluid_disname);
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
-  POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
-  POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, scatradis);
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis, scatradis);
 
-  if(artery_coupl)
+  if (artery_coupl)
   {
-    Teuchos::RCP<DRT::Discretization> arterydis    = problem->GetDis("artery");
+    Teuchos::RCP<DRT::Discretization> arterydis = problem->GetDis("artery");
     Teuchos::RCP<DRT::Discretization> artscatradis = problem->GetDis("artery_scatra");
 
-    ART::UTILS::SetMaterialPointersMatchingGrid(arterydis,artscatradis);
+    ART::UTILS::SetMaterialPointersMatchingGrid(arterydis, artscatradis);
   }
 }
 
@@ -313,9 +270,8 @@ void POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(
  | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
 double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
-  const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
-  const Teuchos::RCP<const Epetra_Vector> vect
-  )
+    const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,
+    const Teuchos::RCP<const Epetra_Vector> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
@@ -339,7 +295,7 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
-    return vectnorm/sqrt((double) vect->GlobalLength());
+    return vectnorm / sqrt((double)vect->GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
@@ -354,7 +310,7 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
-    return vectnorm/((double) vect->GlobalLength());
+    return vectnorm / ((double)vect->GlobalLength());
   }
   else
   {
@@ -368,24 +324,24 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PrintLogo()
 {
- std::cout << "This is a Porous Media problem with multiphase flow and deformation and scalar transport" << std::endl;
- std::cout << "" << std::endl;
- std::cout << "              +----------+" << std::endl;
- std::cout << "              |  Krebs-  |" << std::endl;
- std::cout << "              |  Modell  |" << std::endl;
- std::cout << "              +----------+" << std::endl;
- std::cout << "              |          |" << std::endl;
- std::cout << "              |          |" << std::endl;
- std::cout << " /\\           |          /\\" << std::endl;
- std::cout << "( /   @ @    (|)        ( /   @ @    ()" << std::endl;
- std::cout << " \\  __| |__  /           \\  __| |__  /" << std::endl;
- std::cout << "  \\/   \"   \\/             \\/   \"   \\/" << std::endl;
- std::cout << " /-|       |-\\           /-|       |-\\" << std::endl;
- std::cout << "/ /-\\     /-\\ \\         / /-\\     /-\\ \\" << std::endl;
- std::cout << " / /-`---'-\\ \\           / /-`---'-\\ \\" << std::endl;
- std::cout << "  /         \\             /         \\" << std::endl;
+  std::cout
+      << "This is a Porous Media problem with multiphase flow and deformation and scalar transport"
+      << std::endl;
+  std::cout << "" << std::endl;
+  std::cout << "              +----------+" << std::endl;
+  std::cout << "              |  Krebs-  |" << std::endl;
+  std::cout << "              |  Modell  |" << std::endl;
+  std::cout << "              +----------+" << std::endl;
+  std::cout << "              |          |" << std::endl;
+  std::cout << "              |          |" << std::endl;
+  std::cout << " /\\           |          /\\" << std::endl;
+  std::cout << "( /   @ @    (|)        ( /   @ @    ()" << std::endl;
+  std::cout << " \\  __| |__  /           \\  __| |__  /" << std::endl;
+  std::cout << "  \\/   \"   \\/             \\/   \"   \\/" << std::endl;
+  std::cout << " /-|       |-\\           /-|       |-\\" << std::endl;
+  std::cout << "/ /-\\     /-\\ \\         / /-\\     /-\\ \\" << std::endl;
+  std::cout << " / /-`---'-\\ \\           / /-`---'-\\ \\" << std::endl;
+  std::cout << "  /         \\             /         \\" << std::endl;
 
   return;
-
-
 }

@@ -18,18 +18,14 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::LocaInterface::LocaInterface()
-    : displ_fac_(0.0)
+STR::TIMINT::LocaInterface::LocaInterface() : displ_fac_(0.0)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::LocaInterface::Setup()
-{
-  STR::TIMINT::NoxInterface::Setup();
-}
+void STR::TIMINT::LocaInterface::Setup() { STR::TIMINT::NoxInterface::Setup(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -41,8 +37,8 @@ void STR::TIMINT::LocaInterface::setParameters(const LOCA::ParameterVector& p)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::LocaInterface::computeF(const Epetra_Vector& x,
-    Epetra_Vector& F, const FillType fillFlag)
+bool STR::TIMINT::LocaInterface::computeF(
+    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   CheckInitSetup();
   dserror("You shall not pass!");
@@ -52,8 +48,7 @@ bool STR::TIMINT::LocaInterface::computeF(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::LocaInterface::computeJacobian(const Epetra_Vector& x,
-    Epetra_Operator& jac)
+bool STR::TIMINT::LocaInterface::computeJacobian(const Epetra_Vector& x, Epetra_Operator& jac)
 {
   CheckInitSetup();
   dserror("You shall not pass!");
@@ -62,8 +57,8 @@ bool STR::TIMINT::LocaInterface::computeJacobian(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TIMINT::LocaInterface::computeFandJacobian(const Epetra_Vector& x,
-    Epetra_Vector& rhs, Epetra_Operator& jac)
+bool STR::TIMINT::LocaInterface::computeFandJacobian(
+    const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac)
 {
   CheckInitSetup();
   dserror("You shall not pass!");

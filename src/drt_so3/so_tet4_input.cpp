@@ -15,13 +15,12 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
-                                         const std::string& distype,
-                                         DRT::INPUT::LineDefinition* linedef)
+bool DRT::ELEMENTS::So_tet4::ReadElement(
+    const std::string& eletype, const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
-  linedef->ExtractInt("MAT",material);
+  linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -29,15 +28,15 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   SolidMaterial()->Setup(NUMGPT_SOTET4, linedef);
 
   std::string buffer;
-  linedef->ExtractString("KINEM",buffer);
+  linedef->ExtractString("KINEM", buffer);
 
   // geometrically linear
-  if(buffer=="linear")
+  if (buffer == "linear")
   {
     kintype_ = INPAR::STR::kinem_linear;
   }
   // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="nonlinear")
+  else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
@@ -51,5 +50,3 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
 
   return true;
 }
-
-

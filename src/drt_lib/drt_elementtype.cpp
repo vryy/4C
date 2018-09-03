@@ -16,13 +16,6 @@
 
 #include "drt_elementtype.H"
 
-DRT::ElementType::ElementType()
-  : ParObjectType()
-{
+DRT::ElementType::ElementType() : ParObjectType() {}
 
-}
-
-int DRT::ElementType::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
+int DRT::ElementType::Initialize(DRT::Discretization& dis) { return 0; }

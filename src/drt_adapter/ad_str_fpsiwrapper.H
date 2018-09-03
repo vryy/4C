@@ -18,10 +18,9 @@
 
 namespace ADAPTER
 {
-
   class FPSIStructureWrapper : public FSIStructureWrapper
   {
-  public:
+   public:
     /// constructor
     explicit FPSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
@@ -48,5 +47,5 @@ namespace ADAPTER
     */
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp(bool FPSI = false);
   };
-}
+}  // namespace ADAPTER
 #endif

@@ -29,7 +29,7 @@ References are
 
 #include "../drt_inpar/inpar_fluid.H"
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
   class Discretization;
@@ -37,37 +37,33 @@ namespace DRT
 
 namespace FLD
 {
+  // forward declarations
+  class FluidImplicitTimeInt;
 
-// forward declarations
-class FluidImplicitTimeInt;
-
-// inital condition for homogeneous isotropic turbulence
-// based on the Comte-Bellot - Corrsion experiment
-class HomIsoTurbInitialField
-{
-  public:
-
+  // inital condition for homogeneous isotropic turbulence
+  // based on the Comte-Bellot - Corrsion experiment
+  class HomIsoTurbInitialField
+  {
+   public:
     //! constructor
-    HomIsoTurbInitialField(FluidImplicitTimeInt& timeint,
-                          const INPAR::FLUID::InitialField initfield);
+    HomIsoTurbInitialField(
+        FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
     //! destructor
-    virtual ~HomIsoTurbInitialField(){return;};
+    virtual ~HomIsoTurbInitialField() { return; };
 
     //! calculate initial field
     virtual void CalculateInitialField();
 
-  protected:
-
+   protected:
     //! sort criterium for double values up to a tolerance of 10-9
     class LineSortCriterion
     {
-      public:
-        bool operator() (const double& p1,
-                         const double& p2) const { return (p1 < p2 - 1E-9);}
+     public:
+      bool operator()(const double& p1, const double& p2) const { return (p1 < p2 - 1E-9); }
 
-      protected:
-      private:
+     protected:
+     private:
     };
 
     //! non-dimensionalize and store experimental data
@@ -93,37 +89,35 @@ class HomIsoTurbInitialField
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double> > coordinates_;
+    Teuchos::RCP<std::vector<double>> coordinates_;
 
     //! vector containing wave numbers of experiment
     std::vector<double> k_exp_;
     //! vector containing corresponding energy
     std::vector<double> E_exp_;
+  };
 
-};
-
-// inital condition for homogeneous isotropic turbulence
-// based on the Comte-Bellot - Corrsion experiment
-class HomIsoTurbInitialFieldHDG: public HomIsoTurbInitialField
-{
-  public:
-
+  // inital condition for homogeneous isotropic turbulence
+  // based on the Comte-Bellot - Corrsion experiment
+  class HomIsoTurbInitialFieldHDG : public HomIsoTurbInitialField
+  {
+   public:
     //! constructor
-    HomIsoTurbInitialFieldHDG(FluidImplicitTimeInt& timeint,
-                          const INPAR::FLUID::InitialField initfield);
+    HomIsoTurbInitialFieldHDG(
+        FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
     //! destructor
-    ~HomIsoTurbInitialFieldHDG(){return;};
+    ~HomIsoTurbInitialFieldHDG() { return; };
 
     //! calculate initial field
     void CalculateInitialField();
 
-  protected:
+   protected:
     Teuchos::RCP<Epetra_Vector> intveln_;
     Teuchos::RCP<Epetra_Vector> intvelnm_;
     Teuchos::RCP<Epetra_Vector> intvelnp_;
-};
+  };
 
-} // end FLUID
+}  // namespace FLD
 
 #endif

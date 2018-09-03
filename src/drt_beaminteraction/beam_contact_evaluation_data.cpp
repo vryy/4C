@@ -20,19 +20,18 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamContactEvaluationData::BeamContactEvaluationData():
-beam_to_solid_volume_meshtying_evaluation_data_(Teuchos::null)
+BEAMINTERACTION::BeamContactEvaluationData::BeamContactEvaluationData()
+    : beam_to_solid_volume_meshtying_evaluation_data_(Teuchos::null)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamContactEvaluationData::
-    BuildBeamToSolidVolumeMeshtyingEvaluationData()
+void BEAMINTERACTION::BeamContactEvaluationData::BuildBeamToSolidVolumeMeshtyingEvaluationData()
 {
-  beam_to_solid_volume_meshtying_evaluation_data_ = Teuchos::rcp( new BEAMINTERACTION::
-      BeamToSolidVolumeMeshtyingEvaluationData() );
+  beam_to_solid_volume_meshtying_evaluation_data_ =
+      Teuchos::rcp(new BEAMINTERACTION::BeamToSolidVolumeMeshtyingEvaluationData());
 
   beam_to_solid_volume_meshtying_evaluation_data_->Init();
   beam_to_solid_volume_meshtying_evaluation_data_->Setup();

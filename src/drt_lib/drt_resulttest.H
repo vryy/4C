@@ -31,7 +31,7 @@ namespace DRT
     class DatFileReader;
     class LineDefinition;
     class Lines;
-  }
+  }  // namespace INPUT
 
   /*!
     \brief Pure virtual base class of all field test classes
@@ -48,8 +48,7 @@ namespace DRT
   */
   class ResultTest
   {
-  public:
-
+   public:
     /// not yet documented
     ResultTest(const std::string name = "NONE");
 
@@ -63,8 +62,8 @@ namespace DRT
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// perform special case test
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count,
-        int& unevaluated_test_count );
+    virtual void TestSpecial(
+        DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
 
     /// perform special case test
     virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
@@ -72,8 +71,7 @@ namespace DRT
     /// tell whether this field test matches to a given line
     virtual bool Match(DRT::INPUT::LineDefinition& res);
 
-  protected:
-
+   protected:
     //! compare a calculated value with the expected one
     //!
     //! There is a difference between node/element based results and special results.
@@ -82,8 +80,7 @@ namespace DRT
     //! overall algorithm.
     virtual int CompareValues(double actresult, std::string type, DRT::INPUT::LineDefinition& res);
 
-  private:
-
+   private:
     /// specific name of a field test
     const std::string myname_;
   };
@@ -100,8 +97,7 @@ namespace DRT
   */
   class ResultTestManager
   {
-  public:
-
+   public:
     /// add field specific result test object
     void AddFieldTest(Teuchos::RCP<ResultTest> test);
 
@@ -114,16 +110,15 @@ namespace DRT
     /// read the baci input file and set up all curves
     void ReadInput(DRT::INPUT::DatFileReader& reader);
 
-  private:
-
+   private:
     /// set of field specific result test objects
-    std::vector<Teuchos::RCP<ResultTest> > fieldtest_;
+    std::vector<Teuchos::RCP<ResultTest>> fieldtest_;
 
     /// expected results
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> > results_;
+    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> results_;
   };
 
-}
+}  // namespace DRT
 
 void PrintResultDescrDatHeader();
 

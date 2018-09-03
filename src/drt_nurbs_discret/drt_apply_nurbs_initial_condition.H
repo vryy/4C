@@ -29,104 +29,96 @@ the function value as well)
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 
-//forward declarations
+// forward declarations
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 }
 namespace LINALG
 {
-class Solver;
+  class Solver;
 }
 
 namespace DRT
 {
+  namespace NURBS
+  {
+    /*----------------------------------------------------------------------*/
+    /*!
+    \brief A service method allowing the application of initial conditions
+           for nurbs discretisations. Recommended version with separate
+           solver allocation
 
-namespace NURBS
-{
+    \param dis          (i) the discretisation
+    \param solverparams (i) a list with solver parameters
+    \param startfuncno  (i) the number of the startfunction defining
+                           the initial field (i.e. u_0(x))
+    \param initialvals  (o) the initial field on output (i.e. u_cp)
 
-/*----------------------------------------------------------------------*/
-/*!
-\brief A service method allowing the application of initial conditions
-       for nurbs discretisations. Recommended version with separate
-       solver allocation
+    \date 08/11
+    */
+    void apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* outfile,
+        const Teuchos::ParameterList& solverparams, const int startfuncno,
+        Teuchos::RCP<Epetra_Vector> initialvals);
 
-\param dis          (i) the discretisation
-\param solverparams (i) a list with solver parameters
-\param startfuncno  (i) the number of the startfunction defining
-                       the initial field (i.e. u_0(x))
-\param initialvals  (o) the initial field on output (i.e. u_cp)
+    /*----------------------------------------------------------------------*/
+    /*!
+    \brief A service method allowing the application of initial conditions
+           for nurbs discretisations.
 
-\date 08/11
-*/
-void apply_nurbs_initial_condition(
-  DRT::Discretization&        dis         ,
-  FILE*                       outfile,
-  const Teuchos::ParameterList&     solverparams,
-  const int                   startfuncno ,
-  Teuchos::RCP<Epetra_Vector> initialvals );
+    This method provides the following:
 
-/*----------------------------------------------------------------------*/
-/*!
-\brief A service method allowing the application of initial conditions
-       for nurbs discretisations.
+    Given an initial distribution u_0(x) of initial values (for example by a
+    spatial function), we compute control point values u_cp such that they
+    minimize the following least-squares problem:
 
-This method provides the following:
-
-Given an initial distribution u_0(x) of initial values (for example by a
-spatial function), we compute control point values u_cp such that they
-minimize the following least-squares problem:
-
-<pre>
-                  ||                                   || 2
-                  || +----+                            ||
-                  ||  \                                ||
-             min  ||   +    N   (x) * u     -  u   (x) ||
-                  ||  /      cp       - cp     - 0     ||
-             u    || +----+                            ||
-             - cp ||   cp                              ||
-</pre>
+    <pre>
+                      ||                                   || 2
+                      || +----+                            ||
+                      ||  \                                ||
+                 min  ||   +    N   (x) * u     -  u   (x) ||
+                      ||  /      cp       - cp     - 0     ||
+                 u    || +----+                            ||
+                 - cp ||   cp                              ||
+    </pre>
 
 
-This is equivalent to the solution of the following linear system:
+    This is equivalent to the solution of the following linear system:
 
-<pre>
+    <pre>
 
-         /                         \               /                         \
-        |    /                      |             |    /                      |
- +----+ |   |                       |             |   |                       |
-  \     |   |                       |    dim      |   |            dim        |
-   +    |   | N   (x) * N   (x) dx  | * u     =   |   | N   (x) * u   (x) dx  |
-  /     |   |  cp        cp         |    cp       |   |  cp        0          |
- +----+ |   |    j         i        |      j      |   |    j                  |
-   cp   |  /                        |             |  /                        |
-     j   \                         /               \                         /
+             /                         \               /                         \
+            |    /                      |             |    /                      |
+     +----+ |   |                       |             |   |                       |
+      \     |   |                       |    dim      |   |            dim        |
+       +    |   | N   (x) * N   (x) dx  | * u     =   |   | N   (x) * u   (x) dx  |
+      /     |   |  cp        cp         |    cp       |   |  cp        0          |
+     +----+ |   |    j         i        |      j      |   |    j                  |
+       cp   |  /                        |             |  /                        |
+         j   \                         /               \                         /
 
-        |                           |             |                           |
-        +---------------------------+             +---------------------------+
+            |                           |             |                           |
+            +---------------------------+             +---------------------------+
 
-               M(assmatrix)                                   rhs
+                   M(assmatrix)                                   rhs
 
-</pre>
-
-
-\param dis         (i) the discretisation
-\param solver      (i) a solver object for the least-squares problem
-\param startfuncno (i) the number of the startfunction defining
-                       the initial field (i.e. u_0(x))
-\param initialvals (o) the initial field on output (i.e. u_cp)
-
-\date 04/09
-*/
-  void apply_nurbs_initial_condition_solve(
-    DRT::Discretization&        dis         ,
-    LINALG::Solver&             solver      ,
-    const int                   startfuncno ,
-    Teuchos::RCP<Epetra_Vector> initialvals );
+    </pre>
 
 
-} // namespace NURBS
+    \param dis         (i) the discretisation
+    \param solver      (i) a solver object for the least-squares problem
+    \param startfuncno (i) the number of the startfunction defining
+                           the initial field (i.e. u_0(x))
+    \param initialvals (o) the initial field on output (i.e. u_cp)
 
-} //namespace DRT
+    \date 04/09
+    */
+    void apply_nurbs_initial_condition_solve(DRT::Discretization& dis, LINALG::Solver& solver,
+        const int startfuncno, Teuchos::RCP<Epetra_Vector> initialvals);
 
-#endif // #ifdef DRT_APPLY_NURBS_INITIAL_CONDITION_H
+
+  }  // namespace NURBS
+
+}  // namespace DRT
+
+#endif  // #ifdef DRT_APPLY_NURBS_INITIAL_CONDITION_H

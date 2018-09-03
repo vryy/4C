@@ -30,10 +30,12 @@ namespace PARTICLE
   /*!
   \brief abstract interface of time integration strategies for particle problems
 
-  To keep the particle time integrator classes as plain as possible, several algorithmic parts focusing on the computation
-  of kinematic and kinetic quantities have been encapsulated within separate time integration strategy classes. Thereby,
-  a bunch of unhandy if-else selections within the time integrator classes themselves can be circumvented. Each specific
-  time integration strategy class has to be implemented in a subclass derived from this abstract, purely virtual interface.
+  To keep the particle time integrator classes as plain as possible, several algorithmic parts
+  focusing on the computation of kinematic and kinetic quantities have been encapsulated within
+  separate time integration strategy classes. Thereby, a bunch of unhandy if-else selections within
+  the time integrator classes themselves can be circumvented. Each specific time integration
+  strategy class has to be implemented in a subclass derived from this abstract, purely virtual
+  interface.
 
   \author fang (fang@lnm.mw.tum.de)
 
@@ -42,63 +44,58 @@ namespace PARTICLE
 
   class TimIntStrategyBase
   {
-    public:
+   public:
+    //! constructor
+    explicit TimIntStrategyBase(TimInt* const timint  //!< time integrator
+    );
 
-      //! constructor
-      explicit TimIntStrategyBase(
-          TimInt* const   timint   //!< time integrator
-          );
+    //! destructor
+    virtual ~TimIntStrategyBase() { return; };
 
-      //! destructor
-      virtual ~TimIntStrategyBase(){return;};
+    //! compute angular acceleration vector
+    virtual void ComputeAngularAcceleration(
+        Epetra_Vector& angacc,          //!< global angular acceleration vector
+        const Epetra_Vector& m_contact  //!< global moment vector
+        ) const = 0;
 
-      //! compute angular acceleration vector
-      virtual void ComputeAngularAcceleration(
-          Epetra_Vector&         angacc,     //!< global angular acceleration vector
-          const Epetra_Vector&   m_contact   //!< global moment vector
-          ) const = 0;
+    //! compute inertia vector
+    virtual void ComputeInertia() const = 0;
 
-      //! compute inertia vector
-      virtual void ComputeInertia() const = 0;
+    //! compute kinetic energy
+    virtual double ComputeKineticEnergy() const = 0;
 
-      //! compute kinetic energy
-      virtual double ComputeKineticEnergy() const = 0;
+    //! compute mass vector
+    virtual void ComputeMass() const = 0;
 
-      //! compute mass vector
-      virtual void ComputeMass() const = 0;
+    //! output particle orientation
+    virtual void OutputOrientation() const = 0;
 
-      //! output particle orientation
-      virtual void OutputOrientation() const = 0;
+    //! predict or correct angular velocity vector
+    virtual void PredictOrCorrectAngularVelocity(const double dt,  //!< time step size
+        const Epetra_Vector& m_contact,                            //!< global moment vector
+        const Epetra_Vector& orient  //!< particle orientation vector at time t_n
+        ) const = 0;
 
-      //! predict or correct angular velocity vector
-      virtual void PredictOrCorrectAngularVelocity(
-          const double           dt,          //!< time step size
-          const Epetra_Vector&   m_contact,   //!< global moment vector
-          const Epetra_Vector&   orient       //!< particle orientation vector at time t_n
-          ) const = 0;
+    //! update particle orientation vector
+    virtual void RotateOrientVector(const double dt  //!< time step size
+        ) const = 0;
 
-      //! update particle orientation vector
-      virtual void RotateOrientVector(
-          const double   dt   //!< time step size
-          ) const = 0;
+    //! set initial particle orientation
+    virtual void SetInitialOrientation() const = 0;
 
-      //! set initial particle orientation
-      virtual void SetInitialOrientation() const = 0;
+    //! set initial particle radii
+    virtual void SetInitialRadii() const = 0;
 
-      //! set initial particle radii
-      virtual void SetInitialRadii() const = 0;
+    //! update map of inertia vector
+    virtual void UpdateInertiaVectorMap() const = 0;
 
-      //! update map of inertia vector
-      virtual void UpdateInertiaVectorMap() const = 0;
+    //! update map of radius vector
+    virtual void UpdateRadiusVectorMap() const = 0;
 
-      //! update map of radius vector
-      virtual void UpdateRadiusVectorMap() const = 0;
-
-    protected:
-
-      //! time integrator
-      TimInt* const timint_;
-  }; // class TimIntStrategyBase
+   protected:
+    //! time integrator
+    TimInt* const timint_;
+  };  // class TimIntStrategyBase
 
 
   /*!
@@ -111,58 +108,53 @@ namespace PARTICLE
 
   class TimIntStrategySpheres : public TimIntStrategyBase
   {
-    public:
+   public:
+    //! constructor
+    explicit TimIntStrategySpheres(TimInt* const timint  //!< time integrator
+    );
 
-      //! constructor
-      explicit TimIntStrategySpheres(
-          TimInt* const   timint   //!< time integrator
-          );
+    //! destructor
+    virtual ~TimIntStrategySpheres() { return; };
 
-      //! destructor
-      virtual ~TimIntStrategySpheres(){return;};
+    //! compute angular acceleration vector
+    void ComputeAngularAcceleration(Epetra_Vector& angacc,  //!< global angular acceleration vector
+        const Epetra_Vector& m_contact                      //!< global moment vector
+        ) const;
 
-      //! compute angular acceleration vector
-      void ComputeAngularAcceleration(
-          Epetra_Vector&         angacc,     //!< global angular acceleration vector
-          const Epetra_Vector&   m_contact   //!< global moment vector
-          ) const;
+    //! compute inertia vector
+    void ComputeInertia() const;
 
-      //! compute inertia vector
-      void ComputeInertia() const;
+    //! compute kinetic energy
+    double ComputeKineticEnergy() const;
 
-      //! compute kinetic energy
-      double ComputeKineticEnergy() const;
+    //! compute mass vector
+    void ComputeMass() const;
 
-      //! compute mass vector
-      void ComputeMass() const;
+    //! output particle orientation
+    void OutputOrientation() const;
 
-      //! output particle orientation
-      void OutputOrientation() const;
+    //! predict or correct angular velocity vector
+    void PredictOrCorrectAngularVelocity(const double dt,  //!< time step size
+        const Epetra_Vector& m_contact,                    //!< global moment vector
+        const Epetra_Vector& orient  //!< particle orientation vector at time t_n
+        ) const;
 
-      //! predict or correct angular velocity vector
-      void PredictOrCorrectAngularVelocity(
-          const double           dt,          //!< time step size
-          const Epetra_Vector&   m_contact,   //!< global moment vector
-          const Epetra_Vector&   orient       //!< particle orientation vector at time t_n
-          ) const;
+    //! update particle orientation vector
+    void RotateOrientVector(const double dt  //!< time step size
+        ) const;
 
-      //! update particle orientation vector
-      void RotateOrientVector(
-          const double   dt   //!< time step size
-          ) const;
+    //! set initial particle orientation
+    void SetInitialOrientation() const;
 
-      //! set initial particle orientation
-      void SetInitialOrientation() const;
+    //! set initial particle radii
+    void SetInitialRadii() const;
 
-      //! set initial particle radii
-      void SetInitialRadii() const;
+    //! update map of inertia vector
+    void UpdateInertiaVectorMap() const;
 
-      //! update map of inertia vector
-      void UpdateInertiaVectorMap() const;
-
-      //! update map of radius vector
-      void UpdateRadiusVectorMap() const;
-  }; // class TimIntStrategySpheres
+    //! update map of radius vector
+    void UpdateRadiusVectorMap() const;
+  };  // class TimIntStrategySpheres
 
 
   /*!
@@ -175,57 +167,52 @@ namespace PARTICLE
 
   class TimIntStrategyEllipsoids : public TimIntStrategyBase
   {
-    public:
+   public:
+    //! constructor
+    explicit TimIntStrategyEllipsoids(TimInt* const timint  //!< time integrator
+    );
 
-      //! constructor
-      explicit TimIntStrategyEllipsoids(
-          TimInt* const   timint   //!< time integrator
-          );
+    //! destructor
+    virtual ~TimIntStrategyEllipsoids() { return; };
 
-      //! destructor
-      virtual ~TimIntStrategyEllipsoids(){return;};
+    //! compute angular acceleration vector
+    void ComputeAngularAcceleration(Epetra_Vector& angacc,  //!< global angular acceleration vector
+        const Epetra_Vector& m_contact                      //!< global moment vector
+        ) const;
 
-      //! compute angular acceleration vector
-      void ComputeAngularAcceleration(
-          Epetra_Vector&         angacc,     //!< global angular acceleration vector
-          const Epetra_Vector&   m_contact   //!< global moment vector
-          ) const;
+    //! compute inertia vector
+    void ComputeInertia() const;
 
-      //! compute inertia vector
-      void ComputeInertia() const;
+    //! compute kinetic energy
+    double ComputeKineticEnergy() const;
 
-      //! compute kinetic energy
-      double ComputeKineticEnergy() const;
+    //! compute mass vector
+    void ComputeMass() const;
 
-      //! compute mass vector
-      void ComputeMass() const;
+    //! output particle orientation
+    void OutputOrientation() const;
 
-      //! output particle orientation
-      void OutputOrientation() const;
+    //! predict or correct angular velocity vector
+    void PredictOrCorrectAngularVelocity(const double dt,  //!< time step size
+        const Epetra_Vector& m_contact,                    //!< global moment vector
+        const Epetra_Vector& orient  //!< particle orientation vector at time t_n
+        ) const;
 
-      //! predict or correct angular velocity vector
-      void PredictOrCorrectAngularVelocity(
-          const double           dt,          //!< time step size
-          const Epetra_Vector&   m_contact,   //!< global moment vector
-          const Epetra_Vector&   orient       //!< particle orientation vector at time t_n
-          ) const;
+    //! update particle orientation vector
+    void RotateOrientVector(const double dt  //!< time step size
+        ) const;
 
-      //! update particle orientation vector
-      void RotateOrientVector(
-          const double   dt   //!< time step size
-          ) const;
+    //! set initial particle orientation
+    void SetInitialOrientation() const;
 
-      //! set initial particle orientation
-      void SetInitialOrientation() const;
+    //! set initial particle radii
+    void SetInitialRadii() const;
 
-      //! set initial particle radii
-      void SetInitialRadii() const;
+    //! update map of inertia vector
+    void UpdateInertiaVectorMap() const;
 
-      //! update map of inertia vector
-      void UpdateInertiaVectorMap() const;
-
-      //! update map of radius vector
-      void UpdateRadiusVectorMap() const;
-  }; // class TimIntStrategyEllipsoids
-} // namespace PARTICLE
-#endif // #ifndef PARTICLE_TIMINT_STRATEGY_H
+    //! update map of radius vector
+    void UpdateRadiusVectorMap() const;
+  };  // class TimIntStrategyEllipsoids
+}  // namespace PARTICLE
+#endif  // #ifndef PARTICLE_TIMINT_STRATEGY_H

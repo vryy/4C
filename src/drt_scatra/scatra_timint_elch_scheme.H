@@ -25,198 +25,185 @@
 
 namespace SCATRA
 {
+  class ScaTraTimIntElchOST : public ScaTraTimIntElch, public TimIntOneStepTheta
+  {
+   public:
+    //! Standard Constructor
+    ScaTraTimIntElchOST(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-class ScaTraTimIntElchOST : public ScaTraTimIntElch, public TimIntOneStepTheta
-{
+    //! Destructor
+    virtual ~ScaTraTimIntElchOST();
 
-public:
+    //! initialize time integration scheme
+    virtual void Init();
 
-  //! Standard Constructor
-  ScaTraTimIntElchOST(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! Destructor
-  virtual ~ScaTraTimIntElchOST();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! initialize time integration scheme
-  virtual void Init();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! setup time integration scheme
-  virtual void Setup();
+   protected:
+    //! calculate initial electric potential field
+    void CalcInitialPotentialField();
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    //! update time-dependent electrode state variables at the end of an time step
+    void ElectrodeKineticsTimeUpdate();
 
-protected:
+    //! explicit predictor for nonlinear solver
+    void ExplicitPredictor() const;
 
-  //! calculate initial electric potential field
-  void CalcInitialPotentialField();
+    //!  compute scalar time derivate parameters of the input voltage to compute double layer
+    //!  current densities
+    void ComputeTimeDerivPot0(const bool init);
 
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-  //! update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate();
-
-  //! explicit predictor for nonlinear solver
-  void ExplicitPredictor() const;
-
-  //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
-  void ComputeTimeDerivPot0(const bool init);
-
-  //! set part of residual vector belonging to previous time step
-  void SetOldPartOfRighthandside();
-}; // class TimIntElchOST
+    //! set part of residual vector belonging to previous time step
+    void SetOldPartOfRighthandside();
+  };  // class TimIntElchOST
 
 
-class ScaTraTimIntElchBDF2 : public ScaTraTimIntElch, public TimIntBDF2
-{
+  class ScaTraTimIntElchBDF2 : public ScaTraTimIntElch, public TimIntBDF2
+  {
+   public:
+    //! Standard Constructor
+    ScaTraTimIntElchBDF2(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-public:
+    //! Destructor
+    virtual ~ScaTraTimIntElchBDF2();
 
-  //! Standard Constructor
-  ScaTraTimIntElchBDF2(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! initialize time integration scheme
+    void Init();
 
-  //! Destructor
-  virtual ~ScaTraTimIntElchBDF2();
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! initialize time integration scheme
-  void Init();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! setup time integration scheme
-  virtual void Setup();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+   protected:
+    //! calculate initial electric potential field
+    void CalcInitialPotentialField();
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-protected:
+    //! update time-dependent electrode state variables at the end of an time step
+    void ElectrodeKineticsTimeUpdate();
 
-  //! calculate initial electric potential field
-  void CalcInitialPotentialField();
+    //!  compute scalar time derivate parameters of the input voltage to compute double layer
+    //!  current densities
+    void ComputeTimeDerivPot0(const bool init);
 
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-  //! update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate();
-
-  //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
-  void ComputeTimeDerivPot0(const bool init);
-
-  //! set part of residual vector belonging to previous time step
-  void SetOldPartOfRighthandside();
-}; // class TimIntElchBDF2
+    //! set part of residual vector belonging to previous time step
+    void SetOldPartOfRighthandside();
+  };  // class TimIntElchBDF2
 
 
-class ScaTraTimIntElchGenAlpha : public ScaTraTimIntElch, public TimIntGenAlpha
-{
+  class ScaTraTimIntElchGenAlpha : public ScaTraTimIntElch, public TimIntGenAlpha
+  {
+   public:
+    //! Standard Constructor
+    ScaTraTimIntElchGenAlpha(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-public:
+    //! Destructor
+    virtual ~ScaTraTimIntElchGenAlpha();
 
-  //! Standard Constructor
-  ScaTraTimIntElchGenAlpha(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! initialize time integration scheme
+    void Init();
 
-  //! Destructor
-  virtual ~ScaTraTimIntElchGenAlpha();
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! initialize time integration scheme
-  void Init();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! setup time integration scheme
-  virtual void Setup();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+   protected:
+    //! calculate initial electric potential field
+    void CalcInitialPotentialField();
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-protected:
+    //! update time-dependent electrode state variables at the end of an time step
+    void ElectrodeKineticsTimeUpdate();
 
-  //! calculate initial electric potential field
-  void CalcInitialPotentialField();
-
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-  //! update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate();
-
-  //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
-  void ComputeTimeDerivPot0(const bool init);
-}; // class TimIntElchGenAlpha
+    //!  compute scalar time derivate parameters of the input voltage to compute double layer
+    //!  current densities
+    void ComputeTimeDerivPot0(const bool init);
+  };  // class TimIntElchGenAlpha
 
 
-class ScaTraTimIntElchStationary : public ScaTraTimIntElch, public TimIntStationary
-{
+  class ScaTraTimIntElchStationary : public ScaTraTimIntElch, public TimIntStationary
+  {
+   public:
+    //! Standard Constructor
+    ScaTraTimIntElchStationary(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
-public:
+    //! Destructor
+    virtual ~ScaTraTimIntElchStationary();
 
-  //! Standard Constructor
-  ScaTraTimIntElchStationary(
-    Teuchos::RCP<DRT::Discretization>       dis,
-    Teuchos::RCP<LINALG::Solver>            solver,
-    Teuchos::RCP<Teuchos::ParameterList>    params,
-    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter>  output);
+    //! initialize time integration scheme
+    void Init();
 
-  //! Destructor
-  virtual ~ScaTraTimIntElchStationary();
+    //! setup time integration scheme
+    virtual void Setup();
 
-  //! initialize time integration scheme
-  void Init();
+    //! Update the solution after convergence of the nonlinear iteration.
+    //! Current solution becomes old solution of next timestep.
+    void Update(const int num = 0);
 
-  //! setup time integration scheme
-  virtual void Setup();
+    //! read restart data
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
-  //! Update the solution after convergence of the nonlinear iteration.
-  //! Current solution becomes old solution of next timestep.
-  void Update(const int num=0);
+   protected:
+    //! calculate initial electric potential field
+    void CalcInitialPotentialField();
 
-  //! read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    //! write additional data required for restart
+    void OutputRestart() const;
 
-protected:
+    //! update time-dependent electrode state variables at the end of an time step
+    void ElectrodeKineticsTimeUpdate()
+    {
+      dserror("Galvanostatic-BC is not implemented for the stationary time-integration scheme");
+      return;
+    };
 
-  //! calculate initial electric potential field
-  void CalcInitialPotentialField();
-
-  //! write additional data required for restart
-  void OutputRestart() const;
-
-  //! update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate(){dserror("Galvanostatic-BC is not implemented for the stationary time-integration scheme"); return;};
-
-  //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
-  void ComputeTimeDerivPot0(const bool init);
-}; // class TimIntElchStatationary
-} // namespace SCATRA
+    //!  compute scalar time derivate parameters of the input voltage to compute double layer
+    //!  current densities
+    void ComputeTimeDerivPot0(const bool init);
+  };  // class TimIntElchStatationary
+}  // namespace SCATRA
 
 #endif  // #ifndef SCATRA_TIMINT_ELCH_SCHEME_H

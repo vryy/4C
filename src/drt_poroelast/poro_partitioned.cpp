@@ -25,9 +25,9 @@
 /*----------------------------------------------------------------------*
  | constructor (public)                                    vuong 01/12  |
  *----------------------------------------------------------------------*/
-POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
-                                          const Teuchos::ParameterList& timeparams) :
-      PoroBase(comm, timeparams),
+POROELAST::Partitioned::Partitioned(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : PoroBase(comm, timeparams),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
       del_(Teuchos::null),
@@ -37,8 +37,8 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
 {
   const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
   // Get the parameters for the ConvergenceCheck
-  itmax_ = porodyn.get<int>("ITEMAX"); // default: =10
-  ittol_ = porodyn.get<double>("INCTOL"); // default: =1e-6
+  itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
+  ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6
 
   fluidveln_ = LINALG::CreateVector(*(FluidField()->DofRowMap()), true);
   fluidveln_->PutScalar(0.0);
@@ -49,21 +49,17 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
 *----------------------------------------------------------------------*/
 void POROELAST::Partitioned::DoTimeStep()
 {
+  PrepareTimeStep();
 
-    PrepareTimeStep();
+  Solve();
 
-    Solve();
-
-    UpdateAndOutput();
+  UpdateAndOutput();
 }
 
 /*----------------------------------------------------------------------*
                                                            vuong 01/12  |
 *----------------------------------------------------------------------*/
-void POROELAST::Partitioned::SetupSystem()
-{
-
-}  // SetupSystem()
+void POROELAST::Partitioned::SetupSystem() {}  // SetupSystem()
 
 /*----------------------------------------------------------------------*
                                                            vuong 01/12  |
@@ -75,55 +71,55 @@ void POROELAST::Partitioned::UpdateAndOutput()
   Update();
 
   Output();
-} // UpdateAndOutput()
+}  // UpdateAndOutput()
 
 /*----------------------------------------------------------------------*
                                                            vuong 01/12  |
 *----------------------------------------------------------------------*/
 void POROELAST::Partitioned::Solve()
 {
-  int  itnum = 0;
+  int itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
-    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout << "\n****************************************\n          OUTER ITERATION "
+                 "LOOP\n****************************************\n";
   }
 
   // initially solve coupled scalar transport equation system
-  //DoScatraStep();
+  // DoScatraStep();
 
-  if ( Step()==1 )
+  if (Step() == 1)
   {
-    fluidveln_->Update(1.0,*(FluidField()->Veln()),0.0);
+    fluidveln_->Update(1.0, *(FluidField()->Veln()), 0.0);
   }
 
-  while (stopnonliniter==false)
+  while (stopnonliniter == false)
   {
     itnum++;
 
     // store increment from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    fluidincnp_->Update(1.0,*FluidField()->Velnp(),0.0);
-    structincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
+    fluidincnp_->Update(1.0, *FluidField()->Velnp(), 0.0);
+    structincnp_->Update(1.0, *StructureField()->Dispnp(), 0.0);
 
     // get current fluid velocities due to solve fluid step, like predictor in FSI
     // 1. iteration: get velocities of old time step (T_n)
-    if (itnum==1)
+    if (itnum == 1)
     {
-      fluidveln_->Update(1.0,*(FluidField()->Veln()),0.0);
+      fluidveln_->Update(1.0, *(FluidField()->Veln()), 0.0);
     }
-    else // itnum > 1
+    else  // itnum > 1
     {
       // save velocity solution of old iteration step T_{n+1}^i
-      fluidveln_->Update(1.0,*(FluidField()->Velnp()),0.0);
+      fluidveln_->Update(1.0, *(FluidField()->Velnp()), 0.0);
     }
 
     // set fluid- and structure-based scalar transport values required in FSI
     SetFluidSolution();
 
-    if(itnum!=1)
-      StructureField()->PreparePartitionStep();
+    if (itnum != 1) StructureField()->PreparePartitionStep();
     // solve structural system
     DoStructStep();
 
@@ -132,13 +128,13 @@ void POROELAST::Partitioned::Solve()
 
     // solve scalar transport equation
     DoFluidStep();
-    //ScatraEvaluateSolveIterUpdate();
+    // ScatraEvaluateSolveIterUpdate();
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
 
-    //AitkenRelax();
+    // AitkenRelax();
   }
 
   // initial guess for next time step n+1
@@ -156,12 +152,11 @@ void POROELAST::Partitioned::DoStructStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout
-        << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
+    std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
   // Newton-Raphson iteration
-  StructureField()-> Solve();
+  StructureField()->Solve();
 }
 
 /*----------------------------------------------------------------------*/
@@ -170,11 +165,10 @@ void POROELAST::Partitioned::DoFluidStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout
-        << "\n***********************\n FLUID SOLVER \n***********************\n";
+    std::cout << "\n***********************\n FLUID SOLVER \n***********************\n";
   }
 
-  //FluidField()->PrepareSolve();
+  // FluidField()->PrepareSolve();
   // Newton-Raphson iteration
   FluidField()->Solve();
 }
@@ -186,7 +180,7 @@ void POROELAST::Partitioned::PrepareTimeStep()
   IncrementTimeAndStep();
   PrintHeader();
 
-  StructureField()-> PrepareTimeStep();
+  StructureField()->PrepareTimeStep();
   SetStructSolution();
   FluidField()->PrepareTimeStep();
   SetFluidSolution();
@@ -195,11 +189,8 @@ void POROELAST::Partitioned::PrepareTimeStep()
 /*----------------------------------------------------------------------*
  | convergence check for both fields (fluid & structure)
  *----------------------------------------------------------------------*/
-bool POROELAST::Partitioned::ConvergenceCheck(
-  int itnum
-  )
+bool POROELAST::Partitioned::ConvergenceCheck(int itnum)
 {
-
   // convergence check based on the temperature increment
   bool stopnonliniter = false;
 
@@ -217,8 +208,8 @@ bool POROELAST::Partitioned::ConvergenceCheck(
 
   // build the current temperature increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  fluidincnp_->Update(1.0,*(FluidField()->Velnp()),-1.0);
-  structincnp_->Update(1.0,*(StructureField()->Dispnp()),-1.0);
+  fluidincnp_->Update(1.0, *(FluidField()->Velnp()), -1.0);
+  structincnp_->Update(1.0, *(StructureField()->Dispnp()), -1.0);
 
   // build the L2-norm of the temperature increment and the temperature
   fluidincnp_->Norm2(&fluidincnorm_L2);
@@ -232,44 +223,50 @@ bool POROELAST::Partitioned::ConvergenceCheck(
   if (structnorm_L2 < 1e-6) structnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID()==0 )//and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+  if (Comm().MyPID() == 0)  // and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
   {
-    std::cout<<"\n";
-    std::cout<<"***********************************************************************************\n";
-    std::cout<<"    OUTER ITERATION STEP    \n";
-    std::cout<<"***********************************************************************************\n";
+    std::cout << "\n";
+    std::cout
+        << "***********************************************************************************\n";
+    std::cout << "    OUTER ITERATION STEP    \n";
+    std::cout
+        << "***********************************************************************************\n";
     printf("+--------------+------------------------+--------------------+--------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  fluid-inc      --|--  disp-inc      --|\n");
-    printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
-         itnum,itmax_,ittol_,fluidincnorm_L2/fluidnorm_L2,dispincnorm_L2/structnorm_L2);
+    printf(
+        "|-  step/max  -|-  tol      [norm]     -|--  fluid-inc      --|--  disp-inc      --|\n");
+    printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |", itnum, itmax_,
+        ittol_, fluidincnorm_L2 / fluidnorm_L2, dispincnorm_L2 / structnorm_L2);
     printf("\n");
     printf("+--------------+------------------------+--------------------+--------------------+\n");
   }
 
   // converged
-  if ((fluidincnorm_L2/fluidnorm_L2 <= ittol_) &&
-      (dispincnorm_L2/structnorm_L2 <= ittol_))
+  if ((fluidincnorm_L2 / fluidnorm_L2 <= ittol_) && (dispincnorm_L2 / structnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID()==0 ) //and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if (Comm().MyPID() == 0)  // and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
     {
       printf("\n");
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax_);
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      printf(
+          "|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n",
+          itnum, itmax_);
+      printf(
+          "+--------------+------------------------+--------------------+--------------------+\n");
     }
   }
 
   // warn if itemax is reached without convergence, but proceed to next
   // timestep
-  if ((itnum==itmax_) and
-       ((fluidincnorm_L2/fluidnorm_L2 > ittol_) || (dispincnorm_L2/structnorm_L2 > ittol_))
-     )
+  if ((itnum == itmax_) and
+      ((fluidincnorm_L2 / fluidnorm_L2 > ittol_) || (dispincnorm_L2 / structnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID()==0) )//and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if ((Comm().MyPID() == 0))  // and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
     {
-      printf("|     >>>>>> not converged in itemax steps!                                       |\n");
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      printf(
+          "|     >>>>>> not converged in itemax steps!                                       |\n");
+      printf(
+          "+--------------+------------------------+--------------------+--------------------+\n");
       printf("\n");
       printf("\n");
     }
@@ -282,7 +279,7 @@ bool POROELAST::Partitioned::ConvergenceCheck(
 /*----------------------------------------------------------------------*/
 void POROELAST::Partitioned::AitkenRelax()
 {
-dserror("Aitken Relaxation not yet implemented");
+  dserror("Aitken Relaxation not yet implemented");
   // ------------------------------------------------------------
   // if r_{i+1} not converged in ConvergenceCheck()
   // --> apply Aitken relaxation to displacements
@@ -321,7 +318,7 @@ dserror("Aitken Relaxation not yet implemented");
 
   // calculate difference of current (i+1) and old (i) residual vector
   // del = r^{i+1}_{n+1}
-  del_->Update(1.0, *fluidincnp_,0.0);
+  del_->Update(1.0, *fluidincnp_, 0.0);
   // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
   delhist_->Update(1.0, *del_, (-1.0));
   double normdel = 0.0;
@@ -329,32 +326,32 @@ dserror("Aitken Relaxation not yet implemented");
   delhist_->Norm2(&normdel);
   // calculate dot product
   // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
-  del_->Dot(*delhist_,&dot);
+  del_->Dot(*delhist_, &dot);
 
   // Aikten factor
   // omega^{i+1}_{n+1} == omeganp_
   // omega^{i}_{n+1} == omegan_
   // ome^{i+1} = ome^i + (ome^i -1) . (r^i - r^{i+1})^T . r^{i+1} / |r^{i+1} - r^{i}|^2
-  omeganp_ = omegan_ + (omegan_ - 1.0) * (-dot) / (normdel*normdel);
+  omeganp_ = omegan_ + (omegan_ - 1.0) * (-dot) / (normdel * normdel);
 
   // relaxation parameter
   // omega_relax^{i+1} = 1- omega^{i+1}
   double relax = 1.0 - omeganp_;
 
-  if(Comm().MyPID() == 0)
-  std::cout<<"Aitken relaxation with omega_relax = "<<relax<<std::endl;
+  if (Comm().MyPID() == 0)
+    std::cout << "Aitken relaxation with omega_relax = " << relax << std::endl;
 
   // relax displacement solution for next iteration step
   // overwrite temp_ with relaxed solution vector
   // T^{i+1} = relax . T^{i+1} + (1- relax^{i+1}) T^i
   //         = T^i + relax^{i+1} * ( T^{i+1} - T^i )
-  fluidveln_->Update(relax,*del_,1.0);
+  fluidveln_->Update(relax, *del_, 1.0);
 
   // update Aitken parameter omega^{i+1}_{n+1}
   omegan_ = omeganp_;
 
   // update history vector with residual displacement of old iteration step
-  delhist_->Update(1.0,*del_,0.0);
+  delhist_->Update(1.0, *del_, 0.0);
 
   // end Aitken relaxation
   // ------------------------------------------------------------

@@ -36,62 +36,48 @@ namespace ADAPTER
 
 namespace POROMULTIPHASESCATRA
 {
-class PoroMultiPhaseScaTraBase;
-class PoroMultiPhaseScaTraArtCouplBase;
+  class PoroMultiPhaseScaTraBase;
+  class PoroMultiPhaseScaTraArtCouplBase;
 
-/// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase problems
-namespace UTILS
-{
+  /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase
+  /// problems
+  namespace UTILS
+  {
+    /// setup discretizations and dofsets
+    void SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
+        const std::string& struct_disname, const std::string& fluid_disname,
+        const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
+        int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl);
 
-/// setup discretizations and dofsets
-void SetupDiscretizationsAndFieldCoupling(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    int& ndsporo_disp,
-    int& ndsporo_vel,
-    int& ndsporo_solidpressure,
-    int& ndsporofluid_scatra,
-    const bool artery_coupl
+    //! exchange material pointers of discretizations
+    void AssignMaterialPointers(const std::string& struct_disname, const std::string& fluid_disname,
+        const std::string& scatra_disname, const bool artery_coupl);
+
+    /// create solution algorithm depending on input file
+    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>
+    CreatePoroMultiPhaseScatraAlgorithm(INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields
+                                            solscheme,  //!< solution scheme to build (i)
+        const Teuchos::ParameterList& timeparams,       //!< problem parameters (i)
+        const Epetra_Comm& comm                         //!< communicator(i)
     );
 
-//! exchange material pointers of discretizations
-void AssignMaterialPointers(
-    const std::string& struct_disname,
-    const std::string& fluid_disname,
-    const std::string& scatra_disname,
-    const bool artery_coupl
+    /// create coupling strategy for coupling with 1D network depending on input file
+    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
+    CreateAndInitArteryCouplingStrategy(Teuchos::RCP<DRT::Discretization> arterydis,
+        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
+        const std::string& condname, const std::string& artcoupleddofname,
+        const std::string& contcoupleddofname);
+
+    //! Determine norm of vector
+    double CalculateVectorNorm(
+        const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm,  //!< norm to use
+        const Teuchos::RCP<const Epetra_Vector> vect              //!< the vector of interest
     );
 
-/// create solution algorithm depending on input file
-Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase>
-CreatePoroMultiPhaseScatraAlgorithm(
-    INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solscheme, //!< solution scheme to build (i)
-    const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
-    const Epetra_Comm& comm //!< communicator(i)
-    );
-
-/// create coupling strategy for coupling with 1D network depending on input file
-Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
-CreateAndInitArteryCouplingStrategy(
-    Teuchos::RCP<DRT::Discretization>  arterydis,
-    Teuchos::RCP<DRT::Discretization>  contdis,
-    const Teuchos::ParameterList&      meshtyingparams,
-    const std::string&                 condname,
-    const std::string&                 artcoupleddofname,
-    const std::string&                 contcoupleddofname
-    );
-
-//! Determine norm of vector
-double CalculateVectorNorm(const enum INPAR::POROMULTIPHASESCATRA::VectorNorm norm, //!< norm to use
-    const Teuchos::RCP<const Epetra_Vector> vect //!< the vector of interest
-    );
-
-} // UTILS
-// Print the logo
-void PrintLogo();
-}
+  }  // namespace UTILS
+  // Print the logo
+  void PrintLogo();
+}  // namespace POROMULTIPHASESCATRA
 
 
 

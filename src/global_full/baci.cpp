@@ -36,7 +36,7 @@
 /*----------------------------------------------------------------------*
  | size of buffer to attach to intra-communicator in byte               |
  *----------------------------------------------------------------------*/
-#define MPIBUFFSIZE      (52428800) /* this is 50 MB */
+#define MPIBUFFSIZE (52428800) /* this is 50 MB */
 
 /*!
  * \brief FPE signal handle
@@ -46,17 +46,12 @@
  * through core-dumps from MPI_Abort() (e.g. OpenMPI does whereas
  * Intel MPI doesn't).
  */
-void sigfpe_handler(int sig){
-  dserror("Baci produced a floating point exception.");
-}
+void sigfpe_handler(int sig) { dserror("Baci produced a floating point exception."); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ntam(
-    int                 argc,
-    char               *argv[]
-  );
+void ntam(int argc, char *argv[]);
 
 /*!
 
@@ -71,109 +66,108 @@ main is only printing the ccarat head and the finish
 */
 int main(int argc, char *argv[])
 {
-  char *buff,*dbuff;
-  int   buffsize=MPIBUFFSIZE;
+  char *buff, *dbuff;
+  int buffsize = MPIBUFFSIZE;
 
-  MPI_Init(&argc,&argv);
+  MPI_Init(&argc, &argv);
 
-  COMM_UTILS::CreateComm(argc,argv);
+  COMM_UTILS::CreateComm(argc, argv);
 
-  DRT::Problem* problem = DRT::Problem::Instance();
+  DRT::Problem *problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::rcp(problem->GetNPGroup()->LocalComm().get(), false);
   Teuchos::RCP<Epetra_Comm> gcomm = Teuchos::rcp(problem->GetNPGroup()->GlobalComm().get(), false);
   int ngroups = problem->GetNPGroup()->NumGroups();
 
-  if (strcmp(argv[argc-1], "--interactive") == 0)
+  if (strcmp(argv[argc - 1], "--interactive") == 0)
   {
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
-    printf("Global rank %d with PID %d on %s is ready for attach\n", gcomm->MyPID(), getpid(), hostname);
+    printf("Global rank %d with PID %d on %s is ready for attach\n", gcomm->MyPID(), getpid(),
+        hostname);
     if (gcomm->MyPID() == 0)
     {
-      printf( "\n** Enter a character to continue > \n"); fflush(stdout);
+      printf("\n** Enter a character to continue > \n");
+      fflush(stdout);
       char go = ' ';
-      scanf("%c",&go);
+      scanf("%c", &go);
     }
   }
 
   gcomm->Barrier();
 
   /*------------------------------------------------ attach buffer to mpi */
-  buff = (char*)malloc(buffsize);
+  buff = (char *)malloc(buffsize);
   if (!buff)
   {
     printf("Allocation of memory for mpi buffer failed");
     MPI_Finalize();
     exit(1);
   }
-  MPI_Buffer_attach(buff,buffsize);
+  MPI_Buffer_attach(buff, buffsize);
 
-  if (gcomm->MyPID()==0)
+  if (gcomm->MyPID() == 0)
   {
-    printf("\n"
-           "****************************************\n"
-           "*                                      *\n"
-           "*               B A C I                *\n"
-           "*                                      *\n"
-           "*                                      *\n"
-           "*            revision %5d            *\n"
+    printf(
+        "\n"
+        "****************************************\n"
+        "*                                      *\n"
+        "*               B A C I                *\n"
+        "*                                      *\n"
+        "*                                      *\n"
+        "*            revision %5d            *\n"
 #ifdef PARALLEL
-           "*           parallel version           *\n"
+        "*           parallel version           *\n"
 #else
-           "*          sequential version          *\n"
+        "*          sequential version          *\n"
 #endif
 #ifdef DEBUG
-           "*            debug version             *\n"
+        "*            debug version             *\n"
 #else
-           "*             fast version             *\n"
+        "*             fast version             *\n"
 #endif
-           "*                                      *\n"
-           "*  Lehrstuhl fuer Numerische Mechanik  *\n"
-           "*                 LNM                  *\n"
-           "*   Technische Universitaet Muenchen   *\n"
-           "*                                      *\n"
-           "*    (c) 2010 All Rights Reserved.     *\n"
-           "*                                      *\n"
-           "****************************************\n\n",
-           CHANGEDREVISION+0);
+        "*                                      *\n"
+        "*  Lehrstuhl fuer Numerische Mechanik  *\n"
+        "*                 LNM                  *\n"
+        "*   Technische Universitaet Muenchen   *\n"
+        "*                                      *\n"
+        "*    (c) 2010 All Rights Reserved.     *\n"
+        "*                                      *\n"
+        "****************************************\n\n",
+        CHANGEDREVISION + 0);
     printf("Baci SHA1: %s\n", Baci_SHA1);
-    printf("Trilinos SHA1: %s\n",Trilinos_SHA1);
-    printf("Total number of processors: %d\n",gcomm->NumProc());
+    printf("Trilinos SHA1: %s\n", Trilinos_SHA1);
+    printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 
-  if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
-    if (lcomm->MyPID()==0) {
+  if ((argc == 2) && (strcmp(argv[1], "-v") == 0))
+  {
+    if (lcomm->MyPID() == 0)
+    {
       PrintParObjectList();
       printf("\n\n");
     }
   }
-  else if ((argc == 2) &&
-           ((strcmp(argv[1], "-h") == 0) ||
-            (strcmp(argv[1], "--help") == 0)))
+  else if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
-    if (lcomm->MyPID()==0)
+    if (lcomm->MyPID() == 0)
     {
       printf("\n\n");
       PrintHelpMessage();
       printf("\n\n");
     }
   }
-  else if ((argc == 2) &&
-           ((strcmp(argv[1], "-p") == 0) ||
-            (strcmp(argv[1], "--parameters") == 0)))
+  else if ((argc == 2) && ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--parameters") == 0)))
   {
-    if (lcomm->MyPID()==0)
+    if (lcomm->MyPID() == 0)
     {
       printf("\n\n");
       PrintValidParameters();
       printf("\n\n");
     }
   }
-  else if ((argc == 2) &&
-           ((strcmp(argv[1], "-d") == 0) ||
-            (strcmp(argv[1], "--datfile") == 0)))
+  else if ((argc == 2) && ((strcmp(argv[1], "-d") == 0) || (strcmp(argv[1], "--datfile") == 0)))
   {
-    if (lcomm->MyPID()==0)
+    if (lcomm->MyPID() == 0)
     {
       printf("\n\n");
       PrintDefaultDatHeader();
@@ -186,7 +180,8 @@ int main(int argc, char *argv[])
       printf("\n\n");
     }
   }
-  else {
+  else
+  {
     /* Here we turn the NaN and INF numbers off. No need to calculate
      * those. If those appear, the calculation needs much (!) more
      * time. Better stop immediately if some illegal operation occurs. */
@@ -231,58 +226,55 @@ int main(int argc, char *argv[])
 
 /*----------------------------------------------- everything is in here */
 #ifdef DSERROR_DUMP
-      ntam(argc,argv);
+    ntam(argc, argv);
 #else
     try
     {
-      ntam(argc,argv);
+      ntam(argc, argv);
     }
-    catch ( std::runtime_error & err )
+    catch (std::runtime_error &err)
     {
       char line[] = "=========================================================================\n";
-      std::cout << "\n\n"
-                << line
-                << err.what()
-                << "\n"
-                << line
-                << "\n" << std::endl;
+      std::cout << "\n\n" << line << err.what() << "\n" << line << "\n" << std::endl;
 
-      if(ngroups > 1)
+      if (ngroups > 1)
       {
-        printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",gcomm->MyPID());
+        printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",
+            gcomm->MyPID());
         gcomm->Barrier();
       }
 
       DRT::Problem::Done();
 
-      MPI_Buffer_detach(&dbuff,&buffsize);
-      if (dbuff!=buff || buffsize != MPIBUFFSIZE)
+      MPI_Buffer_detach(&dbuff, &buffsize);
+      if (dbuff != buff || buffsize != MPIBUFFSIZE)
         dserror("Illegal modification of mpi buffer adress or size appeared");
       free(dbuff);
-      MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
+      MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 #endif
-/*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
   }
 
   lcomm->Barrier();
-  if(ngroups > 1)
+  if (ngroups > 1)
   {
-    printf("Global processor %d with local rank %d finished normally\n",gcomm->MyPID(),lcomm->MyPID());
+    printf("Global processor %d with local rank %d finished normally\n", gcomm->MyPID(),
+        lcomm->MyPID());
     gcomm->Barrier();
   }
   else
   {
-    printf("processor %d finished normally\n",lcomm->MyPID());
+    printf("processor %d finished normally\n", lcomm->MyPID());
   }
 
   DRT::Problem::Done();
 
-  MPI_Buffer_detach(&dbuff,&buffsize);
-  if (dbuff!=buff || buffsize != MPIBUFFSIZE)
+  MPI_Buffer_detach(&dbuff, &buffsize);
+  if (dbuff != buff || buffsize != MPIBUFFSIZE)
     dserror("Illegal modification of mpi buffer adress or size appeared");
   free(dbuff);
   MPI_Finalize();
 
-  return(0);
+  return (0);
 }

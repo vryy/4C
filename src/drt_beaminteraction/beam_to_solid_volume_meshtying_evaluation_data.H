@@ -20,17 +20,16 @@
 #include "../drt_lib/drt_dserror.H"
 
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   class BeamToSolidVolumeMeshtyingEvaluationData
   {
-  public:
-
+   public:
     //! constructor
     BeamToSolidVolumeMeshtyingEvaluationData();
 
     //! destructor
-    virtual ~BeamToSolidVolumeMeshtyingEvaluationData() {};
+    virtual ~BeamToSolidVolumeMeshtyingEvaluationData(){};
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -39,25 +38,21 @@ namespace BEAMINTERACTION {
     void Setup();
 
     //! returns the isinit_ flag
-    inline const bool& IsInit() const
-    { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const
-    { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! Checks the init and setup status
     inline void CheckInitSetup() const
     {
-      if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
+      if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
     }
 
     //! Checks the init status
     inline void CheckInit() const
     {
-      if (!IsInit())
-        dserror("Init() has not been called, yet!");
+      if (!IsInit()) dserror("Init() has not been called, yet!");
     }
 
     inline std::map<int, std::vector<bool>>* BTSVOLMTGaussPointProjectionTracker() const
@@ -71,8 +66,7 @@ namespace BEAMINTERACTION {
     }
 
 
-  private:
-
+   private:
     bool isinit_;
 
     bool issetup_;
@@ -90,10 +84,8 @@ namespace BEAMINTERACTION {
            vector of bools --> one bool for each Gauss point of the beam element
     */
     std::map<int, std::vector<bool>>* BTSVOLMT_GaussPointEvaluateTracker_ptr_;
-
-
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

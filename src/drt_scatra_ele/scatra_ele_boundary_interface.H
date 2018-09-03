@@ -31,48 +31,35 @@ namespace DRT
   class Condition;
   class FaceElement;
 
-namespace ELEMENTS
-{
-class TransportBoundary;
-
-  /// Interface base class for ScaTraEleBoundaryCalc
-  /*!
-    This class exists to provide a common interface for all template
-    versions of ScaTraEleBoundaryCalc.
-   */
-  class ScaTraBoundaryInterface : DRT::SingletonDestruction
+  namespace ELEMENTS
   {
+    class TransportBoundary;
 
-  public:
+    /// Interface base class for ScaTraEleBoundaryCalc
+    /*!
+      This class exists to provide a common interface for all template
+      versions of ScaTraEleBoundaryCalc.
+     */
+    class ScaTraBoundaryInterface : DRT::SingletonDestruction
+    {
+     public:
+      /// Empty constructor
+      ScaTraBoundaryInterface() { return; };
 
-    /// Empty constructor
-    ScaTraBoundaryInterface(){return;};
+      /// Empty destructor
+      virtual ~ScaTraBoundaryInterface() { return; };
 
-    /// Empty destructor
-    virtual ~ScaTraBoundaryInterface(){return;};
+      virtual int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+          Epetra_SerialDenseVector& elevec3) = 0;
 
-    virtual int Evaluate(
-      DRT::FaceElement*                   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      DRT::Element::LocationArray&        la,
-      Epetra_SerialDenseMatrix&           elemat1,
-      Epetra_SerialDenseMatrix&           elemat2,
-      Epetra_SerialDenseVector&           elevec1,
-      Epetra_SerialDenseVector&           elevec2,
-      Epetra_SerialDenseVector&           elevec3
-    ) = 0;
-
-    virtual int EvaluateNeumann(
-        DRT::FaceElement*                   ele,
-        Teuchos::ParameterList&             params,
-        DRT::Discretization&                discretization,
-        DRT::Condition&                     condition,
-        DRT::Element::LocationArray&        la,
-        Epetra_SerialDenseVector&           elevec1,
-        const double                        scalar
-    ) = 0;
-  };
-} // namespace Elements
-} // namespace DRT
+      virtual int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          const double scalar) = 0;
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
 #endif

@@ -42,28 +42,23 @@ namespace POROELAST
 namespace POROELAST
 {
   /// partitioned algorithm for scalar transport in porous media
-  class PoroScatraPart: public PoroScatraBase
+  class PoroScatraPart : public PoroScatraBase
   {
-  public:
+   public:
+    /// Constructor
+    explicit PoroScatraPart(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    ///Constructor
-    explicit PoroScatraPart(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& timeparams);
+    /// destructor
+    virtual ~PoroScatraPart(){};
 
-    ///destructor
-    virtual ~PoroScatraPart()
-    {
-    }
-    ;
-
-    //Methods
+    // Methods
 
     //! solve one time/incremental step of porous media problem (depending on coupling algorithm)
-    virtual void DoPoroStep()=0;
-    //! solve one time/incremental step of scalar transport problem (depending on coupling algorithm)
-    virtual void DoScatraStep()=0;
-
+    virtual void DoPoroStep() = 0;
+    //! solve one time/incremental step of scalar transport problem (depending on coupling
+    //! algorithm)
+    virtual void DoScatraStep() = 0;
   };
-}
+}  // namespace POROELAST
 
 #endif

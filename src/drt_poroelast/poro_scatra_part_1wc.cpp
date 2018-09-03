@@ -33,13 +33,13 @@ void POROELAST::PoroScatraPart1WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout
-        << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
+    std::cout << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
-  //1)  solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); --> sdynparams
+  // 1)  solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); -->
+  // sdynparams
   //      CUIDADO, aqui vuelve a avanzar el paso de tiempo. Hay que corregir eso.
-  //2)  Newton-Raphson iteration
-  PoroField()-> Solve();
+  // 2)  Newton-Raphson iteration
+  PoroField()->Solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -49,8 +49,7 @@ void POROELAST::PoroScatraPart1WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout
-        << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
+    std::cout << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
@@ -61,10 +60,7 @@ void POROELAST::PoroScatraPart1WC::DoScatraStep()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::PrepareOutput()
-{
-  PoroField()-> PrepareOutput();
-}
+void POROELAST::PoroScatraPart1WC::PrepareOutput() { PoroField()->PrepareOutput(); }
 
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
@@ -75,7 +71,7 @@ void POROELAST::PoroScatraPart1WC::Update()
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  PoroField()-> Update();
+  PoroField()->Update();
   ScaTraField()->Update();
 
   // -------------------------------------------------------------------
@@ -92,19 +88,19 @@ void POROELAST::PoroScatraPart1WC::Output()
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  PoroField()-> Output();
+  PoroField()->Output();
   ScaTraField()->Output();
 }
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : PoroScatraPart1WC(comm, timeparams)
+POROELAST::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : PoroScatraPart1WC(comm, timeparams)
 {
-  if(comm.MyPID()==0)
-    std::cout<<"\n Create PoroScatraPart1WCPoroToScatra algorithm ... \n"<<std::endl;
+  if (comm.MyPID() == 0)
+    std::cout << "\n Create PoroScatraPart1WCPoroToScatra algorithm ... \n" << std::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -112,7 +108,7 @@ POROELAST::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(const Ep
  *----------------------------------------------------------------------*/
 void POROELAST::PoroScatraPart1WCPoroToScatra::Timeloop()
 {
-  //InitialCalculations();
+  // InitialCalculations();
 
   while (NotFinished())
   {
@@ -129,18 +125,16 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::Timeloop()
 }
 
 /*----------------------------------------------------------------------*/
-//prepare time step                                  rauch/vuong 04/15  |
+// prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  if(printheader)
-    PrintHeader();
+  if (printheader) PrintHeader();
 
   PoroField()->PrepareTimeStep();
   SetPoroSolution();
   ScaTraField()->PrepareTimeStep();
-
 }
 
 /*----------------------------------------------------------------------*
@@ -148,9 +142,9 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
  *----------------------------------------------------------------------*/
 void POROELAST::PoroScatraPart1WCPoroToScatra::Solve()
 {
-  DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
+  DoPoroStep();  // It has its own time and timestep variables, and it increments them by itself.
   SetPoroSolution();
-  DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+  DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
 }
 
 /*----------------------------------------------------------------------*
@@ -170,29 +164,29 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::ReadRestart(int restart)
 
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-                                                      ScaTraField()->Discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
-                                                      ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+        PoroField()->StructureField()->Discretization(), ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+        PoroField()->FluidField()->Discretization(), ScaTraField()->Discretization());
   }
 }
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams)
-  : PoroScatraPart1WC(comm, timeparams)
+POROELAST::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
+    const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
+    : PoroScatraPart1WC(comm, timeparams)
 {
-  if(comm.MyPID()==0)
-    std::cout<<"\n Create PoroScatraPart1WCScatraToPoro algorithm ... \n"<<std::endl;
+  if (comm.MyPID() == 0)
+    std::cout << "\n Create PoroScatraPart1WCScatraToPoro algorithm ... \n" << std::endl;
 
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSetInterface> scatradofset
-    = ScaTraField()->Discretization()->GetDofSetProxy();
+  Teuchos::RCP<DRT::DofSetInterface> scatradofset =
+      ScaTraField()->Discretization()->GetDofSetProxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible
-  if (PoroField()->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
+  if (PoroField()->StructureField()->Discretization()->AddDofSet(scatradofset) != 1)
     dserror("unexpected dof sets in structure field");
 }
 
@@ -201,7 +195,7 @@ POROELAST::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(const Ep
  *----------------------------------------------------------------------*/
 void POROELAST::PoroScatraPart1WCScatraToPoro::Timeloop()
 {
-  //InitialCalculations();
+  // InitialCalculations();
 
   while (NotFinished())
   {
@@ -218,13 +212,12 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::Timeloop()
 }
 
 /*----------------------------------------------------------------------*/
-//prepare time step                                  rauch/vuong 04/15  |
+// prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  if(printheader)
-    PrintHeader();
+  if (printheader) PrintHeader();
 
   ScaTraField()->PrepareTimeStep();
   SetScatraSolution();
@@ -237,9 +230,9 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
  *----------------------------------------------------------------------*/
 void POROELAST::PoroScatraPart1WCScatraToPoro::Solve()
 {
-  DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+  DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
   SetScatraSolution();
-  DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
+  DoPoroStep();  // It has its own time and timestep variables, and it increments them by itself.
 }
 
 /*----------------------------------------------------------------------*
@@ -259,9 +252,9 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::ReadRestart(int restart)
 
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-                                                      ScaTraField()->Discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
-                                                      ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+        PoroField()->StructureField()->Discretization(), ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+        PoroField()->FluidField()->Discretization(), ScaTraField()->Discretization());
   }
 }

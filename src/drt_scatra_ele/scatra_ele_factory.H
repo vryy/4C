@@ -26,56 +26,42 @@
 
 namespace DRT
 {
+  namespace ELEMENTS
+  {
+    class ScaTraFactory
+    {
+     public:
+      //! ctor
+      ScaTraFactory() { return; }
 
-namespace ELEMENTS
-{
+      //! dtor
+      virtual ~ScaTraFactory() { return; }
 
-class ScaTraFactory
-{
-public:
-  //! ctor
-  ScaTraFactory(){ return; }
+      //! ProvideImpl
+      static ScaTraEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
+          INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
+          const std::string& disname);
 
-  //! dtor
-  virtual ~ScaTraFactory(){ return; }
+      //! ProvideImplHDG
+      static ScaTraEleInterface* ProvideImplHDG(DRT::Element::DiscretizationType distype,
+          INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
+          const std::string& disname);
 
-  //! ProvideImpl
-  static ScaTraEleInterface* ProvideImpl(
-    DRT::Element::DiscretizationType distype,
-    INPAR::SCATRA::ImplType problem,
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname);
+     private:
+      //! define ScatraEle instances dependent on problem
+      template <DRT::Element::DiscretizationType distype, int probdim>
+      static ScaTraEleInterface* DefineProblemType(INPAR::SCATRA::ImplType problem,
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-  //! ProvideImplHDG
-  static ScaTraEleInterface* ProvideImplHDG(
-    DRT::Element::DiscretizationType distype,
-    INPAR::SCATRA::ImplType problem,
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname);
+      //! define ScatraEle instances dependent on problem
+      template <DRT::Element::DiscretizationType distype, int probdim>
+      static ScaTraEleInterface* DefineProblemTypeHDG(INPAR::SCATRA::ImplType problem,
+          const int numdofpernode, const int numscal, const std::string& disname);
 
-private:
-  //! define ScatraEle instances dependent on problem
-  template<DRT::Element::DiscretizationType distype,int probdim>
-  static ScaTraEleInterface* DefineProblemType(
-    INPAR::SCATRA::ImplType problem,
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname);
+    };  // end class ScaTraFactory
 
-  //! define ScatraEle instances dependent on problem
-  template<DRT::Element::DiscretizationType distype,int probdim>
-  static ScaTraEleInterface* DefineProblemTypeHDG(
-    INPAR::SCATRA::ImplType problem,
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname);
+  }  // namespace ELEMENTS
 
-}; // end class ScaTraFactory
-
-} // end ELEMENTS
-
-} // end DRT
+}  // namespace DRT
 
 #endif

@@ -24,97 +24,83 @@
  *----------------------------------------------------------------------*/
 namespace PARTICLE
 {
+  //! equation of state base class
+  class EquationOfState_Base
+  {
+   public:
+    //! constructor
+    explicit EquationOfState_Base(){};
 
-//! equation of state base class
-class EquationOfState_Base
-{
+    //! virtual destructor
+    virtual ~EquationOfState_Base(){};
 
-public :
+    //! determine the pressure
+    virtual double DensityToPressure(const double& density, const double& density0) = 0;
 
-  //! constructor
-  explicit EquationOfState_Base(){};
+    //! determine the density
+    virtual double PressureToDensity(const double& pressure, const double& density0) = 0;
 
-  //! virtual destructor
-  virtual ~EquationOfState_Base(){};
+    //! determine the energy
+    virtual double DensityToEnergy(
+        const double& density, const double& mass, const double& density0) = 0;
+  };
 
-  //! determine the pressure
-  virtual double DensityToPressure(const double& density, const double& density0) = 0;
+  //! generalized tait's equation of state for water-like fluids (cf. Adami 2012, equation (3))
+  class EquationOfState_GenTait : public EquationOfState_Base
+  {
+   public:
+    //! constructor
+    explicit EquationOfState_GenTait(
+        const double& speedOfSound, const double& refDensFac, const double& exponent);
 
-  //! determine the density
-  virtual double PressureToDensity(const double& pressure, const double& density0) = 0;
+    //! virtual destructor
+    virtual ~EquationOfState_GenTait(){};
 
-  //! determine the energy
-  virtual double DensityToEnergy(const double& density, const double& mass, const double& density0) = 0;
+    //! determine the pressure
+    virtual double DensityToPressure(const double& density, const double& density0);
 
-};
+    //! determine the density
+    virtual double PressureToDensity(const double& pressure, const double& density0);
 
-//! generalized tait's equation of state for water-like fluids (cf. Adami 2012, equation (3))
-class EquationOfState_GenTait : public EquationOfState_Base
-{
+    //! determine the energy
+    virtual double DensityToEnergy(
+        const double& density, const double& mass, const double& density0);
 
-public :
+   private:
+    //! speed of sound
+    const double speedOfSound_;
 
-  //! constructor
-  explicit EquationOfState_GenTait(
-      const double& speedOfSound,
-      const double& refDensFac,
-      const double& exponent
-      );
+    //! reference density factor
+    const double refDensFac_;
 
-  //! virtual destructor
-  virtual ~EquationOfState_GenTait(){};
+    //! exponent
+    const double exponent_;
+  };
 
-  //! determine the pressure
-  virtual double DensityToPressure(const double& density, const double& density0);
+  //! ideal gas law (cf. Hu and Adams 2006, equation (3) or similar Tartakovsky 2016, equation (50))
+  class EquationOfState_IdealGas : public EquationOfState_Base
+  {
+   public:
+    //! constructor
+    explicit EquationOfState_IdealGas(const double& speedOfSound);
 
-  //! determine the density
-  virtual double PressureToDensity(const double& pressure, const double& density0);
+    //! virtual destructor
+    virtual ~EquationOfState_IdealGas(){};
 
-  //! determine the energy
-  virtual double DensityToEnergy(const double& density, const double& mass, const double& density0);
+    //! determine the pressure
+    virtual double DensityToPressure(const double& density, const double& density0);
 
-private :
+    //! determine the density
+    virtual double PressureToDensity(const double& pressure, const double& density0);
 
-  //! speed of sound
-  const double speedOfSound_;
+    //! determine the energy
+    virtual double DensityToEnergy(
+        const double& density, const double& mass, const double& density0);
 
-  //! reference density factor
-  const double refDensFac_;
-
-  //! exponent
-  const double exponent_;
-
-};
-
-//! ideal gas law (cf. Hu and Adams 2006, equation (3) or similar Tartakovsky 2016, equation (50))
-class EquationOfState_IdealGas : public EquationOfState_Base
-{
-
-public :
-
-  //! constructor
-  explicit EquationOfState_IdealGas(
-      const double& speedOfSound
-      );
-
-  //! virtual destructor
-  virtual ~EquationOfState_IdealGas(){};
-
-  //! determine the pressure
-  virtual double DensityToPressure(const double& density, const double& density0);
-
-  //! determine the density
-  virtual double PressureToDensity(const double& pressure, const double& density0);
-
-  //! determine the energy
-  virtual double DensityToEnergy(const double& density, const double& mass, const double& density0);
-
-private :
-
-  //! speed of sound
-  const double speedOfSound_;
-
-};
+   private:
+    //! speed of sound
+    const double speedOfSound_;
+  };
 
 }  // namespace PARTICLE
 

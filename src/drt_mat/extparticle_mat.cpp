@@ -19,16 +19,14 @@
 /*----------------------------------------------------------------------*
  | constructor                                              catta 06/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::ExtParticleMat::ExtParticleMat(
-    Teuchos::RCP<MAT::PAR::Material> matdata
-    ) :
-    ParticleMat(matdata),
-    refdensfac_(matdata->GetDouble("REFDENSFAC")),
-    exponent_(matdata->GetDouble("EXPONENT")),
-    bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
-    dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
-    bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
-    artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY"))
+MAT::PAR::ExtParticleMat::ExtParticleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
+    : ParticleMat(matdata),
+      refdensfac_(matdata->GetDouble("REFDENSFAC")),
+      exponent_(matdata->GetDouble("EXPONENT")),
+      bulkModulus_(matdata->GetDouble("BULK_MODULUS")),
+      dynamicViscosity_(matdata->GetDouble("DYNAMIC_VISCOSITY")),
+      bulkViscosity_(matdata->GetDouble("BULK_VISCOSITY")),
+      artificialViscosity_(matdata->GetDouble("ARTIFICIAL_VISCOSITY"))
 {
   return;
 }
@@ -55,19 +53,14 @@ DRT::ParObject* MAT::ExtParticleMatType::Create(const std::vector<char>& data)
 /*------------------------------------------------------------------*
 | construct empty ExtParticleMat material                catta 06/16 |
  *------------------------------------------------------------------*/
-MAT::ExtParticleMat::ExtParticleMat() :
-  params_(NULL)
-{
-  return;
-}
+MAT::ExtParticleMat::ExtParticleMat() : params_(NULL) { return; }
 
 
 /*--------------------------------------------------------------------------------*
  | construct ExtParticleMat material with specific material parameters catta 06/16 |
  *--------------------------------------------------------------------------------*/
-MAT::ExtParticleMat::ExtParticleMat(MAT::PAR::ExtParticleMat* params) :
-  ParticleMat(params),
-  params_(params)
+MAT::ExtParticleMat::ExtParticleMat(MAT::PAR::ExtParticleMat* params)
+    : ParticleMat(params), params_(params)
 {
   return;
 }
@@ -83,12 +76,11 @@ void MAT::ExtParticleMat::Pack(DRT::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
 
   int matid = -1;
-  if(params_ != NULL)
-    matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  AddtoPack(data, matid);
 
   // pack base class material
   ParticleMat::Pack(data);
@@ -106,33 +98,34 @@ void MAT::ExtParticleMat::Unpack(const std::vector<char>& data)
 
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
-  if(type != UniqueParObjectId())
-    dserror("Wrong instance type data!");
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId()) dserror("Wrong instance type data!");
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, matid);
   params_ = NULL;
-  if(DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if(DRT::Problem::Instance()->Materials()->Num() != 0)
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if(mat->Type() == MaterialType())
+      MAT::PAR::Parameter* mat =
+          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ExtParticleMat*>(mat);
       else
-        dserror("Type of parameter material %d does not match calling type %d!", mat->Type(), MaterialType());
+        dserror("Type of parameter material %d does not match calling type %d!", mat->Type(),
+            MaterialType());
     }
 
   // extract base class material
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   ParticleMat::Unpack(basedata);
 
   // final safety check
-  if(position != data.size())
-    dserror("Mismatch in size of data %d <-> %d!",data.size(),position);
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d!", data.size(), position);
 
   return;
 }

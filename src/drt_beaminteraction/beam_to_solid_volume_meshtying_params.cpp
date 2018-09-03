@@ -18,10 +18,8 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams():
-isinit_(false),
-issetup_(false),
-BTSVOLMT_penalty_param_(-1.0)
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
+    : isinit_(false), issetup_(false), BTSVOLMT_penalty_param_(-1.0)
 {
   // Empty Constructor
 }

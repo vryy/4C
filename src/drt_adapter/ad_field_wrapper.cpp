@@ -41,7 +41,7 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
 {
   if (NOXCorrection_) GetIterinc(disiterinc);
-  field_->Evaluate(disiterinc,firstiter);
+  field_->Evaluate(disiterinc, firstiter);
 }
 
 /*-----------------------------------------------------------------------/
@@ -49,14 +49,13 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 /-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::ResetStepinc()
 {
-  if (stepinc_!=Teuchos::null)
-    stepinc_->PutScalar(0.);
+  if (stepinc_ != Teuchos::null) stepinc_->PutScalar(0.);
 }
 
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
 /-----------------------------------------------------------------------*/
-void  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepinc)
+void ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -67,23 +66,23 @@ void  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepi
   // x^n+1_i+1 = x^n+1_i + iterinc  (sometimes referred to as residual increment), and
   //
   // x^n+1_i+1 = x^n     + stepinc
-  if (stepinc!=Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // iteration increments
     Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::rcp(new Epetra_Vector(*stepinc));
-    if (stepinc_!=Teuchos::null)
+    if (stepinc_ != Teuchos::null)
     {
-      iterinc->Update(-1.0,*stepinc_,1.0);
+      iterinc->Update(-1.0, *stepinc_, 1.0);
 
       // update incremental dof member to provided step increments
       // shortly: disinc_^<i> := disp^<i+1>
-      stepinc_->Update(1.0,*stepinc,0.0);
+      stepinc_->Update(1.0, *stepinc, 0.0);
     }
     else
     {
       stepinc_ = Teuchos::rcp(new Epetra_Vector(*stepinc));
     }
-    //output is iterinc!
+    // output is iterinc!
     stepinc = Teuchos::rcp(new const Epetra_Vector(*iterinc));
   }
 }

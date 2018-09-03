@@ -25,47 +25,41 @@
 
 namespace FLD
 {
+  class TimIntPoroGenAlpha : public TimIntGenAlpha, public TimIntPoro
+  {
+   public:
+    /// Standard Constructor
+    TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntPoroGenAlpha : public TimIntGenAlpha, public TimIntPoro
-{
-public:
-  /// Standard Constructor
-  TimIntPoroGenAlpha(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntPoroGenAlpha();
 
-  /// Destructor
-  virtual ~TimIntPoroGenAlpha();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
+    */
+    virtual void Init();
 
-  */
-  virtual void Init();
+    /*!
+    \brief read restart data
 
-  /*!
-  \brief read restart data
+    */
+    virtual void ReadRestart(int step);
 
-  */
-  virtual void ReadRestart(int step);
+   protected:
+    /*!
+    \brief compute values at intermediate time steps for gen.-alpha
 
-protected:
+    */
+    virtual void GenAlphaIntermediateValues();
 
-  /*!
-  \brief compute values at intermediate time steps for gen.-alpha
+   private:
+  };  // class TimIntPoroGenAlpha
 
-  */
-  virtual void GenAlphaIntermediateValues() ;
-
-private:
-
-
-}; // class TimIntPoroGenAlpha
-
-} // namespace FLD
-
+}  // namespace FLD
 
 
 

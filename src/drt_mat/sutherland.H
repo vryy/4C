@@ -21,20 +21,15 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// parameters for material with temperature dependence according to Sutherland law
     class Sutherland : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      Sutherland(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      Sutherland(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~Sutherland() { ; }
@@ -66,27 +61,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class SutherlandType : public DRT::ParObjectType
-{
-public:
+  class SutherlandType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "SutherlandType"; }
 
-  std::string Name() const { return "SutherlandType"; }
+    static SutherlandType& Instance() { return instance_; };
 
-  static SutherlandType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static SutherlandType instance_;
-};
+   private:
+    static SutherlandType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// material with temperature dependence according to Sutherland law
   class Sutherland : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Sutherland();
 
@@ -136,7 +128,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_sutherland; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Sutherland( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Sutherland(*this)); }
 
     /// compute viscosity
     double ComputeViscosity(const double temp) const;
@@ -170,13 +162,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Sutherland* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

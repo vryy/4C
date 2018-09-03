@@ -39,17 +39,17 @@ namespace LINALG
 {
   class Solver;
   class SparseOperator;
-} // namespace LINALG
+}  // namespace LINALG
 
 namespace NLNSOL
 {
   class LineSearchBase;
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -76,8 +76,7 @@ namespace NLNSOL
    */
   class NlnOperatorNonlinCG : public NlnOperatorBase
   {
-  public:
-
+   public:
     //! @name Construction
     //@{
 
@@ -85,7 +84,7 @@ namespace NLNSOL
     NlnOperatorNonlinCG();
 
     //! Destructor
-    virtual ~NlnOperatorNonlinCG(){}
+    virtual ~NlnOperatorNonlinCG() {}
 
     //@}
 
@@ -117,9 +116,10 @@ namespace NLNSOL
      *  \author mayr.mt \date 03/2014
      */
     virtual int ApplyInverse(
-        const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
-        Epetra_MultiVector& x ///< solution
-        )  const;
+        const Epetra_MultiVector&
+            f,  ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
+        Epetra_MultiVector& x  ///< solution
+        ) const;
 
     //! @name Attribute access functions
     //@{
@@ -132,18 +132,15 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! Compute line search parameter (=step length)
-    virtual void ComputeStepLength(
-        const Epetra_MultiVector& x, ///< current solution
-        const Epetra_MultiVector& f, ///< residual at current solution
-        const Epetra_MultiVector& inc, ///< search direction
-        const double fnorm2, ///< current L2-norm of residual
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+    virtual void ComputeStepLength(const Epetra_MultiVector& x,  ///< current solution
+        const Epetra_MultiVector& f,                             ///< residual at current solution
+        const Epetra_MultiVector& inc,                           ///< search direction
+        const double fnorm2,                                     ///< current L2-norm of residual
+        double& lsparam,  ///< line search parameter (to be determined)
+        bool& suffdecr    ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //! @name Setup
@@ -161,11 +158,9 @@ namespace NLNSOL
      *
      *  \return integer error code, set to 0 if successful
      */
-    virtual int ApplyPreconditioner
-    (
-        const Epetra_MultiVector& f, ///< residual
-        Epetra_MultiVector& x ///< solution
-    ) const;
+    virtual int ApplyPreconditioner(const Epetra_MultiVector& f,  ///< residual
+        Epetra_MultiVector& x                                     ///< solution
+        ) const;
 
     //! @name Computation of beta
     //@{
@@ -181,11 +176,12 @@ namespace NLNSOL
      *
      *  \author mayr \date 11/2013
      */
-    virtual void ComputeBeta(double& beta, ///< parameter to be computed
-        Teuchos::RCP<const Epetra_MultiVector> fnew, ///< most recent residual
-        Teuchos::RCP<const Epetra_MultiVector> fold, ///< residual from previous iteration
-        Teuchos::RCP<const Epetra_MultiVector> s, ///< most recent preconditioned residual
-        Teuchos::RCP<const Epetra_MultiVector> sold ///< preconditioned residual from previous iteration
+    virtual void ComputeBeta(double& beta,            ///< parameter to be computed
+        Teuchos::RCP<const Epetra_MultiVector> fnew,  ///< most recent residual
+        Teuchos::RCP<const Epetra_MultiVector> fold,  ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> s,     ///< most recent preconditioned residual
+        Teuchos::RCP<const Epetra_MultiVector>
+            sold  ///< preconditioned residual from previous iteration
         ) const;
 
     /*! \brief Compute the parameter beta according to Fletcher-Reeves formula
@@ -196,24 +192,27 @@ namespace NLNSOL
      *
      *  \author mayr \date 11/2013
      */
-    virtual void ComputeBetaFletcherReeves(double& beta, ///< parameter to be computed
-        Teuchos::RCP<const Epetra_MultiVector> fnew, ///< most recent residual
-        Teuchos::RCP<const Epetra_MultiVector> fold, ///< residual from previous iteration
-        Teuchos::RCP<const Epetra_MultiVector> s, ///< most recent preconditioned residual
-        Teuchos::RCP<const Epetra_MultiVector> sold ///< preconditioned residual from previous iteration
+    virtual void ComputeBetaFletcherReeves(double& beta,  ///< parameter to be computed
+        Teuchos::RCP<const Epetra_MultiVector> fnew,      ///< most recent residual
+        Teuchos::RCP<const Epetra_MultiVector> fold,      ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> s,         ///< most recent preconditioned residual
+        Teuchos::RCP<const Epetra_MultiVector>
+            sold  ///< preconditioned residual from previous iteration
         ) const;
 
     /*! \brief Compute the parameter beta according to Polak-Ribiere formula
      *
-     *  \f[ \beta_{k+1}^{PR} = \frac{f_{k+1}^TM^{-1}\left(f_{k+1}-f_{k}\right)}{f_{k}^TM^{-1}f_{k}} \f]
+     *  \f[ \beta_{k+1}^{PR} = \frac{f_{k+1}^TM^{-1}\left(f_{k+1}-f_{k}\right)}{f_{k}^TM^{-1}f_{k}}
+     * \f]
      *
      *  \author mayr \date 11/2013
      */
-    virtual void ComputeBetaPolakRibiere(double& beta, ///< parameter to be computed
-        Teuchos::RCP<const Epetra_MultiVector> fnew, ///< most recent residual
-        Teuchos::RCP<const Epetra_MultiVector> fold, ///< residual from previous iteration
-        Teuchos::RCP<const Epetra_MultiVector> s, ///< most recent preconditioned residual
-        Teuchos::RCP<const Epetra_MultiVector> sold ///< preconditioned residual from previous iteration
+    virtual void ComputeBetaPolakRibiere(double& beta,  ///< parameter to be computed
+        Teuchos::RCP<const Epetra_MultiVector> fnew,    ///< most recent residual
+        Teuchos::RCP<const Epetra_MultiVector> fold,    ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> s,       ///< most recent preconditioned residual
+        Teuchos::RCP<const Epetra_MultiVector>
+            sold  ///< preconditioned residual from previous iteration
         ) const;
 
     /*! \brief Compute the parameter beta according to Hestenes-Stiefel formula
@@ -241,7 +240,7 @@ namespace NLNSOL
     //! Restart the iteration every #restartevery_ iterations
     int restartevery_;
 
-  }; // class NlnOperatorNonlinCG
-} // namespace NLNSOL
+  };  // class NlnOperatorNonlinCG
+}  // namespace NLNSOL
 
 #endif /* NLN_OPERATOR_NONLIN_CG_H */

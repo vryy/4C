@@ -23,7 +23,7 @@ namespace ADAPTER
 {
   class Coupling;
   class FluidFluidFSI;
-}
+}  // namespace ADAPTER
 
 namespace FSI
 {
@@ -32,8 +32,8 @@ namespace FSI
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }
-}
+  }  // namespace UTILS
+}  // namespace FSI
 
 namespace FSI
 {
@@ -46,17 +46,15 @@ namespace FSI
   {
     friend class FSI::FSIResultTest;
 
-  public:
-
+   public:
     /// constructor
-    explicit FluidFluidMonolithicFluidSplitNoNOX(const Epetra_Comm& comm,
-                                                 const Teuchos::ParameterList& timeparams);
+    explicit FluidFluidMonolithicFluidSplitNoNOX(
+        const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// initialize, read parameters and create merged DOF row map
     virtual void SetupSystem();
 
-  protected:
-
+   protected:
     //! @name Apply current field state to system
 
     //! setup composed right hand side from field solvers
@@ -65,9 +63,8 @@ namespace FSI
     //! 1) the single fields residuals
     //! 2) the Lagrange multiplier field lambda_
     //! 3) terms in the first nonlinear iteration
-    virtual void SetupRHS(
-        Epetra_Vector& f,     ///< empty rhs vector (to be filled)
-        bool firstcall=false  ///< indicates whether this is the first nonlinear iteration or not
+    virtual void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+        bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
     );
 
     /// setup composed system matrix from field solvers
@@ -78,7 +75,7 @@ namespace FSI
     virtual void CreateCombinedDofRowMap();
 
     /// initial guess for subsequent fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig );
+    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// create merged Dirichlet map from single field maps
     virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
@@ -100,9 +97,8 @@ namespace FSI
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                     Teuchos::RCP<const Epetra_Vector>& sx,
-                                     Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax);
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
+        Teuchos::RCP<const Epetra_Vector>& ax);
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
     virtual void RecoverLagrangeMultiplier();
@@ -132,39 +128,35 @@ namespace FSI
      * \author kruse
      * \date 05/14
      */
-    virtual bool HasFluidDofMapChanged(
-        const Epetra_BlockMap& fluidincrementmap);
+    virtual bool HasFluidDofMapChanged(const Epetra_BlockMap& fluidincrementmap);
 
-  private:
-
+   private:
     /// build block vector from field vectors
-    void SetupVector(Epetra_Vector &f,
-                     Teuchos::RCP<const Epetra_Vector> sv,
-                     Teuchos::RCP<const Epetra_Vector> fv,
-                     Teuchos::RCP<const Epetra_Vector> av,
-                     double fluidscale);
+    void SetupVector(Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> sv,
+        Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
+        double fluidscale);
 
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField(){ return MonolithicNoNOX::fluid_; }
+    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField() { return MonolithicNoNOX::fluid_; }
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<UTILS::MatrixRowColTransform>  fggtransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform>     fgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform>     figtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform>     aigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform>     fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform>  fmgitransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform>  fmggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform> fmggtransform_;
 
     //@}
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
 
     //@{
-    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the fluid)
-    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
+    //! fluid) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
@@ -191,14 +183,17 @@ namespace FSI
     //! block \f$F^G_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
 
-    //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector>  ddialeinc_;
-    //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector>  ddginc_;
-    //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector>  duiinc_;
+    //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
+    //! iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddialeinc_;
+    //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
+    //! current iteration \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> ddginc_;
+    //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration
+    //! \f$i+1\f$
+    Teuchos::RCP<Epetra_Vector> duiinc_;
     //@}
   };
-}
+}  // namespace FSI
 
 #endif /* FSI_FLUIDFLUIDMONOLITHIC_FLUIDSPLIT_NONOX_H_ */

@@ -25,41 +25,36 @@
 
 namespace FLD
 {
+  class TimIntRedModelsBDF2 : public TimIntBDF2, public TimIntRedModels
+  {
+   public:
+    /// Standard Constructor
+    TimIntRedModelsBDF2(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntRedModelsBDF2 : public TimIntBDF2 ,public TimIntRedModels
-{
-public:
-  /// Standard Constructor
-  TimIntRedModelsBDF2(const Teuchos::RCP<DRT::Discretization>&      actdis,
-      const Teuchos::RCP<LINALG::Solver>&           solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&   params,
-      const Teuchos::RCP<IO::DiscretizationWriter>& output,
-      bool                                          alefluid = false);
+    /// Destructor
+    virtual ~TimIntRedModelsBDF2();
 
-  /// Destructor
-  virtual ~TimIntRedModelsBDF2();
+    /*!
+    \brief initialization
 
-  /*!
-  \brief initialization
+    */
+    virtual void Init();
 
-  */
-  virtual void Init();
+    /*!
+    \brief read restart data
 
-  /*!
-  \brief read restart data
-
-  */
-  virtual void ReadRestart(int step);
+    */
+    virtual void ReadRestart(int step);
 
 
-protected:
+   protected:
+   private:
+  };  // class TimIntRedModelsBDF2
 
-private:
-
-
-}; // class TimIntRedModelsBDF2
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_RED_BDF2_H

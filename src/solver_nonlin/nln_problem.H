@@ -40,7 +40,7 @@ class Epetra_Operator;
 namespace LINALG
 {
   class SparseOperator;
-} // namespace LINALG
+}  // namespace LINALG
 
 namespace NLNSOL
 {
@@ -48,15 +48,15 @@ namespace NLNSOL
   {
     class DebugWriterBase;
   }  // namespace UTILS
-} // namespace NLNSOL
+}  // namespace NLNSOL
 
 namespace NOX
 {
   namespace Abstract
   {
     class Group;
-  } // namespace Abstract
-} // namespace NOX
+  }  // namespace Abstract
+}  // namespace NOX
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -77,8 +77,7 @@ namespace NLNSOL
    */
   class NlnProblem : public NlnProblemBase
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -125,11 +124,12 @@ namespace NLNSOL
      *  \sa NLNSOL::NlnProblemCoarseLevel::SetupResidualModification
      */
     virtual void SetupResidualModification(
-        Teuchos::RCP<const Epetra_MultiVector> xbar, ///< \f$\bar{x}\f$
-        Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
-        )
+        Teuchos::RCP<const Epetra_MultiVector> xbar,  ///< \f$\bar{x}\f$
+        Teuchos::RCP<const Epetra_MultiVector> fbar   ///< \f$\bar{F}\f$
+    )
     {
-      dserror("Not implemented in base class. This routine is needed only in "
+      dserror(
+          "Not implemented in base class. This routine is needed only in "
           "case of a coarse level problem within FAS-AMG.");
     }
 
@@ -164,8 +164,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 09/2014
      */
-    virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
-        Epetra_MultiVector& f ///< current residual (to be filled)
+    virtual void ComputeF(const Epetra_MultiVector& x,  ///< current solution
+        Epetra_MultiVector& f                           ///< current residual (to be filled)
         ) const = 0;
 
     /*! \brief Compute nonlinear residual \f$F(x)\f$
@@ -173,7 +173,7 @@ namespace NLNSOL
      *  \author mayr.mt \date 10/2015
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
-        const Epetra_MultiVector& x ///< current solution
+        const Epetra_MultiVector& x  ///< current solution
         ) const = 0;
 
     /*! \brief Evaluate Jacobian (linearization of residual)
@@ -207,18 +207,20 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::VectorType vt = IO::dofvector ///< vector type
+    virtual void WriteVector(
+        Teuchos::RCP<const Epetra_MultiVector> vec,  ///< vector with result data (to be outputted)
+        const std::string& description,              ///< description of output quantity
+        const IO::VectorType vt = IO::dofvector      ///< vector type
         ) const;
 
     /*! \brief Wrapper to write plain Epetra_MultiVector to output
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::VectorType vt = IO::dofvector ///< vector type
+    virtual void WriteVector(
+        const Epetra_MultiVector& vec,           ///< vector with result data (to be outputted)
+        const std::string& description,          ///< description of output quantity
+        const IO::VectorType vt = IO::dofvector  ///< vector type
         ) const;
 
     //@}
@@ -239,11 +241,9 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
-  }; // class NlnProblem
-} // namespace NLNSOL
+   protected:
+   private:
+  };  // class NlnProblem
+}  // namespace NLNSOL
 
 #endif /* NLN_PROBLEM_H */

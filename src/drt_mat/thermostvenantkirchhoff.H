@@ -34,74 +34,68 @@
 
 namespace MAT
 {
-
-namespace PAR
-{
-
-  /*----------------------------------------------------------------------*/
-  //! material parameters for de St. Venant--Kirchhoff with temperature
-  //! dependent term
-  //!
-  //! <h3>Input line</h3>
-  //! MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
-  class ThermoStVenantKirchhoff : public Parameter
+  namespace PAR
   {
-  public:
+    /*----------------------------------------------------------------------*/
+    //! material parameters for de St. Venant--Kirchhoff with temperature
+    //! dependent term
+    //!
+    //! <h3>Input line</h3>
+    //! MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
+    class ThermoStVenantKirchhoff : public Parameter
+    {
+     public:
+      //! standard constructor
+      ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-    //! standard constructor
-    ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
+      //! destructor
+      virtual ~ThermoStVenantKirchhoff() { ; }
 
-    //! destructor
-    virtual ~ThermoStVenantKirchhoff() { ; }
+      //! @name material parameters
+      //@{
 
-    //! @name material parameters
-    //@{
+      //! Young's modulus (temperature dependent --> polynomial expression)
+      const std::vector<double> youngs_;
+      //! Possion's ratio \f$ \nu \f$
+      const double poissonratio_;
+      //! mass density \f$ \rho \f$
+      const double density_;
+      //! linear coefficient of thermal expansion  \f$ \alpha_T \f$
+      const double thermexpans_;
+      //! heat capacity \f$ C_V \f$
+      const double capa_;
+      //! heat conductivity \f$ k \f$
+      const double conduct_;
+      //! initial temperature (constant) \f$ \theta_0 \f$
+      const double thetainit_;
 
-    //! Young's modulus (temperature dependent --> polynomial expression)
-    const std::vector<double> youngs_;
-    //! Possion's ratio \f$ \nu \f$
-    const double poissonratio_;
-    //! mass density \f$ \rho \f$
-    const double density_;
-    //! linear coefficient of thermal expansion  \f$ \alpha_T \f$
-    const double thermexpans_;
-    //! heat capacity \f$ C_V \f$
-    const double capa_;
-    //! heat conductivity \f$ k \f$
-    const double conduct_;
-    //! initial temperature (constant) \f$ \theta_0 \f$
-    const double thetainit_;
+      //@}
 
-    //@}
+      //! create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    //! create material instance of matching type with my parameters
-    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+    };  // class ThermoStVenantKirchhoff
 
-  };  // class ThermoStVenantKirchhoff
+  }  // namespace PAR
 
-}  // namespace PAR
+  class ThermoStVenantKirchhoffType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ThermoStVenantKirchhoffType"; }
 
-class ThermoStVenantKirchhoffType : public DRT::ParObjectType
-{
-public:
+    static ThermoStVenantKirchhoffType& Instance() { return instance_; };
 
-  std::string Name() const { return "ThermoStVenantKirchhoffType"; }
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  static ThermoStVenantKirchhoffType & Instance() { return instance_; };
-
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ThermoStVenantKirchhoffType instance_;
-};
+   private:
+    static ThermoStVenantKirchhoffType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   //! Wrapper for St.-Venant-Kirchhoff material with temperature term
   class ThermoStVenantKirchhoff : public So3Material
   {
-  public:
-
+   public:
     //! construct empty material object
     ThermoStVenantKirchhoff();
 
@@ -123,8 +117,10 @@ private:
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_linear || kinem == INPAR::STR::kinem_nonlinearTotLag))
-      dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_linear || kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -134,9 +130,8 @@ private:
       unique parobject id delivered by UniqueParObjectId() which will then
       identify the exact class on the receiving processor.
     */
-    virtual void Pack(
-      DRT::PackBuffer& data  //!< (i/o): char vector to store class information
-      ) const;
+    virtual void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
+        ) const;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -147,72 +142,62 @@ private:
       parobject id defined at the top of this file and delivered by
       UniqueParObjectId().
     */
-    virtual void Unpack(
-      const std::vector<char>& data  //!< (i) : vector storing all data to be unpacked into this instance.
-      );
+    virtual void Unpack(const std::vector<char>&
+            data  //!< (i) : vector storing all data to be unpacked into this instance.
+    );
 
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
-    {
-      return INPAR::MAT::m_thermostvenant;
-    }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermostvenant; }
 
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {
-      return Teuchos::rcp( new ThermoStVenantKirchhoff( *this ) );
+      return Teuchos::rcp(new ThermoStVenantKirchhoff(*this));
     }
 
     //! evaluates stresses for 3d
-    virtual void Evaluate(
-      const LINALG::Matrix<3,3>* defgrd, //!< deformation gradient
-      const LINALG::Matrix<6,1>* glstrain,  //!< Green-Lagrange strain
-      Teuchos::ParameterList& params,  //!< parameter list
-      LINALG::Matrix<6,1>* stress,  //!< stress
-      LINALG::Matrix<6,6>* cmat,  //!< elastic material tangent
-      const int eleGID                 //!< element GID
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,                  //!< Green-Lagrange strain
+        Teuchos::ParameterList& params,                        //!< parameter list
+        LINALG::Matrix<6, 1>* stress,                          //!< stress
+        LINALG::Matrix<6, 6>* cmat,                            //!< elastic material tangent
+        const int eleGID                                       //!< element GID
     );
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
-    void Evaluate(
-      const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element (N . T)
-      LINALG::Matrix<6,1>& ctemp,  //!< temperature dependent material tangent
-      LINALG::Matrix<6,1>& stresstemp,  //!< temperature dependent stress term
-      Teuchos::ParameterList& params  //!< parameter list
-      );
+    void Evaluate(const LINALG::Matrix<1, 1>& Ntemp,  //!< temperature of element (N . T)
+        LINALG::Matrix<6, 1>& ctemp,                  //!< temperature dependent material tangent
+        LINALG::Matrix<6, 1>& stresstemp,             //!< temperature dependent stress term
+        Teuchos::ParameterList& params                //!< parameter list
+    );
 
     /// add strain energy
-    virtual void StrainEnergy(
-        const LINALG::Matrix<6,1>& glstrain,   ///< Green-Lagrange strain
-        double& psi,                           ///< strain energy functions
-        const int eleGID                       ///< element GID
+    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+        double& psi,                                                 ///< strain energy functions
+        const int eleGID                                             ///< element GID
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(
-      LINALG::Matrix<6,6>& cmat,
-      Teuchos::ParameterList params
-      );
+    void SetupCmat(LINALG::Matrix<6, 6>& cmat, Teuchos::ParameterList params);
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void SetupCthermo(
-      LINALG::Matrix<6,1>& ctemp,
-      Teuchos::ParameterList& params  //!< parameter list
-      );
+    void SetupCthermo(LINALG::Matrix<6, 1>& ctemp,
+        Teuchos::ParameterList& params  //!< parameter list
+    );
 
     //! calculates stress-temperature modulus
-    double STModulus(
-      Teuchos::ParameterList& params  //!< parameter list
-      ) const;
+    double STModulus(Teuchos::ParameterList& params  //!< parameter list
+        ) const;
 
     //! Young's modulus, here we suppose a constant value for E
     double Youngs() const
     {
-      dserror("return value 'E' not available due to possibly temperature-dependent Young's modulus.");
+      dserror(
+          "return value 'E' not available due to possibly temperature-dependent Young's modulus.");
       return (params_->youngs_)[0];
     }
 
@@ -234,8 +219,9 @@ private:
     //! shear modulus \f$ \mu \f$, here we suppose a constant value for E
     double ShearMod() const
     {
-      dserror("return value 'mu' not available due to possibly temperature-dependent Young's modulus");
-      return 0.5*(params_->youngs_)[0]/(1.0+params_->poissonratio_);
+      dserror(
+          "return value 'mu' not available due to possibly temperature-dependent Young's modulus");
+      return 0.5 * (params_->youngs_)[0] / (1.0 + params_->poissonratio_);
     }
 
     //! Return quick accessible material parameter data
@@ -245,54 +231,50 @@ private:
     //@{
 
     //! calculates mechanical stress refering to linearisation of ctemp w.r.t. T_{n+1}
-    void GetMechStress_T(
-      const LINALG::Matrix<6,1>* glstrain,  //!< Green-Lagrange strains
-      Teuchos::ParameterList& params,  //!< parameter list
-      LINALG::Matrix<6,1>* stress_T  //!< linearisation of mechanical stress w.r.t. T
-      );
+    void GetMechStress_T(const LINALG::Matrix<6, 1>* glstrain,  //!< Green-Lagrange strains
+        Teuchos::ParameterList& params,                         //!< parameter list
+        LINALG::Matrix<6, 1>* stress_T  //!< linearisation of mechanical stress w.r.t. T
+    );
 
     //! calculates thermal stress refering to linearisation of ctemp w.r.t. T_{n+1}
-    void GetThermalStress_T(
-      const LINALG::Matrix<1,1>* Ntemp,  //!< element temperature T_{n+1}
-      Teuchos::ParameterList& params,  //!< parameter list
-      LINALG::Matrix<6,1>* stresstemp_T  //!< linearisation of thermal stress w.r.t. T
-      );
+    void GetThermalStress_T(const LINALG::Matrix<1, 1>* Ntemp,  //!< element temperature T_{n+1}
+        Teuchos::ParameterList& params,                         //!< parameter list
+        LINALG::Matrix<6, 1>* stresstemp_T  //!< linearisation of thermal stress w.r.t. T
+    );
 
     //! calculates stress-temperature modulus
-    double GetSTModulus_T(
-      Teuchos::ParameterList& params  //!< parameter list
-      ) const;
+    double GetSTModulus_T(Teuchos::ParameterList& params  //!< parameter list
+        ) const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void GetCmatAtTempnp_T(
-      LINALG::Matrix<6,6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t. T
-      Teuchos::ParameterList params  //!< parameter list
-      );
+        LINALG::Matrix<6, 6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t. T
+        Teuchos::ParameterList params     //!< parameter list
+    );
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void GetCthermoAtTempnp_T(
-      LINALG::Matrix<6,1>& derivctemp,  //!< linearisation of ctemp w.r.t. T
-      Teuchos::ParameterList& params  //!< parameter list
-      );
+        LINALG::Matrix<6, 1>& derivctemp,  //!< linearisation of ctemp w.r.t. T
+        Teuchos::ParameterList& params     //!< parameter list
+    );
 
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp(
-      const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
-      const double& tempnp  // tmpr (i) current temperature
-      ) const ;
+        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+        const double& tempnp                     // tmpr (i) current temperature
+        ) const;
 
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp_T(
-      const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
-      const double& tempnp  // tmpr (i) current temperature
-      ) const ;
+        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+        const double& tempnp                     // tmpr (i) current temperature
+        ) const;
 
     //@}
 
-  private:
-
+   private:
     //! my material parameters
     MAT::PAR::ThermoStVenantKirchhoff* params_;
 

@@ -26,270 +26,262 @@ typedef Sacado::Fad::DFad<double> FAD;
 /* belongs to particle namespace */
 namespace PARTICLE
 {
+  class WeightFunction_Base
+  {
+   public:
+    // destructor
+    virtual ~WeightFunction_Base() { ; };
 
-class WeightFunction_Base
-{
-public :
+    // get smoothing length h from radius r
+    virtual double SmoothingLength(const double &radius) = 0;
 
-  // destructor
-  virtual ~WeightFunction_Base() { ; };
+    // weight function
+    virtual double W(const double &disRel, const double &radius) = 0;
 
-  // get smoothing length h from radius r
-  virtual double SmoothingLength(const double &radius) = 0;
+    // weight function (FAD)
+    virtual FAD W(const FAD &disRel, const double &radius) = 0;
 
-  // weight function
-  virtual double W(const double &disRel, const double &radius) = 0;
+    // weight function 1 derivative
+    virtual double DW(const double &disRel, const double &radius) = 0;
 
-  // weight function (FAD)
-  virtual FAD W(const FAD &disRel, const double &radius) = 0;
+    // weight function 1 derivative (FAD)
+    virtual FAD DW(const FAD &disRel, const double &radius) = 0;
 
-  // weight function 1 derivative
-  virtual double DW(const double &disRel, const double &radius) = 0;
+    // weight function 2 derivative
+    virtual double DDW(const double &disRel, const double &radius) = 0;
 
-  // weight function 1 derivative (FAD)
-  virtual FAD DW(const FAD &disRel, const double &radius) = 0;
+    // gradient, r = r_i - r_j
+    virtual LINALG::Matrix<3, 1> GradW(const LINALG::Matrix<3, 1> &rRelVersor, const double &dw);
 
-  // weight function 2 derivative
-  virtual double DDW(const double &disRel, const double &radius) = 0;
+    // gradient, r = r_i - r_j (FAD)
+    virtual LINALG::TMatrix<FAD, 3, 1> GradW(
+        const LINALG::TMatrix<FAD, 3, 1> &rRelVersor, const FAD &dw);
 
-  // gradient, r = r_i - r_j
-  virtual LINALG::Matrix<3,1> GradW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw);
+    // hessian, r = r_i - r_j
+    virtual LINALG::Matrix<3, 3> HessW(const LINALG::Matrix<3, 1> &rRelVersor, const double &dw,
+        const double &rNorm2, const double &ddw);
 
-  // gradient, r = r_i - r_j (FAD)
-  virtual LINALG::TMatrix<FAD,3,1> GradW(const LINALG::TMatrix<FAD,3,1> &rRelVersor, const FAD& dw);
+    // weight function in 0 (auto-interactions)
+    virtual double W0(const double &radius) = 0;
 
-  // hessian, r = r_i - r_j
-  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw, const double& rNorm2, const double& ddw);
+    // hessian of the weight function in 0 (auto-interactions)
+    virtual double DDW0(const double &radius) = 0;
 
-  // weight function in 0 (auto-interactions)
-  virtual double W0(const double& radius) = 0;
+    // weight function type
+    virtual INPAR::PARTICLE::WeightFunction Name() = 0;
 
-  // hessian of the weight function in 0 (auto-interactions)
-  virtual double DDW0(const double& radius) = 0;
+    // check if the gradient is correct
+    virtual void DBG_GradW();
 
-  // weight function type
-  virtual INPAR::PARTICLE::WeightFunction Name() = 0;
+    // check if the gradient is correct
+    virtual void DBG_HessW();
 
-  // check if the gradient is correct
-  virtual void DBG_GradW();
+   private:
+    // resizer due to the dimension integral
+    virtual double RszDim(const double &radius) = 0;
+  };
 
-  // check if the gradient is correct
-  virtual void DBG_HessW();
+  class WeightFunction_CubicBspline : public WeightFunction_Base
+  {
+   public:
+    //! @name Actions
+    //@{
 
-private :
+    //! constructor
+    WeightFunction_CubicBspline(INPAR::PARTICLE::WeightFunctionDim dim) : WF_DIM_(dim) {}
 
-  // resizer due to the dimension integral
-  virtual double RszDim(const double& radius) = 0;
+    // get smoothing length h from radius r
+    virtual inline double SmoothingLength(const double &radius) { return radius / 2.0; }
 
-};
+    //! compute the cubicBspline weight function
+    virtual double W(const double &disRel, const double &radius);
 
-class WeightFunction_CubicBspline : public WeightFunction_Base
-{
-public :
+    //! compute the cubicBspline weight function (FAD)
+    virtual FAD W(const FAD &disRel, const double &radius);
 
-   //! @name Actions
-   //@{
+    //! compute the weight function 1 derivative of the cubicBspline weight function
+    virtual double DW(const double &disRel, const double &radius);
 
-   //! constructor
-   WeightFunction_CubicBspline(INPAR::PARTICLE::WeightFunctionDim dim):
-    WF_DIM_(dim){}
+    //! compute the weight function 1 derivative of the cubicBspline weight function (FAD)
+    virtual FAD DW(const FAD &disRel, const double &radius);
 
-   // get smoothing length h from radius r
-   virtual inline double SmoothingLength(const double &radius){return radius/2.0; }
+    //! compute the weight function 2 derivative of the cubicBspline weight function
+    virtual double DDW(const double &disRel, const double &radius);
 
-   //! compute the cubicBspline weight function
-   virtual double W(const double &disRel, const double &radius);
+    // weight function in 0 (auto-interactions)
+    virtual inline double W0(const double &radius) { return 2.0 / 3.0 * RszDim(radius); }
 
-   //! compute the cubicBspline weight function (FAD)
-   virtual FAD W(const FAD &disRel, const double &radius);
+    // hessian of the weight function in 0 (auto-interactions)
+    virtual inline double DDW0(const double &radius)
+    {
+      return -8 * RszDim(radius) / std::pow(radius, 2);
+    }
 
-   //! compute the weight function 1 derivative of the cubicBspline weight function
-   virtual double DW(const double &disRel, const double &radius);
+    // weight function type
+    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::CubicBspline; }
 
-   //! compute the weight function 1 derivative of the cubicBspline weight function (FAD)
-   virtual FAD DW(const FAD &disRel, const double &radius);
+    //@}
 
-   //! compute the weight function 2 derivative of the cubicBspline weight function
-   virtual double DDW(const double &disRel, const double &radius);
+   private:
+    virtual double RszDisRel(const double &disRel, const double &radius)
+    {
+      return 2 * disRel / radius;
+    }
 
-   // weight function in 0 (auto-interactions)
-   virtual inline double W0(const double& radius) { return 2.0/3.0 * RszDim(radius); }
+    virtual FAD RszDisRel(const FAD &disRel, const double &radius) { return 2 * disRel / radius; }
 
-   // hessian of the weight function in 0 (auto-interactions)
-   virtual inline double DDW0(const double& radius) { return -8 * RszDim(radius) / std::pow(radius,2); }
+    virtual double RszDim(const double &radius);
 
-   // weight function type
-   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::CubicBspline; }
+   protected:
+    // store problem dimension required by weight functions
+    INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+  };
 
-   //@}
+  class WeightFunction_QuinticBspline : public WeightFunction_Base
+  {
+   public:
+    //! @name Actions
+    //@{
 
-private :
+    //! constructor
+    WeightFunction_QuinticBspline(INPAR::PARTICLE::WeightFunctionDim dim) : WF_DIM_(dim) {}
 
-   virtual double RszDisRel(const double& disRel, const double& radius) {return 2 * disRel / radius; }
+    // get smoothing length h from radius r
+    virtual inline double SmoothingLength(const double &radius) { return radius / 3.0; }
 
-   virtual FAD RszDisRel(const FAD& disRel, const double& radius) {return 2 * disRel / radius; }
+    //! compute the QuinticBspline weight function
+    virtual double W(const double &disRel, const double &radius);
 
-   virtual double RszDim(const double& radius);
+    //! compute the QuinticBspline weight function (FAD)
+    virtual FAD W(const FAD &disRel, const double &radius);
 
-protected:
+    //! compute the weight function 1 derivative of the QuinticBspline weight function
+    virtual double DW(const double &disRel, const double &radius);
 
-   // store problem dimension required by weight functions
-   INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+    //! compute the weight function 1 derivative of the QuinticBspline weight function (FAD)
+    virtual FAD DW(const FAD &disRel, const double &radius);
 
-};
+    //! compute the weight function 2 derivative of the QuinticBspline weight function
+    virtual double DDW(const double &disRel, const double &radius);
 
-class WeightFunction_QuinticBspline : public WeightFunction_Base
-{
-public :
+    // weight function in 0 (auto-interactions)
+    virtual inline double W0(const double &radius)
+    {
+      double h = radius / 3.0;
+      return 66 * RszDim(h);
+    }
 
-   //! @name Actions
-   //@{
+    // hessian of the weight function in 0 (auto-interactions)
+    virtual inline double DDW0(const double &radius)
+    {
+      double h = radius / 3.0;
+      return -120 * RszDim(h) / (h * h);
+    }
 
-   //! constructor
-   WeightFunction_QuinticBspline(INPAR::PARTICLE::WeightFunctionDim dim):
-    WF_DIM_(dim){}
+    // weight function type
+    virtual inline INPAR::PARTICLE::WeightFunction Name()
+    {
+      return INPAR::PARTICLE::QuinticBspline;
+    }
 
-   // get smoothing length h from radius r
-   virtual inline double SmoothingLength(const double &radius){return radius/3.0; }
+    //@}
 
-   //! compute the QuinticBspline weight function
-   virtual double W(const double &disRel, const double &radius);
+   private:
+    virtual double RszDim(const double &h);
 
-   //! compute the QuinticBspline weight function (FAD)
-   virtual FAD W(const FAD &disRel, const double &radius);
+   protected:
+    // store problem dimension required by weight functions
+    INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+  };
 
-   //! compute the weight function 1 derivative of the QuinticBspline weight function
-   virtual double DW(const double &disRel, const double &radius);
+  class WeightFunction_SqrtHyperbola : public WeightFunction_Base
+  {
+   public:
+    //! @name Actions
+    //@{
 
-   //! compute the weight function 1 derivative of the QuinticBspline weight function (FAD)
-   virtual FAD DW(const FAD &disRel, const double &radius);
+    //! constructor
+    WeightFunction_SqrtHyperbola(INPAR::PARTICLE::WeightFunctionDim dim) : WF_DIM_(dim) {}
 
-   //! compute the weight function 2 derivative of the QuinticBspline weight function
-   virtual double DDW(const double &disRel, const double &radius);
+    // get smoothing length h from radius r
+    virtual inline double SmoothingLength(const double &radius) { return radius; }
 
-   // weight function in 0 (auto-interactions)
-   virtual inline double W0(const double& radius)
-   {
-     double h=radius/3.0;
-     return 66*RszDim(h);
-   }
+    //! compute the SqrtHyperbola weight function
+    virtual double W(const double &disRel, const double &radius);
 
-   // hessian of the weight function in 0 (auto-interactions)
-   virtual inline double DDW0(const double& radius)
-   {
-     double h=radius/3.0;
-     return -120*RszDim(h)/(h*h);
-   }
+    //! compute the SqrtHyperbola weight function
+    virtual FAD W(const FAD &disRel, const double &radius);
 
-   // weight function type
-   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::QuinticBspline; }
+    //! compute the weight function 1 derivative of the SqrtHyperbola weight function
+    virtual double DW(const double &disRel, const double &radius);
 
-   //@}
+    //! compute the weight function 1 derivative of the SqrtHyperbola weight function (FAD)
+    virtual FAD DW(const FAD &disRel, const double &radius);
 
-private :
+    //! compute the weight function 2 derivative of the SqrtHyperbola weight function
+    virtual double DDW(const double &disRel, const double &radius);
 
-   virtual double RszDim(const double& h);
+    // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
+    virtual inline double W0(const double &radius) { return RszDim(radius); }
 
-protected:
+    // hessian of the weight function in 0 (auto-interactions)
+    virtual inline double DDW0(const double &radius) { return RszDim(radius); }
 
-   // store problem dimension required by weight functions
-   INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+    // weight function type
+    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::SqrtHyperbola; }
 
-};
+    //@}
 
-class WeightFunction_SqrtHyperbola : public WeightFunction_Base
-{
-public :
+   private:
+    virtual double RszDim(const double &radius);
 
-   //! @name Actions
-   //@{
+   protected:
+    // store problem dimension required by weight functions
+    INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+  };
 
-   //! constructor
-   WeightFunction_SqrtHyperbola(INPAR::PARTICLE::WeightFunctionDim dim):
-    WF_DIM_(dim){}
 
-   // get smoothing length h from radius r
-   virtual inline double SmoothingLength(const double &radius){return radius; }
+  class WeightFunction_HyperbolaNoRsz : public WeightFunction_Base
+  {
+   public:
+    //! @name Actions
+    //@{
 
-   //! compute the SqrtHyperbola weight function
-   virtual double W(const double &disRel, const double &radius);
+    // get smoothing length h from radius r
+    virtual inline double SmoothingLength(const double &radius) { return radius; }
 
-   //! compute the SqrtHyperbola weight function
-   virtual FAD W(const FAD &disRel, const double &radius);
+    //! compute the HyperbolaNoRsz weight function
+    virtual double W(const double &disRel, const double &radius);
 
-   //! compute the weight function 1 derivative of the SqrtHyperbola weight function
-   virtual double DW(const double &disRel, const double &radius);
+    //! compute the HyperbolaNoRsz weight function
+    virtual FAD W(const FAD &disRel, const double &radius);
 
-   //! compute the weight function 1 derivative of the SqrtHyperbola weight function (FAD)
-   virtual FAD DW(const FAD &disRel, const double &radius);
+    //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
+    virtual double DW(const double &disRel, const double &radius);
 
-   //! compute the weight function 2 derivative of the SqrtHyperbola weight function
-   virtual double DDW(const double &disRel, const double &radius);
+    //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function (FAD)
+    virtual FAD DW(const FAD &disRel, const double &radius);
 
-   // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
-   virtual inline double W0(const double& radius) { return RszDim(radius); }
+    //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
+    virtual double DDW(const double &disRel, const double &radius);
 
-   // hessian of the weight function in 0 (auto-interactions)
-   virtual inline double DDW0(const double& radius) { return RszDim(radius); }
+    // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
+    virtual inline double W0(const double &radius) { return RszDim(radius); }
 
-   // weight function type
-   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::SqrtHyperbola; }
+    // hessian of the weight function in 0 (auto-interactions)
+    virtual inline double DDW0(const double &radius) { return RszDim(radius); }
 
-   //@}
+    // weight function type
+    virtual inline INPAR::PARTICLE::WeightFunction Name()
+    {
+      return INPAR::PARTICLE::HyperbolaNoRsz;
+    }
 
-private :
+    //@}
 
-   virtual double RszDim(const double& radius);
-
-protected:
-
-   // store problem dimension required by weight functions
-   INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
-
-};
-
-
-class WeightFunction_HyperbolaNoRsz : public WeightFunction_Base
-{
-public :
-
-   //! @name Actions
-   //@{
-
-  // get smoothing length h from radius r
-  virtual inline double SmoothingLength(const double &radius){return radius; }
-
-   //! compute the HyperbolaNoRsz weight function
-   virtual double W(const double &disRel, const double &radius);
-
-   //! compute the HyperbolaNoRsz weight function
-   virtual FAD W(const FAD &disRel, const double &radius);
-
-   //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
-   virtual double DW(const double &disRel, const double &radius);
-
-   //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function (FAD)
-   virtual FAD DW(const FAD &disRel, const double &radius);
-
-   //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
-   virtual double DDW(const double &disRel, const double &radius);
-
-   // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
-   virtual inline double W0(const double& radius) { return RszDim(radius); }
-
-   // hessian of the weight function in 0 (auto-interactions)
-   virtual inline double DDW0(const double& radius) { return RszDim(radius); }
-
-   // weight function type
-   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::HyperbolaNoRsz; }
-
-   //@}
-
-private :
-
-   virtual double RszDim(const double& radius) {return 1; };
-
-};
+   private:
+    virtual double RszDim(const double &radius) { return 1; };
+  };
 
 
 }  // namespace PARTICLE

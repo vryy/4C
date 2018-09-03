@@ -21,20 +21,15 @@ Maintainer: Volker Gravemeier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters
     class HerschelBulkley : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      HerschelBulkley(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      HerschelBulkley(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~HerschelBulkley() { ; }
@@ -42,13 +37,13 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      const double tau0_;             /* yield stress */
-      const double kfac_;             /* constant factor */
-      const double nexp_;             /* exponent */
-      const double mexp_;             /* exponent */
-      const double lolimshearrate_;   /* lower limit of shear rate */
-      const double uplimshearrate_;   /* upper limit of shear rate */
-      const double density_;          /* density */
+      const double tau0_;           /* yield stress */
+      const double kfac_;           /* constant factor */
+      const double nexp_;           /* exponent */
+      const double mexp_;           /* exponent */
+      const double lolimshearrate_; /* lower limit of shear rate */
+      const double uplimshearrate_; /* upper limit of shear rate */
+      const double density_;        /* density */
 
       //@}
 
@@ -59,26 +54,23 @@ namespace MAT
 
   }  // namespace PAR
 
-class HerschelBulkleyType : public DRT::ParObjectType
-{
-public:
+  class HerschelBulkleyType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "HerschelBulkleyType"; }
 
-  std::string Name() const { return "HerschelBulkleyType"; }
+    static HerschelBulkleyType& Instance() { return instance_; };
 
-  static HerschelBulkleyType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static HerschelBulkleyType instance_;
-};
+   private:
+    static HerschelBulkleyType instance_;
+  };
 
   /// Nonlinear viscosity according to HerschelBulkley
   class HerschelBulkley : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     HerschelBulkley();
 
@@ -94,7 +86,10 @@ private:
       top of drt_parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const { return HerschelBulkleyType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return HerschelBulkleyType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -128,7 +123,10 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_herschelbulkley; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new HerschelBulkley( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new HerschelBulkley(*this));
+    }
 
     /// return material parameters for element calculation
     //@{
@@ -153,14 +151,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::HerschelBulkley* params_;
-
   };
 
-}
+}  // namespace MAT
 
 #endif
-

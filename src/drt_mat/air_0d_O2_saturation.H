@@ -18,22 +18,19 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for Air 0D O2 saturation material
     ///
     class Air_0d_O2_saturation : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
       Air_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Air_0d_O2_saturation() { }
+      virtual ~Air_0d_O2_saturation() {}
 
       /// @name material parameters
       //@{
@@ -52,16 +49,14 @@ namespace MAT
 
   class Air_0d_O2_saturationType : public DRT::ParObjectType
   {
-  public:
-
+   public:
     std::string Name() const { return "air_0d_O2_saturationType"; }
 
-    static Air_0d_O2_saturationType & Instance() { return instance_; };
+    static Air_0d_O2_saturationType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  private:
-
+   private:
     static Air_0d_O2_saturationType instance_;
   };
 
@@ -71,8 +66,7 @@ namespace MAT
   /// This object exists (several times) at every element
   class Air_0d_O2_saturation : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Air_0d_O2_saturation();
 
@@ -87,7 +81,10 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return Air_0d_O2_saturationType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return Air_0d_O2_saturationType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -118,27 +115,31 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_0d_o2_air_saturation; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_0d_o2_air_saturation;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Air_0d_O2_saturation( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new Air_0d_O2_saturation(*this));
+    }
 
     /// Atmospheric pressure
-    double AtmosphericPressure() const {return params_->atmospheric_p_;}
+    double AtmosphericPressure() const { return params_->atmospheric_p_; }
 
     /// Number of O2 moles per unit volume of air
-    double NumO2PerVO2() const {return params_->nO2_per_VO2_;}
+    double NumO2PerVO2() const { return params_->nO2_per_VO2_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Air_0d_O2_saturation* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

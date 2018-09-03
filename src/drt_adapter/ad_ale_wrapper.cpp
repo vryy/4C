@@ -21,22 +21,19 @@ void ADAPTER::AleNOXCorrectionWrapper::PrepareTimeStep()
 {
   AleWrapper::PrepareTimeStep();
 
-  if (stepinc_ != Teuchos::null)
-    stepinc_->PutScalar(0.0);
+  if (stepinc_ != Teuchos::null) stepinc_->PutScalar(0.0);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleNOXCorrectionWrapper::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> stepinc)
+void ADAPTER::AleNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
-  if (stepinc!=Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
     // iteration increments
-    Teuchos::RCP<Epetra_Vector> iterinc =
-        Teuchos::rcp(new Epetra_Vector(*stepinc));
+    Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::rcp(new Epetra_Vector(*stepinc));
     if (stepinc_ != Teuchos::null)
     {
       iterinc->Update(-1.0, *stepinc_, 1.0);

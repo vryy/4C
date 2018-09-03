@@ -51,18 +51,14 @@ namespace MAT
 
     class ElastHyper : public Parameter
     {
-
       friend class MAT::ElastHyper;
 
-    public:
-
+     public:
       /// standard constructor
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      ElastHyper(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~ElastHyper() { ; }
@@ -70,10 +66,10 @@ namespace MAT
       /// @name material parameters
       //@{
 
-//       /// provide access to material/summand by its ID
-//       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
-//         const int id  ///< ID to look for in collection of summands
-//         ) const;
+      //       /// provide access to material/summand by its ID
+      //       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
+      //         const int id  ///< ID to look for in collection of summands
+      //         ) const;
 
       /// length of material list
       const int nummat_;
@@ -94,10 +90,9 @@ namespace MAT
       virtual void OptParams(std::map<std::string, int>* pnames);
 
       /// for stat inverse analysis: set pointer to elasthyper
-      void SetMaterialPtrSIA(MAT::ElastHyper* in)
-      { statiaelasthyper_=in;}
+      void SetMaterialPtrSIA(MAT::ElastHyper* in) { statiaelasthyper_ = in; }
 
-    protected:
+     protected:
       /// pointer to elasthyper for stat inverse analysis
       MAT::ElastHyper* statiaelasthyper_;
 
@@ -107,20 +102,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class ElastHyperType : public DRT::ParObjectType
-{
-public:
+  class ElastHyperType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "ElastHyperType"; }
 
-  std::string Name() const { return "ElastHyperType"; }
+    static ElastHyperType& Instance() { return instance_; };
 
-  static ElastHyperType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static ElastHyperType instance_;
-};
+   private:
+    static ElastHyperType instance_;
+  };
 
 
   /*----------------------------------------------------------------------*/
@@ -154,8 +147,7 @@ private:
 
   class ElastHyper : public So3Material
   {
-  public:
-
+   public:
     friend class MAT::PAR::ElastHyper;
 
     /// construct empty material object
@@ -202,22 +194,24 @@ private:
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-       dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElastHyper( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ElastHyper(*this)); }
 
     /// number of materials
     virtual int NumMat() const { return params_->nummat_; }
 
     /// deliver material ID of index i'th potential summand in collection
-    virtual int MatID(
-      const unsigned index  ///< index i
-      ) const;
+    virtual int MatID(const unsigned index  ///< index i
+        ) const;
 
     /// provide access to material by its ID
-//     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
+    //     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const {
+    //     return params_->MaterialById(id); }
 
     /// material mass density
     virtual double Density() const { return params_->density_; }
@@ -226,77 +220,59 @@ private:
     virtual double ShearMod() const;
 
     /// a young's modulus equivalent
-    virtual double GetYoung() ;
+    virtual double GetYoung();
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain, ///< Green-Lagrange strain
-                              double& psi,                         ///< Strain energy function
-                              const int eleGID                   ///< Element GID
-                              );
+    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+        double& psi,                                                 ///< Strain energy function
+        const int eleGID                                             ///< Element GID
+    );
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
-                          const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
-                          Teuchos::ParameterList& params,     ///< Container for additional information
-                          LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat,         ///< Constitutive matrix
-                          const int eleGID                    ///< Element GID
-                          );
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,  ///< Container for additional information
+        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
+        const int eleGID                 ///< Element GID
+    );
 
     /// evaluate for GEMM
-    virtual void EvaluateGEMM(LINALG::Matrix<6,1>* stress,          ///< 2nd Piola-Kirchhoff stresses
-                              LINALG::Matrix<6,6>* cmat,            ///< Constitutive matrix
-                              double* density,                      ///< Density
-                              LINALG::Matrix<6,1>* glstrain_m,      ///< Green-Lagrange strain at t_{n+1/2}
-                              LINALG::Matrix<6,1>* glstrain_new,    ///< Green-Lagrange strain at t_{n+1}
-                              LINALG::Matrix<6,1>* glstrain_old,    ///< Green-Lagrange strain at t_{n}
-                              LINALG::Matrix<3,3>* rcg_new,         ///< Right Cauchy-Green tensor at t_{n+1}
-                              LINALG::Matrix<3,3>* rcg_old,         ///< Right Cauchy-Green tensor at t_{n}
-                              const int eleGID);                           ///< Element GID
+    virtual void EvaluateGEMM(LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,                          ///< Constitutive matrix
+        double* density,                                     ///< Density
+        LINALG::Matrix<6, 1>* glstrain_m,                    ///< Green-Lagrange strain at t_{n+1/2}
+        LINALG::Matrix<6, 1>* glstrain_new,                  ///< Green-Lagrange strain at t_{n+1}
+        LINALG::Matrix<6, 1>* glstrain_old,                  ///< Green-Lagrange strain at t_{n}
+        LINALG::Matrix<3, 3>* rcg_new,  ///< Right Cauchy-Green tensor at t_{n+1}
+        LINALG::Matrix<3, 3>* rcg_old,  ///< Right Cauchy-Green tensor at t_{n}
+        const int eleGID);              ///< Element GID
 
     /// evaluate Cauchy stress with given left Cauchy--Green tensor
     /// if requested, additional linearizations are computed
     /// potential thermal dependency handled if temperature is given
-    virtual void EvaluateCauchy(
-        const LINALG::Matrix<3,3>& b,
-        const LINALG::Matrix<3,1>& n,
-        const LINALG::Matrix<3,1>& t,
-        double& snt,
-        LINALG::Matrix<6,1>* dsntdb,
-        LINALG::Matrix<6,6>* d2sntdb2,
-        LINALG::Matrix<6,3>* d2sntDbDn,
-        LINALG::Matrix<6,3>* d2sntDbDt,
-        LINALG::Matrix<3,1>* dsntdn,
-        LINALG::Matrix<3,1>* dsntdt,
-        const int eleGID,
-        const double* temp =NULL,
-        double* dsntdT=NULL,
-        LINALG::Matrix<6,1>* d2sntDbDT=NULL);
+    virtual void EvaluateCauchy(const LINALG::Matrix<3, 3>& b, const LINALG::Matrix<3, 1>& n,
+        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<6, 1>* dsntdb,
+        LINALG::Matrix<6, 6>* d2sntdb2, LINALG::Matrix<6, 3>* d2sntDbDn,
+        LINALG::Matrix<6, 3>* d2sntDbDt, LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt,
+        const int eleGID, const double* temp = NULL, double* dsntdT = NULL,
+        LINALG::Matrix<6, 1>* d2sntDbDT = NULL);
 
     /// calculate derivatives of SEF for calculation of Cauchy stress
     /// can be overloaded if temperature is given
-    virtual void EvaluateCauchyDerivs(
-        const LINALG::Matrix<3,1>& prinv,
-        const int eleGID,
-        LINALG::Matrix<3,1>& dPI,
-        LINALG::Matrix<6,1>& ddPII_ordered,
-        LINALG::Matrix<10,1>& dddPIII,
-        const double* temp=NULL
-        );
+    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered,
+        LINALG::Matrix<10, 1>& dddPIII, const double* temp = NULL);
 
     /// calculate derivatives of Cauchy stress w.r.t. temperature
     /// to be overloaded
-    virtual void EvaluateCauchyTempDeriv(
-        const LINALG::Matrix<3,1>& prinv,
-        const double ndt,
-        const double tbn,
-        const double tibn,
-        const LINALG::Matrix<6,1>& dI1db,
-        const LINALG::Matrix<6,1>& dI2db,
-        const LINALG::Matrix<6,1>& dI3db,
-        const LINALG::Matrix<6,1>& nt_tn_v,
-        const LINALG::Matrix<6,1>& dtibndb,
-        const double* temp, double* dsntdT,LINALG::Matrix<6,1>* d2sntDbDT) {}
+    virtual void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
+        const double tbn, const double tibn, const LINALG::Matrix<6, 1>& dI1db,
+        const LINALG::Matrix<6, 1>& dI2db, const LINALG::Matrix<6, 1>& dI3db,
+        const LINALG::Matrix<6, 1>& nt_tn_v, const LINALG::Matrix<6, 1>& dtibndb,
+        const double* temp, double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT)
+    {
+    }
 
 
     /// setup
@@ -309,36 +285,35 @@ private:
     virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID);
 
     /// return if isotropic not splitted formulation
-    virtual bool IsotropicPrincipal() const { return isoprinc_;}
+    virtual bool IsotropicPrincipal() const { return isoprinc_; }
 
     /// return if isotropic and splitted formulation
-    virtual bool IsotropicModified() const { return isomod_;}
+    virtual bool IsotropicModified() const { return isomod_; }
 
     /// return if anisotropic not splitted formulation
-    virtual bool AnisotropicPrincipal() const { return anisoprinc_;}
+    virtual bool AnisotropicPrincipal() const { return anisoprinc_; }
 
     /// return if anisotropic and splitted formulation
-    virtual bool AnisotropicModified() const { return anisomod_;}
+    virtual bool AnisotropicModified() const { return anisomod_; }
 
     /// get fiber vectors
-    virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
+    virtual void GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs);
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
-    virtual void EvaluateFiberVecs
-    (
-      const double newgamma,   ///< new angle
-      const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
-      const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
+    virtual void EvaluateFiberVecs(const double newgamma,  ///< new angle
+        const LINALG::Matrix<3, 3>& locsys,                ///< local coordinate system
+        const LINALG::Matrix<3, 3>& defgrd                 ///< deformation gradient
     );
 
     /// Return potential summand pointer for the given material type
-    Teuchos::RCP<const MAT::ELASTIC::Summand> GetPotSummandPtr(const INPAR::MAT::MaterialType& materialtype) const;
+    Teuchos::RCP<const MAT::ELASTIC::Summand> GetPotSummandPtr(
+        const INPAR::MAT::MaterialType& materialtype) const;
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
@@ -346,36 +321,26 @@ private:
     /// Return whether the material requires the deformation gradient for its evaluation
     virtual bool NeedsDefgrd()
     {
-      if (params_->polyconvex_)
-        return true;
+      if (params_->polyconvex_) return true;
       /* usual materials are based on GL-strains */
       else
         return false;
     };
 
-  protected:
+   protected:
     /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluateKinQuant(
-      const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,1>& id2,
-      LINALG::Matrix<6,1>& scg,
-      LINALG::Matrix<6,1>& rcg,
-      LINALG::Matrix<6,1>& icg,
-      LINALG::Matrix<6,6>& id4,
-      LINALG::Matrix<6,6>& id4sharp,
-      LINALG::Matrix<3,1>& prinv);
+    virtual void EvaluateKinQuant(const LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<6, 1>& id2,
+        LINALG::Matrix<6, 1>& scg, LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 1>& icg,
+        LINALG::Matrix<6, 6>& id4, LINALG::Matrix<6, 6>& id4sharp, LINALG::Matrix<3, 1>& prinv);
 
-    /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants
-    virtual void EvaluateInvariantDerivatives(
-        const LINALG::Matrix<3,1>& prinv,
-        LINALG::Matrix<3,1>& dPI,
-        LINALG::Matrix<6,1>& ddPII,
-        int eleGID,
-        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> >& potsum
-        );
+    /// calculates the derivatives of the hyperelastic laws with respect to the (modified)
+    /// invariants
+    virtual void EvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv,
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int eleGID,
+        const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
-    /// converts the derivatives with respect to the modified invariants in derivatives with respect to principal invariants.
-    /// Uses the following conversions:
+    /// converts the derivatives with respect to the modified invariants in derivatives with respect
+    /// to principal invariants. Uses the following conversions:
     ///\f[
     ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} I_{\boldsymbol{C}},
     ///\f]
@@ -386,13 +351,9 @@ private:
     ///  J = \sqrt{III_{\boldsymbol{C}}}
     ///\f]
 
-    virtual void ConvertModToPrinc(
-        const LINALG::Matrix<3,1>& prinv,
-        const LINALG::Matrix<3,1>& dPmodI,
-        const LINALG::Matrix<6,1>& ddPmodII,
-        LINALG::Matrix<3,1>& dPI,
-        LINALG::Matrix<6,1>& ddPII
-        );
+    virtual void ConvertModToPrinc(const LINALG::Matrix<3, 1>& prinv,
+        const LINALG::Matrix<3, 1>& dPmodI, const LINALG::Matrix<6, 1>& ddPmodII,
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII);
 
     /// calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
     /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
@@ -402,9 +363,8 @@ private:
     ///\f[
     ///  I_{\boldsymbol{C}} = C_{AA},
     ///  \quad
-    ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
-    ///  \quad
-    ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
+    ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) -
+    ///  \mathrm{trace}(\boldsymbol{C}^2) \big), \quad III_{\boldsymbol{C}} = \det(\boldsymbol{C})
     ///\f]
     ///
     /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
@@ -425,34 +385,44 @@ private:
     /// material constitutive tensor coefficients
     /// cf. Holzapfel [1], p. 261
     ///\f[
-    ///  \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
-    ///  + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right) + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
-    ///  + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
+    ///  \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left(
+    ///  \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
+    ///  + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right)
+    ///  + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
+    ///  + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) +
+    ///  \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
     ///  + \delta_7 \mathbb{P}
     ///\f]
     ///\f[
     /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2}
-    ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+    ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial
+    ///          II_{\boldsymbol{C}}}
     ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
-    ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+    ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2}
+    ///          \right)
     ///\f]
     ///\f[
-    /// \delta_2 = -4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+    /// \delta_2 = -4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial
+    /// II_{\boldsymbol{C}}}
     ///          + I_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
     ///\f]
     ///\f[
-    /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
-    ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc \partial III_{\boldsymbol{C}}} \right)
+    /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}
+    /// \partial III_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc
+    ///          \partial III_{\boldsymbol{C}}} \right)
     ///\f]
     ///\f[
     /// \delta_4 = 4\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2}
     ///\f]
     ///\f[
-    /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
+    /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}
+    /// \partial III_{\boldsymbol{C}}}
     ///\f]
     ///\f[
     /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
-    ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} \right)
+    ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2}
+    ///          \right)
     ///\f]
     ///\f[
     /// \delta_7 = -4 III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
@@ -461,70 +431,49 @@ private:
     /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
     ///\f]
 
-    virtual void CalculateGammaDelta(
-        LINALG::Matrix<3,1>& gamma,
-        LINALG::Matrix<8,1>& delta,
-        const LINALG::Matrix<3,1>& prinv,
-        const LINALG::Matrix<3,1>& dPI,
-        const LINALG::Matrix<6,1>& ddPII
-        );
+    virtual void CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,
+        const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
+        const LINALG::Matrix<6, 1>& ddPII);
 
     /// calculates the isotropic stress and elasticity tensor
-    void EvaluateIsotropicStressCmat(
-        LINALG::Matrix<6,1>& stress,
-        LINALG::Matrix<6,6>& cmat,
-        const LINALG::Matrix<6,1>& scg,
-        const LINALG::Matrix<6,1>& id2,
-        const LINALG::Matrix<6,1>& icg,
-        const LINALG::Matrix<6,6>& id4sharp,
-        const LINALG::Matrix<3,1>& prinv,
-        const LINALG::Matrix<3,1>& dPI,
-        const LINALG::Matrix<6,1>& ddPII
-        );
+    void EvaluateIsotropicStressCmat(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
+        const LINALG::Matrix<6, 1>& scg, const LINALG::Matrix<6, 1>& id2,
+        const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<6, 6>& id4sharp,
+        const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
+        const LINALG::Matrix<6, 1>& ddPII);
 
     /// calculates the anisotropic stress and elasticity tensor for coupled configuration
-    void EvaluateAnisotropicPrinc(
-        LINALG::Matrix<6,1>& stressanisoprinc,
-        LINALG::Matrix<6,6>& cmatanisoprinc,
-        const LINALG::Matrix<6,1>& rcg,
-        Teuchos::ParameterList& params,
-        const int eleGID
-        );
+    void EvaluateAnisotropicPrinc(LINALG::Matrix<6, 1>& stressanisoprinc,
+        LINALG::Matrix<6, 6>& cmatanisoprinc, const LINALG::Matrix<6, 1>& rcg,
+        Teuchos::ParameterList& params, const int eleGID);
 
     /// calculates the anisotropic stress and elasticity tensor for decoupled configuration
-    void EvaluateAnisotropicMod(
-        LINALG::Matrix<6,1>& stressanisoprinc,
-        LINALG::Matrix<6,6>& cmatanisoprinc,
-        const LINALG::Matrix<6,1>& rcg,
-        const LINALG::Matrix<6,1>& icg,
-        const LINALG::Matrix<3,1>& prinv,
-        const int eleGID
-        );
+    void EvaluateAnisotropicMod(LINALG::Matrix<6, 1>& stressanisoprinc,
+        LINALG::Matrix<6, 6>& cmatanisoprinc, const LINALG::Matrix<6, 1>& rcg,
+        const LINALG::Matrix<6, 1>& icg, const LINALG::Matrix<3, 1>& prinv, const int eleGID);
 
     /// calculate principal invariants
-    virtual void InvariantsPrincipal(
-      LINALG::Matrix<3,1>& prinv,  ///< principal invariants
-      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-      );
+    virtual void InvariantsPrincipal(LINALG::Matrix<3, 1>& prinv,  ///< principal invariants
+        const LINALG::Matrix<6, 1>&
+            rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+    );
 
     /// calculate modified invariants
-    virtual void InvariantsModified(
-      LINALG::Matrix<3,1>& modinv,  ///< modified invariants
-      const LINALG::Matrix<3,1>& prinv  ///< principal invariants
-      );
+    virtual void InvariantsModified(LINALG::Matrix<3, 1>& modinv,  ///< modified invariants
+        const LINALG::Matrix<3, 1>& prinv                          ///< principal invariants
+    );
 
     /// calculate principal stretches \f$\lambda_\alpha\f$ and material principal directions
-    void StretchesPrincipal(
-     LINALG::Matrix<3,1>& prstr,  ///< principal stretches
-     LINALG::Matrix<3,3>& prdir,  ///< principal directions, stored col-by-col
-     const LINALG::Matrix<6,1>& rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+    void StretchesPrincipal(LINALG::Matrix<3, 1>& prstr,  ///< principal stretches
+        LINALG::Matrix<3, 3>& prdir,  ///< principal directions, stored col-by-col
+        const LINALG::Matrix<6, 1>&
+            rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
 
 
     /// calculate modified principal stretches \f$\bar{\lambda}_\alpha\f$
-    void StretchesModified(
-     LINALG::Matrix<3,1>& modstr,  ///< modified principal stretches
-     const LINALG::Matrix<3,1>& prstr  ///< principal stretches
-     );
+    void StretchesModified(LINALG::Matrix<3, 1>& modstr,  ///< modified principal stretches
+        const LINALG::Matrix<3, 1>& prstr                 ///< principal stretches
+    );
 
     /// determine if at least one summand uses principal stretches
     bool HaveCoefficientsStretchesPrincipal();
@@ -569,8 +518,9 @@ private:
     /// \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$, i.e.
     ///\f[
     ///   \delta_{\alpha\beta}
-    ///   = \frac{\partial^2\Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha \partial\lambda_\beta}
-    ///   = \frac{\partial^2\Psi(\bar{\boldsymbol{\lambda}})}{\partial\bar{\lambda}_\eta\partial\bar{\lambda}_\epsilon}
+    ///   = \frac{\partial^2\Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha
+    ///   \partial\lambda_\beta} =
+    ///   \frac{\partial^2\Psi(\bar{\boldsymbol{\lambda}})}{\partial\bar{\lambda}_\eta\partial\bar{\lambda}_\epsilon}
     ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
     ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta}
     ///   + \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
@@ -587,7 +537,8 @@ private:
     ///   = -\frac{1}{3} J^{-1/3} \Big(
     ///     1_{\alpha\beta} \lambda_\eta^{-1}
     ///     + 1_{\alpha\eta}\lambda_\beta^{-1}
-    ///     - \big( 1_{\beta\eta} + \frac{1}{3} \big) \lambda_\alpha \lambda_\beta^{-1} \lambda_\eta^{-1}
+    ///     - \big( 1_{\beta\eta} + \frac{1}{3} \big) \lambda_\alpha \lambda_\beta^{-1}
+    ///     \lambda_\eta^{-1}
     ///   \Big)
     ///\f]
     ///
@@ -597,13 +548,13 @@ private:
     /// \author bborn
     /// \date 08/09
 
-    void ResponseStretches(
-        LINALG::Matrix<6,6>& cmat,      ///< material elasticity matrix
-        LINALG::Matrix<6,1>& stress,    ///< 2nd Piola-Kirchhoff stress vector
-        const LINALG::Matrix<6,1>& rcg,  ///< Right Cauchy-Green tensor
-        const bool& havecoeffstrpr,     ///< true, if at least one summand is based on pr.stretches
-        const bool& havecoeffstrmod,    ///< true, if at least one summand is based on mod.pr.stretches
-        const int eleGID                ///< element GID
+    void ResponseStretches(LINALG::Matrix<6, 6>& cmat,  ///< material elasticity matrix
+        LINALG::Matrix<6, 1>& stress,                   ///< 2nd Piola-Kirchhoff stress vector
+        const LINALG::Matrix<6, 1>& rcg,                ///< Right Cauchy-Green tensor
+        const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
+        const bool&
+            havecoeffstrmod,  ///< true, if at least one summand is based on mod.pr.stretches
+        const int eleGID      ///< element GID
     );
 
     /// Check if material state is polyconvex:
@@ -613,44 +564,36 @@ private:
     /// Partial derivatives of SEF are used.
     /// \author birzle
     /// \date 04/2016
-    virtual void CheckPolyconvexity(
-        const LINALG::Matrix<3,3>& defgrd,
-        const LINALG::Matrix<3,1>& prinv,
-        const LINALG::Matrix<3,1>& dPI,
-        const LINALG::Matrix<6,1>& ddPII,
-        Teuchos::ParameterList& params,
-        const int eleGID
-        );
+    virtual void CheckPolyconvexity(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& dPI,
+        const LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int eleGID);
 
     /// Sat Inverse Analysis: add params of summands
-    virtual void ElastOptParams(
-        std::map<std::string,int>* pnames);
+    virtual void ElastOptParams(std::map<std::string, int>* pnames);
 
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
-    bool isoprinc_; ///< global indicator for isotropic principal formulation
-    bool isomod_; ///< global indicator for isotropic splitted formulation
-    bool anisoprinc_; ///< global indicator for anisotropic principal formulation
-    bool anisomod_; ///< global indicator for anisotropic splitted formulation
+    bool isoprinc_;    ///< global indicator for isotropic principal formulation
+    bool isomod_;      ///< global indicator for isotropic splitted formulation
+    bool anisoprinc_;  ///< global indicator for anisotropic principal formulation
+    bool anisomod_;    ///< global indicator for anisotropic splitted formulation
     //@}
 
     /// @name Voigt index arrays
     //@{
-    static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
-    static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
-    static const int VOIGT3X3SYM_[]; ///< go from symmetric 2-tensor index pair to 6-Voigt index
-                                     ///< by [3*i+j] for any i,j=0,1,2
+    static const int VOIGT6ROW_[];    ///< 6-Voigt row index of corresponding 2-tensor
+    static const int VOIGT6COL_[];    ///< 6-Voigt column index of corresponding 2-tensor
+    static const int VOIGT3X3SYM_[];  ///< go from symmetric 2-tensor index pair to 6-Voigt index
+                                      ///< by [3*i+j] for any i,j=0,1,2
     //@}
 
     /// my material parameters
     MAT::PAR::ElastHyper* params_;
 
     /// map to materials/potential summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
-
+    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

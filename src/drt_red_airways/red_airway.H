@@ -26,1973 +26,1943 @@
 // forward declarations
 namespace DRT
 {
-// forward declarations
-class Discretization;
+  // forward declarations
+  class Discretization;
 
-namespace ELEMENTS
-{
-// forward declarations
-class RedAirwayImplInterface;
-template <DRT::Element::DiscretizationType distype> class AirwayImpl;
+  namespace ELEMENTS
+  {
+    // forward declarations
+    class RedAirwayImplInterface;
+    template <DRT::Element::DiscretizationType distype>
+    class AirwayImpl;
 
-class RedAirwayType : public DRT::ElementType
-{
-public:
+    class RedAirwayType : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "RedAirwayType"; }
 
-  std::string Name() const { return "RedAirwayType"; }
+      static RedAirwayType& Instance();
 
-  static RedAirwayType& Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      {
+      }
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+      virtual void ComputeNullSpace(
+          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      {
+      }
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static RedAirwayType instance_;
+    };
 
-private:
+    /*!
+    \brief A C++ wrapper for the airway element
 
-  static RedAirwayType instance_;
-};
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
+    class RedAirway : public DRT::Element
+    {
+     public:
+      //! @name Friends
+      friend class RedAirwayImplInterface;
+      friend class AirwayImpl<DRT::Element::line2>;
 
-/*!
-\brief A C++ wrapper for the airway element
+      //@}
+      //! @name Constructors and destructors and related methods
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class RedAirway : public DRT::Element
-{
-public:
+      /*!
+      \brief Standard Constructor
 
-  //! @name Friends
-  friend class RedAirwayImplInterface;
-  friend class AirwayImpl<DRT::Element::line2>;
+      \param id : A unique global id
+      */
+      RedAirway(int id, int owner);
 
-  //@}
-  //! @name Constructors and destructors and related methods
+      /*!
+      \brief Copy Constructor
 
-  /*!
-  \brief Standard Constructor
+      Makes a deep copy of a Element
 
-  \param id : A unique global id
-  */
-  RedAirway(int id, int owner);
+      */
+      RedAirway(const RedAirway& old);
 
-  /*!
-  \brief Copy Constructor
+      /*!
+      \brief Deep copy this instance of RedAirway and return pointer to the copy
 
-  Makes a deep copy of a Element
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
 
-  */
-  RedAirway(const RedAirway& old);
+      */
+      DRT::Element* Clone() const;
 
-  /*!
-  \brief Deep copy this instance of RedAirway and return pointer to the copy
+      /*!
+      \brief Get shape type of element
+      */
+      virtual DiscretizationType Shape() const;
 
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {if (NumNode()==2) return 1;
-      else {
+      /*!
+      \brief Return number of lines of this element
+      */
+      virtual int NumLine() const
+      {
+        if (NumNode() == 2)
+          return 1;
+        else
+        {
           dserror("Could not determine number of lines");
           return -1;
+        }
       }
-  }
 
-  /*!
-  \brief Return number of surfaces of this element (always 1)
-  */
-  virtual int NumSurface() const {return -1;}
+      /*!
+      \brief Return number of surfaces of this element (always 1)
+      */
+      virtual int NumSurface() const { return -1; }
 
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
-  virtual int NumVolume() const {return -1;}
+      /*!
+      \brief Return number of volumes of this element (always 1)
+      */
+      virtual int NumVolume() const { return -1; }
 
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
-
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return RedAirwayType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const std::vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~RedAirway();
-
-  //@}
-
-  //! @name Acess methods
+      /*!
+      \brief Get vector of Teuchos::RCPs to the lines of this element
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
 
 
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
+      /*!
+      \brief Return unique ParObject id
 
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
+      every class implementing ParObject needs a unique id defined at the
+      top of this file.
+      */
+      virtual int UniqueParObjectId() const
+      {
+        return RedAirwayType::Instance().UniqueParObjectId();
+      }
 
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
+      /*!
+      \brief Pack this class so it can be communicated
 
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const
-  {
-    return 0;
-  }
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  /*!
-  \brief Print this element
-  */
-  void Print(std::ostream& os) const;
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  virtual RedAirwayType & ElementType() const
-  { return RedAirwayType::Instance(); }
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  //@}
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-  \brief Query names of element data to be visualized using BINIO
+      /*!
+      \brief Destructor
 
-  The element fills the provided map with key names of
-  visualization data the element wants to visualize AT THE CENTER
-  of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-  or 9 (nonsym. tensor)
+      */
+      virtual ~RedAirway();
 
-  Example:
-  \code
-    // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<std::string,int>("Owner",1));
-    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<std::string,int>("StressesXYZ",6));
-  \endcode
+      //@}
 
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
-  */
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*!
-  \brief Query data to be visualized using BINIO of a given name
-
-  The method is supposed to call this base method to visualize the owner of
-  the element.
-  If the derived method recognizes a supported data name, it shall fill it
-  with corresponding data.
-  If it does NOT recognizes the name, it shall do nothing.
-
-  \warning The method must not change size of data
-
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
-  */
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
+      //! @name Acess methods
 
 
-  //! @name Input and Creation
+      /*!
+      \brief Get number of degrees of freedom of a certain node
+             (implements pure virtual DRT::Element)
 
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+      */
+      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
 
-  //@}
+      /*!
+      \brief Get number of degrees of freedom per element
+             (implements pure virtual DRT::Element)
 
-  //! @name Evaluation
+      The element decides how many element degrees of freedom it has.
+      It can redecide along the way of a simulation.
 
-  /*!
-  \brief Evaluate an element
+      \note Element degrees of freedom mentioned here are dofs that are visible
+            at the level of the total system of equations. Purely internal
+            element dofs that are condensed internally should NOT be considered.
+      */
+      virtual int NumDofPerElement() const { return 0; }
 
-  Evaluate airway element stiffness, mass, internal forces etc
+      /*!
+      \brief Print this element
+      */
+      void Print(std::ostream& os) const;
 
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList& params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+      virtual RedAirwayType& ElementType() const { return RedAirwayType::Instance(); }
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      //@}
 
-  An element derived from this class uses the EvaluateNeumann method to receive commands
-  and parameters from some control routine in params and evaluates a Neumann boundary condition
-  given in condition
+      /*!
+      \brief Query names of element data to be visualized using BINIO
 
-  \note This class implements a dummy of this method that prints a warning and
-        returns false.
+      The element fills the provided map with key names of
+      visualization data the element wants to visualize AT THE CENTER
+      of the element geometry. The values is supposed to be dimension of the
+      data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+      or 9 (nonsym. tensor)
 
-  \param params (in/out)    : ParameterList for communication between control routine
+      Example:
+      \code
+        // Name of data is 'Owner', dimension is 1 (scalar value)
+        names.insert(std::pair<std::string,int>("Owner",1));
+        // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+        names.insert(std::pair<std::string,int>("StressesXYZ",6));
+      \endcode
+
+      \param names (out): On return, the derived class has filled names with
+                          key names of data it wants to visualize and with int dimensions
+                          of that data.
+      */
+      virtual void VisNames(std::map<std::string, int>& names);
+
+      /*!
+      \brief Query data to be visualized using BINIO of a given name
+
+      The method is supposed to call this base method to visualize the owner of
+      the element.
+      If the derived method recognizes a supported data name, it shall fill it
+      with corresponding data.
+      If it does NOT recognizes the name, it shall do nothing.
+
+      \warning The method must not change size of data
+
+      \param name (in):   Name of data that is currently processed for visualization
+      \param data (out):  data to be filled by element if element recognizes the name
+      */
+      virtual bool VisData(const std::string& name, std::vector<double>& data);
+
+
+      //! @name Input and Creation
+
+      /*!
+      \brief Read input for this element
+      */
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef);
+
+      //@}
+
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate an element
+
+      Evaluate airway element stiffness, mass, internal forces etc
+
+      \param params (in/out): ParameterList for communication between control routine
                               and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element
+      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \return 0 if successful, negative otherwise
+      */
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      An element derived from this class uses the EvaluateNeumann method to receive commands
+      and parameters from some control routine in params and evaluates a Neumann boundary condition
+      given in condition
 
-  this method evaluates a line Neumann condition on the airway element
+      \note This class implements a dummy of this method that prints a warning and
+            returns false.
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateDirichlet(Teuchos::ParameterList&   params,
-                                DRT::Discretization&      discretization,
-                                DRT::Condition&           condition,
-                                std::vector<int>&         lm,
-                                Epetra_SerialDenseVector& elevec1);
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): A reference to the underlying discretization
+      \param condition (in)     : The condition to be evaluated
+      \param lm (in)            : location vector of this element
+      \param elevec1 (out)      : Force vector to be filled by element
 
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  //@}
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
-  //! @name Other
-  std::string Type(){return elemType_;}
+      this method evaluates a line Neumann condition on the airway element
 
-  //! @name Other
-  std::string Resistance(){return resistance_;}
-
-  //! @name Other
-  std::string ElemSolvingType(){return elemsolvingType_;}
-
-  //@}
-
-  //! get cross-sectional area
-  //  double         getA(){ return A_;}
-
-  //! get youngs modulus of the wall
-  //  double         getEw(){ return Ew_;}
-
-  //! get youngs modulus of the air
-  //  double         getEa(){ return Ea_;}
-
-  //! get wall thickness
-  //  double         gettw(){ return tw_;}
-
-  //! set qin
-  //  void           setqin (double Qin ){ qin_ = Qin;}
-
-  //! set qout
-  //  void           setqout(double Qout){ qout_ = Qout;}
-
-  //! get element parameters
-  void           getParams(std::string name, double & var);
-
-  //! get element parameters
-  void           getParams(std::string name, int    & var);
-
-private:
-
-  //! action parameters recognized by airway
-  enum ActionType
-  {
-    none,
-    calc_sys_matrix_rhs,
-    calc_sys_matrix_rhs_iad,
-    get_initial_state,
-    set_bc,
-    calc_flow_rates,
-    get_coupled_values,
-    get_junction_volume_mix,
-    solve_scatra,
-    solve_junction_scatra,
-    calc_cfl,
-    solve_blood_air_transport,
-    update_scatra,
-    update_elem12_scatra,
-    eval_nodal_ess_vals,
-    eval_PO2_from_concentration,
-    calc_elem_volumes
-  };
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateDirichlet(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1);
 
 
+      //@}
 
-  //! Element Type
-  std::string                                     elemType_;
+      //! @name Other
+      std::string Type() { return elemType_; }
 
-  //! Resistance Type
-  std::string                                     resistance_;
+      //! @name Other
+      std::string Resistance() { return resistance_; }
 
-  //! Solver Type
-  std::string                                     elemsolvingType_;
+      //! @name Other
+      std::string ElemSolvingType() { return elemsolvingType_; }
 
-  //! container containing all kind of airway thisandthat
-  DRT::Container                                  data_;
+      //@}
+
+      //! get cross-sectional area
+      //  double         getA(){ return A_;}
+
+      //! get youngs modulus of the wall
+      //  double         getEw(){ return Ew_;}
+
+      //! get youngs modulus of the air
+      //  double         getEa(){ return Ea_;}
+
+      //! get wall thickness
+      //  double         gettw(){ return tw_;}
+
+      //! set qin
+      //  void           setqin (double Qin ){ qin_ = Qin;}
+
+      //! set qout
+      //  void           setqout(double Qout){ qout_ = Qout;}
+
+      //! get element parameters
+      void getParams(std::string name, double& var);
+
+      //! get element parameters
+      void getParams(std::string name, int& var);
+
+     private:
+      //! action parameters recognized by airway
+      enum ActionType
+      {
+        none,
+        calc_sys_matrix_rhs,
+        calc_sys_matrix_rhs_iad,
+        get_initial_state,
+        set_bc,
+        calc_flow_rates,
+        get_coupled_values,
+        get_junction_volume_mix,
+        solve_scatra,
+        solve_junction_scatra,
+        calc_cfl,
+        solve_blood_air_transport,
+        update_scatra,
+        update_elem12_scatra,
+        eval_nodal_ess_vals,
+        eval_PO2_from_concentration,
+        calc_elem_volumes
+      };
 
 
-  // data
-  std::map<std::string, double>                   elemParams_;
+
+      //! Element Type
+      std::string elemType_;
+
+      //! Resistance Type
+      std::string resistance_;
+
+      //! Solver Type
+      std::string elemsolvingType_;
+
+      //! container containing all kind of airway thisandthat
+      DRT::Container data_;
 
 
-  // element tree generation
-  int                                             generation_;
-
-  // internal calculation methods
-
-  // don't want = operator
-  RedAirway& operator = (const RedAirway& old);
+      // data
+      std::map<std::string, double> elemParams_;
 
 
-  /// set number of gauss points to element shape default
-  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+      // element tree generation
+      int generation_;
 
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
+      // internal calculation methods
+
+      // don't want = operator
+      RedAirway& operator=(const RedAirway& old);
 
 
-}; // class RedAirway
+      /// set number of gauss points to element shape default
+      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+
+      /*!
+       * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
+       * necessary \return boolean indicating higher order status
+       */
+      bool isHigherOrderElement(
+          const DRT::Element::DiscretizationType distype  ///< discretization type
+          ) const;
 
 
-class RedAcinusType : public DRT::ElementType
-{
-public:
+    };  // class RedAirway
 
-  std::string Name() const { return "RedAcinusType"; }
 
-  static RedAcinusType & Instance();
+    class RedAcinusType : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "RedAcinusType"; }
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      static RedAcinusType& Instance();
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      {
+      }
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      virtual void ComputeNullSpace(
+          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      {
+      }
 
-private:
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  static RedAcinusType instance_;
-};
+     private:
+      static RedAcinusType instance_;
+    };
 
-/*!
-\brief A C++ wrapper for the acinus element
+    /*!
+    \brief A C++ wrapper for the acinus element
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class RedAcinus : public DRT::Element
-{
-public:
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
+    class RedAcinus : public DRT::Element
+    {
+     public:
+      //! @name Friends
+      friend class RedAirwayImplInterface;
+      friend class AirwayImpl<DRT::Element::line2>;
 
-  //! @name Friends
-  friend class RedAirwayImplInterface;
-  friend class AirwayImpl<DRT::Element::line2>;
+      //@}
+      //! @name Constructors and destructors and related methods
 
-  //@}
-  //! @name Constructors and destructors and related methods
+      /*!
+      \brief Standard Constructor
 
-  /*!
-  \brief Standard Constructor
+      \param id : A unique global id
+      */
+      RedAcinus(int id, int owner);
 
-  \param id : A unique global id
-  */
-  RedAcinus(int id, int owner);
+      /*!
+      \brief Copy Constructor
 
-  /*!
-  \brief Copy Constructor
+      Makes a deep copy of a Element
 
-  Makes a deep copy of a Element
+      */
+      RedAcinus(const RedAcinus& old);
 
-  */
-  RedAcinus(const RedAcinus& old);
+      /*!
+      \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-  /*!
-  \brief Deep copy this instance of Redacinus and return pointer to the copy
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
 
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
+      */
+      DRT::Element* Clone() const;
 
-  */
-  DRT::Element* Clone() const;
+      /*!
+      \brief Get shape type of element
+      */
+      virtual DiscretizationType Shape() const;
 
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {if (NumNode()==2) return 1;
-      else {
+      /*!
+      \brief Return number of lines of this element
+      */
+      virtual int NumLine() const
+      {
+        if (NumNode() == 2)
+          return 1;
+        else
+        {
           dserror("Could not determine number of lines");
           return -1;
+        }
       }
-  }
 
-  /*!
-  \brief Return number of surfaces of this element (always 1)
-  */
-  virtual int NumSurface() const {return -1;}
+      /*!
+      \brief Return number of surfaces of this element (always 1)
+      */
+      virtual int NumSurface() const { return -1; }
 
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
-  virtual int NumVolume() const {return -1;}
+      /*!
+      \brief Return number of volumes of this element (always 1)
+      */
+      virtual int NumVolume() const { return -1; }
 
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+      /*!
+      \brief Get vector of Teuchos::RCPs to the lines of this element
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
 
-  /*!
-  \brief Return center coordinates of element
-  */
-  virtual std::vector<double> ElementCenterRefeCoords();
+      /*!
+      \brief Return center coordinates of element
+      */
+      virtual std::vector<double> ElementCenterRefeCoords();
 
-  /*!
-  \brief Return unique ParObject id
+      /*!
+      \brief Return unique ParObject id
 
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return RedAcinusType::Instance().UniqueParObjectId(); }
+      every class implementing ParObject needs a unique id defined at the
+      top of this file.
+      */
+      virtual int UniqueParObjectId() const
+      {
+        return RedAcinusType::Instance().UniqueParObjectId();
+      }
 
-  /*!
-  \brief Pack this class so it can be communicated
+      /*!
+      \brief Pack this class so it can be communicated
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  /*!
-  \brief Unpack data from a char vector into this class
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  */
-  virtual void Unpack(const std::vector<char>& data);
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-  \brief Destructor
+      /*!
+      \brief Destructor
 
-  */
-  virtual ~RedAcinus();
+      */
+      virtual ~RedAcinus();
 
-  //@}
+      //@}
 
-  //! @name Acess methods
-
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const
-    {
-      return 0;
-    }
-
-  /*!
-  \brief Print this element
-  */
-  void Print(std::ostream& os) const;
-
-  virtual RedAcinusType & ElementType() const
-  { return RedAcinusType::Instance(); }
-
-  //@}
-
-  /*!
-  \brief Query names of element data to be visualized using BINIO
-
-  The element fills the provided map with key names of
-  visualization data the element wants to visualize AT THE CENTER
-  of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-  or 9 (nonsym. tensor)
-
-  Example:
-  \code
-    // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<std::string,int>("Owner",1));
-    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<std::string,int>("StressesXYZ",6));
-  \endcode
-
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
-  */
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*!
-  \brief Query data to be visualized using BINIO of a given name
-
-  The method is supposed to call this base method to visualize the owner of
-  the element.
-  If the derived method recognizes a supported data name, it shall fill it
-  with corresponding data.
-  If it does NOT recognizes the name, it shall do nothing.
-
-  \warning The method must not change size of data
-
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
-  */
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
+      //! @name Acess methods
 
 
-  //! @name Input and Creation
+      /*!
+      \brief Get number of degrees of freedom of a certain node
+             (implements pure virtual DRT::Element)
 
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+      */
+      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
 
-  //@}
+      /*!
+      \brief Get number of degrees of freedom per element
+             (implements pure virtual DRT::Element)
 
-  //! @name Evaluation
+      The element decides how many element degrees of freedom it has.
+      It can redecide along the way of a simulation.
 
-  /*!
-  \brief Evaluate an element
+      \note Element degrees of freedom mentioned here are dofs that are visible
+            at the level of the total system of equations. Purely internal
+            element dofs that are condensed internally should NOT be considered.
+      */
+      virtual int NumDofPerElement() const { return 0; }
 
-  Evaluate acinus element stiffness, mass, internal forces etc
+      /*!
+      \brief Print this element
+      */
+      void Print(std::ostream& os) const;
 
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList& params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+      virtual RedAcinusType& ElementType() const { return RedAcinusType::Instance(); }
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      //@}
 
-  An element derived from this class uses the EvaluateNeumann method to receive commands
-  and parameters from some control routine in params and evaluates a Neumann boundary condition
-  given in condition
+      /*!
+      \brief Query names of element data to be visualized using BINIO
 
-  \note This class implements a dummy of this method that prints a warning and
-        returns false.
+      The element fills the provided map with key names of
+      visualization data the element wants to visualize AT THE CENTER
+      of the element geometry. The values is supposed to be dimension of the
+      data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+      or 9 (nonsym. tensor)
 
-  \param params (in/out)    : ParameterList for communication between control routine
+      Example:
+      \code
+        // Name of data is 'Owner', dimension is 1 (scalar value)
+        names.insert(std::pair<std::string,int>("Owner",1));
+        // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+        names.insert(std::pair<std::string,int>("StressesXYZ",6));
+      \endcode
+
+      \param names (out): On return, the derived class has filled names with
+                          key names of data it wants to visualize and with int dimensions
+                          of that data.
+      */
+      virtual void VisNames(std::map<std::string, int>& names);
+
+      /*!
+      \brief Query data to be visualized using BINIO of a given name
+
+      The method is supposed to call this base method to visualize the owner of
+      the element.
+      If the derived method recognizes a supported data name, it shall fill it
+      with corresponding data.
+      If it does NOT recognizes the name, it shall do nothing.
+
+      \warning The method must not change size of data
+
+      \param name (in):   Name of data that is currently processed for visualization
+      \param data (out):  data to be filled by element if element recognizes the name
+      */
+      virtual bool VisData(const std::string& name, std::vector<double>& data);
+
+
+      //! @name Input and Creation
+
+      /*!
+      \brief Read input for this element
+      */
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef);
+
+      //@}
+
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate an element
+
+      Evaluate acinus element stiffness, mass, internal forces etc
+
+      \param params (in/out): ParameterList for communication between control routine
                               and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element
+      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \return 0 if successful, negative otherwise
+      */
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+
+      /*!
+      \brief Evaluate a Neumann boundary condition
+
+      An element derived from this class uses the EvaluateNeumann method to receive commands
+      and parameters from some control routine in params and evaluates a Neumann boundary condition
+      given in condition
+
+      \note This class implements a dummy of this method that prints a warning and
+            returns false.
+
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): A reference to the underlying discretization
+      \param condition (in)     : The condition to be evaluated
+      \param lm (in)            : location vector of this element
+      \param elevec1 (out)      : Force vector to be filled by element
+
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      this method evaluates a line Neumann condition on the acinus element
 
-  this method evaluates a line Neumann condition on the acinus element
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateDirichlet(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1);
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateDirichlet(Teuchos::ParameterList&   params,
-                                DRT::Discretization&      discretization,
-                                DRT::Condition&           condition,
-                                std::vector<int>&         lm,
-                                Epetra_SerialDenseVector& elevec1);
 
+      //@}
 
-  //@}
 
+      //! @name Other
+      std::string Type() { return elemType_; }
 
-  //! @name Other
-  std::string Type(){return elemType_;}
+      //! @name Other
+      std::string Resistance() { return resistance_; }
 
-  //! @name Other
-  std::string Resistance(){return resistance_;}
+      //@}
 
-  //@}
+      //! get cross-sectional area
+      //  double         getA(){ return A_;}
 
-  //! get cross-sectional area
-  //  double         getA(){ return A_;}
+      //! get youngs modulus of the wall
+      //  double         getEw(){ return Ew_;}
 
-  //! get youngs modulus of the wall
-  //  double         getEw(){ return Ew_;}
+      //! get youngs modulus of the air
+      //  double         getEa(){ return Ea_;}
 
-  //! get youngs modulus of the air
-  //  double         getEa(){ return Ea_;}
+      //! get wall thickness
+      //  double         gettw(){ return tw_;}
 
-  //! get wall thickness
-  //  double         gettw(){ return tw_;}
+      //! set qin
+      //  void           setqin (double Qin ){ qin_ = Qin;}
 
-  //! set qin
-  //  void           setqin (double Qin ){ qin_ = Qin;}
+      //! set qout
+      //  void           setqout(double Qout){ qout_ = Qout;}
 
-  //! set qout
-  //  void           setqout(double Qout){ qout_ = Qout;}
+      //! set element parameters
+      void setParams(std::string name, double& var);
 
-  //! set element parameters
-  void           setParams(std::string name, double & var);
+      //! get element parameters
+      void getParams(std::string name, double& var);
 
-  //! get element parameters
-  void           getParams(std::string name, double & var);
+      //! get element parameters
+      void getParams(std::string name, int& var);
 
-  //! get element parameters
-  void           getParams(std::string name, int    & var);
+      const std::map<std::string, double> getAllParams() { return elemParams_; }
 
-  const std::map<std::string, double> getAllParams(){return elemParams_;}
+     private:
+      //! action parameters recognized by acinus
+      enum ActionType
+      {
+        none,
+        calc_sys_matrix_rhs,
+        calc_sys_matrix_rhs_iad,
+        get_initial_state,
+        set_bc,
+        calc_flow_rates,
+        get_coupled_values,
+        get_junction_volume_mix,
+        solve_scatra,
+        solve_junction_scatra,
+        calc_cfl,
+        solve_blood_air_transport,
+        update_scatra,
+        update_elem12_scatra,
+        eval_nodal_ess_vals,
+        eval_PO2_from_concentration,
+        calc_elem_volumes
+      };
 
-private:
 
-  //! action parameters recognized by acinus
-  enum ActionType
-  {
-    none,
-    calc_sys_matrix_rhs,
-    calc_sys_matrix_rhs_iad,
-    get_initial_state,
-    set_bc,
-    calc_flow_rates,
-    get_coupled_values,
-    get_junction_volume_mix,
-    solve_scatra,
-    solve_junction_scatra,
-    calc_cfl,
-    solve_blood_air_transport,
-    update_scatra,
-    update_elem12_scatra,
-    eval_nodal_ess_vals,
-    eval_PO2_from_concentration,
-    calc_elem_volumes
-  };
+      //! Element Type
+      std::string elemType_;
 
+      //! Resistance Type
+      std::string resistance_;
 
-  //! Element Type
-  std::string                                     elemType_;
+      //! container containing all kind of airway thisandthat
+      DRT::Container data_;
 
-  //! Resistance Type
-  std::string                                     resistance_;
 
-  //! container containing all kind of airway thisandthat
-  DRT::Container                                  data_;
+      // data
+      std::map<std::string, double> elemParams_;
 
 
-  // data
-  std::map<std::string, double>                   elemParams_;
+      // element tree generation
+      int generation_;
 
+      // internal calculation methods
 
-  // element tree generation
-  int                                             generation_;
+      // don't want = operator
+      RedAcinus& operator=(const RedAcinus& old);
 
-  // internal calculation methods
 
-  // don't want = operator
-  RedAcinus& operator = (const RedAcinus& old);
+      /// set number of gauss points to element shape default
+      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
+      /*!
+       * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
+       * necessary \return boolean indicating higher order status
+       */
+      bool isHigherOrderElement(
+          const DRT::Element::DiscretizationType distype  ///< discretization type
+          ) const;
 
-  /// set number of gauss points to element shape default
-  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
+    };  // class RedAcinus
 
+    /*!
+    \brief A C++ wrapper for the inter acinar dependency element
 
-}; // class RedAcinus
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
 
-/*!
-\brief A C++ wrapper for the inter acinar dependency element
+    class RedInterAcinarDepType : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "RedInterAcinarDepType"; }
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
+      static RedInterAcinarDepType& Instance();
 
-class RedInterAcinarDepType : public DRT::ElementType
-{
-public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  std::string Name() const { return "RedInterAcinarDepType"; }
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  static RedInterAcinarDepType & Instance();
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      {
+      }
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      virtual void ComputeNullSpace(
+          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      {
+      }
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+     private:
+      static RedInterAcinarDepType instance_;
+    };
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+    /*!
+    \brief A C++ wrapper for the inter acinar dependency element
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
+    class RedInterAcinarDep : public DRT::Element
+    {
+     public:
+      //! @name Friends
+      friend class RedAirwayImplInterface;
+      friend class AirwayImpl<DRT::Element::line2>;
 
-private:
+      //@}
+      //! @name Constructors and destructors and related methods
 
-  static RedInterAcinarDepType instance_;
-};
+      /*!
+      \brief Standard Constructor
 
-/*!
-\brief A C++ wrapper for the inter acinar dependency element
+      \param id : A unique global id
+      */
+      RedInterAcinarDep(int id, int owner);
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class RedInterAcinarDep : public DRT::Element
-{
-public:
+      /*!
+      \brief Copy Constructor
 
-  //! @name Friends
-  friend class RedAirwayImplInterface;
-  friend class AirwayImpl<DRT::Element::line2>;
+      Makes a deep copy of a Element
 
-  //@}
-  //! @name Constructors and destructors and related methods
+      */
+      RedInterAcinarDep(const RedInterAcinarDep& old);
 
-  /*!
-  \brief Standard Constructor
+      /*!
+      \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-  \param id : A unique global id
-  */
-  RedInterAcinarDep(int id, int owner);
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
 
-  /*!
-  \brief Copy Constructor
+      */
+      DRT::Element* Clone() const;
 
-  Makes a deep copy of a Element
+      /*!
+      \brief Get shape type of element
+      */
+      virtual DiscretizationType Shape() const;
 
-  */
-  RedInterAcinarDep(const RedInterAcinarDep& old);
-
-  /*!
-  \brief Deep copy this instance of Redacinus and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {if (NumNode()==2) return 1;
-      else {
+      /*!
+      \brief Return number of lines of this element
+      */
+      virtual int NumLine() const
+      {
+        if (NumNode() == 2)
+          return 1;
+        else
+        {
           dserror("Could not determine number of lines");
           return -1;
+        }
       }
-  }
 
-  /*!
-  \brief Return number of surfaces of this element (always 1)
-  */
-  virtual int NumSurface() const {return -1;}
+      /*!
+      \brief Return number of surfaces of this element (always 1)
+      */
+      virtual int NumSurface() const { return -1; }
 
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
-  virtual int NumVolume() const {return -1;}
+      /*!
+      \brief Return number of volumes of this element (always 1)
+      */
+      virtual int NumVolume() const { return -1; }
 
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+      /*!
+      \brief Get vector of Teuchos::RCPs to the lines of this element
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
 
-  /*!
-  \brief Return unique ParObject id
+      /*!
+      \brief Return unique ParObject id
 
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return RedInterAcinarDepType::Instance().UniqueParObjectId(); }
+      every class implementing ParObject needs a unique id defined at the
+      top of this file.
+      */
+      virtual int UniqueParObjectId() const
+      {
+        return RedInterAcinarDepType::Instance().UniqueParObjectId();
+      }
 
-  /*!
-  \brief Pack this class so it can be communicated
+      /*!
+      \brief Pack this class so it can be communicated
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  /*!
-  \brief Unpack data from a char vector into this class
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  */
-  virtual void Unpack(const std::vector<char>& data);
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-  \brief Destructor
+      /*!
+      \brief Destructor
 
-  */
-  virtual ~RedInterAcinarDep();
+      */
+      virtual ~RedInterAcinarDep();
 
-  //@}
+      //@}
 
-  //! @name Acess methods
-
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const
-    {
-
-      return 0;
-    }
-
-  /*!
-  \brief Print this element
-  */
-  void Print(std::ostream& os) const;
-
-  virtual RedInterAcinarDepType & ElementType() const
-  { return RedInterAcinarDepType::Instance(); }
-
-  //@}
-
-  /*!
-  \brief Query names of element data to be visualized using BINIO
-
-  The element fills the provided map with key names of
-  visualization data the element wants to visualize AT THE CENTER
-  of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-  or 9 (nonsym. tensor)
-
-  Example:
-  \code
-    // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<std::string,int>("Owner",1));
-    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<std::string,int>("StressesXYZ",6));
-  \endcode
-
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
-  */
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*!
-  \brief Query data to be visualized using BINIO of a given name
-
-  The method is supposed to call this base method to visualize the owner of
-  the element.
-  If the derived method recognizes a supported data name, it shall fill it
-  with corresponding data.
-  If it does NOT recognizes the name, it shall do nothing.
-
-  \warning The method must not change size of data
-
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
-  */
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
+      //! @name Acess methods
 
 
-  //! @name Input and Creation
+      /*!
+      \brief Get number of degrees of freedom of a certain node
+             (implements pure virtual DRT::Element)
 
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+      */
+      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
 
-  //@}
+      /*!
+      \brief Get number of degrees of freedom per element
+             (implements pure virtual DRT::Element)
 
-  //! @name Evaluation
+      The element decides how many element degrees of freedom it has.
+      It can redecide along the way of a simulation.
 
-  /*!
-  \brief Evaluate an element
+      \note Element degrees of freedom mentioned here are dofs that are visible
+            at the level of the total system of equations. Purely internal
+            element dofs that are condensed internally should NOT be considered.
+      */
+      virtual int NumDofPerElement() const { return 0; }
 
-  Evaluate inter acinar dependency element stiffness, mass, internal forces etc
+      /*!
+      \brief Print this element
+      */
+      void Print(std::ostream& os) const;
 
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList& params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+      virtual RedInterAcinarDepType& ElementType() const
+      {
+        return RedInterAcinarDepType::Instance();
+      }
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      //@}
 
-  An element derived from this class uses the EvaluateNeumann method to receive commands
-  and parameters from some control routine in params and evaluates a Neumann boundary condition
-  given in condition
+      /*!
+      \brief Query names of element data to be visualized using BINIO
 
-  \note This class implements a dummy of this method that prints a warning and
-        returns false.
+      The element fills the provided map with key names of
+      visualization data the element wants to visualize AT THE CENTER
+      of the element geometry. The values is supposed to be dimension of the
+      data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+      or 9 (nonsym. tensor)
 
-  \param params (in/out)    : ParameterList for communication between control routine
+      Example:
+      \code
+        // Name of data is 'Owner', dimension is 1 (scalar value)
+        names.insert(std::pair<std::string,int>("Owner",1));
+        // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+        names.insert(std::pair<std::string,int>("StressesXYZ",6));
+      \endcode
+
+      \param names (out): On return, the derived class has filled names with
+                          key names of data it wants to visualize and with int dimensions
+                          of that data.
+      */
+      virtual void VisNames(std::map<std::string, int>& names);
+
+      /*!
+      \brief Query data to be visualized using BINIO of a given name
+
+      The method is supposed to call this base method to visualize the owner of
+      the element.
+      If the derived method recognizes a supported data name, it shall fill it
+      with corresponding data.
+      If it does NOT recognizes the name, it shall do nothing.
+
+      \warning The method must not change size of data
+
+      \param name (in):   Name of data that is currently processed for visualization
+      \param data (out):  data to be filled by element if element recognizes the name
+      */
+      virtual bool VisData(const std::string& name, std::vector<double>& data);
+
+
+      //! @name Input and Creation
+
+      /*!
+      \brief Read input for this element
+      */
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef);
+
+      //@}
+
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate an element
+
+      Evaluate inter acinar dependency element stiffness, mass, internal forces etc
+
+      \param params (in/out): ParameterList for communication between control routine
                               and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element
+      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \return 0 if successful, negative otherwise
+      */
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      An element derived from this class uses the EvaluateNeumann method to receive commands
+      and parameters from some control routine in params and evaluates a Neumann boundary condition
+      given in condition
 
-  this method evaluates a line Neumann condition on the acinus element
+      \note This class implements a dummy of this method that prints a warning and
+            returns false.
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateDirichlet(Teuchos::ParameterList&   params,
-                                DRT::Discretization&      discretization,
-                                DRT::Condition&           condition,
-                                std::vector<int>&         lm,
-                                Epetra_SerialDenseVector& elevec1);
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): A reference to the underlying discretization
+      \param condition (in)     : The condition to be evaluated
+      \param lm (in)            : location vector of this element
+      \param elevec1 (out)      : Force vector to be filled by element
 
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  //@}
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
+      this method evaluates a line Neumann condition on the acinus element
 
-  //! get cross-sectional area
-  //  double         getA(){ return A_;}
-
-  //! get youngs modulus of the wall
-  //  double         getEw(){ return Ew_;}
-
-  //! get youngs modulus of the air
-  //  double         getEa(){ return Ea_;}
-
-  //! get wall thickness
-  //  double         gettw(){ return tw_;}
-
-  //! set qin
-  //  void           setqin (double Qin ){ qin_ = Qin;}
-
-  //! set qout
-  //  void           setqout(double Qout){ qout_ = Qout;}
-
-  //! get element parameters
-  void           getParams(std::string name, double & var);
-
-  //! get element parameters
-  void           getParams(std::string name, int    & var);
-
-private:
-
-  //! action parameters recognized by inter acinar dependency
-  enum ActionType
-  {
-    none,
-    calc_sys_matrix_rhs,
-    calc_sys_matrix_rhs_iad,
-    get_initial_state,
-    set_bc,
-    calc_flow_rates,
-    get_coupled_values,
-    get_junction_volume_mix,
-    solve_scatra,
-    calc_cfl,
-    solve_blood_air_transport,
-    update_scatra,
-    update_elem12_scatra,
-    eval_nodal_ess_vals,
-    eval_PO2_from_concentration,
-    calc_elem_volumes
-  };
-
-  //! container containing all kind of airway thisandthat
-  DRT::Container                                  data_;
-
-  // data
-  std::map<std::string, double>                        elemParams_;
-
-  // element tree generation
-  int                                             generation_;
-
-  // internal calculation methods
-
-  // don't want = operator
-  RedInterAcinarDep& operator = (const RedInterAcinarDep& old);
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateDirichlet(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1);
 
 
-  /// set number of gauss points to element shape default
-  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
-
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
+      //@}
 
 
-}; // class RedInterAcinarDep
+      //! get cross-sectional area
+      //  double         getA(){ return A_;}
 
-/*!
-\brief A C++ wrapper for the Air/Blood diffusion element
+      //! get youngs modulus of the wall
+      //  double         getEw(){ return Ew_;}
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
+      //! get youngs modulus of the air
+      //  double         getEa(){ return Ea_;}
 
-class RedAirBloodScatraType : public DRT::ElementType
-{
-public:
+      //! get wall thickness
+      //  double         gettw(){ return tw_;}
 
-  std::string Name() const { return "RedAirBloodScatraType"; }
+      //! set qin
+      //  void           setqin (double Qin ){ qin_ = Qin;}
 
-  static RedAirBloodScatraType & Instance();
+      //! set qout
+      //  void           setqout(double Qout){ qout_ = Qout;}
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      //! get element parameters
+      void getParams(std::string name, double& var);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      //! get element parameters
+      void getParams(std::string name, int& var);
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+     private:
+      //! action parameters recognized by inter acinar dependency
+      enum ActionType
+      {
+        none,
+        calc_sys_matrix_rhs,
+        calc_sys_matrix_rhs_iad,
+        get_initial_state,
+        set_bc,
+        calc_flow_rates,
+        get_coupled_values,
+        get_junction_volume_mix,
+        solve_scatra,
+        calc_cfl,
+        solve_blood_air_transport,
+        update_scatra,
+        update_elem12_scatra,
+        eval_nodal_ess_vals,
+        eval_PO2_from_concentration,
+        calc_elem_volumes
+      };
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+      //! container containing all kind of airway thisandthat
+      DRT::Container data_;
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+      // data
+      std::map<std::string, double> elemParams_;
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      // element tree generation
+      int generation_;
 
-private:
+      // internal calculation methods
 
-  static RedAirBloodScatraType instance_;
-}; // class RedAirBloodScatraType
+      // don't want = operator
+      RedInterAcinarDep& operator=(const RedInterAcinarDep& old);
 
-class RedAirBloodScatra : public DRT::Element
-{
-public:
 
-  //! @name Friends
-  friend class RedAirwayImplInterface;
-  friend class AirwayImpl<DRT::Element::line2>;
+      /// set number of gauss points to element shape default
+      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
-  //@}
-  //! @name Constructors and destructors and related methods
+      /*!
+       * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
+       * necessary \return boolean indicating higher order status
+       */
+      bool isHigherOrderElement(
+          const DRT::Element::DiscretizationType distype  ///< discretization type
+          ) const;
 
-  /*!
-  \brief Standard Constructor
 
-  \param id : A unique global id
-  */
-  RedAirBloodScatra(int id, int owner);
+    };  // class RedInterAcinarDep
 
-  /*!
-  \brief Copy Constructor
+    /*!
+    \brief A C++ wrapper for the Air/Blood diffusion element
 
-  Makes a deep copy of a Element
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
 
-  */
-  RedAirBloodScatra(const RedAirBloodScatra& old);
+    class RedAirBloodScatraType : public DRT::ElementType
+    {
+     public:
+      std::string Name() const { return "RedAirBloodScatraType"; }
 
-  /*!
-  \brief Deep copy this instance of Redacinus and return pointer to the copy
+      static RedAirBloodScatraType& Instance();
 
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  */
-  DRT::Element* Clone() const;
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {if (NumNode()==2) return 1;
-      else {
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      {
+      }
+
+      virtual void ComputeNullSpace(
+          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      {
+      }
+
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+
+     private:
+      static RedAirBloodScatraType instance_;
+    };  // class RedAirBloodScatraType
+
+    class RedAirBloodScatra : public DRT::Element
+    {
+     public:
+      //! @name Friends
+      friend class RedAirwayImplInterface;
+      friend class AirwayImpl<DRT::Element::line2>;
+
+      //@}
+      //! @name Constructors and destructors and related methods
+
+      /*!
+      \brief Standard Constructor
+
+      \param id : A unique global id
+      */
+      RedAirBloodScatra(int id, int owner);
+
+      /*!
+      \brief Copy Constructor
+
+      Makes a deep copy of a Element
+
+      */
+      RedAirBloodScatra(const RedAirBloodScatra& old);
+
+      /*!
+      \brief Deep copy this instance of Redacinus and return pointer to the copy
+
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
+
+      */
+      DRT::Element* Clone() const;
+
+      /*!
+      \brief Get shape type of element
+      */
+      virtual DiscretizationType Shape() const;
+
+      /*!
+      \brief Return number of lines of this element
+      */
+      virtual int NumLine() const
+      {
+        if (NumNode() == 2)
+          return 1;
+        else
+        {
           dserror("Could not determine number of lines");
           return -1;
+        }
       }
-  }
 
-  /*!
-  \brief Return number of surfaces of this element (always 1)
-  */
-  virtual int NumSurface() const {return -1;}
+      /*!
+      \brief Return number of surfaces of this element (always 1)
+      */
+      virtual int NumSurface() const { return -1; }
 
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
-  virtual int NumVolume() const {return -1;}
+      /*!
+      \brief Return number of volumes of this element (always 1)
+      */
+      virtual int NumVolume() const { return -1; }
 
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+      /*!
+      \brief Get vector of Teuchos::RCPs to the lines of this element
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
 
-  /*!
-  \brief Return unique ParObject id
+      /*!
+      \brief Return unique ParObject id
 
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return RedAirBloodScatraType::Instance().UniqueParObjectId(); }
+      every class implementing ParObject needs a unique id defined at the
+      top of this file.
+      */
+      virtual int UniqueParObjectId() const
+      {
+        return RedAirBloodScatraType::Instance().UniqueParObjectId();
+      }
 
-  /*!
-  \brief Pack this class so it can be communicated
+      /*!
+      \brief Pack this class so it can be communicated
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  /*!
-  \brief Unpack data from a char vector into this class
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  */
-  virtual void Unpack(const std::vector<char>& data);
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-  \brief Destructor
+      /*!
+      \brief Destructor
 
-  */
-  virtual ~RedAirBloodScatra();
+      */
+      virtual ~RedAirBloodScatra();
 
-  //@}
+      //@}
 
-  //! @name Acess methods
-
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const
-    {
-
-      return 0;
-    }
-
-  /*!
-  \brief Print this element
-  */
-  void Print(std::ostream& os) const;
-
-  virtual RedAirBloodScatraType & ElementType() const
-  { return RedAirBloodScatraType::Instance(); }
-
-  //@}
-
-  /*!
-  \brief Query names of element data to be visualized using BINIO
-
-  The element fills the provided map with key names of
-  visualization data the element wants to visualize AT THE CENTER
-  of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-  or 9 (nonsym. tensor)
-
-  Example:
-  \code
-    // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
-    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
-  \endcode
-
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
-  */
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*!
-  \brief Query data to be visualized using BINIO of a given name
-
-  The method is supposed to call this base method to visualize the owner of
-  the element.
-  If the derived method recognizes a supported data name, it shall fill it
-  with corresponding data.
-  If it does NOT recognizes the name, it shall do nothing.
-
-  \warning The method must not change size of data
-
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
-  */
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
+      //! @name Acess methods
 
 
-  //! @name Input and Creation
+      /*!
+      \brief Get number of degrees of freedom of a certain node
+             (implements pure virtual DRT::Element)
 
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+      */
+      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
 
-  //@}
+      /*!
+      \brief Get number of degrees of freedom per element
+             (implements pure virtual DRT::Element)
 
-  //! @name Evaluation
+      The element decides how many element degrees of freedom it has.
+      It can redecide along the way of a simulation.
 
-  /*!
-  \brief Evaluate an element
+      \note Element degrees of freedom mentioned here are dofs that are visible
+            at the level of the total system of equations. Purely internal
+            element dofs that are condensed internally should NOT be considered.
+      */
+      virtual int NumDofPerElement() const { return 0; }
 
-  Evaluate inter acinar dependency element stiffness, mass, internal forces etc
+      /*!
+      \brief Print this element
+      */
+      void Print(std::ostream& os) const;
 
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList& params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+      virtual RedAirBloodScatraType& ElementType() const
+      {
+        return RedAirBloodScatraType::Instance();
+      }
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      //@}
 
-  An element derived from this class uses the EvaluateNeumann method to receive commands
-  and parameters from some control routine in params and evaluates a Neumann boundary condition
-  given in condition
+      /*!
+      \brief Query names of element data to be visualized using BINIO
 
-  \note This class implements a dummy of this method that prints a warning and
-        returns false.
+      The element fills the provided map with key names of
+      visualization data the element wants to visualize AT THE CENTER
+      of the element geometry. The values is supposed to be dimension of the
+      data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+      or 9 (nonsym. tensor)
 
-  \param params (in/out)    : ParameterList for communication between control routine
+      Example:
+      \code
+        // Name of data is 'Owner', dimension is 1 (scalar value)
+        names.insert(std::pair<string,int>("Owner",1));
+        // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+        names.insert(std::pair<string,int>("StressesXYZ",6));
+      \endcode
+
+      \param names (out): On return, the derived class has filled names with
+                          key names of data it wants to visualize and with int dimensions
+                          of that data.
+      */
+      virtual void VisNames(std::map<std::string, int>& names);
+
+      /*!
+      \brief Query data to be visualized using BINIO of a given name
+
+      The method is supposed to call this base method to visualize the owner of
+      the element.
+      If the derived method recognizes a supported data name, it shall fill it
+      with corresponding data.
+      If it does NOT recognizes the name, it shall do nothing.
+
+      \warning The method must not change size of data
+
+      \param name (in):   Name of data that is currently processed for visualization
+      \param data (out):  data to be filled by element if element recognizes the name
+      */
+      virtual bool VisData(const std::string& name, std::vector<double>& data);
+
+
+      //! @name Input and Creation
+
+      /*!
+      \brief Read input for this element
+      */
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef);
+
+      //@}
+
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate an element
+
+      Evaluate inter acinar dependency element stiffness, mass, internal forces etc
+
+      \param params (in/out): ParameterList for communication between control routine
                               and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element
+      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \return 0 if successful, negative otherwise
+      */
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      An element derived from this class uses the EvaluateNeumann method to receive commands
+      and parameters from some control routine in params and evaluates a Neumann boundary condition
+      given in condition
 
-  this method evaluates a line Neumann condition on the acinus element
+      \note This class implements a dummy of this method that prints a warning and
+            returns false.
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateDirichlet(Teuchos::ParameterList&   params,
-                                DRT::Discretization&      discretization,
-                                DRT::Condition&           condition,
-                                std::vector<int>&         lm,
-                                Epetra_SerialDenseVector& elevec1);
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): A reference to the underlying discretization
+      \param condition (in)     : The condition to be evaluated
+      \param lm (in)            : location vector of this element
+      \param elevec1 (out)      : Force vector to be filled by element
 
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  //@}
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
+      this method evaluates a line Neumann condition on the acinus element
 
-  //! get cross-sectional area
-  //  double         getA(){ return A_;}
-
-  //! get youngs modulus of the wall
-  //  double         getEw(){ return Ew_;}
-
-  //! get youngs modulus of the air
-  //  double         getEa(){ return Ea_;}
-
-  //! get wall thickness
-  //  double         gettw(){ return tw_;}
-
-  //! set qin
-  //  void           setqin (double Qin ){ qin_ = Qin;}
-
-  //! set qout
-  //  void           setqout(double Qout){ qout_ = Qout;}
-
-  //! get element parameters
-  void           getParams(std::string name, double & var);
-
-  //! get element parameters
-  void           getParams(std::string name, int    & var);
-
-private:
-
-  //! action parameters recognized by inter acinar dependency
-  enum ActionType
-  {
-    none,
-    calc_sys_matrix_rhs,
-    calc_sys_matrix_rhs_iad,
-    get_initial_state,
-    set_bc,
-    calc_flow_rates,
-    get_coupled_values,
-    get_junction_volume_mix,
-    solve_scatra,
-    calc_cfl,
-    solve_junction_scatra,
-    solve_blood_air_transport,
-    update_scatra,
-    update_elem12_scatra,
-    eval_nodal_ess_vals,
-    eval_PO2_from_concentration,
-    calc_elem_volumes
-  };
-
-  //! container containing all kind of airway thisandthat
-  DRT::Container                                  data_;
-
-  // data
-  std::map<std::string, double>                        elemParams_;
-
-  // element tree generation
-  int                                             generation_;
-
-  // internal calculation methods
-
-  // don't want = operator
-  RedAirBloodScatra  & operator = (const RedAirBloodScatra& old);
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateDirichlet(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1);
 
 
-  /// set number of gauss points to element shape default
-  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
-
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
-
-}; // class RedAirBloodScatra
+      //@}
 
 
-/*!
-\brief A C++ wrapper for the Air/Blood diffusion element
+      //! get cross-sectional area
+      //  double         getA(){ return A_;}
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class RedAirBloodScatraLine3Type : public DRT::ElementType
-{
-public:
+      //! get youngs modulus of the wall
+      //  double         getEw(){ return Ew_;}
 
-  std::string Name() const { return "RedAirBloodScatraLine3Type"; }
+      //! get youngs modulus of the air
+      //  double         getEa(){ return Ea_;}
 
-  static RedAirBloodScatraLine3Type & Instance();
+      //! get wall thickness
+      //  double         gettw(){ return tw_;}
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+      //! set qin
+      //  void           setqin (double Qin ){ qin_ = Qin;}
 
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
+      //! set qout
+      //  void           setqout(double Qout){ qout_ = Qout;}
 
-  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      //! get element parameters
+      void getParams(std::string name, double& var);
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+      //! get element parameters
+      void getParams(std::string name, int& var);
 
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+     private:
+      //! action parameters recognized by inter acinar dependency
+      enum ActionType
+      {
+        none,
+        calc_sys_matrix_rhs,
+        calc_sys_matrix_rhs_iad,
+        get_initial_state,
+        set_bc,
+        calc_flow_rates,
+        get_coupled_values,
+        get_junction_volume_mix,
+        solve_scatra,
+        calc_cfl,
+        solve_junction_scatra,
+        solve_blood_air_transport,
+        update_scatra,
+        update_elem12_scatra,
+        eval_nodal_ess_vals,
+        eval_PO2_from_concentration,
+        calc_elem_volumes
+      };
 
-  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      //! container containing all kind of airway thisandthat
+      DRT::Container data_;
 
-private:
+      // data
+      std::map<std::string, double> elemParams_;
 
-  static RedAirBloodScatraLine3Type instance_;
-}; // class RedAirBloodScatraLine3Type
+      // element tree generation
+      int generation_;
+
+      // internal calculation methods
+
+      // don't want = operator
+      RedAirBloodScatra& operator=(const RedAirBloodScatra& old);
 
 
-/*!
-\brief A C++ wrapper for the inter acinar dependency element
+      /// set number of gauss points to element shape default
+      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
-\author ismail (ismail@lnm.mw.tum.de)
-*/
-class RedAirBloodScatraLine3 : public DRT::Element
-{
-public:
+      /*!
+       * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
+       * necessary \return boolean indicating higher order status
+       */
+      bool isHigherOrderElement(
+          const DRT::Element::DiscretizationType distype  ///< discretization type
+          ) const;
 
-  //! @name Friends
-  friend class RedAirwayImplInterface;
-  friend class AirwayImpl<DRT::Element::line3>;
+    };  // class RedAirBloodScatra
 
-  //@}
-  //! @name Constructors and destructors and related methods
 
-  /*!
-  \brief Standard Constructor
+    /*!
+    \brief A C++ wrapper for the Air/Blood diffusion element
 
-  \param id : A unique global id
-  */
-  RedAirBloodScatraLine3(int id, int owner);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a Element
-
-  */
-  RedAirBloodScatraLine3(const RedAirBloodScatraLine3& old);
-
-  /*!
-  \brief Deep copy this instance of Redacinus and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {if (NumNode()==3)
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
+    class RedAirBloodScatraLine3Type : public DRT::ElementType
     {
-      return 2;
-    }
-    else
+     public:
+      std::string Name() const { return "RedAirBloodScatraLine3Type"; }
+
+      static RedAirBloodScatraLine3Type& Instance();
+
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
+
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
+
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      {
+      }
+
+      virtual void ComputeNullSpace(
+          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      {
+      }
+
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+
+     private:
+      static RedAirBloodScatraLine3Type instance_;
+    };  // class RedAirBloodScatraLine3Type
+
+
+    /*!
+    \brief A C++ wrapper for the inter acinar dependency element
+
+    \author ismail (ismail@lnm.mw.tum.de)
+    */
+    class RedAirBloodScatraLine3 : public DRT::Element
     {
-      dserror("Could not determine number of lines");
-      return -1;
-    }
-  }
+     public:
+      //! @name Friends
+      friend class RedAirwayImplInterface;
+      friend class AirwayImpl<DRT::Element::line3>;
 
-  /*!
-  \brief Return number of surfaces of this element (always 1)
-  */
-  virtual int NumSurface() const {return 1;}
+      //@}
+      //! @name Constructors and destructors and related methods
 
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
-  virtual int NumVolume() const {return -1;}
+      /*!
+      \brief Standard Constructor
 
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+      \param id : A unique global id
+      */
+      RedAirBloodScatraLine3(int id, int owner);
 
-  /*!
-  \brief Return unique ParObject id
+      /*!
+      \brief Copy Constructor
 
-  every class implementing ParObject needs a unique id defined at the
-  top of this file.
-  */
-  virtual int UniqueParObjectId() const { return RedAirBloodScatraLine3Type::Instance().UniqueParObjectId(); }
+      Makes a deep copy of a Element
 
-  /*!
-  \brief Pack this class so it can be communicated
+      */
+      RedAirBloodScatraLine3(const RedAirBloodScatraLine3& old);
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      /*!
+      \brief Deep copy this instance of Redacinus and return pointer to the copy
 
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
 
-  /*!
-  \brief Unpack data from a char vector into this class
+      */
+      DRT::Element* Clone() const;
 
-  \ref Pack and \ref Unpack are used to communicate this element
+      /*!
+      \brief Get shape type of element
+      */
+      virtual DiscretizationType Shape() const;
 
-  */
-  virtual void Unpack(const std::vector<char>& data);
+      /*!
+      \brief Return number of lines of this element
+      */
+      virtual int NumLine() const
+      {
+        if (NumNode() == 3)
+        {
+          return 2;
+        }
+        else
+        {
+          dserror("Could not determine number of lines");
+          return -1;
+        }
+      }
 
-  /*!
-  \brief Destructor
+      /*!
+      \brief Return number of surfaces of this element (always 1)
+      */
+      virtual int NumSurface() const { return 1; }
 
-  */
-  virtual ~RedAirBloodScatraLine3();
+      /*!
+      \brief Return number of volumes of this element (always 1)
+      */
+      virtual int NumVolume() const { return -1; }
 
-  //@}
+      /*!
+      \brief Get vector of Teuchos::RCPs to the lines of this element
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
 
-  //! @name Acess methods
+      /*!
+      \brief Return unique ParObject id
 
+      every class implementing ParObject needs a unique id defined at the
+      top of this file.
+      */
+      virtual int UniqueParObjectId() const
+      {
+        return RedAirBloodScatraLine3Type::Instance().UniqueParObjectId();
+      }
 
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
+      /*!
+      \brief Pack this class so it can be communicated
 
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 1;}
+      \ref Pack and \ref Unpack are used to communicate this element
 
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
 
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
+      /*!
+      \brief Unpack data from a char vector into this class
 
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const
-    {
+      \ref Pack and \ref Unpack are used to communicate this element
 
-      return 0;
-    }
+      */
+      virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-  \brief Print this element
-  */
-  void Print(std::ostream& os) const;
+      /*!
+      \brief Destructor
 
-  virtual RedAirBloodScatraLine3Type & ElementType() const
-  { return RedAirBloodScatraLine3Type::Instance(); }
+      */
+      virtual ~RedAirBloodScatraLine3();
 
-  //@}
+      //@}
 
-  /*!
-  \brief Query names of element data to be visualized using BINIO
-
-  The element fills the provided map with key names of
-  visualization data the element wants to visualize AT THE CENTER
-  of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-  or 9 (nonsym. tensor)
-
-  Example:
-  \code
-    // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
-    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
-  \endcode
-
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
-  */
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*!
-  \brief Query data to be visualized using BINIO of a given name
-
-  The method is supposed to call this base method to visualize the owner of
-  the element.
-  If the derived method recognizes a supported data name, it shall fill it
-  with corresponding data.
-  If it does NOT recognizes the name, it shall do nothing.
-
-  \warning The method must not change size of data
-
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
-  */
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
+      //! @name Acess methods
 
 
-  //! @name Input and Creation
+      /*!
+      \brief Get number of degrees of freedom of a certain node
+             (implements pure virtual DRT::Element)
 
-  /*!
-  \brief Read input for this element
-  */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+      */
+      virtual int NumDofPerNode(const DRT::Node& node) const { return 1; }
 
-  //@}
+      /*!
+      \brief Get number of degrees of freedom per element
+             (implements pure virtual DRT::Element)
 
-  //! @name Evaluation
+      The element decides how many element degrees of freedom it has.
+      It can redecide along the way of a simulation.
 
-  /*!
-  \brief Evaluate an element
+      \note Element degrees of freedom mentioned here are dofs that are visible
+            at the level of the total system of equations. Purely internal
+            element dofs that are condensed internally should NOT be considered.
+      */
+      virtual int NumDofPerElement() const { return 0; }
 
-  Evaluate inter acinar dependency element stiffness, mass, internal forces etc
+      /*!
+      \brief Print this element
+      */
+      void Print(std::ostream& os) const;
 
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList& params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+      virtual RedAirBloodScatraLine3Type& ElementType() const
+      {
+        return RedAirBloodScatraLine3Type::Instance();
+      }
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      //@}
 
-  An element derived from this class uses the EvaluateNeumann method to receive commands
-  and parameters from some control routine in params and evaluates a Neumann boundary condition
-  given in condition
+      /*!
+      \brief Query names of element data to be visualized using BINIO
 
-  \note This class implements a dummy of this method that prints a warning and
-        returns false.
+      The element fills the provided map with key names of
+      visualization data the element wants to visualize AT THE CENTER
+      of the element geometry. The values is supposed to be dimension of the
+      data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+      or 9 (nonsym. tensor)
 
-  \param params (in/out)    : ParameterList for communication between control routine
+      Example:
+      \code
+        // Name of data is 'Owner', dimension is 1 (scalar value)
+        names.insert(std::pair<string,int>("Owner",1));
+        // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+        names.insert(std::pair<string,int>("StressesXYZ",6));
+      \endcode
+
+      \param names (out): On return, the derived class has filled names with
+                          key names of data it wants to visualize and with int dimensions
+                          of that data.
+      */
+      virtual void VisNames(std::map<std::string, int>& names);
+
+      /*!
+      \brief Query data to be visualized using BINIO of a given name
+
+      The method is supposed to call this base method to visualize the owner of
+      the element.
+      If the derived method recognizes a supported data name, it shall fill it
+      with corresponding data.
+      If it does NOT recognizes the name, it shall do nothing.
+
+      \warning The method must not change size of data
+
+      \param name (in):   Name of data that is currently processed for visualization
+      \param data (out):  data to be filled by element if element recognizes the name
+      */
+      virtual bool VisData(const std::string& name, std::vector<double>& data);
+
+
+      //! @name Input and Creation
+
+      /*!
+      \brief Read input for this element
+      */
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef);
+
+      //@}
+
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate an element
+
+      Evaluate inter acinar dependency element stiffness, mass, internal forces etc
+
+      \param params (in/out): ParameterList for communication between control routine
                               and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element
+      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \return 0 if successful, negative otherwise
+      */
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
-  /*!
-  \brief Evaluate a Neumann boundary condition
+      An element derived from this class uses the EvaluateNeumann method to receive commands
+      and parameters from some control routine in params and evaluates a Neumann boundary condition
+      given in condition
 
-  this method evaluates a line Neumann condition on the acinus element
+      \note This class implements a dummy of this method that prints a warning and
+            returns false.
 
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateDirichlet(Teuchos::ParameterList&   params,
-                                DRT::Discretization&      discretization,
-                                DRT::Condition&           condition,
-                                std::vector<int>&         lm,
-                                Epetra_SerialDenseVector& elevec1);
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): A reference to the underlying discretization
+      \param condition (in)     : The condition to be evaluated
+      \param lm (in)            : location vector of this element
+      \param elevec1 (out)      : Force vector to be filled by element
 
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  //@}
+      /*!
+      \brief Evaluate a Neumann boundary condition
 
+      this method evaluates a line Neumann condition on the acinus element
 
-  //! get cross-sectional area
-  //  double         getA(){ return A_;}
-
-  //! get youngs modulus of the wall
-  //  double         getEw(){ return Ew_;}
-
-  //! get youngs modulus of the air
-  //  double         getEa(){ return Ea_;}
-
-  //! get wall thickness
-  //  double         gettw(){ return tw_;}
-
-  //! set qin
-  //  void           setqin (double Qin ){ qin_ = Qin;}
-
-  //! set qout
-  //  void           setqout(double Qout){ qout_ = Qout;}
-
-  //! get element parameters
-  void           getParams(std::string name, double & var);
-
-  //! get element parameters
-  void           getParams(std::string name, int    & var);
-
-private:
-
-  //! action parameters recognized by inter acinar dependency
-  enum ActionType
-  {
-    none,
-    calc_sys_matrix_rhs,
-    calc_sys_matrix_rhs_iad,
-    get_initial_state,
-    set_bc,
-    calc_flow_rates,
-    get_coupled_values,
-    get_junction_volume_mix,
-    solve_scatra,
-    calc_cfl,
-    solve_junction_scatra,
-    solve_blood_air_transport,
-    update_scatra,
-    update_elem12_scatra,
-    eval_nodal_ess_vals,
-    eval_PO2_from_concentration,
-    calc_elem_volumes
-  };
-
-  //! container containing all kind of airway thisandthat
-  DRT::Container                                  data_;
-
-  // data
-  std::map<std::string, double>                        elemParams_;
-
-  // element tree generation
-  int                                             generation_;
-
-  // internal calculation methods
-
-  // don't want = operator
-  RedAirBloodScatraLine3  & operator = (const RedAirBloodScatraLine3& old);
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateDirichlet(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+          Epetra_SerialDenseVector& elevec1);
 
 
-  /// set number of gauss points to element shape default
-  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
-
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
-
-}; // class RedAirBloodScatraLine3
+      //@}
 
 
-} // namespace ELEMENTS
-} // namespace DRT
+      //! get cross-sectional area
+      //  double         getA(){ return A_;}
+
+      //! get youngs modulus of the wall
+      //  double         getEw(){ return Ew_;}
+
+      //! get youngs modulus of the air
+      //  double         getEa(){ return Ea_;}
+
+      //! get wall thickness
+      //  double         gettw(){ return tw_;}
+
+      //! set qin
+      //  void           setqin (double Qin ){ qin_ = Qin;}
+
+      //! set qout
+      //  void           setqout(double Qout){ qout_ = Qout;}
+
+      //! get element parameters
+      void getParams(std::string name, double& var);
+
+      //! get element parameters
+      void getParams(std::string name, int& var);
+
+     private:
+      //! action parameters recognized by inter acinar dependency
+      enum ActionType
+      {
+        none,
+        calc_sys_matrix_rhs,
+        calc_sys_matrix_rhs_iad,
+        get_initial_state,
+        set_bc,
+        calc_flow_rates,
+        get_coupled_values,
+        get_junction_volume_mix,
+        solve_scatra,
+        calc_cfl,
+        solve_junction_scatra,
+        solve_blood_air_transport,
+        update_scatra,
+        update_elem12_scatra,
+        eval_nodal_ess_vals,
+        eval_PO2_from_concentration,
+        calc_elem_volumes
+      };
+
+      //! container containing all kind of airway thisandthat
+      DRT::Container data_;
+
+      // data
+      std::map<std::string, double> elemParams_;
+
+      // element tree generation
+      int generation_;
+
+      // internal calculation methods
+
+      // don't want = operator
+      RedAirBloodScatraLine3& operator=(const RedAirBloodScatraLine3& old);
+
+
+      /// set number of gauss points to element shape default
+      DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+
+      /*!
+       * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are
+       * necessary \return boolean indicating higher order status
+       */
+      bool isHigherOrderElement(
+          const DRT::Element::DiscretizationType distype  ///< discretization type
+          ) const;
+
+    };  // class RedAirBloodScatraLine3
+
+
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 
 #endif  // #ifndef RED_AIRWAY_H_

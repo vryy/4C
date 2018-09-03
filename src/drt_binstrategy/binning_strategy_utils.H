@@ -23,37 +23,35 @@ namespace DRT
   class Discretization;
   class Element;
   class Node;
-}
+}  // namespace DRT
 
 namespace BINSTRATEGY
 {
-namespace UTILS
-{
-  /// Type of elements assigned to a bin
-  enum BinContentType
+  namespace UTILS
   {
-    Scatra,                 ///< scatra element
-    Fluid,                  ///< fluid element
-    BELE3,                  ///< bele3 element
-    Beam,                   ///< beam element
-    RigidSphere,            ///< rigid sphere element
-    Solid,                  ///< solid element (all elements derived from So_base, if more distinction is needed, split this type)
+    /// Type of elements assigned to a bin
+    enum BinContentType
+    {
+      Scatra,       ///< scatra element
+      Fluid,        ///< fluid element
+      BELE3,        ///< bele3 element
+      Beam,         ///< beam element
+      RigidSphere,  ///< rigid sphere element
+      Solid,  ///< solid element (all elements derived from So_base, if more distinction is needed,
+              ///< split this type)
 
-    enumsize                ///< NOTE: This entry gives the size of the enum and is used somewhere else in baci therefore put it ALWAYS in last place
-  };
+      enumsize  ///< NOTE: This entry gives the size of the enum and is used somewhere else in baci
+                ///< therefore put it ALWAYS in last place
+    };
 
-  void ExtendDiscretizationGhosting(
-      Teuchos::RCP<DRT::Discretization> discret,
-      Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
-      bool                              assigndegreesoffreedom,
-      bool                              initelements,
-      bool                              doboundaryconditions );
+    void ExtendDiscretizationGhosting(Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
+        bool initelements, bool doboundaryconditions);
 
-  /// convert element to bin content type
-  BinContentType ConvertElementToBinContentType(
-      DRT::Element const * const eleptr );
+    /// convert element to bin content type
+    BinContentType ConvertElementToBinContentType(DRT::Element const* const eleptr);
 
-}
-}
+  }  // namespace UTILS
+}  // namespace BINSTRATEGY
 
 #endif

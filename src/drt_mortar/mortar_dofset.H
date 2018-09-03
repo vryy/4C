@@ -29,44 +29,42 @@ namespace DRT
 */
 namespace MORTAR
 {
-/*!
-\brief A set of degrees of freedom special for mortar coupling
-
-*/
-class MortarDofSet : public DRT::DofSet
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
   /*!
-  \brief Standard Constructor
+  \brief A set of degrees of freedom special for mortar coupling
 
   */
-  MortarDofSet();
+  class MortarDofSet : public DRT::DofSet
+  {
+   public:
+    //! @name Constructors and destructors and related methods
 
-  /*!
-  \brief Destructor
+    /*!
+    \brief Standard Constructor
 
-  */
-  virtual ~MortarDofSet() { return; }
+    */
+    MortarDofSet();
 
-  /// create a copy of this object
-  virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new MortarDofSet(*this)); }
+    /*!
+    \brief Destructor
 
-  //@}
+    */
+    virtual ~MortarDofSet() { return; }
 
-  //! @name Construction
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new MortarDofSet(*this)); }
 
-  /// Assign dof numbers to all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
+    //@}
 
-  //@}
+    //! @name Construction
 
-protected:
+    /// Assign dof numbers to all elements and nodes of the discretization.
+    virtual int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start);
 
+    //@}
 
-}; // class MortarDofSet
-} // namespace MORTAR
+   protected:
+  };  // class MortarDofSet
+}  // namespace MORTAR
 
 #endif  // #ifndef MORTAR_DOFSET_H

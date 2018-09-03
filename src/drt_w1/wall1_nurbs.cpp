@@ -23,45 +23,46 @@ DRT::ELEMENTS::NURBS::Wall1NurbsType& DRT::ELEMENTS::NURBS::Wall1NurbsType::Inst
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1,-1);
+  DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const std::string eletype,
-                                                                         const std::string eledistype,
-                                                                         const int id,
-                                                                         const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
+    const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if ( eletype=="WALL" )
+  if (eletype == "WALL")
   {
-    if(eledistype=="NURBS4" || eledistype=="NURBS9")
+    if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+      return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id, owner));
     }
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
+    const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id,owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id, owner));
 }
 
-void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation(
+    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
   dimns = 3;
   nv = 2;
 }
 
-void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
+    DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 
@@ -69,8 +70,8 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace( DRT::Discretization
  |  ctor (public)                                            gammi 02/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(int id, int owner) :
-DRT::ELEMENTS::Wall1::Wall1(id,owner)
+DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(int id, int owner)
+    : DRT::ELEMENTS::Wall1::Wall1(id, owner)
 {
   return;
 }
@@ -79,9 +80,8 @@ DRT::ELEMENTS::Wall1::Wall1(id,owner)
  |  copy-ctor (public)                                       gammi 02/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs
-(const DRT::ELEMENTS::NURBS::Wall1Nurbs& old) :
-DRT::ELEMENTS::Wall1::Wall1(old)
+DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nurbs& old)
+    : DRT::ELEMENTS::Wall1::Wall1(old)
 {
   return;
 }
@@ -90,10 +90,7 @@ DRT::ELEMENTS::Wall1::Wall1(old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 02/09|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::~Wall1Nurbs()
-{
-  return;
-}
+DRT::ELEMENTS::NURBS::Wall1Nurbs::~Wall1Nurbs() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -126,10 +123,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 {
   switch (NumNode())
   {
-  case  4: return nurbs4;
-  case  9: return nurbs9;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
+    case 4:
+      return nurbs4;
+    case 9:
+      return nurbs9;
+    default:
+      dserror("unexpected number of nodes %d", NumNode());
   }
 
   return dis_none;
@@ -138,7 +137,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -147,17 +146,15 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<Wall1Line,Wall1>(DRT::UTILS::buildLines,this);
+  return DRT::UTILS::ElementBoundaryFactory<Wall1Line, Wall1>(DRT::UTILS::buildLines, this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element> > surfaces(1);
-  surfaces[0]= Teuchos::rcp(this, false);
+  std::vector<Teuchos::RCP<Element>> surfaces(1);
+  surfaces[0] = Teuchos::rcp(this, false);
   return surfaces;
 }
-
-

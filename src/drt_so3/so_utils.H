@@ -16,17 +16,16 @@
 
 namespace DRT
 {
-namespace ELEMENTS
-{
-namespace UTILS
-{
-
-template<DRT::Element::DiscretizationType distype>
-void CalcR(const DRT::Element* ele,
-           const std::vector<double>& disp,
-           LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,DRT::UTILS::DisTypeToDim<distype>::dim>& R);
-}
-}
-}
+  namespace ELEMENTS
+  {
+    namespace UTILS
+    {
+      template <DRT::Element::DiscretizationType distype>
+      void CalcR(const DRT::Element* ele, const std::vector<double>& disp,
+          LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+              DRT::UTILS::DisTypeToDim<distype>::dim>& R);
+    }
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif

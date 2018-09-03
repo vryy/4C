@@ -5,9 +5,10 @@
 \brief singleton class holding all static parameters required for Lubrication element evaluation
 
 This singleton class holds all static parameters required for Lubrication element evaluation. All
-parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
-time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
-the general parameter class holding all general static parameters required for Lubrication element evaluation.
+parameters are usually set only once at the beginning of a simulation, namely during initialization
+of the global time integrator, and then never touched again throughout the simulation. This
+parameter class needs to coexist with the general parameter class holding all general static
+parameters required for Lubrication element evaluation.
 
 <pre>
 Maintainer: Andy Wirtz
@@ -30,44 +31,39 @@ namespace DRT
     /// Evaluation of general parameters (constant over time)
     class LubricationEleParameter : public DRT::SingletonDestruction
     {
-      public:
+     public:
+      //! singleton access method
+      static LubricationEleParameter* Instance(
+          const std::string& disname,                      //!< name of discretization
+          const LubricationEleParameter* delete_me = NULL  //!< creation/destruction indication
+      );
 
-        //! singleton access method
-        static LubricationEleParameter* Instance(
-            const std::string&           disname,   //!< name of discretization
-            const LubricationEleParameter* delete_me = NULL //!< creation/destruction indication
-            );
+      //! Singleton destruction method called from global problem
+      void Done();
 
-        //! Singleton destruction method called from global problem
-        void Done();
+      //! dtor
+      ~LubricationEleParameter() {}
 
-        //! dtor
-        ~LubricationEleParameter() {}
+      //! set parameters
+      void SetTimeParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      );
 
-        //! set parameters
-        void SetTimeParameters(
-            Teuchos::ParameterList& parameters   //!< parameter list
-            );
+      //! set parameters
+      void SetGeneralParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      );
 
-        //! set parameters
-        void SetGeneralParameters(
-            Teuchos::ParameterList& parameters   //!< parameter list
-            );
+      double Time() const { return time_; };
 
-        double Time() const {return time_;};
+     private:
+      //! private constructor for singletons
+      LubricationEleParameter(const std::string& disname  //!< name of discretization
+      );
 
-      private:
+      double time_;
 
-        //! private constructor for singletons
-        LubricationEleParameter(
-            const std::string& disname   //!< name of discretization
-            );
-
-        double time_;
-
-    }; // class LubricationEleParameter
-  } // namespace ELEMENTS
-} // namespace DRT
+    };  // class LubricationEleParameter
+  }     // namespace ELEMENTS
+}  // namespace DRT
 
 
 

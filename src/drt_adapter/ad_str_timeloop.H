@@ -21,12 +21,10 @@
 
 namespace ADAPTER
 {
-
   /// Just wrap, do nothing new, meant to be derived from
   class StructureTimeLoop : public StructureWrapper
   {
-  public:
-
+   public:
     /// constructor
     explicit StructureTimeLoop(Teuchos::RCP<Structure> structure) : StructureWrapper(structure) {}
 
@@ -56,9 +54,8 @@ namespace ADAPTER
 
     /// wrapper for things that should be done after the output
     virtual void PostOutput(){};
-
   };
 
-}
+}  // namespace ADAPTER
 
 #endif

@@ -22,7 +22,7 @@
 
 // MueLu
 #ifdef HAVE_MueLu
-//Xpetra
+// Xpetra
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
 #include <Xpetra_EpetraCrsMatrix.hpp>
@@ -36,7 +36,7 @@
 
 /* MueLu typedefs: header files for default types, must be included after all
  * other MueLu/Xpetra headers */
-#include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
 
 #endif
 
@@ -58,18 +58,18 @@ namespace NLNSOL
   namespace FAS
   {
     class NlnLevel;
-  } // namespace FAS
+  }  // namespace FAS
 
   namespace UTILS
   {
     class NlnConfig;
-  } // namespace UTILS
-} // namespace NLNSOL
+  }  // namespace UTILS
+}  // namespace NLNSOL
 
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -97,9 +97,7 @@ namespace NLNSOL
      */
     class AMGHierarchy : public Teuchos::VerboseObject<AMGHierarchy>
     {
-
-    public:
-
+     public:
       //! @name Construction / Destruction
       //@{
 
@@ -107,7 +105,7 @@ namespace NLNSOL
       AMGHierarchy();
 
       //! Destructor
-      virtual ~AMGHierarchy(){}
+      virtual ~AMGHierarchy() {}
 
       //@}
 
@@ -115,12 +113,13 @@ namespace NLNSOL
       //@{
 
       //! Initialization of member variables
-      virtual void Init(const Epetra_Comm& comm, ///< communicator
-          Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
-          const std::string listname, ///< name of sublist with configuration of this operator
-          Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem, ///< nonlinear problem to solve
-          const Teuchos::ParameterList& mlparams ///< ML parameter list from baci linear solver (just for null space)
-          );
+      virtual void Init(const Epetra_Comm& comm,                ///< communicator
+          Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,  ///< configuration
+          const std::string listname,  ///< name of sublist with configuration of this operator
+          Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem,  ///< nonlinear problem to solve
+          const Teuchos::ParameterList&
+              mlparams  ///< ML parameter list from baci linear solver (just for null space)
+      );
 
       //! Setup of multigrid hierarchy
       virtual void Setup();
@@ -138,18 +137,18 @@ namespace NLNSOL
        *  \return Coarse level vector on level \c targetlevel
        */
       Teuchos::RCP<Epetra_MultiVector> RestrictToCoarseLevel(
-          const Epetra_MultiVector& vec, ///< vector
-          const int targetlevel ///< target level (some coarse level)
-      ) const;
+          const Epetra_MultiVector& vec,  ///< vector
+          const int targetlevel           ///< target level (some coarse level)
+          ) const;
 
       /*! \brief Prolongate vector from a given coarse level \c sourcelevel to fine level
        *
        *  \return Fine level vector
        */
       Teuchos::RCP<Epetra_MultiVector> ProlongateToFineLevel(
-          const Epetra_MultiVector& veccoarse, ///< vector
-          const int sourcelevel ///< source level (some coarse level)
-      ) const;
+          const Epetra_MultiVector& veccoarse,  ///< vector
+          const int sourcelevel                 ///< source level (some coarse level)
+          ) const;
 
       //@}
 
@@ -213,10 +212,8 @@ namespace NLNSOL
 
       //@}
 
-    protected:
-
-    private:
-
+     protected:
+     private:
       //! @name Setup
       //@{
 
@@ -238,15 +235,23 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 06/2014
        */
-      virtual void AddNlnLevel(
-          Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel ///< level to be added to level container #nlnlevels_
-          );
+      virtual void AddNlnLevel(Teuchos::RCP<NLNSOL::FAS::NlnLevel>
+              newlevel  ///< level to be added to level container #nlnlevels_
+      );
 
       //! Init() has been called
-      virtual void SetIsInit() { isinit_ = true; return; }
+      virtual void SetIsInit()
+      {
+        isinit_ = true;
+        return;
+      }
 
       //! Setup() has been called
-      virtual void SetIsSetup() { issetup_ = true; return; }
+      virtual void SetIsSetup()
+      {
+        issetup_ = true;
+        return;
+      }
 
 #ifdef HAVE_MueLu
       /*! \brief Access to fine level matrix as Xpetra::Matrix
@@ -258,8 +263,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 03/2015
        */
-      Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> >
-      GetXpetraFineLevelMatrix() const;
+      Teuchos::RCP<Xpetra::Matrix<double, int, int, Node>> GetXpetraFineLevelMatrix() const;
 
       /*! \brief Access to pre-computed null space as Xpetra::MultiVector
        *
@@ -277,8 +281,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 06/2015
        */
-      Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> >
-      GetXpetraNullSpaceFromBaci() const;
+      Teuchos::RCP<Xpetra::MultiVector<double, int, int, Node>> GetXpetraNullSpaceFromBaci() const;
 
       /*! \brief Debug-Tool: Check null space conservation properties
        *
@@ -351,19 +354,19 @@ namespace NLNSOL
       Teuchos::RCP<const Teuchos::ParameterList> mlparams_;
 
       //! vector containing all nonlinear levels
-      Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> > nlnlevels_;
+      Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel>> nlnlevels_;
 
 #ifdef HAVE_MueLu
       //! MueLu Hierarchy Factory to create #mueLuHierarchy_
-      Teuchos::RCP<MueLu::HierarchyManager<double,int,int,Node> > mueLuFactory_;
+      Teuchos::RCP<MueLu::HierarchyManager<double, int, int, Node>> mueLuFactory_;
 
       //! MueLu Hierarchy
-      Teuchos::RCP<MueLu::Hierarchy<double,int,int,Node> > mueLuHierarchy_;
+      Teuchos::RCP<MueLu::Hierarchy<double, int, int, Node>> mueLuHierarchy_;
 #endif
 
-    }; // class AMGHierarchy
-  } // namespace FAS
-} // namespace NLNSOL
+    };  // class AMGHierarchy
+  }     // namespace FAS
+}  // namespace NLNSOL
 
 
 #endif /* FAS_HIERARCHY_H */

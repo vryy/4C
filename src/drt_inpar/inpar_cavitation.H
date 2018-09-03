@@ -18,7 +18,13 @@
 #include "inpar_parameterlist_utils.H"
 
 // forward declaration
-namespace DRT { namespace INPUT { class ConditionDefinition; } }
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
 
 /*----------------------------------------------------------------------*/
 
@@ -27,7 +33,6 @@ namespace INPAR
   /// Input parameters for cavitation
   namespace CAVITATION
   {
-
     /// Type of coupling strategy for cavitation problems
     enum CouplingStrategyOverFields
     {

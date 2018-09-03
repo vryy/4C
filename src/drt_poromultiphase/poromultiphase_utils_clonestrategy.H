@@ -19,53 +19,45 @@
 
 namespace DRT
 {
-class Element;
+  class Element;
 }
 
 namespace POROMULTIPHASE
 {
-namespace UTILS
-{
-/*!
-\brief implementation of special clone strategy for automatic generation
-       of scatra from a given fluid discretization
+  namespace UTILS
+  {
+    /*!
+    \brief implementation of special clone strategy for automatic generation
+           of scatra from a given fluid discretization
 
- */
-class PoroFluidMultiPhaseCloneStrategy
-{
-public:
+     */
+    class PoroFluidMultiPhaseCloneStrategy
+    {
+     public:
+      /// constructor
+      explicit PoroFluidMultiPhaseCloneStrategy() {}
+      /// destructor
+      virtual ~PoroFluidMultiPhaseCloneStrategy() {}
 
-  /// constructor
-  explicit PoroFluidMultiPhaseCloneStrategy(){}
-  /// destructor
-  virtual ~PoroFluidMultiPhaseCloneStrategy() {}
+      /// returns conditions names to be copied (source and target name)
+      virtual std::map<std::string, std::string> ConditionsToCopy();
 
-  /// returns conditions names to be copied (source and target name)
-  virtual std::map<std::string,std::string> ConditionsToCopy();
+     protected:
+      /// determine element type std::string and whether element is copied or not
+      virtual bool DetermineEleType(
+          DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
-protected:
+      /// set element-specific data (material etc.)
+      void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
+          const bool isnurbs);
 
-  /// determine element type std::string and whether element is copied or not
-  virtual bool DetermineEleType(
-      DRT::Element* actele,
-      const bool ismyele,
-      std::vector<std::string>& eletype);
+      /// check for correct material
+      void CheckMaterialType(const int matid);
 
-  /// set element-specific data (material etc.)
-  void SetElementData(
-      Teuchos::RCP<DRT::Element> newele,
-      DRT::Element* oldele,
-      const int matid,
-      const bool isnurbs);
+     private:
+    };  // class PoroFluidMultiPhaseCloneStrategy
 
-  /// check for correct material
-  void CheckMaterialType(const int matid);
-
-private:
-
-}; // class PoroFluidMultiPhaseCloneStrategy
-
-} // namespace UITLS
-} // namespace POROMULTIPHASE
+  }  // namespace UTILS
+}  // namespace POROMULTIPHASE
 
 #endif /* SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_UTILS_CLONESTRATEGY_H_ */

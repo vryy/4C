@@ -38,18 +38,14 @@ namespace MAT
     /// Storage map of hyperelastic summands.
     class PlasticElastHyper : public MAT::PAR::ElastHyper
     {
-
       friend class MAT::PlasticElastHyper;
 
-    public:
-
+     public:
       /// standard constructor
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      PlasticElastHyper(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~PlasticElastHyper() { ; }
@@ -57,13 +53,16 @@ namespace MAT
       /// @name material parameters
       //@{
 
-       /// provide access to material/summand by its ID
-       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
-         const int id  ///< ID to look for in collection of summands
-         ) const;
+      /// provide access to material/summand by its ID
+      Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
+          const int id  ///< ID to look for in collection of summands
+          ) const;
 
-       // elasthyper needs this for stat inverse analysis
-       virtual void OptParams(std::map<std::string, int>* pnames){dserror("This material is not implemented in OptParams.");};
+      // elasthyper needs this for stat inverse analysis
+      virtual void OptParams(std::map<std::string, int>* pnames)
+      {
+        dserror("This material is not implemented in OptParams.");
+      };
 
       /// initial yield stress
       const double inityield_;
@@ -102,7 +101,7 @@ namespace MAT
       const double rY_13_;
       /// complementarity parameter
       double cpl_;
-      ///stabilization parameter "s" controlling the shape of the NCP function
+      /// stabilization parameter "s" controlling the shape of the NCP function
       double stab_s_;
       /// method to calculate plastic dissipation in TSI problem
       INPAR::TSI::DissipationMode dis_mode_;
@@ -116,20 +115,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class PlasticElastHyperType : public DRT::ParObjectType
-{
-public:
+  class PlasticElastHyperType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "PlasticElastHyperType"; }
 
-  std::string Name() const { return "PlasticElastHyperType"; }
+    static PlasticElastHyperType& Instance() { return instance_; };
 
-  static PlasticElastHyperType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static PlasticElastHyperType instance_;
-};
+   private:
+    static PlasticElastHyperType instance_;
+  };
 
 
   /*----------------------------------------------------------------------*/
@@ -138,8 +135,7 @@ private:
 
   class PlasticElastHyper : public MAT::ElastHyper
   {
-  public:
-
+   public:
     /// construct empty material object
     PlasticElastHyper();
 
@@ -153,7 +149,10 @@ private:
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return PlasticElastHyperType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return PlasticElastHyperType::Instance().UniqueParObjectId();
+    }
 
     /// \brief Pack this class so it can be communicated
     ///
@@ -184,190 +183,198 @@ private:
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-      dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticElastHyper( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new PlasticElastHyper(*this));
+    }
 
     /// material mass density
     virtual double Density() const { return MatParams()->density_; }
 
     /// initial yield stress
-    virtual double Inityield() const { return MatParams()->inityield_;}
+    virtual double Inityield() const { return MatParams()->inityield_; }
 
     /// linear isotropic hardening modulus
-    virtual double Isohard() const { return MatParams()->isohard_;}
+    virtual double Isohard() const { return MatParams()->isohard_; }
 
     /// exponent for nonlinear isotropic hardening
-    virtual double Expisohard() const {return MatParams()->expisohard_;}
+    virtual double Expisohard() const { return MatParams()->expisohard_; }
 
     /// saturation yield stress for nonlinear isotropic hardening
-    virtual double Infyield() const { return MatParams()->infyield_;}
+    virtual double Infyield() const { return MatParams()->infyield_; }
 
     /// linear kinematic hardening modulus
-    virtual double Kinhard() const { return MatParams()->kinhard_;}
+    virtual double Kinhard() const { return MatParams()->kinhard_; }
 
     /// complementarity parameter
-    virtual double cpl() const {
-      if (MatParams()!=NULL) return MatParams()->cpl_;
-      else return 0.;}
+    virtual double cpl() const
+    {
+      if (MatParams() != NULL)
+        return MatParams()->cpl_;
+      else
+        return 0.;
+    }
 
     /// stabilization parameter
-    virtual double s() const {
-      if (MatParams()!=NULL) return MatParams()->stab_s_;
-      else return 0.;}
+    virtual double s() const
+    {
+      if (MatParams() != NULL)
+        return MatParams()->stab_s_;
+      else
+        return 0.;
+    }
 
     /// plastic spin unequal zero
     virtual bool HavePlasticSpin() const
-    {return (MatParams()->plspin_chi_!=0. && (MatParams()->kinhard_!=0 || MatParams()->rY_11_!=0.));}
+    {
+      return (MatParams()->plspin_chi_ != 0. &&
+              (MatParams()->kinhard_ != 0 || MatParams()->rY_11_ != 0.));
+    }
 
     /// plastic spin parameter chi
-    virtual double PlSpinChi() const {return MatParams()->plspin_chi_; }
+    virtual double PlSpinChi() const { return MatParams()->plspin_chi_; }
 
     /// viscosity (of the plastic flow, no visco-elasticity)
-    virtual double Visc() const {return MatParams()->visc_;}
+    virtual double Visc() const { return MatParams()->visc_; }
 
     /// rate dependency of visco-plasticity
-    virtual double ViscRate() const {return MatParams()->rate_dependency_;}
+    virtual double ViscRate() const { return MatParams()->rate_dependency_; }
 
     /// viscosity (of the plastic flow, no visco-elasticity)
-    virtual double ViscSoft() const {return MatParams()->visc_soft_;}
+    virtual double ViscSoft() const { return MatParams()->visc_soft_; }
 
     /// thermal expansion coefficient
-    virtual double Cte() const {return MatParams()->cte_; }
+    virtual double Cte() const { return MatParams()->cte_; }
 
     /// initial temperature
-    virtual double InitTemp() const {return MatParams()->inittemp_; }
+    virtual double InitTemp() const { return MatParams()->inittemp_; }
 
     /// initial yield stress softening with temperature
-    virtual double YieldSoft() const {return MatParams()->yieldsoft_;}
+    virtual double YieldSoft() const { return MatParams()->yieldsoft_; }
 
     /// isotropic Hardening softening with temperature
-    virtual double HardSoft() const {return MatParams()->hardsoft_;}
+    virtual double HardSoft() const { return MatParams()->hardsoft_; }
 
     /// Taylor Quinney factor
-    virtual double TaylorQuinney() const {return MatParams()->taylor_quinney_;}
+    virtual double TaylorQuinney() const { return MatParams()->taylor_quinney_; }
 
     /// set dissipation mode
     virtual void SetDissipationMode(INPAR::TSI::DissipationMode mode)
-    {if (MatParams()!=NULL) MatParams()->dis_mode_=mode;}
+    {
+      if (MatParams() != NULL) MatParams()->dis_mode_ = mode;
+    }
 
     /// get dissipation mode
-    virtual INPAR::TSI::DissipationMode DisMode() const {
-      if (MatParams()!=NULL) return MatParams()->dis_mode_;
-      else return (INPAR::TSI::DissipationMode)0;}
+    virtual INPAR::TSI::DissipationMode DisMode() const
+    {
+      if (MatParams() != NULL)
+        return MatParams()->dis_mode_;
+      else
+        return (INPAR::TSI::DissipationMode)0;
+    }
 
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
-    virtual void EvaluateElast(const LINALG::Matrix<3,3>*defgrd,
-                               const LINALG::Matrix<3,3>* deltaLp,
-                               LINALG::Matrix<6,1>* pk2,
-                               LINALG::Matrix<6,6>* cmat,
-                               const int gp,
-                               const int eleGID );                   ///< global ID of element
+    virtual void EvaluateElast(const LINALG::Matrix<3, 3>* defgrd,
+        const LINALG::Matrix<3, 3>* deltaLp, LINALG::Matrix<6, 1>* pk2, LINALG::Matrix<6, 6>* cmat,
+        const int gp,
+        const int eleGID);  ///< global ID of element
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
-    virtual void EvaluateThermalStress(const LINALG::Matrix<3,3>*defgrd,
-                                       const double temp,
-                                       LINALG::Matrix<6,1>* pk2,
-                                       LINALG::Matrix<6,6>* cmat,
-                                       const int gp,
-                                       const int eleGID);       ///< global ID of element
+    virtual void EvaluateThermalStress(const LINALG::Matrix<3, 3>* defgrd, const double temp,
+        LINALG::Matrix<6, 1>* pk2, LINALG::Matrix<6, 6>* cmat, const int gp,
+        const int eleGID);  ///< global ID of element
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
-    virtual void EvaluateCTvol(const LINALG::Matrix<3,3>*defgrd,
-                               LINALG::Matrix<6,1>* cTvol,
-                               LINALG::Matrix<6,6>* dCTvoldE,
-                               const int gp,
-                               const int eleGID);       ///< global ID of element
+    virtual void EvaluateCTvol(const LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 1>* cTvol,
+        LINALG::Matrix<6, 6>* dCTvoldE, const int gp,
+        const int eleGID);  ///< global ID of element
 
     /// evaluate the Gough Joule Effect
-    virtual void EvaluateGoughJoule(const double j,
-        const int eleGID,
-        double& he_fac,
-        double& he_fac_deriv);
+    virtual void EvaluateGoughJoule(
+        const double j, const int eleGID, double& he_fac, double& he_fac_deriv);
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
-    virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
-        const LINALG::Matrix<3,3>* deltaDp,///< symmetric part of plastic flow increment
-        const double* temp,                 ///< current temperature
-        Teuchos::ParameterList& params,    ///< Container for additional information
-        LINALG::Matrix<6,6>* dPK2dDp,      ///< derivative of PK2 w.r.t. F_p^{-1}
-        LINALG::Matrix<6,1>* NCP,          ///< NCP function
-        LINALG::Matrix<6,6>* dNCPdC,       ///< derivative of NCP function w.r.t. RCG
-        LINALG::Matrix<6,6>* dNCPdDp,      ///< derivative of NCP function w.r.t. deltaLp
-        bool* active,                      ///< gauss point is active
-        bool* elast,                       ///< gauss point needs condensation if it is not elast
-        bool* as_converged,                ///< convergence of active set (false, if as has changed)
-        const int gp,                       ///< gauss point
-        LINALG::Matrix<6,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
-        LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
-        LINALG::Matrix<6,1>* dHdDp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
-        const double dt,                     ///< time step size
-        const int eleGID,                   ///< global ID of element
-        LINALG::Matrix<6,1>* cauchy=NULL,
-        LINALG::Matrix<6,6>* d_cauchy_ddp=NULL,
-        LINALG::Matrix<6,6>* d_cauchy_dC=NULL,
-        LINALG::Matrix<6,9>* d_cauchy_dF=NULL,
-        LINALG::Matrix<6,1>* d_cauchy_dT=NULL
-        );
+    virtual void EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<3, 3>* deltaDp,  ///< symmetric part of plastic flow increment
+        const double* temp,                   ///< current temperature
+        Teuchos::ParameterList& params,       ///< Container for additional information
+        LINALG::Matrix<6, 6>* dPK2dDp,        ///< derivative of PK2 w.r.t. F_p^{-1}
+        LINALG::Matrix<6, 1>* NCP,            ///< NCP function
+        LINALG::Matrix<6, 6>* dNCPdC,         ///< derivative of NCP function w.r.t. RCG
+        LINALG::Matrix<6, 6>* dNCPdDp,        ///< derivative of NCP function w.r.t. deltaLp
+        bool* active,                         ///< gauss point is active
+        bool* elast,                          ///< gauss point needs condensation if it is not elast
+        bool* as_converged,  ///< convergence of active set (false, if as has changed)
+        const int gp,        ///< gauss point
+        LINALG::Matrix<6, 1>*
+            dNCPdT,  ///< derivative of NCP function w.r.t. temperature (only in TSI case)
+        LINALG::Matrix<6, 1>* dHdC,   ///< derivative of Heating w.r.t. RCG (only in TSI case)
+        LINALG::Matrix<6, 1>* dHdDp,  ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
+        const double dt,              ///< time step size
+        const int eleGID,             ///< global ID of element
+        LINALG::Matrix<6, 1>* cauchy = NULL, LINALG::Matrix<6, 6>* d_cauchy_ddp = NULL,
+        LINALG::Matrix<6, 6>* d_cauchy_dC = NULL, LINALG::Matrix<6, 9>* d_cauchy_dF = NULL,
+        LINALG::Matrix<6, 1>* d_cauchy_dT = NULL);
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
-    virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
-        const LINALG::Matrix<3,3>* deltaLp,///< plastic deformation gradient (non-symmetric)
-        const double* temp,                 ///< current temperature
-        Teuchos::ParameterList& params,    ///< Container for additional information
-        LINALG::Matrix<6,9>* dPK2dLp,      ///< derivative of PK2 w.r.t. F_p^{-1}
-        LINALG::Matrix<9,1>* NCP,          ///< NCP function
-        LINALG::Matrix<9,6>* dNCPdC,       ///< derivative of NCP function w.r.t. RCG
-        LINALG::Matrix<9,9>* dNCPdLp,      ///< derivative of NCP function w.r.t. deltaLp
-        bool* active,                      ///< gauss point is active
-        bool* elast,                       ///< gauss point needs condensation if it is not elast
-        bool* as_converged,                ///< convergence of active set (false, if as has changed)
-        const int gp,                      ///< gauss point
-        LINALG::Matrix<9,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
-        LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
-        LINALG::Matrix<9,1>* dHdLp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
-        const double dt,                     ///< time step size
-        const int eleGID,                    ///< global ID of element
-        LINALG::Matrix<6,1>* cauchy=NULL,
-        LINALG::Matrix<6,9>* d_cauchy_ddp=NULL,
-        LINALG::Matrix<6,6>* d_cauchy_dC=NULL,
-        LINALG::Matrix<6,9>* d_cauchy_dF=NULL,
-        LINALG::Matrix<6,1>* d_cauchy_dT=NULL
-        );
+    virtual void EvaluatePlast(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<3, 3>* deltaLp,  ///< plastic deformation gradient (non-symmetric)
+        const double* temp,                   ///< current temperature
+        Teuchos::ParameterList& params,       ///< Container for additional information
+        LINALG::Matrix<6, 9>* dPK2dLp,        ///< derivative of PK2 w.r.t. F_p^{-1}
+        LINALG::Matrix<9, 1>* NCP,            ///< NCP function
+        LINALG::Matrix<9, 6>* dNCPdC,         ///< derivative of NCP function w.r.t. RCG
+        LINALG::Matrix<9, 9>* dNCPdLp,        ///< derivative of NCP function w.r.t. deltaLp
+        bool* active,                         ///< gauss point is active
+        bool* elast,                          ///< gauss point needs condensation if it is not elast
+        bool* as_converged,  ///< convergence of active set (false, if as has changed)
+        const int gp,        ///< gauss point
+        LINALG::Matrix<9, 1>*
+            dNCPdT,  ///< derivative of NCP function w.r.t. temperature (only in TSI case)
+        LINALG::Matrix<6, 1>* dHdC,   ///< derivative of Heating w.r.t. RCG (only in TSI case)
+        LINALG::Matrix<9, 1>* dHdLp,  ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
+        const double dt,              ///< time step size
+        const int eleGID,             ///< global ID of element
+        LINALG::Matrix<6, 1>* cauchy = NULL, LINALG::Matrix<6, 9>* d_cauchy_ddp = NULL,
+        LINALG::Matrix<6, 6>* d_cauchy_dC = NULL, LINALG::Matrix<6, 9>* d_cauchy_dF = NULL,
+        LINALG::Matrix<6, 1>* d_cauchy_dT = NULL);
 
-    virtual void EvaluateCauchyPlast(
-        const LINALG::Matrix<3,1>& dPI,
-        const LINALG::Matrix<6,1>& ddPII,
-        const LINALG::Matrix<3,3>* defgrd,
-        LINALG::Matrix<6,1>& cauchy,
-        LINALG::Matrix<6,9>& d_cauchy_dFpi,
-        LINALG::Matrix<6,6>& d_cauchy_dC,
-        LINALG::Matrix<6,9>& d_cauchy_dF,
-        LINALG::Matrix<6,1>* d_cauchy_dT=NULL);
+    virtual void EvaluateCauchyPlast(const LINALG::Matrix<3, 1>& dPI,
+        const LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 3>* defgrd,
+        LINALG::Matrix<6, 1>& cauchy, LINALG::Matrix<6, 9>& d_cauchy_dFpi,
+        LINALG::Matrix<6, 6>& d_cauchy_dC, LINALG::Matrix<6, 9>& d_cauchy_dF,
+        LINALG::Matrix<6, 1>* d_cauchy_dT = NULL);
 
     /// hyperelastic stress response plus elasticity tensor
     /// (pure virtual in material base class. Not allowed here)
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
-                          const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
-                          Teuchos::ParameterList& params,     ///< Container for additional information
-                          LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat,          ///< Constitutive matrix
-                          const int eleGID)                    ///< Element GID
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,  ///< Container for additional information
+        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
+        const int eleGID)                ///< Element GID
     {
-      ElastHyper::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
+      ElastHyper::Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
       return;
     }
 
-    virtual double StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID)
-      { return StrainEnergyTSI(defgrd,gp,eleGID,MatParams()->inittemp_);}
-    virtual double StrainEnergyTSI(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID, const double temp);
+    virtual double StrainEnergy(const LINALG::Matrix<3, 3>& defgrd, const int gp, const int eleGID)
+    {
+      return StrainEnergyTSI(defgrd, gp, eleGID, MatParams()->inittemp_);
+    }
+    virtual double StrainEnergyTSI(
+        const LINALG::Matrix<3, 3>& defgrd, const int gp, const int eleGID, const double temp);
 
     /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
@@ -381,35 +388,40 @@ private:
 
     /// update sumands
     virtual void Update()
-    {dserror("Elastic summands in PlasticHyperElast are not allowed to have internal variables"
-        "that would need an Update-routine!");};
+    {
+      dserror(
+          "Elastic summands in PlasticHyperElast are not allowed to have internal variables"
+          "that would need an Update-routine!");
+    };
 
     /// update plastic history variables
-    virtual void UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp);
+    virtual void UpdateGP(const int gp, const LINALG::Matrix<3, 3>* deltaDp);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return MatParams(); }
 
     /// Access to material params
-    virtual MAT::PAR::PlasticElastHyper* MatParams() const {return params_;}
+    virtual MAT::PAR::PlasticElastHyper* MatParams() const { return params_; }
 
     /// Return whether the material requires the deformation gradient for its evaluation
     virtual bool NeedsDefgrd() { return true; };
 
     /// get plastic algorithm parameters
-    virtual void GetParams(double s, double cpl){
-      if (MatParams()==NULL) return; // ... from post processor
-      MatParams()->stab_s_=s;MatParams()->cpl_=cpl;
+    virtual void GetParams(double s, double cpl)
+    {
+      if (MatParams() == NULL) return;  // ... from post processor
+      MatParams()->stab_s_ = s;
+      MatParams()->cpl_ = cpl;
     };
 
     /// return accumulated plastic strain at GP
-    virtual double AccumulatedStrain(int gp) {return last_alpha_isotropic_[gp];}
+    virtual double AccumulatedStrain(int gp) { return last_alpha_isotropic_[gp]; }
 
     /// is this GP active
-    virtual bool Active(int gp) { return activity_state_[gp];}
+    virtual bool Active(int gp) { return activity_state_[gp]; }
 
     /// heating at this gp
-    virtual double& HepDiss(int gp) {return (*HepDiss_)[gp];}
+    virtual double& HepDiss(int gp) { return (*HepDiss_)[gp]; }
 
     /// derivative of heating at this gp
     virtual Epetra_SerialDenseVector& dHepDissDd(int gp) { return (*dHepDissdd_)[gp]; }
@@ -419,130 +431,80 @@ private:
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    virtual Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDTeas() {return dHepDissdTeas_;}
+    virtual Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDTeas()
+    {
+      return dHepDissdTeas_;
+    }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
+    virtual void VisNames(std::map<std::string, int>& names);
 
     //! return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
     //! purely elastic material (input via negative initial yield stress
-    bool AllElastic() {return Inityield()<0.;}
+    bool AllElastic() { return Inityield() < 0.; }
 
-  protected:
-
+   protected:
     /// calculates the kinematic quantities and tensors used afterwards
-    virtual int EvaluateKinQuantPlast(
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<3,3>* deltaLp,
-        const int gp,
-        Teuchos::ParameterList& params
-);
+    virtual int EvaluateKinQuantPlast(const LINALG::Matrix<3, 3>* defgrd,
+        const LINALG::Matrix<3, 3>* deltaLp, const int gp, Teuchos::ParameterList& params);
 
     virtual void EvaluateKinQuantElast(
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<3,3>* deltaLp,
-        const int gp);
+        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 3>* deltaLp, const int gp);
 
-    virtual double NormStressLike(const LINALG::Matrix<6,1>& stress);
+    virtual double NormStressLike(const LINALG::Matrix<6, 1>& stress);
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrincPlast(
-        LINALG::Matrix<6,9>& dPK2dFpinvIsoprinc,
-        LINALG::Matrix<3,3>& MandelStressIsoprinc,
-        LINALG::Matrix<6,6>& dMdCisoprinc,
-        LINALG::Matrix<6,9>& dMdFpinvIsoprinc,
-        const LINALG::Matrix<3,1>& gamma,
-        const LINALG::Matrix<8,1>& delta
-        );
+    virtual void EvaluateIsotropicPrincPlast(LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc,
+        LINALG::Matrix<3, 3>& MandelStressIsoprinc, LINALG::Matrix<6, 6>& dMdCisoprinc,
+        LINALG::Matrix<6, 9>& dMdFpinvIsoprinc, const LINALG::Matrix<3, 1>& gamma,
+        const LINALG::Matrix<8, 1>& delta);
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrincElast(
-        LINALG::Matrix<6,1>& stressisoprinc,
-        LINALG::Matrix<6,6>& cmatisoprinc,
-        LINALG::Matrix<3,1> dPI,
-        LINALG::Matrix<6,1> ddPII
-        );
+    virtual void EvaluateIsotropicPrincElast(LINALG::Matrix<6, 1>& stressisoprinc,
+        LINALG::Matrix<6, 6>& cmatisoprinc, LINALG::Matrix<3, 1> dPI, LINALG::Matrix<6, 1> ddPII);
 
-    virtual void EvaluateNCP(const LINALG::Matrix<3,3>* mStr,
-                             const LINALG::Matrix<6,6>* dMdC,
-                             const LINALG::Matrix<6,9>* dMdFpinv,
-                             const LINALG::Matrix<6,9>* dPK2dFpinv,
-                             const LINALG::Matrix<3,3>* deltaDp,
-                             const int gp,
-                             const double* temp,
-                             LINALG::Matrix<6,1>* NCP,
-                             LINALG::Matrix<6,6>* dNCPdC,
-                             LINALG::Matrix<6,6>* dNCPdDp,
-                             LINALG::Matrix<6,1>* dNCPdT,
-                             LINALG::Matrix<6,6>* dPK2dDp,
-                             bool* active,
-                             bool* elast,
-                             bool* as_converged,
-                             LINALG::Matrix<6,1>* dHdC,
-                             LINALG::Matrix<6,1>* dHdDp,
-                             Teuchos::ParameterList& params,
-                             const double dt,
-                             const LINALG::Matrix<6,9>* d_cauchy_dFpi,
-                             LINALG::Matrix<6,6>* d_cauchy_ddp
-    );
+    virtual void EvaluateNCP(const LINALG::Matrix<3, 3>* mStr, const LINALG::Matrix<6, 6>* dMdC,
+        const LINALG::Matrix<6, 9>* dMdFpinv, const LINALG::Matrix<6, 9>* dPK2dFpinv,
+        const LINALG::Matrix<3, 3>* deltaDp, const int gp, const double* temp,
+        LINALG::Matrix<6, 1>* NCP, LINALG::Matrix<6, 6>* dNCPdC, LINALG::Matrix<6, 6>* dNCPdDp,
+        LINALG::Matrix<6, 1>* dNCPdT, LINALG::Matrix<6, 6>* dPK2dDp, bool* active, bool* elast,
+        bool* as_converged, LINALG::Matrix<6, 1>* dHdC, LINALG::Matrix<6, 1>* dHdDp,
+        Teuchos::ParameterList& params, const double dt, const LINALG::Matrix<6, 9>* d_cauchy_dFpi,
+        LINALG::Matrix<6, 6>* d_cauchy_ddp);
 
-    virtual void EvaluateNCPandSpin(
-        const LINALG::Matrix<3,3>* mStr,
-        const LINALG::Matrix<6,6>* dMdC,
-        const LINALG::Matrix<6,9>* dMdFpinv,
-        const LINALG::Matrix<6,9>* dPK2dFpinv,
-        const LINALG::Matrix<3,3>* deltaLp,
-        const int gp,
-        LINALG::Matrix<9,1>* NCP,
-        LINALG::Matrix<9,6>* dNCPdC,
-        LINALG::Matrix<9,9>* dNCPdLp,
-        LINALG::Matrix<6,9>* dPK2dLp,
-        bool* active,
-        bool* elast,
-        bool* as_converged,
-        const double dt,
-        const LINALG::Matrix<6,9>* d_cauchy_dFpi,
-        LINALG::Matrix<6,9>* d_cauchy_ddp);
+    virtual void EvaluateNCPandSpin(const LINALG::Matrix<3, 3>* mStr,
+        const LINALG::Matrix<6, 6>* dMdC, const LINALG::Matrix<6, 9>* dMdFpinv,
+        const LINALG::Matrix<6, 9>* dPK2dFpinv, const LINALG::Matrix<3, 3>* deltaLp, const int gp,
+        LINALG::Matrix<9, 1>* NCP, LINALG::Matrix<9, 6>* dNCPdC, LINALG::Matrix<9, 9>* dNCPdLp,
+        LINALG::Matrix<6, 9>* dPK2dLp, bool* active, bool* elast, bool* as_converged,
+        const double dt, const LINALG::Matrix<6, 9>* d_cauchy_dFpi,
+        LINALG::Matrix<6, 9>* d_cauchy_ddp);
 
-    virtual void EvaluateCauchyDerivs(
-        const LINALG::Matrix<3,1>& prinv,
-        const int eleGID,
-        LINALG::Matrix<3,1>& dPI,
-        LINALG::Matrix<6,1>& ddPII_ordered,
-        LINALG::Matrix<10,1>& dddPIII,
-        const double* temp=NULL
-        );
+    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int eleGID,
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII_ordered,
+        LINALG::Matrix<10, 1>& dddPIII, const double* temp = NULL);
 
-    virtual void EvaluateCauchyTempDeriv(
-        const LINALG::Matrix<3,1>& prinv,
-        const double ndt,
-        const double tbn,
-        const double tibn,
-        const LINALG::Matrix<6,1>& dI1db,
-        const LINALG::Matrix<6,1>& dI2db,
-        const LINALG::Matrix<6,1>& dI3db,
-        const LINALG::Matrix<6,1>& nt_tn_v,
-        const LINALG::Matrix<6,1>& dtibndb,
-        const double* temp, double* dsntdT,LINALG::Matrix<6,1>* d2sntDbDT) ;
+    virtual void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
+        const double tbn, const double tibn, const LINALG::Matrix<6, 1>& dI1db,
+        const LINALG::Matrix<6, 1>& dI2db, const LINALG::Matrix<6, 1>& dI3db,
+        const LINALG::Matrix<6, 1>& nt_tn_v, const LINALG::Matrix<6, 1>& dtibndb,
+        const double* temp, double* dsntdT, LINALG::Matrix<6, 1>* d2sntDbDT);
 
-    virtual void AddThermalExpansionDerivs(
-        const LINALG::Matrix<3,1>& prinv,
-        LINALG::Matrix<3,1>& dPI,
-        LINALG::Matrix<6,1>& ddPII,
-        int eleGID,
-        const double& temp
-        );
+    virtual void AddThermalExpansionDerivs(const LINALG::Matrix<3, 1>& prinv,
+        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, int eleGID, const double& temp);
 
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
-    virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
+    virtual void MatrixExponential3x3(LINALG::Matrix<3, 3>& MatrixInOut);
 
     //! calculate the derivative of the exponential of a symmetric 3x3 matrix
-    virtual void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
+    virtual void MatrixExponentialDerivativeSym3x3(
+        const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<6, 6>& MatrixExpDeriv);
 
     //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
-    virtual void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
+    virtual void MatrixExponentialDerivative3x3(
+        const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<9, 9>& MatrixExpDeriv);
 
     /// @name Voigt index arrays
     //@{
@@ -556,17 +518,17 @@ private:
 
     /// plastic anisotropy tensor for Hill-plasticity
     /// Von Mises plasticity is included for H = H^-1 = P_dev
-    LINALG::Matrix<6,6> PlAniso_full_;
-    LINALG::Matrix<6,6> InvPlAniso_full_;
+    LINALG::Matrix<6, 6> PlAniso_full_;
+    LINALG::Matrix<6, 6> InvPlAniso_full_;
 
     /// inverse plastic deformation gradient for each Gauss point at last converged state
-    std::vector<LINALG::Matrix<3,3> > last_plastic_defgrd_inverse_;
+    std::vector<LINALG::Matrix<3, 3>> last_plastic_defgrd_inverse_;
 
     /// accumulated plastic strain for each Gauss point at last converged state
-    std::vector<double > last_alpha_isotropic_;
+    std::vector<double> last_alpha_isotropic_;
 
     /// accumulated plastic strain for each Gauss point at last converged state
-    std::vector<LINALG::Matrix<3,3> > last_alpha_kinematic_;
+    std::vector<LINALG::Matrix<3, 3>> last_alpha_kinematic_;
 
     /// classification, if the Gauss point is currently in the active (true) or inactive (false) set
     std::vector<bool> activity_state_;
@@ -578,33 +540,32 @@ private:
     /// use the material to transfer linearization from the structural to the thermo element
 
     /// Elasto-plastic heating and mechanical dissipation at each gp
-    Teuchos::RCP<std::vector<double> >                   HepDiss_;
+    Teuchos::RCP<std::vector<double>> HepDiss_;
 
-    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. nodal displacements
-    /// compute the complete derivative w.r.t. nodal displacements (not only RCG) to make sure, that the same
-    /// element technology is used.
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDissdd_;
+    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. nodal
+    /// displacements compute the complete derivative w.r.t. nodal displacements (not only RCG) to
+    /// make sure, that the same element technology is used.
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDissdd_;
 
-    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. gp temperature
-    Teuchos::RCP<std::vector<double> >                   dHepDissdT_;
+    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. gp
+    /// temperature
+    Teuchos::RCP<std::vector<double>> dHepDissdT_;
 
-    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. to element temperature
-    /// this is an additional term to dHepDissdT_ that only appears in EAS elements
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDissdTeas_;
+    /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. to element
+    /// temperature this is an additional term to dHepDissdT_ that only appears in EAS elements
+    Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDissdTeas_;
 
 
-//  private:
+    //  private:
 
     /// kinematic quatities
-    static LINALG::Matrix<6,1> Cpi_,CpiCCpi_,ircg_,Ce_,Ce2_,id2V_,bev_,be2v_;
-    static LINALG::Matrix<3,3> invpldefgrd_,CeM_,id2_,CpiC_,FpiCe_,FpiTC_,CeFpiTC_,
-                                be_,be2_,Fe_,beF_,beFe_,FCpi_,beFCpi_;
-    static LINALG::Matrix<9,1> CFpiCei_,CFpi_,CFpiCe_;
-    static LINALG::Matrix<3,1> prinv_;
-
+    static LINALG::Matrix<6, 1> Cpi_, CpiCCpi_, ircg_, Ce_, Ce2_, id2V_, bev_, be2v_;
+    static LINALG::Matrix<3, 3> invpldefgrd_, CeM_, id2_, CpiC_, FpiCe_, FpiTC_, CeFpiTC_, be_,
+        be2_, Fe_, beF_, beFe_, FCpi_, beFCpi_;
+    static LINALG::Matrix<9, 1> CFpiCei_, CFpi_, CFpiCe_;
+    static LINALG::Matrix<3, 1> prinv_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

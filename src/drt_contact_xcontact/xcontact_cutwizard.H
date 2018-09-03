@@ -29,99 +29,92 @@
 class Epetra_Vector;
 class Epetra_Map;
 class Epetra_Comm;
-namespace LINALG {
+namespace LINALG
+{
   class SerialDenseMatrix;
-} // namespace LINALG
-namespace DRT {
+}  // namespace LINALG
+namespace DRT
+{
   class Discretization;
   class DiscretizationInterface;
-} // namespace DRT
-namespace GEO {
+}  // namespace DRT
+namespace GEO
+{
   class BoundaryIntCell;
-  typedef std::vector< Teuchos::RCP<GEO::BoundaryIntCell> > BoundaryIntCellPtrs;
-namespace CUT {
-  class ElementHandle;
-  class LevelSetIntersection;
-  class CombIntersection;
-} // namespace CUT
-} // namespace GEO
-namespace XCONTACT {
-
+  typedef std::vector<Teuchos::RCP<GEO::BoundaryIntCell>> BoundaryIntCellPtrs;
+  namespace CUT
+  {
+    class ElementHandle;
+    class LevelSetIntersection;
+    class CombIntersection;
+  }  // namespace CUT
+}  // namespace GEO
+namespace XCONTACT
+{
   class CutWizard : public GEO::CutWizard
   {
-  protected:
-    typedef GEN::pairedvector< const DRT::Element *, std::vector<const DRT::FaceElement *> > EleFacePair;
+   protected:
+    typedef GEN::pairedvector<const DRT::Element *, std::vector<const DRT::FaceElement *>>
+        EleFacePair;
 
     /*! \brief Container class for the background mesh object
      *
      *  \author hiermeier \date 01/17 */
     class BackMesh : public GEO::CutWizard::BackMesh
     {
-    public:
+     public:
       /// constructor
-      BackMesh( const Teuchos::RCP<DRT::Discretization> & backdis,
-          XCONTACT::CutWizard * wizard )
-          : GEO::CutWizard::BackMesh( backdis, wizard )
+      BackMesh(const Teuchos::RCP<DRT::Discretization> &backdis, XCONTACT::CutWizard *wizard)
+          : GEO::CutWizard::BackMesh(backdis, wizard)
       {
         /* left blank */
       }
 
       /// destructor
-      virtual ~BackMesh() {};
+      virtual ~BackMesh(){};
 
       /// returns the number of considered column elements
       virtual int NumMyColElements() const;
 
       /// returns a pointer to the col element with the given local ID
-      virtual const DRT::Element * lColElement( int lid ) const;
+      virtual const DRT::Element *lColElement(int lid) const;
 
-    private:
+     private:
       /// call-back to the wrapping cut wizard class (read and write)
-      XCONTACT::CutWizard * Wizard()
-      {
-        return static_cast<XCONTACT::CutWizard * >( wizard_ );
-      }
+      XCONTACT::CutWizard *Wizard() { return static_cast<XCONTACT::CutWizard *>(wizard_); }
 
       /// call-back to the wrapping cut wizard class (read-only)
-      const XCONTACT::CutWizard * Wizard() const
+      const XCONTACT::CutWizard *Wizard() const
       {
-        return static_cast<XCONTACT::CutWizard * >( wizard_ );
+        return static_cast<XCONTACT::CutWizard *>(wizard_);
       }
-    }; // class BackMesh
+    };  // class BackMesh
 
-  public:
+   public:
     /// constructor
-    CutWizard( const Teuchos::RCP<DRT::DiscretizationInterface> & backdis );
+    CutWizard(const Teuchos::RCP<DRT::DiscretizationInterface> &backdis);
 
     /// destructor
-    virtual ~CutWizard() {};
+    virtual ~CutWizard(){};
 
-    void SetBackgroundState(
-        Teuchos::RCP<const Epetra_Vector> back_disp_col,
-        Teuchos::RCP<const Epetra_Vector> back_levelset_row,
-        int level_set_sid );
+    void SetBackgroundState(Teuchos::RCP<const Epetra_Vector> back_disp_col,
+        Teuchos::RCP<const Epetra_Vector> back_levelset_row, int level_set_sid);
 
     /** \brief Set cut wizard options for the xcontact formulation
      *
-     *  \param gen_bcells_position   (in) : generate boundary cells of facets with the given position
-     *  \param nodal_dofset_strategy (in) : strategy for nodal dofset management
-     *  \param VCellgausstype        (in) : Gauss point generation method for Volumecell
-     *  \param BCellgausstype        (in) : Gauss point generation method for Boundarycell
-     *  \param gmsh_output           (in) : print write gmsh output for cut
-     *  \param positions             (in) : set inside and outside point, facet and volumecell positions
-     *  \param tetcellsonly          (in) : generate only tet cells
-     *  \param screenoutput          (in) : print screen output
+     *  \param gen_bcells_position   (in) : generate boundary cells of facets with the given
+     * position \param nodal_dofset_strategy (in) : strategy for nodal dofset management \param
+     * VCellgausstype        (in) : Gauss point generation method for Volumecell \param
+     * BCellgausstype        (in) : Gauss point generation method for Boundarycell \param
+     * gmsh_output           (in) : print write gmsh output for cut \param positions (in) : set
+     * inside and outside point, facet and volumecell positions \param tetcellsonly          (in) :
+     * generate only tet cells \param screenoutput          (in) : print screen output
      *
      *  \author hiermeier \date 01/17 */
-    void SetOptions(
-        INPAR::CUT::BoundaryCellPosition gen_bcells_position,
+    void SetOptions(INPAR::CUT::BoundaryCellPosition gen_bcells_position,
         INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy,
-        INPAR::CUT::VCellGaussPts VCellgausstype,
-        INPAR::CUT::BCellGaussPts BCellgausstype,
-        bool gmsh_output,
-        bool positions,
-        bool tetcellsonly,
-        bool screenoutput );
+        INPAR::CUT::VCellGaussPts VCellgausstype, INPAR::CUT::BCellGaussPts BCellgausstype,
+        bool gmsh_output, bool positions, bool tetcellsonly, bool screenoutput);
 
     /** \brief access the created boundary integration cells on the contact interface
      *
@@ -132,38 +125,35 @@ namespace XCONTACT {
      *          given face element ID.
      *
      *  \author hiermeier \date 01/17 */
-    const GEO::BoundaryIntCellPtrs * GetBoundaryIntegrationCells( int face_ele_id ) const;
+    const GEO::BoundaryIntCellPtrs *GetBoundaryIntegrationCells(int face_ele_id) const;
 
-  protected:
+   protected:
     /// do stuff after the Run_Cut routine is finished
-    virtual void Post_Run_Cut( bool include_inner );
+    virtual void Post_Run_Cut(bool include_inner);
 
     virtual void GetPhysicalNodalCoordinates(
-        const DRT::Element * ele,
-        LINALG::SerialDenseMatrix & xyze ) const;
+        const DRT::Element *ele, LINALG::SerialDenseMatrix &xyze) const;
 
-  private:
+   private:
     /// access the conditioned parent-face element paired vector
-    inline const EleFacePair & CondColParentFaceElementPair() const
+    inline const EleFacePair &CondColParentFaceElementPair() const
     {
       return cond_col_parent_face_element_pair_;
     }
 
     /// access the face elements corresponding to the xfem parent element
-    inline const std::vector<const DRT::FaceElement *> * CondColParentFaceElementPair(
-        const DRT::Element * parent_ele ) const
+    inline const std::vector<const DRT::FaceElement *> *CondColParentFaceElementPair(
+        const DRT::Element *parent_ele) const
     {
-      EleFacePair::const_iterator cit = cond_col_parent_face_element_pair_.find( parent_ele );
+      EleFacePair::const_iterator cit = cond_col_parent_face_element_pair_.find(parent_ele);
 
-      if ( cit != cond_col_parent_face_element_pair_.end() )
-        return ( & cit->second );
+      if (cit != cond_col_parent_face_element_pair_.end()) return (&cit->second);
 
       return NULL;
     }
 
     /// collect the cut background elements
-    void GetCutBackgroundElements(
-        std::vector<const DRT::Element * > & cut_elements ) const;
+    void GetCutBackgroundElements(std::vector<const DRT::Element *> &cut_elements) const;
 
     /** \brief Calculate the local coordinates of the cell vertices in the
      *  parent element parameter space coordinate system
@@ -176,30 +166,23 @@ namespace XCONTACT {
      *  \return \c TRUE, if all the cell vertices are within the parent element.
      *
      *  \author hiermeier \date 01/17 */
-    bool GetNodalLocalCoordinatesInParentElement(
-        const DRT::Element * parent_element,
-        const Epetra_SerialDenseMatrix & xyz_cell,
-        DRT::Element::DiscretizationType celltype,
-        LINALG::SerialDenseMatrix & rs_bc ) const;
+    bool GetNodalLocalCoordinatesInParentElement(const DRT::Element *parent_element,
+        const Epetra_SerialDenseMatrix &xyz_cell, DRT::Element::DiscretizationType celltype,
+        LINALG::SerialDenseMatrix &rs_bc) const;
 
-    void AddToCondBoundaryIntCells(
-        const Teuchos::RCP<GEO::BoundaryIntCell> & bicell,
-        int face_ele_id,
-        std::map<int, GEO::BoundaryIntCellPtrs> & cond_bicells_map ) const;
+    void AddToCondBoundaryIntCells(const Teuchos::RCP<GEO::BoundaryIntCell> &bicell,
+        int face_ele_id, std::map<int, GEO::BoundaryIntCellPtrs> &cond_bicells_map) const;
 
-    void CreateCondBoundaryIntCells(
-        const DRT::Element * cut_element,
-        const GEO::CUT::BoundaryCell & bcell,
-        std::map<int, GEO::BoundaryIntCellPtrs> & cond_bicells_map ) const;
+    void CreateCondBoundaryIntCells(const DRT::Element *cut_element,
+        const GEO::CUT::BoundaryCell &bcell,
+        std::map<int, GEO::BoundaryIntCellPtrs> &cond_bicells_map) const;
 
-    void CreateCondBoundaryIntegrationCells(
-        const std::vector<const DRT::Element * > & cut_elements,
-        std::map<int, GEO::BoundaryIntCellPtrs> & bicells_map ) const;
+    void CreateCondBoundaryIntegrationCells(const std::vector<const DRT::Element *> &cut_elements,
+        std::map<int, GEO::BoundaryIntCellPtrs> &bicells_map) const;
 
     void RemoveNonInterfaceNonStandardNodalDofSets();
 
-    void CheckBoundaryCellType(
-        DRT::Element::DiscretizationType distype_bc ) const;
+    void CheckBoundaryCellType(DRT::Element::DiscretizationType distype_bc) const;
 
     /** \brief Expand level-set values along the element edges perpendicular to
      *  the slave interface in the parameter space
@@ -214,12 +197,10 @@ namespace XCONTACT {
      *  \return expanded level-set value vector
      *
      *  \author hiermeier \date 01/17 */
-    Teuchos::RCP<Epetra_Vector> ExpandLevelSetValues(
-        const DRT::Discretization & xdiscret,
-        const Epetra_Vector & levelset_values,
-        const std::vector<std::string> & desired_conds,
-        EleFacePair & cond_col_parent_face_element_pair,
-        Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const;
+    Teuchos::RCP<Epetra_Vector> ExpandLevelSetValues(const DRT::Discretization &xdiscret,
+        const Epetra_Vector &levelset_values, const std::vector<std::string> &desired_conds,
+        EleFacePair &cond_col_parent_face_element_pair,
+        Teuchos::RCP<Epetra_Map> &cond_face_node_col_map) const;
 
     /** \brief Expand level-set values along the element edges perpendicular to
      *  the slave interface in the parameter space
@@ -234,17 +215,14 @@ namespace XCONTACT {
      *  \return expanded level-set value vector
      *
      *  \author hiermeier \date 01/17 */
-    inline Teuchos::RCP<Epetra_Vector> ExpandLevelSetValues(
-        const DRT::Discretization & xdiscret,
-        const Epetra_Vector & levelset_values,
-        const std::string & desired_cond,
-        EleFacePair & cond_col_parent_face_element_pair,
-        Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const
+    inline Teuchos::RCP<Epetra_Vector> ExpandLevelSetValues(const DRT::Discretization &xdiscret,
+        const Epetra_Vector &levelset_values, const std::string &desired_cond,
+        EleFacePair &cond_col_parent_face_element_pair,
+        Teuchos::RCP<Epetra_Map> &cond_face_node_col_map) const
     {
-      const std::vector<std::string> desired_conds( 1, desired_cond );
-      return ExpandLevelSetValues( xdiscret, levelset_values,
-          desired_conds, cond_col_parent_face_element_pair,
-          cond_face_node_col_map );
+      const std::vector<std::string> desired_conds(1, desired_cond);
+      return ExpandLevelSetValues(xdiscret, levelset_values, desired_conds,
+          cond_col_parent_face_element_pair, cond_face_node_col_map);
     }
 
     /** \brief project the level-set values along the given line
@@ -257,40 +235,33 @@ namespace XCONTACT {
      *                                     level-set values.
      *
      *  \author hiermeier \date 01/17 */
-    void ProjectLevelSetValuesAlongLine(
-        const int * line_node_gids,
-        unsigned num_line_nodes,
-        int common_line_node_lid,
-        Epetra_Vector & expanded_level_set_values ) const;
+    void ProjectLevelSetValuesAlongLine(const int *line_node_gids, unsigned num_line_nodes,
+        int common_line_node_lid, Epetra_Vector &expanded_level_set_values) const;
 
-    void CollectConditionSideInfo(
-        const std::map<int, Teuchos::RCP<DRT::Element> > & cond_elements,
-        const Epetra_Comm & comm,
-        Teuchos::RCP<Epetra_Map> & cond_node_col_map,
-        EleFacePair & cond_col_parent_face_element_pair,
-        Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const;
+    void CollectConditionSideInfo(const std::map<int, Teuchos::RCP<DRT::Element>> &cond_elements,
+        const Epetra_Comm &comm, Teuchos::RCP<Epetra_Map> &cond_node_col_map,
+        EleFacePair &cond_col_parent_face_element_pair,
+        Teuchos::RCP<Epetra_Map> &cond_face_node_col_map) const;
 
-    const Epetra_Map & CondFaceNodeColMap() const
+    const Epetra_Map &CondFaceNodeColMap() const
     {
-      if ( cond_face_node_col_map_.is_null() )
-        dserror( "NULL pointer!" );
+      if (cond_face_node_col_map_.is_null()) dserror("NULL pointer!");
 
-      return * cond_face_node_col_map_;
+      return *cond_face_node_col_map_;
     }
 
-  public:
+   public:
     /// debug output to check the cut algorithm
-    void Cut_Debug( const DRT::Element * cut_ele ) const;
+    void Cut_Debug(const DRT::Element *cut_ele) const;
 
-  private:
-
+   private:
     std::map<int, GEO::BoundaryIntCellPtrs> cond_bicells_map_;
 
     EleFacePair cond_col_parent_face_element_pair_;
 
     Teuchos::RCP<Epetra_Map> cond_face_node_col_map_;
   };
-} // namespace XCONTACT
+}  // namespace XCONTACT
 
 
 

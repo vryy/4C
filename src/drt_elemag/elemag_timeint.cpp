@@ -28,40 +28,36 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-ELEMAG::ElemagTimeInt::ElemagTimeInt(
-  const Teuchos::RCP<DRT::DiscretizationHDG>&   actdis,
-  const Teuchos::RCP<LINALG::Solver>&           solver,
-  const Teuchos::RCP<Teuchos::ParameterList>&   params,
-  const Teuchos::RCP<IO::DiscretizationWriter>& output
-  ):
-  discret_        (actdis),
-  solver_         (solver),
-  params_         (params),
-  output_         (output),
-  elemagdyna_     (DRT::INPUT::IntegralValue<INPAR::ELEMAG::DynamicType>(*params_,"TIMEINT")),
-  myrank_         (actdis->Comm().MyPID()),
-  time_           (0.0),
-  step_           (0),
-  restart_        (params_->get<int>("restart")),
-  maxtime_        (params_->get<double>("MAXTIME")),
-  stepmax_        (params_->get<int>("NUMSTEP")),
-  uprestart_      (params_->get<int>("RESTARTEVRY", -1)),
-  upres_          (params_->get<int>("RESULTSEVRY", -1)),
-  numdim_         (DRT::Problem::Instance()->NDim()),
-  dtp_            (params_->get<double>("TIMESTEP")),
-  dtele_          (0.0),
-  dtsolve_        (0.0),
-  calcerr_        (false)
+ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output)
+    : discret_(actdis),
+      solver_(solver),
+      params_(params),
+      output_(output),
+      elemagdyna_(DRT::INPUT::IntegralValue<INPAR::ELEMAG::DynamicType>(*params_, "TIMEINT")),
+      myrank_(actdis->Comm().MyPID()),
+      time_(0.0),
+      step_(0),
+      restart_(params_->get<int>("restart")),
+      maxtime_(params_->get<double>("MAXTIME")),
+      stepmax_(params_->get<int>("NUMSTEP")),
+      uprestart_(params_->get<int>("RESTARTEVRY", -1)),
+      upres_(params_->get<int>("RESULTSEVRY", -1)),
+      numdim_(DRT::Problem::Instance()->NDim()),
+      dtp_(params_->get<double>("TIMESTEP")),
+      dtele_(0.0),
+      dtsolve_(0.0),
+      calcerr_(false)
 {
   // constructor supposed to be empty!
 
-} // ElemagTimeInt
+}  // ElemagTimeInt
 
 /*----------------------------------------------------------------------*
  |  Desctructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-ELEMAG::ElemagTimeInt::~ElemagTimeInt()
-{}
+ELEMAG::ElemagTimeInt::~ElemagTimeInt() {}
 
 
 /*----------------------------------------------------------------------*
@@ -73,10 +69,10 @@ void ELEMAG::ElemagTimeInt::Init()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // check time-step length
-  if(dtp_ <= 0.0) dserror("Zero or negative time-step length!");
+  if (dtp_ <= 0.0) dserror("Zero or negative time-step length!");
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector(*dofrowmap,true);
+  zeros_ = LINALG::CreateVector(*dofrowmap, true);
 
   /*dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
@@ -89,26 +85,23 @@ void ELEMAG::ElemagTimeInt::Init()
   }*/
 
   // create system matrix and set to zero
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 108, false, true));
   sysmat_->Zero();
 
   // create residual vector
-  residual_ = LINALG::CreateVector(*dofrowmap,true);
+  residual_ = LINALG::CreateVector(*dofrowmap, true);
 
   // write mesh
-  output_->WriteMesh(0,0.0);
+  output_->WriteMesh(0, 0.0);
 
   return;
-} // Init
+}  // Init
 
 
 /*----------------------------------------------------------------------*
  |  Print information to screen (public)               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::PrintInformationToScreen()
-{
-  return;
-} //  PrintInformationToScreen
+void ELEMAG::ElemagTimeInt::PrintInformationToScreen() { return; }  //  PrintInformationToScreen
 
 
 /*----------------------------------------------------------------------*
@@ -129,7 +122,7 @@ void ELEMAG::ElemagTimeInt::Integrate()
   ApplyDirichletToSystem();
 
   // time loop
-  while (step_<stepmax_ and time_<maxtime_)
+  while (step_ < stepmax_ and time_ < maxtime_)
   {
     // increment time and step
     IncrementTimeAndStep();
@@ -140,70 +133,46 @@ void ELEMAG::ElemagTimeInt::Integrate()
     // output of solution
     Output();
 
-  } // while (step_<stepmax_ and time_<maxtime_)
+  }  // while (step_<stepmax_ and time_<maxtime_)
 
   return;
-} // Integrate
+}  // Integrate
 
 
 /*----------------------------------------------------------------------*
  |  Set initial field by given function (public)       gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::SetInitialField(int startfuncno)
-{
-
-  return;
-} // SetInitialField
+void ELEMAG::ElemagTimeInt::SetInitialField(int startfuncno) { return; }  // SetInitialField
 
 
 /*----------------------------------------------------------------------*
  |  Assemble matrix and right-hand side (public)       gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
-{
-
-  return;
-} // AssembleMatAndRHS
+void ELEMAG::ElemagTimeInt::AssembleMatAndRHS() { return; }  // AssembleMatAndRHS
 
 
 /*----------------------------------------------------------------------*
  |  Apply Dirichlet b.c. to system (public)            gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem()
-{
-
-  return;
-} // ApplyDirichletToSystem
+void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem() { return; }  // ApplyDirichletToSystem
 
 
 /*----------------------------------------------------------------------*
  |  Solve system for trace and then interior field     gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::Solve()
-{
-
-  return;
-} // Solve
+void ELEMAG::ElemagTimeInt::Solve() { return; }  // Solve
 
 
 /*----------------------------------------------------------------------*
  |  Output to screen (public)                          gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::OutputToScreen()
-{
-
-  return;
-} // OutputToScreen
+void ELEMAG::ElemagTimeInt::OutputToScreen() { return; }  // OutputToScreen
 
 
 /*----------------------------------------------------------------------*
  |  Output (public)                                    gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::Output()
-{
-
-  return;
-} // Output
+void ELEMAG::ElemagTimeInt::Output() { return; }  // Output
 
 
 /*----------------------------------------------------------------------*

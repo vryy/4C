@@ -2,7 +2,8 @@
 /*!
 \file ehl_base.H
 
-\brief base class for all elastohydrodynamic lubrication (lubrication structure interaction) algorithms
+\brief base class for all elastohydrodynamic lubrication (lubrication structure interaction)
+algorithms
 
 \level 3
 
@@ -27,7 +28,7 @@ namespace ADAPTER
   class Structure;
   class Coupling;
   class CouplingEhlMortar;
-}
+}  // namespace ADAPTER
 
 namespace LINALG
 {
@@ -36,18 +37,14 @@ namespace LINALG
 
 namespace EHL
 {
-
   class Base : public ADAPTER::AlgorithmBase
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
-    explicit Base(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& lubricationparams,
-        const Teuchos::ParameterList& structparams,
+    explicit Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& lubricationparams, const Teuchos::ParameterList& structparams,
         const std::string struct_disname,
-        const std::string lubrication_disname);// Problem builder
+        const std::string lubrication_disname);  // Problem builder
 
     /// virtual destructor
     virtual ~Base(){};
@@ -62,42 +59,35 @@ namespace EHL
     void TestResults(const Epetra_Comm& comm);
 
     /// read restart
-    void ReadRestart( int restart );
+    void ReadRestart(int restart);
 
     /// read restart from given time
-    void ReadRestartfromTime( double restarttime );
+    void ReadRestartfromTime(double restarttime);
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+    const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
 
     /// set structure solution on lubrication field
     void SetStructSolution(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set lubrication solution on structure field
-    void SetLubricationSolution( Teuchos::RCP<const Epetra_Vector> pressure);
+    void SetLubricationSolution(Teuchos::RCP<const Epetra_Vector> pressure);
 
     /// evaluate fluid forces on structure
     Teuchos::RCP<Epetra_Vector> EvaluateFluidForce(Teuchos::RCP<const Epetra_Vector> pressure);
 
-  protected:
-
+   protected:
     void AddPressureForce(
-        Teuchos::RCP<Epetra_Vector>   slaveiforce,
-        Teuchos::RCP<Epetra_Vector>  masteriforce
-        );
+        Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     void AddPoiseuilleForce(
-        Teuchos::RCP<Epetra_Vector>   slaveiforce,
-        Teuchos::RCP<Epetra_Vector>  masteriforce
-        );
+        Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     void AddCouetteForce(
-        Teuchos::RCP<Epetra_Vector>   slaveiforce,
-        Teuchos::RCP<Epetra_Vector>  masteriforce
-        );
+        Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     /// underlying structure of the EHL problem
-    Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+    Teuchos::RCP<::ADAPTER::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
     Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubrication_;
@@ -105,7 +95,8 @@ namespace EHL
     //! Type of coupling strategy between the two fields of the EHL problems
     const INPAR::EHL::FieldCoupling fieldcoupling_;
 
-    //! adapter for coupling the nodes of the lubrication field with the nodes from the master side of the structure
+    //! adapter for coupling the nodes of the lubrication field with the nodes from the master side
+    //! of the structure
     Teuchos::RCP<ADAPTER::CouplingEhlMortar> mortaradapter_;
 
     //! Interface traction vector in the slave str dof map
@@ -135,7 +126,8 @@ namespace EHL
     bool dry_contact_;
 
     /// setup adapters for EHL on boundary
-    virtual void SetupFieldCoupling(const std::string struct_disname, const std::string lubrication_disname);
+    virtual void SetupFieldCoupling(
+        const std::string struct_disname, const std::string lubrication_disname);
 
     //! take current results for converged and save for next time step
     virtual void Update();
@@ -145,29 +137,30 @@ namespace EHL
     Teuchos::RCP<Epetra_Vector> inf_gap_toggle_lub_;
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Epetra_Vector> CalcVelocity( Teuchos::RCP<const Epetra_Vector> dispnp );
+    Teuchos::RCP<Epetra_Vector> CalcVelocity(Teuchos::RCP<const Epetra_Vector> dispnp);
 
-  private:
+   private:
     /// setup discretizations and dofsets
-    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string lubrication_disname);
+    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname,
+        const std::string lubrication_disname);
 
     /// set structure mesh displacement on lubrication field
-    void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
+    void SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// set average tangential interface velocity (ie structural velocities
     /// this is invariant w.r.t. rigid body rotations
     void SetAverageVelocityField();
 
     /// set film height of the lubrication field
-    void SetHeightField() ;
+    void SetHeightField();
 
-    //set Time derivative of height (squeeze term)
+    // set Time derivative of height (squeeze term)
     void SetHeightDot();
 
     // Create DBC map for unprojectable nodes
     void SetupUnprojectableDBC();
   };
-}
+}  // namespace EHL
 
 
 #endif /* SRC_DRT_EHL_EHL_BASE_H_ */

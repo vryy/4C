@@ -15,7 +15,7 @@
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 #include "mortar_calc_utils.H"
-#include "../drt_contact/contact_interpolator.H" // MT interpolator is located in here
+#include "../drt_contact/contact_interpolator.H"  // MT interpolator is located in here
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -24,18 +24,17 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele) :
-    idiscret_(idiscret),
-    dim_(dim),
-    shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
-    quad_(quad),
-    lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LM_QUAD")),
-    sele_(sele),
-    mele_(mele),
-    imortar_(params),
-    lauxn_(-1.0)
+MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
+    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    : idiscret_(idiscret),
+      dim_(dim),
+      shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
+      quad_(quad),
+      lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params, "LM_QUAD")),
+      sele_(sele),
+      mele_(mele),
+      imortar_(params),
+      lauxn_(-1.0)
 {
   // empty constructor body
   return;
@@ -45,10 +44,7 @@ MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                                popp 06/09|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& MORTAR::Coupling3d::Comm() const
-{
-  return idiscret_.Comm();
-}
+const Epetra_Comm& MORTAR::Coupling3d::Comm() const { return idiscret_.Comm(); }
 
 
 /*----------------------------------------------------------------------*
@@ -60,8 +56,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   // whether or not quadratic 3d coupling is performed, we only
   // check the distance of the parent slave and master elements
   bool near = RoughCheckCenters();
-  if (!near)
-    return false;
+  if (!near) return false;
 
   // tolerance for polygon clipping
   double tol = 0.0;
@@ -74,8 +69,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   // if slave and master element center normals form an
   // angle > 90° the pair will not be considered further
   bool orient = RoughCheckOrient();
-  if (!orient)
-    return false;
+  if (!orient) return false;
 
   // project slave element nodes onto auxiliary plane
   ProjectSlave();
@@ -89,25 +83,21 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // do polygon clipping
-  bool clip = PolygonClippingConvexHull(SlaveVertices(), MasterVertices(),
-      Clip(), tol);
-  int clipsize = (int) (Clip().size());
+  bool clip = PolygonClippingConvexHull(SlaveVertices(), MasterVertices(), Clip(), tol);
+  int clipsize = (int)(Clip().size());
 
   // within polygon clipping we may have performed a second rough check
   // if the two elements are really "near" (NOTE: this has only been done
   // if problems occured within polygon clipping, i.e. the projected master
   // element being non-convex. In the standard case, bool clip is simply true)
   // --> this way, robustness of coupling is further increased!
-  if (!clip)
-    return false;
+  if (!clip) return false;
 
   // proceed only if clipping polygon is at least a triangle
-  if (clipsize < 3)
-    return false;
+  if (clipsize < 3) return false;
 
   // proceed only if clipping polygon has non-zero area
-  if (PolygonArea() < MORTARINTLIM * SlaveElementArea())
-    return false;
+  if (PolygonArea() < MORTARINTLIM * SlaveElementArea()) return false;
 
   // check / set  projection status of slave nodes
   HasProjStatus();
@@ -128,16 +118,14 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
   const double mme = MasterIntElement().MaxEdgeSize();
   const double near = 2.0 * std::max(sme, mme);
 
-  double loccs[2] =
-  { 0.0, 0.0 };
+  double loccs[2] = {0.0, 0.0};
   DRT::Element::DiscretizationType dts = SlaveIntElement().Shape();
   if (dts == MortarElement::tri3 || dts == MortarElement::tri6)
   {
     loccs[0] = 1.0 / 3.0;
     loccs[1] = 1.0 / 3.0;
   }
-  double loccm[2] =
-  { 0.0, 0.0 };
+  double loccm[2] = {0.0, 0.0};
   DRT::Element::DiscretizationType dtm = MasterIntElement().Shape();
   if (dtm == MortarElement::tri3 || dtm == MortarElement::tri6)
   {
@@ -145,16 +133,13 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
     loccm[1] = 1.0 / 3.0;
   }
 
-  double sc[3] =
-  { 0.0, 0.0, 0.0 };
-  double mc[3] =
-  { 0.0, 0.0, 0.0 };
+  double sc[3] = {0.0, 0.0, 0.0};
+  double mc[3] = {0.0, 0.0, 0.0};
   SlaveIntElement().LocalToGlobal(loccs, sc, 0);
   MasterIntElement().LocalToGlobal(loccm, mc, 0);
 
-  const double cdist = sqrt(
-      (mc[0] - sc[0]) * (mc[0] - sc[0]) + (mc[1] - sc[1]) * (mc[1] - sc[1])
-          + (mc[2] - sc[2]) * (mc[2] - sc[2]));
+  const double cdist = sqrt((mc[0] - sc[0]) * (mc[0] - sc[0]) + (mc[1] - sc[1]) * (mc[1] - sc[1]) +
+                            (mc[2] - sc[2]) * (mc[2] - sc[2]));
   if (cdist >= near)
     return false;
   else
@@ -170,8 +155,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
   // project master nodes onto auxiliary plane
   int nnodes = MasterIntElement().NumNode();
   DRT::Node** mynodes = MasterIntElement().Nodes();
-  if (!mynodes)
-    dserror("ERROR: RoughCheckNodes: Null pointer!");
+  if (!mynodes) dserror("ERROR: RoughCheckNodes: Null pointer!");
 
   // prepare check
   bool near = false;
@@ -182,19 +166,17 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode)
-      dserror("ERROR: RoughCheckNodes: Null pointer!");
+    if (!mycnode) dserror("ERROR: RoughCheckNodes: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0]
-        + (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1]
-        + (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
+                  (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
+                  (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
 
     // only near if at least one node is "close" to auxiliary plane
     // (signed distance in order to capture intrusion correctly)
-    if (dist < limit)
-      near = true;
+    if (dist < limit) near = true;
   }
 
   return near;
@@ -212,8 +194,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
   // we first need the master element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
-  double loccenter[2] =
-  { 0.0, 0.0 };
+  double loccenter[2] = {0.0, 0.0};
 
   DRT::Element::DiscretizationType dt = MasterIntElement().Shape();
   if (dt == MortarElement::tri3 || dt == MortarElement::tri6)
@@ -221,8 +202,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
     loccenter[0] = 1.0 / 3;
     loccenter[1] = 1.0 / 3;
   }
-  else if (dt == MortarElement::quad4 || dt == MortarElement::quad8
-      || dt == MortarElement::quad9)
+  else if (dt == MortarElement::quad4 || dt == MortarElement::quad8 || dt == MortarElement::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -231,7 +211,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
     dserror("ERROR: RoughCheckOrient called for unknown element type");
 
   // compute the unit normal vector at the master element center
-  double nmc[3] = { 0.0, 0.0, 0.0 };
+  double nmc[3] = {0.0, 0.0, 0.0};
   MasterIntElement().ComputeUnitNormalAtXi(loccenter, nmc);
 
   // check orientation with respect to slave element
@@ -251,8 +231,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   // we first need the element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
-  double loccenter[2] =
-  { 0.0, 0.0 };
+  double loccenter[2] = {0.0, 0.0};
 
   DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
   if (dt == MortarElement::tri3 || dt == MortarElement::tri6)
@@ -260,8 +239,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == MortarElement::quad4 || dt == MortarElement::quad8
-      || dt == MortarElement::quad9)
+  else if (dt == MortarElement::quad4 || dt == MortarElement::quad8 || dt == MortarElement::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -277,33 +255,34 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
 
 
   // calculate auxplane with cpp normal!
-//  LINALG::SerialDenseVector val(SlaveIntElement().NumNode());
-//  LINALG::SerialDenseMatrix deriv(SlaveIntElement().NumNode(),2,true);
-//  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().NumNode(),false);
-//  Auxn()[0] = 0.0;
-//  Auxn()[1] = 0.0;
-//  Auxn()[2] = 0.0;
-//
-//  // interpolate between nodal normals
-//  for(int i=0;i<SlaveIntElement().NumNode();++i)
-//  {
-//    MortarNode* snode = dynamic_cast<MortarNode*>(SlaveIntElement().Nodes()[i]);
-//    Auxn()[0] += val[i]*snode->MoData().n()[0];
-//    Auxn()[1] += val[i]*snode->MoData().n()[1];
-//    Auxn()[2] += val[i]*snode->MoData().n()[2];
-//  }
-//
-//  // get length (not used in the following)
-//  Lauxn() = sqrt(Auxn()[0]*Auxn()[0] + Auxn()[1]*Auxn()[1] + Auxn()[2]*Auxn()[2]);
-//
-//  // create unit normal
-//  Auxn()[0] /= Lauxn();
-//  Auxn()[1] /= Lauxn();
-//  Auxn()[2] /= Lauxn();
+  //  LINALG::SerialDenseVector val(SlaveIntElement().NumNode());
+  //  LINALG::SerialDenseMatrix deriv(SlaveIntElement().NumNode(),2,true);
+  //  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().NumNode(),false);
+  //  Auxn()[0] = 0.0;
+  //  Auxn()[1] = 0.0;
+  //  Auxn()[2] = 0.0;
+  //
+  //  // interpolate between nodal normals
+  //  for(int i=0;i<SlaveIntElement().NumNode();++i)
+  //  {
+  //    MortarNode* snode = dynamic_cast<MortarNode*>(SlaveIntElement().Nodes()[i]);
+  //    Auxn()[0] += val[i]*snode->MoData().n()[0];
+  //    Auxn()[1] += val[i]*snode->MoData().n()[1];
+  //    Auxn()[2] += val[i]*snode->MoData().n()[2];
+  //  }
+  //
+  //  // get length (not used in the following)
+  //  Lauxn() = sqrt(Auxn()[0]*Auxn()[0] + Auxn()[1]*Auxn()[1] + Auxn()[2]*Auxn()[2]);
+  //
+  //  // create unit normal
+  //  Auxn()[0] /= Lauxn();
+  //  Auxn()[1] /= Lauxn();
+  //  Auxn()[2] /= Lauxn();
 
-  //std::cout << "Slave Element: " << SlaveIntElement().Id() << std::endl;
-  //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << std::endl;
-//  std::cout << "->Normal cpp: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << std::endl;
+  // std::cout << "Slave Element: " << SlaveIntElement().Id() << std::endl;
+  // std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << std::endl;
+  //  std::cout << "->Normal cpp: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] <<
+  //  std::endl;
 
   return true;
 }
@@ -317,8 +296,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
   // project slave nodes onto auxiliary plane
   int nnodes = SlaveIntElement().NumNode();
   DRT::Node** mynodes = SlaveIntElement().Nodes();
-  if (!mynodes)
-    dserror("ERROR: ProjectSlave: Null pointer!");
+  if (!mynodes) dserror("ERROR: ProjectSlave: Null pointer!");
 
   // initialize storage for slave coords + their ids
   std::vector<double> vertices(3);
@@ -327,29 +305,28 @@ bool MORTAR::Coupling3d::ProjectSlave()
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode)
-      dserror("ERROR: ProjectSlave: Null pointer!");
+    if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0]
-        + (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1]
-        + (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
+                        (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
+                        (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
 
     // compute projection
-    for (int k = 0; k < 3; ++k)
-      vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
 
     // get node id, too
     snodeids[0] = mycnode->Id();
 
     // store into vertex data structure
     SlaveVertices().push_back(
-        Vertex(vertices, Vertex::slave, snodeids, NULL, NULL, false, false,
-            NULL, -1.0));
+        Vertex(vertices, Vertex::slave, snodeids, NULL, NULL, false, false, NULL, -1.0));
 
-    //std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl;
-    //std::cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
+    // std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
+    // mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl; std::cout <<
+    // "->ProjNode(S) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " <<
+    // vertices[2] << std::endl;
   }
 
   return true;
@@ -364,8 +341,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
   // project master nodes onto auxiliary plane
   int nnodes = MasterIntElement().NumNode();
   DRT::Node** mynodes = MasterIntElement().Nodes();
-  if (!mynodes)
-    dserror("ERROR: ProjectMaster: Null pointer!");
+  if (!mynodes) dserror("ERROR: ProjectMaster: Null pointer!");
 
   // initialize storage for master coords + their ids
   std::vector<double> vertices(3);
@@ -374,29 +350,28 @@ bool MORTAR::Coupling3d::ProjectMaster()
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode)
-      dserror("ERROR: ProjectMaster: Null pointer!");
+    if (!mycnode) dserror("ERROR: ProjectMaster: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
-    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0]
-        + (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1]
-        + (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
+    const double dist = (mycnode->xspatial()[0] - Auxc()[0]) * Auxn()[0] +
+                        (mycnode->xspatial()[1] - Auxc()[1]) * Auxn()[1] +
+                        (mycnode->xspatial()[2] - Auxc()[2]) * Auxn()[2];
 
     // compute projection
-    for (int k = 0; k < 3; ++k)
-      vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
+    for (int k = 0; k < 3; ++k) vertices[k] = mycnode->xspatial()[k] - dist * Auxn()[k];
 
     // get node id, too
     mnodeids[0] = mycnode->Id();
 
     // store into vertex data structure
     MasterVertices().push_back(
-        Vertex(vertices, Vertex::projmaster, mnodeids, NULL, NULL, false, false,
-            NULL, -1.0));
+        Vertex(vertices, Vertex::projmaster, mnodeids, NULL, NULL, false, false, NULL, -1.0));
 
-    //std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl;
-    //std::cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
+    // std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
+    // mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl; std::cout <<
+    // "->ProjNode(M) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " <<
+    // vertices[2] << std::endl;
   }
 
   return true;
@@ -406,8 +381,8 @@ bool MORTAR::Coupling3d::ProjectMaster()
 /*----------------------------------------------------------------------*
  |  Clipping of two polygons                                  popp 11/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
-    std::vector<Vertex>& poly2, std::vector<Vertex>& respoly, double& tol)
+void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector<Vertex>& poly2,
+    std::vector<Vertex>& respoly, double& tol)
 {
   //**********************************************************************
   dserror("ERROR: PolygonClipping outdated, use PolygonClippingConvexHull instead!");
@@ -425,36 +400,32 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   //**********************************************************************
 
   // check input variables
-  if ((int) poly1.size() < 3 || (int) poly2.size() < 3)
+  if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
     dserror("ERROR: Input Polygons must consist of min. 3 vertices each");
 
   // check for rotation of polygon1 (slave) and polgon 2 (master)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
-  double center1[3] = { 0.0, 0.0, 0.0 };
-  double center2[3] = { 0.0, 0.0, 0.0 };
+  double center1[3] = {0.0, 0.0, 0.0};
+  double center2[3] = {0.0, 0.0, 0.0};
 
-  for (int i = 0; i < (int) poly1.size(); ++i)
-    for (int k = 0; k < 3; ++k)
-      center1[k] += poly1[i].Coord()[k] / ((int) poly1.size());
+  for (int i = 0; i < (int)poly1.size(); ++i)
+    for (int k = 0; k < 3; ++k) center1[k] += poly1[i].Coord()[k] / ((int)poly1.size());
 
-  for (int i = 0; i < (int) poly2.size(); ++i)
-    for (int k = 0; k < 3; ++k)
-      center2[k] += poly2[i].Coord()[k] / ((int) poly2.size());
+  for (int i = 0; i < (int)poly2.size(); ++i)
+    for (int k = 0; k < 3; ++k) center2[k] += poly2[i].Coord()[k] / ((int)poly2.size());
 
   if (out)
   {
-    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " "
-        << center1[2] << std::endl;
-    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " "
-        << center2[2] << std::endl;
+    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << std::endl;
+    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << std::endl;
   }
 
   // then we compute the counter-clockwise plane normal
-  double diff1[3] = { 0.0, 0.0, 0.0 };
-  double edge1[3] = { 0.0, 0.0, 0.0 };
-  double diff2[3] = { 0.0, 0.0, 0.0 };
-  double edge2[3] = { 0.0, 0.0, 0.0 };
+  double diff1[3] = {0.0, 0.0, 0.0};
+  double edge1[3] = {0.0, 0.0, 0.0};
+  double diff2[3] = {0.0, 0.0, 0.0};
+  double edge2[3] = {0.0, 0.0, 0.0};
 
   for (int k = 0; k < 3; ++k)
   {
@@ -464,8 +435,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     edge2[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
   }
 
-  double cross1[3] = { 0.0, 0.0, 0.0 };
-  double cross2[3] = { 0.0, 0.0, 0.0 };
+  double cross1[3] = {0.0, 0.0, 0.0};
+  double cross2[3] = {0.0, 0.0, 0.0};
 
   cross1[0] = diff1[1] * edge1[2] - diff1[2] * edge1[1];
   cross1[1] = diff1[2] * edge1[0] - diff1[0] * edge1[2];
@@ -476,10 +447,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   cross2[2] = diff2[0] * edge2[1] - diff2[1] * edge2[0];
 
   // check against auxiliary plane normal
-  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1]
-      + cross1[2] * Auxn()[2];
-  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1]
-      + cross2[2] * Auxn()[2];
+  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1] + cross1[2] * Auxn()[2];
+  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1] + cross2[2] * Auxn()[2];
 
   // check polygon 1 and throw dserror if not c-clockwise
   if (check1 <= 0)
@@ -492,41 +461,38 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   if (check2 < 0)
   {
     if (out)
-      std::cout
-          << "Polygon 2 (master) not ordered counter-clockwise -> reordered!"
-          << std::endl;
+      std::cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << std::endl;
     std::reverse(poly2.begin(), poly2.end());
   }
 
   // check if the two input polygons are convex
   // a polygon is convex if the scalar product of an edge normal and the
   // next edge direction is negative for all edges
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
     // we need the edge vector first
-    double edge[3] =
-    { 0.0, 0.0, 0.0 };
+    double edge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i != (int) poly1.size() - 1)
+      if (i != (int)poly1.size() - 1)
         edge[k] = poly1[i + 1].Coord()[k] - poly1[i].Coord()[k];
       else
         edge[k] = poly1[0].Coord()[k] - poly1[i].Coord()[k];
     }
 
     // edge normal is result of cross product
-    double n[3] = { 0.0, 0.0, 0.0 };
+    double n[3] = {0.0, 0.0, 0.0};
     n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
     n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
     n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
     // we need the next edge vector now
-    double nextedge[3] = { 0.0, 0.0, 0.0 };
+    double nextedge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i < (int) poly1.size() - 2)
+      if (i < (int)poly1.size() - 2)
         nextedge[k] = poly1[i + 2].Coord()[k] - poly1[i + 1].Coord()[k];
-      else if (i == (int) poly1.size() - 2)
+      else if (i == (int)poly1.size() - 2)
         nextedge[k] = poly1[0].Coord()[k] - poly1[i + 1].Coord()[k];
       else
         nextedge[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
@@ -534,35 +500,34 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
     // check scalar product
     double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
-    if (check > 0)
-      dserror("ERROR: Input polygon 1 not convex");
+    if (check > 0) dserror("ERROR: Input polygon 1 not convex");
   }
 
-  for (int i = 0; i < (int) poly2.size(); ++i)
+  for (int i = 0; i < (int)poly2.size(); ++i)
   {
     // we need the edge vector first
-    double edge[3] = { 0.0, 0.0, 0.0 };
+    double edge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i != (int) poly2.size() - 1)
+      if (i != (int)poly2.size() - 1)
         edge[k] = poly2[i + 1].Coord()[k] - poly2[i].Coord()[k];
       else
         edge[k] = poly2[0].Coord()[k] - poly2[i].Coord()[k];
     }
 
     // edge normal is result of cross product
-    double n[3] = { 0.0, 0.0, 0.0 };
+    double n[3] = {0.0, 0.0, 0.0};
     n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
     n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
     n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
     // we need the next edge vector now
-    double nextedge[3] = { 0.0, 0.0, 0.0 };
+    double nextedge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i < (int) poly2.size() - 2)
+      if (i < (int)poly2.size() - 2)
         nextedge[k] = poly2[i + 2].Coord()[k] - poly2[i + 1].Coord()[k];
-      else if (i == (int) poly2.size() - 2)
+      else if (i == (int)poly2.size() - 2)
         nextedge[k] = poly2[0].Coord()[k] - poly2[i + 1].Coord()[k];
       else
         nextedge[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
@@ -570,24 +535,21 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
     // check scalar product
     double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
-    if (check > 0)
-      dserror("ERROR: Input polygon 2 not convex");
+    if (check > 0) dserror("ERROR: Input polygon 2 not convex");
   }
 
   // print final input polygons to screen
   if (out)
   {
     std::cout << "\nInput Poylgon 1:";
-    for (int i = 0; i < (int) poly1.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific
-          << poly1[i].Coord()[0] << "\t" << poly1[i].Coord()[1] << "\t"
-          << poly1[i].Coord()[2];
+    for (int i = 0; i < (int)poly1.size(); ++i)
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].Coord()[0] << "\t"
+                << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
 
     std::cout << "\nInput Poylgon 2:";
-    for (int i = 0; i < (int) poly2.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific
-          << poly2[i].Coord()[0] << "\t" << poly2[i].Coord()[1] << "\t"
-          << poly2[i].Coord()[2];
+    for (int i = 0; i < (int)poly2.size(); ++i)
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0] << "\t"
+                << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
 
     std::cout << std::endl << std::endl;
   }
@@ -599,10 +561,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   //**********************************************************************
 
   // set previous and next Vertex pointer for all elements in lists
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
     // standard case
-    if (i != 0 && i != (int) poly1.size() - 1)
+    if (i != 0 && i != (int)poly1.size() - 1)
     {
       poly1[i].AssignNext(&poly1[i + 1]);
       poly1[i].AssignPrev(&poly1[i - 1]);
@@ -611,7 +573,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     else if (i == 0)
     {
       poly1[i].AssignNext(&poly1[i + 1]);
-      poly1[i].AssignPrev(&poly1[(int) poly1.size() - 1]);
+      poly1[i].AssignPrev(&poly1[(int)poly1.size() - 1]);
     }
     // last element in list
     else
@@ -620,10 +582,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       poly1[i].AssignPrev(&poly1[i - 1]);
     }
   }
-  for (int i = 0; i < (int) poly2.size(); ++i)
+  for (int i = 0; i < (int)poly2.size(); ++i)
   {
     // standard case
-    if (i != 0 && i != (int) poly2.size() - 1)
+    if (i != 0 && i != (int)poly2.size() - 1)
     {
       poly2[i].AssignNext(&poly2[i + 1]);
       poly2[i].AssignPrev(&poly2[i - 1]);
@@ -632,7 +594,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     else if (i == 0)
     {
       poly2[i].AssignNext(&poly2[i + 1]);
-      poly2[i].AssignPrev(&poly2[(int) poly2.size() - 1]);
+      poly2[i].AssignPrev(&poly2[(int)poly2.size() - 1]);
     }
     // last element in list
     else
@@ -647,13 +609,13 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   // - if a point of poly1 is close (<tol) to a edge of poly2 or vice
   //   versa we move this point away from the edge by tol
   //**********************************************************************
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
-    for (int j = 0; j < (int) poly2.size(); ++j)
+    for (int j = 0; j < (int)poly2.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff1[3] = { 0.0, 0.0, 0.0 };
-      double edge2[3] = { 0.0, 0.0, 0.0 };
+      double diff1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff1[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
@@ -661,37 +623,35 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       }
 
       // check if point of poly1 lies within [0,1] for edge2
-      double checkalpha = diff1[0] * edge2[0] + diff1[1] * edge2[1]
-          + diff1[2] * edge2[2];
-      checkalpha /= (edge2[0] * edge2[0] + edge2[1] * edge2[1]
-          + edge2[2] * edge2[2]);
+      double checkalpha = diff1[0] * edge2[0] + diff1[1] * edge2[1] + diff1[2] * edge2[2];
+      checkalpha /= (edge2[0] * edge2[0] + edge2[1] * edge2[1] + edge2[2] * edge2[2]);
 
       // proceed only if inside [0,1] with tolerance tol
-      if (checkalpha < -tol || checkalpha > 1 + tol)
-        continue;
+      if (checkalpha < -tol || checkalpha > 1 + tol) continue;
 
       // compute distance from point on poly1 to edge2
-      double n2[3] = { 0.0, 0.0, 0.0 };
+      double n2[3] = {0.0, 0.0, 0.0};
       n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
       n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
       n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
       double ln = sqrt(n2[0] * n2[0] + n2[1] * n2[1] + n2[2] * n2[2]);
-      for (int k = 0; k < 3; ++k)
-        n2[k] /= ln;
+      for (int k = 0; k < 3; ++k) n2[k] /= ln;
 
       double dist = diff1[0] * n2[0] + diff1[1] * n2[1] + diff1[2] * n2[2];
 
       // move point away if very close to edge 2
       if (dist > -tol && dist < 0)
       {
-        //std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << std::endl;
+        // std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 ->
+        // moved inside!" << std::endl;
         poly1[i].Coord()[0] -= tol * n2[0];
         poly1[i].Coord()[1] -= tol * n2[1];
         poly1[i].Coord()[2] -= tol * n2[2];
       }
       else if (dist < tol && dist >= 0)
       {
-        //std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << std::endl;
+        // std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 ->
+        // moved outside!" << std::endl;
         poly1[i].Coord()[0] += tol * n2[0];
         poly1[i].Coord()[1] += tol * n2[1];
         poly1[i].Coord()[2] += tol * n2[2];
@@ -703,13 +663,13 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     }
   }
 
-  for (int i = 0; i < (int) poly2.size(); ++i)
+  for (int i = 0; i < (int)poly2.size(); ++i)
   {
-    for (int j = 0; j < (int) poly1.size(); ++j)
+    for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge1 first
-      double diff2[3] = { 0.0, 0.0, 0.0 };
-      double edge1[3] = { 0.0, 0.0, 0.0 };
+      double diff2[3] = {0.0, 0.0, 0.0};
+      double edge1[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff2[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
@@ -717,37 +677,35 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       }
 
       // check if point of poly2 lies within [0,1] for edge1
-      double checkalpha = diff2[0] * edge1[0] + diff2[1] * edge1[1]
-          + diff2[2] * edge1[2];
-      checkalpha /= (edge1[0] * edge1[0] + edge1[1] * edge1[1]
-          + edge1[2] * edge1[2]);
+      double checkalpha = diff2[0] * edge1[0] + diff2[1] * edge1[1] + diff2[2] * edge1[2];
+      checkalpha /= (edge1[0] * edge1[0] + edge1[1] * edge1[1] + edge1[2] * edge1[2]);
 
       // proceed only if inside [0,1] with tolerance tol
-      if (checkalpha < -tol || checkalpha > 1 + tol)
-        continue;
+      if (checkalpha < -tol || checkalpha > 1 + tol) continue;
 
       // compute distance from point on poly2 to edge1
-      double n1[3] = { 0.0, 0.0, 0.0 };
+      double n1[3] = {0.0, 0.0, 0.0};
       n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
       n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
       n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
       double ln = sqrt(n1[0] * n1[0] + n1[1] * n1[1] + n1[2] * n1[2]);
-      for (int k = 0; k < 3; ++k)
-        n1[k] /= ln;
+      for (int k = 0; k < 3; ++k) n1[k] /= ln;
 
       double dist = diff2[0] * n1[0] + diff2[1] * n1[1] + diff2[2] * n1[2];
 
       // move point away if very close to edge 2
       if (dist > -tol && dist < 0)
       {
-        //std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << std::endl;
+        // std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 ->
+        // moved inside!" << std::endl;
         poly2[i].Coord()[0] -= tol * n1[0];
         poly2[i].Coord()[1] -= tol * n1[1];
         poly2[i].Coord()[2] -= tol * n1[2];
       }
       else if (dist < tol && dist >= 0)
       {
-        //std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << std::endl;
+        // std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 ->
+        // moved outside!" << std::endl;
         poly2[i].Coord()[0] += tol * n1[0];
         poly2[i].Coord()[1] += tol * n1[1];
         poly2[i].Coord()[2] += tol * n1[2];
@@ -768,13 +726,13 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   std::vector<Vertex> intersec1;
   std::vector<Vertex> intersec2;
 
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
-    for (int j = 0; j < (int) poly2.size(); ++j)
+    for (int j = 0; j < (int)poly2.size(); ++j)
     {
       // we need two edges first
-      double edge1[3] = { 0.0, 0.0, 0.0 };
-      double edge2[3] = { 0.0, 0.0, 0.0 };
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
@@ -782,8 +740,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       }
 
       // outward edge normals of polygon 1 and 2 edges
-      double n1[3] = { 0.0, 0.0, 0.0 };
-      double n2[3] = { 0.0, 0.0, 0.0 };
+      double n1[3] = {0.0, 0.0, 0.0};
+      double n2[3] = {0.0, 0.0, 0.0};
       n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
       n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
       n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
@@ -796,14 +754,12 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       if (abs(parallel) < 1.0e-12)
       {
         if (out)
-          std::cout << "WARNING: Detected two parallel edges! (" << i << ","
-              << j << ")" << std::endl;
+          std::cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")"
+                    << std::endl;
         continue;
       }
 
-      if (out)
-        std::cout << "Searching intersection (" << i << "," << j << ")"
-            << std::endl;
+      if (out) std::cout << "Searching intersection (" << i << "," << j << ")" << std::endl;
 
       // check for intersection of non-parallel edges
       double wec_p1 = 0.0;
@@ -821,8 +777,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         for (int k = 0; k < 3; ++k)
         {
           wec_q1 += (poly2[j].Coord()[k] - poly1[i].Coord()[k]) * n1[k];
-          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k])
-              * n1[k];
+          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k]) * n1[k];
         }
 
         if (wec_q1 * wec_q2 <= 0)
@@ -833,40 +788,32 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
           std::vector<double> iq(3);
           for (int k = 0; k < 3; ++k)
           {
-            ip[k] = (1 - alphap) * poly1[i].Coord()[k]
-                + alphap * (poly1[i].Next())->Coord()[k];
-            iq[k] = (1 - alphaq) * poly2[j].Coord()[k]
-                + alphaq * (poly2[j].Next())->Coord()[k];
-            if (abs(ip[k]) < 1.0e-12)
-              ip[k] = 0.0;
-            if (abs(iq[k]) < 1.0e-12)
-              iq[k] = 0.0;
+            ip[k] = (1 - alphap) * poly1[i].Coord()[k] + alphap * (poly1[i].Next())->Coord()[k];
+            iq[k] = (1 - alphaq) * poly2[j].Coord()[k] + alphaq * (poly2[j].Next())->Coord()[k];
+            if (abs(ip[k]) < 1.0e-12) ip[k] = 0.0;
+            if (abs(iq[k]) < 1.0e-12) iq[k] = 0.0;
           }
 
           if (out)
           {
-            std::cout << "Found intersection! (" << i << "," << j << ") "
-                << alphap << " " << alphaq << std::endl;
-            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " "
-                << ip[2] << std::endl;
-            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " "
-                << iq[2] << std::endl;
+            std::cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq
+                      << std::endl;
+            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << std::endl;
+            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << std::endl;
           }
 
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           std::vector<int> lcids(4);
-          lcids[0] = (int) (poly1[i].Nodeids()[0]);
-          lcids[1] = (int) ((poly1[i].Next())->Nodeids()[0]);
-          lcids[2] = (int) (poly2[j].Nodeids()[0]);
-          lcids[3] = (int) ((poly2[j].Next())->Nodeids()[0]);
+          lcids[0] = (int)(poly1[i].Nodeids()[0]);
+          lcids[1] = (int)((poly1[i].Next())->Nodeids()[0]);
+          lcids[2] = (int)(poly2[j].Nodeids()[0]);
+          lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
 
           // store intersection points
-          intersec1.push_back(
-              Vertex(ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i],
-                  true, false, NULL, alphap));
-          intersec2.push_back(
-              Vertex(iq, Vertex::lineclip, lcids, poly2[j].Next(), &poly2[j],
-                  true, false, NULL, alphaq));
+          intersec1.push_back(Vertex(
+              ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true, false, NULL, alphap));
+          intersec2.push_back(Vertex(
+              iq, Vertex::lineclip, lcids, poly2[j].Next(), &poly2[j], true, false, NULL, alphaq));
         }
       }
     }
@@ -878,20 +825,20 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
    for (int i=0;i<(int)poly1.size();++i)
    {
    Vertex& testv = poly1[i];
-   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
-   std::cout << "Type: " << testv.VType() << std::endl;
-   std::cout << "Alpha: " << testv.Alpha() << std::endl;
-   std::cout << "Node id: " << testv.Nodeids()[0] << std::endl << std::endl;
+   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
+   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   testv.Alpha() << std::endl; std::cout << "Node id: " << testv.Nodeids()[0] << std::endl <<
+   std::endl;
    }
    // check master points
    std::cout << "\nTesting master element points" << std::endl;
    for (int i=0;i<(int)poly2.size();++i)
    {
    Vertex& testv = poly2[i];
-   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
-   std::cout << "Type: " << testv.VType() << std::endl;
-   std::cout << "Alpha: " << testv.Alpha() << std::endl;
-   std::cout << "Node id: " << testv.Nodeids()[0] << std::endl << std::endl;
+   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
+   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   testv.Alpha() << std::endl; std::cout << "Node id: " << testv.Nodeids()[0] << std::endl <<
+   std::endl;
    }
 
    // check intersection points
@@ -899,10 +846,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
    for (int i=0;i<(int)intersec1.size();++i)
    {
    Vertex& testv = intersec1[i];
-   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
-   std::cout << "Type: " << testv.VType() << std::endl;
-   std::cout << "Alpha: " << testv.Alpha() << std::endl;
-   std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
+   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
+   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   testv.Alpha() << std::endl; std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " <<
+   testv.Nodeids()[1]
    << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
    }
    // check intersection points
@@ -910,10 +857,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
    for (int i=0;i<(int)intersec2.size();++i)
    {
    Vertex& testv = intersec2[i];
-   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
-   std::cout << "Type: " << testv.VType() << std::endl;
-   std::cout << "Alpha: " << testv.Alpha() << std::endl;
-   std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
+   std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2]
+   << std::endl; std::cout << "Type: " << testv.VType() << std::endl; std::cout << "Alpha: " <<
+   testv.Alpha() << std::endl; std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " <<
+   testv.Nodeids()[1]
    << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
    }
    */
@@ -921,8 +868,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   //**********************
   // do clipping
   //**********************
-  if ((int) respoly.size() != 0)
-    dserror("ERROR: PolygonClipping: Respoly!=0 at beginning...");
+  if ((int)respoly.size() != 0) dserror("ERROR: PolygonClipping: Respoly!=0 at beginning...");
 
   //**********************************************************************
   // STEP5: Find result polygon for no intersection case
@@ -931,19 +877,17 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   // - by default the respective edge end vertices are assumed to be
   //   the next/prev vertices and connectivity is set up accordingly
   //**********************************************************************
-  if ((int) intersec1.size() == 0 && (int) intersec2.size() == 0)
+  if ((int)intersec1.size() == 0 && (int)intersec2.size() == 0)
   {
     // if they are nested the clip polygon is the inner input polygon
     bool poly1inner = true;
     bool poly2inner = true;
 
     // (A) check if poly1[0] inside poly2
-    for (int i = 0; i < (int) poly2.size(); ++i)
+    for (int i = 0; i < (int)poly2.size(); ++i)
     {
-      double edge[3] =
-      { 0.0, 0.0, 0.0 };
-      double diff[3] =
-      { 0.0, 0.0, 0.0 };
+      double edge[3] = {0.0, 0.0, 0.0};
+      double diff[3] = {0.0, 0.0, 0.0};
 
       for (int k = 0; k < 3; ++k)
       {
@@ -951,7 +895,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         diff[k] = poly1[0].Coord()[k] - poly2[i].Coord()[k];
       }
 
-      double n[3] = { 0.0, 0.0, 0.0 };
+      double n[3] = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -968,18 +912,17 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
     if (poly1inner == true)
     {
-      if (out)
-        std::cout << "Polygon S lies fully inside polygon M!" << std::endl;
+      if (out) std::cout << "Polygon S lies fully inside polygon M!" << std::endl;
       respoly = poly1;
     }
 
     else
     {
       // (A) check if poly2[0] inside poly1
-      for (int i = 0; i < (int) poly1.size(); ++i)
+      for (int i = 0; i < (int)poly1.size(); ++i)
       {
-        double edge[3] = { 0.0, 0.0, 0.0 };
-        double diff[3] = { 0.0, 0.0, 0.0 };
+        double edge[3] = {0.0, 0.0, 0.0};
+        double diff[3] = {0.0, 0.0, 0.0};
 
         for (int k = 0; k < 3; ++k)
         {
@@ -987,7 +930,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
           diff[k] = poly2[0].Coord()[k] - poly1[i].Coord()[k];
         }
 
-        double n[3] = { 0.0, 0.0, 0.0 };
+        double n[3] = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
@@ -1004,16 +947,14 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
       if (poly2inner == true)
       {
-        if (out)
-          std::cout << "Polygon M lies fully inside polygon S!" << std::endl;
+        if (out) std::cout << "Polygon M lies fully inside polygon S!" << std::endl;
         respoly = poly2;
       }
 
       // fully adjacent case
       else
       {
-        if (out)
-          std::cout << "Polygons S and M are fully adjacent!" << std::endl;
+        if (out) std::cout << "Polygons S and M are fully adjacent!" << std::endl;
         std::vector<Vertex> empty;
         respoly = empty;
       }
@@ -1021,7 +962,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   }
 
   // invalid case
-  else if ((int) intersec1.size() * (int) intersec2.size() == 0)
+  else if ((int)intersec1.size() * (int)intersec2.size() == 0)
   {
     dserror("ERROR: Found intersection points only on one input polygon...?");
   }
@@ -1041,28 +982,23 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   else
   {
     // assign neighbor intersection nodes on the respective other polygon
-    for (int i = 0; i < (int) intersec1.size(); ++i)
-      intersec1[i].AssignNeighbor(&intersec2[i]);
-    for (int i = 0; i < (int) intersec2.size(); ++i)
-      intersec2[i].AssignNeighbor(&intersec1[i]);
+    for (int i = 0; i < (int)intersec1.size(); ++i) intersec1[i].AssignNeighbor(&intersec2[i]);
+    for (int i = 0; i < (int)intersec2.size(); ++i) intersec2[i].AssignNeighbor(&intersec1[i]);
 
     // check all edges for double intersections
-    for (int i = 0; i < (int) poly1.size(); ++i)
+    for (int i = 0; i < (int)poly1.size(); ++i)
     {
       std::vector<Vertex*> dis;
-      for (int z = 0; z < (int) intersec1.size(); ++z)
+      for (int z = 0; z < (int)intersec1.size(); ++z)
       {
-        if (intersec1[z].Next() == poly1[i].Next()
-            && intersec1[z].Prev() == &poly1[i])
+        if (intersec1[z].Next() == poly1[i].Next() && intersec1[z].Prev() == &poly1[i])
         {
           dis.push_back(&intersec1[z]);
         }
       }
 
-      if ((int) dis.size() < 2)
-        continue;
-      if ((int) dis.size() > 2)
-        dserror("ERROR: More than 2 intersections on 1 edge impossible!");
+      if ((int)dis.size() < 2) continue;
+      if ((int)dis.size() > 2) dserror("ERROR: More than 2 intersections on 1 edge impossible!");
 
       double alpha1 = dis[0]->Alpha();
       double alpha2 = dis[1]->Alpha();
@@ -1085,22 +1021,19 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       }
     }
 
-    for (int i = 0; i < (int) poly2.size(); ++i)
+    for (int i = 0; i < (int)poly2.size(); ++i)
     {
       std::vector<Vertex*> dis;
-      for (int z = 0; z < (int) intersec2.size(); ++z)
+      for (int z = 0; z < (int)intersec2.size(); ++z)
       {
-        if (intersec2[z].Next() == poly2[i].Next()
-            && intersec2[z].Prev() == &poly2[i])
+        if (intersec2[z].Next() == poly2[i].Next() && intersec2[z].Prev() == &poly2[i])
         {
           dis.push_back(&intersec2[z]);
         }
       }
 
-      if ((int) dis.size() < 2)
-        continue;
-      if ((int) dis.size() > 2)
-        dserror("ERROR: More than 2 intersections on 1 edge impossible!");
+      if ((int)dis.size() < 2) continue;
+      if ((int)dis.size() > 2) dserror("ERROR: More than 2 intersections on 1 edge impossible!");
 
       double alpha1 = dis[0]->Alpha();
       double alpha2 = dis[1]->Alpha();
@@ -1124,12 +1057,12 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     }
 
     // assign new next / previous nodes for vertices near intersections
-    for (int i = 0; i < (int) intersec1.size(); ++i)
+    for (int i = 0; i < (int)intersec1.size(); ++i)
     {
       (intersec1[i].Prev())->AssignNext(&intersec1[i]);
       (intersec1[i].Next())->AssignPrev(&intersec1[i]);
     }
-    for (int i = 0; i < (int) intersec2.size(); ++i)
+    for (int i = 0; i < (int)intersec2.size(); ++i)
     {
       (intersec2[i].Prev())->AssignNext(&intersec2[i]);
       (intersec2[i].Next())->AssignPrev(&intersec2[i]);
@@ -1140,66 +1073,61 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     // point is an entry or exit point with respect to the other polygon.
     // this status is then stored into the vertex data structure.
 
-    for (int i = 0; i < (int) intersec1.size(); ++i)
+    for (int i = 0; i < (int)intersec1.size(); ++i)
     {
       // check if previous vertex is inside for first intersection
-      double edge1[3] = { 0.0, 0.0, 0.0 };
-      double edge2[3] = { 0.0, 0.0, 0.0 };
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        edge1[k] = (intersec1[i].Next())->Coord()[k]
-            - (intersec1[i].Prev())->Coord()[k];
-        edge2[k] = ((intersec1[i].Neighbor())->Next())->Coord()[k]
-            - ((intersec1[i].Neighbor())->Prev())->Coord()[k];
+        edge1[k] = (intersec1[i].Next())->Coord()[k] - (intersec1[i].Prev())->Coord()[k];
+        edge2[k] = ((intersec1[i].Neighbor())->Next())->Coord()[k] -
+                   ((intersec1[i].Neighbor())->Prev())->Coord()[k];
       }
-      double n2[3] = { 0.0, 0.0, 0.0 };
+      double n2[3] = {0.0, 0.0, 0.0};
       n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
       n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
       n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
 
       double check = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
-      if (check < 0)
-        intersec1[i].EntryExit() = true;
+      if (check < 0) intersec1[i].EntryExit() = true;
     }
 
-    for (int i = 0; i < (int) intersec1.size(); ++i)
+    for (int i = 0; i < (int)intersec1.size(); ++i)
     {
       // check if previous vertex is inside for first intersection
-      double edge1[3] = { 0.0, 0.0, 0.0 };
-      double edge2[3] = { 0.0, 0.0, 0.0 };
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        edge1[k] = (intersec2[i].Next())->Coord()[k]
-            - (intersec2[i].Prev())->Coord()[k];
-        edge2[k] = ((intersec2[i].Neighbor())->Next())->Coord()[k]
-            - ((intersec2[i].Neighbor())->Prev())->Coord()[k];
+        edge1[k] = (intersec2[i].Next())->Coord()[k] - (intersec2[i].Prev())->Coord()[k];
+        edge2[k] = ((intersec2[i].Neighbor())->Next())->Coord()[k] -
+                   ((intersec2[i].Neighbor())->Prev())->Coord()[k];
       }
-      double n2[3] =
-      { 0.0, 0.0, 0.0 };
+      double n2[3] = {0.0, 0.0, 0.0};
       n2[0] = edge2[1] * Auxn()[2] - edge2[2] * Auxn()[1];
       n2[1] = edge2[2] * Auxn()[0] - edge2[0] * Auxn()[2];
       n2[2] = edge2[0] * Auxn()[1] - edge2[1] * Auxn()[0];
 
       double check = edge1[0] * n2[0] + edge1[1] * n2[1] + edge1[2] * n2[2];
-      if (check < 0)
-        intersec2[i].EntryExit() = true;
+      if (check < 0) intersec2[i].EntryExit() = true;
     }
 
     // print intersection points and their status
     if (out)
     {
-      for (int i = 0; i < (int) intersec1.size(); ++i)
+      for (int i = 0; i < (int)intersec1.size(); ++i)
       {
         std::cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " "
-            << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
+                  << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
         std::cout << " EntryExit: " << intersec1[i].EntryExit() << std::endl;
       }
 
-      //std::cout << std::endl;
-      for (int i = 0; i < (int) intersec2.size(); ++i)
+      // std::cout << std::endl;
+      for (int i = 0; i < (int)intersec2.size(); ++i)
       {
         std::cout << "Intersec2: " << i << " " << intersec2[i].Coord()[0] << " "
-            << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
+                  << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
         std::cout << " EntryExit: " << intersec2[i].EntryExit() << std::endl;
       }
     }
@@ -1215,11 +1143,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
     // push_back start Vertex coords into result polygon
     if (out)
-      std::cout << "\nStart loop on Slave at " << current->Coord()[0] << " "
-          << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
-    respoly.push_back(
-        Vertex(current->Coord(), Vertex::lineclip, current->Nodeids(), NULL,
-            NULL, false, false, NULL, -1.0));
+      std::cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1]
+                << " " << current->Coord()[2] << std::endl;
+    respoly.push_back(Vertex(current->Coord(), Vertex::lineclip, current->Nodeids(), NULL, NULL,
+        false, false, NULL, -1.0));
 
     do
     {
@@ -1227,116 +1154,96 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       if (current->EntryExit() == true)
       {
         if (out)
-          std::cout
-              << "Intersection was Entry, so move to Next() on same polygon!"
-              << std::endl;
+          std::cout << "Intersection was Entry, so move to Next() on same polygon!" << std::endl;
         do
         {
           current = current->Next();
           if (out)
-            std::cout << "Current vertex is " << current->Coord()[0] << " "
-                << current->Coord()[1] << " " << current->Coord()[2]
-                << std::endl;
-          respoly.push_back(
-              Vertex(current->Coord(), current->VType(), current->Nodeids(),
-                  NULL, NULL, false, false, NULL, -1.0));
+            std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
+                      << " " << current->Coord()[2] << std::endl;
+          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), NULL,
+              NULL, false, false, NULL, -1.0));
         } while (current->Intersect() == false);
         if (out)
-          std::cout << "Found intersection: " << current->Coord()[0] << " "
-              << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
+          std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1]
+                    << " " << current->Coord()[2] << std::endl;
       }
       else
       {
         if (out)
-          std::cout
-              << "Intersection was Exit, so move to Prev() on same polygon!"
-              << std::endl;
+          std::cout << "Intersection was Exit, so move to Prev() on same polygon!" << std::endl;
         do
         {
           current = current->Prev();
           if (out)
-            std::cout << "Current vertex is " << current->Coord()[0] << " "
-                << current->Coord()[1] << " " << current->Coord()[2]
-                << std::endl;
-          respoly.push_back(
-              Vertex(current->Coord(), current->VType(), current->Nodeids(),
-                  NULL, NULL, false, false, NULL, -1.0));
+            std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
+                      << " " << current->Coord()[2] << std::endl;
+          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), NULL,
+              NULL, false, false, NULL, -1.0));
         } while (current->Intersect() == false);
         if (out)
-          std::cout << "Found intersection: " << current->Coord()[0] << " "
-              << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
+          std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1]
+                    << " " << current->Coord()[2] << std::endl;
       }
 
       // jump to the other input polygon
       current = current->Neighbor();
       if (out)
-        std::cout << "Jumping to other polygon at intersection: "
-            << current->Coord()[0] << " " << current->Coord()[1] << " "
-            << current->Coord()[2] << std::endl;
-      if (out)
-        std::cout << "Length of result list so far: " << (int) respoly.size()
-            << std::endl;
+        std::cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " "
+                  << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
+      if (out) std::cout << "Length of result list so far: " << (int)respoly.size() << std::endl;
 
       // check length of result polygon list
-      if ((int) respoly.size() > 8)
+      if ((int)respoly.size() > 8)
         dserror("ERROR: Length of result polygon > 8! Something went wrong!");
 
     } while (current != &intersec1[0] && current != &intersec2[0]);
 
     // check if last entry is identical to first entry
     // check on both intersection lists
-    double fldiff[3]  = { 0.0, 0.0, 0.0 };
-    double fldiff2[3] = { 0.0, 0.0, 0.0 };
+    double fldiff[3] = {0.0, 0.0, 0.0};
+    double fldiff2[3] = {0.0, 0.0, 0.0};
     bool identical = true;
     double fldist = 0.0;
     double fldist2 = 0.0;
     for (int k = 0; k < 3; ++k)
     {
-      fldiff[k] = respoly[(int) respoly.size() - 1].Coord()[k]
-          - intersec1[0].Coord()[k];
+      fldiff[k] = respoly[(int)respoly.size() - 1].Coord()[k] - intersec1[0].Coord()[k];
       fldist += fldiff[k] * fldiff[k];
-      fldiff2[k] = respoly[(int) respoly.size() - 1].Coord()[k]
-          - intersec2[0].Coord()[k];
+      fldiff2[k] = respoly[(int)respoly.size() - 1].Coord()[k] - intersec2[0].Coord()[k];
       fldist2 += fldiff2[k] * fldiff2[k];
     }
     fldist = sqrt(fldist);
-    if (fldist > 1.0e-8 && fldist2 > 1.0e-8)
-      identical = false;
+    if (fldist > 1.0e-8 && fldist2 > 1.0e-8) identical = false;
 
     // remove last entry if so, throw dserror if not so
     if (identical)
       respoly.pop_back();
     else
     {
-      std::cout << "\nDifference Dists: " << fldist << " " << fldist2
-          << std::endl;
+      std::cout << "\nDifference Dists: " << fldist << " " << fldist2 << std::endl;
       dserror("ERROR: We did not arrive at the starting point again...?");
     }
 
     // collapse respoly points that are very close
     std::vector<Vertex> collapsedrespoly;
-    for (int i = 0; i < (int) respoly.size(); ++i)
+    for (int i = 0; i < (int)respoly.size(); ++i)
     {
       // find distance between two consecutive points
       // first point of respoly
-      if (i == 0)
-        collapsedrespoly.push_back(respoly[i]);
+      if (i == 0) collapsedrespoly.push_back(respoly[i]);
 
       // last point of respoly
-      else if (i == (int) respoly.size() - 1)
+      else if (i == (int)respoly.size() - 1)
       {
-        double diff[3]  = { 0.0, 0.0, 0.0 };
-        double diff2[3] = { 0.0, 0.0, 0.0 };
+        double diff[3] = {0.0, 0.0, 0.0};
+        double diff2[3] = {0.0, 0.0, 0.0};
 
-        for (int k = 0; k < 3; ++k)
-          diff[k] = respoly[i].Coord()[k] - respoly[i - 1].Coord()[k];
-        for (int k = 0; k < 3; ++k)
-          diff2[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
+        for (int k = 0; k < 3; ++k) diff[k] = respoly[i].Coord()[k] - respoly[i - 1].Coord()[k];
+        for (int k = 0; k < 3; ++k) diff2[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
 
-        double dist = sqrt(
-            diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-        double dist2 = sqrt(
-            diff2[0] * diff2[0] + diff2[1] * diff2[1] + diff2[2] * diff2[2]);
+        double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+        double dist2 = sqrt(diff2[0] * diff2[0] + diff2[1] * diff2[1] + diff2[2] * diff2[2]);
         double tolcollapse = 1.0e6 * tol;
 
         if (abs(dist) >= tolcollapse && abs(dist2) >= tolcollapse)
@@ -1348,9 +1255,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       // standard case
       else
       {
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        for (int k = 0; k < 3; ++k)
-          diff[k] = respoly[i].Coord()[k] - respoly[i - 1].Coord()[k];
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int k = 0; k < 3; ++k) diff[k] = respoly[i].Coord()[k] - respoly[i - 1].Coord()[k];
 
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
         double tolcollapse = 1.0e6 * tol;
@@ -1364,36 +1270,31 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
     // replace respoly by collapsed respoly
     respoly = collapsedrespoly;
-    if (out)
-      std::cout << "Final length of result list: " << (int) respoly.size()
-          << std::endl;
+    if (out) std::cout << "Final length of result list: " << (int)respoly.size() << std::endl;
 
     // check if respoly collapsed to nothing
-    if ((int) collapsedrespoly.size() < 3)
+    if ((int)collapsedrespoly.size() < 3)
     {
       if (out)
-        std::cout
-            << "Collapsing of result polygon led to < 3 vertices -> no respoly!"
-            << std::endl;
+        std::cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << std::endl;
       std::vector<Vertex> empty;
       respoly = empty;
     }
 
     // check for rotation of result polygon (must be clockwise!!!)
     // first get geometric center
-    double center[3] = { 0.0, 0.0, 0.0 };
+    double center[3] = {0.0, 0.0, 0.0};
 
-    for (int i = 0; i < (int) respoly.size(); ++i)
-      for (int k = 0; k < 3; ++k)
-        center[k] += respoly[i].Coord()[k] / ((int) respoly.size());
+    for (int i = 0; i < (int)respoly.size(); ++i)
+      for (int k = 0; k < 3; ++k) center[k] += respoly[i].Coord()[k] / ((int)respoly.size());
 
     if (out)
-      std::cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " "
-          << center[2] << std::endl;
+      std::cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2]
+                << std::endl;
 
     // then we compute the clockwise plane normal
-    double diff[3] = { 0.0, 0.0, 0.0 };
-    double edge[3] = { 0.0, 0.0, 0.0 };
+    double diff[3] = {0.0, 0.0, 0.0};
+    double edge[3] = {0.0, 0.0, 0.0};
 
     for (int k = 0; k < 3; ++k)
     {
@@ -1401,15 +1302,14 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       edge[k] = respoly[1].Coord()[k] - respoly[0].Coord()[k];
     }
 
-    double cross[3] = { 0.0, 0.0, 0.0 };
+    double cross[3] = {0.0, 0.0, 0.0};
 
     cross[0] = diff[1] * edge[2] - diff[2] * edge[1];
     cross[1] = diff[2] * edge[0] - diff[0] * edge[2];
     cross[2] = diff[0] * edge[1] - diff[1] * edge[0];
 
     // check against auxiliary plane normal
-    double check = cross[0] * Auxn()[0] + cross[1] * Auxn()[1]
-        + cross[2] * Auxn()[2];
+    double check = cross[0] * Auxn()[0] + cross[1] * Auxn()[1] + cross[2] * Auxn()[2];
 
     if (check < 0)
     {
@@ -1422,49 +1322,46 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     {
       // print final input polygons to screen
       std::cout << "\nResult Poylgon:";
-      for (int i = 0; i < (int) respoly.size(); ++i)
+      for (int i = 0; i < (int)respoly.size(); ++i)
         std::cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t"
-            << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
+                  << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
       std::cout << std::endl;
     }
 
     // check if result polygon is convex
     // a polygon is convex if the scalar product of an edge normal and the
     // next edge direction is negative for all edges
-    for (int i = 0; i < (int) respoly.size(); ++i)
+    for (int i = 0; i < (int)respoly.size(); ++i)
     {
       // we need the edge vector first
-      double edge[3] = { 0.0, 0.0, 0.0 };
+      double edge[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        if (i != (int) respoly.size() - 1)
+        if (i != (int)respoly.size() - 1)
           edge[k] = respoly[i + 1].Coord()[k] - respoly[i].Coord()[k];
         else
           edge[k] = respoly[0].Coord()[k] - respoly[i].Coord()[k];
       }
       // edge normal is result of cross product
-      double n[3] = { 0.0, 0.0, 0.0 };
+      double n[3] = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
       // we need the next edge vector now
-      double nextedge[3] =
-      { 0.0, 0.0, 0.0 };
+      double nextedge[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
-        if (i < (int) respoly.size() - 2)
+        if (i < (int)respoly.size() - 2)
           nextedge[k] = respoly[i + 2].Coord()[k] - respoly[i + 1].Coord()[k];
-        else if (i == (int) respoly.size() - 2)
+        else if (i == (int)respoly.size() - 2)
           nextedge[k] = respoly[0].Coord()[k] - respoly[i + 1].Coord()[k];
         else
           nextedge[k] = respoly[1].Coord()[k] - respoly[0].Coord()[k];
       }
       // check scalar product
-      double check = n[0] * nextedge[0] + n[1] * nextedge[1]
-          + n[2] * nextedge[2];
-      if (check > 0)
-        dserror("ERROR: Result polygon not convex!");
+      double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
+      if (check > 0) dserror("ERROR: Result polygon not convex!");
     }
   }
 
@@ -1477,7 +1374,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     // **********************************************************************
     std::ostringstream filename;
     static int gmshcount = 0;
-    filename << "o/gmsh_output/" << "clipping_";
+    filename << "o/gmsh_output/"
+             << "clipping_";
     if (gmshcount < 10)
       filename << 0 << 0 << 0 << 0;
     else if (gmshcount < 100)
@@ -1495,95 +1393,88 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Clipping \" {" << std::endl;
 
-    for (int i = 0; i < (int) poly1.size(); ++i)
+    for (int i = 0; i < (int)poly1.size(); ++i)
     {
-      if (i != (int) poly1.size() - 1)
+      if (i != (int)poly1.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0]
-            << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-            << poly1[i + 1].Coord()[0] << "," << poly1[i + 1].Coord()[1] << ","
-            << poly1[i + 1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};"
-            << std::endl;
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
+                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
+                        << poly1[i + 1].Coord()[0] << "," << poly1[i + 1].Coord()[1] << ","
+                        << poly1[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0]
-            << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-            << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
-            << poly1[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};"
-            << std::endl;
-
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
+                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
+                        << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
+                        << poly1[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << ","
-          << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17
-          << ")";
-      gmshfilecontent << "{" << "S" << i << "};" << std::endl;
+                      << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{"
+                      << "S" << i << "};" << std::endl;
     }
 
-    for (int i = 0; i < (int) poly2.size(); ++i)
+    for (int i = 0; i < (int)poly2.size(); ++i)
     {
-      if (i != (int) poly2.size() - 1)
+      if (i != (int)poly2.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0]
-            << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-            << poly2[i + 1].Coord()[0] << "," << poly2[i + 1].Coord()[1] << ","
-            << poly2[i + 1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
+                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
+                        << poly2[i + 1].Coord()[0] << "," << poly2[i + 1].Coord()[1] << ","
+                        << poly2[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0]
-            << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-            << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
-            << poly2[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
-
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
+                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
+                        << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
+                        << poly2[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << ","
-          << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17
-          << ")";
-      gmshfilecontent << "{" << "M" << i << "};" << std::endl;
+                      << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{"
+                      << "M" << i << "};" << std::endl;
     }
 
-    for (int i = 0; i < (int) respoly.size(); ++i)
+    for (int i = 0; i < (int)respoly.size(); ++i)
     {
-      if (i != (int) respoly.size() - 1)
+      if (i != (int)respoly.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0]
-            << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2]
-            << "," << respoly[i + 1].Coord()[0] << ","
-            << respoly[i + 1].Coord()[1] << "," << respoly[i + 1].Coord()[2]
-            << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
+                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
+                        << respoly[i + 1].Coord()[0] << "," << respoly[i + 1].Coord()[1] << ","
+                        << respoly[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0]
-            << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2]
-            << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1]
-            << "," << respoly[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
-
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
+                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
+                        << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
+                        << respoly[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0]
-          << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
-          << 27 << ")";
-      gmshfilecontent << "{" << "R" << i << "};" << std::endl;
+      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << ","
+                      << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "{"
+                      << "R" << i << "};" << std::endl;
     }
 
     //  for (int i=0;i<(int)intersec1.size();++i)
     //  {
-    //    gmshfilecontent << "T3(" << std::scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
-    //    if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SEME" << "};" << std::endl;
-    //    else if (intersec1[i].EntryExit()==false && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << std::endl;
-    //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << std::endl;
-    //    else gmshfilecontent << "{" << "SXMX" << "};" << std::endl;
+    //    gmshfilecontent << "T3(" << std::scientific << intersec1[i].Coord()[0] << "," <<
+    //    intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")"; if
+    //    (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{"
+    //    << "SEME" << "};" << std::endl; else if (intersec1[i].EntryExit()==false &&
+    //    intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << std::endl;
+    //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false)
+    //    gmshfilecontent << "{" << "SEMX" << "};" << std::endl; else gmshfilecontent << "{" <<
+    //    "SXMX" << "};" << std::endl;
     //  }
 
     gmshfilecontent << "};" << std::endl;
@@ -1615,36 +1506,32 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   //**********************************************************************
 
   // check input variables
-  if ((int) poly1.size() < 3 || (int) poly2.size() < 3)
+  if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
     dserror("ERROR: Input Polygons must consist of min. 3 vertices each");
 
   // check for rotation of polygon1 (slave) and polgon 2 (master)
   // note that we implicitly already rely on convexity here!
   // first get geometric centers of polygon1 and polygon2
-  double center1[3] = { 0.0, 0.0, 0.0 };
-  double center2[3] = { 0.0, 0.0, 0.0 };
+  double center1[3] = {0.0, 0.0, 0.0};
+  double center2[3] = {0.0, 0.0, 0.0};
 
-  for (int i = 0; i < (int) poly1.size(); ++i)
-    for (int k = 0; k < 3; ++k)
-      center1[k] += poly1[i].Coord()[k] / ((int) poly1.size());
+  for (int i = 0; i < (int)poly1.size(); ++i)
+    for (int k = 0; k < 3; ++k) center1[k] += poly1[i].Coord()[k] / ((int)poly1.size());
 
-  for (int i = 0; i < (int) poly2.size(); ++i)
-    for (int k = 0; k < 3; ++k)
-      center2[k] += poly2[i].Coord()[k] / ((int) poly2.size());
+  for (int i = 0; i < (int)poly2.size(); ++i)
+    for (int k = 0; k < 3; ++k) center2[k] += poly2[i].Coord()[k] / ((int)poly2.size());
 
   if (out)
   {
-    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " "
-        << center1[2] << std::endl;
-    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " "
-        << center2[2] << std::endl;
+    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << std::endl;
+    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << std::endl;
   }
 
   // then we compute the counter-clockwise plane normal
-  double diff1[3] = { 0.0, 0.0, 0.0 };
-  double edge1[3] = { 0.0, 0.0, 0.0 };
-  double diff2[3] = { 0.0, 0.0, 0.0 };
-  double edge2[3] = { 0.0, 0.0, 0.0 };
+  double diff1[3] = {0.0, 0.0, 0.0};
+  double edge1[3] = {0.0, 0.0, 0.0};
+  double diff2[3] = {0.0, 0.0, 0.0};
+  double edge2[3] = {0.0, 0.0, 0.0};
 
   for (int k = 0; k < 3; ++k)
   {
@@ -1654,8 +1541,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     edge2[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
   }
 
-  double cross1[3] = { 0.0, 0.0, 0.0 };
-  double cross2[3] = { 0.0, 0.0, 0.0 };
+  double cross1[3] = {0.0, 0.0, 0.0};
+  double cross2[3] = {0.0, 0.0, 0.0};
 
   cross1[0] = diff1[1] * edge1[2] - diff1[2] * edge1[1];
   cross1[1] = diff1[2] * edge1[0] - diff1[0] * edge1[2];
@@ -1666,10 +1553,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   cross2[2] = diff2[0] * edge2[1] - diff2[1] * edge2[0];
 
   // check against auxiliary plane normal
-  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1]
-      + cross1[2] * Auxn()[2];
-  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1]
-      + cross2[2] * Auxn()[2];
+  double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1] + cross1[2] * Auxn()[2];
+  double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1] + cross2[2] * Auxn()[2];
 
   // check polygon 1 and throw dserror if not c-clockwise
   if (check1 <= 0)
@@ -1682,40 +1567,38 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (check2 < 0)
   {
     if (out)
-      std::cout
-          << "Polygon 2 (master) not ordered counter-clockwise -> reordered!"
-          << std::endl;
+      std::cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << std::endl;
     std::reverse(poly2.begin(), poly2.end());
   }
 
   // check if the two input polygons are convex
   // a polygon is convex if the scalar product of an edge normal and the
   // next edge direction is negative for all edges
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
     // we need the edge vector first
-    double edge[3] = { 0.0, 0.0, 0.0 };
+    double edge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i != (int) poly1.size() - 1)
+      if (i != (int)poly1.size() - 1)
         edge[k] = poly1[i + 1].Coord()[k] - poly1[i].Coord()[k];
       else
         edge[k] = poly1[0].Coord()[k] - poly1[i].Coord()[k];
     }
 
     // edge normal is result of cross product
-    double n[3] = { 0.0, 0.0, 0.0 };
+    double n[3] = {0.0, 0.0, 0.0};
     n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
     n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
     n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
     // we need the next edge vector now
-    double nextedge[3] = { 0.0, 0.0, 0.0 };
+    double nextedge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i < (int) poly1.size() - 2)
+      if (i < (int)poly1.size() - 2)
         nextedge[k] = poly1[i + 2].Coord()[k] - poly1[i + 1].Coord()[k];
-      else if (i == (int) poly1.size() - 2)
+      else if (i == (int)poly1.size() - 2)
         nextedge[k] = poly1[0].Coord()[k] - poly1[i + 1].Coord()[k];
       else
         nextedge[k] = poly1[1].Coord()[k] - poly1[0].Coord()[k];
@@ -1730,31 +1613,31 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
   }
 
-  for (int i = 0; i < (int) poly2.size(); ++i)
+  for (int i = 0; i < (int)poly2.size(); ++i)
   {
     // we need the edge vector first
-    double edge[3] = { 0.0, 0.0, 0.0 };
+    double edge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i != (int) poly2.size() - 1)
+      if (i != (int)poly2.size() - 1)
         edge[k] = poly2[i + 1].Coord()[k] - poly2[i].Coord()[k];
       else
         edge[k] = poly2[0].Coord()[k] - poly2[i].Coord()[k];
     }
 
     // edge normal is result of cross product
-    double n[3] = { 0.0, 0.0, 0.0 };
+    double n[3] = {0.0, 0.0, 0.0};
     n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
     n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
     n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
 
     // we need the next edge vector now
-    double nextedge[3] = { 0.0, 0.0, 0.0 };
+    double nextedge[3] = {0.0, 0.0, 0.0};
     for (int k = 0; k < 3; ++k)
     {
-      if (i < (int) poly2.size() - 2)
+      if (i < (int)poly2.size() - 2)
         nextedge[k] = poly2[i + 2].Coord()[k] - poly2[i + 1].Coord()[k];
-      else if (i == (int) poly2.size() - 2)
+      else if (i == (int)poly2.size() - 2)
         nextedge[k] = poly2[0].Coord()[k] - poly2[i + 1].Coord()[k];
       else
         nextedge[k] = poly2[1].Coord()[k] - poly2[0].Coord()[k];
@@ -1774,15 +1657,16 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       if (nearcheck)
       {
         return false;
-        std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: "
-            << sid << "/" << mid << ")" << std::endl;
+        std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: " << sid << "/" << mid
+                  << ")" << std::endl;
       }
 
       if (nearcheck && out)
       {
         std::ostringstream filename;
         static int problemcount = 0;
-        filename << "o/gmsh_output/" << "problem_";
+        filename << "o/gmsh_output/"
+                 << "problem_";
         if (problemcount < 10)
           filename << 0 << 0 << 0 << 0;
         else if (problemcount < 100)
@@ -1792,10 +1676,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         else if (problemcount < 10000)
           filename << 0;
         else if (problemcount < 100000)
-          {;}
+        {
+          ;
+        }
         else
-          dserror(
-              "Gmsh output implemented for a maximum of 9.999 problem polygons");
+          dserror("Gmsh output implemented for a maximum of 9.999 problem polygons");
         filename << problemcount << "_" << sid << "_" << mid << ".pos";
         problemcount++;
 
@@ -1803,77 +1688,69 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         FILE* fp = NULL;
         fp = fopen(filename.str().c_str(), "w");
         std::stringstream gmshfilecontent;
-        gmshfilecontent << "View \" ProblemClipping S" << sid << "/M" << mid
-            << " \" {" << std::endl;
+        gmshfilecontent << "View \" ProblemClipping S" << sid << "/M" << mid << " \" {"
+                        << std::endl;
 
         // get slave and master nodes
         int nsnodes = SlaveIntElement().NumNode();
         DRT::Node** mysnodes = SlaveIntElement().Nodes();
-        if (!mysnodes)
-          dserror("ERROR: Null pointer!");
+        if (!mysnodes) dserror("ERROR: Null pointer!");
         std::vector<MortarNode*> mycsnodes(nsnodes);
-        for (int i = 0; i < nsnodes; ++i)
-          mycsnodes[i] = dynamic_cast<MortarNode*>(mysnodes[i]);
+        for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<MortarNode*>(mysnodes[i]);
         int nmnodes = MasterIntElement().NumNode();
         DRT::Node** mymnodes = MasterIntElement().Nodes();
-        if (!mymnodes)
-          dserror("ERROR: Null pointer!");
+        if (!mymnodes) dserror("ERROR: Null pointer!");
         std::vector<MortarNode*> mycmnodes(nmnodes);
-        for (int i = 0; i < nmnodes; ++i)
-          mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
+        for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
 
         // get node coordinates
         LINALG::SerialDenseMatrix scoord(3, nsnodes);
         SlaveIntElement().GetNodalCoords(scoord);
-        double scolor = (double) SlaveIntElement().Owner();
+        double scolor = (double)SlaveIntElement().Owner();
         LINALG::SerialDenseMatrix mcoord(3, nmnodes);
         MasterIntElement().GetNodalCoords(mcoord);
-        double mcolor = (double) MasterIntElement().Owner();
+        double mcolor = (double)MasterIntElement().Owner();
 
         // plot elements
         // 3D linear case (3noded triangular elements)
         if (SlaveIntElement().Shape() == DRT::Element::tri3)
         {
-          gmshfilecontent << "ST(" << std::scientific << scoord(0, 0) << ","
-              << scoord(1, 0) << "," << scoord(2, 0) << "," << scoord(0, 1)
-              << "," << scoord(1, 1) << "," << scoord(2, 1) << ","
-              << scoord(0, 2) << "," << scoord(1, 2) << "," << scoord(2, 2)
-              << ")";
-          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor
-              << "," << scolor << "};" << std::endl;
+          gmshfilecontent << "ST(" << std::scientific << scoord(0, 0) << "," << scoord(1, 0) << ","
+                          << scoord(2, 0) << "," << scoord(0, 1) << "," << scoord(1, 1) << ","
+                          << scoord(2, 1) << "," << scoord(0, 2) << "," << scoord(1, 2) << ","
+                          << scoord(2, 2) << ")";
+          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor
+                          << "};" << std::endl;
         }
         else if (SlaveIntElement().Shape() == DRT::Element::quad4)
         {
-          gmshfilecontent << "SQ(" << std::scientific << scoord(0, 0) << ","
-              << scoord(1, 0) << "," << scoord(2, 0) << "," << scoord(0, 1)
-              << "," << scoord(1, 1) << "," << scoord(2, 1) << ","
-              << scoord(0, 2) << "," << scoord(1, 2) << "," << scoord(2, 2)
-              << "," << scoord(0, 3) << "," << scoord(1, 3) << ","
-              << scoord(2, 3) << ")";
-          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor
-              << "," << scolor << "," << scolor << "};" << std::endl;
+          gmshfilecontent << "SQ(" << std::scientific << scoord(0, 0) << "," << scoord(1, 0) << ","
+                          << scoord(2, 0) << "," << scoord(0, 1) << "," << scoord(1, 1) << ","
+                          << scoord(2, 1) << "," << scoord(0, 2) << "," << scoord(1, 2) << ","
+                          << scoord(2, 2) << "," << scoord(0, 3) << "," << scoord(1, 3) << ","
+                          << scoord(2, 3) << ")";
+          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor
+                          << "," << scolor << "};" << std::endl;
         }
 
         if (MasterIntElement().Shape() == DRT::Element::tri3)
         {
-          gmshfilecontent << "ST(" << std::scientific << mcoord(0, 0) << ","
-              << mcoord(1, 0) << "," << mcoord(2, 0) << "," << mcoord(0, 1)
-              << "," << mcoord(1, 1) << "," << mcoord(2, 1) << ","
-              << mcoord(0, 2) << "," << mcoord(1, 2) << "," << mcoord(2, 2)
-              << ")";
-          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor
-              << "," << mcolor << "};" << std::endl;
+          gmshfilecontent << "ST(" << std::scientific << mcoord(0, 0) << "," << mcoord(1, 0) << ","
+                          << mcoord(2, 0) << "," << mcoord(0, 1) << "," << mcoord(1, 1) << ","
+                          << mcoord(2, 1) << "," << mcoord(0, 2) << "," << mcoord(1, 2) << ","
+                          << mcoord(2, 2) << ")";
+          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor
+                          << "};" << std::endl;
         }
         else if (MasterIntElement().Shape() == DRT::Element::quad4)
         {
-          gmshfilecontent << "SQ(" << std::scientific << mcoord(0, 0) << ","
-              << mcoord(1, 0) << "," << mcoord(2, 0) << "," << mcoord(0, 1)
-              << "," << mcoord(1, 1) << "," << mcoord(2, 1) << ","
-              << mcoord(0, 2) << "," << mcoord(1, 2) << "," << mcoord(2, 2)
-              << "," << mcoord(0, 3) << "," << mcoord(1, 3) << ","
-              << mcoord(2, 3) << ")";
-          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor
-              << "," << mcolor << "," << mcolor << "};" << std::endl;
+          gmshfilecontent << "SQ(" << std::scientific << mcoord(0, 0) << "," << mcoord(1, 0) << ","
+                          << mcoord(2, 0) << "," << mcoord(0, 1) << "," << mcoord(1, 1) << ","
+                          << mcoord(2, 1) << "," << mcoord(0, 2) << "," << mcoord(1, 2) << ","
+                          << mcoord(2, 2) << "," << mcoord(0, 3) << "," << mcoord(1, 3) << ","
+                          << mcoord(2, 3) << ")";
+          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor
+                          << "," << mcolor << "};" << std::endl;
         }
 
         // plot edges
@@ -1881,68 +1758,54 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         {
           if (i != nsnodes - 1)
           {
-            gmshfilecontent << "SL(" << std::scientific
-                << mycsnodes[i]->xspatial()[0] << ","
-                << mycsnodes[i]->xspatial()[1] << ","
-                << mycsnodes[i]->xspatial()[2] << ","
-                << mycsnodes[i + 1]->xspatial()[0] << ","
-                << mycsnodes[i + 1]->xspatial()[1] << ","
-                << mycsnodes[i + 1]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0
-                << "};" << std::endl;
+            gmshfilecontent << "SL(" << std::scientific << mycsnodes[i]->xspatial()[0] << ","
+                            << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2]
+                            << "," << mycsnodes[i + 1]->xspatial()[0] << ","
+                            << mycsnodes[i + 1]->xspatial()[1] << ","
+                            << mycsnodes[i + 1]->xspatial()[2] << ")";
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
           }
           else
           {
-            gmshfilecontent << "SL(" << std::scientific
-                << mycsnodes[i]->xspatial()[0] << ","
-                << mycsnodes[i]->xspatial()[1] << ","
-                << mycsnodes[i]->xspatial()[2] << ","
-                << mycsnodes[0]->xspatial()[0] << ","
-                << mycsnodes[0]->xspatial()[1] << ","
-                << mycsnodes[0]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0
-                << "};" << std::endl;
-
+            gmshfilecontent << "SL(" << std::scientific << mycsnodes[i]->xspatial()[0] << ","
+                            << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2]
+                            << "," << mycsnodes[0]->xspatial()[0] << ","
+                            << mycsnodes[0]->xspatial()[1] << "," << mycsnodes[0]->xspatial()[2]
+                            << ")";
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
           }
-          gmshfilecontent << "T3(" << std::scientific
-              << mycsnodes[i]->xspatial()[0] << ","
-              << mycsnodes[i]->xspatial()[1] << ","
-              << mycsnodes[i]->xspatial()[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "S" << i << "};" << std::endl;
+          gmshfilecontent << "T3(" << std::scientific << mycsnodes[i]->xspatial()[0] << ","
+                          << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2]
+                          << "," << 17 << ")";
+          gmshfilecontent << "{"
+                          << "S" << i << "};" << std::endl;
         }
 
         for (int i = 0; i < nmnodes; ++i)
         {
           if (i != nmnodes - 1)
           {
-            gmshfilecontent << "SL(" << std::scientific
-                << mycmnodes[i]->xspatial()[0] << ","
-                << mycmnodes[i]->xspatial()[1] << ","
-                << mycmnodes[i]->xspatial()[2] << ","
-                << mycmnodes[i + 1]->xspatial()[0] << ","
-                << mycmnodes[i + 1]->xspatial()[1] << ","
-                << mycmnodes[i + 1]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0
-                << "};" << std::endl;
+            gmshfilecontent << "SL(" << std::scientific << mycmnodes[i]->xspatial()[0] << ","
+                            << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2]
+                            << "," << mycmnodes[i + 1]->xspatial()[0] << ","
+                            << mycmnodes[i + 1]->xspatial()[1] << ","
+                            << mycmnodes[i + 1]->xspatial()[2] << ")";
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
           }
           else
           {
-            gmshfilecontent << "SL(" << std::scientific
-                << mycmnodes[i]->xspatial()[0] << ","
-                << mycmnodes[i]->xspatial()[1] << ","
-                << mycmnodes[i]->xspatial()[2] << ","
-                << mycmnodes[0]->xspatial()[0] << ","
-                << mycmnodes[0]->xspatial()[1] << ","
-                << mycmnodes[0]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0
-                << "};" << std::endl;
-
+            gmshfilecontent << "SL(" << std::scientific << mycmnodes[i]->xspatial()[0] << ","
+                            << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2]
+                            << "," << mycmnodes[0]->xspatial()[0] << ","
+                            << mycmnodes[0]->xspatial()[1] << "," << mycmnodes[0]->xspatial()[2]
+                            << ")";
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
           }
-          gmshfilecontent << "T3(" << std::scientific
-              << mycmnodes[i]->xspatial()[0] << ","
-              << mycmnodes[i]->xspatial()[1] << ","
-              << mycmnodes[i]->xspatial()[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "M" << i << "};" << std::endl;
+          gmshfilecontent << "T3(" << std::scientific << mycmnodes[i]->xspatial()[0] << ","
+                          << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2]
+                          << "," << 17 << ")";
+          gmshfilecontent << "{"
+                          << "M" << i << "};" << std::endl;
         }
 
         gmshfilecontent << "};" << std::endl;
@@ -1960,16 +1823,14 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (out)
   {
     std::cout << "\nInput Poylgon 1:";
-    for (int i = 0; i < (int) poly1.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific
-          << poly1[i].Coord()[0] << "\t" << poly1[i].Coord()[1] << "\t"
-          << poly1[i].Coord()[2];
+    for (int i = 0; i < (int)poly1.size(); ++i)
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly1[i].Coord()[0] << "\t"
+                << poly1[i].Coord()[1] << "\t" << poly1[i].Coord()[2];
 
     std::cout << "\nInput Poylgon 2:";
-    for (int i = 0; i < (int) poly2.size(); ++i)
-      std::cout << "\nVertex " << i << ":\t" << std::scientific
-          << poly2[i].Coord()[0] << "\t" << poly2[i].Coord()[1] << "\t"
-          << poly2[i].Coord()[2];
+    for (int i = 0; i < (int)poly2.size(); ++i)
+      std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0] << "\t"
+                << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
 
     std::cout << std::endl << std::endl;
   }
@@ -1981,10 +1842,10 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   //**********************************************************************
 
   // set previous and next Vertex pointer for all elements in lists
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
     // standard case
-    if (i != 0 && i != (int) poly1.size() - 1)
+    if (i != 0 && i != (int)poly1.size() - 1)
     {
       poly1[i].AssignNext(&poly1[i + 1]);
       poly1[i].AssignPrev(&poly1[i - 1]);
@@ -1993,7 +1854,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     else if (i == 0)
     {
       poly1[i].AssignNext(&poly1[i + 1]);
-      poly1[i].AssignPrev(&poly1[(int) poly1.size() - 1]);
+      poly1[i].AssignPrev(&poly1[(int)poly1.size() - 1]);
     }
     // last element in list
     else
@@ -2002,10 +1863,10 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       poly1[i].AssignPrev(&poly1[i - 1]);
     }
   }
-  for (int i = 0; i < (int) poly2.size(); ++i)
+  for (int i = 0; i < (int)poly2.size(); ++i)
   {
     // standard case
-    if (i != 0 && i != (int) poly2.size() - 1)
+    if (i != 0 && i != (int)poly2.size() - 1)
     {
       poly2[i].AssignNext(&poly2[i + 1]);
       poly2[i].AssignPrev(&poly2[i - 1]);
@@ -2014,7 +1875,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     else if (i == 0)
     {
       poly2[i].AssignNext(&poly2[i + 1]);
-      poly2[i].AssignPrev(&poly2[(int) poly2.size() - 1]);
+      poly2[i].AssignPrev(&poly2[(int)poly2.size() - 1]);
     }
     // last element in list
     else
@@ -2032,13 +1893,13 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   //**********************************************************************
   std::vector<Vertex> intersec;
 
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
-    for (int j = 0; j < (int) poly2.size(); ++j)
+    for (int j = 0; j < (int)poly2.size(); ++j)
     {
       // we need two edges first
-      double edge1[3] = { 0.0, 0.0, 0.0 };
-      double edge2[3] = { 0.0, 0.0, 0.0 };
+      double edge1[3] = {0.0, 0.0, 0.0};
+      double edge2[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         edge1[k] = (poly1[i].Next())->Coord()[k] - poly1[i].Coord()[k];
@@ -2046,8 +1907,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       }
 
       // outward edge normals of polygon 1 and 2 edges
-      double n1[3] = { 0.0, 0.0, 0.0 };
-      double n2[3] = { 0.0, 0.0, 0.0 };
+      double n1[3] = {0.0, 0.0, 0.0};
+      double n2[3] = {0.0, 0.0, 0.0};
       n1[0] = edge1[1] * Auxn()[2] - edge1[2] * Auxn()[1];
       n1[1] = edge1[2] * Auxn()[0] - edge1[0] * Auxn()[2];
       n1[2] = edge1[0] * Auxn()[1] - edge1[1] * Auxn()[0];
@@ -2060,14 +1921,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       if (abs(parallel) < tol)
       {
         if (out)
-          std::cout << "WARNING: Detected two parallel edges! (" << i << ","
-              << j << ")" << std::endl;
+          std::cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")"
+                    << std::endl;
         continue;
       }
 
-      if (out)
-        std::cout << "Searching intersection (" << i << "," << j << ")"
-            << std::endl;
+      if (out) std::cout << "Searching intersection (" << i << "," << j << ")" << std::endl;
 
       // check for intersection of non-parallel edges
       double wec_p1 = 0.0;
@@ -2085,8 +1944,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         for (int k = 0; k < 3; ++k)
         {
           wec_q1 += (poly2[j].Coord()[k] - poly1[i].Coord()[k]) * n1[k];
-          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k])
-              * n1[k];
+          wec_q2 += ((poly2[j].Next())->Coord()[k] - poly1[i].Coord()[k]) * n1[k];
         }
 
         if (wec_q1 * wec_q2 <= 0)
@@ -2097,37 +1955,30 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           std::vector<double> iq(3);
           for (int k = 0; k < 3; ++k)
           {
-            ip[k] = (1 - alphap) * poly1[i].Coord()[k]
-                + alphap * (poly1[i].Next())->Coord()[k];
-            iq[k] = (1 - alphaq) * poly2[j].Coord()[k]
-                + alphaq * (poly2[j].Next())->Coord()[k];
-            if (abs(ip[k]) < tol)
-              ip[k] = 0.0;
-            if (abs(iq[k]) < tol)
-              iq[k] = 0.0;
+            ip[k] = (1 - alphap) * poly1[i].Coord()[k] + alphap * (poly1[i].Next())->Coord()[k];
+            iq[k] = (1 - alphaq) * poly2[j].Coord()[k] + alphaq * (poly2[j].Next())->Coord()[k];
+            if (abs(ip[k]) < tol) ip[k] = 0.0;
+            if (abs(iq[k]) < tol) iq[k] = 0.0;
           }
 
           if (out)
           {
-            std::cout << "Found intersection! (" << i << "," << j << ") "
-                << alphap << " " << alphaq << std::endl;
-            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " "
-                << ip[2] << std::endl;
-            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " "
-                << iq[2] << std::endl;
+            std::cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq
+                      << std::endl;
+            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << std::endl;
+            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << std::endl;
           }
 
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
           std::vector<int> lcids(4);
-          lcids[0] = (int) (poly1[i].Nodeids()[0]);
-          lcids[1] = (int) ((poly1[i].Next())->Nodeids()[0]);
-          lcids[2] = (int) (poly2[j].Nodeids()[0]);
-          lcids[3] = (int) ((poly2[j].Next())->Nodeids()[0]);
+          lcids[0] = (int)(poly1[i].Nodeids()[0]);
+          lcids[1] = (int)((poly1[i].Next())->Nodeids()[0]);
+          lcids[2] = (int)(poly2[j].Nodeids()[0]);
+          lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
 
           // store intersection points
-          intersec.push_back(
-              Vertex(ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i],
-                  true, false, NULL, alphap));
+          intersec.push_back(Vertex(
+              ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true, false, NULL, alphap));
         }
       }
     }
@@ -2137,16 +1988,16 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   {
     // check intersection points
     std::cout << "\nTesting intersection points" << std::endl;
-    for (int i = 0; i < (int) intersec.size(); ++i)
+    for (int i = 0; i < (int)intersec.size(); ++i)
     {
       Vertex& testv = intersec[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1]
-          << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
+                << testv.Coord()[2] << std::endl;
       std::cout << "Type: " << testv.VType() << std::endl;
       std::cout << "Alpha: " << testv.Alpha() << std::endl;
-      std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " "
-          << testv.Nodeids()[1] << " " << testv.Nodeids()[2] << " "
-          << testv.Nodeids()[3] << std::endl << std::endl;
+      std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1] << " "
+                << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl
+                << std::endl;
     }
   }
 
@@ -2157,18 +2008,17 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   //**********************************************************************
   std::vector<Vertex> collintersec;
 
-  for (int i = 0; i < (int) intersec.size(); ++i)
+  for (int i = 0; i < (int)intersec.size(); ++i)
   {
     // keep track of comparisons
     bool close = false;
 
     // check against all poly1 (slave) points
-    for (int j = 0; j < (int) poly1.size(); ++j)
+    for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // distance vector
-      double diff[3] = { 0.0, 0.0, 0.0 };
-      for (int k = 0; k < 3; ++k)
-        diff[k] = intersec[i].Coord()[k] - poly1[j].Coord()[k];
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k = 0; k < 3; ++k) diff[k] = intersec[i].Coord()[k] - poly1[j].Coord()[k];
       double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
       // only keep intersection point if not close
@@ -2183,12 +2033,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (!close)
     {
       // check against all poly2 (master) points
-      for (int j = 0; j < (int) poly2.size(); ++j)
+      for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // distance vector
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        for (int k = 0; k < 3; ++k)
-          diff[k] = intersec[i].Coord()[k] - poly2[j].Coord()[k];
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int k = 0; k < 3; ++k) diff[k] = intersec[i].Coord()[k] - poly2[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
         // only keep intersection point if not close
@@ -2201,24 +2050,23 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // keep intersection point only if not close to any poly1/poly2 point
-    if (!close)
-      collintersec.push_back(intersec[i]);
+    if (!close) collintersec.push_back(intersec[i]);
   }
 
   if (out)
   {
     // check collapsed intersection points
     std::cout << "\nTesting collapsed intersection points" << std::endl;
-    for (int i = 0; i < (int) collintersec.size(); ++i)
+    for (int i = 0; i < (int)collintersec.size(); ++i)
     {
       Vertex& testv = collintersec[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1]
-          << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
+                << testv.Coord()[2] << std::endl;
       std::cout << "Type: " << testv.VType() << std::endl;
       std::cout << "Alpha: " << testv.Alpha() << std::endl;
-      std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " "
-          << testv.Nodeids()[1] << " " << testv.Nodeids()[2] << " "
-          << testv.Nodeids()[3] << std::endl << std::endl;
+      std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1] << " "
+                << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl
+                << std::endl;
     }
   }
 
@@ -2233,17 +2081,17 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   std::vector<Vertex> convexhull;
 
   //----------------------------------------------------check poly1 points
-  for (int i = 0; i < (int) poly1.size(); ++i)
+  for (int i = 0; i < (int)poly1.size(); ++i)
   {
     // keep track of inside / outside status
     bool outside = false;
 
     // check against all poly1 (slave) edges
-    for (int j = 0; j < (int) poly1.size(); ++j)
+    for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff[3] = { 0.0, 0.0, 0.0 };
-      double edge[3] = { 0.0, 0.0, 0.0 };
+      double diff[3] = {0.0, 0.0, 0.0};
+      double edge[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff[k] = poly1[i].Coord()[k] - poly1[j].Coord()[k];
@@ -2251,13 +2099,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       }
 
       // compute distance from point on poly1 to edge
-      double n[3] = { 0.0, 0.0, 0.0 };
+      double n[3] = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-      for (int k = 0; k < 3; ++k)
-        n[k] /= ln;
+      for (int k = 0; k < 3; ++k) n[k] /= ln;
 
       double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -2273,11 +2120,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (!outside)
     {
       // check against all poly2 (master) edges
-      for (int j = 0; j < (int) poly2.size(); ++j)
+      for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        double edge[3] = { 0.0, 0.0, 0.0 };
+        double diff[3] = {0.0, 0.0, 0.0};
+        double edge[3] = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
           diff[k] = poly1[i].Coord()[k] - poly2[j].Coord()[k];
@@ -2285,13 +2132,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         }
 
         // compute distance from point on poly1 to edge
-        double n[3] = { 0.0, 0.0, 0.0 };
+        double n[3] = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-        for (int k = 0; k < 3; ++k)
-          n[k] /= ln;
+        for (int k = 0; k < 3; ++k) n[k] /= ln;
 
         double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -2305,22 +2151,21 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // only keep point if never in outside halfspace
-    if (!outside)
-      convexhull.push_back(poly1[i]);
+    if (!outside) convexhull.push_back(poly1[i]);
   }
 
   //----------------------------------------------------check poly2 points
-  for (int i = 0; i < (int) poly2.size(); ++i)
+  for (int i = 0; i < (int)poly2.size(); ++i)
   {
     // keep track of inside / outside status
     bool outside = false;
 
     // check against all poly1 (slave) edges
-    for (int j = 0; j < (int) poly1.size(); ++j)
+    for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff[3] = { 0.0, 0.0, 0.0 };
-      double edge[3] = { 0.0, 0.0, 0.0 };
+      double diff[3] = {0.0, 0.0, 0.0};
+      double edge[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff[k] = poly2[i].Coord()[k] - poly1[j].Coord()[k];
@@ -2328,13 +2173,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       }
 
       // compute distance from point on poly1 to edge
-      double n[3] = { 0.0, 0.0, 0.0 };
+      double n[3] = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-      for (int k = 0; k < 3; ++k)
-        n[k] /= ln;
+      for (int k = 0; k < 3; ++k) n[k] /= ln;
 
       double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -2350,11 +2194,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (!outside)
     {
       // check against all poly2 (master) edges
-      for (int j = 0; j < (int) poly2.size(); ++j)
+      for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        double edge[3] = { 0.0, 0.0, 0.0 };
+        double diff[3] = {0.0, 0.0, 0.0};
+        double edge[3] = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
           diff[k] = poly2[i].Coord()[k] - poly2[j].Coord()[k];
@@ -2362,13 +2206,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         }
 
         // compute distance from point on poly1 to edge
-        double n[3] = { 0.0, 0.0, 0.0 };
+        double n[3] = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-        for (int k = 0; k < 3; ++k)
-          n[k] /= ln;
+        for (int k = 0; k < 3; ++k) n[k] /= ln;
 
         double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -2382,22 +2225,21 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // only keep point if never in outside halfspace
-    if (!outside)
-      convexhull.push_back(poly2[i]);
+    if (!outside) convexhull.push_back(poly2[i]);
   }
 
   //---------------------------------------------check collintersec points
-  for (int i = 0; i < (int) collintersec.size(); ++i)
+  for (int i = 0; i < (int)collintersec.size(); ++i)
   {
     // keep track of inside / outside status
     bool outside = false;
 
     // check against all poly1 (slave) edges
-    for (int j = 0; j < (int) poly1.size(); ++j)
+    for (int j = 0; j < (int)poly1.size(); ++j)
     {
       // we need diff vector and edge2 first
-      double diff[3] = { 0.0, 0.0, 0.0 };
-      double edge[3] = { 0.0, 0.0, 0.0 };
+      double diff[3] = {0.0, 0.0, 0.0};
+      double edge[3] = {0.0, 0.0, 0.0};
       for (int k = 0; k < 3; ++k)
       {
         diff[k] = collintersec[i].Coord()[k] - poly1[j].Coord()[k];
@@ -2405,13 +2247,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       }
 
       // compute distance from point on poly1 to edge
-      double n[3] = { 0.0, 0.0, 0.0 };
+      double n[3] = {0.0, 0.0, 0.0};
       n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
       n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
       n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
       double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-      for (int k = 0; k < 3; ++k)
-        n[k] /= ln;
+      for (int k = 0; k < 3; ++k) n[k] /= ln;
 
       double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -2427,11 +2268,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (!outside)
     {
       // check against all poly2 (master) edges
-      for (int j = 0; j < (int) poly2.size(); ++j)
+      for (int j = 0; j < (int)poly2.size(); ++j)
       {
         // we need diff vector and edge2 first
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        double edge[3] = { 0.0, 0.0, 0.0 };
+        double diff[3] = {0.0, 0.0, 0.0};
+        double edge[3] = {0.0, 0.0, 0.0};
         for (int k = 0; k < 3; ++k)
         {
           diff[k] = collintersec[i].Coord()[k] - poly2[j].Coord()[k];
@@ -2439,13 +2280,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         }
 
         // compute distance from point on poly1 to edge
-        double n[3] = { 0.0, 0.0, 0.0 };
+        double n[3] = {0.0, 0.0, 0.0};
         n[0] = edge[1] * Auxn()[2] - edge[2] * Auxn()[1];
         n[1] = edge[2] * Auxn()[0] - edge[0] * Auxn()[2];
         n[2] = edge[0] * Auxn()[1] - edge[1] * Auxn()[0];
         double ln = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-        for (int k = 0; k < 3; ++k)
-          n[k] /= ln;
+        for (int k = 0; k < 3; ++k) n[k] /= ln;
 
         double dist = diff[0] * n[0] + diff[1] * n[1] + diff[2] * n[2];
 
@@ -2459,19 +2299,18 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // only keep point if never in outside halfspace
-    if (!outside)
-      convexhull.push_back(collintersec[i]);
+    if (!outside) convexhull.push_back(collintersec[i]);
   }
 
   if (out)
   {
     // check convex hull points
     std::cout << "\nTesting convex hull points" << std::endl;
-    for (int i = 0; i < (int) convexhull.size(); ++i)
+    for (int i = 0; i < (int)convexhull.size(); ++i)
     {
       Vertex& testv = convexhull[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1]
-          << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
+                << testv.Coord()[2] << std::endl;
       std::cout << "Type: " << testv.VType() << std::endl;
     }
   }
@@ -2486,7 +2325,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   //**********************************************************************
   std::vector<Vertex> collconvexhull;
 
-  for (int i = 0; i < (int) convexhull.size(); ++i)
+  for (int i = 0; i < (int)convexhull.size(); ++i)
   {
     // keep track of comparisons
     bool close = false;
@@ -2499,16 +2338,14 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // check remaining poly2 (master) and intersec points against poly1 (slave) points
-    for (int j = 0; j < (int) convexhull.size(); ++j)
+    for (int j = 0; j < (int)convexhull.size(); ++j)
     {
       // only collapse with poly1 (slave) points
-      if (convexhull[j].VType() != MORTAR::Vertex::slave)
-        continue;
+      if (convexhull[j].VType() != MORTAR::Vertex::slave) continue;
 
       // distance vector
-      double diff[3] = { 0.0, 0.0, 0.0 };
-      for (int k = 0; k < 3; ++k)
-        diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
+      double diff[3] = {0.0, 0.0, 0.0};
+      for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
       double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
       // only keep point if not close
@@ -2522,24 +2359,21 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     // do not check poly2 (master) points
     if (convexhull[i].VType() == MORTAR::Vertex::projmaster)
     {
-      if (!close)
-        collconvexhull.push_back(convexhull[i]);
+      if (!close) collconvexhull.push_back(convexhull[i]);
       continue;
     }
 
     // check intersec points against poly2 (master) points
     if (!close && convexhull[i].VType() == MORTAR::Vertex::lineclip)
     {
-      for (int j = 0; j < (int) convexhull.size(); ++j)
+      for (int j = 0; j < (int)convexhull.size(); ++j)
       {
         // only collapse with poly2 (master) points
-        if (convexhull[j].VType() != MORTAR::Vertex::projmaster)
-          continue;
+        if (convexhull[j].VType() != MORTAR::Vertex::projmaster) continue;
 
         // distance vector
-        double diff[3] = { 0.0, 0.0, 0.0 };
-        for (int k = 0; k < 3; ++k)
-          diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
+        double diff[3] = {0.0, 0.0, 0.0};
+        for (int k = 0; k < 3; ++k) diff[k] = convexhull[i].Coord()[k] - convexhull[j].Coord()[k];
         double dist = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
 
         // only keep intersection point if not close
@@ -2552,19 +2386,18 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // keep intersection point only if not collapsed
-    if (!close)
-      collconvexhull.push_back(convexhull[i]);
+    if (!close) collconvexhull.push_back(convexhull[i]);
   }
 
   if (out)
   {
     // check collapsed convex hull points
     std::cout << "\nTesting collapsed convex hull points" << std::endl;
-    for (int i = 0; i < (int) collconvexhull.size(); ++i)
+    for (int i = 0; i < (int)collconvexhull.size(); ++i)
     {
       Vertex& testv = collconvexhull[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1]
-          << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " "
+                << testv.Coord()[2] << std::endl;
       std::cout << "Type: " << testv.VType() << std::endl;
     }
   }
@@ -2576,13 +2409,13 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   //**********************************************************************
 
   // only continue if more than two points remaining
-  if ((int) collconvexhull.size() < 3)
+  if ((int)collconvexhull.size() < 3)
   {
     // no clip polygon if less than 3 points
     std::vector<Vertex> empty;
     respoly = empty;
   }
-  else if ((int) collconvexhull.size() == 3)
+  else if ((int)collconvexhull.size() == 3)
   {
     // 3 points already ARE the convex hull
     respoly = collconvexhull;
@@ -2590,23 +2423,18 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   else
   {
     // do transformation to auxiliary plane
-    double newzero[3] =
-    { collconvexhull[0].Coord()[0], collconvexhull[0].Coord()[1],
-        collconvexhull[0].Coord()[2] };
-    double newxaxis[3] =
-    { collconvexhull[1].Coord()[0] - collconvexhull[0].Coord()[0],
+    double newzero[3] = {
+        collconvexhull[0].Coord()[0], collconvexhull[0].Coord()[1], collconvexhull[0].Coord()[2]};
+    double newxaxis[3] = {collconvexhull[1].Coord()[0] - collconvexhull[0].Coord()[0],
         collconvexhull[1].Coord()[1] - collconvexhull[0].Coord()[1],
-        collconvexhull[1].Coord()[2] - collconvexhull[0].Coord()[2] };
-    double newyaxis[3] =
-    { Auxn()[1] * newxaxis[2] - Auxn()[2] * newxaxis[1], Auxn()[2] * newxaxis[0]
-        - Auxn()[0] * newxaxis[2], Auxn()[0] * newxaxis[1]
-        - Auxn()[1] * newxaxis[0] };
-    double lnewxaxis = sqrt(
-        newxaxis[0] * newxaxis[0] + newxaxis[1] * newxaxis[1]
-            + newxaxis[2] * newxaxis[2]);
-    double lnewyaxis = sqrt(
-        newyaxis[0] * newyaxis[0] + newyaxis[1] * newyaxis[1]
-            + newyaxis[2] * newyaxis[2]);
+        collconvexhull[1].Coord()[2] - collconvexhull[0].Coord()[2]};
+    double newyaxis[3] = {Auxn()[1] * newxaxis[2] - Auxn()[2] * newxaxis[1],
+        Auxn()[2] * newxaxis[0] - Auxn()[0] * newxaxis[2],
+        Auxn()[0] * newxaxis[1] - Auxn()[1] * newxaxis[0]};
+    double lnewxaxis =
+        sqrt(newxaxis[0] * newxaxis[0] + newxaxis[1] * newxaxis[1] + newxaxis[2] * newxaxis[2]);
+    double lnewyaxis =
+        sqrt(newyaxis[0] * newyaxis[0] + newyaxis[1] * newyaxis[1] + newyaxis[2] * newyaxis[2]);
 
     // normalize
     for (int k = 0; k < 3; ++k)
@@ -2625,21 +2453,19 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // temporary storage for transformed points
-    int np = (int) collconvexhull.size();
+    int np = (int)collconvexhull.size();
     Epetra_SerialDenseMatrix transformed(2, np);
 
     // transform each convex hull point
     for (int i = 0; i < np; ++i)
     {
-      double newpoint[3] = { 0.0, 0.0, 0.0 };
+      double newpoint[3] = {0.0, 0.0, 0.0};
 
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k)
-          newpoint[j] += trafo(j, k)
-              * (collconvexhull[i].Coord()[k] - newzero[k]);
+          newpoint[j] += trafo(j, k) * (collconvexhull[i].Coord()[k] - newzero[k]);
 
-      if (abs(newpoint[2]) > tol)
-        dserror("ERROR: Transformation to aux. plane failed: z!=0 !");
+      if (abs(newpoint[2]) > tol) dserror("ERROR: Transformation to aux. plane failed: z!=0 !");
       transformed(0, i) = newpoint[0];
       transformed(1, i) = newpoint[1];
     }
@@ -2661,7 +2487,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   {
     std::ostringstream filename;
     static int gmshcount = 0;
-    filename << "o/gmsh_output/" << "clipping_";
+    filename << "o/gmsh_output/"
+             << "clipping_";
     if (gmshcount < 10)
       filename << 0 << 0 << 0 << 0;
     else if (gmshcount < 100)
@@ -2669,9 +2496,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     else if (gmshcount < 1000)
       filename << 0 << 0;
     else if (gmshcount < 10000)
-      filename << 0 ;
+      filename << 0;
     else if (gmshcount < 100000)
-      {;}
+    {
+      ;
+    }
     else
       dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
     filename << gmshcount << ".pos";
@@ -2683,90 +2512,80 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     std::stringstream gmshfilecontent;
 
     gmshfilecontent << "View \" poly1 \" {" << std::endl;
-    for (int i = 0; i < (int) poly1.size(); ++i)
+    for (int i = 0; i < (int)poly1.size(); ++i)
     {
-      if (i != (int) poly1.size() - 1)
+      if (i != (int)poly1.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0]
-            << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-            << poly1[i + 1].Coord()[0] << "," << poly1[i + 1].Coord()[1] << ","
-            << poly1[i + 1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};"
-            << std::endl;
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
+                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
+                        << poly1[i + 1].Coord()[0] << "," << poly1[i + 1].Coord()[1] << ","
+                        << poly1[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0]
-            << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
-            << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
-            << poly1[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};"
-            << std::endl;
-
+        gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << ","
+                        << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << ","
+                        << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
+                        << poly1[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << ","
-          << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17
-          << ")";
-      gmshfilecontent << "{" << "S" << i << "};" << std::endl;
+                      << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{"
+                      << "S" << i << "};" << std::endl;
     }
     gmshfilecontent << "};" << std::endl;
 
     gmshfilecontent << "View \" poly2 \" {" << std::endl;
-    for (int i = 0; i < (int) poly2.size(); ++i)
+    for (int i = 0; i < (int)poly2.size(); ++i)
     {
-      if (i != (int) poly2.size() - 1)
+      if (i != (int)poly2.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0]
-            << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-            << poly2[i + 1].Coord()[0] << "," << poly2[i + 1].Coord()[1] << ","
-            << poly2[i + 1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
+                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
+                        << poly2[i + 1].Coord()[0] << "," << poly2[i + 1].Coord()[1] << ","
+                        << poly2[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0]
-            << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
-            << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
-            << poly2[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
-
+        gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << ","
+                        << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << ","
+                        << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
+                        << poly2[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << ","
-          << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17
-          << ")";
-      gmshfilecontent << "{" << "M" << i << "};" << std::endl;
+                      << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
+      gmshfilecontent << "{"
+                      << "M" << i << "};" << std::endl;
     }
     gmshfilecontent << "};" << std::endl;
 
     gmshfilecontent << "View \" clip poly \" {" << std::endl;
-    for (int i = 0; i < (int) respoly.size(); ++i)
+    for (int i = 0; i < (int)respoly.size(); ++i)
     {
-      if (i != (int) respoly.size() - 1)
+      if (i != (int)respoly.size() - 1)
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0]
-            << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2]
-            << "," << respoly[i + 1].Coord()[0] << ","
-            << respoly[i + 1].Coord()[1] << "," << respoly[i + 1].Coord()[2]
-            << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
+                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
+                        << respoly[i + 1].Coord()[0] << "," << respoly[i + 1].Coord()[1] << ","
+                        << respoly[i + 1].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
-        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0]
-            << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2]
-            << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1]
-            << "," << respoly[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};"
-            << std::endl;
-
+        gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << ","
+                        << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
+                        << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
+                        << respoly[0].Coord()[2] << ")";
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
-      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0]
-          << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << ","
-          << 27 << ")";
-      gmshfilecontent << "{" << "R" << i << "};" << std::endl;
+      gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << ","
+                      << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
+      gmshfilecontent << "{"
+                      << "R" << i << "};" << std::endl;
     }
 
     gmshfilecontent << "};" << std::endl;
@@ -2787,9 +2606,8 @@ double MORTAR::Coupling3d::PolygonArea()
 {
   // initialize and check for trivial case
   double area = 0.0;
-  int clipsize = (int) (Clip().size());
-  if (clipsize < 3)
-    return area;
+  int clipsize = (int)(Clip().size());
+  if (clipsize < 3) return area;
 
   // loop over all vertices to compute area
   for (int k = 0; k < clipsize; ++k)
@@ -2803,16 +2621,14 @@ double MORTAR::Coupling3d::PolygonArea()
       vkp1 = Clip()[k + 1].Coord();
 
     // cross product
-    double cross[3] =
-    { 0.0, 0.0, 0.0 };
+    double cross[3] = {0.0, 0.0, 0.0};
     cross[0] = vk[1] * vkp1[2] - vk[2] * vkp1[1];
     cross[1] = vk[2] * vkp1[0] - vk[0] * vkp1[2];
     cross[2] = vk[0] * vkp1[1] - vk[1] * vkp1[0];
 
     // add scalar product with negative(!) normal to area
     // (because the clip polygon is oriented clockwise w.r.t. normal)
-    area -= 0.5
-        * (cross[0] * Auxn()[0] + cross[1] * Auxn()[1] + cross[2] * Auxn()[2]);
+    area -= 0.5 * (cross[0] * Auxn()[0] + cross[1] * Auxn()[1] + cross[2] * Auxn()[2]);
   }
 
   // when areas are close to zero, we might get sign problems
@@ -2843,30 +2659,26 @@ bool MORTAR::Coupling3d::HasProjStatus()
   // check all nodes
   int nnodes = SlaveIntElement().NumNode();
   DRT::Node** mynodes = SlaveIntElement().Nodes();
-  if (!mynodes)
-    dserror("ERROR: HasProjStatus: Null pointer!");
+  if (!mynodes) dserror("ERROR: HasProjStatus: Null pointer!");
 
   // loop over all slave nodes
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode)
-      dserror("ERROR: HasProjStatus: Null pointer!");
+    if (!mycnode) dserror("ERROR: HasProjStatus: Null pointer!");
 
     // loop over all vertices of clip polygon
-    for (int j = 0; j < (int) (Clip().size()); ++j)
+    for (int j = 0; j < (int)(Clip().size()); ++j)
     {
       bool identical = false;
 
       // check if this clip vertex is slave-type and has the
       // current slave node id
-      if ((int) (Clip()[j].VType()) == Vertex::slave)
-        if (mycnode->Id() == Clip()[j].Nodeids()[0])
-          identical = true;
+      if ((int)(Clip()[j].VType()) == Vertex::slave)
+        if (mycnode->Id() == Clip()[j].Nodeids()[0]) identical = true;
 
       // set hasproj to true, if so
-      if (identical)
-        mycnode->HasProj() = true;
+      if (identical) mycnode->HasProj() = true;
     }
   }
 
@@ -2884,13 +2696,13 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
   const int nmrows = MasterElement().NumNode();
 
   // preparations
-  int clipsize = (int) (Clip().size());
-  std::vector<std::vector<GEN::pairedvector<int, double> > > linvertex(clipsize,
-      std::vector<GEN::pairedvector<int, double> >(3, 3 * nsrows + 3 * nmrows));
+  int clipsize = (int)(Clip().size());
+  std::vector<std::vector<GEN::pairedvector<int, double>>> linvertex(
+      clipsize, std::vector<GEN::pairedvector<int, double>>(3, 3 * nsrows + 3 * nmrows));
 
   // get integration type
   INPAR::MORTAR::Triangulation tri_type =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::Triangulation>(imortar_,"TRIANGULATION");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::Triangulation>(imortar_, "TRIANGULATION");
 
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates (only for contact)
@@ -2899,25 +2711,25 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
 
   switch (tri_type)
   {
-  //**********************************************************************
-  // (2) Triangulation of clip polygon (DELAUNAY-based (new))
-  //**********************************************************************
-  case INPAR::MORTAR::triangulation_delaunay:
-    if (!DelaunayTriangulation(linvertex, tol))
-      // (3) Backup triangulation of clip polygon (CENTER-based (old))
+    //**********************************************************************
+    // (2) Triangulation of clip polygon (DELAUNAY-based (new))
+    //**********************************************************************
+    case INPAR::MORTAR::triangulation_delaunay:
+      if (!DelaunayTriangulation(linvertex, tol))
+        // (3) Backup triangulation of clip polygon (CENTER-based (old))
+        CenterTriangulation(linvertex, tol);
+      break;
+
+    //**********************************************************************
+    // (3) Backup triangulation of clip polygon (CENTER-based (old))
+    //**********************************************************************
+    case INPAR::MORTAR::triangulation_center:
       CenterTriangulation(linvertex, tol);
-    break;
+      break;
 
-  //**********************************************************************
-  // (3) Backup triangulation of clip polygon (CENTER-based (old))
-  //**********************************************************************
-  case INPAR::MORTAR::triangulation_center:
-    CenterTriangulation(linvertex, tol);
-    break;
-
-  default:
-    dserror("unknown triangulation type");
-    break;
+    default:
+      dserror("unknown triangulation type");
+      break;
   }
   return true;
 }
@@ -2926,16 +2738,13 @@ bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double to
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::DelaunayTriangulation(
-    std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex,
-    double tol)
+    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
-  int clipsize = (int) (Clip().size());
+  int clipsize = (int)(Clip().size());
   bool out = false;
-  if (out)
-    std::cout << "***\nPolygon with " << clipsize << " vertices\n***"
-        << std::endl;
+  if (out) std::cout << "***\nPolygon with " << clipsize << " vertices\n***" << std::endl;
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -2947,14 +2756,11 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
     // IntCell vertices = clip polygon vertices
     LINALG::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
-      for (int k = 0; k < 3; ++k)
-        coords(k, i) = Clip()[i].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(
-            new IntCell(0, 3, coords, Auxn(), DRT::Element::tri3, linvertex[0],
-                linvertex[1], linvertex[2], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), DRT::Element::tri3,
+        linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -2964,7 +2770,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
   // (2) General clipping polygon: Triangulation -> IntCells
   //**********************************************************************
   // store Delaunay triangles here
-  std::vector<std::vector<int> > triangles(0, std::vector<int>(3));
+  std::vector<std::vector<int>> triangles(0, std::vector<int>(3));
 
   // start with first triangle v0,v1,v2
   std::vector<int> currtriangle(3);
@@ -2990,18 +2796,16 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
 
     if (out)
     {
-      std::cout << "-> checking " << currsize << "th node of polygon"
-          << std::endl;
-      std::cout << "-> found " << (int) triangles.size() << " triangles"
-          << std::endl;
-      for (int k = 0; k < (int) triangles.size(); ++k)
-        std::cout << "      Triangle: " << triangles[k][0] << " "
-            << triangles[k][1] << " " << triangles[k][2] << " " << std::endl;
+      std::cout << "-> checking " << currsize << "th node of polygon" << std::endl;
+      std::cout << "-> found " << (int)triangles.size() << " triangles" << std::endl;
+      for (int k = 0; k < (int)triangles.size(); ++k)
+        std::cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " "
+                  << triangles[k][2] << " " << std::endl;
     }
 
     // check Delaunay criterion for all triangles and sort
     // triangles accordingly (good / bad)
-    int numt = (int) triangles.size();
+    int numt = (int)triangles.size();
     std::vector<bool> bad(numt);
     std::vector<double> close(numt);
     for (int t = 0; t < numt; ++t)
@@ -3070,14 +2874,10 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
 
       // try to minimize error
       int direction = 0;
-      if (abs(Auxn()[0]) >= abs(Auxn()[1]) && abs(Auxn()[0]) >= abs(Auxn()[2]))
-        direction = 1;
-      if (abs(Auxn()[1]) >= abs(Auxn()[0]) && abs(Auxn()[1]) >= abs(Auxn()[2]))
-        direction = 2;
-      if (abs(Auxn()[2]) >= abs(Auxn()[0]) && abs(Auxn()[2]) >= abs(Auxn()[1]))
-        direction = 3;
-      if (direction == 0)
-        dserror("ERROR: Did not find best direction");
+      if (abs(Auxn()[0]) >= abs(Auxn()[1]) && abs(Auxn()[0]) >= abs(Auxn()[2])) direction = 1;
+      if (abs(Auxn()[1]) >= abs(Auxn()[0]) && abs(Auxn()[1]) >= abs(Auxn()[2])) direction = 2;
+      if (abs(Auxn()[2]) >= abs(Auxn()[0]) && abs(Auxn()[2]) >= abs(Auxn()[1])) direction = 3;
+      if (direction == 0) dserror("ERROR: Did not find best direction");
 
       // intersection of the two perpendicular bisections
       // (solution of m1+s*c1 = n1+t*d1 and m2+s*c2 = n2+t*d2)
@@ -3107,22 +2907,21 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       const double zcenter = m3 + s * c3;
 
       // radius of the circumcircle
-      const double radius1 = sqrt(
-          (xcenter - x1) * (xcenter - x1) + (ycenter - y1) * (ycenter - y1)
-              + (zcenter - z1) * (zcenter - z1));
-      const double radius2 = sqrt(
-          (xcenter - x2) * (xcenter - x2) + (ycenter - y2) * (ycenter - y2)
-              + (zcenter - z2) * (zcenter - z2));
-      const double radius3 = sqrt(
-          (xcenter - x3) * (xcenter - x3) + (ycenter - y3) * (ycenter - y3)
-              + (zcenter - z3) * (zcenter - z3));
+      const double radius1 =
+          sqrt((xcenter - x1) * (xcenter - x1) + (ycenter - y1) * (ycenter - y1) +
+               (zcenter - z1) * (zcenter - z1));
+      const double radius2 =
+          sqrt((xcenter - x2) * (xcenter - x2) + (ycenter - y2) * (ycenter - y2) +
+               (zcenter - z2) * (zcenter - z2));
+      const double radius3 =
+          sqrt((xcenter - x3) * (xcenter - x3) + (ycenter - y3) * (ycenter - y3) +
+               (zcenter - z3) * (zcenter - z3));
 
       // check radius computation
       if (abs(radius2 - radius1) > tol || abs(radius3 - radius1) > tol)
       {
-        std::cout
-            << "***WARNING*** Delaunay triangulation failed (no well-defined circumcircles)"
-            << " -> using backup" << std::endl;
+        std::cout << "***WARNING*** Delaunay triangulation failed (no well-defined circumcircles)"
+                  << " -> using backup" << std::endl;
 
         // if Delaunay triangulation failed, use old center-based
         // triangulation as backup (therefore return false)
@@ -3134,26 +2933,21 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       for (int k = 0; k < currsize; ++k)
       {
         // no check needed for triangle vertices
-        if (k == idx0 || k == idx1 || k == idx2)
-          continue;
+        if (k == idx0 || k == idx1 || k == idx2) continue;
 
         // compute distance
-        const double dist = sqrt(
-            (xcenter - Clip()[k].Coord()[0]) * (xcenter - Clip()[k].Coord()[0])
-                + (ycenter - Clip()[k].Coord()[1])
-                    * (ycenter - Clip()[k].Coord()[1])
-                + (zcenter - Clip()[k].Coord()[2])
-                    * (zcenter - Clip()[k].Coord()[2]));
+        const double dist =
+            sqrt((xcenter - Clip()[k].Coord()[0]) * (xcenter - Clip()[k].Coord()[0]) +
+                 (ycenter - Clip()[k].Coord()[1]) * (ycenter - Clip()[k].Coord()[1]) +
+                 (zcenter - Clip()[k].Coord()[2]) * (zcenter - Clip()[k].Coord()[2]));
 
         // monitor critical Delaunay criterion decision
         // (necessary to avoid inconsistent good/bad grouping later)
         const double diff = abs(dist - radius1);
-        if (diff < close[t])
-          close[t] = diff;
+        if (diff < close[t]) close[t] = diff;
 
         // check for bad triangle (without tolerance)
-        if (dist < radius1)
-          bad[t] = true;
+        if (dist < radius1) bad[t] = true;
       }
     }
 
@@ -3168,19 +2962,17 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
         bool foundpartner = false;
         for (int u = 0; u < numt; ++u)
         {
-          if (bad[u] && close[u] < tol)
-            foundpartner = true;
+          if (bad[u] && close[u] < tol) foundpartner = true;
         }
 
         // set good->bad if partner found
-        if (foundpartner)
-          bad[t] = true;
+        if (foundpartner) bad[t] = true;
       }
     }
 
     // now we build vector of all good / bad triangles
-    std::vector<std::vector<int> > goodtriangles(0, std::vector<int>(3));
-    std::vector<std::vector<int> > badtriangles(0, std::vector<int>(3));
+    std::vector<std::vector<int>> goodtriangles(0, std::vector<int>(3));
+    std::vector<std::vector<int>> badtriangles(0, std::vector<int>(3));
     for (int t = 0; t < numt; ++t)
     {
       if (bad[t])
@@ -3191,18 +2983,14 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
 
     if (out)
     {
-      std::cout << "   -> found " << (int) goodtriangles.size()
-          << " GOOD triangles" << std::endl;
-      for (int k = 0; k < (int) goodtriangles.size(); ++k)
-        std::cout << "      Triangle: " << goodtriangles[k][0] << " "
-            << goodtriangles[k][1] << " " << goodtriangles[k][2] << " "
-            << std::endl;
-      std::cout << "   -> found " << (int) badtriangles.size()
-          << " BAD triangles" << std::endl;
-      for (int k = 0; k < (int) badtriangles.size(); ++k)
-        std::cout << "      Triangle: " << badtriangles[k][0] << " "
-            << badtriangles[k][1] << " " << badtriangles[k][2] << " "
-            << std::endl;
+      std::cout << "   -> found " << (int)goodtriangles.size() << " GOOD triangles" << std::endl;
+      for (int k = 0; k < (int)goodtriangles.size(); ++k)
+        std::cout << "      Triangle: " << goodtriangles[k][0] << " " << goodtriangles[k][1] << " "
+                  << goodtriangles[k][2] << " " << std::endl;
+      std::cout << "   -> found " << (int)badtriangles.size() << " BAD triangles" << std::endl;
+      for (int k = 0; k < (int)badtriangles.size(); ++k)
+        std::cout << "      Triangle: " << badtriangles[k][0] << " " << badtriangles[k][1] << " "
+                  << badtriangles[k][2] << " " << std::endl;
     }
 
     // find vertices in bad triangles: ALL vertices
@@ -3220,31 +3008,25 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
 
         // collect ALL vertices
         bool foundbefore0 = false;
-        for (int k = 0; k < (int) badv.size(); ++k)
+        for (int k = 0; k < (int)badv.size(); ++k)
         {
-          if (badv[k] == idx0)
-            foundbefore0 = true;
+          if (badv[k] == idx0) foundbefore0 = true;
         }
-        if (!foundbefore0)
-          badv.push_back(idx0);
+        if (!foundbefore0) badv.push_back(idx0);
 
         bool foundbefore1 = false;
-        for (int k = 0; k < (int) badv.size(); ++k)
+        for (int k = 0; k < (int)badv.size(); ++k)
         {
-          if (badv[k] == idx1)
-            foundbefore1 = true;
+          if (badv[k] == idx1) foundbefore1 = true;
         }
-        if (!foundbefore1)
-          badv.push_back(idx1);
+        if (!foundbefore1) badv.push_back(idx1);
 
         bool foundbefore2 = false;
-        for (int k = 0; k < (int) badv.size(); ++k)
+        for (int k = 0; k < (int)badv.size(); ++k)
         {
-          if (badv[k] == idx2)
-            foundbefore2 = true;
+          if (badv[k] == idx2) foundbefore2 = true;
         }
-        if (!foundbefore2)
-          badv.push_back(idx2);
+        if (!foundbefore2) badv.push_back(idx2);
 
         // indices of current vertex neighbors
         int neighbor0 = c - 1;
@@ -3254,42 +3036,36 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
         if (idx0 != c && idx0 != neighbor0 && idx0 != neighbor1)
         {
           bool foundbefore = false;
-          for (int k = 0; k < (int) ncv.size(); ++k)
+          for (int k = 0; k < (int)ncv.size(); ++k)
           {
-            if (ncv[k] == idx0)
-              foundbefore = true;
+            if (ncv[k] == idx0) foundbefore = true;
           }
-          if (!foundbefore)
-            ncv.push_back(idx0);
+          if (!foundbefore) ncv.push_back(idx0);
         }
         if (idx1 != c && idx1 != neighbor0 && idx1 != neighbor1)
         {
           bool foundbefore = false;
-          for (int k = 0; k < (int) ncv.size(); ++k)
+          for (int k = 0; k < (int)ncv.size(); ++k)
           {
-            if (ncv[k] == idx1)
-              foundbefore = true;
+            if (ncv[k] == idx1) foundbefore = true;
           }
-          if (!foundbefore)
-            ncv.push_back(idx1);
+          if (!foundbefore) ncv.push_back(idx1);
         }
         if (idx2 != c && idx2 != neighbor0 && idx2 != neighbor1)
         {
           bool foundbefore = false;
-          for (int k = 0; k < (int) ncv.size(); ++k)
+          for (int k = 0; k < (int)ncv.size(); ++k)
           {
-            if (ncv[k] == idx2)
-              foundbefore = true;
+            if (ncv[k] == idx2) foundbefore = true;
           }
-          if (!foundbefore)
-            ncv.push_back(idx2);
+          if (!foundbefore) ncv.push_back(idx2);
         }
       }
     }
 
     // build triangles formed by current vertex and ncv vertices
-    std::vector<std::vector<int> > addtriangles(0, std::vector<int>(3));
-    for (int k = 0; k < (int) ncv.size(); ++k)
+    std::vector<std::vector<int>> addtriangles(0, std::vector<int>(3));
+    for (int k = 0; k < (int)ncv.size(); ++k)
     {
       // find ncv vertex neighbor0
       bool validneighbor0 = false;
@@ -3299,14 +3075,12 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       {
         // set neighbor
         neighbor0 = ncv[k] - 1 - off0;
-        if ((ncv[k] - off0) == 0)
-          neighbor0 = currsize - 1 - off0;
+        if ((ncv[k] - off0) == 0) neighbor0 = currsize - 1 - off0;
 
         // check if neighbor is in bad vertices
-        for (int k = 0; k < (int) badv.size(); ++k)
+        for (int k = 0; k < (int)badv.size(); ++k)
         {
-          if (badv[k] == neighbor0)
-            validneighbor0 = true;
+          if (badv[k] == neighbor0) validneighbor0 = true;
         }
 
         // increase counter
@@ -3322,14 +3096,12 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       {
         // set neighbor
         neighbor1 = ncv[k] + 1 + off1;
-        if ((ncv[k] + off1) == currsize - 1)
-          neighbor1 = 0 + off1;
+        if ((ncv[k] + off1) == currsize - 1) neighbor1 = 0 + off1;
 
         // check if neighbor is in bad vertices
-        for (int k = 0; k < (int) badv.size(); ++k)
+        for (int k = 0; k < (int)badv.size(); ++k)
         {
-          if (badv[k] == neighbor1)
-            validneighbor1 = true;
+          if (badv[k] == neighbor1) validneighbor1 = true;
         }
 
         // increase counter
@@ -3338,8 +3110,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       } while (!validneighbor1);
 
       // plausibility check
-      if (neighbor0 == c || neighbor1 == c)
-        dserror("ERROR: Connected nodes not possible here");
+      if (neighbor0 == c || neighbor1 == c) dserror("ERROR: Connected nodes not possible here");
 
       // add triangles
       std::vector<int> add1(3);
@@ -3356,17 +3127,16 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
 
     if (out)
     {
-      std::cout << "   -> we have " << (int) addtriangles.size()
-          << " potential NEW triangles" << std::endl;
-      for (int k = 0; k < (int) addtriangles.size(); ++k)
-        std::cout << "      Triangle: " << addtriangles[k][0] << " "
-            << addtriangles[k][1] << " " << addtriangles[k][2] << " "
-            << std::endl;
+      std::cout << "   -> we have " << (int)addtriangles.size() << " potential NEW triangles"
+                << std::endl;
+      for (int k = 0; k < (int)addtriangles.size(); ++k)
+        std::cout << "      Triangle: " << addtriangles[k][0] << " " << addtriangles[k][1] << " "
+                  << addtriangles[k][2] << " " << std::endl;
     }
 
     // collapse addtriangles (remove double entries)
     int nadd = 0;
-    for (int k = 0; k < (int) addtriangles.size(); ++k)
+    for (int k = 0; k < (int)addtriangles.size(); ++k)
     {
       bool addbefore = false;
       int idx0 = addtriangles[k][0];
@@ -3374,25 +3144,19 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       int idx2 = addtriangles[k][2];
 
       // check against all other goodtriangles
-      for (int l = 0; l < (int) goodtriangles.size(); ++l)
+      for (int l = 0; l < (int)goodtriangles.size(); ++l)
       {
         // do not check against itself
         int lidx0 = goodtriangles[l][0];
         int lidx1 = goodtriangles[l][1];
         int lidx2 = goodtriangles[l][2];
 
-        if (idx0 == lidx0 && idx1 == lidx1 && idx2 == lidx2)
-          addbefore = true;
-        if (idx0 == lidx0 && idx1 == lidx2 && idx2 == lidx1)
-          addbefore = true;
-        if (idx0 == lidx1 && idx1 == lidx0 && idx2 == lidx2)
-          addbefore = true;
-        if (idx0 == lidx1 && idx1 == lidx2 && idx2 == lidx0)
-          addbefore = true;
-        if (idx0 == lidx2 && idx1 == lidx0 && idx2 == lidx1)
-          addbefore = true;
-        if (idx0 == lidx2 && idx1 == lidx1 && idx2 == lidx0)
-          addbefore = true;
+        if (idx0 == lidx0 && idx1 == lidx1 && idx2 == lidx2) addbefore = true;
+        if (idx0 == lidx0 && idx1 == lidx2 && idx2 == lidx1) addbefore = true;
+        if (idx0 == lidx1 && idx1 == lidx0 && idx2 == lidx2) addbefore = true;
+        if (idx0 == lidx1 && idx1 == lidx2 && idx2 == lidx0) addbefore = true;
+        if (idx0 == lidx2 && idx1 == lidx0 && idx2 == lidx1) addbefore = true;
+        if (idx0 == lidx2 && idx1 == lidx1 && idx2 == lidx0) addbefore = true;
       }
 
       // add to good triangles
@@ -3405,22 +3169,20 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
 
     // store final triangulation
     triangles.resize(0);
-    for (int k = 0; k < (int) goodtriangles.size(); ++k)
-      triangles.push_back(goodtriangles[k]);
+    for (int k = 0; k < (int)goodtriangles.size(); ++k) triangles.push_back(goodtriangles[k]);
 
     if (out)
     {
       std::cout << "   -> added " << nadd << " NEW triangles" << std::endl;
-      std::cout << "   -> overall " << (int) triangles.size() << " triangles"
-          << std::endl;
-      for (int k = 0; k < (int) triangles.size(); ++k)
-        std::cout << "      Triangle: " << triangles[k][0] << " "
-            << triangles[k][1] << " " << triangles[k][2] << " " << std::endl;
+      std::cout << "   -> overall " << (int)triangles.size() << " triangles" << std::endl;
+      for (int k = 0; k < (int)triangles.size(); ++k)
+        std::cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " "
+                  << triangles[k][2] << " " << std::endl;
     }
   }
 
   // create intcells for all triangle
-  int numt = (int) triangles.size();
+  int numt = (int)triangles.size();
   for (int t = 0; t < numt; ++t)
   {
     // indices of current triangle
@@ -3438,19 +3200,16 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
     }
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(
-            new IntCell(t, 3, coords, Auxn(), DRT::Element::tri3,
-                linvertex[idx0], linvertex[idx1], linvertex[idx2],
-                GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(t, 3, coords, Auxn(), DRT::Element::tri3,
+        linvertex[idx0], linvertex[idx1], linvertex[idx2], GetDerivAuxn())));
   }
 
   // double check number of triangles
   if (numt != clipsize - 2)
   {
-    std::cout << "***WARNING*** Delaunay triangulation failed (" << clipsize
-        << " vertices, " << numt << " triangles)" << " -> using backup"
-        << std::endl;
+    std::cout << "***WARNING*** Delaunay triangulation failed (" << clipsize << " vertices, "
+              << numt << " triangles)"
+              << " -> using backup" << std::endl;
 
     // if Delaunay triangulation failed, use old center-based
     // triangulation as backup (therefore return false)
@@ -3466,13 +3225,13 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
  |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::CenterTriangulation(
-    std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex,
-    double tol)
+    std::vector<std::vector<GEN::pairedvector<int, double>>>& linvertex, double tol)
 {
   // preparations
   Cells().resize(0);
-  int clipsize = (int) (Clip().size());
-  std::vector<GEN::pairedvector<int, double> > lincenter(3, (MasterElement().NumNode()+SlaveElement().NumNode())*3);
+  int clipsize = (int)(Clip().size());
+  std::vector<GEN::pairedvector<int, double>> lincenter(
+      3, (MasterElement().NumNode() + SlaveElement().NumNode()) * 3);
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -3484,14 +3243,11 @@ bool MORTAR::Coupling3d::CenterTriangulation(
     // IntCell vertices = clip polygon vertices
     LINALG::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
-      for (int k = 0; k < 3; ++k)
-        coords(k, i) = Clip()[i].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(
-            new IntCell(0, 3, coords, Auxn(), DRT::Element::tri3, linvertex[0],
-                linvertex[1], linvertex[2], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, Auxn(), DRT::Element::tri3,
+        linvertex[0], linvertex[1], linvertex[2], GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -3536,70 +3292,53 @@ bool MORTAR::Coupling3d::CenterTriangulation(
   // (2) Find center of clipping polygon (centroid formula)
   //**********************************************************************
   std::vector<double> clipcenter(3);
-  for (int k = 0; k < 3; ++k)
-    clipcenter[k] = 0.0;
+  for (int k = 0; k < 3; ++k) clipcenter[k] = 0.0;
   double fac = 0.0;
 
   // first we need node averaged center
-  double nac[3] =
-  { 0.0, 0.0, 0.0 };
+  double nac[3] = {0.0, 0.0, 0.0};
   for (int i = 0; i < clipsize; ++i)
-    for (int k = 0; k < 3; ++k)
-      nac[k] += (Clip()[i].Coord()[k] / clipsize);
+    for (int k = 0; k < 3; ++k) nac[k] += (Clip()[i].Coord()[k] / clipsize);
 
   // loop over all triangles of polygon
   for (int i = 0; i < clipsize; ++i)
   {
-    double xi_i[3] =
-    { 0.0, 0.0, 0.0 };
-    double xi_ip1[3] =
-    { 0.0, 0.0, 0.0 };
+    double xi_i[3] = {0.0, 0.0, 0.0};
+    double xi_ip1[3] = {0.0, 0.0, 0.0};
 
     // standard case
     if (i < clipsize - 1)
     {
-      for (int k = 0; k < 3; ++k)
-        xi_i[k] = Clip()[i].Coord()[k];
-      for (int k = 0; k < 3; ++k)
-        xi_ip1[k] = Clip()[i + 1].Coord()[k];
+      for (int k = 0; k < 3; ++k) xi_i[k] = Clip()[i].Coord()[k];
+      for (int k = 0; k < 3; ++k) xi_ip1[k] = Clip()[i + 1].Coord()[k];
     }
     // last vertex of clip polygon
     else
     {
-      for (int k = 0; k < 3; ++k)
-        xi_i[k] = Clip()[clipsize - 1].Coord()[k];
-      for (int k = 0; k < 3; ++k)
-        xi_ip1[k] = Clip()[0].Coord()[k];
+      for (int k = 0; k < 3; ++k) xi_i[k] = Clip()[clipsize - 1].Coord()[k];
+      for (int k = 0; k < 3; ++k) xi_ip1[k] = Clip()[0].Coord()[k];
     }
 
     // triangle area
-    double diff1[3] =
-    { 0.0, 0.0, 0.0 };
-    double diff2[3] =
-    { 0.0, 0.0, 0.0 };
-    for (int k = 0; k < 3; ++k)
-      diff1[k] = xi_ip1[k] - xi_i[k];
-    for (int k = 0; k < 3; ++k)
-      diff2[k] = xi_i[k] - nac[k];
+    double diff1[3] = {0.0, 0.0, 0.0};
+    double diff2[3] = {0.0, 0.0, 0.0};
+    for (int k = 0; k < 3; ++k) diff1[k] = xi_ip1[k] - xi_i[k];
+    for (int k = 0; k < 3; ++k) diff2[k] = xi_i[k] - nac[k];
 
-    double cross[3] =
-    { 0.0, 0.0, 0.0 };
+    double cross[3] = {0.0, 0.0, 0.0};
     cross[0] = diff1[1] * diff2[2] - diff1[2] * diff2[1];
     cross[1] = diff1[2] * diff2[0] - diff1[0] * diff2[2];
     cross[2] = diff1[0] * diff2[1] - diff1[1] * diff2[0];
 
-    double Atri = 0.5
-        * sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
+    double Atri = 0.5 * sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     // add contributions to clipcenter and fac
     fac += Atri;
-    for (int k = 0; k < 3; ++k)
-      clipcenter[k] += 1.0 / 3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
+    for (int k = 0; k < 3; ++k) clipcenter[k] += 1.0 / 3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
   }
 
   // final clipcenter
-  for (int k = 0; k < 3; ++k)
-    clipcenter[k] /= fac;
+  for (int k = 0; k < 3; ++k) clipcenter[k] /= fac;
 
   //**********************************************************************
   // (3) Linearization of clip center coordinates (only for contact)
@@ -3626,19 +3365,15 @@ bool MORTAR::Coupling3d::CenterTriangulation(
     int numplus1 = num + 1;
     if (num == clipsize - 1)
     {
-      for (int k = 0; k < 3; ++k)
-        coords(k, 2) = Clip()[0].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, 2) = Clip()[0].Coord()[k];
       numplus1 = 0;
     }
     else
-      for (int k = 0; k < 3; ++k)
-        coords(k, 2) = Clip()[num + 1].Coord()[k];
+      for (int k = 0; k < 3; ++k) coords(k, 2) = Clip()[num + 1].Coord()[k];
 
     // create IntCell object and push back
-    Cells().push_back(
-        Teuchos::rcp(
-            new IntCell(num, 3, coords, Auxn(), DRT::Element::tri3, lincenter,
-                linvertex[num], linvertex[numplus1], GetDerivAuxn())));
+    Cells().push_back(Teuchos::rcp(new IntCell(num, 3, coords, Auxn(), DRT::Element::tri3,
+        lincenter, linvertex[num], linvertex[numplus1], GetDerivAuxn())));
   }
 
   // triangulation successful
@@ -3649,8 +3384,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::IntegrateCells(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -3659,32 +3393,28 @@ bool MORTAR::Coupling3d::IntegrateCells(
   /**********************************************************************/
 
   // nothing to do here, if there are no cells
-  if (Cells().size() == 0)
-    return false;
+  if (Cells().size() == 0) return false;
 
   // loop over all integration cells
-  for (int i = 0; i < (int) (Cells().size()); ++i)
+  for (int i = 0; i < (int)(Cells().size()); ++i)
   {
     // integrate cell only if it has a non-zero area
-    if (Cells()[i]->Area() < MORTARINTLIM * SlaveElementArea())
-      continue;
+    if (Cells()[i]->Area() < MORTARINTLIM * SlaveElementArea()) continue;
 
-    // debug output of integration cells in GMSH
+      // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
     GmshOutputCells(i);
-#endif // #ifdef MORTARGMSHCELLS
+#endif  // #ifdef MORTARGMSHCELLS
     // set segmentation status of all slave nodes
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
     int nnodes = SlaveIntElement().NumNode();
     DRT::Node** mynodes = SlaveIntElement().Nodes();
-    if (!mynodes)
-      dserror("ERROR: Null pointer!");
+    if (!mynodes) dserror("ERROR: Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
       MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-      if (!mycnode)
-        dserror("ERROR: Null pointer!");
+      if (!mycnode) dserror("ERROR: Null pointer!");
       mycnode->HasSegment() = true;
     }
 
@@ -3704,27 +3434,24 @@ bool MORTAR::Coupling3d::IntegrateCells(
     if (!Quad())
     {
       // call integrator
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateCell3DAuxPlane(
-          SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+          ->IntegrateCell3DAuxPlane(SlaveElement(), MasterElement(), Cells()[i], Auxn(), Comm());
     }
 
     // *******************************************************************
     // cases (2) and (3)
     // *******************************************************************
-    else if (Quad()
-        && (lmtype == INPAR::MORTAR::lagmult_quad
-            || lmtype == INPAR::MORTAR::lagmult_lin
-            || lmtype == INPAR::MORTAR::lagmult_const))
+    else if (Quad() &&
+             (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin ||
+                 lmtype == INPAR::MORTAR::lagmult_const))
     {
       // dynamic_cast to make sure to pass in IntElement&
-      MORTAR::IntElement& sintref =
-          dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
-      MORTAR::IntElement& mintref =
-          dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
+      MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateCell3DAuxPlaneQuad(
-          SlaveElement(), MasterElement(), sintref, mintref, Cells()[i],
-          Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+          ->IntegrateCell3DAuxPlaneQuad(
+              SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
 
     // *******************************************************************
@@ -3735,17 +3462,16 @@ bool MORTAR::Coupling3d::IntegrateCells(
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual)
         dserror(
-            "ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
+            "ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic "
+            "mortar");
 
       // dynamic_cast to make sure to pass in IntElement&
-      MORTAR::IntElement& sintref =
-          dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
-      MORTAR::IntElement& mintref =
-          dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
+      MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
+      MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())->IntegrateCell3DAuxPlaneQuad(
-          SlaveElement(), MasterElement(), sintref, mintref, Cells()[i],
-          Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(), IParams())
+          ->IntegrateCell3DAuxPlaneQuad(
+              SlaveElement(), MasterElement(), sintref, mintref, Cells()[i], Auxn());
     }
 
     // *******************************************************************
@@ -3753,8 +3479,10 @@ bool MORTAR::Coupling3d::IntegrateCells(
     // *******************************************************************
     else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
     {
-      dserror("Lagrange multiplier interpolation for quadratic elements undefined\n"
-              "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR COUPLING section");
+      dserror(
+          "Lagrange multiplier interpolation for quadratic elements undefined\n"
+          "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR "
+          "COUPLING section");
     }
 
     // *******************************************************************
@@ -3762,8 +3490,7 @@ bool MORTAR::Coupling3d::IntegrateCells(
     // *******************************************************************
     else
     {
-      dserror(
-          "ERROR: IntegrateCells: Invalid case for 3D mortar coupling LM interpolation");
+      dserror("ERROR: IntegrateCells: Invalid case for 3D mortar coupling LM interpolation");
     }
     // *******************************************************************
   }
@@ -3783,8 +3510,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
 
   // write each integration cell only once
   // (no overlap, only owner of slave element writes output)
-  if (proc != SlaveElement().Owner())
-    return;
+  if (proc != SlaveElement().Owner()) return;
 
   // construct unique filename for gmsh output
   // first index = time step index
@@ -3813,31 +3539,26 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
   if (count == 0)
   {
     // header
-    gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {"
-        << std::endl;
+    gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << std::endl;
 
     // dummy element 1
-    gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << ","
-        << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << ","
-        << 0.0 << "," << 0.0 << ")";
-    gmshfilecontent << "{" << std::scientific << 0 << "," << 0 << "," << 0
-        << "};" << std::endl;
+    gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0
+                    << "," << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << ")";
+    gmshfilecontent << "{" << std::scientific << 0 << "," << 0 << "," << 0 << "};" << std::endl;
 
     // dummy element 1
-    gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << ","
-        << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << ","
-        << 0.0 << "," << 0.0 << ")";
-    gmshfilecontent << "{" << std::scientific << nproc - 1 << "," << nproc - 1
-        << "," << nproc - 1 << "};" << std::endl;
+    gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0
+                    << "," << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << ")";
+    gmshfilecontent << "{" << std::scientific << nproc - 1 << "," << nproc - 1 << "," << nproc - 1
+                    << "};" << std::endl;
   }
 
   // plot cell itself
-  gmshfilecontent << "ST(" << std::scientific << coord(0, 0) << ","
-      << coord(1, 0) << "," << coord(2, 0) << "," << coord(0, 1) << ","
-      << coord(1, 1) << "," << coord(2, 1) << "," << coord(0, 2) << ","
-      << coord(1, 2) << "," << coord(2, 2) << ")";
-  gmshfilecontent << "{" << std::scientific << proc << "," << proc << ","
-      << proc << "};" << std::endl;
+  gmshfilecontent << "ST(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
+                  << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << "," << coord(2, 1)
+                  << "," << coord(0, 2) << "," << coord(1, 2) << "," << coord(2, 2) << ")";
+  gmshfilecontent << "{" << std::scientific << proc << "," << proc << "," << proc << "};"
+                  << std::endl;
 
   // move everything to gmsh post-processing files and close them
   fprintf(fp, gmshfilecontent.str().c_str());
@@ -3853,8 +3574,8 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
 /*----------------------------------------------------------------------*
  | Split MortarElements->IntElements for 3D quad. coupling    popp 03/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
-    std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele)
+bool MORTAR::Coupling3dQuadManager::SplitIntElements(
+    MORTAR::MortarElement& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele)
 {
   // *********************************************************************
   // do splitting for given element
@@ -3867,8 +3588,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     // first integration element
     // containing parent nodes 0,4,8,7
-    int nodeids[4] =
-    { 0, 0, 0, 0 };
+    int nodeids[4] = {0, 0, 0, 0};
     nodeids[0] = ele.NodeIds()[0];
     nodeids[1] = ele.NodeIds()[4];
     nodeids[2] = ele.NodeIds()[8];
@@ -3880,10 +3600,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[8];
     nodes[3] = ele.Nodes()[7];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        0, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 4,1,5,8
@@ -3897,10 +3615,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[5];
     nodes[3] = ele.Nodes()[8];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        1, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 8,5,2,6
@@ -3914,10 +3630,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[2];
     nodes[3] = ele.Nodes()[6];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        2, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 7,8,6,3
@@ -3931,10 +3645,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[6];
     nodes[3] = ele.Nodes()[3];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        3, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
   }
 
   // *********************************************************** quad8 ***
@@ -3948,8 +3660,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     // first integration element
     // containing parent nodes 0,4,7
-    int nodeids[3] =
-    { 0, 0, 0 };
+    int nodeids[3] = {0, 0, 0};
     nodeids[0] = ele.NodeIds()[0];
     nodeids[1] = ele.NodeIds()[4];
     nodeids[2] = ele.NodeIds()[7];
@@ -3959,10 +3670,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[4];
     nodes[2] = ele.Nodes()[7];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(0, ele.Id(),ele.Owner(), &ele, dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        0, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 1,5,4
@@ -3974,10 +3683,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[5];
     nodes[2] = ele.Nodes()[4];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), &ele, dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        1, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 2,6,5
@@ -3989,10 +3696,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[6];
     nodes[2] = ele.Nodes()[5];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), &ele, dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        2, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 3,7,6
@@ -4004,15 +3709,12 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[7];
     nodes[2] = ele.Nodes()[6];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), &ele, dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        3, ele.Id(), ele.Owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // fifth integration element
     // containing parent nodes 4,5,6,7
-    int nodeidsquad[4] =
-    { 0, 0, 0, 0 };
+    int nodeidsquad[4] = {0, 0, 0, 0};
     nodeidsquad[0] = ele.NodeIds()[4];
     nodeidsquad[1] = ele.NodeIds()[5];
     nodeidsquad[2] = ele.NodeIds()[6];
@@ -4024,10 +3726,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodesquad[2] = ele.Nodes()[6];
     nodesquad[3] = ele.Nodes()[7];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(4, ele.Id(), ele.Owner(), &ele, dtquad,
-                numnodequad, nodeidsquad, nodesquad, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(4, ele.Id(), ele.Owner(), &ele, dtquad,
+        numnodequad, nodeidsquad, nodesquad, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri6 ***
@@ -4039,8 +3739,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     // first integration element
     // containing parent nodes 0,3,5
-    int nodeids[3] =
-    { 0, 0, 0 };
+    int nodeids[3] = {0, 0, 0};
     nodeids[0] = ele.NodeIds()[0];
     nodeids[1] = ele.NodeIds()[3];
     nodeids[2] = ele.NodeIds()[5];
@@ -4050,10 +3749,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[3];
     nodes[2] = ele.Nodes()[5];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        0, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 3,1,4
@@ -4065,10 +3762,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[1];
     nodes[2] = ele.Nodes()[4];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        1, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 5,4,2
@@ -4080,10 +3775,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[4];
     nodes[2] = ele.Nodes()[2];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        2, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 4,5,3
@@ -4095,10 +3788,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[5];
     nodes[2] = ele.Nodes()[3];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), &ele, dt, numnode,
-                nodeids, nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(
+        3, ele.Id(), ele.Owner(), &ele, dt, numnode, nodeids, nodes, ele.IsSlave(), false)));
   }
 
   // *********************************************************** quad4 ***
@@ -4111,10 +3802,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[2] = ele.Nodes()[2];
     nodes[3] = ele.Nodes()[3];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
-                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
+        ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri3 ***
@@ -4126,10 +3815,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     nodes[1] = ele.Nodes()[1];
     nodes[2] = ele.Nodes()[2];
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
-                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
+        ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ************************************************************ nurbs9 ***
@@ -4142,56 +3829,72 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
     // of the nurbs element
 
     // create pseudo-nodes
-    std::vector<DRT::Node> pseudo_nodes; pseudo_nodes.clear();
+    std::vector<DRT::Node> pseudo_nodes;
+    pseudo_nodes.clear();
     std::vector<DRT::Node*> pseudo_nodes_ptr(0);
 
     // parameter space coords of pseudo nodes
     double pseudo_nodes_param_coords[4][2];
-    int id[4]={0,0,0,0};
-    bool rewind=false;
+    int id[4] = {0, 0, 0, 0};
+    bool rewind = false;
 
-    if (ele.NormalFac()==1.)
+    if (ele.NormalFac() == 1.)
     {
-      rewind=false;
-      pseudo_nodes_param_coords[0][0] = -1.; pseudo_nodes_param_coords[0][1] = -1.; id[0]=ele.NodeIds()[0];
-      pseudo_nodes_param_coords[1][0] = +1.; pseudo_nodes_param_coords[1][1] = -1.; id[1]=ele.NodeIds()[2];
-      pseudo_nodes_param_coords[2][0] = +1.; pseudo_nodes_param_coords[2][1] = +1.; id[2]=ele.NodeIds()[8];
-      pseudo_nodes_param_coords[3][0] = -1.; pseudo_nodes_param_coords[3][1] = +1.; id[3]=ele.NodeIds()[6];
+      rewind = false;
+      pseudo_nodes_param_coords[0][0] = -1.;
+      pseudo_nodes_param_coords[0][1] = -1.;
+      id[0] = ele.NodeIds()[0];
+      pseudo_nodes_param_coords[1][0] = +1.;
+      pseudo_nodes_param_coords[1][1] = -1.;
+      id[1] = ele.NodeIds()[2];
+      pseudo_nodes_param_coords[2][0] = +1.;
+      pseudo_nodes_param_coords[2][1] = +1.;
+      id[2] = ele.NodeIds()[8];
+      pseudo_nodes_param_coords[3][0] = -1.;
+      pseudo_nodes_param_coords[3][1] = +1.;
+      id[3] = ele.NodeIds()[6];
     }
-    else if (ele.NormalFac()==-1.)
+    else if (ele.NormalFac() == -1.)
     {
-      rewind=true;
-      pseudo_nodes_param_coords[0][0] = -1.; pseudo_nodes_param_coords[0][1] = -1.; id[0]=ele.NodeIds()[0];
-      pseudo_nodes_param_coords[1][0] = -1.; pseudo_nodes_param_coords[1][1] = +1.; id[1]=ele.NodeIds()[6];
-      pseudo_nodes_param_coords[2][0] = +1.; pseudo_nodes_param_coords[2][1] = +1.; id[2]=ele.NodeIds()[8];
-      pseudo_nodes_param_coords[3][0] = +1.; pseudo_nodes_param_coords[3][1] = -1.; id[3]=ele.NodeIds()[2];
+      rewind = true;
+      pseudo_nodes_param_coords[0][0] = -1.;
+      pseudo_nodes_param_coords[0][1] = -1.;
+      id[0] = ele.NodeIds()[0];
+      pseudo_nodes_param_coords[1][0] = -1.;
+      pseudo_nodes_param_coords[1][1] = +1.;
+      id[1] = ele.NodeIds()[6];
+      pseudo_nodes_param_coords[2][0] = +1.;
+      pseudo_nodes_param_coords[2][1] = +1.;
+      id[2] = ele.NodeIds()[8];
+      pseudo_nodes_param_coords[3][0] = +1.;
+      pseudo_nodes_param_coords[3][1] = -1.;
+      id[3] = ele.NodeIds()[2];
     }
     else
       dserror("don't know what to do with this ele.NormalFac()");
 
 
     LINALG::SerialDenseVector sval(9);
-    LINALG::SerialDenseMatrix sderiv(9,2);
-    std::vector<int> empty_dofs(3,-1);
+    LINALG::SerialDenseMatrix sderiv(9, 2);
+    std::vector<int> empty_dofs(3, -1);
 
-    for (int i=0; i<4; ++i)
+    for (int i = 0; i < 4; ++i)
     {
-      double xi[2] = {pseudo_nodes_param_coords[i][0],pseudo_nodes_param_coords[i][1]};
-      double xspatial[3] = {0.,0.,0.};
-      ele.EvaluateShape(xi,sval,sderiv,9,true);
-      for (int dim=0; dim<dim_; ++dim)
-        for (int n=0; n<ele.NumNode(); ++n)
-          xspatial[dim]+=sval(n)*dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->xspatial()[dim];
-      pseudo_nodes.push_back(MORTAR::MortarNode(-1,xspatial,ele.Owner(),3,empty_dofs,ele.IsSlave()));
+      double xi[2] = {pseudo_nodes_param_coords[i][0], pseudo_nodes_param_coords[i][1]};
+      double xspatial[3] = {0., 0., 0.};
+      ele.EvaluateShape(xi, sval, sderiv, 9, true);
+      for (int dim = 0; dim < dim_; ++dim)
+        for (int n = 0; n < ele.NumNode(); ++n)
+          xspatial[dim] +=
+              sval(n) * dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->xspatial()[dim];
+      pseudo_nodes.push_back(
+          MORTAR::MortarNode(-1, xspatial, ele.Owner(), 3, empty_dofs, ele.IsSlave()));
     }
 
-    for (int i=0; i<4; ++i)
-      pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
+    for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
 
-    auxele.push_back(
-        Teuchos::rcp(
-            new IntElement(0,ele.Id(),ele.Owner(),&ele,DRT::Element::quad4,
-                4,&(id[0]),pseudo_nodes_ptr,ele.IsSlave(),rewind)));
+    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.Id(), ele.Owner(), &ele,
+        DRT::Element::quad4, 4, &(id[0]), pseudo_nodes_ptr, ele.IsSlave(), rewind)));
   }
 
   // ********************************************************* invalid ***
@@ -4207,17 +3910,15 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
-    MORTAR::IntElement& mintele) :
-    MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
-    sintele_(sintele),
-    mintele_(mintele)
+MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
+    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    MORTAR::IntElement& sintele, MORTAR::IntElement& mintele)
+    : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
+      sintele_(sintele),
+      mintele_(mintele)
 {
   //  3D quadratic coupling only for quadratic ansatz type
-  if (!Quad())
-    dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");
+  if (!Quad()) dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");
 
   return;
 }
@@ -4226,27 +3927,25 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim,
 /*----------------------------------------------------------------------*
  |  get communicator  (public)                               farah 01/13|
  *----------------------------------------------------------------------*/
-const Epetra_Comm& MORTAR::Coupling3dManager::Comm() const
-{
-  return idiscret_.Comm();
-}
+const Epetra_Comm& MORTAR::Coupling3dManager::Comm() const { return idiscret_.Comm(); }
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
-    int dim, bool quad, Teuchos::ParameterList& params,
-    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele) :
-    idiscret_(idiscret),
-    dim_(dim),
-    integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
-    shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
-    lmdualconsistent_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(params, "LM_DUAL_CONSISTENT")),
-    quad_(quad),
-    imortar_(params),
-    sele_(sele),
-    mele_(mele)
+MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
+    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
+    std::vector<MORTAR::MortarElement*> mele)
+    : idiscret_(idiscret),
+      dim_(dim),
+      integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
+      shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
+      lmdualconsistent_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(
+          params, "LM_DUAL_CONSISTENT")),
+      quad_(quad),
+      imortar_(params),
+      sele_(sele),
+      mele_(mele)
 {
   return;
 }
@@ -4255,11 +3954,10 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
 /*----------------------------------------------------------------------*
  |  ctor (public) -- empty                                   farah 01/13|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(
-    DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele) :
-    Coupling3dManager(idiscret,dim,quad,params,sele,mele)
+MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscret, int dim,
+    bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
+    std::vector<MORTAR::MortarElement*> mele)
+    : Coupling3dManager(idiscret, dim, quad, params, sele, mele)
 {
   return;
 }
@@ -4268,12 +3966,10 @@ MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3dManager::EvaluateCoupling(
-    Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
+bool MORTAR::Coupling3dManager::EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
 {
   // check of we need to start the real coupling
-  if(MasterElements().size() == 0)
-    return false;
+  if (MasterElements().size() == 0) return false;
 
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
@@ -4282,8 +3978,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling(
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo == INPAR::MORTAR::algorithm_mortar or
-     algo == INPAR::MORTAR::algorithm_gpts)
+  if (algo == INPAR::MORTAR::algorithm_mortar or algo == INPAR::MORTAR::algorithm_gpts)
     IntegrateCoupling(mparams_ptr);
 
   //*********************************
@@ -4309,57 +4004,52 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-      // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create Coupling3d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(),
-                    MasterElement(m))));
-        // do coupling
-        Coupling()[m]->EvaluateCoupling();
-      }
+    // loop over all master elements associated with this slave element
+    for (int m = 0; m < (int)MasterElements().size(); ++m)
+    {
+      // create Coupling3d object and push back
+      Coupling().push_back(Teuchos::rcp(
+          new Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
+      // do coupling
+      Coupling()[m]->EvaluateCoupling();
+    }
 
-      // special treatment of boundary elements
-      // calculate consistent dual shape functions for this element
-      ConsistDualShape();
+    // special treatment of boundary elements
+    // calculate consistent dual shape functions for this element
+    ConsistDualShape();
 
-      // integrate cells
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-        Coupling()[m]->IntegrateCells(mparams_ptr);
+    // integrate cells
+    for (int m = 0; m < (int)MasterElements().size(); ++m)
+      Coupling()[m]->IntegrateCells(mparams_ptr);
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType() == INPAR::MORTAR::inttype_elements
-      || IntType() == INPAR::MORTAR::inttype_elements_BS)
+  else if (IntType() == INPAR::MORTAR::inttype_elements ||
+           IntType() == INPAR::MORTAR::inttype_elements_BS)
   {
-    if ((int) MasterElements().size() == 0)
-      return;
+    if ((int)MasterElements().size() == 0) return;
 
     if (!Quad())
     {
       bool boundary_ele = false;
 
-      //integrate D and M -- 2 Cells
-      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)->IntegrateEleBased3D(
-          SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
+      // integrate D and M -- 2 Cells
+      MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+          ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
       if (IntType() == INPAR::MORTAR::inttype_elements_BS)
       {
         if (boundary_ele == true)
         {
-          if (lmdualconsistent_!=INPAR::MORTAR::consistent_none)
+          if (lmdualconsistent_ != INPAR::MORTAR::consistent_none)
           {
             // loop over all master elements associated with this slave element
-            for (int m = 0; m < (int) MasterElements().size(); ++m)
+            for (int m = 0; m < (int)MasterElements().size(); ++m)
             {
               // create Coupling3d object and push back
-              Coupling().push_back(
-                  Teuchos::rcp(
-                      new Coupling3d(idiscret_, dim_, false, imortar_,
-                          SlaveElement(), MasterElement(m))));
+              Coupling().push_back(Teuchos::rcp(new Coupling3d(
+                  idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
               // do coupling
               Coupling()[m]->EvaluateCoupling();
 
@@ -4372,13 +4062,11 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
           else
           {
             // loop over all master elements associated with this slave element
-            for (int m = 0; m < (int) MasterElements().size(); ++m)
+            for (int m = 0; m < (int)MasterElements().size(); ++m)
             {
               // create Coupling3d object and push back
-              Coupling().push_back(
-                  Teuchos::rcp(
-                      new Coupling3d(idiscret_, dim_, false, imortar_,
-                          SlaveElement(), MasterElement(m))));
+              Coupling().push_back(Teuchos::rcp(new Coupling3d(
+                  idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m))));
               // do coupling
               Coupling()[m]->EvaluateCoupling();
             }
@@ -4387,7 +4075,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
             ConsistDualShape();
 
             // integrate cells
-            for (int m = 0; m < (int) MasterElements().size(); ++m)
+            for (int m = 0; m < (int)MasterElements().size(); ++m)
               Coupling()[m]->IntegrateCells(mparams_ptr);
           }
         }
@@ -4403,7 +4091,9 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
     }
     else
     {
-      dserror("ERROR: You should not be here! This coupling manager is not able to perform mortar coupling for high-order elements.");
+      dserror(
+          "ERROR: You should not be here! This coupling manager is not able to perform mortar "
+          "coupling for high-order elements.");
     }
   }
   //**********************************************************************
@@ -4436,95 +4126,90 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
     // build linear integration elements from quadratic MortarElements
-    std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
-    std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement> > >mauxelements(MasterElements().size());
+    std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
+    std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
+        MasterElements().size());
     SplitIntElements(SlaveElement(), sauxelements);
 
     // loop over all master elements associated with this slave element
-    for (int m = 0; m < (int) MasterElements().size(); ++m)
+    for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
       // build linear integration elements from quadratic MortarElements
       mauxelements[m].resize(0);
       SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
       // loop over all IntElement pairs for coupling
-      for (int i = 0; i < (int) sauxelements.size(); ++i)
+      for (int i = 0; i < (int)sauxelements.size(); ++i)
       {
-        for (int j = 0; j < (int) mauxelements[m].size(); ++j)
+        for (int j = 0; j < (int)mauxelements[m].size(); ++j)
         {
           // create instance of coupling class
-          Coupling().push_back(
-              Teuchos::rcp(new
-                Coupling3dQuad(idiscret_, dim_, true, imortar_,
-                    SlaveElement(), *MasterElements()[m], *sauxelements[i],
-                    *mauxelements[m][j])));
+          Coupling().push_back(Teuchos::rcp(new Coupling3dQuad(idiscret_, dim_, true, imortar_,
+              SlaveElement(), *MasterElements()[m], *sauxelements[i], *mauxelements[m][j])));
 
           // do coupling
-          Coupling()[Coupling().size()-1]->EvaluateCoupling();
-        } // for maux
-      } // for saux
-    } // for m
+          Coupling()[Coupling().size() - 1]->EvaluateCoupling();
+        }  // for maux
+      }    // for saux
+    }      // for m
 
     ConsistDualShape();
 
     // do integration
-    for (int i=0; i<(int)Coupling().size(); ++i)
-      Coupling()[i]->IntegrateCells(mparams_ptr);
+    for (int i = 0; i < (int)Coupling().size(); ++i) Coupling()[i]->IntegrateCells(mparams_ptr);
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType() == INPAR::MORTAR::inttype_elements
-      || IntType() == INPAR::MORTAR::inttype_elements_BS)
+  else if (IntType() == INPAR::MORTAR::inttype_elements ||
+           IntType() == INPAR::MORTAR::inttype_elements_BS)
   {
-    if ((int) MasterElements().size() == 0)
-      return;
+    if ((int)MasterElements().size() == 0) return;
 
     bool boundary_ele = false;
 
-    //integrate D and M -- 2 Cells
-    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)->IntegrateEleBased3D(
-        SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
+    // integrate D and M -- 2 Cells
+    MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(0), imortar_)
+        ->IntegrateEleBased3D(SlaveElement(), MasterElements(), &boundary_ele, idiscret_.Comm());
 
     if (IntType() == INPAR::MORTAR::inttype_elements_BS)
     {
       if (boundary_ele == true)
       {
         // loop over all master elements associated with this slave element
-        for (int m = 0; m < (int) MasterElements().size(); ++m)
+        for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
           // build linear integration elements from quadratic MortarElements
-          std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
-          std::vector<Teuchos::RCP<MORTAR::IntElement> > mauxelements(0);
+          std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
+          std::vector<Teuchos::RCP<MORTAR::IntElement>> mauxelements(0);
           SplitIntElements(SlaveElement(), sauxelements);
           SplitIntElements(*MasterElements()[m], mauxelements);
 
           // loop over all IntElement pairs for coupling
-          for (int i = 0; i < (int) sauxelements.size(); ++i)
+          for (int i = 0; i < (int)sauxelements.size(); ++i)
           {
-            for (int j = 0; j < (int) mauxelements.size(); ++j)
+            for (int j = 0; j < (int)mauxelements.size(); ++j)
             {
               // create instance of coupling class
-              MORTAR::Coupling3dQuad coup(idiscret_, dim_, true, imortar_,
-                  SlaveElement(), *MasterElements()[m], *sauxelements[i],
-                  *mauxelements[j]);
+              MORTAR::Coupling3dQuad coup(idiscret_, dim_, true, imortar_, SlaveElement(),
+                  *MasterElements()[m], *sauxelements[i], *mauxelements[j]);
               // do coupling
               coup.EvaluateCoupling();
 
               // Integrate Cells
               coup.IntegrateCells(mparams_ptr);
-            } // for maux
-          } // for saux
-        } // for m
+            }  // for maux
+          }    // for saux
+        }      // for m
       }
       else
       {
-        //nothing
+        // nothing
       }
     }
     else
     {
-      //nothing
+      // nothing
     }
   }
   //**********************************************************************
@@ -4549,17 +4234,20 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard || lmdualconsistent_==INPAR::MORTAR::consistent_none)
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard ||
+      lmdualconsistent_ == INPAR::MORTAR::consistent_none)
     return;
 
   // Consistent modification not yet checked for constant LM interpolation
-  if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const && lmdualconsistent_ != INPAR::MORTAR::consistent_none)
-    dserror("ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
+  if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const &&
+      lmdualconsistent_ != INPAR::MORTAR::consistent_none)
+    dserror(
+        "ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
 
-  if (Coupling().size() == 0)
-    return;
+  if (Coupling().size() == 0) return;
 
-  if (IntType() == INPAR::MORTAR::inttype_segments && lmdualconsistent_==INPAR::MORTAR::consistent_boundary)
+  if (IntType() == INPAR::MORTAR::inttype_segments &&
+      lmdualconsistent_ == INPAR::MORTAR::consistent_boundary)
   {
     // check if fully projecting
     bool boundary_ele = false;
@@ -4568,51 +4256,48 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
     for (int gp = 0; gp < integrator.nGP(); ++gp)
     {
       // coordinates and weight
-      double eta[2] = { integrator.Coordinate(gp, 0), integrator.Coordinate(gp, 1) };
+      double eta[2] = {integrator.Coordinate(gp, 0), integrator.Coordinate(gp, 1)};
 
       // note that the third component of sxi is necessary!
       // (although it will always be 0.0 of course)
-      //double tempsxi[3] = {0.0, 0.0, 0.0};
-      double sxi[2] = { 0.0, 0.0 };
-      double mxi[2] = { 0.0, 0.0 };
+      // double tempsxi[3] = {0.0, 0.0, 0.0};
+      double sxi[2] = {0.0, 0.0};
+      double mxi[2] = {0.0, 0.0};
       double projalpha = 0.0;
 
       sxi[0] = eta[0];
       sxi[1] = eta[1];
 
-      //check for Boundary Segmentation
+      // check for Boundary Segmentation
       bool projectable_gp = false;
 
       // discretization type of master element
-      DRT::Element::DiscretizationType dt =
-          Coupling()[0]->MasterElement().Shape();
+      DRT::Element::DiscretizationType dt = Coupling()[0]->MasterElement().Shape();
 
       //*******************************************************************
       // loop over meles
       //*******************************************************************
-      for (int nummaster = 0; nummaster < (int) Coupling().size(); ++nummaster)
+      for (int nummaster = 0; nummaster < (int)Coupling().size(); ++nummaster)
       {
         // project Gauss point onto master element
-        MORTAR::MortarProjector::Impl(SlaveElement(),
-            Coupling()[nummaster]->MasterElement())->ProjectGaussPoint3D(
-            SlaveElement(), sxi, Coupling()[nummaster]->MasterElement(), mxi,
-            projalpha);
+        MORTAR::MortarProjector::Impl(SlaveElement(), Coupling()[nummaster]->MasterElement())
+            ->ProjectGaussPoint3D(
+                SlaveElement(), sxi, Coupling()[nummaster]->MasterElement(), mxi, projalpha);
 
         bool is_on_mele = true;
 
         // check GP projection
         double tol = 0.00;
-        if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8
-            || dt == DRT::Element::quad9)
+        if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
         {
-          if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol
-              || mxi[1] > 1.0 + tol)
+          if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol ||
+              mxi[1] > 1.0 + tol)
             is_on_mele = false;
         }
         else
         {
-          if (mxi[0] < -tol || mxi[1] < -tol || mxi[0] > 1.0 + tol
-              || mxi[1] > 1.0 + tol || mxi[0] + mxi[1] > 1.0 + 2 * tol)
+          if (mxi[0] < -tol || mxi[1] < -tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol ||
+              mxi[0] + mxi[1] > 1.0 + 2 * tol)
             is_on_mele = false;
         }
         if (is_on_mele == true)
@@ -4620,16 +4305,15 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
           projectable_gp = true;
           break;
         }
-      } //loop over meles
+      }  // loop over meles
 
       if (projectable_gp == false)
       {
         boundary_ele = true;
         break;
       }
-    } // gp-loop
-    if (boundary_ele == false)
-      return;
+    }  // gp-loop
+    if (boundary_ele == false) return;
   }
 
   // get number of nodes of present slave element
@@ -4643,41 +4327,49 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
   // loop over all master elements associated with this slave element
-  for (int m = 0; m < (int) MasterElements().size(); ++m)
+  for (int m = 0; m < (int)MasterElements().size(); ++m)
   {
     // loop over all integration cells
-    for (int c = 0; c < (int) Coupling()[m]->Cells().size(); ++c)
+    for (int c = 0; c < (int)Coupling()[m]->Cells().size(); ++c)
     {
       Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
       // create an integrator for this cell
-      for (int gp = 0; gp < MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m),imortar_)->nGP(); ++gp)
+      for (int gp = 0;
+           gp < MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->nGP();
+           ++gp)
       {
         // coordinates and weight
-        double eta[2] = {
-            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m),imortar_)->Coordinate(gp, 0),
-            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m),imortar_)->Coordinate(gp, 1)};
-        double wgt = MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
+        double eta[2] = {MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)
+                             ->Coordinate(gp, 0),
+            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)
+                ->Coordinate(gp, 1)};
+        double wgt =
+            MORTAR::MortarIntegrator::Impl(SlaveElement(), MasterElement(m), imortar_)->Weight(gp);
 
         // get global Gauss point coordinates
-        double globgp[3] = { 0.0, 0.0, 0.0 };
+        double globgp[3] = {0.0, 0.0, 0.0};
         currcell->LocalToGlobal(eta, globgp, 0);
 
         // project Gauss point onto slave integration element
-        double sxi[2] = { 0.0, 0.0 };
+        double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
 
-        //TODO random?
-        MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPointAuxn3D(
-            globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+        // TODO random?
+        MORTAR::MortarProjector::Impl(SlaveElement())
+            ->ProjectGaussPointAuxn3D(
+                globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 
         // create vector for shape function evaluation
         LINALG::SerialDenseVector sval(nnodes);
         LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
 
         // evaluate trace space shape functions at Gauss point
-        if (LagMultQuad() == INPAR::MORTAR::lagmult_lin) SlaveElement().EvaluateShapeLagMultLin(INPAR::MORTAR::shape_standard,sxi,sval,sderiv,nnodes);
-        else SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
+        if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+          SlaveElement().EvaluateShapeLagMultLin(
+              INPAR::MORTAR::shape_standard, sxi, sval, sderiv, nnodes);
+        else
+          SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
 
         detg = currcell->Jacobian();
 
@@ -4698,59 +4390,61 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
           }
         }
       }
-    } // cells
-  } // mele
+    }  // cells
+  }    // mele
 
   // in case of no overlap just return, as there is no integration area
   // and therefore the consistent dual shape functions are not defined.
   // This doesn't matter, as there is no associated integration domain anyway
-  if (me.Det_long() == 0)
-    return;
+  if (me.Det_long() == 0) return;
 
   // declare dual shape functions coefficient matrix
-  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
   // compute matrix A_e for linear interpolation of quadratic element
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
   {
     // declare and initialize to zero inverse of Matrix M_e
-    LINALG::SerialDenseMatrix meinv(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
     if (SlaveElement().Shape() == DRT::Element::tri6)
     {
       // reduce me to non-zero nodes before inverting
-      LINALG::Matrix<3,3> melin;
-      for (int j=0;j<3;++j)
-        for (int k=0;k<3;++k) melin(j,k) = me(j,k);
+      LINALG::Matrix<3, 3> melin;
+      for (int j = 0; j < 3; ++j)
+        for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
       LINALG::Inverse3x3(melin);
 
       // re-inflate inverse of melin to full size
-      for (int j=0;j<3;++j)
-        for (int k=0;k<3;++k) meinv(j,k) = melin(j,k);
+      for (int j = 0; j < 3; ++j)
+        for (int k = 0; k < 3; ++k) meinv(j, k) = melin(j, k);
     }
-    else if (SlaveElement().Shape() == DRT::Element::quad8 || SlaveElement().Shape() == DRT::Element::quad9)
+    else if (SlaveElement().Shape() == DRT::Element::quad8 ||
+             SlaveElement().Shape() == DRT::Element::quad9)
     {
       // reduce me to non-zero nodes before inverting
-      LINALG::Matrix<4,4> melin;
-      for (int j=0;j<4;++j)
-        for (int k=0;k<4;++k) melin(j,k) = me(j,k);
+      LINALG::Matrix<4, 4> melin;
+      for (int j = 0; j < 4; ++j)
+        for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
       LINALG::Inverse4x4(melin);
 
       // re-inflate inverse of melin to full size
-      for (int j=0;j<4;++j)
-        for (int k=0;k<4;++k) meinv(j,k) = melin(j,k);
+      for (int j = 0; j < 4; ++j)
+        for (int k = 0; k < 4; ++k) meinv(j, k) = melin(j, k);
     }
-    else dserror("ERROR: incorrect element shape for linear interpolation of quadratic element!");
+    else
+      dserror("ERROR: incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
-    ae.Multiply('N','N',1.0,de,meinv,0.0);
+    ae.Multiply('N', 'N', 1.0, de, meinv, 0.0);
   }
   // compute matrix A_e for all other cases
-  else LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+  else
+    LINALG::InvertAndMultiplyByCholesky(me, de, ae);
 
   // store ae matrix in slave element data container
   SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));

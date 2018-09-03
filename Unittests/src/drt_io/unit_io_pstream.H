@@ -17,18 +17,18 @@
 #include <mpi.h>
 #include "src/drt_io/io_pstream.H"
 
-namespace IO { class Pstream_TestSuite; }
+namespace IO
+{
+  class Pstream_TestSuite;
+}
 
 class IO::Pstream_TestSuite : public CxxTest::TestSuite
 {
  private:
-
  public:
-  void setUp()
-  {}
+  void setUp() {}
 
-  void tearDown()
-  {}
+  void tearDown() {}
 
   void test_uninitializedUse()
   {
@@ -42,13 +42,17 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
-    TS_ASSERT_THROWS(ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 2, ""), std::runtime_error);
+    TS_ASSERT_THROWS(
+        ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 2, ""),
+        std::runtime_error);
   }
 
   void test_nonexistantProc()
   {
     Pstream ps;
-    TS_ASSERT_THROWS(ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 4, 2, ""), std::runtime_error);
+    TS_ASSERT_THROWS(
+        ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 4, 2, ""),
+        std::runtime_error);
   }
 
   void test_initializedUse()
@@ -73,7 +77,8 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
-    TS_ASSERT_THROWS_NOTHING(ps << 4UL << -5LL << 1337.0 << 42.0f << "blub" << std::string("blah") << "\n");
+    TS_ASSERT_THROWS_NOTHING(
+        ps << 4UL << -5LL << 1337.0 << 42.0f << "blub" << std::string("blah") << "\n");
     TS_ASSERT_THROWS_NOTHING(ps.flush());
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
@@ -105,6 +110,6 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(lvl << 23 << IO::endl);
   }
 
-}; // class Pstream_TestSuite
+};  // class Pstream_TestSuite
 
-#endif // UNIT_IO_PSTREAM_H_
+#endif  // UNIT_IO_PSTREAM_H_

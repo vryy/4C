@@ -34,54 +34,31 @@ using namespace DRT::UTILS;
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
-                                    DRT::Discretization&      discretization,
-                                    std::vector<int>&         lm,
-                                    Epetra_SerialDenseMatrix& elemat1,
-                                    Epetra_SerialDenseMatrix& elemat2,
-                                    Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseVector& elevec2,
-                                    Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
   // check for the action parameter
-  const ARTERY::Action action = DRT::INPUT::get<ARTERY::Action>(params,"action");
+  const ARTERY::Action action = DRT::INPUT::get<ARTERY::Action>(params, "action");
   /*
   Here must add the steps for evaluating an element
   */
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  switch(action)
+  switch (action)
   {
     case ARTERY::calc_sys_matrix_rhs:
     {
-
-     return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(),impltype_,discretization.Name())->Evaluate(
-              this,
-              params,
-              discretization,
-              lm,
-              elemat1,
-              elemat2,
-              elevec1,
-              elevec2,
-              elevec3,
-              mat
-              );
+      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
+          ->Evaluate(
+              this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
     case ARTERY::calc_scatra_sys_matrix_rhs:
     {
-      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(),impltype_,discretization.Name())->ScatraEvaluate(
-               this,
-               params,
-               discretization,
-               lm,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3,
-               mat
-               );
+      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
+          ->ScatraEvaluate(
+              this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
       break;
     }
     case ARTERY::get_initial_artery_state:
@@ -94,36 +71,23 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     case ARTERY::evaluate_wf_wb:
     case ARTERY::evaluate_scatra_analytically:
     {
-      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(),impltype_,discretization.Name())->EvaluateService(
-               this,
-               action,
-               params,
-               discretization,
-               lm,
-               elemat1,
-               elemat2,
-               elevec1,
-               elevec2,
-               elevec3,
-               mat
-               );
+      return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
+          ->EvaluateService(this, action, params, discretization, lm, elemat1, elemat2, elevec1,
+              elevec2, elevec3, mat);
     }
     break;
     default:
       dserror("Unkown type of action %d for Artery", action);
-  }// end of switch(act)
+  }  // end of switch(act)
 
 
   return 0;
-} // end of DRT::ELEMENTS::Artery::Evaluate
+}  // end of DRT::ELEMENTS::Artery::Evaluate
 
 
 int DRT::ELEMENTS::Artery::EvaluateNeumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization,
-    DRT::Condition& condition,
-    std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -134,10 +98,8 @@ int DRT::ELEMENTS::Artery::EvaluateNeumann(Teuchos::ParameterList& params,
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Artery::EvaluateDirichlet(Teuchos::ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           std::vector<int>&         lm,
-                                           Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
+    Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }
@@ -148,7 +110,7 @@ GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(const DiscretizationType&
 {
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
-    {
+  {
     case line2:
       rule = DRT::UTILS::intrule_line_2point;
       break;
@@ -156,15 +118,15 @@ GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(const DiscretizationType&
       rule = DRT::UTILS::intrule_line_3point;
       break;
     default:
-    dserror("unknown number of nodes for gaussrule initialization");
-    }
+      dserror("unknown number of nodes for gaussrule initialization");
+  }
   return rule;
 }
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
 bool DRT::ELEMENTS::Artery::isHigherOrderElement(
-  const DRT::Element::DiscretizationType  distype) const
+    const DRT::Element::DiscretizationType distype) const
 {
   bool hoel = true;
   switch (distype)
@@ -173,8 +135,8 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(
       hoel = true;
       break;
     case line2:
-       hoel = false;
-       break;
+      hoel = false;
+      break;
     default:
       dserror("distype unknown!");
   }

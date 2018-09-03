@@ -68,10 +68,8 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
-    const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output
-    )
+    const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -82,45 +80,47 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
   {
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
-    printlogo_ = (printscreen_>0 ? true : false);
+    printlogo_ = (printscreen_ > 0 ? true : false);
     errfile_ = xparams.get<FILE*>("err file");
-    gmsh_out_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_GMSH");
+    gmsh_out_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
     printerrfile_ = (true and errfile_);
     printiter_ = true;
-    p_io_every_iteration_ = Teuchos::rcp( new Teuchos::ParameterList(
-        ioparams.sublist( "EVERY ITERATION" ) ) );
-    outputeveryiter_ = DRT::INPUT::IntegralValue<bool>( *p_io_every_iteration_,
-        "OUTPUT_EVERY_ITER" );
+    p_io_every_iteration_ =
+        Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
+    outputeveryiter_ = DRT::INPUT::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writereducedrestart_ = xparams.get<int>("REDUCED_OUTPUT");
-    writestate_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP");
-    writevelacc_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_VEL_ACC");
-    writejac2matlab_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_JACOBIAN_MATLAB");
+    writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
+    writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
+    writejac2matlab_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
-    writestress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS");
-    writecouplstress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_COUPLING_STRESS");
-    writestrain_ = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN");
-    writeplstrain_ = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN");
+    writestress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS");
+    writecouplstress_ =
+        DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
+    writestrain_ = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_STRAIN");
+    writeplstrain_ =
+        DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
-    writesurfactant_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT");
-    writeoptquantity_ = DRT::INPUT::IntegralValue<INPAR::STR::OptQuantityType>(ioparams,"STRUCT_OPTIONAL_QUANTITY");
+    writesurfactant_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
+    writeoptquantity_ = DRT::INPUT::IntegralValue<INPAR::STR::OptQuantityType>(
+        ioparams, "STRUCT_OPTIONAL_QUANTITY");
 
     // check whether VTK output at runtime is desired
-    if ( ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1 )
+    if (ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtk_output_ = Teuchos::rcp( new ParamsRuntimeVtkOutput() );
+      params_runtime_vtk_output_ = Teuchos::rcp(new ParamsRuntimeVtkOutput());
 
-      params_runtime_vtk_output_->Init( ioparams.sublist("RUNTIME VTK OUTPUT") );
+      params_runtime_vtk_output_->Init(ioparams.sublist("RUNTIME VTK OUTPUT"));
       params_runtime_vtk_output_->Setup();
     }
 
     // check whether VTP output at runtime is desired
-    if ( ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1 )
+    if (ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtp_output_ = Teuchos::rcp( new ParamsRuntimeVtpOutput() );
+      params_runtime_vtp_output_ = Teuchos::rcp(new ParamsRuntimeVtpOutput());
 
-      params_runtime_vtp_output_->Init( ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE") );
+      params_runtime_vtp_output_->Init(ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE"));
       params_runtime_vtp_output_->Setup();
     }
   }
@@ -136,11 +136,9 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 void STR::TIMINT::BaseDataIO::Setup()
 {
   // safety check
-  if (!IsInit())
-    dserror("Init() has not been called, yet!");
+  if (!IsInit()) dserror("Init() has not been called, yet!");
 
-  if ( outputeveryiter_ )
-    writer_every_iter_ = Teuchos::rcp( new IO::EveryIterationWriter() );
+  if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new IO::EveryIterationWriter());
 
   issetup_ = true;
 
@@ -151,56 +149,51 @@ void STR::TIMINT::BaseDataIO::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
-    IO::EveryIterationWriterInterface* interface,
-    Teuchos::ParameterList& p_nox )
+    IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
 {
-  if ( not outputeveryiter_ )
-    return;
+  if (not outputeveryiter_) return;
 
-  writer_every_iter_->Init( output_.get(), interface, *p_io_every_iteration_ );
+  writer_every_iter_->Init(output_.get(), interface, *p_io_every_iteration_);
   writer_every_iter_->Setup();
 
   // insert the every_iter output writer as ppo for the solver object
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
 
-  Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr =
-      Teuchos::rcp( new NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration(
-          *writer_every_iter_ ) );
+  Teuchos::RCP<NOX::Abstract::PrePostOperator> prepost_solver_ptr = Teuchos::rcp(
+      new NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration(*writer_every_iter_));
 
-  NOX::NLN::AUX::AddToPrePostOpVector( p_sol_opt, prepost_solver_ptr );
+  NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
 
   // insert the every_iter output writer as ppo for the linesearch object
   Teuchos::ParameterList& p_linesearch = p_nox.sublist("Line Search");
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::NLN::LineSearch::PrePostOperator::map& prepostls_map =
-      NOX::NLN::LineSearch::PrePostOperator::GetMutableMap( p_linesearch );
+      NOX::NLN::LineSearch::PrePostOperator::GetMutableMap(p_linesearch);
 
   // insert/replace the old pointer in the map
   prepostls_map[NOX::NLN::LineSearch::prepost_output_every_iter] =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Abstract::PrePostOperator>(
-          prepost_solver_ptr );
+      Teuchos::rcp_dynamic_cast<NOX::NLN::Abstract::PrePostOperator>(prepost_solver_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 {
-  if ( energyfile_.is_null() )
+  if (energyfile_.is_null())
   {
-    std::string energy_file_name
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()
-      + "_energy.csv";
+    std::string energy_file_name =
+        DRT::Problem::Instance()->OutputControlFile()->FileName() + "_energy.csv";
 
-    energyfile_ = Teuchos::rcp( new std::ofstream( energy_file_name.c_str() ) );
+    energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEveryIteration(
-    IO::EveryIterationWriter& every_iter_writer )
-    : every_iter_writer_( every_iter_writer )
+    IO::EveryIterationWriter& every_iter_writer)
+    : every_iter_writer_(every_iter_writer)
 {
   /* empty */
 }
@@ -208,7 +201,7 @@ NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEvery
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve(
-    const NOX::Solver::Generic& solver )
+    const NOX::Solver::Generic& solver)
 {
   every_iter_writer_.InitNewtonIteration();
 }
@@ -216,20 +209,19 @@ void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreSolve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPostIterate(
-    const NOX::Solver::Generic& solver )
+    const NOX::Solver::Generic& solver)
 {
   const int newton_iteration = solver.getNumIterations();
-  every_iter_writer_.AddNewtonIteration( newton_iteration );
+  every_iter_writer_.AddNewtonIteration(newton_iteration);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::runPreModifyStepLength(
-    const NOX::Solver::Generic& solver,
-    const NOX::LineSearch::Generic& linesearch )
+    const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch)
 {
   const int newton_iteration = solver.getNumIterations();
-  const int ls_iteration = dynamic_cast<const NOX::NLN::LineSearch::Generic&>(
-      linesearch ).GetNumIterations();
-  every_iter_writer_.AddLineSearchIteration( newton_iteration, ls_iteration );
+  const int ls_iteration =
+      dynamic_cast<const NOX::NLN::LineSearch::Generic&>(linesearch).GetNumIterations();
+  every_iter_writer_.AddLineSearchIteration(newton_iteration, ls_iteration);
 }

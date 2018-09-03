@@ -19,21 +19,23 @@
 
 #include "../drt_xfem/xfem_state_creator.H"
 
-namespace ADAPTER {
+namespace ADAPTER
+{
   class Field;
-} // namespace ADAPTER
-namespace XSTR {
+}  // namespace ADAPTER
+namespace XSTR
+{
   class MultiDiscretizationWrapper;
-} // namespace XSTR
+}  // namespace XSTR
 
-namespace XCONTACT {
+namespace XCONTACT
+{
   class StateCreator : public XFEM::StateCreator
   {
-  public:
-
+   public:
     StateCreator();
 
-    virtual ~StateCreator() {};
+    virtual ~StateCreator(){};
 
     /*! \brief Recreate a state object if necessary
      *
@@ -47,63 +49,45 @@ namespace XCONTACT {
      *  \param time          : current time
      *  \param dosetup       : call setup on the new state object
      */
-    void Recreate(
-        Teuchos::RCP<XFEM::XFieldState> &                xstate,
-        const Teuchos::RCP<ADAPTER::Field> &             xfield,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & full_discret,
-        const Teuchos::RCP<const Epetra_Vector> &        back_disp_col,
-        const Teuchos::RCP<const Epetra_Vector> &        levelset_field_row,
-        Teuchos::ParameterList &                         solver_params,
-        int                                              step,
-        double                                           time,
-        bool                                             dosetup);
-    void Recreate(
-        Teuchos::RCP<XFEM::XFieldState> &             xstate,
-        const Teuchos::RCP<ADAPTER::Field> &          xfield,
-        XSTR::MultiDiscretizationWrapper &            full_discret,
-        const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
-        const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
-        Teuchos::ParameterList &                      solver_params,
-        int                                           step,
-        double                                        time,
-        bool                                          dosetup);
+    void Recreate(Teuchos::RCP<XFEM::XFieldState>& xstate,
+        const Teuchos::RCP<ADAPTER::Field>& xfield,
+        const Teuchos::RCP<DRT::DiscretizationInterface>& full_discret,
+        const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+        const Teuchos::RCP<const Epetra_Vector>& levelset_field_row,
+        Teuchos::ParameterList& solver_params, int step, double time, bool dosetup);
+    void Recreate(Teuchos::RCP<XFEM::XFieldState>& xstate,
+        const Teuchos::RCP<ADAPTER::Field>& xfield, XSTR::MultiDiscretizationWrapper& full_discret,
+        const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+        const Teuchos::RCP<const Epetra_Vector>& levelset_field_row,
+        Teuchos::ParameterList& solver_params, int step, double time, bool dosetup);
 
-  protected:
-    void CreateCutWizard(
-        const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,
-        const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
-        const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
-        Teuchos::RCP<GEO::CutWizard> &                wizard );
+   protected:
+    void CreateCutWizard(const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+        const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+        const Teuchos::RCP<const Epetra_Vector>& levelset_field_row,
+        Teuchos::RCP<GEO::CutWizard>& wizard);
 
-  private:
+   private:
     enum XFEM::StateStatus FinishBackgroundDiscretization(
-        const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
-        Teuchos::ParameterList &               solver_params,
-        XSTR::MultiDiscretizationWrapper &     full_discret );
+        const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset, Teuchos::ParameterList& solver_params,
+        XSTR::MultiDiscretizationWrapper& full_discret);
 
-    enum XFEM::StateStatus CreateNewCutState(
-        Teuchos::RCP<XFEM::XFEMDofSet> &              xdofset,
-        Teuchos::RCP<GEO::CutWizard> &                wizard,
-        XSTR::MultiDiscretizationWrapper &            full_discret,
-        const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
-        const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
-        Teuchos::ParameterList &                      solver_params,
-        int                                           step );
+    enum XFEM::StateStatus CreateNewCutState(Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+        Teuchos::RCP<GEO::CutWizard>& wizard, XSTR::MultiDiscretizationWrapper& full_discret,
+        const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
+        const Teuchos::RCP<const Epetra_Vector>& levelset_field_row,
+        Teuchos::ParameterList& solver_params, int step);
 
-    Teuchos::RCP<XFEM::XFieldState> CreateNewXFieldState(
-        const Teuchos::RCP<ADAPTER::Field> &   xfield,
-        const Teuchos::RCP<GEO::CutWizard> &   wizard,
-        const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
-        XSTR::MultiDiscretizationWrapper &     full_discret ) const;
+    Teuchos::RCP<XFEM::XFieldState> CreateNewXFieldState(const Teuchos::RCP<ADAPTER::Field>& xfield,
+        const Teuchos::RCP<GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
+        XSTR::MultiDiscretizationWrapper& full_discret) const;
 
-    void DestroyXFieldState(
-        const Teuchos::RCP<ADAPTER::Field> & xfield ) const;
+    void DestroyXFieldState(const Teuchos::RCP<ADAPTER::Field>& xfield) const;
 
-    void ResetXFieldNonStandardDofs(
-        const Teuchos::RCP<ADAPTER::Field> & xfield ) const;
+    void ResetXFieldNonStandardDofs(const Teuchos::RCP<ADAPTER::Field>& xfield) const;
 
-  }; // class StateCreator
-} // namespace XCONTACT
+  };  // class StateCreator
+}  // namespace XCONTACT
 
 
 

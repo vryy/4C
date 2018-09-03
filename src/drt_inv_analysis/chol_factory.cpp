@@ -23,8 +23,6 @@
 Teuchos::RCP<INVANA::CholFactorBase> INVANA::CholFactory::Create(
     Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::ParameterList& p)
 {
-
-
   Teuchos::RCP<CholFactorBase> factor = Teuchos::null;
 
   // initialize cholesky factor
@@ -34,10 +32,8 @@ Teuchos::RCP<INVANA::CholFactorBase> INVANA::CholFactory::Create(
 
   // compute factorization
   int err = factor->Compute();
-  if (err!=0)
-    dserror("Factorization computation delivered: %d", err);
+  if (err != 0) dserror("Factorization computation delivered: %d", err);
   factor->Print(std::cout);
 
   return factor;
-
 }

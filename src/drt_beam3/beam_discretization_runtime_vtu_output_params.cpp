@@ -39,7 +39,7 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
-    const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist )
+    const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -47,44 +47,34 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
   // initialize the parameter values
 
   output_displacement_state_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
 
-  use_absolute_positions_visualizationpoint_coordinates_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
+  use_absolute_positions_visualizationpoint_coordinates_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
 
-  write_internal_energy_element_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
+  write_internal_energy_element_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "INTERNAL_ENERGY_ELEMENT");
 
-  write_kinetic_energy_element_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
+  write_kinetic_energy_element_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "KINETIC_ENERGY_ELEMENT");
 
-  write_triads_visualizationpoints_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "TRIAD_VISUALIZATIONPOINT");
+  write_triads_visualizationpoints_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "TRIAD_VISUALIZATIONPOINT");
 
   write_material_crosssection_strains_gausspoints_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
 
-  write_material_crosssection_stresses_gausspoints_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_GAUSSPOINT");
+  write_material_crosssection_stresses_gausspoints_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_GAUSSPOINT");
 
-  write_spatial_crosssection_stresses_gausspoints_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "SPATIAL_FORCES_GAUSSPOINT");
+  write_spatial_crosssection_stresses_gausspoints_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "SPATIAL_FORCES_GAUSSPOINT");
 
-  write_orientation_parameter_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
+  write_orientation_parameter_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "ORIENTATION_PARAMETER");
 
-  write_rve_crosssection_forces_ =
-      (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
+  write_rve_crosssection_forces_ = (bool)DRT::INPUT::IntegralValue<int>(
+      IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
 
 
   isinit_ = true;
@@ -94,8 +84,7 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Setup()
 {
-  if ( not IsInit() )
-    dserror("Init() has not been called, yet!");
+  if (not IsInit()) dserror("Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -106,6 +95,5 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::CheckInitSetup() const
 {
-  if ( not IsInit() or not IsSetup() )
-    dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
 }

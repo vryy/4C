@@ -41,10 +41,10 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/18 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(
-    const Teuchos::RCP<const SSI::SSI_Part>   ssi_part   //!< partitioned algorithm for scalar-structure interaction
-    ) :
-ssi_part_(ssi_part)
+STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSI_Part>
+        ssi_part  //!< partitioned algorithm for scalar-structure interaction
+    )
+    : ssi_part_(ssi_part)
 {
   return;
 }
@@ -52,74 +52,46 @@ ssi_part_(ssi_part)
 /*----------------------------------------------------------------------*
  | assemble Jacobian                                         fang 01/18 |
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(LINALG::SparseOperator& jac,const double& timefac_np) const
+bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
+    LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   // perform structural meshtying for scatra-scatra interface coupling
-  if(ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling())
+  if (ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling())
   {
     // cast old Jacobian
     LINALG::SparseMatrix& jac_sparse = dynamic_cast<LINALG::SparseMatrix&>(jac);
 
     // initialize new Jacobian
-    LINALG::SparseMatrix jac_new(*GState().DofRowMap(),81,true,true);
+    LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
 
     // assemble interior and master-side rows and columns of original Jacobian into new Jacobian
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(
-        jac_sparse,
-        *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->MapStructureCondensed(),
-        1.,
-        NULL,
-        NULL,
-        jac_new
-        );
+    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
+        *ssi_part_->MapStructureCondensed(), 1., NULL, NULL, jac_new);
 
     // transform and assemble slave-side rows of original Jacobian into new Jacobian
     ADAPTER::CouplingSlaveConverter converter(*ssi_part_->CouplingAdapterStructure());
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(
-        jac_sparse,
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(),
-        *ssi_part_->MapStructureCondensed(),
-        1.,
-        &converter,
-        NULL,
-        jac_new,
-        true,
-        true
-        );
+    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse,
+        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), *ssi_part_->MapStructureCondensed(),
+        1., &converter, NULL, jac_new, true, true);
 
     // transform and assemble slave-side columns of original Jacobian into new Jacobian
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(
-        jac_sparse,
-        *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(),
-        1.,
-        NULL,
-        &converter,
-        jac_new,
-        true,
-        true
-        );
+    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
+        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), 1., NULL, &converter, jac_new, true,
+        true);
 
     // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
-    FSI::UTILS::MatrixLogicalSplitAndTransform()(
-        jac_sparse,
+    FSI::UTILS::MatrixLogicalSplitAndTransform()(jac_sparse,
         *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(),
-        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(),
-        1.,
-        &converter,
-        &converter,
-        jac_new,
-        true,
-        true
-        );
+        *ssi_part_->CouplingAdapterStructure()->SlaveDofMap(), 1., &converter, &converter, jac_new,
+        true, true);
 
-    // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize structural meshtying
+    // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize structural
+    // meshtying
     jac_new.Complete();
     jac_new.ApplyDirichlet(*ssi_part_->CouplingAdapterStructure()->SlaveDofMap());
 
     // replace old Jacobian by new one
-    jac_sparse.Assign(LINALG::View,jac_new);
+    jac_sparse.Assign(LINALG::View, jac_new);
   }
 
   return true;
@@ -128,20 +100,23 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(LINALG::SparseOperato
 /*----------------------------------------------------------------------*
  | pre-compute solution vector                               fang 01/18 |
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(const Epetra_Vector& xold,Epetra_Vector& dir_mutable,const NOX::NLN::Group& curr_grp)
+void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
+    const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
 {
   // perform structural meshtying for scatra-scatra interface coupling
-  if(ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling())
+  if (ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling())
     // transform and assemble master-side part of structural increment vector to slave side
-    ssi_part_->MapsStructure()->InsertVector(*ssi_part_->CouplingAdapterStructure()->MasterToSlave(ssi_part_->MapsStructure()->ExtractVector(dir_mutable,2)),1,dir_mutable);
+    ssi_part_->MapsStructure()->InsertVector(
+        *ssi_part_->CouplingAdapterStructure()->MasterToSlave(
+            ssi_part_->MapsStructure()->ExtractVector(dir_mutable, 2)),
+        1, dir_mutable);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::
-    Setup()
+void STR::MODELEVALUATOR::PartitionedSSI::Setup()
 {
   CheckInit();
   // set flag
@@ -152,8 +127,7 @@ void STR::MODELEVALUATOR::PartitionedSSI::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedSSI::
-    GetBlockDofRowMapPtr() const
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedSSI::GetBlockDofRowMapPtr() const
 {
   CheckInitSetup();
   return GState().DofRowMap();
@@ -161,8 +135,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedSSI::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::
-    GetCurrentSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::GetCurrentSolutionPtr() const
 {
   CheckInit();
   return GState().GetDisNp();
@@ -170,8 +143,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::
-    GetLastTimeStepSolutionPtr() const
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::GetLastTimeStepSolutionPtr()
+    const
 {
   CheckInit();
   return GState().GetDisN();
@@ -180,16 +153,19 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedSSI::
 /*----------------------------------------------------------------------*
  | assemble right-hand side vector                           fang 01/18 |
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(Epetra_Vector& f,const double & timefac_np) const
+bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
+    Epetra_Vector& f, const double& timefac_np) const
 {
   // perform structural meshtying for scatra-scatra interface coupling
-  if(ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling() and ssi_part_->IsSetup())
+  if (ssi_part_->ScaTraField()->ScaTraField()->S2ICoupling() and ssi_part_->IsSetup())
   {
     // transform and assemble slave-side part of structural right-hand side vector to master side
-    ssi_part_->MapsStructure()->AddVector(*ssi_part_->CouplingAdapterStructure()->SlaveToMaster(ssi_part_->MapsStructure()->ExtractVector(f,1)),2,f);
+    ssi_part_->MapsStructure()->AddVector(*ssi_part_->CouplingAdapterStructure()->SlaveToMaster(
+                                              ssi_part_->MapsStructure()->ExtractVector(f, 1)),
+        2, f);
 
     // zero out slave-side part of structural right-hand side vector
-    ssi_part_->MapsStructure()->PutScalar(f,1,0.);
+    ssi_part_->MapsStructure()->PutScalar(f, 1, 0.);
   }
 
   return true;
@@ -197,9 +173,4 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(Epetra_Vector& f,const d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::
-     UpdateStepState(
-    const double& timefac_n)
-{
-  return;
-}
+void STR::MODELEVALUATOR::PartitionedSSI::UpdateStepState(const double& timefac_n) { return; }

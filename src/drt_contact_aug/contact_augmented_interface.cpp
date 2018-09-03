@@ -37,53 +37,43 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IDataContainer::IDataContainer()
-    : penBound_( -1.0 ),
-      ct_( -1.0 ),
-      slMaElementAreaRatio_( 0 ),
-      isTriangleOnMaster_( false ),
-      issetup_( false ),
-      assemble_strat_( INPAR::CONTACT::assemble_none ),
-      var_type_( INPAR::CONTACT::var_unknown ),
-      sndofrowmap_( Teuchos::null ),
-      stdofrowmap_( Teuchos::null )
+    : penBound_(-1.0),
+      ct_(-1.0),
+      slMaElementAreaRatio_(0),
+      isTriangleOnMaster_(false),
+      issetup_(false),
+      assemble_strat_(INPAR::CONTACT::assemble_none),
+      var_type_(INPAR::CONTACT::var_unknown),
+      sndofrowmap_(Teuchos::null),
+      stdofrowmap_(Teuchos::null)
 {
   /* nothing to do */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr )
-    : ::CONTACT::CoInterface( idata_ptr ),
-      idata_ptr_( idata_ptr ),
-      idata_( *idata_ptr_ )
+CONTACT::AUG::Interface::Interface(const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr)
+    : ::CONTACT::CoInterface(idata_ptr), idata_ptr_(idata_ptr), idata_(*idata_ptr_)
 {
   /* do nothing */
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::Interface::Interface(
-    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    int id,
-    const Epetra_Comm& comm,
-    int dim,
-    const Teuchos::ParameterList& icontact,
-    bool selfcontact,
+CONTACT::AUG::Interface::Interface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr, int id,
+    const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(idata_ptr,id,comm,dim,icontact,selfcontact,redundant),
-      idata_ptr_( Teuchos::rcp_dynamic_cast<AUG::IDataContainer>( idata_ptr, true ) ),
-      idata_( *idata_ptr_ )
+    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant),
+      idata_ptr_(Teuchos::rcp_dynamic_cast<AUG::IDataContainer>(idata_ptr, true)),
+      idata_(*idata_ptr_)
 {
   const Teuchos::ParameterList& p_aug = icontact.sublist("AUGMENTED");
 
   idata_.SetAssembleStratType(
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::AssembleStrategy>(p_aug,
-      "ASSEMBLE_STRATEGY") );
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AssembleStrategy>(p_aug, "ASSEMBLE_STRATEGY"));
 
-  idata_.SetVariationalApproachType(
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(p_aug,
-      "VARIATIONAL_APPROACH") );
+  idata_.SetVariationalApproachType(DRT::INPUT::IntegralValue<INPAR::CONTACT::VariationalApproach>(
+      p_aug, "VARIATIONAL_APPROACH"));
 
   // empty constructor body
   return;
@@ -91,20 +81,17 @@ CONTACT::AUG::Interface::Interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::FillComplete(
-    int maxdof,
-    bool newghosting)
+void CONTACT::AUG::Interface::FillComplete(int maxdof, bool newghosting)
 {
   // call the standard mortar routine first
-  MortarInterface::FillComplete(maxdof,newghosting);
+  MortarInterface::FillComplete(maxdof, newghosting);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Setup()
 {
-  if ( idata_.IsSetup() )
-    return;
+  if (idata_.IsSetup()) return;
 
   // find smallest interface element edge length
   double myMinEdgeLength = 1.0e12;
@@ -119,38 +106,34 @@ void CONTACT::AUG::Interface::Setup()
 
   // ------------------------------------------------------------------------
   // loop over all slave elements
-  for (int i=0; i<selerowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < selerowmap_->NumMyElements(); ++i)
   {
     int gid = selerowmap_->GID(i);
     DRT::Element* ele = idiscret_->gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find slave element with gid %i",gid);
+    if (!ele) dserror("ERROR: Cannot find slave element with gid %i", gid);
 
     MORTAR::MortarElement* sele = static_cast<MORTAR::MortarElement*>(ele);
-    if (myMinEdgeLength > sele->MinEdgeSize())
-      myMinEdgeLength = sele->MinEdgeSize();
+    if (myMinEdgeLength > sele->MinEdgeSize()) myMinEdgeLength = sele->MinEdgeSize();
 
-    if ( myMaxAreaSl < sele->MoData().Area() )
-      myMaxAreaSl = sele->MoData().Area();
+    if (myMaxAreaSl < sele->MoData().Area()) myMaxAreaSl = sele->MoData().Area();
   }
 
   // ------------------------------------------------------------------------
   // loop over all master elements
-  for (int i=0; i<melerowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < melerowmap_->NumMyElements(); ++i)
   {
     int gid = melerowmap_->GID(i);
     DRT::Element* ele = idiscret_->gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find master element with gid %i",gid);
+    if (!ele) dserror("ERROR: Cannot find master element with gid %i", gid);
 
     MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
-    if (myMinEdgeLength > mele->MinEdgeSize())
-      myMinEdgeLength = mele->MinEdgeSize();
+    if (myMinEdgeLength > mele->MinEdgeSize()) myMinEdgeLength = mele->MinEdgeSize();
 
     // no Mortar Data container on the master side
     double myarea = mele->ComputeArea();
-    if ( myMinAreaMa > myarea )
-      myMinAreaMa = myarea;
+    if (myMinAreaMa > myarea) myMinAreaMa = myarea;
 
-    switch ( ele->Shape() )
+    switch (ele->Shape())
     {
       case DRT::Element::tri3:
       case DRT::Element::tri6:
@@ -164,38 +147,41 @@ void CONTACT::AUG::Interface::Setup()
 
   // ------------------------------------------------------------------------
   // communicate the minimal edge length and element area over all procs
-  double lMins[2] = { myMinEdgeLength, myMinAreaMa };
-  double gMins[2] = { 1.0e12, 1.0e12 };
-  Comm().MinAll(&lMins[0],&gMins[0],2);
+  double lMins[2] = {myMinEdgeLength, myMinAreaMa};
+  double gMins[2] = {1.0e12, 1.0e12};
+  Comm().MinAll(&lMins[0], &gMins[0], 2);
 
   if (gMins[0] == 1.0e12 or gMins[0] < 0.0)
-    dserror("ERROR: Global minimal interface edge length couldn't"
-        " be calculated! (value: %d)",gMins[0]);
+    dserror(
+        "ERROR: Global minimal interface edge length couldn't"
+        " be calculated! (value: %d)",
+        gMins[0]);
 
   // set penetration bound to 50% of the minimal interface element edge length,
   // if no user defined value is provided.
-  if ( idata_.PenBound() < 0.0)
-    idata_.PenBound() = 0.5*gMins[0];
+  if (idata_.PenBound() < 0.0) idata_.PenBound() = 0.5 * gMins[0];
 
   if (gMins[1] == 1.0e12 or gMins[1] < 0.0)
-    dserror("ERROR: Global minimal master element area couldn't"
-        " be calculated! (value: %d)",gMins[1]);
+    dserror(
+        "ERROR: Global minimal master element area couldn't"
+        " be calculated! (value: %d)",
+        gMins[1]);
 
   const double gMinAreaMa = gMins[1];
 
   // ------------------------------------------------------------------------
   // communicate the maximal slave element area over all procs
-  double lMaxs[2] = { myMaxAreaSl, static_cast<double>( myTriangleOnMaster ) };
-  double gMaxs[2] = { 0.0, 0.0 };
-  Comm().MaxAll( &lMaxs[0], &gMaxs[0], 2 );
+  double lMaxs[2] = {myMaxAreaSl, static_cast<double>(myTriangleOnMaster)};
+  double gMaxs[2] = {0.0, 0.0};
+  Comm().MaxAll(&lMaxs[0], &gMaxs[0], 2);
 
   const double gMaxAreaSl = gMaxs[0];
-  const bool isTriangleOnMaster = static_cast<bool>( gMaxs[1] );
+  const bool isTriangleOnMaster = static_cast<bool>(gMaxs[1]);
 
-  const int slMaElementAreaRatio = std::ceil( gMaxAreaSl / gMinAreaMa );
+  const int slMaElementAreaRatio = std::ceil(gMaxAreaSl / gMinAreaMa);
 
-  idata_.SetSlMaElementAreaRatio( slMaElementAreaRatio );
-  idata_.SetIsTriangleOnMaster( isTriangleOnMaster );
+  idata_.SetSlMaElementAreaRatio(slMaElementAreaRatio);
+  idata_.SetIsTriangleOnMaster(isTriangleOnMaster);
 
   idata_.IsSetup() = true;
 
@@ -209,20 +195,20 @@ void CONTACT::AUG::Interface::Setup()
 void CONTACT::AUG::Interface::SetupAssembleStrategy()
 {
   const enum INPAR::CONTACT::AssembleStrategy type = idata_.AssembleStratType();
-  switch ( type )
+  switch (type)
   {
     case INPAR::CONTACT::assemble_node_based:
     {
       Teuchos::RCP<INTERFACE::AssembleStrategy> assemble_strategy =
           CreateNodeBasedAssembleStrategy();
-      idata_.SetAssembleStrategy( assemble_strategy );
+      idata_.SetAssembleStrategy(assemble_strategy);
 
       break;
     }
     default:
     {
-      dserror( "Unknown interface assemble strategy! (enum=%d)", type );
-      exit( EXIT_FAILURE );
+      dserror("Unknown interface assemble strategy! (enum=%d)", type);
+      exit(EXIT_FAILURE);
     }
   }
 }
@@ -232,37 +218,34 @@ void CONTACT::AUG::Interface::SetupAssembleStrategy()
 Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
 CONTACT::AUG::Interface::CreateNodeBasedAssembleStrategy()
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type =
-      idata_.VariationalApproachType();
+  const enum INPAR::CONTACT::VariationalApproach var_type = idata_.VariationalApproachType();
 
-  switch ( var_type )
+  switch (var_type)
   {
     case INPAR::CONTACT::var_complete:
     {
-      return Teuchos::rcp( new INTERFACE::NodeBasedAssembleStrategy<
-          INTERFACE::CompleteAssemblePolicy>( this ) );
+      return Teuchos::rcp(
+          new INTERFACE::NodeBasedAssembleStrategy<INTERFACE::CompleteAssemblePolicy>(this));
     }
     case INPAR::CONTACT::var_incomplete:
     {
-      return Teuchos::rcp( new INTERFACE::NodeBasedAssembleStrategy<
-          INTERFACE::IncompleteAssemblePolicy>( this ) );
+      return Teuchos::rcp(
+          new INTERFACE::NodeBasedAssembleStrategy<INTERFACE::IncompleteAssemblePolicy>(this));
     }
     default:
     {
-      dserror( "Unknown variational approach! (var_type= \"%s\" | %d)",
-          INPAR::CONTACT::VariationalApproach2String( var_type ).c_str(),
-          var_type );
-      exit( EXIT_FAILURE );
+      dserror("Unknown variational approach! (var_type= \"%s\" | %d)",
+          INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
+      exit(EXIT_FAILURE);
     }
   }
-
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Initialize()
 {
-  TEUCHOS_FUNC_TIME_MONITOR( CONTACT_FUNC_NAME );
+  TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -277,26 +260,24 @@ void CONTACT::AUG::Interface::Initialize()
   // loop over all slave nodes to reset stuff (standard column map)
   // (include slave side boundary nodes / crosspoints)
   const int nummynodes = SlaveColNodesBound()->NumMyElements();
-  const int * mynodegids = SlaveColNodesBound()->MyGlobalElements();
+  const int* mynodegids = SlaveColNodesBound()->MyGlobalElements();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     DRT::Node* node = Discret().gNode(gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
-    if ( not cnode )
-      dserror("Dynamic cast for node gid %d failed!",gid);
+    if (not cnode) dserror("Dynamic cast for node gid %d failed!", gid);
 
-    cnode->InitializeAugDataContainer( idata_.SlMaElementAreaRatio(),
-        idata_.IsTriangleOnMaster() );
+    cnode->InitializeAugDataContainer(idata_.SlMaElementAreaRatio(), idata_.IsTriangleOnMaster());
 
     // reset nodal weighted gap
     cnode->AugData().GetWGap() = 1.0e12;
 
     // reset nodal scaling factor
     cnode->AugData().GetKappa() = 1.0e12;
-    cnode->AugData().GetAugA()  = 0.0;
+    cnode->AugData().GetAugA() = 0.0;
 
     // reset kappaLin
     cnode->AugData().GetDeriv1st_Kappa().clear();
@@ -316,8 +297,8 @@ void CONTACT::AUG::Interface::Initialize()
 
     cnode->AugData().GetDeriv2nd_WGapMa().clear();
 
-    cnode->AugData().Get_Debug() = std::pair<int,double>();
-    cnode->AugData().Get_DebugVec() = std::vector<std::pair<int,double> >( Dim() );
+    cnode->AugData().Get_Debug() = std::pair<int, double>();
+    cnode->AugData().Get_DebugVec() = std::vector<std::pair<int, double>>(Dim());
 
     cnode->AugData().GetDeriv1st_Debug().clear();
     cnode->AugData().GetDeriv1st_DebugVec().clear();
@@ -339,13 +320,12 @@ void CONTACT::AUG::Interface::UpdateMasterSlaveSets()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::RedEvaluate(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  TEUCHOS_FUNC_TIME_MONITOR( CONTACT_FUNC_NAME );
+  TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // interface needs to be complete
-  if (!Filled() && Comm().MyPID()==0)
+  if (!Filled() && Comm().MyPID() == 0)
     dserror("ERROR: FillComplete() not called on interface %", id_);
 
   // get out of here if not participating in interface
@@ -354,33 +334,32 @@ void CONTACT::AUG::Interface::RedEvaluate(
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   const int nummyelements = selecolmap_->NumMyElements();
-  const int * myelementgids = selecolmap_->MyGlobalElements();
+  const int* myelementgids = selecolmap_->MyGlobalElements();
 
-  for ( int i=0; i<nummyelements; ++i )
+  for (int i = 0; i < nummyelements; ++i)
   {
     const int gid1 = myelementgids[i];
 
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
     MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
-    if (selement->ZeroSized())
-      continue;
+    if (selement->ZeroSized()) continue;
 
     /**************************************************************************
      *    Integrate all remaining quantities only over the slave interface    *
      **************************************************************************/
     // create a Augmented Lagrangian integrator instance with correct NumGP and Dim
-    CONTACT::AUG::IntegrationWrapper augIntegrationWrapper(IParams(),selement->Shape(),Comm());
-    switch ( Dim() )
+    CONTACT::AUG::IntegrationWrapper augIntegrationWrapper(IParams(), selement->Shape(), Comm());
+    switch (Dim())
     {
       case 2:
       case 3:
-        augIntegrationWrapper.IntegrateDerivSlaveElement((*selement),Comm(),mparams_ptr);
+        augIntegrationWrapper.IntegrateDerivSlaveElement((*selement), Comm(), mparams_ptr);
         break;
       default:
         dserror("ERROR: RedEvaluate: Dim value has to be 2 or 3!");
-        exit( EXIT_FAILURE );
+        exit(EXIT_FAILURE);
     }
     /**************************************************************************
      *                       !!! end integration !!!                          *
@@ -405,23 +384,21 @@ void CONTACT::AUG::Interface::EvaluateNodalNormals() const
   {
     const int gid = mygids[i];
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::CoNode& cnode = dynamic_cast<CONTACT::CoNode&>(*node);
 
     /*------------------------------------------------------------------------*/
     std::vector<CONTACT::INTEGRATOR::ElementNormal> adj_ele_normals;
     const double avg_normal_length =
-        CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode( adj_ele_normals,
-            cnode );
+        CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(adj_ele_normals, cnode);
 
     /*------------------------------------------------------------------------*/
     CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(
-        cnode, adj_ele_normals, avg_normal_length, d_nodal_avg_normal );
+        cnode, adj_ele_normals, avg_normal_length, d_nodal_avg_normal);
 
     /*------------------------------------------------------------------------*/
     CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(
-        cnode, adj_ele_normals, avg_normal_length, d_nodal_avg_normal );
+        cnode, adj_ele_normals, avg_normal_length, d_nodal_avg_normal);
   }
 
   return;
@@ -431,7 +408,7 @@ void CONTACT::AUG::Interface::EvaluateNodalNormals() const
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::ExportNodalNormals() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR( CONTACT_FUNC_NAME );
+  TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   ExportNodalNormalsOnly();
 
@@ -444,7 +421,7 @@ void CONTACT::AUG::Interface::ExportNodalNormals() const
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
 {
-  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > normals;
+  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> normals;
 
   /*--------------------------------------------------------------------------*/
   // (0) Pack normals
@@ -452,28 +429,28 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
     const unsigned my_num_row_entries = snoderowmapbound_->NumMyElements();
     const int* my_rgids = snoderowmapbound_->MyGlobalElements();
 
-    for(unsigned i=0; i< my_num_row_entries; ++i)
+    for (unsigned i = 0; i < my_num_row_entries; ++i)
     {
       int gid = my_rgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       Teuchos::RCP<Epetra_SerialDenseMatrix>& normals_i = normals[gid];
 
       // fill nodal matrix
-      normals_i = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,1));
+      normals_i = Teuchos::rcp(new Epetra_SerialDenseMatrix(3, 1));
       Epetra_SerialDenseMatrix& n_i = *normals_i;
-      n_i(0,0) = cnode->MoData().n()[0];
-      n_i(1,0) = cnode->MoData().n()[1];
-      n_i(2,0) = cnode->MoData().n()[2];
+      n_i(0, 0) = cnode->MoData().n()[0];
+      n_i(1, 0) = cnode->MoData().n()[1];
+      n_i(2, 0) = cnode->MoData().n()[2];
     }
   }
 
   /*--------------------------------------------------------------------------*/
   // (1) Export normals
   DRT::Exporter& ex = idata_.Exporter();
-  ex.Export( normals );
+  ex.Export(normals);
 
   /*--------------------------------------------------------------------------*/
   // (2) Unpack normals
@@ -481,21 +458,20 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
     const unsigned my_num_col_entries = snodecolmapbound_->NumMyElements();
     const int* my_cgids = snodecolmapbound_->MyGlobalElements();
 
-    for(unsigned i=0; i< my_num_col_entries; ++i)
+    for (unsigned i = 0; i < my_num_col_entries; ++i)
     {
       int gid = my_cgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
       CoNode& cnode = dynamic_cast<CoNode&>(*node);
 
       Teuchos::RCP<Epetra_SerialDenseMatrix>& normals_i = normals[gid];
 
-      if ( normals_i.is_null() )
-        dserror("GID %d could not be found!", gid);
+      if (normals_i.is_null()) dserror("GID %d could not be found!", gid);
 
       // fill nodal matrix
       const Epetra_SerialDenseMatrix& n_i = *normals_i;
-      std::copy( n_i.A(), n_i.A()+3, cnode.MoData().n() );
+      std::copy(n_i.A(), n_i.A() + 3, cnode.MoData().n());
     }
   }
 
@@ -514,15 +490,15 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
     const unsigned my_row_num_entries = snoderowmapbound_->NumMyElements();
     const int* my_rgids = snoderowmapbound_->MyGlobalElements();
 
-    for ( unsigned i=0; i<my_row_num_entries; ++i )
+    for (unsigned i = 0; i < my_row_num_entries; ++i)
     {
       const int gid = my_rgids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>( *idiscret_->gNode( gid ) );
+      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
 
       const Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       Deriv1stVecMap& exp_d_n = export_d_normals[gid];
 
-      GEN_DATA::copy( d_normal, exp_d_n, GEN_DATA::DeepCopy );
+      GEN_DATA::copy(d_normal, exp_d_n, GEN_DATA::DeepCopy);
     }
   }
 
@@ -530,16 +506,16 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
   // (1) Export the 1-st order derivatives
 #ifdef DEBUG
   const double t_start = Teuchos::Time::wallTime();
-  const double send_size = CONTACT::INTEGRATOR::SizeOf( export_d_normals );
-  std::cout << "Export 1-st order normal derivatives of proc " <<
-      Comm().MyPID() << " (" << std::scientific << send_size / 1.0e6 << " MByte)...";
+  const double send_size = CONTACT::INTEGRATOR::SizeOf(export_d_normals);
+  std::cout << "Export 1-st order normal derivatives of proc " << Comm().MyPID() << " ("
+            << std::scientific << send_size / 1.0e6 << " MByte)...";
 #endif
 
   DRT::Exporter& ex = idata_.Exporter();
-  ex.Export( export_d_normals );
+  ex.Export(export_d_normals);
 
 #ifdef DEBUG
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
+  const double t_diff = Teuchos::Time::wallTime() - t_start;
   std::cout << " successfully! (" << t_diff << "secs)\n";
 #endif
 
@@ -549,15 +525,15 @@ void CONTACT::AUG::Interface::ExportDeriv1stNodalNormals() const
     const unsigned my_col_num_entries = snodecolmapbound_->NumMyElements();
     const int* my_cgids = snodecolmapbound_->MyGlobalElements();
 
-    for ( unsigned i=0; i<my_col_num_entries; ++i )
+    for (unsigned i = 0; i < my_col_num_entries; ++i)
     {
       const int gid = my_cgids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>( *idiscret_->gNode( gid ) );
+      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
 
       Deriv1stVecMap& d_normal = cnode.AugData().GetDeriv1st_N();
       const Deriv1stVecMap& exp_d_n = export_d_normals[gid];
 
-      GEN_DATA::copy( exp_d_n, d_normal, GEN_DATA::DeepCopy );
+      GEN_DATA::copy(exp_d_n, d_normal, GEN_DATA::DeepCopy);
     }
   }
 
@@ -576,15 +552,15 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
     const unsigned my_num_entries = snoderowmapbound_->NumMyElements();
     const int* my_gids = snoderowmapbound_->MyGlobalElements();
 
-    for ( unsigned i=0; i<my_num_entries; ++i )
+    for (unsigned i = 0; i < my_num_entries; ++i)
     {
       const int gid = my_gids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>( *idiscret_->gNode( gid ) );
+      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
 
       const Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
 
-      GEN_DATA::copy( dd_normal, exp_dd_n, GEN_DATA::DeepCopy );
+      GEN_DATA::copy(dd_normal, exp_dd_n, GEN_DATA::DeepCopy);
     }
   }
 
@@ -592,16 +568,16 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
   // (1) Export the 2-nd order derivatives
 #ifdef DEBUG
   const double t_start = Teuchos::Time::wallTime();
-  const double send_size = CONTACT::INTEGRATOR::SizeOf( export_dd_normals );
-  std::cout << "Export 2-nd order normal derivatives of proc " <<
-      Comm().MyPID() << " (" << std::scientific << send_size / 1.0e6 << " MByte)...";
+  const double send_size = CONTACT::INTEGRATOR::SizeOf(export_dd_normals);
+  std::cout << "Export 2-nd order normal derivatives of proc " << Comm().MyPID() << " ("
+            << std::scientific << send_size / 1.0e6 << " MByte)...";
 #endif
 
   DRT::Exporter& ex = idata_.Exporter();
-  ex.Export( export_dd_normals );
+  ex.Export(export_dd_normals);
 
 #ifdef DEBUG
-  const double t_diff = Teuchos::Time::wallTime()-t_start;
+  const double t_diff = Teuchos::Time::wallTime() - t_start;
   std::cout << " successfully! (" << t_diff << "secs)\n";
 #endif
 
@@ -611,15 +587,15 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
     const unsigned my_col_num_entries = snodecolmapbound_->NumMyElements();
     const int* my_cgids = snodecolmapbound_->MyGlobalElements();
 
-    for ( unsigned i=0; i<my_col_num_entries; ++i )
+    for (unsigned i = 0; i < my_col_num_entries; ++i)
     {
       const int gid = my_cgids[i];
-      CoNode& cnode = dynamic_cast<CoNode&>( *idiscret_->gNode( gid ) );
+      CoNode& cnode = dynamic_cast<CoNode&>(*idiscret_->gNode(gid));
 
       Deriv2ndVecMap& dd_normal = cnode.AugData().GetDeriv2nd_N();
       const Deriv2ndVecMap& exp_dd_n = export_dd_normals[gid];
 
-      GEN_DATA::copy( exp_dd_n, dd_normal, GEN_DATA::DeepCopy );
+      GEN_DATA::copy(exp_dd_n, dd_normal, GEN_DATA::DeepCopy);
     }
   }
 
@@ -629,8 +605,7 @@ void CONTACT::AUG::Interface::ExportDeriv2ndNodalNormals() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::EvalActiveContributions(
-    const int rriter,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr )
+    const int rriter, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // search algorithm
   if (SearchAlg() == INPAR::MORTAR::search_bfele)
@@ -642,93 +617,78 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
 
   // set active slave node map of this interface and start the
   // coupling evaluation
-  cparams_ptr->Set<Epetra_Map>( activenodes_.get(), 0 );
-  EvaluateCoupling( *idata_.SActiveEleColMap(), NULL, cparams_ptr );
+  cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 0);
+  EvaluateCoupling(*idata_.SActiveEleColMap(), NULL, cparams_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleBMatrix(
-    LINALG::SparseMatrix& BMatrix ) const
+void CONTACT::AUG::Interface::AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const
 {
-  idata_.AssembleStrategy().AssembleBMatrix( BMatrix );
+  idata_.AssembleStrategy().AssembleBMatrix(BMatrix);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(
-    LINALG::SparseMatrix& dGLmLinMatrix ) const
+void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLinMatrix) const
 {
-  idata_.AssembleStrategy().AssembleDGLmLinMatrix( dGLmLinMatrix );
+  idata_.AssembleStrategy().AssembleDGLmLinMatrix(dGLmLinMatrix);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDGGLinMatrix(
-    LINALG::SparseMatrix& dGGLinMatrix,
-    const Epetra_Vector& cnVec ) const
+    LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
-  idata_.AssembleStrategy().AssembleDGGLinMatrix( dGGLinMatrix, cnVec );
+  idata_.AssembleStrategy().AssembleDGGLinMatrix(dGGLinMatrix, cnVec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Add_Var_A_GG(
-    Epetra_Vector& sl_force_g,
-    const Epetra_Vector& cnVec ) const
+    Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const
 {
-  idata_.AssembleStrategy().Add_Var_A_GG( sl_force_g, cnVec );
+  idata_.AssembleStrategy().Add_Var_A_GG(sl_force_g, cnVec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::Assemble_SlForceLmInactive(
-    Epetra_Vector& sl_force_lm_inactive,
-    const Epetra_Vector& cnVec,
-    const double inactive_scale ) const
+void CONTACT::AUG::Interface::Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
+    const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  idata_.AssembleStrategy().Assemble_SlForceLmInactive( sl_force_lm_inactive,
-      cnVec, inactive_scale );
+  idata_.AssembleStrategy().Assemble_SlForceLmInactive(sl_force_lm_inactive, cnVec, inactive_scale);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(
-    LINALG::SparseMatrix& inactive_dd_matrix,
-    const Epetra_Vector& cnVec,
-    const double inactive_scale ) const
+void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
+    const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  idata_.AssembleStrategy().AssembleInactiveDDMatrix( inactive_dd_matrix,
-      cnVec, inactive_scale );
+  idata_.AssembleStrategy().AssembleInactiveDDMatrix(inactive_dd_matrix, cnVec, inactive_scale);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDLmNWGapLinMatrix(
-    LINALG::SparseMatrix& dLmNWGapLinMatrix,
-    const enum MapType map_type ) const
+    LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
 {
-  idata_.AssembleStrategy().AssembleDLmNWGapLinMatrix( dLmNWGapLinMatrix,
-      map_type );
+  idata_.AssembleStrategy().AssembleDLmNWGapLinMatrix(dLmNWGapLinMatrix, map_type);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleActiveUnitGap(
-    Epetra_Vector& unit_gap ) const
+void CONTACT::AUG::Interface::AssembleActiveUnitGap(Epetra_Vector& unit_gap) const
 {
-  idata_.AssembleStrategy().AssembleActiveUnitGap( unit_gap );
+  idata_.AssembleStrategy().AssembleActiveUnitGap(unit_gap);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleActiveGapVectors(
-    Epetra_Vector& aWGapVec,
-    Epetra_Vector& wGapVec ) const
+    Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -736,47 +696,44 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
   const int* mynodegids = activenodes_->MyGlobalElements();
 
   int* myactiven_gids = activen_->MyGlobalElements();
-  if ( nummynodes != activen_->NumMyElements() )
-    dserror( "Dimension mismatch!" );
+  if (nummynodes != activen_->NumMyElements()) dserror("Dimension mismatch!");
 
   double* aWGapVec_vals = aWGapVec.Values();
   double* wGapVec_vals = wGapVec.Values();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
-    if ( not cnode )
-      dserror( "Dynamic_cast to CoNode failed! [node-gid=%d]", gid );
+    if (not cnode) dserror("Dynamic_cast to CoNode failed! [node-gid=%d]", gid);
 
     // calculate averaged weighted gap
     const double wGap = cnode->AugData().GetWGap();
     const double kappa = cnode->AugData().GetKappa();
     double aWGap = wGap;
 
-    if ( kappa == 1.0e12 or aWGap == 1.0e12 )
-      dserror("ERROR: Kappa and/or the weighted gap should "
+    if (kappa == 1.0e12 or aWGap == 1.0e12)
+      dserror(
+          "ERROR: Kappa and/or the weighted gap should "
           "not be equal 1.0e12 for active nodes!");
 
     aWGap /= kappa;
 
-    const int rgid = myactiven_gids[ i ];
+    const int rgid = myactiven_gids[i];
 
     // --- averaged weighted gap vector
-    int rlid = aWGapVec.Map().LID( rgid );
-    if ( rlid == -1 )
-      dserror("Sparse vector aWGapVec does not have global row %d", rgid);
+    int rlid = aWGapVec.Map().LID(rgid);
+    if (rlid == -1) dserror("Sparse vector aWGapVec does not have global row %d", rgid);
 
-    aWGapVec_vals[ rlid ] += aWGap;
+    aWGapVec_vals[rlid] += aWGap;
 
     // --- weighted gap vector
-    rlid = wGapVec.Map().LID( rgid );
-    if ( rlid == -1 )
-      dserror("Sparse vector wGapVec does not have global row %d", rgid);
+    rlid = wGapVec.Map().LID(rgid);
+    if (rlid == -1) dserror("Sparse vector wGapVec does not have global row %d", rgid);
 
-    wGapVec_vals[ rlid ] += wGap;
+    wGapVec_vals[rlid] += wGap;
   }
 
   return;
@@ -784,56 +741,49 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(
-    Epetra_Vector& wGapAllSlNodesVec ) const
+void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapAllSlNodesVec) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  const int  nummynodes = snoderowmap_->NumMyElements();
+  const int nummynodes = snoderowmap_->NumMyElements();
   const int* mynodegids = snoderowmap_->MyGlobalElements();
 
   int* myslndof_gids = idata_.SNDofRowMap()->MyGlobalElements();
-  if ( nummynodes != idata_.SNDofRowMap()->NumMyElements() )
-    dserror( "Dimension mismatch!" );
+  if (nummynodes != idata_.SNDofRowMap()->NumMyElements()) dserror("Dimension mismatch!");
 
   double* wGapAllVec_vals = wGapAllSlNodesVec.Values();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
-    if ( not cnode )
-      dserror( "Dynamic_cast to CoNode failed! [node-gid=%d]", gid );
+    if (not cnode) dserror("Dynamic_cast to CoNode failed! [node-gid=%d]", gid);
     const double wGap = cnode->AugData().GetWGap();
 
-    const int rgid = myslndof_gids[ i ];
+    const int rgid = myslndof_gids[i];
 
     // --- weighted gap vector
-    const int rlid = wGapAllSlNodesVec.Map().LID( rgid );
-    if ( rlid == -1 )
-      dserror("Sparse vector wGapVec does not have global row %d", rgid);
+    const int rlid = wGapAllSlNodesVec.Map().LID(rgid);
+    if (rlid == -1) dserror("Sparse vector wGapVec does not have global row %d", rgid);
 
-    wGapAllVec_vals[ rlid ] += wGap;
+    wGapAllVec_vals[rlid] += wGap;
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleLmNVector(
-    Epetra_Vector& lmNVec) const
+void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
   // get cn
-//  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+  //  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -841,30 +791,31 @@ void CONTACT::AUG::Interface::AssembleLmNVector(
   const int* mynodegids = activenodes_->MyGlobalElements();
 
   int* myactiven_gids = activen_->MyGlobalElements();
-  if ( nummynodes != activen_->NumMyElements() )
-    dserror( "Dimension mismatch!" );
+  if (nummynodes != activen_->NumMyElements()) dserror("Dimension mismatch!");
 
   double* lmNVec_vals = lmNVec.Values();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: AssembleDGLmrhs: Cannot find slave"
-        " node with gid %",gid);
+    if (!node)
+      dserror(
+          "ERROR: AssembleDGLmrhs: Cannot find slave"
+          " node with gid %",
+          gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    double lmn  = cnode->MoData().lm()[0];
+    double lmn = cnode->MoData().lm()[0];
 
-    const int rgid = myactiven_gids[ i ];
+    const int rgid = myactiven_gids[i];
 
     // --- normal lagrange multiplier vector
-    int rlid = lmNVec.Map().LID( rgid );
-    if ( rlid == -1 )
-      dserror("Sparse vector lmNVec does not have global row %d", rgid);
+    int rlid = lmNVec.Map().LID(rgid);
+    if (rlid == -1) dserror("Sparse vector lmNVec does not have global row %d", rgid);
 
-    lmNVec_vals[ rlid ] += lmn;
+    lmNVec_vals[rlid] += lmn;
   }
 
   return;
@@ -873,62 +824,61 @@ void CONTACT::AUG::Interface::AssembleLmNVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleAugAVector(
-    Epetra_Vector& augAVec,
-    Epetra_Vector& kappaVec) const
+    Epetra_Vector& augAVec, Epetra_Vector& kappaVec) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = snoderowmap_->NumMyElements();
-  int * mynodegids = snoderowmap_->MyGlobalElements();
+  int* mynodegids = snoderowmap_->MyGlobalElements();
 
   double* augA_values = augAVec.Values();
   double* kappa_values = kappaVec.Values();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
 
     CoNode* cnode = static_cast<CoNode*>(node);
 
     // *** augmented Area ***
-    const double augA  = cnode->AugData().GetAugA();
+    const double augA = cnode->AugData().GetAugA();
 
     if (augA > 0.0)
     {
-      const int lid = augAVec.Map().LID( gid );
-      if ( lid == -1 )
-        dserror("Sparse vector augAVec does not have global row %d", gid);
+      const int lid = augAVec.Map().LID(gid);
+      if (lid == -1) dserror("Sparse vector augAVec does not have global row %d", gid);
 
-      augA_values[ lid ] += augA;
+      augA_values[lid] += augA;
     }
     else
-      dserror("ERROR: The augmented nodal area shouldn't be equal/lower than zero! "
-          "(value= %.2e)",augA);
+      dserror(
+          "ERROR: The augmented nodal area shouldn't be equal/lower than zero! "
+          "(value= %.2e)",
+          augA);
 
     // *** kappa ***
     if (cnode->Active())
     {
-      const double kappa  = cnode->AugData().GetKappa();
+      const double kappa = cnode->AugData().GetKappa();
 
       if (kappa > 0.0)
       {
-        const int lid = kappaVec.Map().LID( gid );
-        if ( lid == -1 )
-          dserror("Sparse vector kappaVec does not have global row %d", gid);
+        const int lid = kappaVec.Map().LID(gid);
+        if (lid == -1) dserror("Sparse vector kappaVec does not have global row %d", gid);
 
-        kappa_values[ lid ] += kappa;
+        kappa_values[lid] += kappa;
       }
       else
-        dserror("ERROR: The weighted area kappa shouldn't be equal/lower than zero! "
-            "(value= %.2e)",augA);
+        dserror(
+            "ERROR: The weighted area kappa shouldn't be equal/lower than zero! "
+            "(value= %.2e)",
+            augA);
     }
   }
 
@@ -938,55 +888,51 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
-    Epetra_Vector& augInactiveRhs,
-    Epetra_Vector& cnVec,
-    const double inactive_scale) const
+    Epetra_Vector& augInactiveRhs, Epetra_Vector& cnVec, const double inactive_scale) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
-  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes  = LINALG::SplitMap(
-      *snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
-  ct_inv = 1/ct_inv;
+  ct_inv = 1 / ct_inv;
 
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
-  const int * mynodegids = augInactiveSlaveNodes->MyGlobalElements();
+  const int* mynodegids = augInactiveSlaveNodes->MyGlobalElements();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find inactive slave node with gid %",gid);
+    if (!cnode) dserror("ERROR: Cannot find inactive slave node with gid %", gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AugmentedInterface::AssembleInactiverhs: "
+      dserror(
+          "ERROR: AugmentedInterface::AssembleInactiverhs: "
           "Node ownership inconsistency!");
 
-    double cn_inv   = 1/cnVec[cnVec.Map().LID(gid)];
-    double* lm  = cnode->MoData().lm();
+    double cn_inv = 1 / cnVec[cnVec.Map().LID(gid)];
+    double* lm = cnode->MoData().lm();
     double augA = cnode->AugData().GetAugA();
 
     std::vector<int> rGid(Dim());
-    std::vector<int> rOwner(Dim(),cnode->Owner());
+    std::vector<int> rOwner(Dim(), cnode->Owner());
     Epetra_SerialDenseVector rVal(Dim());
 
-    for (int rDof=0; rDof<cnode->NumDof();++rDof)
+    for (int rDof = 0; rDof < cnode->NumDof(); ++rDof)
     {
       rGid[rDof] = cnode->Dofs()[rDof];
       // normal direction
-      if (rDof==0)
-        rVal[rDof] = 2.0 * inactive_scale * cn_inv * lm[rDof] * augA;
+      if (rDof == 0) rVal[rDof] = 2.0 * inactive_scale * cn_inv * lm[rDof] * augA;
       // tangential direction
       else
         rVal[rDof] = ct_inv * lm[rDof] * augA;
     }
 
-    LINALG::Assemble(augInactiveRhs,rVal,rGid,rOwner);
+    LINALG::Assemble(augInactiveRhs, rVal, rGid, rOwner);
   }
 
   return;
@@ -994,41 +940,42 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(
-    Epetra_Vector& dLmTLmTRhs) const
+void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
   // get ct and invert it
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
-  ct_inv = 1/ct_inv;
+  ct_inv = 1 / ct_inv;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
-  const int * mynodegids = activenodes_->MyGlobalElements();
+  const int* mynodegids = activenodes_->MyGlobalElements();
 
-  for( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: AssembleDLmTLmTRhs: Cannot find active"
-        " slave node with gid %",gid);
+    if (!cnode)
+      dserror(
+          "ERROR: AssembleDLmTLmTRhs: Cannot find active"
+          " slave node with gid %",
+          gid);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDLmTLmTrhs: Node ownership inconsistency!");
 
     // Get the Lagrange multiplier and txi of the current node
-    double* lm  = cnode->MoData().lm();
+    double* lm = cnode->MoData().lm();
     // Get weighted element area
-    const double kappa  = cnode->AugData().GetKappa();
+    const double kappa = cnode->AugData().GetKappa();
 
-    std::vector<int> rGid(Dim()-1);
-    std::vector<int> rOwner(Dim()-1,cnode->Owner());
-    Epetra_SerialDenseVector rVal(Dim()-1);
+    std::vector<int> rGid(Dim() - 1);
+    std::vector<int> rOwner(Dim() - 1, cnode->Owner());
+    Epetra_SerialDenseVector rVal(Dim() - 1);
 
     /*------------------------------------------------------------------*
      |* 2-D case *******************************************************|
@@ -1051,14 +998,14 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(
      |                       :                                          |
      |                       :                                          |
      *------------------------------------------------------------------*/
-    for (int j=0;j<(Dim()-1);++j)
+    for (int j = 0; j < (Dim() - 1); ++j)
     {
-      rGid[j] = activet_->GID((Dim()-1)*i+j);
-      rVal[j] = ct_inv*lm[j+1]*kappa;
+      rGid[j] = activet_->GID((Dim() - 1) * i + j);
+      rVal[j] = ct_inv * lm[j + 1] * kappa;
     }
 
     // Assemble
-    LINALG::Assemble(dLmTLmTRhs,rVal,rGid,rOwner);
+    LINALG::Assemble(dLmTLmTRhs, rVal, rGid, rOwner);
   }
 
   return;
@@ -1066,29 +1013,30 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(
-    LINALG::SparseMatrix& dLmTLmTMatrix) const
+void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLmTMatrix) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
   // get ct and invert it
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
-  ct_inv = 1/ct_inv;
+  ct_inv = 1 / ct_inv;
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
-  const int * mynodegids = activenodes_->MyGlobalElements();
+  const int* mynodegids = activenodes_->MyGlobalElements();
 
-  for( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: AssembleDLmTLmTrhs: Cannot find slave"
-        " node with gid %",gid);
+    if (!cnode)
+      dserror(
+          "ERROR: AssembleDLmTLmTrhs: Cannot find slave"
+          " node with gid %",
+          gid);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDLmTLmTrhs: Node ownership inconsistency!");
@@ -1096,18 +1044,18 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(
     // get weighted element area
     const double kappa = cnode->AugData().GetKappa();
 
-    for (int j=0;j<(Dim()-1);++j)
+    for (int j = 0; j < (Dim() - 1); ++j)
     {
-      int rowId = activet_->GID((Dim()-1)*i+j);
+      int rowId = activet_->GID((Dim() - 1) * i + j);
       int colId = rowId;
       /*-----------------------------------------------------------*
        | Attention:                                                |
        | D_{lm}[1/ct*(dlm_t * lm_t)] = D_{lm}[1/ct*[dlm_t*lm_t]]   |
        *-----------------------------------------------------------*/
-      double val = ct_inv*kappa;
+      double val = ct_inv * kappa;
 
       // Assemble
-      if (abs(val)>1.0e-12) dLmTLmTMatrix.Assemble(val,rowId,colId);
+      if (abs(val) > 1.0e-12) dLmTLmTMatrix.Assemble(val, rowId, colId);
     }
   }
 
@@ -1116,47 +1064,45 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(
-    LINALG::SparseMatrix& dLmTLmTLinMatrix) const
+void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLmTLmTLinMatrix) const
 {
   // get out of here if not participating in interface
-  if ( not lComm() )
-    return;
+  if (not lComm()) return;
 
   // get ct and invert it
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
-  ct_inv = 1/ct_inv;
+  ct_inv = 1 / ct_inv;
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
-  const int * mynodegids = activenodes_->MyGlobalElements();
+  const int* mynodegids = activenodes_->MyGlobalElements();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDGLmLin: Node ownership inconsistency!");
 
-    double* lm  = cnode->MoData().lm();
+    double* lm = cnode->MoData().lm();
     Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_Kappa();
 
     /*---------------------------------------------------------*
      | Attention:                                              |
      | D_{d}[-1/ct*(dlm_t * lm_t)] = D_{d}[-1/ct*[dlm_t*lm_t]] |
      *---------------------------------------------------------*/
-    for (int j=0;j<(Dim()-1);++j)
+    for (int j = 0; j < (Dim() - 1); ++j)
     {
-      const int rowId = activet_->GID((Dim()-1)*i+j);
+      const int rowId = activet_->GID((Dim() - 1) * i + j);
 
-      double tmp = ct_inv*lm[j+1];
+      double tmp = ct_inv * lm[j + 1];
 
-      AssembleMapIntoMatrix( rowId, tmp, augALinMap, dLmTLmTLinMatrix );
+      AssembleMapIntoMatrix(rowId, tmp, augALinMap, dLmTLmTLinMatrix);
     }
   }
 
@@ -1165,66 +1111,66 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(
-    Epetra_Vector& augInactiveDiagMatrix,
-    const Epetra_Vector& cnVec,
-    const double inactive_scale ) const
+void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augInactiveDiagMatrix,
+    const Epetra_Vector& cnVec, const double inactive_scale) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
-  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes  = LINALG::SplitMap(
-      *snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
-  ct_inv = 1/ct_inv;
+  ct_inv = 1 / ct_inv;
 
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
-  const int * mynodegids = augInactiveSlaveNodes->MyGlobalElements();
+  const int* mynodegids = augInactiveSlaveNodes->MyGlobalElements();
 
   LINALG::SerialDenseVector vals;
   std::vector<int> rowIds(0);
   std::vector<int> rowner(0);
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: AssembleAugInactiveMatrix: Cannot find"
-        " inactive slave node with gid %",gid);
+    if (!cnode)
+      dserror(
+          "ERROR: AssembleAugInactiveMatrix: Cannot find"
+          " inactive slave node with gid %",
+          gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AugmentedInterface::AssembleAugInactiveMatrix:"
+      dserror(
+          "ERROR: AugmentedInterface::AssembleAugInactiveMatrix:"
           " Node ownership inconsistency!");
 
-    const double cn_inv_scale = 2.0*inactive_scale/cnVec[cnVec.Map().LID(gid)];
-    double augA   = cnode->AugData().GetAugA();
+    const double cn_inv_scale = 2.0 * inactive_scale / cnVec[cnVec.Map().LID(gid)];
+    double augA = cnode->AugData().GetAugA();
 
     const int numdof = cnode->NumDof();
 
-    if ( vals.Length() != numdof )
+    if (vals.Length() != numdof)
     {
-      vals.Resize( numdof );
-      rowIds.resize( numdof, -1 );
-      rowner.resize( numdof, -1 );
+      vals.Resize(numdof);
+      rowIds.resize(numdof, -1);
+      rowner.resize(numdof, -1);
     }
 
     // normal direction
-    vals( 0 ) = cn_inv_scale*augA;
+    vals(0) = cn_inv_scale * augA;
 
     // tangential directions
-    std::fill( vals.A() + 1, vals.A() + numdof, ct_inv*augA );
+    std::fill(vals.A() + 1, vals.A() + numdof, ct_inv * augA);
 
     // copy dof ids
-    std::copy( cnode->Dofs(), cnode->Dofs() + numdof, &rowIds[0] );
+    std::copy(cnode->Dofs(), cnode->Dofs() + numdof, &rowIds[0]);
 
     // insert owner
-    std::fill( &rowner[0], &rowner[0] + numdof, cnode->Owner() );
+    std::fill(&rowner[0], &rowner[0] + numdof, cnode->Owner());
 
-    LINALG::Assemble( augInactiveDiagMatrix, vals, rowIds, rowner );
+    LINALG::Assemble(augInactiveDiagMatrix, vals, rowIds, rowner);
   }
 
   return;
@@ -1233,50 +1179,50 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
-    LINALG::SparseMatrix& augInactiveLinMatrix,
-    const Epetra_Vector& cnVec,
+    LINALG::SparseMatrix& augInactiveLinMatrix, const Epetra_Vector& cnVec,
     const double inactive_scale) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
   // get ct and invert it
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
-  ct_inv = 1/ct_inv;
+  ct_inv = 1 / ct_inv;
 
   const int nummynodes = inactivenodes_->NumMyElements();
-  const int * mynodegids = inactivenodes_->MyGlobalElements();
+  const int* mynodegids = inactivenodes_->MyGlobalElements();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: AssembleAugInactiveMatrix: Cannot find"
-        " inactive slave node with gid %",gid);
+    if (!cnode)
+      dserror(
+          "ERROR: AssembleAugInactiveMatrix: Cannot find"
+          " inactive slave node with gid %",
+          gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AugmentedInterface::AssembleAugInactiveMatrix:"
+      dserror(
+          "ERROR: AugmentedInterface::AssembleAugInactiveMatrix:"
           " Node ownership inconsistency!");
 
-    double cn_inv = 1/cnVec[cnVec.Map().LID(gid)];
-    double* lm  = cnode->MoData().lm();
+    double cn_inv = 1 / cnVec[cnVec.Map().LID(gid)];
+    double* lm = cnode->MoData().lm();
     Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_A();
 
-    for (int j=0; j<Dim();++j)
+    for (int j = 0; j < Dim(); ++j)
     {
       int rowId = cnode->Dofs()[j];
       double tmp = 0.0;
       // normal direction
-      if (j==0)
-        tmp = 2.0 * inactive_scale * cn_inv * lm[j];
+      if (j == 0) tmp = 2.0 * inactive_scale * cn_inv * lm[j];
       // tangential direction
       else
-        tmp = ct_inv*lm[j];
+        tmp = ct_inv * lm[j];
 
-      AssembleMapIntoMatrix( rowId, tmp, augALinMap,
-          augInactiveLinMatrix );
+      AssembleMapIntoMatrix(rowId, tmp, augALinMap, augInactiveLinMatrix);
     }
   }
 
@@ -1286,54 +1232,49 @@ void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
-    const Epetra_Vector& cnVec,
-    double& zn_gn,
-    double& gn_gn,
-    double& zn_zn,
-    double& zt_zt ) const
+    const Epetra_Vector& cnVec, double& zn_gn, double& gn_gn, double& zn_zn, double& zt_zt) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  double ct_inv = 1.0 /  idata_.Ct();
+  double ct_inv = 1.0 / idata_.Ct();
 
   // *** Active part *************************************************
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
-  const int * mynodegids = activenodes_->MyGlobalElements();
+  const int* mynodegids = activenodes_->MyGlobalElements();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
 
     const double cn = cnVec[cnVec.Map().LID(gid)];
 
     const double wgap = cnode->AugData().GetWGap();
-    dsassert( wgap!=1.0e12, "ERROR: WGap is equal 1.e12 for a active node!" );
+    dsassert(wgap != 1.0e12, "ERROR: WGap is equal 1.e12 for a active node!");
 
     const double kappa = cnode->AugData().GetKappa();
-    dsassert( kappa!=1.0e12, "ERROR: Kappa is equal 1.e12 for a active node! (node-id: %d)" );
+    dsassert(kappa != 1.0e12, "ERROR: Kappa is equal 1.e12 for a active node! (node-id: %d)");
 
     // get the Lagrange multiplier
-    const double* lm  = cnode->MoData().lm();
+    const double* lm = cnode->MoData().lm();
 
     // *** ACTIVE - NORMAL DIRECTION ***
     if (wgap != 0.0)
     {
       // ** zn_i * awgap_i * A_i **
-      zn_gn += wgap*lm[0];
+      zn_gn += wgap * lm[0];
       // ** cn/2 * awgap * awgap * A_i **
       gn_gn += 0.5 * cn * wgap * wgap / kappa;
     }
 
     // *** ACTIVE - TANGENTIAL DIRECTION ***
-    for (int d=1;d<Dim();++d)
+    for (int d = 1; d < Dim(); ++d)
     {
       // ** 1/(ct) * zt_i^T*zt_i * A_i **
       zt_zt += ct_inv * lm[d] * lm[d] * kappa;
@@ -1341,33 +1282,30 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
   }
 
   // *** Inactive part *************************************************
-  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes  =
-      LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
+  for (int i = 0; i < augInactiveSlaveNodes->NumMyElements(); ++i)
   {
     int gid = augInactiveSlaveNodes->GID(i);
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
 
     const int cn_lid = cnVec.Map().LID(gid);
-    if ( cn_lid < 0 )
-      dserror( "Couldn't find the cn-LID for GID %d.", gid );
+    if (cn_lid < 0) dserror("Couldn't find the cn-LID for GID %d.", gid);
     const double cn_inv = 1.0 / cnVec[cn_lid];
     const double augA = cnode->AugData().GetAugA();
 
     // get the lagrange multiplier
-    const double* lm  = cnode->MoData().lm();
+    const double* lm = cnode->MoData().lm();
 
     // *** INACTIVE - NORMAL DIRECTION ***
     // ** 1/(cn) * zn_i * zn_i * A_i **
     zn_zn += cn_inv * lm[0] * lm[0] * augA;
 
     // *** INACTIVE - TANGENTIAL DIRECTION ***
-    for (int d=1;d<Dim();++d)
+    for (int d = 1; d < Dim(); ++d)
     {
       // ** 1/(ct) * zt_i^T*zt_i * A_i **
       zt_zt += ct_inv * lm[d] * lm[d] * augA;
@@ -1387,14 +1325,14 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
 
   // loop over all slave nodes
   const int nummynodes = snoderowmap_->NumMyElements();
-  const int * mynodegids = snoderowmap_->MyGlobalElements();
+  const int* mynodegids = snoderowmap_->MyGlobalElements();
 
-  for ( int i=0; i<nummynodes; ++i )
+  for (int i = 0; i < nummynodes; ++i)
   {
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find node with gid %i",gid);
+    if (!cnode) dserror("ERROR: Cannot find node with gid %i", gid);
 
     const int numdof = cnode->NumDof();
 
@@ -1409,53 +1347,52 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
     // the corresponding CoNodes are put into an initial active set!
     // This yields a very flexible solution for contact initialization.
     // -------------------------------------------------------------------
-//    if (init)
-//    {
-//      // flag for initialization of init active nodes with nodal gaps
-//      bool initcontactbygap = DRT::INPUT::IntegralValue<int>(IParams(),"INITCONTACTBYGAP");
-//      // value
-//      double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
-//
-//      // Either init contact by definition or by gap
-//      if(cnode->IsInitActive() and initcontactbygap)
-//        dserror("Init contact either by definition in condition or by gap!");
-//
-//      // check if node is initially active or, if initialization with nodal gap,
-//      // the gap is smaller than the prescribed value
-//      if (  cnode->IsInitActive() or
-//          ( initcontactbygap and cnode->AugData().GetWGap() < initcontactval ) )
-//      {
-//        cnode->Active() = true;
-//        myactivenodegids.push_back(cnode->Id());
-//
-//        for (int j=0;j<numdof;++j)
-//          myactivedofgids.push_back(cnode->Dofs()[j]);
-//      }
-//    }
+    //    if (init)
+    //    {
+    //      // flag for initialization of init active nodes with nodal gaps
+    //      bool initcontactbygap = DRT::INPUT::IntegralValue<int>(IParams(),"INITCONTACTBYGAP");
+    //      // value
+    //      double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
+    //
+    //      // Either init contact by definition or by gap
+    //      if(cnode->IsInitActive() and initcontactbygap)
+    //        dserror("Init contact either by definition in condition or by gap!");
+    //
+    //      // check if node is initially active or, if initialization with nodal gap,
+    //      // the gap is smaller than the prescribed value
+    //      if (  cnode->IsInitActive() or
+    //          ( initcontactbygap and cnode->AugData().GetWGap() < initcontactval ) )
+    //      {
+    //        cnode->Active() = true;
+    //        myactivenodegids.push_back(cnode->Id());
+    //
+    //        for (int j=0;j<numdof;++j)
+    //          myactivedofgids.push_back(cnode->Dofs()[j]);
+    //      }
+    //    }
     // -------------------------------------------------------------------
     // RE-BUILDING OF THE ACTIVE SET
     // -------------------------------------------------------------------
-    if ( not init )
+    if (not init)
     {
       // check if node is active
       if (cnode->Active())
       {
         myactivenodegids.push_back(cnode->Id());
 
-        for (int j=0;j<numdof;++j)
-          myactivedofgids.push_back(cnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) myactivedofgids.push_back(cnode->Dofs()[j]);
       }
     }
-  } // end loop over all slave nodes
+  }  // end loop over all slave nodes
 
   // create interface local augmented active node map and augmented active dof map
-  activenodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)myactivenodegids.size(),
-      &myactivenodegids[0],0,Comm()));
-  activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)myactivedofgids.size(),
-      &myactivedofgids[0],0,Comm()));
+  activenodes_ = Teuchos::rcp(
+      new Epetra_Map(-1, (int)myactivenodegids.size(), &myactivenodegids[0], 0, Comm()));
+  activedofs_ =
+      Teuchos::rcp(new Epetra_Map(-1, (int)myactivedofgids.size(), &myactivedofgids[0], 0, Comm()));
 
-  inactivenodes_ = LINALG::SplitMap( *snoderowmap_, *activenodes_);
-  inactivedofs_ = LINALG::SplitMap( *sdofrowmap_, *activedofs_ );
+  inactivenodes_ = LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  inactivedofs_ = LINALG::SplitMap(*sdofrowmap_, *activedofs_);
 
   SplitAugActiveDofs();
 
@@ -1467,42 +1404,37 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
-    const CONTACT::ParamsInterface& cparams,
-    CONTACT::CoNode& cnode ) const
+    const CONTACT::ParamsInterface& cparams, CONTACT::CoNode& cnode) const
 {
   static const bool init_contact_by_gap =
-      DRT::INPUT::IntegralValue<int>(IParams(),"INITCONTACTBYGAP");
+      DRT::INPUT::IntegralValue<int>(IParams(), "INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.IsInitActive();
 
   // Either init contact by definition or by gap
-  if( node_init_active and init_contact_by_gap )
+  if (node_init_active and init_contact_by_gap)
     dserror("Init contact either by definition in condition or by gap!");
-  else if ( node_init_active )
+  else if (node_init_active)
     cnode.Active() = true;
-  else if ( init_contact_by_gap )
-    SetNodeInitiallyActiveByGap( cnode );
+  else if (init_contact_by_gap)
+    SetNodeInitiallyActiveByGap(cnode);
 
-  if ( node_init_active )
-    std::cout <<  "Node #" << std::setw(5) << cnode.Id()
-        << " is set initially active via the condition line.\n";
-  else if ( init_contact_by_gap )
-    std::cout <<  "Node #" << std::setw(5) << cnode.Id()
-        << " is set initially active by gap.\n";
+  if (node_init_active)
+    std::cout << "Node #" << std::setw(5) << cnode.Id()
+              << " is set initially active via the condition line.\n";
+  else if (init_contact_by_gap)
+    std::cout << "Node #" << std::setw(5) << cnode.Id() << " is set initially active by gap.\n";
 
-  return ( node_init_active or init_contact_by_gap );
+  return (node_init_active or init_contact_by_gap);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::SetNodeInitiallyActiveByGap(
-    CONTACT::CoNode& cnode ) const
+void CONTACT::AUG::Interface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) const
 {
-  static const double initcontactval =
-      IParams().get<double>("INITCONTACTGAPVALUE");
+  static const double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
 
-  if ( cnode.AugData().GetWGap() < initcontactval )
-    cnode.Active() = true;
+  if (cnode.AugData().GetWGap() < initcontactval) cnode.Active() = true;
 }
 
 /*----------------------------------------------------------------------*
@@ -1510,11 +1442,10 @@ void CONTACT::AUG::Interface::SetNodeInitiallyActiveByGap(
 void CONTACT::AUG::Interface::SplitAugActiveDofs()
 {
   // get out of here if augmented active set is empty
-  if (activenodes_==Teuchos::null or
-      activenodes_->NumGlobalElements() == 0)
+  if (activenodes_ == Teuchos::null or activenodes_->NumGlobalElements() == 0)
   {
-    activen_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
-    activet_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    activen_ = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
+    activet_ = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
     return;
   }
 
@@ -1522,32 +1453,29 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
   int countN = 0;
   int countT = 0;
   std::vector<int> myNGids(activenodes_->NumMyElements());
-  std::vector<int> myTGids((Dim()-1)*activenodes_->NumMyElements());
+  std::vector<int> myTGids((Dim() - 1) * activenodes_->NumMyElements());
 
   // dimension check
-  const double dimcheck =
-      (activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
+  const double dimcheck = (activedofs_->NumGlobalElements()) / (activenodes_->NumGlobalElements());
 
-  if (dimcheck != Dim())
-    dserror("ERROR: SplitAugActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("ERROR: SplitAugActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all augmented active row nodes
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
 
-    CoNode* cnode = static_cast<CoNode*>( node );
+    CoNode* cnode = static_cast<CoNode*>(node);
 
     // add first dof to nMap
     myNGids[countN] = cnode->Dofs()[0];
     ++countN;
 
-    //add reamining dofs to tMap
-    for (int j=1;j<cnode->NumDof();++j)
+    // add reamining dofs to tMap
+    for (int j = 1; j < cnode->NumDof(); ++j)
     {
       myTGids[countT] = cnode->Dofs()[j];
       ++countT;
@@ -1560,16 +1488,16 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
 
   // communicate countN and countT among procs
   int gCountN, gCountT;
-  Comm().SumAll(&countN,&gCountN,1);
-  Comm().SumAll(&countT,&gCountT,1);
+  Comm().SumAll(&countN, &gCountN, 1);
+  Comm().SumAll(&countT, &gCountT, 1);
 
   // check global dimensions
-  if ((gCountN+gCountT)!=activedofs_->NumGlobalElements())
+  if ((gCountN + gCountT) != activedofs_->NumGlobalElements())
     dserror("ERROR: SplitAugActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = Teuchos::rcp(new Epetra_Map(gCountN,countN,&myNGids[0],0,Comm()));
-  activet_ = Teuchos::rcp(new Epetra_Map(gCountT,countT,&myTGids[0],0,Comm()));
+  activen_ = Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
+  activet_ = Teuchos::rcp(new Epetra_Map(gCountT, countT, &myTGids[0], 0, Comm()));
 
   return;
 }
@@ -1579,11 +1507,10 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
 void CONTACT::AUG::Interface::SplitSlaveDofs()
 {
   // get out of here if augmented active set is empty
-  if (snoderowmap_==Teuchos::null or
-      snoderowmap_->NumGlobalElements() == 0)
+  if (snoderowmap_ == Teuchos::null or snoderowmap_->NumGlobalElements() == 0)
   {
-    idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
-    idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
+    idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
     return;
   }
 
@@ -1591,25 +1518,25 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   int countN = 0;
   int countT = 0;
   std::vector<int> myNGids(snoderowmap_->NumMyElements());
-  std::vector<int> myTGids((Dim()-1)*snoderowmap_->NumMyElements());
+  std::vector<int> myTGids((Dim() - 1) * snoderowmap_->NumMyElements());
 
   // dimension check
-  double dimcheck =(sdofrowmap_->NumGlobalElements())/(snoderowmap_->NumGlobalElements());
+  double dimcheck = (sdofrowmap_->NumGlobalElements()) / (snoderowmap_->NumGlobalElements());
   if (dimcheck != Dim()) dserror("ERROR: SplitSlaveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all augmented active row nodes
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!cnode) dserror("ERROR: Cannot find slave node with gid %", gid);
 
     // add first dof to nMap
     myNGids[countN] = cnode->Dofs()[0];
     ++countN;
 
-    //add reamining dofs to tMap
-    for (int j=1;j<cnode->NumDof();++j)
+    // add reamining dofs to tMap
+    for (int j = 1; j < cnode->NumDof(); ++j)
     {
       myTGids[countT] = cnode->Dofs()[j];
       ++countT;
@@ -1621,20 +1548,20 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   myTGids.resize(countT);
 
   // communicate countN and countT among procs
-  int lCount[2] = { countN, countT };
-  int gCount[2] = { 0, 0 };
-  Comm().SumAll( &lCount[0], &gCount[0], 2 );
+  int lCount[2] = {countN, countT};
+  int gCount[2] = {0, 0};
+  Comm().SumAll(&lCount[0], &gCount[0], 2);
 
   const int gCountN = gCount[0];
   const int gCountT = gCount[1];
 
   // check global dimensions
-  if ((gCountN+gCountT)!=sdofrowmap_->NumGlobalElements())
+  if ((gCountN + gCountT) != sdofrowmap_->NumGlobalElements())
     dserror("ERROR: SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountN,countN,&myNGids[0],0,Comm()));
-  idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountT,countT,&myTGids[0],0,Comm()));
+  idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
+  idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountT, countT, &myTGids[0], 0, Comm()));
 
   return;
 }
@@ -1643,8 +1570,8 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
  *-----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::BuildActiveColMaps()
 {
-  Epetra_IntVector active_row_nodes( *snoderowmap_, true );
-  Epetra_IntVector active_col_nodes( *snodecolmap_, true );
+  Epetra_IntVector active_row_nodes(*snoderowmap_, true);
+  Epetra_IntVector active_col_nodes(*snodecolmap_, true);
 
   {
     const unsigned my_num_row_entries = activenodes_->NumMyElements();
@@ -1652,114 +1579,105 @@ void CONTACT::AUG::Interface::BuildActiveColMaps()
 
     int* arow_node_vals = active_row_nodes.Values();
 
-    for ( unsigned i=0; i<my_num_row_entries; ++i )
+    for (unsigned i = 0; i < my_num_row_entries; ++i)
     {
       const int rgid = active_row_node_gids[i];
-      const int rlid = active_row_nodes.Map().LID( rgid );
-      if ( rlid == -1 )
-        dserror( "Active slave node GID #%d is no part of the slave row nodes?!",
-            rgid );
+      const int rlid = active_row_nodes.Map().LID(rgid);
+      if (rlid == -1)
+        dserror("Active slave node GID #%d is no part of the slave row nodes?!", rgid);
 
       arow_node_vals[rlid] = 1;
     }
   }
 
-  LINALG::Export( active_row_nodes, active_col_nodes );
+  LINALG::Export(active_row_nodes, active_col_nodes);
 
   {
     std::vector<int> acol_gids;
-    acol_gids.reserve( active_col_nodes.Map().NumMyElements() );
+    acol_gids.reserve(active_col_nodes.Map().NumMyElements());
 
     const unsigned my_num_col_entries = snodecolmap_->NumMyElements();
     const int* sl_col_node_gids = snodecolmap_->MyGlobalElements();
 
     int* acol_node_vals = active_col_nodes.Values();
 
-    for ( unsigned i=0; i<my_num_col_entries; ++i )
+    for (unsigned i = 0; i < my_num_col_entries; ++i)
     {
-      if ( acol_node_vals[i] == 1 )
-        acol_gids.push_back( sl_col_node_gids[i] );
+      if (acol_node_vals[i] == 1) acol_gids.push_back(sl_col_node_gids[i]);
     }
 
     idata_.SActiveNodeColMap() = Teuchos::null;
-    idata_.SActiveNodeColMap() = Teuchos::rcp( new Epetra_Map( -1,
-        (int) acol_gids.size(), acol_gids.data(), 0, idiscret_->Comm() ) );
+    idata_.SActiveNodeColMap() = Teuchos::rcp(
+        new Epetra_Map(-1, (int)acol_gids.size(), acol_gids.data(), 0, idiscret_->Comm()));
   }
 
-  BuildActiveSlaveElementColMap( *idata_.SActiveNodeColMap() );
+  BuildActiveSlaveElementColMap(*idata_.SActiveNodeColMap());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::BuildActiveSlaveElementColMap(
-    const Epetra_Map& sanode_col_map )
+void CONTACT::AUG::Interface::BuildActiveSlaveElementColMap(const Epetra_Map& sanode_col_map)
 {
   const unsigned my_num_col_entries = sanode_col_map.NumMyElements();
   const int* active_col_node_gids = sanode_col_map.MyGlobalElements();
 
   std::set<int> col_ele_gid_set;
 
-  for ( unsigned i=0; i<my_num_col_entries; ++i )
+  for (unsigned i = 0; i < my_num_col_entries; ++i)
   {
     const int cngid = active_col_node_gids[i];
-    DRT::Node* anode = idiscret_->gNode( cngid );
+    DRT::Node* anode = idiscret_->gNode(cngid);
 
     DRT::Element** adj_eles = anode->Elements();
     const unsigned num_adj_eles = anode->NumElement();
 
-    for ( unsigned e=0; e<num_adj_eles; ++e )
+    for (unsigned e = 0; e < num_adj_eles; ++e)
     {
       const int egid = adj_eles[e]->Id();
       col_ele_gid_set.insert(egid);
     }
   }
 
-  std::vector<int> col_ele_gid_vec( col_ele_gid_set.begin(), col_ele_gid_set.end() );
+  std::vector<int> col_ele_gid_vec(col_ele_gid_set.begin(), col_ele_gid_set.end());
   idata_.SActiveEleColMap() = Teuchos::null;
-  idata_.SActiveEleColMap() = Teuchos::rcp( new Epetra_Map( -1,
-      (int) col_ele_gid_vec.size(), col_ele_gid_vec.data(), 0, idiscret_->Comm() ) );
+  idata_.SActiveEleColMap() = Teuchos::rcp(new Epetra_Map(
+      -1, (int)col_ele_gid_vec.size(), col_ele_gid_vec.data(), 0, idiscret_->Comm()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CONTACT::AUG::Interface::BuildActiveForceMap(
-    const Epetra_Vector& force,
-    const double threshold ) const
+    const Epetra_Vector& force, const double threshold) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return Teuchos::null;
+  if (!lComm()) return Teuchos::null;
 
   const int num_my_entries = force.Map().NumMyElements();
   const int* my_entry_gids = force.Map().MyGlobalElements();
-  const double* fvalues    = force.Values();
+  const double* fvalues = force.Values();
 
-  std::vector<int> my_active_gids( 0 );
-  my_active_gids.reserve( num_my_entries );
+  std::vector<int> my_active_gids(0);
+  my_active_gids.reserve(num_my_entries);
 
-  for ( int i=0; i< num_my_entries; ++i )
+  for (int i = 0; i < num_my_entries; ++i)
   {
-    if ( std::abs( fvalues[i] ) > threshold )
-      my_active_gids.push_back( my_entry_gids[i] );
+    if (std::abs(fvalues[i]) > threshold) my_active_gids.push_back(my_entry_gids[i]);
   }
 
-  return Teuchos::rcp( new Epetra_Map( -1, static_cast<int>( my_active_gids.size() ),
-      &my_active_gids[0], 0, force.Comm() ) );
+  return Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(my_active_gids.size()), &my_active_gids[0], 0, force.Comm()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
-    const Epetra_Vector& dincr,
-    const Epetra_Vector& str_grad,
-    Epetra_Vector& lmincr ) const
+    const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
-  if ( dincr.Map().NumMyElements() != str_grad.Map().NumMyElements() )
-    dserror( "The number of local elements does not coincide!" );
+  if (dincr.Map().NumMyElements() != str_grad.Map().NumMyElements())
+    dserror("The number of local elements does not coincide!");
 
   const double* dincr_vals = dincr.Values();
   const double* str_grad_vals = str_grad.Values();
@@ -1767,48 +1685,49 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
-  const int * mynodegids = activenodes_->MyGlobalElements();
+  const int* mynodegids = activenodes_->MyGlobalElements();
 
-  if ( nummynodes != lmincr.Map().NumMyElements() )
-    dserror( "Number of elements does not coincide! Currently we"
+  if (nummynodes != lmincr.Map().NumMyElements())
+    dserror(
+        "Number of elements does not coincide! Currently we"
         "support only Lagrange Multiplier vectors in normal direction"
-        "only!" );
+        "only!");
 
   double* lmincr_vals = lmincr.Values();
 
-  for ( int lid=0; lid<nummynodes; ++lid )
+  for (int lid = 0; lid < nummynodes; ++lid)
   {
     const int gid = mynodegids[lid];
 
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
-    if ( not cnode )
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (not cnode) dserror("ERROR: Cannot find slave node with gid %", gid);
 
     const int ndof = cnode->Dofs()[0];
-    const int nlid_j = lmincr.Map().LID( ndof );
-    if ( nlid_j == -1 )
+    const int nlid_j = lmincr.Map().LID(ndof);
+    if (nlid_j == -1)
     {
-      dserror( "Couldn't find the normal-dof GID %d in the "
+      dserror(
+          "Couldn't find the normal-dof GID %d in the "
           "Lagrange multiplier increment vector on proc %d!",
-          ndof, lComm()->MyPID() );
+          ndof, lComm()->MyPID());
     }
 
-    double& lmincr_j = lmincr_vals[ nlid_j ];
+    double& lmincr_j = lmincr_vals[nlid_j];
 
     // --- SLAVE SIDE
     {
-      const Deriv2ndMap& varWGapLinSlMap = GetVarWGapLinOfSide<SideType::slave>( *cnode );
+      const Deriv2ndMap& varWGapLinSlMap = GetVarWGapLinOfSide<SideType::slave>(*cnode);
 
-      AssembleGradientBMatrixContributionOfSide( dincr.Map(),
-          varWGapLinSlMap, 1.0, str_grad_vals, dincr_vals, lmincr_j );
+      AssembleGradientBMatrixContributionOfSide(
+          dincr.Map(), varWGapLinSlMap, 1.0, str_grad_vals, dincr_vals, lmincr_j);
     }
 
     // --- MASTER SIDE
     {
-      const Deriv2ndMap& varWGapLinMaMap = GetVarWGapLinOfSide<SideType::master>( *cnode );
+      const Deriv2ndMap& varWGapLinMaMap = GetVarWGapLinOfSide<SideType::master>(*cnode);
 
-      AssembleGradientBMatrixContributionOfSide( dincr.Map(),
-          varWGapLinMaMap, -1.0, str_grad_vals, dincr_vals, lmincr_j );
+      AssembleGradientBMatrixContributionOfSide(
+          dincr.Map(), varWGapLinMaMap, -1.0, str_grad_vals, dincr_vals, lmincr_j);
     }
   }
 }
@@ -1816,43 +1735,40 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleGradientBMatrixContributionOfSide(
-    const Epetra_BlockMap&  gslmadofrowmap,
-    const Deriv2ndMap&      varWGapLinSideMap,
-    const double            scalar,
-    const double * const    str_grad_vals,
-    const double * const    dincr_vals,
-    double&                 lmincr_j ) const
+    const Epetra_BlockMap& gslmadofrowmap, const Deriv2ndMap& varWGapLinSideMap,
+    const double scalar, const double* const str_grad_vals, const double* const dincr_vals,
+    double& lmincr_j) const
 {
-  for ( Deriv2ndMap::const_iterator ci = varWGapLinSideMap.begin();
-        ci != varWGapLinSideMap.end(); ++ci )
+  for (Deriv2ndMap::const_iterator ci = varWGapLinSideMap.begin(); ci != varWGapLinSideMap.end();
+       ++ci)
   {
     const int var_gid = ci->first;
-    const int var_lid = gslmadofrowmap.LID( var_gid );
-    if ( var_lid == -1 )
+    const int var_lid = gslmadofrowmap.LID(var_gid);
+    if (var_lid == -1)
     {
-//      printf( "Couldn't find the variation dof GID %d in the "
-//          "structural gradient vector on proc %d!\n",
-//          var_gid, lComm()->MyPID() );
+      //      printf( "Couldn't find the variation dof GID %d in the "
+      //          "structural gradient vector on proc %d!\n",
+      //          var_gid, lComm()->MyPID() );
       continue;
     }
 
-    const double str_grad_val = str_grad_vals[ var_lid ] * scalar;
+    const double str_grad_val = str_grad_vals[var_lid] * scalar;
 
     const Deriv1stMap& grad_varWGapSlMap = ci->second;
-    for ( Deriv1stMap::const_iterator cj = grad_varWGapSlMap.begin();
-          cj != grad_varWGapSlMap.end(); ++cj )
+    for (Deriv1stMap::const_iterator cj = grad_varWGapSlMap.begin(); cj != grad_varWGapSlMap.end();
+         ++cj)
     {
       const int lin_gid = cj->first;
-      const int lin_lid = gslmadofrowmap.LID( lin_gid );
-      if ( lin_lid == -1 )
+      const int lin_lid = gslmadofrowmap.LID(lin_gid);
+      if (lin_lid == -1)
       {
-//        printf( "Couldn't find the linearization dof GID %d in the "
-//            "displacement increment vector on proc %d!",
-//            lin_gid, lComm()->MyPID() );
+        //        printf( "Couldn't find the linearization dof GID %d in the "
+        //            "displacement increment vector on proc %d!",
+        //            lin_gid, lComm()->MyPID() );
         continue;
       }
 
-      const double dincr_val = dincr_vals[ lin_lid ];
+      const double dincr_val = dincr_vals[lin_lid];
 
       lmincr_j += str_grad_val * dincr_val * cj->second;
     }
@@ -1862,16 +1778,13 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContributionOfSide(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
-    const Epetra_Vector& dincr,
-    const Epetra_Vector& lm,
-    Epetra_Vector& lmincr ) const
+    const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return;
+  if (!lComm()) return;
 
-  if ( lmincr.Map().NumMyElements() != lm.Map().NumMyElements() )
-    dserror( "The number of local elements does not coincide!" );
+  if (lmincr.Map().NumMyElements() != lm.Map().NumMyElements())
+    dserror("The number of local elements does not coincide!");
 
   const double* dincr_vals = dincr.Values();
   const Epetra_BlockMap& dincr_block_map = dincr.Map();
@@ -1882,90 +1795,66 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   const int nummynodes = activenodes_->NumMyElements();
-  const int * mynodegids = activenodes_->MyGlobalElements();
+  const int* mynodegids = activenodes_->MyGlobalElements();
 
-  if ( nummynodes != lmincr.Map().NumMyElements() )
-      dserror( "Number of elements does not coincide! Currently we"
-          "support only Lagrange Multiplier vectors in normal direction!" );
+  if (nummynodes != lmincr.Map().NumMyElements())
+    dserror(
+        "Number of elements does not coincide! Currently we"
+        "support only Lagrange Multiplier vectors in normal direction!");
 
   double* lmincr_vals = lmincr.Values();
 
-  for ( int k=0; k<nummynodes; ++k )
+  for (int k = 0; k < nummynodes; ++k)
   {
     const int kgid = mynodegids[k];
 
     CoNode* cnode_k = static_cast<CoNode*>(idiscret_->gNode(kgid));
-    dsassert( cnode_k, "ERROR: Cannot find slave node!" );
+    dsassert(cnode_k, "ERROR: Cannot find slave node!");
 
     const int ndof_k = cnode_k->Dofs()[0];
-    const int nlid_k = lm.Map().LID( ndof_k );
-    if ( nlid_k == -1 )
+    const int nlid_k = lm.Map().LID(ndof_k);
+    if (nlid_k == -1)
     {
-      dserror( "Couldn't find the normal-dof GID %d in the "
+      dserror(
+          "Couldn't find the normal-dof GID %d in the "
           "Lagrange multiplier vector on proc %d!",
-          ndof_k, lComm()->MyPID() );
+          ndof_k, lComm()->MyPID());
     }
 
     // 1-st summand
-    const double lk = lm_vals[ nlid_k ];
+    const double lk = lm_vals[nlid_k];
 
     // 2-nd summand
-    double& lmincr_k = lmincr_vals[ nlid_k ];
+    double& lmincr_k = lmincr_vals[nlid_k];
 
     // --- SLAVE SIDE
     {
-      AssembleGradientBBMatrixContributionOfSide<SideType::slave>(
-          nummynodes,
-          mynodegids,
-          dincr_block_map,
-          lm_block_map,
-          *cnode_k,
-          1.0,
-          lk,
-          dincr_vals,
-          lm_vals,
-          lmincr_vals,
-          lmincr_k );
+      AssembleGradientBBMatrixContributionOfSide<SideType::slave>(nummynodes, mynodegids,
+          dincr_block_map, lm_block_map, *cnode_k, 1.0, lk, dincr_vals, lm_vals, lmincr_vals,
+          lmincr_k);
     }
 
     // --- MASTER SIDE
     {
-      AssembleGradientBBMatrixContributionOfSide<SideType::master>(
-          nummynodes,
-          mynodegids,
-          dincr_block_map,
-          lm_block_map,
-          *cnode_k,
-          -1.0,
-          lk,
-          dincr_vals,
-          lm_vals,
-          lmincr_vals,
-          lmincr_k );
+      AssembleGradientBBMatrixContributionOfSide<SideType::master>(nummynodes, mynodegids,
+          dincr_block_map, lm_block_map, *cnode_k, -1.0, lk, dincr_vals, lm_vals, lmincr_vals,
+          lmincr_k);
     }
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template<enum CONTACT::AUG::SideType side>
-void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(
-    const int               nummynodes,
-    const int* const        mynodegids,
-    const Epetra_BlockMap&  dincr_block_map,
-    const Epetra_BlockMap&  lm_block_map,
-    const CoNode&           cnode_k,
-    const double            scalar,
-    const double            lk,
-    const double * const    dincr_vals,
-    const double * const    lm_vals,
-    double * const          lmincr_vals,
-    double&                 lmincr_k ) const
+template <enum CONTACT::AUG::SideType side>
+void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const int nummynodes,
+    const int* const mynodegids, const Epetra_BlockMap& dincr_block_map,
+    const Epetra_BlockMap& lm_block_map, const CoNode& cnode_k, const double scalar,
+    const double lk, const double* const dincr_vals, const double* const lm_vals,
+    double* const lmincr_vals, double& lmincr_k) const
 {
-  const Deriv1stMap& varWGapSideMap = GetVarWGapOfSide<side>( cnode_k );
+  const Deriv1stMap& varWGapSideMap = GetVarWGapOfSide<side>(cnode_k);
 
-  for ( Deriv1stMap::const_iterator ci = varWGapSideMap.begin();
-        ci != varWGapSideMap.end(); ++ci )
+  for (Deriv1stMap::const_iterator ci = varWGapSideMap.begin(); ci != varWGapSideMap.end(); ++ci)
   {
     const int var_kgid = ci->first;
 
@@ -1973,49 +1862,47 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(
     const double bik_lk = ci->second * lk;
 
     // 2-nd summand
-    const double bik    = ci->second;
+    const double bik = ci->second;
 
-    for ( int j=0; j<nummynodes; ++j )
+    for (int j = 0; j < nummynodes; ++j)
     {
-      const int jgid = mynodegids[ j ];
+      const int jgid = mynodegids[j];
 
       CoNode* cnode_j = static_cast<CoNode*>(idiscret_->gNode(jgid));
-      dsassert( cnode_j, "ERROR: Cannot find slave node!" );
+      dsassert(cnode_j, "ERROR: Cannot find slave node!");
 
-      const Deriv2ndMap& varWGapLinSideMap = GetVarWGapLinOfSide<side>( *cnode_j );
+      const Deriv2ndMap& varWGapLinSideMap = GetVarWGapLinOfSide<side>(*cnode_j);
 
-      Deriv2ndMap::const_iterator cci = varWGapLinSideMap.find( var_kgid );
-      if ( varWGapLinSideMap.end() == cci )
-        continue;
+      Deriv2ndMap::const_iterator cci = varWGapLinSideMap.find(var_kgid);
+      if (varWGapLinSideMap.end() == cci) continue;
 
       const int ndof_j = cnode_j->Dofs()[0];
-      const int nlid_j = lm_block_map.LID( ndof_j );
-      if ( nlid_j == -1 )
+      const int nlid_j = lm_block_map.LID(ndof_j);
+      if (nlid_j == -1)
       {
-        dserror( "Couldn't find the normal-dof GID %d in the "
+        dserror(
+            "Couldn't find the normal-dof GID %d in the "
             "Lagrange multiplier increment vector on proc %d!",
-            ndof_j, lComm()->MyPID() );
+            ndof_j, lComm()->MyPID());
       }
 
       // 1-st summand
-      double& lmincr_j = lmincr_vals[ nlid_j ];
+      double& lmincr_j = lmincr_vals[nlid_j];
 
       // 2-nd summand
-      const double bik_lj  = bik * lm_vals[ nlid_j ];
+      const double bik_lj = bik * lm_vals[nlid_j];
 
-      for ( Deriv1stMap::const_iterator cix = cci->second.begin();
-            cix != cci->second.end(); ++cix )
+      for (Deriv1stMap::const_iterator cix = cci->second.begin(); cix != cci->second.end(); ++cix)
       {
         const int lin_gid = ci->first;
         const int lin_lid = dincr_block_map.LID(lin_gid);
-        if ( lin_lid == -1 )
-          continue;
+        if (lin_lid == -1) continue;
 
         // 1-st summand: lmincr_{j} = B_{ij,x} B_{ik} lm^{k} dincr^{x}
-        lmincr_j += cix->second * bik_lk * dincr_vals[ lin_lid ];
+        lmincr_j += cix->second * bik_lk * dincr_vals[lin_lid];
 
         // 2-nd summand: lmincr_{k} = B_{ij,x} B_{ik} lm^{j} dincr^{x}
-        lmincr_k += cix->second * bik_lj * dincr_vals[ lin_lid ];
+        lmincr_k += cix->second * bik_lj * dincr_vals[lin_lid];
       }
     }
   }
@@ -2024,9 +1911,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Interface::EnforceNodalComplementarityCondition(
-    const Epetra_Vector& dincr_slma,
-    const Epetra_Vector& cn_old,
-    Epetra_Vector& cn_new ) const
+    const Epetra_Vector& dincr_slma, const Epetra_Vector& cn_old, Epetra_Vector& cn_new) const
 {
   double numerator = 0.0;
   double denominator = 0.0;
@@ -2034,16 +1919,16 @@ double CONTACT::AUG::Interface::EnforceNodalComplementarityCondition(
   const double* displ_vals = dincr_slma.Values();
   const double* cn_old_vals = cn_old.Values();
 
-  cn_new.Scale( 1.0, cn_old );
-  double * cn_new_vals = cn_new.Values();
+  cn_new.Scale(1.0, cn_old);
+  double* cn_new_vals = cn_new.Values();
 
   const unsigned my_num_anodes = activenodes_->NumMyElements();
   const int* my_active_ngids = activenodes_->MyGlobalElements();
 
-  for ( unsigned i=0; i<my_num_anodes; ++i )
+  for (unsigned i = 0; i < my_num_anodes; ++i)
   {
-    DRT::Node* node = idiscret_->gNode( my_active_ngids[i] );
-    CoNode& cnode = dynamic_cast<CoNode&>( *node );
+    DRT::Node* node = idiscret_->gNode(my_active_ngids[i]);
+    CoNode& cnode = dynamic_cast<CoNode&>(*node);
 
     const double zn = cnode.MoData().lm()[0];
 
@@ -2055,22 +1940,18 @@ double CONTACT::AUG::Interface::EnforceNodalComplementarityCondition(
     // search direction
     double dgapn = 0.0;
     {
-      for ( auto& dgapn_sl : augdata.GetDeriv1st_WGapSl_Complete() )
+      for (auto& dgapn_sl : augdata.GetDeriv1st_WGapSl_Complete())
       {
-        const int lid = dincr_slma.Map().LID( dgapn_sl.first );
-        if ( lid < 0 )
-          dserror( "Could not find GID %d in the dincr_slma vector!",
-              dgapn_sl.first );
+        const int lid = dincr_slma.Map().LID(dgapn_sl.first);
+        if (lid < 0) dserror("Could not find GID %d in the dincr_slma vector!", dgapn_sl.first);
 
         dgapn -= dgapn_sl.second * displ_vals[lid];
       }
 
-      for ( auto& dgapn_ma : augdata.GetDeriv1st_WGapMa_Complete() )
+      for (auto& dgapn_ma : augdata.GetDeriv1st_WGapMa_Complete())
       {
-        const int lid = dincr_slma.Map().LID( dgapn_ma.first );
-        if ( lid < 0 )
-          dserror( "Could not find GID %d in the dincr_slma vector!",
-              dgapn_ma.first );
+        const int lid = dincr_slma.Map().LID(dgapn_ma.first);
+        if (lid < 0) dserror("Could not find GID %d in the dincr_slma vector!", dgapn_ma.first);
 
         dgapn += dgapn_ma.second * displ_vals[lid];
       }
@@ -2080,40 +1961,36 @@ double CONTACT::AUG::Interface::EnforceNodalComplementarityCondition(
     // search direction
     double ddgapn = 0.0;
     {
-      for ( auto& ddgapn_sl_var : augdata.GetDeriv2nd_WGapSl() )
+      for (auto& ddgapn_sl_var : augdata.GetDeriv2nd_WGapSl())
       {
-         const int lid_var = dincr_slma.Map().LID( ddgapn_sl_var.first );
-         if ( lid_var < 0 )
-           dserror( "Could not find GID %d in the dincr_slma vector!",
-               ddgapn_sl_var.first );
+        const int lid_var = dincr_slma.Map().LID(ddgapn_sl_var.first);
+        if (lid_var < 0)
+          dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_sl_var.first);
 
-         for ( auto& ddgapn_sl_lin : ddgapn_sl_var.second )
-         {
-           const int lid_lin = dincr_slma.Map().LID( ddgapn_sl_lin.first );
-           if ( lid_lin < 0 )
-             dserror( "Could not find GID %d in the dincr_slma vector!",
-                 ddgapn_sl_lin.first );
+        for (auto& ddgapn_sl_lin : ddgapn_sl_var.second)
+        {
+          const int lid_lin = dincr_slma.Map().LID(ddgapn_sl_lin.first);
+          if (lid_lin < 0)
+            dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_sl_lin.first);
 
-           ddgapn -= displ_vals[lid_var] * displ_vals[lid_lin] * ddgapn_sl_lin.second;
-         }
+          ddgapn -= displ_vals[lid_var] * displ_vals[lid_lin] * ddgapn_sl_lin.second;
+        }
       }
 
-      for ( auto& ddgapn_ma_var : augdata.GetDeriv2nd_WGapMa() )
+      for (auto& ddgapn_ma_var : augdata.GetDeriv2nd_WGapMa())
       {
-         const int lid_var = dincr_slma.Map().LID( ddgapn_ma_var.first );
-         if ( lid_var < 0 )
-           dserror( "Could not find GID %d in the dincr_slma vector!",
-               ddgapn_ma_var.first );
+        const int lid_var = dincr_slma.Map().LID(ddgapn_ma_var.first);
+        if (lid_var < 0)
+          dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_ma_var.first);
 
-         for ( auto& ddgapn_ma_lin : ddgapn_ma_var.second )
-         {
-           const int lid_lin = dincr_slma.Map().LID( ddgapn_ma_lin.first );
-           if ( lid_lin < 0 )
-             dserror( "Could not find GID %d in the dincr_slma vector!",
-                 ddgapn_ma_lin.first );
+        for (auto& ddgapn_ma_lin : ddgapn_ma_var.second)
+        {
+          const int lid_lin = dincr_slma.Map().LID(ddgapn_ma_lin.first);
+          if (lid_lin < 0)
+            dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_ma_lin.first);
 
-           ddgapn += displ_vals[lid_var] * displ_vals[lid_lin] * ddgapn_ma_lin.second;
-         }
+          ddgapn += displ_vals[lid_var] * displ_vals[lid_lin] * ddgapn_ma_lin.second;
+        }
       }
     }
 
@@ -2130,41 +2007,37 @@ double CONTACT::AUG::Interface::EnforceNodalComplementarityCondition(
     const double sc_gapn_dgapn_dgapn = (gapn + dgapn) * a_inv * dgapn;
 
     // nodal cn value
-    const int cn_lid = cn_old.Map().LID( my_active_ngids[i] );
-    if ( cn_lid < 0 )
-      dserror( "Could not find GID %d in the cn vector!", my_active_ngids[i] );
+    const int cn_lid = cn_old.Map().LID(my_active_ngids[i]);
+    if (cn_lid < 0) dserror("Could not find GID %d in the cn vector!", my_active_ngids[i]);
 
 
-//    std::cout << "Node-GID " << my_active_ngids[i] << ":\n"
-//        "gapn_zn             = " << gapn_zn << "\n"
-//        "dgapn_zn            = " << dgapn_zn << "\n"
-//        "d_ddgapn_d          = " << d_ddgapn_d << "\n"
-//        "sc_gapn_dgapn_dgapn = " << sc_gapn_dgapn_dgapn << std::endl;
+    //    std::cout << "Node-GID " << my_active_ngids[i] << ":\n"
+    //        "gapn_zn             = " << gapn_zn << "\n"
+    //        "dgapn_zn            = " << dgapn_zn << "\n"
+    //        "d_ddgapn_d          = " << d_ddgapn_d << "\n"
+    //        "sc_gapn_dgapn_dgapn = " << sc_gapn_dgapn_dgapn << std::endl;
 
-    if ( std::abs( sc_gapn_dgapn_dgapn ) > 1.0e-14 and
-         gapn_zn * dgapn_zn < 0.0 )
+    if (std::abs(sc_gapn_dgapn_dgapn) > 1.0e-14 and gapn_zn * dgapn_zn < 0.0)
     {
       numerator += gapn_zn + dgapn_zn + d_ddgapn_d;
       denominator += sc_gapn_dgapn_dgapn;
     }
 
-    if ( std::abs( sc_gapn_dgapn_dgapn ) > 1.0e-14 )
+    if (std::abs(sc_gapn_dgapn_dgapn) > 1.0e-14)
     {
-      const double nodal_cn = ( gapn_zn + dgapn_zn + d_ddgapn_d ) / sc_gapn_dgapn_dgapn;
-      if ( nodal_cn > cn_old_vals[cn_lid] )
-        cn_new_vals[cn_lid] = nodal_cn;
+      const double nodal_cn = (gapn_zn + dgapn_zn + d_ddgapn_d) / sc_gapn_dgapn_dgapn;
+      if (nodal_cn > cn_old_vals[cn_lid]) cn_new_vals[cn_lid] = nodal_cn;
     }
   }
 
-  return ( denominator != 0.0 ? numerator / denominator : 0.0 );
+  return (denominator != 0.0 ? numerator / denominator : 0.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode ) const
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const CoNode& cnode) const
 {
   return cnode.AugData().GetDeriv1st_WGapMa();
 }
@@ -2173,8 +2046,7 @@ CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(
  *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(
-    const CoNode& cnode ) const
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const CoNode& cnode) const
 {
   return cnode.AugData().GetDeriv1st_WGapSl();
 }
@@ -2184,7 +2056,7 @@ CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(
 template <>
 const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode ) const
+    const CoNode& cnode) const
 {
   return cnode.AugData().GetDeriv2nd_WGapMa();
 }
@@ -2194,39 +2066,33 @@ CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
 template <>
 const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
-    const CoNode& cnode ) const
+    const CoNode& cnode) const
 {
   return cnode.AugData().GetDeriv2nd_WGapSl();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template < class T >
+template <class T>
 void CONTACT::AUG::AssembleMapIntoMatrix(
-    int row,
-    double scal,
-    const T& values,
-    LINALG::SparseMatrix& mat,
-    double threshold )
+    int row, double scal, const T& values, LINALG::SparseMatrix& mat, double threshold)
 {
-  dsassert( threshold >= 0.0, "The threshold value has to be positive!" );
+  dsassert(threshold >= 0.0, "The threshold value has to be positive!");
 
-  for ( typename T::const_iterator pp = values.begin();
-        pp != values.end(); ++pp )
+  for (typename T::const_iterator pp = values.begin(); pp != values.end(); ++pp)
   {
-    const double val = scal * ( pp->second );
+    const double val = scal * (pp->second);
     const int col = pp->first;
 
-    if ( std::abs( val ) < threshold )
-      continue;
+    if (std::abs(val) < threshold) continue;
 
-    switch ( mat.GetMatrixtype() )
+    switch (mat.GetMatrixtype())
     {
       case LINALG::SparseMatrix::FE_MATRIX:
-        mat.FEAssemble( val, row, col );
+        mat.FEAssemble(val, row, col);
         break;
       case LINALG::SparseMatrix::CRS_MATRIX:
-        mat.Assemble( val, row, col );
+        mat.Assemble(val, row, col);
         break;
     }
   }
@@ -2237,20 +2103,17 @@ void CONTACT::AUG::AssembleMapIntoMatrix(
 double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return 0.0;
+  if (!lComm()) return 0.0;
 
   const int num_my_anodes = activenodes_->NumMyElements();
   const int* my_anode_gids = activenodes_->MyGlobalElements();
 
   double my_square_error = 0.0;
 
-  for ( int i=0; i< num_my_anodes; ++i )
+  for (int i = 0; i < num_my_anodes; ++i)
   {
-    const CoNode* cnode = dynamic_cast<const CoNode*>(
-        idiscret_->gNode( my_anode_gids[i] ) );
-    if ( not cnode )
-      dserror( "Dynamic cast failed!" );
+    const CoNode* cnode = dynamic_cast<const CoNode*>(idiscret_->gNode(my_anode_gids[i]));
+    if (not cnode) dserror("Dynamic cast failed!");
 
     {
       const Deriv1stMap& d_wgap_sl = cnode->AugData().GetDeriv1st_WGapSl();
@@ -2258,26 +2121,26 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 
       unsigned sl_sanity_count = 0;
 
-      for ( auto& sl_complete : d_wgap_sl_c )
+      for (auto& sl_complete : d_wgap_sl_c)
       {
         const int var_dof = sl_complete.first;
 
         double e = sl_complete.second;
-        auto sl_incomplete = d_wgap_sl.find( var_dof );
+        auto sl_incomplete = d_wgap_sl.find(var_dof);
 
-        if ( sl_incomplete != d_wgap_sl.end() )
+        if (sl_incomplete != d_wgap_sl.end())
         {
           e -= sl_incomplete->second;
           ++sl_sanity_count;
         }
 
-        std::cout << "GID #" << my_anode_gids[i] << " - sl-error = " << std::sqrt( e*e ) << std::endl;
+        std::cout << "GID #" << my_anode_gids[i] << " - sl-error = " << std::sqrt(e * e)
+                  << std::endl;
 
-        my_square_error += e*e;
+        my_square_error += e * e;
       }
 
-      if ( sl_sanity_count != d_wgap_sl.size() )
-        dserror("Size mismatch for the slave side!");
+      if (sl_sanity_count != d_wgap_sl.size()) dserror("Size mismatch for the slave side!");
     }
 
     {
@@ -2286,26 +2149,26 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 
       unsigned ma_sanity_count = 0;
 
-      for ( auto& ma_complete : d_wgap_ma_c )
+      for (auto& ma_complete : d_wgap_ma_c)
       {
         const int var_dof = ma_complete.first;
 
         double e = ma_complete.second;
-        auto ma_incomplete = d_wgap_ma.find( var_dof );
+        auto ma_incomplete = d_wgap_ma.find(var_dof);
 
-        if ( ma_incomplete != d_wgap_ma.end() )
+        if (ma_incomplete != d_wgap_ma.end())
         {
           e -= ma_incomplete->second;
           ++ma_sanity_count;
         }
 
-        std::cout << "GID #" << my_anode_gids[i] << " - ma-error = " << std::sqrt( e*e ) << std::endl;
+        std::cout << "GID #" << my_anode_gids[i] << " - ma-error = " << std::sqrt(e * e)
+                  << std::endl;
 
-        my_square_error += e*e;
+        my_square_error += e * e;
       }
 
-      if ( ma_sanity_count != d_wgap_ma.size() )
-        dserror("Size mismatch for the master side!");
+      if (ma_sanity_count != d_wgap_ma.size()) dserror("Size mismatch for the master side!");
     }
   }
 
@@ -2315,44 +2178,43 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Interface::MyCharacteristicElementLength(
-    const enum CONTACT::AUG::SideType stype ) const
+    const enum CONTACT::AUG::SideType stype) const
 {
   // get out of here if not participating in interface
-  if (!lComm())
-    return -1.0;
+  if (!lComm()) return -1.0;
 
-  Teuchos::RCP<const Epetra_Map> ele_map_ptr = idata_.ElementRowMapPtr( stype );
+  Teuchos::RCP<const Epetra_Map> ele_map_ptr = idata_.ElementRowMapPtr(stype);
   const int num_my_entries = ele_map_ptr->NumMyElements();
   const int* my_gids = ele_map_ptr->MyGlobalElements();
 
   double my_max_h_ele = -1.0;
-  for ( int i=0; i<num_my_entries; ++i )
+  for (int i = 0; i < num_my_entries; ++i)
   {
-    const DRT::Element* ele = idiscret_->gElement( my_gids[i] );
-    if ( not ele )
-      dserror("Couldn't find the element! (ele-GID=%d)", my_gids[i]);
+    const DRT::Element* ele = idiscret_->gElement(my_gids[i]);
+    if (not ele) dserror("Couldn't find the element! (ele-GID=%d)", my_gids[i]);
 
-    const DRT::Node* const * nodes = ele->Nodes();
-    switch ( ele->Shape() )
+    const DRT::Node* const* nodes = ele->Nodes();
+    switch (ele->Shape())
     {
       case DRT::Element::line2:
       {
         const CoNode& cnode0 = dynamic_cast<const CoNode&>(*nodes[0]);
         const CoNode& cnode1 = dynamic_cast<const CoNode&>(*nodes[1]);
 
-        const LINALG::Matrix<3,1> X0( cnode0.X(), true );
-        LINALG::Matrix<3,1> diffX( cnode1.X(), false );
+        const LINALG::Matrix<3, 1> X0(cnode0.X(), true);
+        LINALG::Matrix<3, 1> diffX(cnode1.X(), false);
 
-        diffX.Update( -1.0, X0, 1.0 );
+        diffX.Update(-1.0, X0, 1.0);
 
-        my_max_h_ele = std::max( my_max_h_ele, diffX.Norm2() );
+        my_max_h_ele = std::max(my_max_h_ele, diffX.Norm2());
 
         break;
       }
       default:
-        dserror( "You have to implement the characteristic element length"
+        dserror(
+            "You have to implement the characteristic element length"
             " calculation for the given element type. (ele-type=%s)",
-            DRT::DistypeToString( ele->Shape() ).c_str() );
+            DRT::DistypeToString(ele->Shape()).c_str());
         exit(EXIT_FAILURE);
     }
   }
@@ -2363,9 +2225,9 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr(
-    const enum SideType stype ) const
+    const enum SideType stype) const
 {
-  switch ( stype )
+  switch (stype)
   {
     case SideType::slave:
       return ElementRowMapPtr<SideType::slave>();
@@ -2374,7 +2236,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr(
     case SideType::slave_master:
       return ElementRowMapPtr<SideType::slave_master>();
     default:
-      dserror( "Unknown sidetype. (enum=%d)", stype );
+      dserror("Unknown sidetype. (enum=%d)", stype);
       exit(EXIT_FAILURE);
   }
 }
@@ -2382,10 +2244,10 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
+Teuchos::RCP<const Epetra_Map>
+CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
 {
-  if ( MEleRowMap().is_null() )
-    dserror("Master element row map ptr is NULL.");
+  if (MEleRowMap().is_null()) dserror("Master element row map ptr is NULL.");
 
   return MEleRowMap();
 }
@@ -2393,10 +2255,10 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr<CO
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <>
-Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
+Teuchos::RCP<const Epetra_Map>
+CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
 {
-  if ( SEleRowMap().is_null() )
-    dserror("Slave element row map ptr is NULL.");
+  if (SEleRowMap().is_null()) dserror("Slave element row map ptr is NULL.");
 
   return SEleRowMap();
 }
@@ -2410,36 +2272,33 @@ CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_mas
   Teuchos::RCP<const Epetra_Map> slelerowmap = ElementRowMapPtr<SideType::slave>();
   Teuchos::RCP<const Epetra_Map> maelerowmap = ElementRowMapPtr<SideType::master>();
 
-  return LINALG::MergeMap( slelerowmap, maelerowmap );
+  return LINALG::MergeMap(slelerowmap, maelerowmap);
 }
 
 /*----------------------------------------------------------------------------*/
 // explicit template instantiations
 
-template Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr<
-CONTACT::AUG::SideType::slave>() const;
-template Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr<
-CONTACT::AUG::SideType::master>() const;
-template Teuchos::RCP<const Epetra_Map> CONTACT::AUG::IDataContainer::ElementRowMapPtr<
-CONTACT::AUG::SideType::slave_master>() const;
+template Teuchos::RCP<const Epetra_Map>
+CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const;
+template Teuchos::RCP<const Epetra_Map>
+CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const;
+template Teuchos::RCP<const Epetra_Map>
+CONTACT::AUG::IDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave_master>() const;
 
-template void CONTACT::AUG::AssembleMapIntoMatrix< CONTACT::AUG::Deriv1stMap >(
-    int row, double scal, const Deriv1stMap& values,
-    LINALG::SparseMatrix& mat, double threshold );
-template void CONTACT::AUG::AssembleMapIntoMatrix< CONTACT::AUG::plain_double_map >(
-    int row, double scal, const plain_double_map& values,
-    LINALG::SparseMatrix& mat, double threshold );
+template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::Deriv1stMap>(
+    int row, double scal, const Deriv1stMap& values, LINALG::SparseMatrix& mat, double threshold);
+template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::plain_double_map>(int row,
+    double scal, const plain_double_map& values, LINALG::SparseMatrix& mat, double threshold);
 
 template const CONTACT::AUG::Deriv1stMap&
 CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode ) const;
+    const CoNode& cnode) const;
 template const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(
-    const CoNode& cnode ) const;
+CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::slave>(const CoNode& cnode) const;
 
 template const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::master>(
-    const CoNode& cnode ) const;
+    const CoNode& cnode) const;
 template const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
-    const CoNode& cnode ) const;
+    const CoNode& cnode) const;

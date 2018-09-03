@@ -37,36 +37,33 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::DirectSolver::DirectSolver( std::string solvertype )
-  : solvertype_(solvertype),
-    factored_(false),
-    x_(Teuchos::null),
-    b_(Teuchos::null),
-    A_(Teuchos::null),
-    amesos_(Teuchos::null),
-    reindexer_(Teuchos::null),
-    projector_(Teuchos::null)
+LINALG::SOLVER::DirectSolver::DirectSolver(std::string solvertype)
+    : solvertype_(solvertype),
+      factored_(false),
+      x_(Teuchos::null),
+      b_(Teuchos::null),
+      A_(Teuchos::null),
+      amesos_(Teuchos::null),
+      reindexer_(Teuchos::null),
+      projector_(Teuchos::null)
 {
-  lp_ = Teuchos::rcp( new Epetra_LinearProblem() );
+  lp_ = Teuchos::rcp(new Epetra_LinearProblem());
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::DirectSolver::~DirectSolver()
 {
-  amesos_    = Teuchos::null;
+  amesos_ = Teuchos::null;
   reindexer_ = Teuchos::null;
-  lp_        = Teuchos::null;
+  lp_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
-                                          Teuchos::RCP<Epetra_MultiVector> x,
-                                          Teuchos::RCP<Epetra_MultiVector> b,
-                                          bool refactor,
-                                          bool reset,
-                                          Teuchos::RCP<LINALG::KrylovProjector> projector)
+void LINALG::SOLVER::DirectSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
+    bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   // Assume the input matrix to be a single block matrix
   bool bIsCrsMatrix = true;
@@ -74,15 +71,15 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
   // try to cast input matrix to a Epetra_CrsMatrix
   // if the cast fails, the input matrix is a blocked operator which cannot be handled by a direct
   // solver unless the matrix is merged. This is a very expensive operation
-  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>( matrix );
-  if(crsA == Teuchos::null) bIsCrsMatrix = false;
+  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
+  if (crsA == Teuchos::null) bIsCrsMatrix = false;
 
   // store projector in internal member variable
   // If no projector is used it is Teuchos::null
   projector_ = projector;
 
   // Set internal member variables (store system matrix, rhs vector and solution vector)
-  if ( projector_!=Teuchos::null)
+  if (projector_ != Teuchos::null)
   {
     // instead of
     //
@@ -95,9 +92,12 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
 
     // cast system matrix to LINALG::SparseMatrix
     // check whether cast was successfull
-    if (crsA==Teuchos::null) {dserror("Could not cast system matrix to Epetra_CrsMatrix.");}
+    if (crsA == Teuchos::null)
+    {
+      dserror("Could not cast system matrix to Epetra_CrsMatrix.");
+    }
     // get view on systemmatrix as LINALG::SparseMatrix - this is no copy!
-    LINALG::SparseMatrix A_view(crsA,View);
+    LINALG::SparseMatrix A_view(crsA, View);
 
     // apply projection to A without computing projection matrix thus avoiding
     // matrix-matrix multiplication
@@ -113,17 +113,24 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
   }
   else
   {
-    if(bIsCrsMatrix == true) {
+    if (bIsCrsMatrix == true)
+    {
       A_ = matrix;
-    } else {
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> Ablock = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(matrix);
+    }
+    else
+    {
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> Ablock =
+          Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(matrix);
 
       int matrixDim = Ablock->FullRangeMap().NumGlobalElements();
-      if(matrixDim > 50000) {
-        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-        fos->setOutputToRootOnly( 0 );
+      if (matrixDim > 50000)
+      {
+        Teuchos::RCP<Teuchos::FancyOStream> fos =
+            Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+        fos->setOutputToRootOnly(0);
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
-        *fos << "  Merging a " << Ablock->Rows() << " x " << Ablock->Cols() << " block matrix " << std::endl;
+        *fos << "  Merging a " << Ablock->Rows() << " x " << Ablock->Cols() << " block matrix "
+             << std::endl;
         *fos << "  of size " << matrixDim << " is a very expensive operation. " << std::endl;
         *fos << "  For performance reasons, try iterative solvers instead!" << std::endl;
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
@@ -145,8 +152,7 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
    * to enforce reindexing of the entire Epetra_LinearProblem. This allows for
    * reuse of the factorization.
    */
-  if (not reindexer_.is_null() and not (reset or refactor))
-    reindexer_->fwd();
+  if (not reindexer_.is_null() and not(reset or refactor)) reindexer_->fwd();
 
   if (reset or refactor or not IsFactored())
   {
@@ -154,30 +160,32 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
 
     reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(NULL));
 
-    if ( solvertype_=="klu" )
+    if (solvertype_ == "klu")
     {
       amesos_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*lp_)));
     }
-    else if ( solvertype_=="umfpack" )
+    else if (solvertype_ == "umfpack")
     {
 #ifndef HAVENOT_UMFPACK
       amesos_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
 #else
-      dserror( "no umfpack here" );
+      dserror("no umfpack here");
 #endif
     }
-    else if ( solvertype_=="superlu" )
+    else if (solvertype_ == "superlu")
     {
 #ifndef HAVENOT_SUPERLU
       amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
 #else
-      Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-      fos->setOutputToRootOnly( 0 );
-      *fos << "Warning: No SuperLU_dist available. Linear system will be solved with KLU instead..." << std::endl;
+      Teuchos::RCP<Teuchos::FancyOStream> fos =
+          Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+      fos->setOutputToRootOnly(0);
+      *fos << "Warning: No SuperLU_dist available. Linear system will be solved with KLU instead..."
+           << std::endl;
       amesos_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*lp_)));
 #endif
     }
-    else if ( solvertype_=="lapack" )
+    else if (solvertype_ == "lapack")
     {
       amesos_ = Teuchos::rcp(new Amesos_Lapack((*reindexer_)(*lp_)));
     }
@@ -190,9 +198,9 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
 //----------------------------------------------------------------------------------
 int LINALG::SOLVER::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
 {
-  x_->Update( 1., X, 0. );
+  x_->Update(1., X, 0.);
   Solve();
-  Y.Update( 1., *b_, 0. );
+  Y.Update(1., *b_, 0.);
 
   return 0;
 }
@@ -201,7 +209,7 @@ int LINALG::SOLVER::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 //----------------------------------------------------------------------------------
 int LINALG::SOLVER::DirectSolver::Solve()
 {
-  if (amesos_==Teuchos::null) dserror("No solver allocated");
+  if (amesos_ == Teuchos::null) dserror("No solver allocated");
 
   // Problem has not been factorized before
   if (not IsFactored())

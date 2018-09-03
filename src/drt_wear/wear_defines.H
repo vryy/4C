@@ -25,12 +25,12 @@
 /************************************************************************/
 
 // advection map tolerance
-#define WEARADVMAP 1.0e-8        /* tolerance for advection map*/
+#define WEARADVMAP 1.0e-8 /* tolerance for advection map*/
 
 // tolerance for singular matrix
-#define WEARSING   1.0e-12       /* singularity check within advection map*/
+#define WEARSING 1.0e-12 /* singularity check within advection map*/
 
 // convergence check
-#define WEARCONV   1.0e-12       /* tolerance for convergence check*/
+#define WEARCONV 1.0e-12 /* tolerance for convergence check*/
 
 #endif /* WEAR_DEFINES_H_ */

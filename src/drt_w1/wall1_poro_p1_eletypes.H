@@ -19,113 +19,109 @@
 
 namespace DRT
 {
-// forward declarations
-class Discretization;
+  // forward declarations
+  class Discretization;
 
-namespace ELEMENTS
-{
-
-  /*----------------------------------------------------------------------*
-   |  QUAD 4 Element                                      vuong 07/13  |
-   *----------------------------------------------------------------------*/
-  class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
+  namespace ELEMENTS
   {
-  public:
+    /*----------------------------------------------------------------------*
+     |  QUAD 4 Element                                      vuong 07/13  |
+     *----------------------------------------------------------------------*/
+    class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
+    {
+     public:
+      std::string Name() const { return "WallQuad4PoroP1Type"; }
 
-    std::string Name() const { return "WallQuad4PoroP1Type"; }
+      static WallQuad4PoroP1Type& Instance();
 
-    static WallQuad4PoroP1Type & Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-    virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
+          const double* x0, int numdf, int dimns);
 
-    virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+      virtual int Initialize(DRT::Discretization& dis);
 
-    virtual int Initialize(DRT::Discretization& dis);
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static WallQuad4PoroP1Type instance_;
+    };
 
-  private:
+    /*----------------------------------------------------------------------*
+     |  QUAD 9 Element                                       vuong 07/13 |
+     *----------------------------------------------------------------------*/
+    class WallQuad9PoroP1Type : public DRT::ELEMENTS::WallQuad9PoroType
+    {
+     public:
+      std::string Name() const { return "WallQuad9PoroP1Type"; }
 
-    static WallQuad4PoroP1Type instance_;
-  };
+      static WallQuad9PoroP1Type& Instance();
 
-  /*----------------------------------------------------------------------*
-   |  QUAD 9 Element                                       vuong 07/13 |
-   *----------------------------------------------------------------------*/
-  class WallQuad9PoroP1Type : public DRT::ELEMENTS::WallQuad9PoroType
-  {
-  public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    std::string Name() const { return "WallQuad9PoroP1Type"; }
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-    static WallQuad9PoroP1Type & Instance();
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
+          const double* x0, int numdf, int dimns);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual int Initialize(DRT::Discretization& dis);
 
-    virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+     private:
+      static WallQuad9PoroP1Type instance_;
+    };
 
-    virtual int Initialize(DRT::Discretization& dis);
+    /*----------------------------------------------------------------------*
+     |  TRI 3 Element                                       |
+     *----------------------------------------------------------------------*/
+    class WallTri3PoroP1Type : public DRT::ELEMENTS::WallTri3PoroType
+    {
+     public:
+      std::string Name() const { return "WallTri3PoroP1Type"; }
 
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      static WallTri3PoroP1Type& Instance();
 
-  private:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    static WallQuad9PoroP1Type instance_;
-  };
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  /*----------------------------------------------------------------------*
-   |  TRI 3 Element                                       |
-   *----------------------------------------------------------------------*/
-  class WallTri3PoroP1Type : public DRT::ELEMENTS::WallTri3PoroType
-  {
-  public:
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    std::string Name() const { return "WallTri3PoroP1Type"; }
+      virtual void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-    static WallTri3PoroP1Type & Instance();
+      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
+          const double* x0, int numdf, int dimns);
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual int Initialize(DRT::Discretization& dis);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+     private:
+      static WallTri3PoroP1Type instance_;
+    };
 
-    virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
-
-    virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-
-    virtual int Initialize(DRT::Discretization& dis);
-
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-  private:
-
-    static WallTri3PoroP1Type instance_;
-  };
-
-}//ELEMENTS
-}//DRT
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 
 #endif /* WALL1_PORO_P1_ELETYPES_H_ */

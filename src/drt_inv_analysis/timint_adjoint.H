@@ -24,194 +24,187 @@
 // forward declarations
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 
-namespace UTILS
-{
-class LocsysManager;
-}
-}
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}  // namespace DRT
 
 namespace LINALG
 {
-class Solver;
-class MapExtractor;
-class SparseMatrix;
-class SparseOperator;
-class BlockSparseMatrixBase;
-}
+  class Solver;
+  class MapExtractor;
+  class SparseMatrix;
+  class SparseOperator;
+  class BlockSparseMatrixBase;
+}  // namespace LINALG
 
 namespace IO
 {
-class DiscretizationWriter;
+  class DiscretizationWriter;
 }
 
 /*----------------------------------------------------------------------*/
 namespace STR
 {
+  class TimIntAdjoint
+  {
+   public:
+    //! constructor
+    TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis);
 
-class TimIntAdjoint
-{
+    //! destructor
+    virtual ~TimIntAdjoint() {}
 
-public:
+    //! interface to the calling optimization routine to set up the rhs and the primal variables
+    /*! \param In
+        rhs - rigth hand side for the adjoint equation.
+        \param In
+        mtime - vector with time for each entry in rhs.
+        \param In
+        dis - primal solution to the adjoint problem.
+        \param In
+        mtime - vector with time for each entry in the primal solution.
+        \param In
+    */
+    virtual void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs, std::vector<double> mtime,
+        Teuchos::RCP<Epetra_MultiVector> dis, std::vector<double> time);
 
-  //! constructor
-  TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis);
+    //! do reverse time integration
+    void Integrate();
 
-  //! destructor
-  virtual ~TimIntAdjoint() {}
+    //! dual variables corresponding to the standard adjoint equation
+    Teuchos::RCP<Epetra_MultiVector> ExtractSolution() { return disdual_; }
 
-  //! interface to the calling optimization routine to set up the rhs and the primal variables
-  /*! \param In
-      rhs - rigth hand side for the adjoint equation.
-      \param In
-      mtime - vector with time for each entry in rhs.
-      \param In
-      dis - primal solution to the adjoint problem.
-      \param In
-      mtime - vector with time for each entry in the primal solution.
-      \param In
-  */
-  virtual void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
-                            std::vector<double> mtime,
-                            Teuchos::RCP<Epetra_MultiVector> dis,
-                            std::vector<double> time);
+    //! dual variables corresponding to the "prestressed adjoint equation"
+    virtual Teuchos::RCP<Epetra_MultiVector> ExtractPrestressSolution() { return Teuchos::null; }
 
-  //! do reverse time integration
-  void Integrate();
+   protected:
+    //! intro
+    void PrintLogo();
 
-  //! dual variables corresponding to the standard adjoint equation
-  Teuchos::RCP<Epetra_MultiVector> ExtractSolution() {return disdual_;}
+    //! solve the linear system
+    virtual void Solve();
 
-  //! dual variables corresponding to the "prestressed adjoint equation"
-  virtual Teuchos::RCP<Epetra_MultiVector> ExtractPrestressSolution() {return Teuchos::null;}
+    //! evaluate stiffness matrix
+    void EvaluateStiff();
 
-protected:
+    //! set up things needed for this timestep
+    void PrepareStep();
 
-  //! intro
-  void PrintLogo();
+    //! update step and time
+    void Update();
 
-  //! solve the linear system
-  virtual void Solve();
+    //! update state
+    virtual void UpdateStepState();
 
-  //! evaluate stiffness matrix
-  void EvaluateStiff();
+    //! set time step history
+    void SetTimeStepHistory(int timestep);
 
-  //! set up things needed for this timestep
-  void PrepareStep();
+    //! create a linear solver according to sdyn section
+    void CreateLinearSolver(const Teuchos::ParameterList& sdyn);
 
-  //! update step and time
-  void Update();
+    //! create the writer
+    void CreateWriter();
 
-  //! update state
-  virtual void UpdateStepState();
+    //! write output
+    void OutputStep();
 
-  //! set time step history
-  void SetTimeStepHistory(int timestep);
+    // DBC Map
+    void GetDBCMap();
 
-  //! create a linear solver according to sdyn section
-  void CreateLinearSolver(const Teuchos::ParameterList& sdyn);
+    //! return (rotatory) transformation matrix of local co-ordinate systems
+    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
-  //! create the writer
-  void CreateWriter();
+    //! find step in the rhs vector according to this time
+    int FindStep(double time);
 
-  //! write output
-  void OutputStep();
+    //! print information of time steps to screen
+    int printtoscreen_;
 
-  // DBC Map
-  void GetDBCMap();
+    //! the discretization
+    Teuchos::RCP<DRT::Discretization> discret_;
 
-  //! return (rotatory) transformation matrix of local co-ordinate systems
-  Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
-
-  //! find step in the rhs vector according to this time
-  int FindStep(double time);
-
-  //! print information of time steps to screen
-  int printtoscreen_;
-
-  //! the discretization
-  Teuchos::RCP<DRT::Discretization> discret_;
-
-  //! a writer for the output
-  Teuchos::RCP<IO::DiscretizationWriter> writer_;
+    //! a writer for the output
+    Teuchos::RCP<IO::DiscretizationWriter> writer_;
 
 
-  //! the dofrowmap of the discretization
-  const Epetra_Map* dofrowmap_;
+    //! the dofrowmap of the discretization
+    const Epetra_Map* dofrowmap_;
 
-  //! a solver
-  Teuchos::RCP<LINALG::Solver> solver_;
+    //! a solver
+    Teuchos::RCP<LINALG::Solver> solver_;
 
-  //! to apply Dirichlet BCs with local co-ordinate system
-  Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+    //! to apply Dirichlet BCs with local co-ordinate system
+    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
-  //! map to the dirichlet boundary
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    //! map to the dirichlet boundary
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-  //! DBC toggle
-  Teuchos::RCP<Epetra_Vector> dbctoggle_;
+    //! DBC toggle
+    Teuchos::RCP<Epetra_Vector> dbctoggle_;
 
-  //! primal variables (displacements)
-  Teuchos::RCP<Epetra_MultiVector> dis_;
+    //! primal variables (displacements)
+    Teuchos::RCP<Epetra_MultiVector> dis_;
 
-  //! dual variables (lagrange multiplier)
-  Teuchos::RCP<Epetra_MultiVector> disdual_;
+    //! dual variables (lagrange multiplier)
+    Teuchos::RCP<Epetra_MultiVector> disdual_;
 
-  //! rhs for the adjoints
-  Teuchos::RCP<Epetra_MultiVector> rhs_;
+    //! rhs for the adjoints
+    Teuchos::RCP<Epetra_MultiVector> rhs_;
 
-  //! dis_ at step n
-  Teuchos::RCP<Epetra_Vector> disn_;
+    //! dis_ at step n
+    Teuchos::RCP<Epetra_Vector> disn_;
 
-  //! disdualn_ at step n
-  Teuchos::RCP<Epetra_Vector> disdualn_;
+    //! disdualn_ at step n
+    Teuchos::RCP<Epetra_Vector> disdualn_;
 
-  //! disdualn_ at step n
-  Teuchos::RCP<Epetra_Vector> rhsn_;
+    //! disdualn_ at step n
+    Teuchos::RCP<Epetra_Vector> rhsn_;
 
-  //! stiffness matrix
-  Teuchos::RCP<LINALG::SparseOperator> stiff_;
+    //! stiffness matrix
+    Teuchos::RCP<LINALG::SparseOperator> stiff_;
 
-  //! stiffness matrix with neumann terms
-  Teuchos::RCP<LINALG::SparseOperator> stiffn_;
+    //! stiffness matrix with neumann terms
+    Teuchos::RCP<LINALG::SparseOperator> stiffn_;
 
-  //! a vector with zeros
-  Teuchos::RCP<Epetra_Vector> zeros_;
+    //! a vector with zeros
+    Teuchos::RCP<Epetra_Vector> zeros_;
 
-  //! number of simulation steps in the primal problem
-  int msteps_;
+    //! number of simulation steps in the primal problem
+    int msteps_;
 
-  //! time step at time n
-  int stepn_;
+    //! time step at time n
+    int stepn_;
 
-  //! to stepn_ corresponding step of the rhs
-  int steprhsn_;
+    //! to stepn_ corresponding step of the rhs
+    int steprhsn_;
 
-  //! timesteps coming from the primal problem
-  std::vector<double> time_;
+    //! timesteps coming from the primal problem
+    std::vector<double> time_;
 
-  //! dt (from forward problem)
-  double dt_;
+    //! dt (from forward problem)
+    double dt_;
 
-  //! timesteps for which there is a rhs not zero
-  std::vector<double> mtime_;
+    //! timesteps for which there is a rhs not zero
+    std::vector<double> mtime_;
 
-  //! current time
-  double timen_;
+    //! current time
+    double timen_;
 
-  //! "write step" counter
-  int writestep_;
+    //! "write step" counter
+    int writestep_;
 
-  //! "write time"
-  double writetime_;
+    //! "write time"
+    double writetime_;
 
-  //! rhs and primal variables set?
-  bool isinit_;
+    //! rhs and primal variables set?
+    bool isinit_;
+  };
 
-};
-
-}
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif

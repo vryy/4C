@@ -21,32 +21,26 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 
 namespace DRT
 {
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
+    class FluidEleParameterStd : public FluidEleParameter
+    {
+     public:
+      virtual ~FluidEleParameterStd() {}
 
-class FluidEleParameterStd : public FluidEleParameter
-{
+      /// Singleton access method
+      static FluidEleParameterStd* Instance(bool create = true);
 
-public:
+      /// called upon destruction
+      virtual void Done();
 
-  virtual ~FluidEleParameterStd() {}
+     private:
+     protected:
+      /// protected Constructor since we are a Singleton.
+      FluidEleParameterStd();
+    };
 
-  /// Singleton access method
-  static FluidEleParameterStd* Instance( bool create=true );
-
-  /// called upon destruction
-  virtual void Done();
-
-private:
-
-protected:
-
-  /// protected Constructor since we are a Singleton.
-  FluidEleParameterStd();
-
-};
-
-}
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif

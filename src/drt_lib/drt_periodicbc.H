@@ -26,21 +26,19 @@
 typedef int idxtype;
 extern "C"
 {
-  void METIS_PartGraphRecursive(int *, idxtype *, idxtype *,
-        idxtype *, idxtype *, int *, int *, int *,
-        int *, int *, idxtype *);
-  void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *,
-         idxtype *, int *, int *, int *, int *, int *,
-         idxtype *);
+  void METIS_PartGraphRecursive(int *, idxtype *, idxtype *, idxtype *, idxtype *, int *, int *,
+      int *, int *, int *, idxtype *);
+  void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *, idxtype *, int *, int *, int *,
+      int *, int *, idxtype *);
 }
 
 // forward declarations
 namespace DRT
 {
-class Discretization;
-class PBCDofSet;
-class Condition;
-}
+  class Discretization;
+  class PBCDofSet;
+  class Condition;
+}  // namespace DRT
 
 
 /*!
@@ -69,8 +67,7 @@ Maintainer: Ursula Rasthofer
 */
 class PeriodicBoundaryConditions
 {
-public:
-
+ public:
   /*!
   \brief Standard Constructor
 
@@ -85,7 +82,7 @@ public:
   \return void
 
   */
-  PeriodicBoundaryConditions(Teuchos::RCP<DRT::Discretization> dis, bool verbose=true);
+  PeriodicBoundaryConditions(Teuchos::RCP<DRT::Discretization> dis, bool verbose = true);
 
   /*!
   \brief Destructor
@@ -113,14 +110,14 @@ public:
   //@}
 
   //! @name methods to provide constructed node to node coupling
-  Teuchos::RCP<std::map<int,std::vector<int> > > ReturnAllCoupledColNodes()
+  Teuchos::RCP<std::map<int, std::vector<int>>> ReturnAllCoupledColNodes()
   {
     return (allcoupledcolnodes_);
   }
   //@}
 
   //! @name methods to provide constructed node to node coupling
-  Teuchos::RCP<std::map<int,std::vector<int> > > ReturnAllCoupledRowNodes()
+  Teuchos::RCP<std::map<int, std::vector<int>>> ReturnAllCoupledRowNodes()
   {
     return (allcoupledrownodes_);
   }
@@ -128,23 +125,20 @@ public:
 
 
   bool HasPBC()
+  {
+    if (numpbcpairs_ > 0)
     {
-      if(numpbcpairs_>0)
-      {
-        return(true);
-      }
-      else
-      {
-        return(false);
-      }
+      return (true);
     }
+    else
+    {
+      return (false);
+    }
+  }
 
 
   //! @name method that returns a pointer to the vector of the conditions
-  std::vector<DRT::Condition*>* ReturnSurfacePBCs()
-  {
-    return &mysurfpbcs_;
-  }
+  std::vector<DRT::Condition *> *ReturnSurfacePBCs() { return &mysurfpbcs_; }
   //@}
 
 
@@ -188,8 +182,7 @@ public:
   */
   void PutAllSlavesToMastersProc();
 
-protected:
-
+ protected:
   /*!
   \brief Couple nodes for specific pair of periodic boundary conditions.
 
@@ -232,13 +225,9 @@ protected:
   \return void
 
   */
-  void CreateNodeCouplingForSinglePBC(
-    std::map<int,std::vector<int> > &midtosid,
-    const std::vector <int>     masternodeids,
-    const std::vector <int>     slavenodeids,
-    const std::vector <int>     dofsforpbcplane,
-    const double           rotangle,
-    const double           abstol);
+  void CreateNodeCouplingForSinglePBC(std::map<int, std::vector<int>> &midtosid,
+      const std::vector<int> masternodeids, const std::vector<int> slavenodeids,
+      const std::vector<int> dofsforpbcplane, const double rotangle, const double abstol);
 
   /*!
   \brief Add the connectivity from this condition (midtosid, on input)
@@ -273,8 +262,7 @@ protected:
   \return void
 
   */
-  void AddConnectivity(
-    std::map<int,std::vector<int> > &midtosid,const int pbcid);
+  void AddConnectivity(std::map<int, std::vector<int>> &midtosid, const int pbcid);
 
   //@}
 
@@ -346,58 +334,57 @@ protected:
   Teuchos::RCP<DRT::PBCDofSet> pbcdofset_;
 
   //!\brief number of pairs of periodic boundary conditions
-  int                     numpbcpairs_;
+  int numpbcpairs_;
 
   //!\brief vector of periodic surface boundary conditions
-  std::vector<DRT::Condition*> mysurfpbcs_;
+  std::vector<DRT::Condition *> mysurfpbcs_;
 
   //!\brief map connecting master to slave nodes owned by this proc
   //       master node -> list of his slave node(s)
-  Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledrownodes_;
+  Teuchos::RCP<std::map<int, std::vector<int>>> allcoupledrownodes_;
 
   //!\brief map connecting master to slave nodes owned or ghosted by this proc
   //       master node -> list of his slave node(s)
-  Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes_;
+  Teuchos::RCP<std::map<int, std::vector<int>>> allcoupledcolnodes_;
 
   //!\brief time measurement (total)
-  Teuchos::RCP<Teuchos::Time> timepbctot_     ;
+  Teuchos::RCP<Teuchos::Time> timepbctot_;
   //!\brief time measurement (create master slave matching for pairs)
   Teuchos::RCP<Teuchos::Time> timepbcmidtosid_;
   //!\brief time measurement (create octree)
-  Teuchos::RCP<Teuchos::Time> timepbcmidoct_  ;
+  Teuchos::RCP<Teuchos::Time> timepbcmidoct_;
   //!\brief time measurement (search in octree)
   Teuchos::RCP<Teuchos::Time> timepbcmidmatch_;
   //!\brief time measurement (redistribute nodes)
-  Teuchos::RCP<Teuchos::Time> timepbcreddis_  ;
+  Teuchos::RCP<Teuchos::Time> timepbcreddis_;
   //!\brief time measurement (add connectivity to previous pbcs)
-  Teuchos::RCP<Teuchos::Time> timepbcaddcon_  ;
+  Teuchos::RCP<Teuchos::Time> timepbcaddcon_;
   //!\brief time measurement (repair ghosting)
-  Teuchos::RCP<Teuchos::Time> timepbcghost_   ;
+  Teuchos::RCP<Teuchos::Time> timepbcghost_;
   //!\brief time measurement (make colmap for ghosting)
-  Teuchos::RCP<Teuchos::Time> timepbcmakeghostmap_   ;
+  Teuchos::RCP<Teuchos::Time> timepbcmakeghostmap_;
   //!\brief time measurement (discret->Redistribute)
-  Teuchos::RCP<Teuchos::Time> timepbcrenumdofs_   ;
+  Teuchos::RCP<Teuchos::Time> timepbcrenumdofs_;
 
 
   //!\brief time measurement (total)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm0_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm0_ref_;
   //!\brief time measurement (create master slave matching for pairs)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm1_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm1_ref_;
   //!\brief time measurement (create octree)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm2_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm2_ref_;
   //!\brief time measurement (search in octree)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm3_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm3_ref_;
   //!\brief time measurement (add connectivity to previous pbcs)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm4_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm4_ref_;
   //!\brief time measurement (redistribute nodes)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm5_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm5_ref_;
   //!\brief time measurement (make row and colmap for ghosting)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm6_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm6_ref_;
   //!\brief time measurement (repair ghosting)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm7_ref_ ;
+  Teuchos::RCP<Teuchos::TimeMonitor> tm7_ref_;
   //!\brief time measurement (discret->Redistribute)
-  Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_ ;
-
+  Teuchos::RCP<Teuchos::TimeMonitor> tm8_ref_;
 };
 
 #endif  // #ifndef PERIODICBC_H

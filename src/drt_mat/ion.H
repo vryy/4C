@@ -23,20 +23,15 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
     class Ion : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      Ion(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      Ion(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~Ion() { ; }
@@ -62,29 +57,26 @@ namespace MAT
 
     };  // class Ion
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class IonType : public DRT::ParObjectType
-{
-public:
+  class IonType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "IonType"; }
 
-  std::string Name() const { return "IonType"; }
+    static IonType& Instance() { return instance_; };
 
-  static IonType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static IonType instance_;
-};
+   private:
+    static IonType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for the material properties of an ion species in an electrolyte solution
   class Ion : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     Ion();
 
@@ -133,7 +125,7 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_ion; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Ion( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Ion(*this)); }
 
     /// valence (= charge number)
     double Valence() const { return params_->valence_; }
@@ -149,13 +141,11 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::Ion* params_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

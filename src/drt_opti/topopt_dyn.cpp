@@ -27,8 +27,6 @@
 
 
 
-
-
 /*------------------------------------------------------------------------------------------------*
  | main control routine for fluid topology optimization                          winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
@@ -44,10 +42,11 @@ void fluid_topopt_dyn()
   //------------------------------------------------------------------------------------------------
   // print Logo on screen
   //------------------------------------------------------------------------------------------------
-  if (comm.MyPID()==0) TOPOPT::printTopOptLogo();
+  if (comm.MyPID() == 0) TOPOPT::printTopOptLogo();
 
   //------------------------------------------------------------------------------------------------
-  // create optimization discretization by copying the fluid discretization (fill with opti elements)
+  // create optimization discretization by copying the fluid discretization (fill with opti
+  // elements)
   //------------------------------------------------------------------------------------------------
   // get discretization ids
 
@@ -55,23 +54,22 @@ void fluid_topopt_dyn()
 
   // access fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-  if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
-  if (fluiddis->NumGlobalNodes()==0)
-    dserror("No fluid discretization found!");
+  if (!fluiddis->Filled()) fluiddis->FillComplete(false, false, false);
+  if (fluiddis->NumGlobalNodes() == 0) dserror("No fluid discretization found!");
 
   // access optimization discretization (it should be empty if it will be cloned)
   Teuchos::RCP<DRT::Discretization> optidis = problem->GetDis("opti");
-  if (!optidis->Filled()) optidis->FillComplete(false,false,false);
+  if (!optidis->Filled()) optidis->FillComplete(false, false, false);
 
-  if (optidis->NumGlobalNodes()==0)
+  if (optidis->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<TOPOPT::TopoptFluidCloneStrategy>(fluiddis,optidis);
+    DRT::UTILS::CloneDiscretization<TOPOPT::TopoptFluidCloneStrategy>(fluiddis, optidis);
     optidis->FillComplete();
   }
   else
     dserror("Optimization discretization is not empty as it should be!");
-  // TODO this shall be ok later if optimization has different discretization than fluid (winklmaier)
-  // therefore later a fillcomplete has to be called here also!
+  // TODO this shall be ok later if optimization has different discretization than fluid
+  // (winklmaier) therefore later a fillcomplete has to be called here also!
 
   //------------------------------------------------------------------------------------------------
   // create a topology optimization algorithm
@@ -79,7 +77,7 @@ void fluid_topopt_dyn()
   // get the topology optimization parameter list
   Teuchos::ParameterList topoptdyn = problem->OptimizationControlParams();
   // create a Algorithm instance
-  Teuchos::RCP<TOPOPT::Algorithm> topopt_ = Teuchos::rcp(new TOPOPT::Algorithm(comm,topoptdyn));
+  Teuchos::RCP<TOPOPT::Algorithm> topopt_ = Teuchos::rcp(new TOPOPT::Algorithm(comm, topoptdyn));
 
   //------------------------------------------------------------------------------------------------
   // restart
@@ -88,10 +86,11 @@ void fluid_topopt_dyn()
   if (restart)
   {
     // check where we restart
-    const INPAR::TOPOPT::Restart restartaction = DRT::INPUT::IntegralValue<INPAR::TOPOPT::Restart>(topoptdyn,"RESTART_ACTION");
+    const INPAR::TOPOPT::Restart restartaction =
+        DRT::INPUT::IntegralValue<INPAR::TOPOPT::Restart>(topoptdyn, "RESTART_ACTION");
 
     // read the restart information, set vectors and variables
-    topopt_->Restart(restart,restartaction);
+    topopt_->Restart(restart, restartaction);
   }
 
   //------------------------------------------------------------------------------------------------
@@ -102,7 +101,7 @@ void fluid_topopt_dyn()
   //------------------------------------------------------------------------------------------------
   // validate the results
   //------------------------------------------------------------------------------------------------
-    // summarize the performance measurements
+  // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
@@ -113,5 +112,4 @@ void fluid_topopt_dyn()
 
   return;
 
-} // fluid_topopt_dyn()
-
+}  // fluid_topopt_dyn()

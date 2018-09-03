@@ -50,33 +50,33 @@ void WEAR::WearInterface::FDCheckGapDeriv()
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // store gap-values into refG
-    refG[i]=cnode->CoData().Getg();
+    refG[i] = cnode->CoData().Getg();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
@@ -88,11 +88,11 @@ void WEAR::WearInterface::FDCheckGapDeriv()
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -110,46 +110,47 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
 
       // store gap-values into newG
-      newG[k]=kcnode->CoData().Getg();
+      newG[k] = kcnode->CoData().Getg();
 
-      if (abs(newG[k]-refG[k]) > 1e-12 && newG[k]!=1.0e12 && refG[k] != 1.0e12)
+      if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
-         double finit = (newG[k]-refG[k])/delta;
-         double analy = kcnode->CoData().GetDerivG()[snode->Dofs()[fd%dim]];
-         double dev = finit - analy;
+        double finit = (newG[k] - refG[k]) / delta;
+        double analy = kcnode->CoData().GetDerivG()[snode->Dofs()[fd % dim]];
+        double dev = finit - analy;
 
-         // kgid: id of currently tested slave node
-         // snode->Dofs()[fd%dim]: currently modified slave dof
-         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+        // kgid: id of currently tested slave node
+        // snode->Dofs()[fd%dim]: currently modified slave dof
+        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+                  << " derivg=" << analy << " DEVIATION " << dev;
 
-         if( abs(dev) > 1e-4 )
-         {
-           std::cout << " ***** WARNING ***** ";
-           w++;
-         }
-         else if( abs(dev) > 1e-5 )
-         {
-           std::cout << " ***** warning ***** ";
-           w++;
-         }
+        if (abs(dev) > 1e-4)
+        {
+          std::cout << " ***** WARNING ***** ";
+          w++;
+        }
+        else if (abs(dev) > 1e-5)
+        {
+          std::cout << " ***** warning ***** ";
+          w++;
+        }
 
-         std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -158,14 +159,15 @@ void WEAR::WearInterface::FDCheckGapDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // global loop to apply FD scheme to all master dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -173,12 +175,12 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int mdof = mnode->Dofs()[fd%dim];
+    int mdof = mnode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
@@ -190,11 +192,11 @@ void WEAR::WearInterface::FDCheckGapDeriv()
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       mnode->xspatial()[1] += delta;
     }
@@ -212,11 +214,11 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
 
       if (kcnode->Active())
@@ -225,25 +227,25 @@ void WEAR::WearInterface::FDCheckGapDeriv()
         double defgap = 0.0;
         double wii = (kcnode->MoData().GetD())[kcnode->Id()];
 
-        for (int j=0;j<dim;++j)
-          defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
+        for (int j = 0; j < dim; ++j)
+          defgap -= (kcnode->MoData().n()[j]) * wii * (kcnode->xspatial()[j]);
 
-        std::map<int,double>& mmap = kcnode->MoData().GetM();
-        std::map<int,double>::const_iterator mcurr;
+        std::map<int, double>& mmap = kcnode->MoData().GetM();
+        std::map<int, double>::const_iterator mcurr;
 
-        for (int m=0;m<mnodefullmap->NumMyElements();++m)
+        for (int m = 0; m < mnodefullmap->NumMyElements(); ++m)
         {
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
           CONTACT::CoNode* cmnode = dynamic_cast<CONTACT::CoNode*>(mnode);
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
-          for (mcurr=mmap.begin();mcurr!=mmap.end();++mcurr)
-            if ((mcurr->first)==cmnode->Id())
+          for (mcurr = mmap.begin(); mcurr != mmap.end(); ++mcurr)
+            if ((mcurr->first) == cmnode->Id())
             {
-              hasentry=true;
+              hasentry = true;
               break;
             }
 
@@ -251,50 +253,50 @@ void WEAR::WearInterface::FDCheckGapDeriv()
           double* mxi = cmnode->xspatial();
 
           // get out of here, if master node not adjacent or coupling very weak
-          if (!hasentry || abs(mik)<1.0e-12) continue;
+          if (!hasentry || abs(mik) < 1.0e-12) continue;
 
-          for (int j=0;j<dim;++j)
-            defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
+          for (int j = 0; j < dim; ++j) defgap += (kcnode->MoData().n()[j]) * mik * mxi[j];
         }
 
-        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << std::endl;
-        //kcnode->CoData().Getg = defgap;
+        // std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << "
+        // DefGap: " << defgap << std::endl; kcnode->CoData().Getg = defgap;
       }
 
       // store gap-values into newG
-      newG[k]=kcnode->CoData().Getg();
+      newG[k] = kcnode->CoData().Getg();
 
-      if (abs(newG[k]-refG[k]) > 1e-12 && newG[k]!=1.0e12 && refG[k] != 1.0e12)
+      if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
-         double finit = (newG[k]-refG[k])/delta;
-         double analy = kcnode->CoData().GetDerivG()[mnode->Dofs()[fd%dim]];
-         double dev = finit - analy;
+        double finit = (newG[k] - refG[k]) / delta;
+        double analy = kcnode->CoData().GetDerivG()[mnode->Dofs()[fd % dim]];
+        double dev = finit - analy;
 
-         // kgid: id of currently tested slave node
-         // mnode->Dofs()[fd%dim]: currently modified slave dof
-         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+        // kgid: id of currently tested slave node
+        // mnode->Dofs()[fd%dim]: currently modified slave dof
+        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+                  << " derivg=" << analy << " DEVIATION " << dev;
 
-         if( abs(dev) > 1e-4 )
-         {
-           std::cout << " ***** WARNING ***** ";
-           w++;
-         }
-         else if( abs(dev) > 1e-5 )
-         {
-           std::cout << " ***** warning ***** ";
-           w++;
-         }
+        if (abs(dev) > 1e-4)
+        {
+          std::cout << " ***** WARNING ***** ";
+          w++;
+        }
+        else if (abs(dev) > 1e-5)
+        {
+          std::cout << " ***** warning ***** ";
+          w++;
+        }
 
-         std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       mnode->xspatial()[1] -= delta;
     }
@@ -303,7 +305,8 @@ void WEAR::WearInterface::FDCheckGapDeriv()
       mnode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // back to normal...
@@ -336,38 +339,37 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // store gap-values into refG
-    refG[i]=cnode->CoData().Getg();
+    refG[i] = cnode->CoData().Getg();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
     std::cout << "\nW --- DERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     double delta = 1e-8;
-    if (fd%dim==0)
-      snode->WearData().wcurr()[0] += delta;
+    if (fd % dim == 0) snode->WearData().wcurr()[0] += delta;
 
 
     // compute element areas
@@ -379,46 +381,47 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
 
       // store gap-values into newG
-      newG[k]=kcnode->CoData().Getg();
+      newG[k] = kcnode->CoData().Getg();
 
-      if (abs(newG[k]-refG[k]) > 1e-12 && newG[k]!=1.0e12 && refG[k] != 1.0e12)
+      if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
-         double finit = (newG[k]-refG[k])/delta;
-         double analy = kcnode->CoData().GetDerivGW()[snode->Dofs()[0]];
-         double dev = finit - analy;
+        double finit = (newG[k] - refG[k]) / delta;
+        double analy = kcnode->CoData().GetDerivGW()[snode->Dofs()[0]];
+        double dev = finit - analy;
 
-         // kgid: id of currently tested slave node
-         // snode->Dofs()[fd%dim]: currently modified slave dof
-         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+        // kgid: id of currently tested slave node
+        // snode->Dofs()[fd%dim]: currently modified slave dof
+        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+                  << " derivg=" << analy << " DEVIATION " << dev;
 
-         if( abs(dev) > 1e-4 )
-         {
-           std::cout << " ***** WARNING ***** ";
-           w++;
-         }
-         else if( abs(dev) > 1e-5 )
-         {
-           std::cout << " ***** warning ***** ";
-           w++;
-         }
+        if (abs(dev) > 1e-4)
+        {
+          std::cout << " ***** WARNING ***** ";
+          w++;
+        }
+        else if (abs(dev) > 1e-5)
+        {
+          std::cout << " ***** warning ***** ";
+          w++;
+        }
 
-         std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
-      snode->WearData().wcurr()[0] -= delta;
+    if (fd % dim == 0) snode->WearData().wcurr()[0] -= delta;
 
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // back to normal...
@@ -441,78 +444,78 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-   // create storage for values of complementary function C
+  // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> reft(nrow);
   std::vector<double> newt(nrow);
 
   int dim = Dim();
-  typedef std::map<int,double>::const_iterator CI;
+  typedef std::map<int, double>::const_iterator CI;
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     reft[i] = 0.0;
 
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->WearData().GetE().size()>0)
+    if (cnode->WearData().GetE().size() > 0)
     {
-      std::map<int,double> scurr = cnode->WearData().GetE()[0];
+      std::map<int, double> scurr = cnode->WearData().GetE()[0];
 
-      for (CI p=scurr.begin();p!=scurr.end();++p)
+      for (CI p = scurr.begin(); p != scurr.end(); ++p)
       {
-        int gid2 = (int)((p->first)/(dim));
+        int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double w = cnode2->WearData().wcurr()[0];
 
-        reft[i] += (p->second) * w ;
+        reft[i] += (p->second) * w;
       }
     }
     else
     {
-      reft[i]=0.0;
+      reft[i] = 0.0;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -524,29 +527,29 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       newt[k] = 0.0;
 
       int gid3 = snoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
+      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
-      if (kcnode->WearData().GetE().size()>0)
+      if (kcnode->WearData().GetE().size() > 0)
       {
-        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
+        std::map<int, double> sscurr = kcnode->WearData().GetE()[0];
 
-        for (CI p=sscurr.begin();p!=sscurr.end();++p)
+        for (CI p = sscurr.begin(); p != sscurr.end(); ++p)
         {
-          int gid2 = (int)((p->first)/(dim));
+          int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
 
-          newt[k] += (p->second) * w ;
+          newt[k] += (p->second) * w;
         }
       }
       else
@@ -559,44 +562,49 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linedis.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[0]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
 
-      //std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
+      // std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
 
-      if (abs(newt[k]-reft[k]) > 1e-12)
+      if (abs(newt[k] - reft[k]) > 1e-12)
       {
-        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0] << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newt[k]-reft[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newt[k]-reft[k])/delta);
-        if (abs(analyt_txi-(newt[k]-reft[k])/delta)>1.0e-4)
+        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0]
+                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newt[k] - reft[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newt[k] - reft[k]) / delta);
+        if (abs(analyt_txi - (newt[k] - reft[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -604,39 +612,39 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all master dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -648,29 +656,29 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       newt[k] = 0.0;
 
       int gid3 = snoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
+      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
-      if (kcnode->WearData().GetE().size()>0)
+      if (kcnode->WearData().GetE().size() > 0)
       {
-        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
+        std::map<int, double> sscurr = kcnode->WearData().GetE()[0];
 
-        for (CI p=sscurr.begin();p!=sscurr.end();++p)
+        for (CI p = sscurr.begin(); p != sscurr.end(); ++p)
         {
-          int gid2 = (int)((p->first)/(dim));
+          int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
 
-          newt[k] += (p->second) * w ;
+          newt[k] += (p->second) * w;
         }
       }
       else
@@ -683,44 +691,49 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linedis.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[0]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
 
-      //std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
+      // std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
 
-      if (abs(newt[k]-reft[k]) > 1e-12)
+      if (abs(newt[k] - reft[k]) > 1e-12)
       {
-        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0] << "\t w.r.t Master: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newt[k]-reft[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newt[k]-reft[k])/delta);
-        if (abs(analyt_txi-(newt[k]-reft[k])/delta)>1.0e-4)
+        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0]
+                  << "\t w.r.t Master: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newt[k] - reft[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newt[k] - reft[k]) / delta);
+        if (abs(analyt_txi - (newt[k] - reft[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -728,13 +741,12 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
   // back to normal...
   Initialize();
   Evaluate();
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -750,78 +762,78 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-   // create storage for values of complementary function C
+  // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> reft(nrow);
   std::vector<double> newt(nrow);
 
   int dim = Dim();
-  typedef std::map<int,double>::const_iterator CI;
+  typedef std::map<int, double>::const_iterator CI;
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<mnoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     reft[i] = 0.0;
 
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->WearData().GetE().size()>0)
+    if (cnode->WearData().GetE().size() > 0)
     {
-      std::map<int,double> scurr = cnode->WearData().GetE()[0];
+      std::map<int, double> scurr = cnode->WearData().GetE()[0];
 
-      for (CI p=scurr.begin();p!=scurr.end();++p)
+      for (CI p = scurr.begin(); p != scurr.end(); ++p)
       {
-        int gid2 = (int)((p->first)/(dim));
+        int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double w = cnode2->WearData().wcurr()[0];
 
-        reft[i] += (p->second) * w ;
+        reft[i] += (p->second) * w;
       }
     }
     else
     {
-      reft[i]=0.0;
+      reft[i] = 0.0;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -833,29 +845,29 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<mnoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
     {
       newt[k] = 0.0;
 
       int gid3 = mnoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
+      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
-      if (kcnode->WearData().GetE().size()>0)
+      if (kcnode->WearData().GetE().size() > 0)
       {
-        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
+        std::map<int, double> sscurr = kcnode->WearData().GetE()[0];
 
-        for (CI p=sscurr.begin();p!=sscurr.end();++p)
+        for (CI p = sscurr.begin(); p != sscurr.end(); ++p)
         {
-          int gid2 = (int)((p->first)/(dim));
+          int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
 
-          newt[k] += (p->second) * w ;
+          newt[k] += (p->second) * w;
         }
       }
       else
@@ -868,44 +880,49 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linedis.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[0]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
 
-      //std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
+      // std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
 
-      if (abs(newt[k]-reft[k]) > 1e-12)
+      if (abs(newt[k] - reft[k]) > 1e-12)
       {
-        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0] << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newt[k]-reft[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newt[k]-reft[k])/delta);
-        if (abs(analyt_txi-(newt[k]-reft[k])/delta)>1.0e-4)
+        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0]
+                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newt[k] - reft[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newt[k] - reft[k]) / delta);
+        if (abs(analyt_txi - (newt[k] - reft[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -913,39 +930,39 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all master dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -957,29 +974,29 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<mnoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
     {
       newt[k] = 0.0;
 
       int gid3 = mnoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
+      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
-      if (kcnode->WearData().GetE().size()>0)
+      if (kcnode->WearData().GetE().size() > 0)
       {
-        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
+        std::map<int, double> sscurr = kcnode->WearData().GetE()[0];
 
-        for (CI p=sscurr.begin();p!=sscurr.end();++p)
+        for (CI p = sscurr.begin(); p != sscurr.end(); ++p)
         {
-          int gid2 = (int)((p->first)/(dim));
+          int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
 
-          newt[k] += (p->second) * w ;
+          newt[k] += (p->second) * w;
         }
       }
       else
@@ -992,44 +1009,49 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linedis.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[0]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
 
-      //std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
+      // std::cout << "ref= " << reft[k] << "\t new= " << newt[k] << std::endl;
 
-      if (abs(newt[k]-reft[k]) > 1e-12)
+      if (abs(newt[k] - reft[k]) > 1e-12)
       {
-        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0] << "\t w.r.t Master: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newt[k]-reft[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newt[k]-reft[k])/delta);
-        if (abs(analyt_txi-(newt[k]-reft[k])/delta)>1.0e-4)
+        std::cout << "E WEAR DIS-Deriv: " << kcnode->Dofs()[0]
+                  << "\t w.r.t Master: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newt[k] - reft[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newt[k] - reft[k]) / delta);
+        if (abs(analyt_txi - (newt[k] - reft[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -1037,7 +1059,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
   // back to normal...
   Initialize();
   Evaluate();
@@ -1059,83 +1081,81 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
   if (!lComm()) return;
 
   // nothing to do if no slip nodes
-  if (slipnodes_->NumMyElements()==0)
-    return;
+  if (slipnodes_->NumMyElements() == 0) return;
 
-   // create storage for values of complementary function C
+  // create storage for values of complementary function C
   int nrow = slipnodes_->NumMyElements();
   std::vector<double> reft(nrow);
   std::vector<double> newt(nrow);
 
   int dim = Dim();
-  typedef std::map<int,double>::const_iterator CI;
+  typedef std::map<int, double>::const_iterator CI;
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<slipnodes_->NumMyElements();++i)
+  for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
   {
     reft[i] = 0.0;
 
     int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->WearData().GetT().size()>0)
+    if (cnode->WearData().GetT().size() > 0)
     {
-      std::map<int,double> scurr = cnode->WearData().GetT()[0];
+      std::map<int, double> scurr = cnode->WearData().GetT()[0];
 
-      for (CI p=scurr.begin();p!=scurr.end();++p)
+      for (CI p = scurr.begin(); p != scurr.end(); ++p)
       {
-        int gid2 = (int)((p->first)/(dim));
+        int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double lmn = 0.0;
-        for (int g=0;g<dim;++g)
-          lmn += (cnode2->MoData().n()[g]) * (cnode2->MoData().lm()[g]);
+        for (int g = 0; g < dim; ++g) lmn += (cnode2->MoData().n()[g]) * (cnode2->MoData().lm()[g]);
 
-        reft[i] += (p->second) * lmn ;
+        reft[i] += (p->second) * lmn;
       }
     }
     else
     {
-      reft[i]=0.0;
+      reft[i] = 0.0;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -1147,31 +1167,31 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<slipnodes_->NumMyElements();++k)
+    for (int k = 0; k < slipnodes_->NumMyElements(); ++k)
     {
       newt[k] = 0.0;
 
       int gid3 = slipnodes_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
+      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
-      if (kcnode->WearData().GetT().size()>0)
+      if (kcnode->WearData().GetT().size() > 0)
       {
-        std::map<int,double> sscurr = kcnode->WearData().GetT()[0];
+        std::map<int, double> sscurr = kcnode->WearData().GetT()[0];
 
-        for (CI p=sscurr.begin();p!=sscurr.end();++p)
+        for (CI p = sscurr.begin(); p != sscurr.end(); ++p)
         {
-          int gid2 = (int)((p->first)/(dim));
+          int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double lmn = 0.0;
-          for (int g=0;g<dim;++g)
+          for (int g = 0; g < dim; ++g)
             lmn += (cnode2->MoData().n()[g]) * (cnode2->MoData().lm()[g]);
 
-          newt[k] += (p->second) * lmn ;
+          newt[k] += (p->second) * lmn;
         }
       }
       else
@@ -1184,42 +1204,47 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = lintdis.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[0]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
 
-      if (abs(newt[k]-reft[k]) > 1e-12)
+      if (abs(newt[k] - reft[k]) > 1e-12)
       {
-        std::cout << "WEAR DIS-Deriv: " << kcnode->Dofs()[0] << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newt[k]-reft[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newt[k]-reft[k])/delta);
-        if (abs(analyt_txi-(newt[k]-reft[k])/delta)>1.0e-4)
+        std::cout << "WEAR DIS-Deriv: " << kcnode->Dofs()[0]
+                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newt[k] - reft[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newt[k] - reft[k]) / delta);
+        if (abs(analyt_txi - (newt[k] - reft[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -1227,14 +1252,13 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // back to normal...
   Initialize();
   Evaluate();
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -1251,83 +1275,81 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
   if (!lComm()) return;
 
   // nothing to do if no slip nodes
-  if (slipmasternodes_->NumMyElements()==0)
-    return;
+  if (slipmasternodes_->NumMyElements() == 0) return;
 
-   // create storage for values of complementary function C
+  // create storage for values of complementary function C
   int nrow = slipmasternodes_->NumMyElements();
   std::vector<double> reft(nrow);
   std::vector<double> newt(nrow);
 
   int dim = Dim();
-  typedef std::map<int,double>::const_iterator CI;
+  typedef std::map<int, double>::const_iterator CI;
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<slipmasternodes_->NumMyElements();++i)
+  for (int i = 0; i < slipmasternodes_->NumMyElements(); ++i)
   {
     reft[i] = 0.0;
 
     int gid = slipmasternodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    if (cnode->WearData().GetT().size()>0)
+    if (cnode->WearData().GetT().size() > 0)
     {
-      std::map<int,double> scurr = cnode->WearData().GetT()[0];
+      std::map<int, double> scurr = cnode->WearData().GetT()[0];
 
-      for (CI p=scurr.begin();p!=scurr.end();++p)
+      for (CI p = scurr.begin(); p != scurr.end(); ++p)
       {
-        int gid2 = (int)((p->first)/(dim));
+        int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double lmn = 0.0;
-        for (int g=0;g<dim;++g)
-          lmn += (cnode2->MoData().n()[g]) * (cnode2->MoData().lm()[g]);
+        for (int g = 0; g < dim; ++g) lmn += (cnode2->MoData().n()[g]) * (cnode2->MoData().lm()[g]);
 
-        reft[i] += (p->second) * lmn ;
+        reft[i] += (p->second) * lmn;
       }
     }
     else
     {
-      reft[i]=0.0;
+      reft[i] = 0.0;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -1339,31 +1361,31 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<slipmasternodes_->NumMyElements();++k)
+    for (int k = 0; k < slipmasternodes_->NumMyElements(); ++k)
     {
       newt[k] = 0.0;
 
       int gid3 = slipmasternodes_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
+      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
-      if (kcnode->WearData().GetT().size()>0)
+      if (kcnode->WearData().GetT().size() > 0)
       {
-        std::map<int,double> sscurr = kcnode->WearData().GetT()[0];
+        std::map<int, double> sscurr = kcnode->WearData().GetT()[0];
 
-        for (CI p=sscurr.begin();p!=sscurr.end();++p)
+        for (CI p = sscurr.begin(); p != sscurr.end(); ++p)
         {
-          int gid2 = (int)((p->first)/(dim));
+          int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double lmn = 0.0;
-          for (int g=0;g<dim;++g)
+          for (int g = 0; g < dim; ++g)
             lmn += (cnode2->MoData().n()[g]) * (cnode2->MoData().lm()[g]);
 
-          newt[k] += (p->second) * lmn ;
+          newt[k] += (p->second) * lmn;
         }
       }
       else
@@ -1376,42 +1398,47 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = lintdis.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[0]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[0],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[0], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
 
-      if (abs(newt[k]-reft[k]) > 1e-12)
+      if (abs(newt[k] - reft[k]) > 1e-12)
       {
-        std::cout << "WEAR DIS-Deriv: " << kcnode->Dofs()[0] << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newt[k]-reft[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newt[k]-reft[k])/delta);
-        if (abs(analyt_txi-(newt[k]-reft[k])/delta)>1.0e-4)
+        std::cout << "WEAR DIS-Deriv: " << kcnode->Dofs()[0]
+                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newt[k] - reft[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newt[k] - reft[k]) / delta);
+        if (abs(analyt_txi - (newt[k] - reft[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -1419,14 +1446,13 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // back to normal...
   Initialize();
   Evaluate();
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -1435,8 +1461,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
  | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
 void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
-                                              LINALG::SparseMatrix& linslipDISglobal,
-                                              LINALG::SparseMatrix& linslipWglobal)
+    LINALG::SparseMatrix& linslipDISglobal, LINALG::SparseMatrix& linslipWglobal)
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
@@ -1448,13 +1473,13 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(), "FRICTION");
   double frbound = IParams().get<double>("FRBOUND");
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
 
-   // create storage for values of complementary function C
+  // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
   std::vector<double> refCtxi(nrow);
   std::vector<double> refCteta(nrow);
@@ -1465,11 +1490,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     double jumptxi = 0;
@@ -1485,121 +1510,122 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       double D = cnode->MoData().GetD()[cnode->Id()];
       double Dold = cnode->FriData().GetDOld()[cnode->Id()];
 
-      for (int dim=0;dim<cnode->NumDof();++dim)
+      for (int dim = 0; dim < cnode->NumDof(); ++dim)
       {
-        jumptxi -= (cnode->CoData().txi()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-        jumpteta -= (cnode->CoData().teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
-        ztxi += (cnode->CoData().txi()[dim])*(cnode->MoData().lm()[dim]);
-        zteta += (cnode->CoData().teta()[dim])*(cnode->MoData().lm()[dim]);
-        znor += (cnode->MoData().n()[dim])*(cnode->MoData().lm()[dim]);
+        jumptxi -= (cnode->CoData().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        jumpteta -= (cnode->CoData().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        ztxi += (cnode->CoData().txi()[dim]) * (cnode->MoData().lm()[dim]);
+        zteta += (cnode->CoData().teta()[dim]) * (cnode->MoData().lm()[dim]);
+        znor += (cnode->MoData().n()[dim]) * (cnode->MoData().lm()[dim]);
       }
 
-      std::map<int,double>& mmap = cnode->MoData().GetM();
-      std::map<int,double>& mmapold = cnode->FriData().GetMOld();
+      std::map<int, double>& mmap = cnode->MoData().GetM();
+      std::map<int, double>& mmapold = cnode->FriData().GetMOld();
 
-      std::map<int,double>::const_iterator colcurr;
-      std::set <int> mnodes;
+      std::map<int, double>::const_iterator colcurr;
+      std::set<int> mnodes;
 
-      for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
-        mnodes.insert(colcurr->first);
+      for (colcurr = mmap.begin(); colcurr != mmap.end(); colcurr++) mnodes.insert(colcurr->first);
 
-      for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+      for (colcurr = mmapold.begin(); colcurr != mmapold.end(); colcurr++)
         mnodes.insert(colcurr->first);
 
       std::set<int>::iterator mcurr;
 
       // loop over all master nodes (find adjacent ones to this slip node)
-      for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+      for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
         CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
         double mik = mmap[cmnode->Id()];
         double mikold = mmapold[cmnode->Id()];
 
-        std::map<int,double>::iterator mcurr;
+        std::map<int, double>::iterator mcurr;
 
-        for (int dim=0;dim<cnode->NumDof();++dim)
+        for (int dim = 0; dim < cnode->NumDof(); ++dim)
         {
-           jumptxi+= (cnode->CoData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-           jumpteta+= (cnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+          jumptxi += (cnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumpteta += (cnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
         }
-      } //  loop over master nodes
+      }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+      if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
       {
-        jumptxi=cnode->FriData().jump_var()[0];
+        jumptxi = cnode->FriData().jump_var()[0];
         jumpteta = 0.0;
 
-        if (Dim()==3)
-          jumpteta=cnode->FriData().jump_var()[1];
+        if (Dim() == 3) jumpteta = cnode->FriData().jump_var()[1];
       }
 
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-      std::vector<double> sum1 (Dim()-1,0);
-      sum1[0] =  ztxi+ct*jumptxi;
-      if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
-      if (Dim()==2) euclidean = abs(sum1[0]);
-      if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
-    } // if cnode == Slip
+      std::vector<double> sum1(Dim() - 1, 0);
+      sum1[0] = ztxi + ct * jumptxi;
+      if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
+      if (Dim() == 2) euclidean = abs(sum1[0]);
+      if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
+    }  // if cnode == Slip
 
     // store C in vector
-    if (ftype==INPAR::CONTACT::friction_tresca)
+    if (ftype == INPAR::CONTACT::friction_tresca)
     {
-      refCtxi[i] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
-      refCteta[i] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
+      refCtxi[i] = euclidean * ztxi - frbound * (ztxi + ct * jumptxi);
+      refCteta[i] = euclidean * zteta - frbound * (zteta + ct * jumpteta);
     }
-    else if (ftype==INPAR::CONTACT::friction_coulomb)
+    else if (ftype == INPAR::CONTACT::friction_coulomb)
     {
-      refCtxi[i] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
-      refCteta[i] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
+      refCtxi[i] = euclidean * ztxi - (frcoeff * znor) * (ztxi + ct * jumptxi);
+      refCteta[i] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
     }
-    else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+    else
+      dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
 
-    refCtxi[i] = euclidean*ztxi-(frcoeff*(znor-cn*cnode->CoData().Getg()))*(ztxi+ct*jumptxi);
-    refCteta[i] = euclidean*zteta-(frcoeff*(znor-cn*cnode->CoData().Getg()))*(zteta+ct*jumpteta);
+    refCtxi[i] =
+        euclidean * ztxi - (frcoeff * (znor - cn * cnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+    refCteta[i] = euclidean * zteta -
+                  (frcoeff * (znor - cn * cnode->CoData().Getg())) * (zteta + ct * jumpteta);
 
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // **********************************************************************************
   // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
   // **********************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
-    int coldof= 0;
+    int gid = snodefullmap->GID(fd / dim);
+    int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->MoData().lm()[0] += delta;
-      coldof=snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->MoData().lm()[1] += delta;
-      coldof=snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->MoData().lm()[2] += delta;
-      coldof=snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -1614,81 +1640,83 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         // check two versions of weighted gap
         double D = kcnode->MoData().GetD()[kcnode->Id()];
         double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
-        for (int dim=0;dim<kcnode->NumDof();++dim)
+        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim])*(kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim])*(kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
-        std::map<int,double> mmap = kcnode->MoData().GetM();
-        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->MoData().GetM();
+        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
 
-        std::map<int,double>::iterator colcurr;
-        std::set <int> mnodes;
+        std::map<int, double>::iterator colcurr;
+        std::set<int> mnodes;
 
-        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        for (colcurr = mmap.begin(); colcurr != mmap.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        for (colcurr = mmapold.begin(); colcurr != mmapold.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
-        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
           double mik = mmap[cmnode->Id()];
           double mikold = mmapold[cmnode->Id()];
 
-          std::map<int,double>::iterator mcurr;
+          std::map<int, double>::iterator mcurr;
 
-          for (int dim=0;dim<kcnode->NumDof();++dim)
+          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-             jumptxi+= (kcnode->CoData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-             jumpteta+= (kcnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
-        } //  loop over master nodes
+        }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
         {
-          jumptxi=kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim()==3)
-            jumpteta=kcnode->FriData().jump_var()[1];
+          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1 (Dim()-1,0);
-        sum1[0] = ztxi+ct*jumptxi;
-        if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
-        if (Dim()==2) euclidean = abs(sum1[0]);
-        if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
-      } // if cnode == Slip
+        std::vector<double> sum1(Dim() - 1, 0);
+        sum1[0] = ztxi + ct * jumptxi;
+        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (Dim() == 2) euclidean = abs(sum1[0]);
+        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
+      }  // if cnode == Slip
 
       // store C in vector
-      if (ftype==INPAR::CONTACT::friction_tresca)
+      if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - frbound * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - frbound * (zteta + ct * jumpteta);
       }
-      else if (ftype==INPAR::CONTACT::friction_coulomb)
+      else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - (frcoeff * znor) * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+      else
+        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
 
-      newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
-      newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
+      newCtxi[k] = euclidean * ztxi -
+                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+      newCteta[k] = euclidean * zteta -
+                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
 
       // ************************************************************************
       // Extract linearizations from sparse matrix !!!
@@ -1697,75 +1725,84 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipLMglobal.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipLMglobal.EpetraMatrix();
       sparse_crs2->FillComplete();
-      double sparse_2= 0.0;
-      int sparsenumentries2=0;
+      double sparse_2 = 0.0;
+      int sparsenumentries2 = 0;
       int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+          &sparsevalues2[0], &sparseindices2[0]);
 
-      for(int h = 0; h < sparselength2; ++h)
+      for (int h = 0; h < sparselength2; ++h)
       {
-        if(sparseindices2[h] == coldof)
+        if (sparseindices2[h] == coldof)
         {
-          sparse_2=sparsevalues2[h];
+          sparse_2 = sparsevalues2[h];
           break;
         }
         else
-          sparse_2=0.0;
+          sparse_2 = 0.0;
       }
       double analyt_teta = sparse_2;
 
       // print results (derivatives) to screen
-      if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
+      if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP LM-Deriv_xi: " << kcnode->Id() << "\t w.r.t: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(4)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
-        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+        std::cout << "SLIP LM-Deriv_xi: " << kcnode->Id() << "\t w.r.t: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
+                  << "\t analyt= " << std::setprecision(4) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
+        if (abs(analyt_txi - (newCtxi[k] - refCtxi[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
 
       // print results (derivatives) to screen
-      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+      if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP LM-Deriv_eta: " << kcnode->Id() << "\t w.r.t: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(4)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
-        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+        std::cout << "SLIP LM-Deriv_eta: " << kcnode->Id()
+                  << "\t w.r.t: " << snode->Dofs()[fd % dim] << "\t FD= " << std::setprecision(4)
+                  << (newCteta[k] - refCteta[k]) / delta << "\t analyt= " << std::setprecision(4)
+                  << analyt_teta
+                  << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
+        if (abs(analyt_teta - (newCteta[k] - refCteta[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
-     }
+    }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->MoData().lm()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->MoData().lm()[1] -= delta;
     }
@@ -1773,40 +1810,40 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     {
       snode->MoData().lm()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof= snode->Dofs()[0];
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof= snode->Dofs()[1];
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof= snode->Dofs()[2];
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -1818,11 +1855,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!node) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -1838,83 +1875,85 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         double D = kcnode->MoData().GetD()[kcnode->Id()];
         double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
-        for (int dim=0;dim<kcnode->NumDof();++dim)
+        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim])*(kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim])*(kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
-        std::map<int,double> mmap = kcnode->MoData().GetM();
-        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->MoData().GetM();
+        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
 
-        std::map<int,double>::iterator colcurr;
-        std::set <int> mnodes;
+        std::map<int, double>::iterator colcurr;
+        std::set<int> mnodes;
 
-        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        for (colcurr = mmap.begin(); colcurr != mmap.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        for (colcurr = mmapold.begin(); colcurr != mmapold.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
-        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
           double mikold = mmapold[cmnode->Id()];
 
-          std::map<int,double>::iterator mcurr;
+          std::map<int, double>::iterator mcurr;
 
-          for (int dim=0;dim<kcnode->NumDof();++dim)
+          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-            jumptxi+= (kcnode->CoData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-            jumpteta+= (kcnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
-        } //  loop over master nodes
+        }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
         {
-          jumptxi=kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim()==3)
-            jumpteta=kcnode->FriData().jump_var()[1];
+          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1 (Dim()-1,0);
-        sum1[0] = ztxi+ct*jumptxi;
-        if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
-        if (Dim()==2) euclidean = abs(sum1[0]);
-        if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
+        std::vector<double> sum1(Dim() - 1, 0);
+        sum1[0] = ztxi + ct * jumptxi;
+        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (Dim() == 2) euclidean = abs(sum1[0]);
+        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
 
-      } // if cnode == Slip
+      }  // if cnode == Slip
 
       // store C in vector
-      if (ftype==INPAR::CONTACT::friction_tresca)
+      if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - frbound * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - frbound * (zteta + ct * jumpteta);
       }
-      else if (ftype==INPAR::CONTACT::friction_coulomb)
+      else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - (frcoeff * znor) * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+      else
+        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
 
-      newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
-      newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
+      newCtxi[k] = euclidean * ztxi -
+                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+      newCteta[k] = euclidean * zteta -
+                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
 
 
 
@@ -1925,75 +1964,85 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.EpetraMatrix();
       sparse_crs2->FillComplete();
-      double sparse_2=0.0;
-      int sparsenumentries2=0;
+      double sparse_2 = 0.0;
+      int sparsenumentries2 = 0;
       int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+          &sparsevalues2[0], &sparseindices2[0]);
 
-      for(int h = 0; h < sparselength2; ++h)
+      for (int h = 0; h < sparselength2; ++h)
       {
-        if(sparseindices2[h] == coldof)
+        if (sparseindices2[h] == coldof)
         {
-          sparse_2=sparsevalues2[h];
+          sparse_2 = sparsevalues2[h];
           break;
         }
         else
-          sparse_2=0.0;
+          sparse_2 = 0.0;
       }
       double analyt_teta = sparse_2;
 
 
-      if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
+      if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id() << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
-        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id()
+                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
+        if (abs(analyt_txi - (newCtxi[k] - refCtxi[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
 
       // print results (derivatives) to screen
-      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+      if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id() << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
-        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id()
+                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_teta
+                  << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
+        if (abs(analyt_teta - (newCteta[k] - refCteta[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -2001,31 +2050,31 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     {
       snode->xspatial()[2] -= delta;
     }
-  } // loop over procs slave nodes
+  }  // loop over procs slave nodes
 
   // ********************************************************************************************
   // global loop to apply FD scheme to all master dofs (=3*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->xspatial()[0] += delta;
       coldof = mnode->Dofs()[0];
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       mnode->xspatial()[1] += delta;
       coldof = mnode->Dofs()[1];
@@ -2045,11 +2094,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -2065,83 +2114,85 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         double D = kcnode->MoData().GetD()[kcnode->Id()];
         double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
-        for (int dim=0;dim<kcnode->NumDof();++dim)
+        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim])*(kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim])*(kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
-        std::map<int,double> mmap = kcnode->MoData().GetM();
-        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->MoData().GetM();
+        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
 
-        std::map<int,double>::iterator colcurr;
-        std::set <int> mnodes;
+        std::map<int, double>::iterator colcurr;
+        std::set<int> mnodes;
 
-        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        for (colcurr = mmap.begin(); colcurr != mmap.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        for (colcurr = mmapold.begin(); colcurr != mmapold.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
-        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
           double mikold = mmapold[cmnode->Id()];
 
-          std::map<int,double>::iterator mcurr;
+          std::map<int, double>::iterator mcurr;
 
-          for (int dim=0;dim<kcnode->NumDof();++dim)
+          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-             jumptxi+= (kcnode->CoData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-             jumpteta+= (kcnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
-        } //  loop over master nodes
+        }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
         {
-          jumptxi=kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim()==3)
-            jumpteta=kcnode->FriData().jump_var()[1];
+          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1 (Dim()-1,0);
-        sum1[0] = ztxi+ct*jumptxi;
-        if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
-        if (Dim()==2) euclidean = abs(sum1[0]);
-        if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
+        std::vector<double> sum1(Dim() - 1, 0);
+        sum1[0] = ztxi + ct * jumptxi;
+        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (Dim() == 2) euclidean = abs(sum1[0]);
+        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
 
-     } // if cnode == Slip
+      }  // if cnode == Slip
 
       // store C in vector
-      if (ftype==INPAR::CONTACT::friction_tresca)
+      if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - frbound * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - frbound * (zteta + ct * jumpteta);
       }
-      else if (ftype==INPAR::CONTACT::friction_coulomb)
+      else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - (frcoeff * znor) * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+      else
+        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
 
-      newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
-      newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
+      newCtxi[k] = euclidean * ztxi -
+                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+      newCteta[k] = euclidean * zteta -
+                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
 
 
 
@@ -2152,63 +2203,73 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.EpetraMatrix();
       sparse_crs2->FillComplete();
-      double sparse_2=0.0;
-      int sparsenumentries2=0;
+      double sparse_2 = 0.0;
+      int sparsenumentries2 = 0;
       int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+          &sparsevalues2[0], &sparseindices2[0]);
 
-      for(int h = 0; h < sparselength2; ++h)
+      for (int h = 0; h < sparselength2; ++h)
       {
-        if(sparseindices2[h] == coldof)
+        if (sparseindices2[h] == coldof)
         {
-          sparse_2=sparsevalues2[h];
+          sparse_2 = sparsevalues2[h];
           break;
         }
         else
-          sparse_2=0.0;
+          sparse_2 = 0.0;
       }
       double analyt_teta = sparse_2;
 
       // print results (derivatives) to screen
-      if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
+      if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
-        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id()
+                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
+        if (abs(analyt_txi - (newCtxi[k] - refCtxi[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
 
-      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+      if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
-        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id()
+                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_teta
+                  << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
+        if (abs(analyt_teta - (newCteta[k] - refCteta[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
@@ -2216,11 +2277,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       mnode->xspatial()[1] -= delta;
     }
@@ -2232,21 +2293,21 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
   // ********************************************************************************************
   // global loop to apply FD scheme to all Wear dofs (=1*nodes)
   // ********************************************************************************************
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->WearData().wcurr()[0] += delta;
       coldof = mnode->Dofs()[0];
@@ -2261,11 +2322,11 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -2281,83 +2342,85 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         double D = kcnode->MoData().GetD()[kcnode->Id()];
         double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
-        for (int dim=0;dim<kcnode->NumDof();++dim)
+        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
         {
-          jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
-          ztxi += (kcnode->CoData().txi()[dim])*(kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->CoData().teta()[dim])*(kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->CoData().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->CoData().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->CoData().txi()[dim]) * (kcnode->MoData().lm()[dim]);
+          zteta += (kcnode->CoData().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
         }
 
-        std::map<int,double> mmap = kcnode->MoData().GetM();
-        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->MoData().GetM();
+        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
 
-        std::map<int,double>::iterator colcurr;
-        std::set <int> mnodes;
+        std::map<int, double>::iterator colcurr;
+        std::set<int> mnodes;
 
-        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        for (colcurr = mmap.begin(); colcurr != mmap.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        for (colcurr = mmapold.begin(); colcurr != mmapold.end(); colcurr++)
           mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
         // loop over all master nodes (find adjacent ones to this stick node)
-        for (mcurr=mnodes.begin(); mcurr != mnodes.end(); mcurr++)
+        for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
           double mikold = mmapold[cmnode->Id()];
 
-          std::map<int,double>::iterator mcurr;
+          std::map<int, double>::iterator mcurr;
 
-          for (int dim=0;dim<kcnode->NumDof();++dim)
+          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
           {
-             jumptxi+= (kcnode->CoData().txi()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
-             jumpteta+= (kcnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->CoData().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->CoData().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
-        } //  loop over master nodes
+        }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        if (DRT::INPUT::IntegralValue<int>(IParams(), "GP_SLIP_INCR") == true)
         {
-          jumptxi=kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->FriData().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim()==3)
-            jumpteta=kcnode->FriData().jump_var()[1];
+          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1 (Dim()-1,0);
-        sum1[0] = ztxi+ct*jumptxi;
-        if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
-        if (Dim()==2) euclidean = abs(sum1[0]);
-        if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
+        std::vector<double> sum1(Dim() - 1, 0);
+        sum1[0] = ztxi + ct * jumptxi;
+        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (Dim() == 2) euclidean = abs(sum1[0]);
+        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
 
-     } // if cnode == Slip
+      }  // if cnode == Slip
 
       // store C in vector
-      if (ftype==INPAR::CONTACT::friction_tresca)
+      if (ftype == INPAR::CONTACT::friction_tresca)
       {
-        newCtxi[k] = euclidean*ztxi-frbound*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-frbound*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - frbound * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - frbound * (zteta + ct * jumpteta);
       }
-      else if (ftype==INPAR::CONTACT::friction_coulomb)
+      else if (ftype == INPAR::CONTACT::friction_coulomb)
       {
-        newCtxi[k] = euclidean*ztxi-(frcoeff*znor)*(ztxi+ct*jumptxi);
-        newCteta[k] = euclidean*zteta-(frcoeff*znor)*(zteta+ct*jumpteta);
+        newCtxi[k] = euclidean * ztxi - (frcoeff * znor) * (ztxi + ct * jumptxi);
+        newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
-      else dserror ("ERROR: Friction law is neiter Tresca nor Coulomb");
+      else
+        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
 
-      newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
-      newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
+      newCtxi[k] = euclidean * ztxi -
+                   (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
+      newCteta[k] = euclidean * zteta -
+                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (zteta + ct * jumpteta);
 
 
       // ************************************************************************
@@ -2367,63 +2430,73 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       // ********************************* TXI
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipWglobal.EpetraMatrix();
       sparse_crs->FillComplete();
-      double sparse_ij=0.0;
-      int sparsenumentries=0;
+      double sparse_ij = 0.0;
+      int sparsenumentries = 0;
       int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(
+          kcnode->Dofs()[1], sparselength, sparsenumentries, &sparsevalues[0], &sparseindices[0]);
 
-      for(int h = 0; h < sparselength; ++h)
+      for (int h = 0; h < sparselength; ++h)
       {
-        if(sparseindices[h] == coldof)
+        if (sparseindices[h] == coldof)
         {
-          sparse_ij=sparsevalues[h];
+          sparse_ij = sparsevalues[h];
           break;
         }
         else
-          sparse_ij=0.0;
+          sparse_ij = 0.0;
       }
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
       Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipWglobal.EpetraMatrix();
       sparse_crs2->FillComplete();
-      double sparse_2=0.0;
-      int sparsenumentries2=0;
+      double sparse_2 = 0.0;
+      int sparsenumentries2 = 0;
       int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
-     // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+      // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+          &sparsevalues2[0], &sparseindices2[0]);
 
-      for(int h = 0; h < sparselength2; ++h)
+      for (int h = 0; h < sparselength2; ++h)
       {
-        if(sparseindices2[h] == coldof)
+        if (sparseindices2[h] == coldof)
         {
-          sparse_2=sparsevalues2[h];
+          sparse_2 = sparsevalues2[h];
           break;
         }
         else
-          sparse_2=0.0;
+          sparse_2 = 0.0;
       }
       double analyt_teta = sparse_2;
 
       // print results (derivatives) to screen
-      if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
+      if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP W-Deriv_xi: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
-        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+        std::cout << "SLIP W-Deriv_xi: " << kcnode->Id()
+                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_txi
+                  << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
+        if (abs(analyt_txi - (newCtxi[k] - refCtxi[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
       }
 
-      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+      if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP W-Deriv_eta: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
-        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+        std::cout << "SLIP W-Deriv_eta: " << kcnode->Id()
+                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+                  << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
+                  << "\t analyt= " << std::setprecision(5) << analyt_teta
+                  << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
+        if (abs(analyt_teta - (newCteta[k] - refCteta[k]) / delta) > 1.0e-4)
           std::cout << "*** WARNING ***" << std::endl;
         else
           std::cout << " " << std::endl;
@@ -2431,7 +2504,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->WearData().wcurr()[0] -= delta;
     }
@@ -2443,7 +2516,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
 
   return;
 
-} // FDCheckSlipTrescaDeriv
+}  // FDCheckSlipTrescaDeriv
 
 /*----------------------------------------------------------------------*
  | Finite difference check for T-Mortar derivatives          farah 09/13|
@@ -2459,65 +2532,64 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
   if (!lComm()) return;
 
   // create storage for D-Matrix entries
-  std::map<int, std::map<int,double> > refT; // stores dof-wise the entries of D
-  std::map<int, std::map<int,double> > newT;
+  std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
+  std::map<int, std::map<int, double>> newT;
 
-  std::map<int, std::map<int, std::map<int,double> > > refDerivT; // stores old derivm for every node
+  std::map<int, std::map<int, std::map<int, double>>>
+      refDerivT;  // stores old derivm for every node
 
   // problem dimension (2D or 3D)
   int dim = Dim();
 
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    //typedef std::map<int,double>::const_iterator CI;
+    // typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    // typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->WearData().GetT().size())==0)
-      continue;
+    if ((int)(cnode->WearData().GetT().size()) == 0) continue;
 
-//    for( int d=0; d<dim; d++ )
-//    {
-      int dof = cnode->Dofs()[0];
-      refT[dof] = cnode->WearData().GetT()[0];
-//    }
+    //    for( int d=0; d<dim; d++ )
+    //    {
+    int dof = cnode->Dofs()[0];
+    refT[dof] = cnode->WearData().GetT()[0];
+    //    }
 
     refDerivT[gid] = cnode->WearData().GetDerivTw();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements(); ++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -2535,20 +2607,18 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
-      if ((int)(kcnode->WearData().GetT().size())==0)
-        continue;
+      if ((int)(kcnode->WearData().GetT().size()) == 0) continue;
 
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int, double>::const_iterator CI;
 
-      for( int d=0; d<1; d++ )
+      for (int d = 0; d < 1; d++)
       {
         int dof = kcnode->Dofs()[d];
 
@@ -2556,25 +2626,26 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
         newT[dof] = kcnode->WearData().GetT()[d];
 
         // print results (derivatives) to screen
-        for (CI p=newT[dof].begin(); p!=newT[dof].end(); ++p)
+        for (CI p = newT[dof].begin(); p != newT[dof].end(); ++p)
         {
-          if (abs(newT[dof][p->first]-refT[dof][p->first]) > 1e-12)
+          if (abs(newT[dof][p->first] - refT[dof][p->first]) > 1e-12)
           {
-            double finit = (newT[dof][p->first]-refT[dof][p->first])/delta;
-            double analy = ((refDerivT[kgid])[(p->first)/Dim()])[sdof];
+            double finit = (newT[dof][p->first] - refT[dof][p->first]) / delta;
+            double analy = ((refDerivT[kgid])[(p->first) / Dim()])[sdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first) << "," << sdof << ") : fd=" << finit << " derivT=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first) << "," << sdof << ") : fd=" << finit
+                      << " derivT=" << analy << " DEVIATION " << dev;
 
-            if( abs(dev) > 1e-4 )
+            if (abs(dev) > 1e-4)
             {
               std::cout << " ***** WARNING ***** ";
               w++;
             }
-            else if( abs(dev) > 1e-5 )
+            else if (abs(dev) > 1e-5)
             {
               std::cout << " ***** warning ***** ";
               w++;
@@ -2587,11 +2658,11 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -2600,7 +2671,8 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // back to normal...
@@ -2633,28 +2705,28 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
   if (!lComm()) return;
 
   // create storage for D-Matrix entries
-  std::map<int, std::map<int,double> > refT; // stores dof-wise the entries of D
-  std::map<int, std::map<int,double> > newT;
+  std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
+  std::map<int, std::map<int, double>> newT;
 
-  std::map<int, std::map<int, std::map<int,double> > > refDerivT; // stores old derivm for every node
+  std::map<int, std::map<int, std::map<int, double>>>
+      refDerivT;  // stores old derivm for every node
 
   // problem dimension (2D or 3D)
   int dim = Dim();
 
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0; i<mnoderowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    //typedef std::map<int,double>::const_iterator CI;
+    // typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    // typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->WearData().GetT().size())==0)
-      continue;
+    if ((int)(cnode->WearData().GetT().size()) == 0) continue;
 
     int dof = cnode->Dofs()[0];
     refT[dof] = cnode->WearData().GetT()[0];
@@ -2666,32 +2738,31 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
   //                            SLAVE
   //**************************************************************
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements(); ++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -2709,20 +2780,18 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<mnoderowmap_->NumMyElements(); ++k)
+    for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
-      if ((int)(kcnode->WearData().GetT().size())==0)
-        continue;
+      if ((int)(kcnode->WearData().GetT().size()) == 0) continue;
 
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int, double>::const_iterator CI;
 
-      for( int d=0; d<1; d++ )
+      for (int d = 0; d < 1; d++)
       {
         int dof = kcnode->Dofs()[d];
 
@@ -2730,25 +2799,26 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
         newT[dof] = kcnode->WearData().GetT()[d];
 
         // print results (derivatives) to screen
-        for (CI p=newT[dof].begin(); p!=newT[dof].end(); ++p)
+        for (CI p = newT[dof].begin(); p != newT[dof].end(); ++p)
         {
-          if (abs(newT[dof][p->first]-refT[dof][p->first]) > 1e-12)
+          if (abs(newT[dof][p->first] - refT[dof][p->first]) > 1e-12)
           {
-            double finit = (newT[dof][p->first]-refT[dof][p->first])/delta;
-            double analy = ((refDerivT[kgid])[(p->first)/Dim()])[sdof];
+            double finit = (newT[dof][p->first] - refT[dof][p->first]) / delta;
+            double analy = ((refDerivT[kgid])[(p->first) / Dim()])[sdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first) << "," << sdof << ") : fd=" << finit << " derivT=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first) << "," << sdof << ") : fd=" << finit
+                      << " derivT=" << analy << " DEVIATION " << dev;
 
-            if( abs(dev) > 1e-4 )
+            if (abs(dev) > 1e-4)
             {
               std::cout << " ***** WARNING ***** ";
               w++;
             }
-            else if( abs(dev) > 1e-5 )
+            else if (abs(dev) > 1e-5)
             {
               std::cout << " ***** warning ***** ";
               w++;
@@ -2761,11 +2831,11 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -2774,39 +2844,39 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   //**************************************************************
   //                            MASTER
   //**************************************************************
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -2824,20 +2894,18 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<mnoderowmap_->NumMyElements(); ++k)
+    for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
-      if ((int)(kcnode->WearData().GetT().size())==0)
-        continue;
+      if ((int)(kcnode->WearData().GetT().size()) == 0) continue;
 
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int, double>::const_iterator CI;
 
-      for( int d=0; d<1; d++ )
+      for (int d = 0; d < 1; d++)
       {
         int dof = kcnode->Dofs()[d];
 
@@ -2845,25 +2913,26 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
         newT[dof] = kcnode->WearData().GetT()[d];
 
         // print results (derivatives) to screen
-        for (CI p=newT[dof].begin(); p!=newT[dof].end(); ++p)
+        for (CI p = newT[dof].begin(); p != newT[dof].end(); ++p)
         {
-          if (abs(newT[dof][p->first]-refT[dof][p->first]) > 1e-12)
+          if (abs(newT[dof][p->first] - refT[dof][p->first]) > 1e-12)
           {
-            double finit = (newT[dof][p->first]-refT[dof][p->first])/delta;
-            double analy = ((refDerivT[kgid])[(p->first)/Dim()])[sdof];
+            double finit = (newT[dof][p->first] - refT[dof][p->first]) / delta;
+            double analy = ((refDerivT[kgid])[(p->first) / Dim()])[sdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first) << "," << sdof << ") : fd=" << finit << " derivT=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first) << "," << sdof << ") : fd=" << finit
+                      << " derivT=" << analy << " DEVIATION " << dev;
 
-            if( abs(dev) > 1e-4 )
+            if (abs(dev) > 1e-4)
             {
               std::cout << " ***** WARNING ***** ";
               w++;
             }
-            else if( abs(dev) > 1e-5 )
+            else if (abs(dev) > 1e-5)
             {
               std::cout << " ***** warning ***** ";
               w++;
@@ -2876,11 +2945,11 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -2889,7 +2958,8 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // back to normal...
@@ -2922,65 +2992,64 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
   if (!lComm()) return;
 
   // create storage for D-Matrix entries
-  std::map<int, std::map<int,double> > refE; // stores dof-wise the entries of D
-  std::map<int, std::map<int,double> > newE;
+  std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
+  std::map<int, std::map<int, double>> newE;
 
-  std::map<int, std::map<int, std::map<int,double> > > refDerivE; // stores old derivm for every node
+  std::map<int, std::map<int, std::map<int, double>>>
+      refDerivE;  // stores old derivm for every node
 
   // problem dimension (2D or 3D)
   int dim = Dim();
 
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    //typedef std::map<int,double>::const_iterator CI;
+    // typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    // typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->WearData().GetE().size())==0)
-      continue;
+    if ((int)(cnode->WearData().GetE().size()) == 0) continue;
 
-//    for( int d=0; d<dim; d++ )
-//    {
-      int dof = cnode->Dofs()[0];
-      refE[dof] = cnode->WearData().GetE()[0];
-//    }
+    //    for( int d=0; d<dim; d++ )
+    //    {
+    int dof = cnode->Dofs()[0];
+    refE[dof] = cnode->WearData().GetE()[0];
+    //    }
 
-      refDerivE[gid] = cnode->WearData().GetDerivE();
+    refDerivE[gid] = cnode->WearData().GetDerivE();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements(); ++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -2998,20 +3067,18 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
-      if ((int)(kcnode->WearData().GetE().size())==0)
-        continue;
+      if ((int)(kcnode->WearData().GetE().size()) == 0) continue;
 
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int, double>::const_iterator CI;
 
-      for( int d=0; d<1; d++ )
+      for (int d = 0; d < 1; d++)
       {
         int dof = kcnode->Dofs()[d];
 
@@ -3019,25 +3086,26 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
         newE[dof] = kcnode->WearData().GetE()[d];
 
         // print results (derivatives) to screen
-        for (CI p=newE[dof].begin(); p!=newE[dof].end(); ++p)
+        for (CI p = newE[dof].begin(); p != newE[dof].end(); ++p)
         {
-          if (abs(newE[dof][p->first]-refE[dof][p->first]) > 1e-12)
+          if (abs(newE[dof][p->first] - refE[dof][p->first]) > 1e-12)
           {
-            double finit = (newE[dof][p->first]-refE[dof][p->first])/delta;
-            double analy = ((refDerivE[kgid])[(p->first)/Dim()])[sdof];
+            double finit = (newE[dof][p->first] - refE[dof][p->first]) / delta;
+            double analy = ((refDerivE[kgid])[(p->first) / Dim()])[sdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivE=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first) / Dim() << "," << sdof
+                      << ") : fd=" << finit << " derivE=" << analy << " DEVIATION " << dev;
 
-            if( abs(dev) > 1e-4 )
+            if (abs(dev) > 1e-4)
             {
               std::cout << " ***** WARNING ***** ";
               w++;
             }
-            else if( abs(dev) > 1e-5 )
+            else if (abs(dev) > 1e-5)
             {
               std::cout << " ***** warning ***** ";
               w++;
@@ -3050,11 +3118,11 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -3063,7 +3131,8 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // back to normal...
@@ -3096,28 +3165,28 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
   if (!lComm()) return;
 
   // create storage for D-Matrix entries
-  std::map<int, std::map<int,double> > refE; // stores dof-wise the entries of D
-  std::map<int, std::map<int,double> > newE;
+  std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
+  std::map<int, std::map<int, double>> newE;
 
-  std::map<int, std::map<int, std::map<int,double> > > refDerivE; // stores old derivm for every node
+  std::map<int, std::map<int, std::map<int, double>>>
+      refDerivE;  // stores old derivm for every node
 
   // problem dimension (2D or 3D)
   int dim = Dim();
 
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0; i<mnoderowmap_->NumMyElements(); ++i)
+  for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    //typedef std::map<int,double>::const_iterator CI;
+    // typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    // typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->WearData().GetE().size())==0)
-      continue;
+    if ((int)(cnode->WearData().GetE().size()) == 0) continue;
 
     int dof = cnode->Dofs()[0];
     refE[dof] = cnode->WearData().GetE()[0];
@@ -3129,32 +3198,31 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
   //                            SLAVE
   //**************************************************************
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements(); ++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -3172,20 +3240,18 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<mnoderowmap_->NumMyElements(); ++k)
+    for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
-      if ((int)(kcnode->WearData().GetE().size())==0)
-        continue;
+      if ((int)(kcnode->WearData().GetE().size()) == 0) continue;
 
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int, double>::const_iterator CI;
 
-      for( int d=0; d<1; d++ )
+      for (int d = 0; d < 1; d++)
       {
         int dof = kcnode->Dofs()[d];
 
@@ -3193,25 +3259,26 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
         newE[dof] = kcnode->WearData().GetE()[d];
 
         // print results (derivatives) to screen
-        for (CI p=newE[dof].begin(); p!=newE[dof].end(); ++p)
+        for (CI p = newE[dof].begin(); p != newE[dof].end(); ++p)
         {
-          if (abs(newE[dof][p->first]-refE[dof][p->first]) > 1e-12)
+          if (abs(newE[dof][p->first] - refE[dof][p->first]) > 1e-12)
           {
-            double finit = (newE[dof][p->first]-refE[dof][p->first])/delta;
-            double analy = ((refDerivE[kgid])[(p->first)/Dim()])[sdof];
+            double finit = (newE[dof][p->first] - refE[dof][p->first]) / delta;
+            double analy = ((refDerivE[kgid])[(p->first) / Dim()])[sdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivE=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first) / Dim() << "," << sdof
+                      << ") : fd=" << finit << " derivE=" << analy << " DEVIATION " << dev;
 
-            if( abs(dev) > 1e-4 )
+            if (abs(dev) > 1e-4)
             {
               std::cout << " ***** WARNING ***** ";
               w++;
             }
-            else if( abs(dev) > 1e-5 )
+            else if (abs(dev) > 1e-5)
             {
               std::cout << " ***** warning ***** ";
               w++;
@@ -3224,11 +3291,11 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -3237,7 +3304,8 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
 
@@ -3245,32 +3313,31 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
   //                            MASTER
   //**************************************************************
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements(); ++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -3288,20 +3355,18 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0; k<mnoderowmap_->NumMyElements(); ++k)
+    for (int k = 0; k < mnoderowmap_->NumMyElements(); ++k)
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode)
-        dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
-      if ((int)(kcnode->WearData().GetE().size())==0)
-        continue;
+      if ((int)(kcnode->WearData().GetE().size()) == 0) continue;
 
-      typedef std::map<int,double>::const_iterator CI;
+      typedef std::map<int, double>::const_iterator CI;
 
-      for( int d=0; d<1; d++ )
+      for (int d = 0; d < 1; d++)
       {
         int dof = kcnode->Dofs()[d];
 
@@ -3309,25 +3374,26 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
         newE[dof] = kcnode->WearData().GetE()[d];
 
         // print results (derivatives) to screen
-        for (CI p=newE[dof].begin(); p!=newE[dof].end(); ++p)
+        for (CI p = newE[dof].begin(); p != newE[dof].end(); ++p)
         {
-          if (abs(newE[dof][p->first]-refE[dof][p->first]) > 1e-12)
+          if (abs(newE[dof][p->first] - refE[dof][p->first]) > 1e-12)
           {
-            double finit = (newE[dof][p->first]-refE[dof][p->first])/delta;
-            double analy = ((refDerivE[kgid])[(p->first)/Dim()])[sdof];
+            double finit = (newE[dof][p->first] - refE[dof][p->first]) / delta;
+            double analy = ((refDerivE[kgid])[(p->first) / Dim()])[sdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivE=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << dof << "," << (p->first) / Dim() << "," << sdof
+                      << ") : fd=" << finit << " derivE=" << analy << " DEVIATION " << dev;
 
-            if( abs(dev) > 1e-4 )
+            if (abs(dev) > 1e-4)
             {
               std::cout << " ***** WARNING ***** ";
               w++;
             }
-            else if( abs(dev) > 1e-5 )
+            else if (abs(dev) > 1e-5)
             {
               std::cout << " ***** warning ***** ";
               w++;
@@ -3340,11 +3406,11 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -3353,7 +3419,8 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
   }
 
   // back to normal...
@@ -3397,39 +3464,39 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // store wear-values into refW
-    refW[i]=cnode->WearData().WeightedWear();
+    refW[i] = cnode->WearData().WeightedWear();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize -- set WearData.Wear() = 0 !!!
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->MoData().lm()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->MoData().lm()[1] += delta;
     }
@@ -3448,46 +3515,47 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
 
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->WearData().DeltaWeightedWear();
+      newW[k] = wcoeff * kcnode->WearData().DeltaWeightedWear();
 
-//      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
-//      {
-         double finit = (newW[k]-refW[k])/delta;
-         double analy = kcnode->CoData().GetDerivWlm()[snode->Dofs()[fd%dim]];
-         double dev = finit - analy;
+      //      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
+      //      {
+      double finit = (newW[k] - refW[k]) / delta;
+      double analy = kcnode->CoData().GetDerivWlm()[snode->Dofs()[fd % dim]];
+      double dev = finit - analy;
 
-         // kgid: id of currently tested slave node
-         // snode->Dofs()[fd%dim]: currently modified slave dof
-         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivw=" << analy << " DEVIATION " << dev;
+      // kgid: id of currently tested slave node
+      // snode->Dofs()[fd%dim]: currently modified slave dof
+      std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+                << " derivw=" << analy << " DEVIATION " << dev;
 
-         if( abs(dev) > 1e-4 )
-         {
-           std::cout << " ***** WARNING ***** ";
-           w++;
-         }
-         else if( abs(dev) > 1e-5 )
-         {
-           std::cout << " ***** warning ***** ";
-           w++;
-         }
+      if (abs(dev) > 1e-4)
+      {
+        std::cout << " ***** WARNING ***** ";
+        w++;
+      }
+      else if (abs(dev) > 1e-5)
+      {
+        std::cout << " ***** warning ***** ";
+        w++;
+      }
 
-         std::cout << std::endl;
-//      }
+      std::cout << std::endl;
+      //      }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->MoData().lm()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->MoData().lm()[1] -= delta;
     }
@@ -3497,27 +3565,28 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
     }
 
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-//    if (w>0)
-//      dserror("WARNING!!!");
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
+    //    if (w>0)
+    //      dserror("WARNING!!!");
   }
 
-  //LM only on slave nodes!!!
+  // LM only on slave nodes!!!
 
   // back to normal...
   Initialize();
   Evaluate();
 
   // write the init. wear back into the node
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // store gap-values into refG
-    cnode->WearData().WeightedWear()=refW[i];
+    cnode->WearData().WeightedWear() = refW[i];
   }
 
 
@@ -3549,42 +3618,42 @@ void WEAR::WearInterface::FDCheckWearDeriv()
 
   // store reference
   // loop over proc's slave nodes
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // store wear-values into refW
-    refW[i]=cnode->WearData().WeightedWear();
+    refW[i] = cnode->WearData().WeightedWear();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
-  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * snodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize -- set WearData.Wear() = 0 !!!
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/dim);
+    int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
-    int sdof = snode->Dofs()[fd%dim];
+    int sdof = snode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
     }
@@ -3603,46 +3672,47 @@ void WEAR::WearInterface::FDCheckWearDeriv()
 
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->WearData().DeltaWeightedWear();
+      newW[k] = wcoeff * kcnode->WearData().DeltaWeightedWear();
 
-      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
+      if (abs(newW[k] - refW[k]) > 1e-12 && newW[k] != 1.0e12 && refW[k] != 1.0e12)
       {
-         double finit = (newW[k]-refW[k])/delta;
-         double analy = kcnode->CoData().GetDerivW()[snode->Dofs()[fd%dim]];
-         double dev = finit - analy;
+        double finit = (newW[k] - refW[k]) / delta;
+        double analy = kcnode->CoData().GetDerivW()[snode->Dofs()[fd % dim]];
+        double dev = finit - analy;
 
-         // kgid: id of currently tested slave node
-         // snode->Dofs()[fd%dim]: currently modified slave dof
-         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivw=" << analy << " DEVIATION " << dev;
+        // kgid: id of currently tested slave node
+        // snode->Dofs()[fd%dim]: currently modified slave dof
+        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+                  << " derivw=" << analy << " DEVIATION " << dev;
 
-         if( abs(dev) > 1e-4 )
-         {
-           std::cout << " ***** WARNING ***** ";
-           w++;
-         }
-         else if( abs(dev) > 1e-5 )
-         {
-           std::cout << " ***** warning ***** ";
-           w++;
-         }
+        if (abs(dev) > 1e-4)
+        {
+          std::cout << " ***** WARNING ***** ";
+          w++;
+        }
+        else if (abs(dev) > 1e-5)
+        {
+          std::cout << " ***** warning ***** ";
+          w++;
+        }
 
-         std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -3651,16 +3721,17 @@ void WEAR::WearInterface::FDCheckWearDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-//    if (w>0)
-//      dserror("WARNING!!!");
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
+    //    if (w>0)
+    //      dserror("WARNING!!!");
   }
 
   // global loop to apply FD scheme to all master dofs (=dim*nodes)
-  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  for (int fd = 0; fd < dim * mnodefullmap->NumMyElements(); ++fd)
   {
     // store warnings for this finite difference
-    int w=0;
+    int w = 0;
 
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -3668,21 +3739,21 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/dim);
+    int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    int mdof = mnode->Dofs()[fd%dim];
+    int mdof = mnode->Dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-6;
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->xspatial()[0] += delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       mnode->xspatial()[1] += delta;
     }
@@ -3700,47 +3771,48 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     Evaluate();
 
     // compute finite difference derivative
-    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->WearData().DeltaWeightedWear();
+      newW[k] = wcoeff * kcnode->WearData().DeltaWeightedWear();
 
-      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
+      if (abs(newW[k] - refW[k]) > 1e-12 && newW[k] != 1.0e12 && refW[k] != 1.0e12)
       {
-         double finit = (newW[k]-refW[k])/delta;
-         double analy = kcnode->CoData().GetDerivW()[mnode->Dofs()[fd%dim]];
-         double dev = finit - analy;
+        double finit = (newW[k] - refW[k]) / delta;
+        double analy = kcnode->CoData().GetDerivW()[mnode->Dofs()[fd % dim]];
+        double dev = finit - analy;
 
-         // kgid: id of currently tested slave node
-         // mnode->Dofs()[fd%dim]: currently modified slave dof
-         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivw=" << analy << " DEVIATION " << dev;
+        // kgid: id of currently tested slave node
+        // mnode->Dofs()[fd%dim]: currently modified slave dof
+        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+                  << " derivw=" << analy << " DEVIATION " << dev;
 
-         if( abs(dev) > 1e-4 )
-         {
-           std::cout << " ***** WARNING ***** ";
-           w++;
-         }
-         else if( abs(dev) > 1e-5 )
-         {
-           std::cout << " ***** warning ***** ";
-           w++;
-         }
+        if (abs(dev) > 1e-4)
+        {
+          std::cout << " ***** WARNING ***** ";
+          w++;
+        }
+        else if (abs(dev) > 1e-5)
+        {
+          std::cout << " ***** warning ***** ";
+          w++;
+        }
 
-         std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
 
     // undo finite difference modification
-    if (fd%dim==0)
+    if (fd % dim == 0)
     {
       mnode->xspatial()[0] -= delta;
     }
-    else if (fd%dim==1)
+    else if (fd % dim == 1)
     {
       mnode->xspatial()[1] -= delta;
     }
@@ -3749,9 +3821,10 @@ void WEAR::WearInterface::FDCheckWearDeriv()
       mnode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
-//    if (w>0)
-//      dserror("WARNING!!!");
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** "
+              << std::endl;
+    //    if (w>0)
+    //      dserror("WARNING!!!");
   }
 
   // back to normal...
@@ -3759,14 +3832,14 @@ void WEAR::WearInterface::FDCheckWearDeriv()
   Evaluate();
 
   // write the init. wear back into the node
-  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
-    cnode->WearData().WeightedWear()=refW[i];
+    cnode->WearData().WeightedWear() = refW[i];
   }
 
   return;

@@ -26,28 +26,26 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
-    const Epetra_Comm& comm,
-    const std::string& struct_disname,
-    const std::string& fluid_disname)
+    const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname)
 {
   // get the fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis(fluid_disname);
 
   // initialize material map
-  std::map<int,int> matmap;
+  std::map<int, int> matmap;
   {
     // get the cloning material map from the .dat file
-    std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap =
+    std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
         DRT::Problem::Instance()->CloningMaterialMap();
     if (clonefieldmatmap.size() < 1)
       dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
 
     // check if the current discretization is included in the material map
-    std::pair<std::string,std::string> key(fluid_disname,struct_disname);
+    std::pair<std::string, std::string> key(fluid_disname, struct_disname);
     matmap = clonefieldmatmap[key];
     if (matmap.size() < 1)
-      dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",
-          fluid_disname.c_str(),struct_disname.c_str());
+      dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.", fluid_disname.c_str(),
+          struct_disname.c_str());
   }
 
 
@@ -55,15 +53,15 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
   const int numelements = fluiddis->NumMyColElements();
 
   // loop over column elements
-  for (int i=0; i<numelements; ++i)
+  for (int i = 0; i < numelements; ++i)
   {
     // get current element
     DRT::Element* ele = fluiddis->lColElement(i);
 
     // find the corresponding material in the matmap
     int src_matid = ele->Material()->Parameter()->Id();
-    std::map<int,int>::iterator mat_iter = matmap.find(src_matid);
-    if (mat_iter!=matmap.end())
+    std::map<int, int>::iterator mat_iter = matmap.find(src_matid);
+    if (mat_iter != matmap.end())
     {
       // get the ID of the secondary material
       const int tar_matid = mat_iter->second;
@@ -71,20 +69,19 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(tar_matid);
 
       // add secondary material to poro fluid element
-      if(ele->AddMaterial(mat)!=2)
-        dserror("unexpected number of materials!");
+      if (ele->AddMaterial(mat) != 2) dserror("unexpected number of materials!");
     }
     else
     {
       // before we stop, print the material id map
-      std::cout<<"Material map on PROC "<<comm.MyPID()<<":"<<std::endl;
-      for(mat_iter=matmap.begin(); mat_iter != matmap.end(); mat_iter++)
-        std::cout<<mat_iter->first<<" -> "<<mat_iter->second<<std::endl;
+      std::cout << "Material map on PROC " << comm.MyPID() << ":" << std::endl;
+      for (mat_iter = matmap.begin(); mat_iter != matmap.end(); mat_iter++)
+        std::cout << mat_iter->first << " -> " << mat_iter->second << std::endl;
 
-      dserror("no matching material ID (%d) in map",src_matid);
+      dserror("no matching material ID (%d) in map", src_matid);
     }
 
-  } // end loop over column elements
+  }  // end loop over column elements
 
   return;
 }
@@ -92,26 +89,24 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
-    const DRT::Discretization& dis,
-    const Epetra_Vector& vector,
-    const int nds,
+    const DRT::Discretization& dis, const Epetra_Vector& vector, const int nds,
     const int numdofpernode)
 {
   // initialize multi vector
   Teuchos::RCP<Epetra_MultiVector> multi =
-      Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(),numdofpernode,true));
+      Teuchos::rcp(new Epetra_MultiVector(*dis.NodeRowMap(), numdofpernode, true));
 
   // get maps
   const Epetra_BlockMap& vectormap = vector.Map();
 
   // loop over nodes of the discretization
-  for (int inode=0; inode<dis.NumMyRowNodes(); ++inode)
+  for (int inode = 0; inode < dis.NumMyRowNodes(); ++inode)
   {
     // get current node
     DRT::Node* node = dis.lRowNode(inode);
-    //copy each dof value of node
-    for (int idof=0; idof<numdofpernode; ++idof)
-      (*multi)[idof][inode] = vector[vectormap.LID(dis.Dof(nds,node,idof))];
+    // copy each dof value of node
+    for (int idof = 0; idof < numdofpernode; ++idof)
+      (*multi)[idof][inode] = vector[vectormap.LID(dis.Dof(nds, node, idof))];
   }
 
   return multi;
@@ -122,13 +117,9 @@ Teuchos::RCP<Epetra_MultiVector> POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToN
  *----------------------------------------------------------------------*/
 Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
     INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
-    Teuchos::RCP<DRT::Discretization>                 dis,
-    const int                                         linsolvernumber,
-    const Teuchos::ParameterList&                     probparams,
-    const Teuchos::ParameterList&                     poroparams,
-    FILE*                                             errfile,
-    Teuchos::RCP<IO::DiscretizationWriter>            output
-    )
+    Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+    const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
+    FILE* errfile, Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   // Creation of Coupled Problem algortihm.
   Teuchos::RCP<ADAPTER::PoroFluidMultiphase> algo = Teuchos::null;
@@ -138,23 +129,18 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
 
-  switch(timintscheme)
+  switch (timintscheme)
   {
-  case INPAR::POROFLUIDMULTIPHASE::timeint_one_step_theta:
-  {
-    // create algorithm
-    algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
-            dis,
-            linsolvernumber,
-            probparams,
-            poroparams,
-            errfile,
-            output));
-    break;
-  }
-  default:
-    dserror("Unknown time-integration scheme for multiphase poro fluid problem");
-    break;
+    case INPAR::POROFLUIDMULTIPHASE::timeint_one_step_theta:
+    {
+      // create algorithm
+      algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
+          dis, linsolvernumber, probparams, poroparams, errfile, output));
+      break;
+    }
+    default:
+      dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+      break;
   }
 
   return algo;
@@ -164,31 +150,29 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
  | redistribute cont- and artery-discretization by binning kremheller 06/18 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(
-    Teuchos::RCP<DRT::Discretization>                 contdis,
-    Teuchos::RCP<DRT::Discretization>                 artdis,
-    const bool                                        ghost_artdis
-    )
+    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
+    const bool ghost_artdis)
 {
-
   contdis->FillComplete();
   artdis->FillComplete();
   // create vector of discr.
-  std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+  std::vector<Teuchos::RCP<DRT::Discretization>> dis;
   dis.push_back(contdis);
   dis.push_back(artdis);
 
-  DRT::UTILS::RedistributeDiscretizationsByBinning(dis,false);
+  DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
 
   // safety check
   // TODO: fix this!
-  if(artdis->NumMyRowNodes() == 0)
-    dserror("problem with parallel redistribution of artery discretization, one or more procs. does not have any row nodes");
+  if (artdis->NumMyRowNodes() == 0)
+    dserror(
+        "problem with parallel redistribution of artery discretization, one or more procs. does "
+        "not have any row nodes");
 
   // TODO: this is necessary to find all possible interactions.
   //       presently, the artery discretization is much smaller than the
   //       others, so it is not that much of a performance issue
-  if(ghost_artdis)
-    DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
+  if (ghost_artdis) DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
 
   return;
 }
@@ -197,9 +181,8 @@ void POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(
  | calculate vector norm                             kremheller 12/17   |
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
-  const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,
-  const Teuchos::RCP<const Epetra_Vector> vect
-  )
+    const enum INPAR::POROFLUIDMULTIPHASE::VectorNorm norm,
+    const Teuchos::RCP<const Epetra_Vector> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
@@ -223,7 +206,7 @@ double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
-    return vectnorm/sqrt((double) vect->GlobalLength());
+    return vectnorm / sqrt((double)vect->GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
@@ -238,7 +221,7 @@ double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
-    return vectnorm/((double) vect->GlobalLength());
+    return vectnorm / ((double)vect->GlobalLength());
   }
   else
   {
@@ -270,6 +253,4 @@ void POROFLUIDMULTIPHASE::PrintLogo()
   std::cout << "  /         \\             /         \\" << std::endl;
 
   return;
-
-
 }

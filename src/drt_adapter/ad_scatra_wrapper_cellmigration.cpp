@@ -21,23 +21,23 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-ADAPTER::AdapterScatraWrapperCellMigration::AdapterScatraWrapperCellMigration(Teuchos::RCP<ScatraInterface> scatra)
-:   AdapterScatraWrapper(scatra)
+ADAPTER::AdapterScatraWrapperCellMigration::AdapterScatraWrapperCellMigration(
+    Teuchos::RCP<ScatraInterface> scatra)
+    : AdapterScatraWrapper(scatra)
 {
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
-  rates_ = LINALG::CreateVector(*dofrowmap,true);
+  rates_ = LINALG::CreateVector(*dofrowmap, true);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::AdapterScatraWrapperCellMigration::EvaluateAdditionalSolutionDependingModels(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          rhs
-)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
+    Teuchos::RCP<Epetra_Vector> rhs)
 {
   // Do only for cellscatra discretization
-  if(Discretization()->Name()=="cellscatra")
+  if (Discretization()->Name() == "cellscatra")
   {
     // get rcp to cell discretization
     Teuchos::RCP<DRT::Discretization> celldis = DRT::Problem::Instance()->GetDis("cell");
@@ -45,10 +45,9 @@ void ADAPTER::AdapterScatraWrapperCellMigration::EvaluateAdditionalSolutionDepen
     // Evaluate biochemical transport and reaction at focal adhesion sites
     // only if BioChemoMechanoCellActiveFiber is used in cell.
     DRT::Condition* FocalAdhesionCondition = Discretization()->GetCondition("CellFocalAdhesion");
-    if(FocalAdhesionCondition != NULL and
+    if (FocalAdhesionCondition != NULL and
         Teuchos::rcp_dynamic_cast<MAT::BioChemoMechanoCellActiveFiber>(
-            celldis->gElement(celldis->ElementRowMap()->GID(0))->Material() ) != Teuchos::null
-    )
+            celldis->gElement(celldis->ElementRowMap()->GID(0))->Material()) != Teuchos::null)
     {
       // declare ParameterList
       Teuchos::ParameterList params;
@@ -56,36 +55,37 @@ void ADAPTER::AdapterScatraWrapperCellMigration::EvaluateAdditionalSolutionDepen
       // zero rates vector
       rates_->Scale(0.0);
 
-      params.set<int>("action",SCATRA::calc_cell_mechanotransduction);
-      params.set<int>("ndsdisp",NdsDisp());
+      params.set<int>("action", SCATRA::calc_cell_mechanotransduction);
+      params.set<int>("ndsdisp", NdsDisp());
 
       // add element parameters and set state vectors according to time-integration scheme
       AddTimeIntegrationSpecificVectors();
-      Discretization()->Evaluate(params,Teuchos::null,Teuchos::null,rates_,Teuchos::null,Teuchos::null);
+      Discretization()->Evaluate(
+          params, Teuchos::null, Teuchos::null, rates_, Teuchos::null, Teuchos::null);
 
       /* -------------------------------------------------------------------------------------------*/
 
-      params.set<int>("action",SCATRA::bd_calc_mechanotransduction);
+      params.set<int>("action", SCATRA::bd_calc_mechanotransduction);
 
       // add element parameters and set state vectors according to time-integration scheme
-      Discretization()->EvaluateCondition(params,Teuchos::null,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"CellFocalAdhesion",-1);
+      Discretization()->EvaluateCondition(params, Teuchos::null, Teuchos::null, rhs, Teuchos::null,
+          Teuchos::null, "CellFocalAdhesion", -1);
 
       // safety
       Discretization()->ClearState();
 
       // write result to right-hand-side
-      rhs->Update(1.0,*rates_,1.0);
+      rhs->Update(1.0, *rates_, 1.0);
 
-    } // at focal adhesions
+    }  // at focal adhesions
 
     // so far this is only needed for adhesion dynamics with bond reactions
     Teuchos::RCP<SCATRA::HeterogeneousReactionStrategy> strategy =
         Teuchos::rcp_dynamic_cast<SCATRA::HeterogeneousReactionStrategy>(Strategy());
 
     // set scalar state
-    if(strategy != Teuchos::null)
-      strategy->SetState(0,"phin",Phin());
-  } // Do only for cellscatra discretization
+    if (strategy != Teuchos::null) strategy->SetState(0, "phin", Phin());
+  }  // Do only for cellscatra discretization
 
   return;
 }
@@ -96,10 +96,9 @@ void ADAPTER::AdapterScatraWrapperCellMigration::EvaluateAdditionalSolutionDepen
 void ADAPTER::AdapterScatraWrapperCellMigration::AddContributionToRHS(
     const Teuchos::RCP<const Epetra_Vector>& contributing_vector)
 {
-  int err = GetNeumannLoadsPtr()->Update(1.0,*contributing_vector,1.0);
+  int err = GetNeumannLoadsPtr()->Update(1.0, *contributing_vector, 1.0);
 
-  if(err!=0)
-    dserror(" Epetra_Vector update threw error code %i ",err);
+  if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
 
   return;
 }

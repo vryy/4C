@@ -1,7 +1,8 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_ac_ost.H
 
-\brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta and TimIntAC.
+\brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta
+and TimIntAC.
 
 \date 2015-07-29
 
@@ -21,31 +22,26 @@
 
 namespace FLD
 {
+  class TimIntACOst : public TimIntOneStepTheta, public TimIntAC
+  {
+   public:
+    /// Standard Constructor
+    TimIntACOst(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-class TimIntACOst : public TimIntOneStepTheta, public TimIntAC
-{
-public:
-  /// Standard Constructor
-  TimIntACOst(const Teuchos::RCP<DRT::Discretization>&    actdis,
-      const Teuchos::RCP<LINALG::Solver>&                 solver,
-      const Teuchos::RCP<Teuchos::ParameterList>&         params,
-      const Teuchos::RCP<IO::DiscretizationWriter>&       output,
-      bool                                                alefluid = false);
+    /// Destructor
+    virtual ~TimIntACOst();
 
-  /// Destructor
-  virtual ~TimIntACOst();
+    /// read restart data
+    virtual void ReadRestart(int step);
 
-  /// read restart data
-  virtual void ReadRestart(int step);
+   protected:
+   private:
+  };  // class TimIntACOst
 
-protected:
-
-private:
-
-
-}; // class TimIntACOst
-
-} // namespace FLD
+}  // namespace FLD
 
 
 #endif  // #ifndef FLD_TIMINT_AC_OST_H

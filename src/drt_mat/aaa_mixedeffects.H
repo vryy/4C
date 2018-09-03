@@ -29,20 +29,15 @@ Maintainer: Andreas Maier
 
 namespace MAT
 {
-
   namespace PAR
   {
-
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
     class AAA_mixedeffects : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      AAA_mixedeffects(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~AAA_mixedeffects() { ; }
@@ -54,7 +49,7 @@ namespace MAT
       const double nue_;
       /// patient's age for calculating alpha and beta
       const double age_;
-      ///reference diameter for normalizing (=to calculate NORD)
+      /// reference diameter for normalizing (=to calculate NORD)
       const double refdia_;
       /// mass density
       const double density_;
@@ -68,20 +63,18 @@ namespace MAT
 
   }  // namespace PAR
 
-class AAA_mixedeffectsType : public DRT::ParObjectType
-{
-public:
+  class AAA_mixedeffectsType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "AAA_mixedeffectsType"; }
 
-  std::string Name() const { return "AAA_mixedeffectsType"; }
+    static AAA_mixedeffectsType& Instance() { return instance_; };
 
-  static AAA_mixedeffectsType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static AAA_mixedeffectsType instance_;
-};
+   private:
+    static AAA_mixedeffectsType instance_;
+  };
 
 
 
@@ -89,9 +82,7 @@ private:
 
   class AAA_mixedeffects : public So3Material
   {
-
-  public:
-
+   public:
     // empty constructor
     AAA_mixedeffects();
 
@@ -106,7 +97,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return AAA_mixedeffectsType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return AAA_mixedeffectsType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -141,8 +135,11 @@ private:
 
     /// shear modulus
     double ShearMod(double elelocalrad) const
-    { return // => 0.5*6*alpha/(1.0+nue)
-      3E6*(0.09631+0.03329*(elelocalrad*2/params_->refdia_ - 2.55))/(1.0+params_->nue_); }
+    {
+      return  // => 0.5*6*alpha/(1.0+nue)
+          3E6 * (0.09631 + 0.03329 * (elelocalrad * 2 / params_->refdia_ - 2.55)) /
+          (1.0 + params_->nue_);
+    }
 
 
     // material type
@@ -150,36 +147,34 @@ private:
 
     /// check if element kinematics and material kinematics are compatible
     virtual void ValidKinematics(INPAR::STR::KinemType kinem)
-    { if(!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");}
+    {
+      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAA_mixedeffects( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new AAA_mixedeffects(*this));
+    }
 
     // THE material routine
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-      Epetra_SerialDenseMatrix* cmat_e,
-      Epetra_SerialDenseVector* stress_e,
-      double elelocalrad);
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e, Epetra_SerialDenseMatrix* cmat_e,
+        Epetra_SerialDenseVector* stress_e, double elelocalrad);
 
     // THE material routine
-    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                  const LINALG::Matrix<6,1>* glstrain,
-                  Teuchos::ParameterList& params,
-                  LINALG::Matrix<6,1>* stress,
-                  LINALG::Matrix<6,6>* cmat,
-                  const int eleGID);
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::AAA_mixedeffects* params_;
-
   };
-}
+}  // namespace MAT
 
 #endif  // AAA_MIXEDEFFECTS_H_

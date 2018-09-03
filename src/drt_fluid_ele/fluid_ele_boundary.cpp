@@ -18,19 +18,16 @@
 
 DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 
-DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance()
-{
-  return instance_;
-}
+DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance() { return instance_; }
 
-DRT::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::FluidBoundaryType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::FluidBoundary* object = new DRT::ELEMENTS::FluidBoundary(-1,-1);
+  DRT::ELEMENTS::FluidBoundary* object = new DRT::ELEMENTS::FluidBoundary(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create(const int id, const int owner)
 {
   return Teuchos::null;
 }
@@ -40,26 +37,22 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create( const int i
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::Fluid* parent,
-                              const int lsurface) :
-DRT::FaceElement(id,owner),
-distype_(DRT::Element::dis_none),
-numdofpernode_(-1)
+DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
+    DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
+    : DRT::FaceElement(id, owner), distype_(DRT::Element::dis_none), numdofpernode_(-1)
 {
-  SetParentMasterElement(parent,lsurface);
-  SetNodeIds(nnode,nodeids);
+  SetParentMasterElement(parent, lsurface);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   distype_ = DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 
-  numdofpernode_= ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
-  //Safety check if all nodes have the same number of dofs!
+  numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
+  // Safety check if all nodes have the same number of dofs!
   for (int nlid = 1; nlid < NumNode(); ++nlid)
   {
-    if (numdofpernode_ !=  ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
-      dserror("You need different NumDofPerNode for each node on this fluid boundary? (%d != %d)", numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
+    if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
+      dserror("You need different NumDofPerNode for each node on this fluid boundary? (%d != %d)",
+          numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
   }
   return;
 }
@@ -67,10 +60,8 @@ numdofpernode_(-1)
 /*------------------------------------------------------------------------*
  |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
  *-----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner) :
-DRT::FaceElement(id,owner),
-distype_(DRT::Element::dis_none),
-numdofpernode_(-1)
+DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
+    : DRT::FaceElement(id, owner), distype_(DRT::Element::dis_none), numdofpernode_(-1)
 {
   return;
 }
@@ -78,12 +69,10 @@ numdofpernode_(-1)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old) :
-DRT::FaceElement(old),
-distype_(old.distype_),
-numdofpernode_(old.numdofpernode_)
+DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old)
+    : DRT::FaceElement(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
 {
- return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -102,18 +91,18 @@ DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidBoundary::Pack(DRT::PackBuffer& data) const
 {
-  DRT::PackBuffer::SizeMarker sm( data );
+  DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  AddtoPack(data, type);
   // add base class Element
   FaceElement::Pack(data);
   // Discretisation type
-  AddtoPack(data,distype_);
-  //add numdofpernode_
-  AddtoPack(data,numdofpernode_);
+  AddtoPack(data, distype_);
+  // add numdofpernode_
+  AddtoPack(data, numdofpernode_);
   return;
 }
 
@@ -126,29 +115,26 @@ void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  ExtractfromPack(position, data, type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
+  ExtractfromPack(position, data, basedata);
   FaceElement::Unpack(basedata);
   // distype
-  distype_ = static_cast<DRT::Element::DiscretizationType>( ExtractInt(position,data) );
+  distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
   // numdofpernode_
-  numdofpernode_ = ExtractInt(position,data);
+  numdofpernode_ = ExtractInt(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::~FluidBoundary()
-{
-  return;
-}
+DRT::ELEMENTS::FluidBoundary::~FluidBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -164,7 +150,7 @@ void DRT::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -174,14 +160,14 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of FluidBoundary not implemented");
-  std::vector<Teuchos::RCP<DRT::Element> > lines(0);
+  std::vector<Teuchos::RCP<DRT::Element>> lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -190,9 +176,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces(
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // just give back this surface element (without ownership)
-  std::vector<Teuchos::RCP<DRT::Element> > surfaces(1);
-  surfaces[0]=Teuchos::rcp(this,false);
+  std::vector<Teuchos::RCP<DRT::Element>> surfaces(1);
+  surfaces[0] = Teuchos::rcp(this, false);
   return surfaces;
 }
-
-

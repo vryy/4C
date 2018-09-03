@@ -42,22 +42,21 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::NlnOperatorSD::NlnOperatorSD()
-: linesearch_(Teuchos::null)
-{
-  return;
-}
+NLNSOL::NlnOperatorSD::NlnOperatorSD() : linesearch_(Teuchos::null) { return; }
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorSD::Setup()
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::NlnOperatorSD::Setup");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::NlnOperatorSD::Setup");
   Teuchos::TimeMonitor monitor(*time);
 
   // Make sure that Init() has been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
 
   SetupLineSearch();
 
@@ -71,44 +70,47 @@ void NLNSOL::NlnOperatorSD::Setup()
 void NLNSOL::NlnOperatorSD::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(Configuration(),
-      MyGetParameter<std::string>("line search"));
+  linesearch_ =
+      linesearchfactory.Create(Configuration(), MyGetParameter<std::string>("line search"));
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
-    Epetra_MultiVector& x) const
+int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f, Epetra_MultiVector& x) const
 {
   // time measurements
-  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::NlnOperatorSD::ApplyInverse");
+  Teuchos::RCP<Teuchos::Time> time =
+      Teuchos::TimeMonitor::getNewCounter("NLNSOL::NlnOperatorSD::ApplyInverse");
   Teuchos::TimeMonitor monitor(*time);
 
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+  if (not IsInit())
+  {
+    dserror("Init() has not been called, yet.");
+  }
+  if (not IsSetup())
+  {
+    dserror("Setup() has not been called, yet.");
+  }
 
   // ---------------------------------------------------------------------------
   // initialize stuff for iteration loop
   // ---------------------------------------------------------------------------
   // solution increment vector
-  Teuchos::RCP<Epetra_MultiVector> inc =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> inc = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // residual vector
-  Teuchos::RCP<Epetra_MultiVector> rhs =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   NlnProblem()->ComputeF(x, *rhs);
 
-  int iter = 0; // iteration counter
-  double steplength = 1.0; // line search parameter
-  double fnorm2 = 1.0e+12; // residual L2 norm
-  bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
-  bool suffdecr = false; // flag for sufficient decrease of line search
+  int iter = 0;                                                   // iteration counter
+  double steplength = 1.0;                                        // line search parameter
+  double fnorm2 = 1.0e+12;                                        // residual L2 norm
+  bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);  // convergence flag
+  bool suffdecr = false;  // flag for sufficient decrease of line search
 
   // print initial state before iterating
   PrintIterSummary(iter, fnorm2);
@@ -128,7 +130,10 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
-    if (err != 0) { dserror("Failed."); }
+    if (err != 0)
+    {
+      dserror("Failed.");
+    }
 
     // compute current residual and check for convergence
     NlnProblem()->ComputeF(x, *rhs);
@@ -141,8 +146,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
   // Finish ApplyInverse()
   // ---------------------------------------------------------------------------
   // determine error code
-  NLNSOL::UTILS::OperatorStatus errorcode =
-      ErrorCode(iter, converged, err);
+  NLNSOL::UTILS::OperatorStatus errorcode = ErrorCode(iter, converged, err);
 
   // write to output parameter list
   SetOutParameterIter(iter);
@@ -163,15 +167,18 @@ int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
    * vector.
    */
   int err = inc.Update(1.0, rhs, 0.0);
-  if (err != 0) { dserror("Update failed."); }
+  if (err != 0)
+  {
+    dserror("Update failed.");
+  }
 
   return err;
 }
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorSD::ComputeStepLength(const Epetra_MultiVector& x,
-    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
-    double& lsparam, bool& suffdecr) const
+    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2, double& lsparam,
+    bool& suffdecr) const
 {
   const std::string lslist = MyGetParameter<std::string>("line search");
 

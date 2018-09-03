@@ -28,29 +28,25 @@
  *----------------------------------------------------------------------------*/
 NOX::NLN::StatusTest::NormWRMS::NormWRMS(
     const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
-    const std::vector<double>& rtol,
-    const std::vector<double>& atol,
-    const std::vector<double>& BDFMultiplier,
-    const std::vector<double>& tolerance,
-    const double& alpha,
-    const double& beta,
-    const std::vector<bool>& disable_implicit_weighting) :
-    normWRMS_(Teuchos::null),
-    nChecks_(checkList.size()),
-    checkList_(checkList),
-    rtol_(rtol),
-    atol_(atol),
-    factor_(BDFMultiplier),
-    tol_(tolerance),
-    alpha_(alpha),
-    computedStepSize_(1.0),
-    beta_(beta),
-    achievedTol_(0.0),
-    gStatus_(NOX::StatusTest::Unconverged),
-    status_(std::vector<NOX::StatusTest::StatusType>(nChecks_,gStatus_)),
-    printCriteria2Info_(false),
-    printCriteria3Info_(false),
-    disable_implicit_weighting_(disable_implicit_weighting)
+    const std::vector<double>& rtol, const std::vector<double>& atol,
+    const std::vector<double>& BDFMultiplier, const std::vector<double>& tolerance,
+    const double& alpha, const double& beta, const std::vector<bool>& disable_implicit_weighting)
+    : normWRMS_(Teuchos::null),
+      nChecks_(checkList.size()),
+      checkList_(checkList),
+      rtol_(rtol),
+      atol_(atol),
+      factor_(BDFMultiplier),
+      tol_(tolerance),
+      alpha_(alpha),
+      computedStepSize_(1.0),
+      beta_(beta),
+      achievedTol_(0.0),
+      gStatus_(NOX::StatusTest::Unconverged),
+      status_(std::vector<NOX::StatusTest::StatusType>(nChecks_, gStatus_)),
+      printCriteria2Info_(false),
+      printCriteria3Info_(false),
+      disable_implicit_weighting_(disable_implicit_weighting)
 {
   // empty constructor
 }
@@ -58,22 +54,20 @@ NOX::NLN::StatusTest::NormWRMS::NormWRMS(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
-    const NOX::Solver::Generic& problem,
-    NOX::StatusTest::CheckType checkType)
+    const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType)
 {
   if (checkType == NOX::StatusTest::None)
   {
     gStatus_ = NOX::StatusTest::Unevaluated;
-    status_.assign(nChecks_,gStatus_);
-    normWRMS_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0e+12));
+    status_.assign(nChecks_, gStatus_);
+    normWRMS_ = Teuchos::rcp(new std::vector<double>(nChecks_, 1.0e+12));
     return gStatus_;
   }
 
-  Teuchos::RCP<const Abstract::Group> soln =
-      Teuchos::rcpFromRef(problem.getSolutionGroup());
+  Teuchos::RCP<const Abstract::Group> soln = Teuchos::rcpFromRef(problem.getSolutionGroup());
   // all entries of the status_ vector are initialized to a unconverged status
   gStatus_ = NOX::StatusTest::Unconverged;
-  status_ = std::vector<NOX::StatusTest::StatusType>(nChecks_,gStatus_);
+  status_ = std::vector<NOX::StatusTest::StatusType>(nChecks_, gStatus_);
 
   // On the first iteration, the old and current solution are the same so
   // we should return the test as unconverged until there is a valid
@@ -81,7 +75,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
   int niters = problem.getNumIterations();
   if (niters == 0)
   {
-    normWRMS_ = Teuchos::rcp(new std::vector<double>(nChecks_,1.0e+12));
+    normWRMS_ = Teuchos::rcp(new std::vector<double>(nChecks_, 1.0e+12));
     return gStatus_;
   }
 
@@ -94,17 +88,17 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
 
   // all entries of the criteria vector are initialized to Converged status
   std::vector<NOX::StatusTest::StatusType> criteria =
-      std::vector<NOX::StatusTest::StatusType>(3,NOX::StatusTest::Converged);
+      std::vector<NOX::StatusTest::StatusType>(3, NOX::StatusTest::Converged);
 
   // get the solution vector of the last step
-  const NOX::Abstract::Vector& xOld =
-      problem.getPreviousSolutionGroup().getX();
+  const NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
 
   // get the root mean square from the underlying interface classes
-  normWRMS_ = nlnGrp->GetSolutionUpdateRMS(xOld,atol_,rtol_,checkList_,disable_implicit_weighting_);
+  normWRMS_ =
+      nlnGrp->GetSolutionUpdateRMS(xOld, atol_, rtol_, checkList_, disable_implicit_weighting_);
 
   // loop over all quantities
-  for (std::size_t i=0;i<nChecks_;++i)
+  for (std::size_t i = 0; i < nChecks_; ++i)
   {
     // do the weighting by the given factor
     normWRMS_->at(i) *= factor_.at(i);
@@ -127,11 +121,11 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
   {
     printCriteria2Info_ = true;
     computedStepSize_ =
-      (dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem))->getStepSize();
+        (dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem))->getStepSize();
 
     if (computedStepSize_ < alpha_)
     {
-      status_.assign(nChecks_,NOX::StatusTest::Unconverged);
+      status_.assign(nChecks_, NOX::StatusTest::Unconverged);
       criteria[1] = NOX::StatusTest::Unconverged;
     }
   }
@@ -150,29 +144,33 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
         if (p.sublist("Direction").sublist("Newton").isSublist("Linear Solver"))
           if (p.sublist("Direction").sublist("Newton").sublist("Linear Solver").isSublist("Output"))
           {
-            const Teuchos::ParameterList& list = p.sublist("Direction").
-                sublist("Newton").sublist("Linear Solver").sublist("Output");
+            const Teuchos::ParameterList& list =
+                p.sublist("Direction").sublist("Newton").sublist("Linear Solver").sublist("Output");
             if (Teuchos::isParameterType<double>(list, "Achieved Tolerance"))
               printCriteria3Info_ = true;
           }
 
   if (printCriteria3Info_)
   {
-    achievedTol_ = const_cast<Teuchos::ParameterList&>(problem.getList()).
-      sublist("Direction").sublist("Newton").sublist("Linear Solver").
-      sublist("Output").get("Achieved Tolerance", -1.0);
+    achievedTol_ = const_cast<Teuchos::ParameterList&>(problem.getList())
+                       .sublist("Direction")
+                       .sublist("Newton")
+                       .sublist("Linear Solver")
+                       .sublist("Output")
+                       .get("Achieved Tolerance", -1.0);
     if (achievedTol_ > beta_)
     {
-      criteria[2] =  NOX::StatusTest::Unconverged;
-      status_.assign(nChecks_,NOX::StatusTest::Unconverged);
+      criteria[2] = NOX::StatusTest::Unconverged;
+      status_.assign(nChecks_, NOX::StatusTest::Unconverged);
     }
   }
 
   // Determine global status of test
-  gStatus_ =   ((criteria[0] == NOX::StatusTest::Converged) and
-                (criteria[1] == NOX::StatusTest::Converged) and
-                (criteria[2] == NOX::StatusTest::Converged))
-                ? NOX::StatusTest::Converged : NOX::StatusTest::Unconverged;
+  gStatus_ = ((criteria[0] == NOX::StatusTest::Converged) and
+                 (criteria[1] == NOX::StatusTest::Converged) and
+                 (criteria[2] == NOX::StatusTest::Converged))
+                 ? NOX::StatusTest::Converged
+                 : NOX::StatusTest::Unconverged;
 
   return gStatus_;
 }
@@ -182,9 +180,8 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
 bool NOX::NLN::StatusTest::NormWRMS::IsQuantity(
     const NOX::NLN::StatusTest::QuantityType& qType) const
 {
-  for (std::size_t i=0;i<nChecks_;++i)
-    if (checkList_[i]==qType)
-      return true;
+  for (std::size_t i = 0; i < nChecks_; ++i)
+    if (checkList_[i] == qType) return true;
 
   return false;
 }
@@ -194,9 +191,8 @@ bool NOX::NLN::StatusTest::NormWRMS::IsQuantity(
 double NOX::NLN::StatusTest::NormWRMS::GetAbsoluteTolerance(
     const NOX::NLN::StatusTest::QuantityType& qType) const
 {
-  for (std::size_t i=0;i<nChecks_;++i)
-    if (checkList_[i]==qType)
-      return atol_[i];
+  for (std::size_t i = 0; i < nChecks_; ++i)
+    if (checkList_[i] == qType) return atol_[i];
 
   return -1.0;
 }
@@ -206,50 +202,46 @@ double NOX::NLN::StatusTest::NormWRMS::GetAbsoluteTolerance(
 double NOX::NLN::StatusTest::NormWRMS::GetRelativeTolerance(
     const NOX::NLN::StatusTest::QuantityType& qType) const
 {
-  for (std::size_t i=0;i<nChecks_;++i)
-    if (checkList_[i]==qType)
-      return rtol_[i];
+  for (std::size_t i = 0; i < nChecks_; ++i)
+    if (checkList_[i] == qType) return rtol_[i];
 
   return -1.0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::getStatus() const
-{
-  return gStatus_;
-}
+NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::getStatus() const { return gStatus_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::StatusTest::NormWRMS::print(
-    std::ostream& stream,
-    int indent) const
+std::ostream& NOX::NLN::StatusTest::NormWRMS::print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
-  indent_string.assign(indent,' ');
+  indent_string.assign(indent, ' ');
 
-  for (std::size_t i=0;i<nChecks_;++i)
+  for (std::size_t i = 0; i < nChecks_; ++i)
   {
     stream << indent_string;
     stream << status_[i];
     stream << QuantityType2String(checkList_[i]) << "-";
-    stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3)
-           << " < " << NOX::Utils::sciformat(tol_[i], 3);
+    stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3) << " < "
+           << NOX::Utils::sciformat(tol_[i], 3);
     stream << std::endl;
   }
-  if (printCriteria2Info_) {
+  if (printCriteria2Info_)
+  {
     stream << indent_string;
     stream << std::setw(13) << " ";
     stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3)
            << " >= " << NOX::Utils::sciformat(alpha_, 3) << ")";
     stream << std::endl;
   }
-  if (printCriteria3Info_) {
+  if (printCriteria3Info_)
+  {
     stream << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3)
-           << " < " << NOX::Utils::sciformat(beta_, 3) << ")";
+    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3) << " < "
+           << NOX::Utils::sciformat(beta_, 3) << ")";
     stream << std::endl;
   }
   return stream;

@@ -22,304 +22,288 @@
 #include <NOX_Abstract_Vector.H>
 
 // forward declaration ...
-namespace LINALG {
+namespace LINALG
+{
   class SparseOperator;
   class SparseMatrix;
-} // namespace LINALG
-namespace STR {
-namespace IMPLICIT {
-  class Generic : public Integrator
+}  // namespace LINALG
+namespace STR
+{
+  namespace IMPLICIT
   {
-  public:
-    //! constructor
-    Generic();
+    class Generic : public Integrator
+    {
+     public:
+      //! constructor
+      Generic();
 
-    //! destructor
-    virtual ~Generic() {};
+      //! destructor
+      virtual ~Generic(){};
 
-    //! Setup (has to be implemented by the derived classes)
-    virtual void Setup();
+      //! Setup (has to be implemented by the derived classes)
+      virtual void Setup();
 
-    //! Set state variables (derived)
-    virtual void SetState(const Epetra_Vector& x) = 0;
+      //! Set state variables (derived)
+      virtual void SetState(const Epetra_Vector& x) = 0;
 
-    /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
-     *
-     * \remark The remaining contributions have been considered in the corresponding model
-     *         evaluators. This is due to the fact, that some models use a different
-     *         time integration scheme for their terms (e.g. GenAlpha for the structure
-     *         and OST for the remaining things). */
-    virtual void AddViscoMassContributions(Epetra_Vector& f) const = 0;
+      /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
+       *
+       * \remark The remaining contributions have been considered in the corresponding model
+       *         evaluators. This is due to the fact, that some models use a different
+       *         time integration scheme for their terms (e.g. GenAlpha for the structure
+       *         and OST for the remaining things). */
+      virtual void AddViscoMassContributions(Epetra_Vector& f) const = 0;
 
-    /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
-     *
-     * \remark The remaining blocks have been considered in the corresponding model
-     *         evaluators. This is due to the fact, that some models use a different
-     *         time integration scheme for their terms (e.g. GenAlpha for the structure
-     *         and OST for the remaining things). Furthermore, constraint/Lagrange
-     *         multiplier blocks need no scaling anyway. */
-    virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const = 0;
+      /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+       *
+       * \remark The remaining blocks have been considered in the corresponding model
+       *         evaluators. This is due to the fact, that some models use a different
+       *         time integration scheme for their terms (e.g. GenAlpha for the structure
+       *         and OST for the remaining things). Furthermore, constraint/Lagrange
+       *         multiplier blocks need no scaling anyway. */
+      virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const = 0;
 
-    //! derived
-    virtual bool ApplyForce(const Epetra_Vector& x,
-        Epetra_Vector& f) = 0;
+      //! derived
+      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
 
-    /*! \brief Apply the stiffness only
-     *
-     * Normally this one is unnecessary, since it makes more sense
-     * to evaluate the stiffness and right hand side at once, because of
-     * the lower computational overhead. */
-    virtual bool ApplyStiff(
-        const Epetra_Vector& x,
-        LINALG::SparseOperator& jac) = 0;
+      /*! \brief Apply the stiffness only
+       *
+       * Normally this one is unnecessary, since it makes more sense
+       * to evaluate the stiffness and right hand side at once, because of
+       * the lower computational overhead. */
+      virtual bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) = 0;
 
-    /*! \brief Apply force and stiff at once
-     *
-     *  Only one loop over all elements. Especially in the contact case,
-     *  the difference between this call and first call ApplyForce and
-     *  then ApplyStiff is mentionable because of the projection operations. */
-    virtual bool ApplyForceStiff(
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac) = 0;
+      /*! \brief Apply force and stiff at once
+       *
+       *  Only one loop over all elements. Especially in the contact case,
+       *  the difference between this call and first call ApplyForce and
+       *  then ApplyStiff is mentionable because of the projection operations. */
+      virtual bool ApplyForceStiff(
+          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) = 0;
 
-    bool ApplyCorrectionSystem(
-        const enum NOX::NLN::CorrectionType type,
-        const std::vector<INPAR::STR::ModelType>& constraint_models,
-        const Epetra_Vector& x,
-        Epetra_Vector& f,
-        LINALG::SparseOperator& jac );
+      bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+          const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+          Epetra_Vector& f, LINALG::SparseOperator& jac);
 
-    /*! \brief Remove contributions from the structural right-hand side stemming
-     *  from any condensation operations (typical example is contact)
-     *
-     *  \author hiermeier \date 03/18 */
-    void RemoveCondensedContributionsFromRhs(
-        Epetra_Vector& rhs ) const;
+      /*! \brief Remove contributions from the structural right-hand side stemming
+       *  from any condensation operations (typical example is contact)
+       *
+       *  \author hiermeier \date 03/18 */
+      void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
 
-    //! derived
-    virtual bool AssembleForce( Epetra_Vector& f,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const = 0;
+      //! derived
+      virtual bool AssembleForce(Epetra_Vector& f,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const = 0;
 
-    //! derived
-    virtual bool AssembleJac( LINALG::SparseOperator& jac,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL ) const {return false;};
+      //! derived
+      virtual bool AssembleJac(LINALG::SparseOperator& jac,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const
+      {
+        return false;
+      };
 
-    //! derived
-    virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
-        const bool& forced_writerestart) const = 0;
+      //! derived
+      virtual void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
-    //! derived
-    virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
+      //! derived
+      virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
 
-    /*! \brief Calculate characteristic/reference norms for forces
-     *
-     *  The reference norms are used to scale the calculated iterative
-     *  displacement norm and/or the residual force norm. For this
-     *  purpose we only need the right order of magnitude, so we don't
-     *  mind evaluating the corresponding norms at possibly different
-     *  points within the time-step (end point, generalized midpoint). */
-    virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) = 0;
+      /*! \brief Calculate characteristic/reference norms for forces
+       *
+       *  The reference norms are used to scale the calculated iterative
+       *  displacement norm and/or the residual force norm. For this
+       *  purpose we only need the right order of magnitude, so we don't
+       *  mind evaluating the corresponding norms at possibly different
+       *  points within the time-step (end point, generalized midpoint). */
+      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) = 0;
 
-    //! return time integration factor
-    virtual double GetIntParam() const = 0;
+      //! return time integration factor
+      virtual double GetIntParam() const = 0;
 
-    //! return the default step length of the used NOX::LineSearch method
-    double GetDefaultStepLength() const;
+      //! return the default step length of the used NOX::LineSearch method
+      double GetDefaultStepLength() const;
 
-    //! @name Monolithic update routines
-    //! @{
-    //! things that should be done before updating (derived)
-    virtual void PreUpdate() {/* do nothing for now */};
+      //! @name Monolithic update routines
+      //! @{
+      //! things that should be done before updating (derived)
+      virtual void PreUpdate(){/* do nothing for now */};
 
-    //! Update configuration after time step (derived)
-    virtual void UpdateStepState() = 0;
+      //! Update configuration after time step (derived)
+      virtual void UpdateStepState() = 0;
 
-    //! Update everything on element level after time step and after output (derived)
-    virtual void UpdateStepElement() = 0;
+      //! Update everything on element level after time step and after output (derived)
+      virtual void UpdateStepElement() = 0;
 
-    //! things that should be done after updating (derived)
-    virtual void PostUpdate() {/* do nothing for now */};
+      //! things that should be done after updating (derived)
+      virtual void PostUpdate(){/* do nothing for now */};
 
-    //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
-    virtual void UpdateConstantStateContributions() {/* do nothing for some integrators */};
-    //! @}
+      //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
+      virtual void UpdateConstantStateContributions(){/* do nothing for some integrators */};
+      //! @}
 
-    //! @name Predictor routines (dependent on the implicit integration scheme)
-    //! @{
-    /*! Predict constant displacements, however the velocities
-     *  and accelerations are consistent to the time integration
-     *  if the constant displacements are taken as correct displacement
-     *  solution.
-     *  This method has to be implemented by the individual time
-     *  integrator. */
-    virtual void PredictConstDisConsistVelAcc(
-        Epetra_Vector& disnp,
-        Epetra_Vector& velnp,
-        Epetra_Vector& accnp) const = 0;
+      //! @name Predictor routines (dependent on the implicit integration scheme)
+      //! @{
+      /*! Predict constant displacements, however the velocities
+       *  and accelerations are consistent to the time integration
+       *  if the constant displacements are taken as correct displacement
+       *  solution.
+       *  This method has to be implemented by the individual time
+       *  integrator. */
+      virtual void PredictConstDisConsistVelAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
 
-    /*! Predict displacements based on the assumption of constant
-     *  velocities. Calculate consistent velocities and accelerations
-     *  afterwards.
-     *  This method has to be implemented by the individual time
-     *  integrator. */
-    virtual bool PredictConstVelConsistAcc(
-        Epetra_Vector& disnp,
-        Epetra_Vector& velnp,
-        Epetra_Vector& accnp) const = 0;
+      /*! Predict displacements based on the assumption of constant
+       *  velocities. Calculate consistent velocities and accelerations
+       *  afterwards.
+       *  This method has to be implemented by the individual time
+       *  integrator. */
+      virtual bool PredictConstVelConsistAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
 
-    /*! Predict displacements based on the assumption of constant
-     *  accelerations. Calculate consistent velocities and accelerations
-     *  afterwards.
-     *  This method has to be implemented by the individual time
-     *  integrator. */
-    virtual bool PredictConstAcc(
-        Epetra_Vector& disnp,
-        Epetra_Vector& velnp,
-        Epetra_Vector& accnp) const = 0;
-    //! @}
+      /*! Predict displacements based on the assumption of constant
+       *  accelerations. Calculate consistent velocities and accelerations
+       *  afterwards.
+       *  This method has to be implemented by the individual time
+       *  integrator. */
+      virtual bool PredictConstAcc(
+          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const = 0;
+      //! @}
 
-    //! Set the predictor state flag
-    void SetIsPredictorState(const bool& ispredictor_state);
+      //! Set the predictor state flag
+      void SetIsPredictorState(const bool& ispredictor_state);
 
-    //! Get the predictor state flag
-    const bool& IsPredictorState() const;
+      //! Get the predictor state flag
+      const bool& IsPredictorState() const;
 
-    //! compute the scaling operator for element based scaling using PTC
-    void ComputeJacobianContributionsFromElementLevelForPTC(
-        Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
+      //! compute the scaling operator for element based scaling using PTC
+      void ComputeJacobianContributionsFromElementLevelForPTC(
+          Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
-    /** \brief Print jacbian into text file for later use in MATLAB
-     *
-     *  \author hiermeier \date 06/17 */
-    void PrintJacobianInMatlabFormat(
-        const NOX::NLN::Group& curr_grp ) const;
+      /** \brief Print jacbian into text file for later use in MATLAB
+       *
+       *  \author hiermeier \date 06/17 */
+      void PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const;
 
-    Teuchos::ParameterList& GetNoxParams();
+      Teuchos::ParameterList& GetNoxParams();
 
-  protected:
-    //! reset the time step dependent parameters for the element evaluation [derived]
-    virtual void ResetEvalParams();
+     protected:
+      //! reset the time step dependent parameters for the element evaluation [derived]
+      virtual void ResetEvalParams();
 
-  private:
-    /*! \brief Flag indicating if the current state is the predictor state.
-     *
-     *  In the evaluation of the predictor state the SetState() routine is
-     *  not allowed to calculate the consistent velocities and accelerations
-     *  as usual. This is due to the fact, that the predictor might lead to
-     *  velocities and accelerations that are not consistently computed from
-     *  the displacements based on the time integration scheme. Instead we
-     *  leave the predictor state untouched during the first evaluation. */
-    bool ispredictor_state_;
+     private:
+      /*! \brief Flag indicating if the current state is the predictor state.
+       *
+       *  In the evaluation of the predictor state the SetState() routine is
+       *  not allowed to calculate the consistent velocities and accelerations
+       *  as usual. This is due to the fact, that the predictor might lead to
+       *  velocities and accelerations that are not consistently computed from
+       *  the displacements based on the time integration scheme. Instead we
+       *  leave the predictor state untouched during the first evaluation. */
+      bool ispredictor_state_;
 
-  };  // class Generic
-} // namespace IMPLICIT
-} // namespace STR
-namespace NOX {
-namespace NLN {
-namespace PrePostOp {
-namespace IMPLICIT {
-  /*! \brief Implicit time integration helper class
-   *
-   *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
-   *  and is used to modify the computeX() routine of the given NOX::NLN::Group.
-   *  It's called by the wrapper class NOX::NLN::GROUP::PrePostOperator.
-   *
-   *  \author Michael Hiermeier */
-  class Generic : public NOX::NLN::Abstract::PrePostOperator
+    };  // class Generic
+  }     // namespace IMPLICIT
+}  // namespace STR
+namespace NOX
+{
+  namespace NLN
   {
-  public:
-    //! constructor
-    Generic( const ::STR::IMPLICIT::Generic& implicit )
-        : impl_(implicit),
-          default_step_(implicit.GetDefaultStepLength())
-    { /* empty */ };
+    namespace PrePostOp
+    {
+      namespace IMPLICIT
+      {
+        /*! \brief Implicit time integration helper class
+         *
+         *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
+         *  and is used to modify the computeX() routine of the given NOX::NLN::Group.
+         *  It's called by the wrapper class NOX::NLN::GROUP::PrePostOperator.
+         *
+         *  \author Michael Hiermeier */
+        class Generic : public NOX::NLN::Abstract::PrePostOperator
+        {
+         public:
+          //! constructor
+          Generic(const ::STR::IMPLICIT::Generic& implicit)
+              : impl_(implicit), default_step_(implicit.GetDefaultStepLength()){/* empty */};
 
-    //! destructor
-    virtual ~Generic() {};
+          //! destructor
+          virtual ~Generic(){};
 
-    /*! \brief Derived function, which is called at the very beginning of a call to
-     *  NOX::NLN::Group::computeX()
-     *
-     *  This method is used to get access to the current direction vector and
-     *  to augment/modify the direction vector before the actual solution update is
-     *  performed. One possible scenario is the CONTACT::AUG::STEEPESTASCENT::Strategy,
-     *  where we calculate the Lagrange multiplier increment in a post-processing
-     *  step.
-     *
-     *  \author hiermeier \date 03/17 */
-    virtual void runPreComputeX(
-        const NOX::NLN::Group& input_grp,
-        const Epetra_Vector& dir,
-        const double& step,
-        const NOX::NLN::Group& curr_grp);
+          /*! \brief Derived function, which is called at the very beginning of a call to
+           *  NOX::NLN::Group::computeX()
+           *
+           *  This method is used to get access to the current direction vector and
+           *  to augment/modify the direction vector before the actual solution update is
+           *  performed. One possible scenario is the CONTACT::AUG::STEEPESTASCENT::Strategy,
+           *  where we calculate the Lagrange multiplier increment in a post-processing
+           *  step.
+           *
+           *  \author hiermeier \date 03/17 */
+          virtual void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::NLN::Group& curr_grp);
 
-    /*! \brief Derived function, which is called at the end of a call to
-     * NOX::NLN::Group::computeX()
-     *
-     *  This method is used to get access to the current direction vector. The
-     *  direction vector is needed for different internal update routines. Two
-     *  examples on element level are the EAS recovery, since the EAS DoFs are
-     *  condensed and the calculation of the strain increments. The displacement
-     *  increment plays also a role in other condensation approaches, like the
-     *  mortar dual strategies.
-     *
-     *  \author hiermeier \date 07/16 */
-    virtual void runPostComputeX(
-        const NOX::NLN::Group& input_grp,
-        const Epetra_Vector& dir,
-        const double& step,
-        const NOX::NLN::Group& curr_grp);
+          /*! \brief Derived function, which is called at the end of a call to
+           * NOX::NLN::Group::computeX()
+           *
+           *  This method is used to get access to the current direction vector. The
+           *  direction vector is needed for different internal update routines. Two
+           *  examples on element level are the EAS recovery, since the EAS DoFs are
+           *  condensed and the calculation of the strain increments. The displacement
+           *  increment plays also a role in other condensation approaches, like the
+           *  mortar dual strategies.
+           *
+           *  \author hiermeier \date 07/16 */
+          virtual void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::NLN::Group& curr_grp);
 
-    /*! \brief Derived function, which is called at the very end of a call to
-     *  NOX::Solver::Generic::step()
-     *
-     *  This method gives you the opportunity to do something in the end of
-     *  a successful or unsuccessful nonlinear solver step. It is called after
-     *  a possible LineSearch or other globalization method has been used.
-     *
-     *  \author hiermeier \date 03/17 */
-    virtual void runPostIterate( const NOX::Solver::Generic& solver );
+          /*! \brief Derived function, which is called at the very end of a call to
+           *  NOX::Solver::Generic::step()
+           *
+           *  This method gives you the opportunity to do something in the end of
+           *  a successful or unsuccessful nonlinear solver step. It is called after
+           *  a possible LineSearch or other globalization method has been used.
+           *
+           *  \author hiermeier \date 03/17 */
+          virtual void runPostIterate(const NOX::Solver::Generic& solver);
 
-    /*! \brief Derived function, which is called at the very end of a call to
-     *  NOX::NLN::Group::applyJacobianInverse()
-     *
-     *  This method gives you the opportunity to do something in the end of
-     *  a successful or unsuccessful linear solver attempt.
-     *
-     *  \note The result vector is the actual result vector of the internal
-     *  linear solver and, accordingly, due to the used sign convention in NOX,
-     *  the NEGATIVE direction vector. The sign will be changed again in the
-     *  NOX::Epetra::Group::computeNewton method.
-     *
-     *  \param rhs    : read-only access to the rhs vector
-     *  \param result : full access to the result vector
-     *  \param xold   : read-only access to the old state vector
-     *  \param grp    : read only access to the group object
-     *
-     *  \author hiermeier \date 12/17 */
-    virtual void runPostApplyJacobianInverse(
-        const NOX::Abstract::Vector& rhs,
-        NOX::Abstract::Vector& result,
-        const NOX::Abstract::Vector& xold,
-        const NOX::NLN::Group& grp );
+          /*! \brief Derived function, which is called at the very end of a call to
+           *  NOX::NLN::Group::applyJacobianInverse()
+           *
+           *  This method gives you the opportunity to do something in the end of
+           *  a successful or unsuccessful linear solver attempt.
+           *
+           *  \note The result vector is the actual result vector of the internal
+           *  linear solver and, accordingly, due to the used sign convention in NOX,
+           *  the NEGATIVE direction vector. The sign will be changed again in the
+           *  NOX::Epetra::Group::computeNewton method.
+           *
+           *  \param rhs    : read-only access to the rhs vector
+           *  \param result : full access to the result vector
+           *  \param xold   : read-only access to the old state vector
+           *  \param grp    : read only access to the group object
+           *
+           *  \author hiermeier \date 12/17 */
+          virtual void runPostApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
+              NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
+              const NOX::NLN::Group& grp);
 
-  private:
-    Epetra_Vector& convert2EpetraVector( NOX::Abstract::Vector& vec ) const;
-    const Epetra_Vector& convert2EpetraVector( const NOX::Abstract::Vector& vec ) const;
+         private:
+          Epetra_Vector& convert2EpetraVector(NOX::Abstract::Vector& vec) const;
+          const Epetra_Vector& convert2EpetraVector(const NOX::Abstract::Vector& vec) const;
 
-  private:
-    //! reference to the STR::IMPLICIT::Generic object (read-only)
-    const ::STR::IMPLICIT::Generic& impl_;
+         private:
+          //! reference to the STR::IMPLICIT::Generic object (read-only)
+          const ::STR::IMPLICIT::Generic& impl_;
 
-    //! default step length
-    const double default_step_;
+          //! default step length
+          const double default_step_;
 
-  }; // class Generic
-} // namespace IMPLICIT
-} // namespace PrePostOp
-} // namespace NLN
-} // namespace NOX
+        };  // class Generic
+      }     // namespace IMPLICIT
+    }       // namespace PrePostOp
+  }         // namespace NLN
+}  // namespace NOX
 
 
 #endif /* STR_IMPL_GENERIC_H_ */

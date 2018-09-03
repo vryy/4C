@@ -2,7 +2,8 @@
 /*!
  \file fluidporo_viscosity_law.H
 
- \brief calculation classes for evaluation of constitutive relation for viscosity for multiphase porous flow
+ \brief calculation classes for evaluation of constitutive relation for viscosity for multiphase
+ porous flow
 
    \level 3
 
@@ -18,98 +19,78 @@
 
 namespace MAT
 {
-namespace PAR
-{
-  //! interface class for generic viscosity law
-  class FluidPoroViscosityLaw : public Parameter
+  namespace PAR
   {
+    //! interface class for generic viscosity law
+    class FluidPoroViscosityLaw : public Parameter
+    {
+     public:
+      /// standard constructor
+      explicit FluidPoroViscosityLaw(Teuchos::RCP<MAT::PAR::Material> matdata, bool constviscosity)
+          : Parameter(matdata), constviscosity_(constviscosity){};
 
-  public:
+      /// destructor
+      virtual ~FluidPoroViscosityLaw() { ; }
 
-    /// standard constructor
-    explicit FluidPoroViscosityLaw(
-      Teuchos::RCP<MAT::PAR::Material> matdata,
-      bool constviscosity
-      ):Parameter(matdata),
-      constviscosity_(constviscosity)
-    {};
+      // get viscosity
+      virtual double GetViscosity(const double abspressgrad) const = 0;
 
-    /// destructor
-    virtual ~FluidPoroViscosityLaw() { ; }
+      // get derivative of viscosity wrt |grad(p)|
+      virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const = 0;
 
-    // get viscosity
-    virtual double GetViscosity(const double abspressgrad) const=0;
+      // check for constant viscosity
+      bool HasConstantViscosity() const { return constviscosity_; }
 
-    // get derivative of viscosity wrt |grad(p)|
-    virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const=0;
+      /// factory method
+      static MAT::PAR::FluidPoroViscosityLaw* CreateViscosityLaw(int matID);
 
-    // check for constant viscosity
-    bool HasConstantViscosity() const
-    {return constviscosity_;}
+     private:
+      const bool constviscosity_;
+    };
 
-    /// factory method
-    static MAT::PAR::FluidPoroViscosityLaw* CreateViscosityLaw(int matID);
+    //! class for constant viscosity law
+    class FluidPoroViscosityLawConstant : public FluidPoroViscosityLaw
+    {
+     public:
+      /// standard constructor
+      explicit FluidPoroViscosityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-  private:
-    const bool constviscosity_;
+      /// destructor
+      virtual ~FluidPoroViscosityLawConstant() { ; }
 
-  };
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
 
-  //! class for constant viscosity law
-   class FluidPoroViscosityLawConstant : public FluidPoroViscosityLaw
-   {
+      // get viscosity
+      double GetViscosity(const double abspressgrad) const { return viscosity_; };
 
-   public:
+      // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
+      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const { return 0.0; };
 
-     /// standard constructor
-     explicit FluidPoroViscosityLawConstant(
-       Teuchos::RCP<MAT::PAR::Material> matdata
-       );
+     private:
+      /// @name material parameters
+      //@{
+      /// viscosity (constant in this case)
+      const double viscosity_;
+      //@}
+    };
 
-     /// destructor
-     virtual ~FluidPoroViscosityLawConstant() { ; }
-
-     /// create material instance of matching type with my parameters
-     virtual Teuchos::RCP<MAT::Material> CreateMaterial()
-            {return Teuchos::null;};
-
-     // get viscosity
-     double GetViscosity(const double abspressgrad) const
-     {return viscosity_;};
-
-     // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
-     double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const
-     {return 0.0;};
-
-   private:
-    /// @name material parameters
-    //@{
-    /// viscosity (constant in this case)
-    const double viscosity_;
-    //@}
-
-   };
-
-   //! class for viscosity law modelling cell adherence from
-   // G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
-   // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484, 2014.
-   // visc = visc0 / ((1 - xi)*(1 - psi / | grad(pressure) |) * heaviside(1 - psi / | grad(pressure) |) + xi)
+    //! class for viscosity law modelling cell adherence from
+    // G. Sciume, William G. Gray, F. Hussain, M. Ferrari, P. Decuzzi, and B. A. Schrefler.
+    // Three phase flow dynamics in tumor growth. Computational Mechanics, 53:465–484, 2014.
+    // visc = visc0 / ((1 - xi)*(1 - psi / | grad(pressure) |) * heaviside(1 - psi / |
+    // grad(pressure) |) + xi)
     class FluidPoroViscosityLawCellAdherence : public FluidPoroViscosityLaw
     {
-
-    public:
-
+     public:
       /// standard constructor
-      explicit FluidPoroViscosityLawCellAdherence(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~FluidPoroViscosityLawCellAdherence() { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial()
-             {return Teuchos::null;};
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
 
       // get viscosity
       double GetViscosity(const double abspressgrad) const;
@@ -117,22 +98,21 @@ namespace PAR
       // get derivative of viscosity wrt |grad(p)|
       virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const;
 
-    private:
-     /// @name material parameters
-     //@{
+     private:
+      /// @name material parameters
+      //@{
       /// viscosity 0
       const double visc0_;
-     /// xi
-     const double xi_;
-     /// psi
-     const double psi_;
-     //@}
-
+      /// xi
+      const double xi_;
+      /// psi
+      const double psi_;
+      //@}
     };
 
 
-}
-}
+  }  // namespace PAR
+}  // namespace MAT
 
 
 

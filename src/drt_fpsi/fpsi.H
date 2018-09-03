@@ -20,12 +20,9 @@ namespace FPSI
 {
   class FPSI_Base : public ADAPTER::AlgorithmBase
   {
-
-  public:
-
+   public:
     /// constructor of base class
-    FPSI_Base(const Epetra_Comm& comm,
-              const Teuchos::ParameterList& fpsidynparams);
+    FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
 
     /// destructor of base class
     virtual ~FPSI_Base(){};
@@ -47,8 +44,7 @@ namespace FPSI
 
     /// redistribute FPSI interface if running on parallel
     void RedistributeInterface();
-
   };
-}
+}  // namespace FPSI
 
 #endif

@@ -19,22 +19,17 @@
 
 namespace MAT
 {
-
   namespace PAR
   {
-
-  class LubricationLaw;
+    class LubricationLaw;
 
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
     class LubricationMat : public Parameter
     {
-    public:
-
+     public:
       /// standard constructor
-      LubricationMat(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~LubricationMat() { ; }
@@ -47,7 +42,7 @@ namespace MAT
 
       //@}
 
-      //implementation of lubrication law
+      // implementation of lubrication law
       LubricationLaw* lubricationlaw_;
 
       /// create material instance of matching type with my parameters
@@ -55,29 +50,26 @@ namespace MAT
 
     };  // class Lubrication
 
-  } // namespace PAR
+  }  // namespace PAR
 
-class LubricationMatType : public DRT::ParObjectType
-{
-public:
+  class LubricationMatType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "LubricationMatType"; }
 
-  std::string Name() const { return "LubricationMatType"; }
+    static LubricationMatType& Instance() { return instance_; };
 
-  static LubricationMatType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static LubricationMatType instance_;
-};
+   private:
+    static LubricationMatType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
   class LubricationMat : public Material
   {
-  public:
-
+   public:
     /// construct empty material object
     LubricationMat();
 
@@ -92,7 +84,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return LubricationMatType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return LubricationMatType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -126,11 +121,11 @@ private:
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_lubrication; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new LubricationMat( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new LubricationMat(*this)); }
 
     /// compute current viscosity
-    double ComputeViscosity( const double press           ///< (i) lubrication pressure
-                           ) ;
+    double ComputeViscosity(const double press  ///< (i) lubrication pressure
+    );
 
     //! evaluate constitutive relation for viscosity and compute derivatives
     double ComputeViscosityDeriv(const double press);
@@ -141,14 +136,12 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-  private:
-
+   private:
     /// my material parameters
     MAT::PAR::LubricationMat* params_;
-
   };
 
-}
+}  // namespace MAT
 
 
 #endif /* SRC_DRT_MAT_LUBRICATION_MAT_H_ */

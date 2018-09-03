@@ -29,7 +29,7 @@
  | constructor                                             sfuchs 06/17 |
  *----------------------------------------------------------------------*/
 ParticleSPHRenderingResultTest::ParticleSPHRenderingResultTest(PARTICLE::Rendering& rendering)
-  : DRT::ResultTest("PARTICLE_RENDERING")
+    : DRT::ResultTest("PARTICLE_RENDERING")
 {
   discret_ = rendering.GetRenderingDiscret();
 
@@ -40,29 +40,29 @@ ParticleSPHRenderingResultTest::ParticleSPHRenderingResultTest(PARTICLE::Renderi
   pressure_ = rendering.GetRenderingPressure();
 
   return;
-} // ParticleSPHRenderingResultTest::ParticleSPHRenderingResultTest
+}  // ParticleSPHRenderingResultTest::ParticleSPHRenderingResultTest
 
 /*----------------------------------------------------------------------*
  |                                                         sfuchs 06/17 |
  *----------------------------------------------------------------------*/
-void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ParticleSPHRenderingResultTest::TestNode(
+    DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
-  res.ExtractString("DIS",dis);
-  if (dis != discret_->Name())
-    return;
+  res.ExtractString("DIS", dis);
+  if (dis != discret_->Name()) return;
 
   int node;
-  res.ExtractInt("NODE",node);
+  res.ExtractInt("NODE", node);
 
   int havenode(discret_->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  discret_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  discret_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
 
-  if (isnodeofanybody==0)
+  if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s",node,discret_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s", node, discret_->Name().c_str());
   }
   else
   {
@@ -71,13 +71,12 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
       const DRT::Node* actnode = discret_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != discret_->Comm().MyPID())
-        return;
+      if (actnode->Owner() != discret_->Comm().MyPID()) return;
 
       std::string position;
-      res.ExtractString("QUANTITY",position);
+      res.ExtractString("QUANTITY", position);
       bool unknownpos = true;  // make sure the result value std::string can be handled
-      double result = 0.0;  // will hold the actual result of run
+      double result = 0.0;     // will hold the actual result of run
 
       // test velocities
       if (vel_ != Teuchos::null)
@@ -94,9 +93,10 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velnpmap.LID(discret_->Dof(0,actnode,idx));
+          int lid = velnpmap.LID(discret_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*vel_)[lid];
         }
       }
@@ -116,9 +116,10 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = accnpmap.LID(discret_->Dof(0,actnode,idx));
+          int lid = accnpmap.LID(discret_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*acc_)[lid];
         }
       }
@@ -138,9 +139,10 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velmodnpmap.LID(discret_->Dof(0,actnode,idx));
+          int lid = velmodnpmap.LID(discret_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
+                actnode->Id());
           result = (*velmod_)[lid];
         }
       }
@@ -150,8 +152,7 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
       {
         const Epetra_BlockMap& densitymap = density_->Map();
         int idx = -1;
-        if (position == "density")
-          idx = 0;
+        if (position == "density") idx = 0;
 
         if (idx >= 0)
         {
@@ -169,8 +170,7 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
       {
         const Epetra_BlockMap& pressuremap = pressure_->Map();
         int idx = -1;
-        if (position == "pressure")
-          idx = 0;
+        if (position == "pressure") idx = 0;
 
         if (idx >= 0)
         {
@@ -184,8 +184,7 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
       }
 
       // catch position std::strings, which are not handled by particle result test
-      if (unknownpos)
-        dserror("Quantity '%s' not supported in particle testing", position.c_str());
+      if (unknownpos) dserror("Quantity '%s' not supported in particle testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -195,4 +194,4 @@ void ParticleSPHRenderingResultTest::TestNode(DRT::INPUT::LineDefinition& res, i
   }
 
   return;
-} // ParticleSPHRenderingResultTest::TestNode
+}  // ParticleSPHRenderingResultTest::TestNode

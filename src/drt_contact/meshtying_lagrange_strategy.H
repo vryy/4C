@@ -19,38 +19,30 @@
 
 namespace CONTACT
 {
+  /*!
+   \brief Meshtying solving strategy with (standard/dual) Lagrangian multipliers.
 
-/*!
- \brief Meshtying solving strategy with (standard/dual) Lagrangian multipliers.
+   This is a specialization of the abstract meshtying algorithm as defined in MtAbstractStrategy.
+   For a more general documentation of the involved functions refer to MtAbstractStrategy.
 
- This is a specialization of the abstract meshtying algorithm as defined in MtAbstractStrategy.
- For a more general documentation of the involved functions refer to MtAbstractStrategy.
-
- \author popp (popp@lnm.mw.tum.de)
- */
-class MtLagrangeStrategy : public MtAbstractStrategy
-{
-  public:
-
+   \author popp (popp@lnm.mw.tum.de)
+   */
+  class MtLagrangeStrategy : public MtAbstractStrategy
+  {
+   public:
     /*!
     \brief Standard Constructor
 
     */
-    MtLagrangeStrategy(
-        const Epetra_Map* DofRowMap,
-        const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-        int dim,
-        Teuchos::RCP<Epetra_Comm> comm,
-        double alphaf,
-        int maxdof);
+    MtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
+        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
 
     */
-    virtual ~MtLagrangeStrategy() {};
+    virtual ~MtLagrangeStrategy(){};
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -86,7 +78,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
 
     */
     void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-                           Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
     \brief Build 2x2 saddle point system
@@ -100,18 +92,28 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
-    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs);
+    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
+        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
+        Teuchos::RCP<Epetra_Vector>& blockrhs);
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
     \param sold (in): the displacement dof solution increment (associated with displacement dofs)
-    \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution vector of the full merged linear system)
+    \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
+    vector of the full merged linear system)
     */
-    void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
+    void UpdateDisplacementsAndLMincrements(
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
 
 
-    void EvalConstrRHS(){std::cout << "Warning: The EvalConstrRHS() function is not yet implemented for meshtying." << std::endl; }
+    void EvalConstrRHS()
+    {
+      std::cout << "Warning: The EvalConstrRHS() function is not yet implemented for meshtying."
+                << std::endl;
+    }
 
 
     /*!
@@ -130,9 +132,12 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     // All these functions only have functionality in Penalty meshtying simulations,
     // thus they are defined as dserror here in the case of Lagrange meshtying..
 
-    double ConstraintNorm() const {return 0.0;}
-    void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
-    double InitialPenalty() {return 0.0;}
+    double ConstraintNorm() const { return 0.0; }
+    void InitializeUzawa(
+        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    {
+    }
+    double InitialPenalty() { return 0.0; }
     void ResetPenalty() {}
     void ModifyPenalty() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
@@ -141,23 +146,22 @@ class MtLagrangeStrategy : public MtAbstractStrategy
 
     //@}
 
-  protected:
-
+   protected:
     // don't want = operator and cctor
-    MtLagrangeStrategy operator = (const MtLagrangeStrategy& old);
+    MtLagrangeStrategy operator=(const MtLagrangeStrategy& old);
     MtLagrangeStrategy(const MtLagrangeStrategy& old);
 
     Teuchos::RCP<LINALG::SparseMatrix> conmatrix_;   // constraint matrix for saddle point system
     Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M
 
-    Teuchos::RCP<Epetra_Vector>        fs_;          // slave side effective forces (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<Epetra_Vector> fs_;           // slave side effective forces (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_;  // inverse of Mortar matrix D (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksn_;   // stiffness block K_sn (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksm_;   // stiffness block K_sm (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kss_;   // stiffness block K_ss (needed for LM)
 
-}; // class MtLagrangeStrategy
-} // namespace CONTACT
+  };  // class MtLagrangeStrategy
+}  // namespace CONTACT
 
 
 #endif  // #ifndef MESHTYING_LAGRANGE_STRATEGY_H

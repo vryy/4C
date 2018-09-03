@@ -40,34 +40,29 @@ namespace TOPOPT
   */
   class TopoptFluidCloneStrategy
   {
-  public:
-
+   public:
     /// constructor
-    explicit TopoptFluidCloneStrategy(){}
+    explicit TopoptFluidCloneStrategy() {}
     /// destructor
     virtual ~TopoptFluidCloneStrategy() {}
 
-  protected:
-
+   protected:
     /// determine element type std::string and whether element is copied or not
-    bool DetermineEleType(DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+    bool DetermineEleType(
+        DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     /// set element-specific data (material etc.)
-    void SetElementData(
-        Teuchos::RCP<DRT::Element> newele,
-        DRT::Element* oldele,
-        const int matid,
+    void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
         const bool isnurbs);
 
     /// returns conditions names to be copied (source and target name)
-    std::map<std::string,std::string> ConditionsToCopy();
+    std::map<std::string, std::string> ConditionsToCopy();
 
     /// check for correct material
     void CheckMaterialType(const int matid);
 
-  private:
-
-  }; // class TopoptFluidCloneStrategy
+   private:
+  };  // class TopoptFluidCloneStrategy
 
   /// prints the logo of topology optimization
   void printTopOptLogo();
@@ -79,11 +74,8 @@ namespace TOPOPT
    *    o the filename within the folder starts with the expansion
    *    o optionally the restart number is lowered by 1 (-1 vanishes)
    */
-  std::string modifyFilename(
-      const std::string& filename,
-      const std::string& expansion,
-      bool handleRestart = true,
-      bool firstcall = false);
-}
+  std::string modifyFilename(const std::string& filename, const std::string& expansion,
+      bool handleRestart = true, bool firstcall = false);
+}  // namespace TOPOPT
 
 #endif /* TOPOPT_UTILS_H_ */

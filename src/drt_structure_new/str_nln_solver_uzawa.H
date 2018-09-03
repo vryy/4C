@@ -16,19 +16,22 @@
 
 #include "str_nln_solver_generic.H"
 
-namespace STR {
-namespace NLN {
-namespace SOLVER {
-  // Can be deleted in an upcoming commit, since unnecessary/deprecated   Hiermeier 01/12/2015
-  class Uzawa : public Generic
+namespace STR
+{
+  namespace NLN
   {
-  public:
-    Uzawa() {};
+    namespace SOLVER
+    {
+      // Can be deleted in an upcoming commit, since unnecessary/deprecated   Hiermeier 01/12/2015
+      class Uzawa : public Generic
+      {
+       public:
+        Uzawa(){};
 
-    virtual ~Uzawa() {};
-  };
-} // namespace SOLVER
-} // namespace NLN
-} // namespace STR
+        virtual ~Uzawa(){};
+      };
+    }  // namespace SOLVER
+  }    // namespace NLN
+}  // namespace STR
 
 #endif /* STR_NLN_SOLVER_UZAWA_H_ */

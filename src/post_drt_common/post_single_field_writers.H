@@ -24,24 +24,20 @@ class PostWriterBase;
  */
 class StructureFilter : public PostFilterBase
 {
-public:
-  StructureFilter(PostField *field,
-                  std::string name,
-                  std::string stresstype="none",
-                  std::string straintype="none",
-                  std::string optquantitytype="none")
-  :
-    PostFilterBase(field, name),
-    stresstype_(stresstype),
-    straintype_(straintype),
-    optquantitytype_(optquantitytype)
+ public:
+  StructureFilter(PostField* field, std::string name, std::string stresstype = "none",
+      std::string straintype = "none", std::string optquantitytype = "none")
+      : PostFilterBase(field, name),
+        stresstype_(stresstype),
+        straintype_(straintype),
+        optquantitytype_(optquantitytype)
   {
   }
 
-protected:
+ protected:
   virtual void WriteAllResults(PostField* field);
 
-  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep );
+  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep);
 
   /*!
   \brief postprocess gauss point stresses and write results
@@ -49,12 +45,9 @@ protected:
   \date 02/08
   */
   void PostStress(const std::string groupname, const std::string stresstype);
-  void WriteStress(const std::string groupname,
-                   PostResult& result,
-                   const ResultType stresskind);
-  void WriteEigenStress(const std::string groupname,
-                        PostResult& result,
-                        const ResultType stresskind);
+  void WriteStress(const std::string groupname, PostResult& result, const ResultType stresskind);
+  void WriteEigenStress(
+      const std::string groupname, PostResult& result, const ResultType stresskind);
 
   std::string stresstype_;
   std::string straintype_;
@@ -66,18 +59,11 @@ protected:
  */
 class FluidFilter : public PostFilterBase
 {
-public:
-    FluidFilter(PostField *field,
-                std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  FluidFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 /*!
@@ -85,18 +71,11 @@ protected:
  */
 class XFluidFilter : public PostFilterBase
 {
-public:
-    XFluidFilter(PostField *field,
-                 std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  XFluidFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 /*!
@@ -104,18 +83,11 @@ protected:
  */
 class AleFilter : public PostFilterBase
 {
-public:
-    AleFilter(PostField *field,
-              std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  AleFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 
@@ -124,18 +96,11 @@ protected:
  */
 class InterfaceFilter : public PostFilterBase
 {
-public:
-    InterfaceFilter(PostField *field,
-                    std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  InterfaceFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 
@@ -147,19 +112,12 @@ protected:
 */
 class LubricationFilter : public PostFilterBase
 {
-public:
-    /// constructor
-    LubricationFilter(PostField *field,
-                      std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  /// constructor
+  LubricationFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 /*!
@@ -170,19 +128,12 @@ protected:
 */
 class PoroFluidMultiPhaseFilter : public PostFilterBase
 {
-public:
-    /// constructor
-  PoroFluidMultiPhaseFilter(PostField *field,
-                      std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  /// constructor
+  PoroFluidMultiPhaseFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 /*!
@@ -193,19 +144,12 @@ protected:
 */
 class ScaTraFilter : public PostFilterBase
 {
-public:
-    /// constructor
-    ScaTraFilter(PostField *field,
-                 std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  /// constructor
+  ScaTraFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 
@@ -217,19 +161,12 @@ protected:
 */
 class ElchFilter : public PostFilterBase
 {
-public:
-    /// constructor
-    ElchFilter(PostField *field,
-               std::string name)
-    :
-      PostFilterBase (field, name)
-    {
-    }
+ public:
+  /// constructor
+  ElchFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
+ protected:
+  virtual void WriteAllResults(PostField* field);
 };
 
 
@@ -241,35 +178,27 @@ protected:
 */
 class ThermoFilter : public PostFilterBase
 {
-public:
-    /// constructor
-    ThermoFilter(PostField *field,
-                 std::string name,
-                 std::string heatfluxtype="none",
-                 std::string tempgradtype="none")
-    :
-      PostFilterBase (field, name),
-      heatfluxtype_(heatfluxtype),
-      tempgradtype_(tempgradtype)
-    {
-    }
+ public:
+  /// constructor
+  ThermoFilter(PostField* field, std::string name, std::string heatfluxtype = "none",
+      std::string tempgradtype = "none")
+      : PostFilterBase(field, name), heatfluxtype_(heatfluxtype), tempgradtype_(tempgradtype)
+  {
+  }
 
-protected:
+ protected:
+  virtual void WriteAllResults(PostField* field);
 
-    virtual void WriteAllResults(PostField* field);
+  /*!
+  \brief postprocess gauss point heatfluxes and write results
+  \author originally by lw
+  \date 11/09
+  */
+  void PostHeatflux(const std::string groupname, const std::string heatfluxtype);
+  void WriteHeatflux(const std::string groupname, PostResult& result, const ResultType kind);
 
-    /*!
-    \brief postprocess gauss point heatfluxes and write results
-    \author originally by lw
-    \date 11/09
-    */
-    void PostHeatflux(const std::string groupname, const std::string heatfluxtype);
-    void WriteHeatflux(const std::string groupname,
-                       PostResult& result,
-                       const ResultType kind);
-
-    std::string heatfluxtype_;  ///< type of heat flux output
-    std::string tempgradtype_;  ///< type of spatial temperature gradient output
+  std::string heatfluxtype_;  ///< type of heat flux output
+  std::string tempgradtype_;  ///< type of spatial temperature gradient output
 };
 
 
@@ -281,13 +210,10 @@ protected:
  */
 class ParticleFilter : public PostFilterBase
 {
-public:
-  ParticleFilter(
-            PostField* field,
-            std::string name);
+ public:
+  ParticleFilter(PostField* field, std::string name);
 
-protected:
-
+ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
@@ -300,16 +226,10 @@ protected:
  */
 class ParticleSPHRenderingFilter : public PostFilterBase
 {
-public:
-  ParticleSPHRenderingFilter(PostField *field,
-                                  std::string name)
-  :
-    PostFilterBase (field, name)
-  {
-  }
+ public:
+  ParticleSPHRenderingFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
+ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
@@ -322,16 +242,10 @@ protected:
  */
 class AcouFilter : public PostFilterBase
 {
-public:
-  AcouFilter(
-            PostField* field,
-            std::string name) :
-        PostFilterBase (field, name)
-  {
-  }
+ public:
+  AcouFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
+ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
@@ -343,16 +257,10 @@ protected:
  */
 class ElemagFilter : public PostFilterBase
 {
-public:
-  ElemagFilter(
-            PostField* field,
-            std::string name) :
-        PostFilterBase (field, name)
-  {
-  }
+ public:
+  ElemagFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
+ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
@@ -364,12 +272,10 @@ protected:
  */
 class InvanaFilter : public PostFilterBase
 {
-public:
-  InvanaFilter(PostField* field, std::string name) :
-    PostFilterBase (field, name){}
+ public:
+  InvanaFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
+ protected:
   virtual void WriteAllResults(PostField* field);
 };
 
@@ -379,15 +285,10 @@ protected:
  */
 class AnyFilter : public PostFilterBase
 {
-public:
-  AnyFilter(PostField* field,
-            std::string name)
-    :
-    PostFilterBase (field, name)
-  {}
+ public:
+  AnyFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
 
-protected:
-
+ protected:
   virtual void WriteAllResults(PostField* field);
 };
 

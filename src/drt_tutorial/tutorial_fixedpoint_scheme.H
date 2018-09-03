@@ -13,93 +13,90 @@
 #define TUTORIAL_FIXEDPOINT_SCHEME_H
 
 
-namespace TUTORIAL {
-
-class FixedPointScheme
+namespace TUTORIAL
 {
+  class FixedPointScheme
+  {
+   public:
+    /// constructor (ctor)
+    explicit FixedPointScheme();
 
-public:
+    /// execute the time loop
+    void TimeLoop();
 
-  /// constructor (ctor)
-  explicit FixedPointScheme();
+    /// return the relaxation parameter
+    double Omega() { return omega_; };
 
-  /// execute the time loop
-  void TimeLoop();
+    /// return the current simulation time
+    double Time() { return time_; };
 
-  /// return the relaxation parameter
-  double Omega(){return omega_;};
+    /// return the current simulation time
+    void IncrementTime(double dt) { time_ = time_ + dt; };
 
-  /// return the current simulation time
-  double Time(){return time_;};
+    /// return the time step size
+    double Dt() { return dt_; };
 
-  /// return the current simulation time
-  void IncrementTime(double dt){time_=time_+dt;};
+    /// return max time
+    double MaxTime() { return Tend_; };
 
-  /// return the time step size
-  double Dt(){return dt_;};
+   private:
+    /// print the chosen tutorial type to screen
+    void PrintTutorialType();
 
-  /// return max time
-  double MaxTime(){return Tend_;};
+    /// define parameters for the toy problem
+    void ProblemDefinition();
 
-private:
+    /// call the partitioned fixed point iteration to equilibrate the time step
+    void IterateFixedPoint();
 
-  /// print the chosen tutorial type to screen
-  void PrintTutorialType();
+    /// Solve Field 1
+    double Operator1(double Fadh);
 
-  /// define parameters for the toy problem
-  void ProblemDefinition();
+    /// Solve Field 2
+    double Operator2(double disp);
 
-  /// call the partitioned fixed point iteration to equilibrate the time step
-  void IterateFixedPoint();
+    /// check if fixed-point scheme is converged
+    bool ConvergenceCheck(double inc, double tol);
 
-  /// Solve Field 1
-  double Operator1(double Fadh);
+    /// predict the new state
+    double InitialGuess();
 
-  /// Solve Field 2
-  double Operator2(double disp);
+    /// relaxation parameter
+    double omega_;
 
-  /// check if fixed-point scheme is converged
-  bool ConvergenceCheck(double inc, double tol);
+    /// current simulation time
+    double time_;
 
-  /// predict the new state
-  double InitialGuess();
+    /// timestep
+    double dt_;
 
-  /// relaxation parameter
-  double omega_;
+    /// max time
+    double Tend_;
 
-  /// current simulation time
-  double time_;
+    /// convergence tolerance
+    double convtol_;
 
-  /// timestep
-  double dt_;
+    /// active force of body 2
+    double Fact_;
 
-  /// max time
-  double Tend_;
+    /// maximum active force
+    double Fmax_;
 
-  /// convergence tolerance
-  double convtol_;
+    /// time when maximum active force is reached
+    double Tm_;
 
-  /// active force of body 2
-  double Fact_;
+    /// stiffnesses
+    double K_cell_;
+    double E_1_;
+    double E_2_;
 
-  /// maximum active force
-  double Fmax_;
+    // displacement state
+    double disp_;
 
-  /// time when maximum active force is reached
-  double Tm_;
+    /// current state of partitioned scheme
+    double x_;
 
-  /// stiffnesses
-  double K_cell_;
-  double E_1_;
-  double E_2_;
-
-  // displacement state
-  double disp_;
-
-  /// current state of partitioned scheme
-  double x_;
-
-};// class FixedPointScheme
-} // namespace TUTORIAL
+  };  // class FixedPointScheme
+}  // namespace TUTORIAL
 
 #endif

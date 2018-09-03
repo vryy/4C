@@ -1,7 +1,8 @@
 /*
  \file post_drt_writer_base.H
 
- \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
+ \brief contains base class for a generic output filter (ensight and vtk are derived from this
+ class)
 
  <pre>
  Maintainer: Martin Kronbichler
@@ -27,24 +28,23 @@ class PostWriterBase;
 //! defines different result types (node-based, element-based, Gauss-Points?)
 enum ResultType
 {
-  no_restype,          // unknown result type
-  dofbased,            // result values based on dofrowmap
-  nodebased,           // result values based on noderowmap
-  elementbased,        // result values based on elementrowmap
-  elementdof,          // result values based on elementdofrowmap (unused)
-  max_restype          // end marker. must be the last entry
+  no_restype,    // unknown result type
+  dofbased,      // result values based on dofrowmap
+  nodebased,     // result values based on noderowmap
+  elementbased,  // result values based on elementrowmap
+  elementdof,    // result values based on elementdofrowmap (unused)
+  max_restype    // end marker. must be the last entry
 };
 
 
 //! Base class for various field writers
 class PostFilterBase
 {
-public:
+ public:
   /*
   //! Constructor. Initializes the writer to the current field
    */
-  PostFilterBase (PostField *field,
-                  const std::string &name);
+  PostFilterBase(PostField* field, const std::string& name);
 
   //! destructor
   virtual ~PostFilterBase() {}
@@ -66,28 +66,31 @@ public:
   virtual void WriteAllResults(PostField* field) = 0;
 
   //! look for problem dependent result entries and write them for one time step
-  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep) {dserror("not implemented"); }
+  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep)
+  {
+    dserror("not implemented");
+  }
 
   /// write all element based results
   /*!
     \note This method sees only those element results that are defined in
     the first result group.
    */
-  void WriteElementResults(PostField* field) { WriteAnyResults(field,"element",elementbased); }
+  void WriteElementResults(PostField* field) { WriteAnyResults(field, "element", elementbased); }
 
   /// write all node based results
   /*!
     \note This method sees only those node results that are defined in
     the first result group.
    */
-  void WriteNodeResults(PostField* field) { WriteAnyResults(field,"node",nodebased); }
+  void WriteNodeResults(PostField* field) { WriteAnyResults(field, "node", nodebased); }
 
   /// write all dof based results
   /*!
     \note This method sees only those dof results that are defined in
     the first result group.
    */
-  void WriteDofResults(PostField* field) { WriteAnyResults(field,"dof",dofbased); }
+  void WriteDofResults(PostField* field) { WriteAnyResults(field, "dof", dofbased); }
 
   /// write all results of the given type
   /*!
@@ -96,7 +99,7 @@ public:
    */
   void WriteAnyResults(PostField* field, const char* type, const ResultType restype);
 
-protected:
+ protected:
   //! The actual writer object
   Teuchos::RCP<PostWriterBase> writer_;
 };

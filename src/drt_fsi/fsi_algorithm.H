@@ -29,12 +29,11 @@ namespace ADAPTER
 {
   class FSIStructureWrapper;
   class StructureBaseAlgorithmNew;
-}
+}  // namespace ADAPTER
 
 
 namespace FSI
 {
-
   /// FSI algorithm base
   /*!
 
@@ -58,8 +57,7 @@ namespace FSI
    */
   class Algorithm : public ADAPTER::AlgorithmBase
   {
-  public:
-
+   public:
     /// create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
@@ -70,16 +68,15 @@ namespace FSI
     virtual void Setup();
 
     /// access to structure field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField(){return fluid_;}
+    const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
     /// read restart data
     virtual void ReadRestart(int step);
 
-  protected:
-
+   protected:
     //! @name Time loop building blocks
 
     /// start a new time step
@@ -109,13 +106,12 @@ namespace FSI
     /// return const version of structure fluid coupling object
     const ADAPTER::Coupling& StructureFluidCoupling() const;
 
-  protected:
-
+   protected:
     /// underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
+    Teuchos::RCP<::ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FluidMovingBoundary>    fluid_;
+    Teuchos::RCP<::ADAPTER::FluidMovingBoundary> fluid_;
 
     /// RCP pointer to the base algorithm of the structure
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr_;
@@ -123,11 +119,10 @@ namespace FSI
     /// use deprecated old structural time integration. todo Has to be removed !
     bool use_old_structure_;
 
-  private:
-
+   private:
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling>               coupsf_;
+    Teuchos::RCP<ADAPTER::Coupling> coupsf_;
   };
-}
+}  // namespace FSI
 
 #endif

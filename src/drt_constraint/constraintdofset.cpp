@@ -21,20 +21,13 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-UTILS::ConstraintDofSet::ConstraintDofSet()
-: DRT::DofSet()
-{
-  return;
-}
+UTILS::ConstraintDofSet::ConstraintDofSet() : DRT::DofSet() { return; }
 
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-UTILS::ConstraintDofSet::~ConstraintDofSet()
-{
-  return;
-}
+UTILS::ConstraintDofSet::~ConstraintDofSet() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -50,16 +43,11 @@ void UTILS::ConstraintDofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
-(
-    const Teuchos::RCP<DRT::Discretization> dis,
-    const int ndofs,
-    const int start
-)
+int UTILS::ConstraintDofSet::AssignDegreesOfFreedom(
+    const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start)
 {
   // A definite offset is currently not supported.
-  if (start!=0)
-    dserror("right now user specified dof offsets are not supported");
+  if (start != 0) dserror("right now user specified dof offsets are not supported");
 
   // Add DofSets in order of assignment to list. Once it is there it has its
   // place and will get its starting id from the previous DofSet.
@@ -84,14 +72,13 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
   const int count = MaxGIDinList(dis->Comm()) + 1;
 
   // dofrowmap with index base = count, which is undesired
-  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs,count,dis->Comm()));
+  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs, count, dis->Comm()));
 
   std::vector<int> gids;
-  for(int i=0;i<dofrowmap->NumMyElements();i++)
-    gids.push_back(dofrowmap->GID(i));
+  for (int i = 0; i < dofrowmap->NumMyElements(); i++) gids.push_back(dofrowmap->GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,gids.size(),&gids[0],0,dis->Comm()));
+  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, gids.size(), &gids[0], 0, dis->Comm()));
 
   return count;
 }

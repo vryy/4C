@@ -24,23 +24,19 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::DofSetMergedWrapper::DofSetMergedWrapper(
-    Teuchos::RCP<DofSetInterface>  sourcedofset,
-    Teuchos::RCP<const DRT::Discretization> sourcedis,
-    const std::string& couplingcond_master,
+DRT::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sourcedofset,
+    Teuchos::RCP<const DRT::Discretization> sourcedis, const std::string& couplingcond_master,
     const std::string& couplingcond_slave)
-  : DofSetBase(),
-    master_nodegids_col_layout_(Teuchos::null),
-    sourcedofset_(sourcedofset),
-    sourcedis_(sourcedis),
-    couplingcond_master_(couplingcond_master),
-    couplingcond_slave_(couplingcond_slave),
-    filled_(false)
+    : DofSetBase(),
+      master_nodegids_col_layout_(Teuchos::null),
+      sourcedofset_(sourcedofset),
+      sourcedis_(sourcedis),
+      couplingcond_master_(couplingcond_master),
+      couplingcond_slave_(couplingcond_slave),
+      filled_(false)
 {
-  if(sourcedofset_ == Teuchos::null)
-    dserror("Source dof set is null pointer.");
-  if(sourcedis_ == Teuchos::null)
-    dserror("Source discretization is null pointer.");
+  if (sourcedofset_ == Teuchos::null) dserror("Source dof set is null pointer.");
+  if (sourcedis_ == Teuchos::null) dserror("Source discretization is null pointer.");
 
   sourcedofset_->Register(this);
 }
@@ -49,8 +45,7 @@ DRT::DofSetMergedWrapper::DofSetMergedWrapper(
  *----------------------------------------------------------------------*/
 DRT::DofSetMergedWrapper::~DofSetMergedWrapper()
 {
-  if (sourcedofset_!=Teuchos::null)
-    sourcedofset_->Unregister(this);
+  if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -73,41 +68,41 @@ const Epetra_Map* DRT::DofSetMergedWrapper::DofColMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
+    const Discretization& dis, const unsigned dspos, const int start)
 {
-  if(sourcedofset_==Teuchos::null)
-    dserror("No source dof set assigned to merged dof set!");
-  if(sourcedis_==Teuchos::null)
-    dserror("No source discretization assigned to mapping dof set!");
+  if (sourcedofset_ == Teuchos::null) dserror("No source dof set assigned to merged dof set!");
+  if (sourcedis_ == Teuchos::null) dserror("No source discretization assigned to mapping dof set!");
 
   // get nodes to be coupled
   std::vector<int> masternodes;
-  DRT::UTILS::FindConditionedNodes(*sourcedis_,couplingcond_master_,masternodes);
+  DRT::UTILS::FindConditionedNodes(*sourcedis_, couplingcond_master_, masternodes);
   std::vector<int> slavenodes;
-  DRT::UTILS::FindConditionedNodes(dis,couplingcond_slave_,slavenodes);
+  DRT::UTILS::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
   DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
-  tree.Init(*sourcedis_,masternodes,150);
+  tree.Init(*sourcedis_, masternodes, 150);
   tree.Setup();
 
   // match master and slave nodes using octtree
   // master id -> slave id, distance
-  std::map<int,std::pair<int,double> > coupling;
+  std::map<int, std::pair<int, double>> coupling;
   tree.FindMatch(dis, slavenodes, coupling);
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
-    dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
+    dserror(
+        "Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
         "DofSetMergedWrapper requires matching slave and master meshes!",
-            masternodes.size(), coupling.size());
+        masternodes.size(), coupling.size());
 
   // initialize final mapping
-  Teuchos::RCP<Epetra_IntVector>  my_master_nodegids_row_layout =
-    Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
+  Teuchos::RCP<Epetra_IntVector> my_master_nodegids_row_layout =
+      Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
 
   // loop over all coupled nodes
-  for (unsigned i=0; i<masternodes.size(); ++i)
+  for (unsigned i = 0; i < masternodes.size(); ++i)
   {
     // get master gid
     int gid = masternodes[i];
@@ -117,24 +112,21 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(const Discretization& dis, 
     // sure all nodes were used.
     if (coupling.find(gid) != coupling.end())
     {
-      std::pair<int,double>& coupled = coupling[gid];
+      std::pair<int, double>& coupled = coupling[gid];
       int slavegid = coupled.first;
-      int slavelid=dis.NodeRowMap()->LID(slavegid);
-      if(slavelid==-1)
-        dserror("slave gid %d was not found on this proc",slavegid);
+      int slavelid = dis.NodeRowMap()->LID(slavegid);
+      if (slavelid == -1) dserror("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
       (*my_master_nodegids_row_layout)[slavelid] = gid;
-
     }
   }
 
   // initialize final mapping
-  master_nodegids_col_layout_ =
-    Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  master_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
   // export to column map
-  LINALG::Export(*my_master_nodegids_row_layout,*master_nodegids_col_layout_);
+  LINALG::Export(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
 
 
   ////////////////////////////////////////////////////
@@ -143,12 +135,12 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(const Discretization& dis, 
 
   // get nodes to be coupled
   masternodes.clear();
-  DRT::UTILS::FindConditionedNodes(*sourcedis_,couplingcond_slave_,masternodes);
+  DRT::UTILS::FindConditionedNodes(*sourcedis_, couplingcond_slave_, masternodes);
   slavenodes.clear();
-  DRT::UTILS::FindConditionedNodes(dis,couplingcond_slave_,slavenodes);
+  DRT::UTILS::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
-  tree.Init(*sourcedis_,masternodes,150);
+  tree.Init(*sourcedis_, masternodes, 150);
   tree.Setup();
 
   // match master and slave nodes using octtree
@@ -158,16 +150,17 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(const Discretization& dis, 
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
-    dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
+    dserror(
+        "Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
         "DofSetMergedWrapper requires matching slave and master meshes!",
-            masternodes.size(), coupling.size());
+        masternodes.size(), coupling.size());
 
   // initialize final mapping
-  Teuchos::RCP<Epetra_IntVector>  my_slave_nodegids_row_layout =
-    Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
+  Teuchos::RCP<Epetra_IntVector> my_slave_nodegids_row_layout =
+      Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
 
   // loop over all coupled nodes
-  for (unsigned i=0; i<masternodes.size(); ++i)
+  for (unsigned i = 0; i < masternodes.size(); ++i)
   {
     // get master gid
     int gid = masternodes[i];
@@ -177,27 +170,24 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(const Discretization& dis, 
     // sure all nodes were used.
     if (coupling.find(gid) != coupling.end())
     {
-      std::pair<int,double>& coupled = coupling[gid];
+      std::pair<int, double>& coupled = coupling[gid];
       int slavegid = coupled.first;
-      int slavelid=dis.NodeRowMap()->LID(slavegid);
-      if(slavelid==-1)
-        dserror("slave gid %d was not found on this proc",slavegid);
+      int slavelid = dis.NodeRowMap()->LID(slavegid);
+      if (slavelid == -1) dserror("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
       (*my_slave_nodegids_row_layout)[slavelid] = gid;
-
     }
   }
 
   // initialize final mapping
-  slave_nodegids_col_layout_ =
-    Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  slave_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
 
   // export to column map
-  LINALG::Export(*my_slave_nodegids_row_layout,*slave_nodegids_col_layout_);
+  LINALG::Export(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
 
   // set filled flag true
-  filled_=true;
+  filled_ = true;
 
   // tell the proxies
   NotifyAssigned();
@@ -213,7 +203,7 @@ void DRT::DofSetMergedWrapper::Reset()
   slave_nodegids_col_layout_ = Teuchos::null;
 
   // set filled flag
-  filled_=false;
+  filled_ = false;
 
   NotifyReset();
 }
@@ -222,7 +212,7 @@ void DRT::DofSetMergedWrapper::Reset()
  *----------------------------------------------------------------------*/
 void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
 {
-  if (dofset==sourcedofset_.get())
+  if (dofset == sourcedofset_.get())
   {
     sourcedofset_ = Teuchos::null;
     sourcedis_ = Teuchos::null;

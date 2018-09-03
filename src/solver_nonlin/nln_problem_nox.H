@@ -39,15 +39,15 @@ class Epetra_Operator;
 namespace LINALG
 {
   class SparseOperator;
-} // namespace LINALG
+}  // namespace LINALG
 
 namespace NOX
 {
   namespace Abstract
   {
     class Group;
-  } // namespace Abstract
-} // namespace NOX
+  }  // namespace Abstract
+}  // namespace NOX
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -67,8 +67,7 @@ namespace NLNSOL
    */
   class NlnProblemNox : public NlnProblem
   {
-  public:
-
+   public:
     //! @name Construction / Destruction
     //@{
 
@@ -138,8 +137,8 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 09/2014
      */
-    virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
-        Epetra_MultiVector& f ///< current residual (to be filled)
+    virtual void ComputeF(const Epetra_MultiVector& x,  ///< current solution
+        Epetra_MultiVector& f                           ///< current residual (to be filled)
         ) const;
 
     /*! \brief Compute nonlinear residual \f$F(x)\f$
@@ -147,7 +146,7 @@ namespace NLNSOL
      *  \author mayr.mt \date 10/2015
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
-        const Epetra_MultiVector& x ///< current solution
+        const Epetra_MultiVector& x  ///< current solution
         ) const;
 
     /*! \brief Evaluate Jacobian (linearization of residual)
@@ -177,10 +176,8 @@ namespace NLNSOL
 
     //@}
 
-  protected:
-
-  private:
-
+   protected:
+   private:
     //! NOX group
     virtual NOX::Abstract::Group& NOXGroup() const;
 
@@ -200,7 +197,7 @@ namespace NLNSOL
      */
     Teuchos::RCP<LINALG::SparseOperator> jac_;
 
-  }; // class NlnProblemNox
-} // namespace NLNSOL
+  };  // class NlnProblemNox
+}  // namespace NLNSOL
 
 #endif /* NLN_PROBLEM_NOXH */

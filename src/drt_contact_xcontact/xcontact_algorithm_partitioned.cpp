@@ -43,18 +43,18 @@ void XCONTACT::ALGORITHM::Partitioned::Setup()
  *----------------------------------------------------------------------*/
 void XCONTACT::ALGORITHM::Partitioned::OuterLoop()
 {
-  int  itnum = 0;
+  int itnum = 0;
   bool isconverged = false;
 
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     std::cout << "*=======================================================*\n";
     std::cout << "||     PARTITIONED OUTER ITERATION LOOP                ||\n";
     std::cout << "*=======================================================*\n";
     std::cout << std::flush;
 
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
-           Time(),MaxTime(),Dt(),ScaTraField().MethodTitle().c_str(),Step(),NumStep());
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n", Time(), MaxTime(), Dt(),
+        ScaTraField().MethodTitle().c_str(), Step(), NumStep());
   }
 
   /* initially solve the structural problem and detect a possible overlap,
@@ -62,7 +62,7 @@ void XCONTACT::ALGORITHM::Partitioned::OuterLoop()
    * call. */
   DoStructureField();
 
-  //Prepare variables for convergence check.
+  // Prepare variables for convergence check.
   PrepareOuterIteration();
 
   while (not isconverged)
@@ -70,13 +70,13 @@ void XCONTACT::ALGORITHM::Partitioned::OuterLoop()
     ++itnum;
 
     // solve the level-set problem
-    DoScaTraField( );
+    DoScaTraField();
 
     // solve the structural problem
     DoStructureField();
 
     // check convergence and stop iteration loop if convergence is achieved
-    isconverged = ConvergenceCheck( itnum );
+    isconverged = ConvergenceCheck(itnum);
   }
 
   return;
@@ -86,18 +86,16 @@ void XCONTACT::ALGORITHM::Partitioned::OuterLoop()
  *----------------------------------------------------------------------*/
 void XCONTACT::ALGORITHM::Partitioned::PrepareOuterIteration()
 {
-  if ( not StructureField().IsComingIntoContact() )
-    return;
+  if (not StructureField().IsComingIntoContact()) return;
 
   // access the weighted gap vector with slave normal dof row map layout
-  const Epetra_Vector & wgap = StructureField().GetWeightedGap();
+  const Epetra_Vector& wgap = StructureField().GetWeightedGap();
 
   /* ToDo If more interfaces are involved, we need a map extractor to
    * extract the wgap vector of each contact interface and transfer
    * these partial wgap vectors to the corresponding ScaTra
    * discretizations. */
-  MultiDiscret().Contact2ScaTra( wgap, *ScaTraField().Phinp(),
-      XFEM::xstructure, true );
+  MultiDiscret().Contact2ScaTra(wgap, *ScaTraField().Phinp(), XFEM::xstructure, true);
 
   ScaTraField().Reinitialization();
 }
@@ -106,8 +104,7 @@ void XCONTACT::ALGORITHM::Partitioned::PrepareOuterIteration()
  *----------------------------------------------------------------------*/
 bool XCONTACT::ALGORITHM::Partitioned::ConvergenceCheck(const int& itnum)
 {
-  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
-      ": Not yet implemented!" << IO::endl;
+  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << ": Not yet implemented!" << IO::endl;
   return true;
 }
 
@@ -115,11 +112,10 @@ bool XCONTACT::ALGORITHM::Partitioned::ConvergenceCheck(const int& itnum)
  *----------------------------------------------------------------------*/
 void XCONTACT::ALGORITHM::Partitioned::DoScaTraField()
 {
-  //Set relevant structure values in ScaTra field.
-  if ( not SetStructureValuesInScaTra() )
-    return;
+  // Set relevant structure values in ScaTra field.
+  if (not SetStructureValuesInScaTra()) return;
 
-  if ( Comm().MyPID() == 0 )
+  if (Comm().MyPID() == 0)
   {
     std::cout << "*-------------------------------------------------------*\n";
     std::cout << "|              LEVEL-SET SOLVER                         |\n";
@@ -127,7 +123,7 @@ void XCONTACT::ALGORITHM::Partitioned::DoScaTraField()
     std::cout << std::flush;
   }
 
-  //Solve the ScaTra field.
+  // Solve the ScaTra field.
   ScaTraField().Solve();
 
   return;
@@ -137,7 +133,7 @@ void XCONTACT::ALGORITHM::Partitioned::DoScaTraField()
  *----------------------------------------------------------------------*/
 void XCONTACT::ALGORITHM::Partitioned::DoStructureField()
 {
-  if ( Comm().MyPID() == 0 )
+  if (Comm().MyPID() == 0)
   {
     std::cout << "*-------------------------------------------------------*\n";
     std::cout << "|        STRUCTURE / XCONTACT SOLVER                    |\n";
@@ -145,10 +141,10 @@ void XCONTACT::ALGORITHM::Partitioned::DoStructureField()
     std::cout << std::flush;
   }
 
-  //Set relevant ScaTra values in structure field.
+  // Set relevant ScaTra values in structure field.
   SetScaTraValuesInStructure();
 
-  //Solve the structure field.
+  // Solve the structure field.
   StructureField().Solve();
 
   return;

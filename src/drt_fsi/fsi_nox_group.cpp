@@ -19,13 +19,10 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::Group::Group(::FSI::MonolithicInterface& mfsi,
-                       Teuchos::ParameterList& printParams,
-                       const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-                       const NOX::Epetra::Vector& x,
-                       const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
-  : NOX::Epetra::Group(printParams,i,x,linSys),
-    mfsi_(mfsi)
+NOX::FSI::Group::Group(::FSI::MonolithicInterface& mfsi, Teuchos::ParameterList& printParams,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i, const NOX::Epetra::Vector& x,
+    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
+    : NOX::Epetra::Group(printParams, i, x, linSys), mfsi_(mfsi)
 {
 }
 
@@ -36,7 +33,7 @@ void NOX::FSI::Group::CaptureSystemState()
 {
   // we know we already have the first linear system calculated
 
-  mfsi_.SetupRHS(RHSVector.getEpetraVector(),true);
+  mfsi_.SetupRHS(RHSVector.getEpetraVector(), true);
   mfsi_.SetupSystemMatrix();
 
   sharedLinearSystem.getObject(this);
@@ -50,7 +47,7 @@ void NOX::FSI::Group::CaptureSystemState()
 NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeF()
 {
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
-  if (ret==NOX::Abstract::Group::Ok)
+  if (ret == NOX::Abstract::Group::Ok)
   {
     if (not isValidJacobian)
     {
@@ -68,7 +65,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeF()
 NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeJacobian()
 {
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeJacobian();
-  if (ret==NOX::Abstract::Group::Ok)
+  if (ret == NOX::Abstract::Group::Ok)
   {
     if (not isValidRHS)
     {
@@ -86,12 +83,11 @@ NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::Paramet
 {
   mfsi_.ScaleSystem(RHSVector.getEpetraVector());
   NOX::Abstract::Group::ReturnType status = NOX::Epetra::Group::computeNewton(p);
-  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(),RHSVector.getEpetraVector());
+  mfsi_.UnscaleSolution(NewtonVector.getEpetraVector(), RHSVector.getEpetraVector());
 
   // check return value of computeNewton call
-  if(status == NOX::Abstract::Group::NotConverged || status == NOX::Abstract::Group::Failed)
+  if (status == NOX::Abstract::Group::NotConverged || status == NOX::Abstract::Group::Failed)
     dserror("NOX::FSI::Group::computeNewton: linear solver not converged...");
 
   return status;
 }
-

@@ -32,23 +32,21 @@
 #include <Teuchos_RCP.hpp>
 
 
-namespace DRT {
-namespace INPUT {
+namespace DRT
+{
+  namespace INPUT
+  {
+    class MaterialDefinition;
 
-  class MaterialDefinition;
+    /// construct list with all materials and documentation
+    Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> ValidMaterials();
 
-  /// construct list with all materials and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > ValidMaterials();
+    /// print all known material sections without contents
+    void PrintEmptyMaterialDefinitions(std::ostream& stream,
+        std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& condlist, bool color = true);
 
-  /// print all known material sections without contents
-  void PrintEmptyMaterialDefinitions(
-    std::ostream& stream,
-    std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& condlist,
-    bool color=true
-    );
-
-}
-}
+  }  // namespace INPUT
+}  // namespace DRT
 
 /// print empty material sections
 void PrintMaterialDatHeader();

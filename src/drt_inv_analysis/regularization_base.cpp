@@ -24,16 +24,13 @@
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-INVANA::RegularizationBase::RegularizationBase() :
-connectivity_(Teuchos::null),
-weight_(0.0)
-{}
+INVANA::RegularizationBase::RegularizationBase() : connectivity_(Teuchos::null), weight_(0.0) {}
 
 void INVANA::RegularizationBase::Init(const Teuchos::ParameterList& invp,
     Teuchos::RCP<ConnectivityData> connectivity, Teuchos::RCP<InitialGuess> initguess)
 {
-  connectivity_=connectivity;
-  initguess_=initguess;
+  connectivity_ = connectivity;
+  initguess_ = initguess;
 
   weight_ = invp.get<double>("REG_WEIGHT");
 

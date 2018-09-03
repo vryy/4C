@@ -48,8 +48,8 @@ namespace DRT
   {
     class LocsysManager;
     class PlastSsnManager;
-  }
-}
+  }  // namespace UTILS
+}  // namespace DRT
 
 namespace UTILS
 {
@@ -58,14 +58,14 @@ namespace UTILS
   class Cardiovascular0DManager;
   class SpringDashpotManager;
   class SurfStressManager;
-//  class GrowthDisplManager;
-}
+  //  class GrowthDisplManager;
+}  // namespace UTILS
 
 namespace CONTACT
 {
   class Beam3cmanager;
   class MeshtyingContactBridge;
-}
+}  // namespace CONTACT
 
 namespace LINALG
 {
@@ -74,7 +74,7 @@ namespace LINALG
   class SparseMatrix;
   class SparseOperator;
   class BlockSparseMatrixBase;
-}
+}  // namespace LINALG
 
 namespace IO
 {
@@ -90,7 +90,6 @@ namespace UTILS
 //! Structural Dynamics
 namespace STR
 {
-
   /*====================================================================*/
   /*!
    * \brief Front-end for structural dynamics by integrating in time.
@@ -122,15 +121,14 @@ namespace STR
    */
   class TimInt : public ::ADAPTER::Structure
   {
-
     //! Structural time adaptivity is friend
     friend class TimAda;
 
     //! Joint auxiliary schemes are friends
-    template <typename T> friend class TimAdaJoint;
+    template <typename T>
+    friend class TimAdaJoint;
 
-  public:
-
+   public:
     //! @name Life
     //@{
 
@@ -138,16 +136,14 @@ namespace STR
     void Logo();
 
     //! Constructor
-    TimInt
-    (
-      const Teuchos::ParameterList& timeparams,
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact/meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimInt(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& ioparams,        //!< ioflags
+        const Teuchos::ParameterList& sdynparams,      //!< input parameters
+        const Teuchos::ParameterList& xparams,         //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact/meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -180,12 +176,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -231,9 +224,7 @@ namespace STR
     //! of #tis with #this. Practically, this turns up with time
     //! adaptivity in which #tis is the marching integrator
     //! and #this is the auxiliary method, which shares the marching data.
-    void Merge
-    (
-      TimInt& tis  //!< existing integrator to merge against
+    void Merge(TimInt& tis  //!< existing integrator to merge against
     )
     {
       // copy it
@@ -258,33 +249,39 @@ namespace STR
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     //! (reimplemented in static time integrator)
-    virtual void ApplyDirichletBC
-    (
-      const double time,  //!< at time
-      Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
-                                        //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
-                                        //!< (may be Teuchos::null)
-      Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
-                                       //!< (may be Teuchos::null)
-      bool recreatemap  //!< recreate map extractor/toggle-vector
-                        //!< which stores the DOF IDs subjected
-                        //!< to Dirichlet BCs
-                        //!< This needs to be true if the bounded DOFs
-                        //!< have been changed.
+    virtual void ApplyDirichletBC(const double time,  //!< at time
+        Teuchos::RCP<Epetra_Vector> dis,              //!< displacements
+                                                      //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> vel,              //!< velocities
+                                                      //!< (may be Teuchos::null)
+        Teuchos::RCP<Epetra_Vector> acc,              //!< accelerations
+                                                      //!< (may be Teuchos::null)
+        bool recreatemap                              //!< recreate map extractor/toggle-vector
+                                                      //!< which stores the DOF IDs subjected
+                                                      //!< to Dirichlet BCs
+                                                      //!< This needs to be true if the bounded DOFs
+                                                      //!< have been changed.
     );
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
 
     //! Do time integration of multiple steps
-    virtual int Integrate() { dserror("time loop moved to separate adapter"); return 0; }
+    virtual int Integrate()
+    {
+      dserror("time loop moved to separate adapter");
+      return 0;
+    }
 
     /// tests if there are more time steps to do
-    virtual bool NotFinished() const { return timen_ <= timemax_+1.0e-8*(*dt_)[0] and stepn_ <= stepmax_; }
+    virtual bool NotFinished() const
+    {
+      return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
+    }
 
     //! do something in case nonlinear solution does not converge for some reason
-    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv);
+    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(
+        INPAR::STR::ConvergenceStatus nonlinsoldiv);
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
@@ -311,8 +308,7 @@ namespace STR
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    virtual void Evaluate()
-    {dserror("new structural time integration only");}
+    virtual void Evaluate() { dserror("new structural time integration only"); }
 
     /// update at time step end
     virtual void Update() = 0;
@@ -322,10 +318,9 @@ namespace STR
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void UpdateIterIncrConstr
-    (
-      Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
-    ) = 0;
+    virtual void UpdateIterIncrConstr(
+        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+        ) = 0;
 
     /// output results
     virtual void Output(bool forced_writerestart = false) = 0;
@@ -429,31 +424,25 @@ namespace STR
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
-    virtual void OutputRestart
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    virtual void OutputRestart(bool& datawritten  //!< (in/out) read and append if
+                                                  //!< it was written at this time step
     );
     //! Get data that is written during restart
     //! \author biehler \data 06/13
-    virtual void GetRestartData
-    (
-      Teuchos::RCP<int> step,
-      Teuchos::RCP<double> time,
-      Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
-      Teuchos::RCP<Epetra_Vector> veln, //!< new velocity state
-      Teuchos::RCP<Epetra_Vector> accn, //!< new acceleration state
-      Teuchos::RCP<std::vector<char> > elementdata, //!< internal element/history variables e.g. F_prestress
-      Teuchos::RCP<std::vector<char> > nodedata //
+    virtual void GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
+        Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
+        Teuchos::RCP<Epetra_Vector> veln,  //!< new velocity state
+        Teuchos::RCP<Epetra_Vector> accn,  //!< new acceleration state
+        Teuchos::RCP<std::vector<char>>
+            elementdata,  //!< internal element/history variables e.g. F_prestress
+        Teuchos::RCP<std::vector<char>> nodedata  //
     );
 
     //! Output displacements, velocities and accelerations
     //! and more system vectors
     //! \author mwgee (originally) \date 03/07
-    virtual void OutputState
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    virtual void OutputState(bool& datawritten  //!< (in/out) read and append if
+                                                //!< it was written at this time step
     );
 
     //! Add restart information to OutputState
@@ -461,20 +450,16 @@ namespace STR
 
     //! Stress & strain output
     //! \author lw (originally)
-    void OutputStressStrain
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    void OutputStressStrain(bool& datawritten  //!< (in/out) read and append if
+                                               //!< it was written at this time step
     );
 
     //! Energy output
     void OutputEnergy();
 
     //! Optional quantity output
-    void OutputOptQuantity
-    (
-      bool& datawritten  //!< (in/out) read and append if
-                         //!< it was written at this time step
+    void OutputOptQuantity(bool& datawritten  //!< (in/out) read and append if
+                                              //!< it was written at this time step
     );
 
     //! Active set, energy and momentum output for contact
@@ -504,8 +489,10 @@ namespace STR
     //! Check whether energy output file is attached
     bool AttachedEnergyFile()
     {
-      if (not energyfile_.is_null()) return true;
-      else return false;
+      if (not energyfile_.is_null())
+        return true;
+      else
+        return false;
     }
 
     //! Attach file handle for energy file #energyfile_
@@ -530,13 +517,11 @@ namespace STR
     //@{
 
     //! Apply external force
-    void ApplyForceExternal
-    (
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis, //!< old displacement state
-      const Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
-      const Teuchos::RCP<Epetra_Vector> vel, // velocity state
-      Teuchos::RCP<Epetra_Vector>& fext //!< external force
+    void ApplyForceExternal(const double time,   //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,   //!< old displacement state
+        const Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
+        const Teuchos::RCP<Epetra_Vector> vel,   // velocity state
+        Teuchos::RCP<Epetra_Vector>& fext        //!< external force
     );
 
     /*! \brief Evaluate ordinary internal force
@@ -551,14 +536,12 @@ namespace STR
      *  residual displacements replaced by the full-step displacement
      *  increment \f$D_{n+1}-D_{n}\f$.
      */
-    void ApplyForceInternal
-    (
-      const double time, //!< evaluation time
-      const double dt, //!< step size
-      Teuchos::RCP<const Epetra_Vector> dis, //!< displacement state
-      Teuchos::RCP<const Epetra_Vector> disi, //!< incremental displacements
-      Teuchos::RCP<const Epetra_Vector> vel, // velocity state
-      Teuchos::RCP<Epetra_Vector> fint //!< internal force
+    void ApplyForceInternal(const double time,   //!< evaluation time
+        const double dt,                         //!< step size
+        Teuchos::RCP<const Epetra_Vector> dis,   //!< displacement state
+        Teuchos::RCP<const Epetra_Vector> disi,  //!< incremental displacements
+        Teuchos::RCP<const Epetra_Vector> vel,   // velocity state
+        Teuchos::RCP<Epetra_Vector> fint         //!< internal force
     );
 
     //@}
@@ -570,21 +553,19 @@ namespace STR
     int HaveNonlinearMass() const;
 
     //! check whether the initial conditions are fulfilled */
-    virtual void NonlinearMassSanityCheck
-    (
-      Teuchos::RCP<const Epetra_Vector> fext, ///< external forces
-      Teuchos::RCP<const Epetra_Vector> dis, ///< displacements
-      Teuchos::RCP<const Epetra_Vector> vel, ///< velocities
-      Teuchos::RCP<const Epetra_Vector> acc, ///< accelerations
-      const Teuchos::ParameterList* sdynparams=NULL ///< structural dynamics parameter list
-    ) const;
+    virtual void NonlinearMassSanityCheck(
+        Teuchos::RCP<const Epetra_Vector> fext,          ///< external forces
+        Teuchos::RCP<const Epetra_Vector> dis,           ///< displacements
+        Teuchos::RCP<const Epetra_Vector> vel,           ///< velocities
+        Teuchos::RCP<const Epetra_Vector> acc,           ///< accelerations
+        const Teuchos::ParameterList* sdynparams = NULL  ///< structural dynamics parameter list
+        ) const;
 
     //@}
 
     //! Set forces due to interface with fluid, the force is expected external-force-like
-    virtual void SetForceInterface
-    (
-      Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
+    virtual void SetForceInterface(
+        Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
     );
 
     //! @name Attributes
@@ -594,10 +575,7 @@ namespace STR
     virtual enum INPAR::STR::DynamicType MethodName() const = 0;
 
     //! Provide title
-    std::string MethodTitle() const
-    {
-      return INPAR::STR::DynamicTypeString(MethodName());
-    }
+    std::string MethodTitle() const { return INPAR::STR::DynamicTypeString(MethodName()); }
 
     //! Return true, if time integrator is implicit
     virtual bool MethodImplicit() = 0;
@@ -619,16 +597,16 @@ namespace STR
     }
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const  = 0;
+    virtual int MethodOrderOfAccuracyDis() const = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const  = 0;
+    virtual int MethodOrderOfAccuracyVel() const = 0;
 
     //! Return linear error coefficient of displacements
     virtual double MethodLinErrCoeffDis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const  = 0;
+    virtual double MethodLinErrCoeffVel() const = 0;
 
     //@}
 
@@ -648,7 +626,7 @@ namespace STR
       // The object #discret_ is gone, when ConstrManager tries
       // to kill it. We achieve a nice segmentation fault.
       // The 'false' prevents ConstrManager of trying to kill it.
-      //return Teuchos::rcp(&discret_, false);
+      // return Teuchos::rcp(&discret_, false);
 
       // Now, the discretisation is stored as Teuchos::RefCountPointer,
       // thus
@@ -659,56 +637,43 @@ namespace STR
     const Epetra_Map* DofRowMapView();
 
     //! Access solver, one of these have to be removed (see below)
-    Teuchos::RCP<LINALG::Solver> Solver()
-    {
-      return solver_;
-    }
+    Teuchos::RCP<LINALG::Solver> Solver() { return solver_; }
 
     //! Access solver, one of these have to be removed (see above)
-    Teuchos::RCP<LINALG::Solver> LinearSolver()
-    {
-      return solver_;
-    }
+    Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     //! Access output object
-    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
-    {
-      return output_;
-    }
+    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
 
     //! Read restart values
-    void ReadRestart
-    (
-      const int step //!< restart step
+    void ReadRestart(const int step  //!< restart step
     );
 
     //! Set restart values
-    void SetRestart
-    (
-      int step,   //!< restart step
-      double time, //!< restart time
-      Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
-      Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities
-      Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations
-      Teuchos::RCP<std::vector<char> > elementdata,  //!< restart element data
-      Teuchos::RCP<std::vector<char> > nodedata  //!< restart element data
+    void SetRestart(int step,                         //!< restart step
+        double time,                                  //!< restart time
+        Teuchos::RCP<Epetra_Vector> disn,             //!< restart displacements
+        Teuchos::RCP<Epetra_Vector> veln,             //!< restart velocities
+        Teuchos::RCP<Epetra_Vector> accn,             //!< restart accelerations
+        Teuchos::RCP<std::vector<char>> elementdata,  //!< restart element data
+        Teuchos::RCP<std::vector<char>> nodedata      //!< restart element data
     );
 
     //! Set the state of the nox group and the global state data container (implicit only)
-    virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x)
-    { dserror("new structural time integration only..."); }
+    virtual void SetState(const Teuchos::RCP<Epetra_Vector>& x)
+    {
+      dserror("new structural time integration only...");
+    }
 
     //! Read and set restart state
     virtual void ReadRestartState();
 
     //! Set restart state
-    virtual void SetRestartState
-    (
-      Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
-      Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities
-      Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations
-      Teuchos::RCP<std::vector<char> > elementdata,  //!< restart element data
-      Teuchos::RCP<std::vector<char> > nodedata  //!< restart element data
+    virtual void SetRestartState(Teuchos::RCP<Epetra_Vector> disn,  //!< restart displacements
+        Teuchos::RCP<Epetra_Vector> veln,                           //!< restart velocities
+        Teuchos::RCP<Epetra_Vector> accn,                           //!< restart accelerations
+        Teuchos::RCP<std::vector<char>> elementdata,                //!< restart element data
+        Teuchos::RCP<std::vector<char>> nodedata                    //!< restart element data
     );
 
     //! Read and set restart forces
@@ -743,7 +708,9 @@ namespace STR
 
     /// set evaluation action
     virtual void SetActionType(const DRT::ELEMENTS::ActionType& action)
-    { dserror("new structural time integration only..."); }
+    {
+      dserror("new structural time integration only...");
+    }
 
     //! @name Access from outside via adapter (needed for coupled problems)
     //@{
@@ -809,7 +776,7 @@ namespace STR
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
     //! Return element data
-    //Teuchos::RCP<std::vector<char> > ElementData() {return discret_->PackMyElements();}
+    // Teuchos::RCP<std::vector<char> > ElementData() {return discret_->PackMyElements();}
 
     //! dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
@@ -828,7 +795,7 @@ namespace STR
 
     //! switch structure field to block matrix in fsi simulations
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-                                Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
+        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
 
     //! Return sparse mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> MassMatrix();
@@ -852,7 +819,7 @@ namespace STR
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
 
     //! Access to scaling matrix for STC
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
 
 
     //@}
@@ -867,22 +834,22 @@ namespace STR
     virtual double Time() const { return timen_; }
 
     //! Sets the current time \f$t_{n}\f$
-    virtual void SetTime(const double time) { (*time_)[0]=time; }
+    virtual void SetTime(const double time) { (*time_)[0] = time; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time) { timen_ = time; }
 
     //! Sets the current step \f$n+1\f$
-    virtual void SetStep(int step) { step_=step; }
+    virtual void SetStep(int step) { step_ = step; }
 
     //! Sets the current step \f$n+1\f$
-    virtual void SetStepn(int step) { stepn_=step; }
+    virtual void SetStepn(int step) { stepn_ = step; }
 
     //! Get upper limit of time range of interest
     virtual double GetTimeEnd() const { return timemax_; }
 
     //! Set upper limit of time range of interest
-    virtual void SetTimeEnd(double timemax) {timemax_=timemax; }
+    virtual void SetTimeEnd(double timemax) { timemax_ = timemax; }
 
     //! Get time step size \f$\Delta t_n\f$
     virtual double Dt() const { return (*dt_)[0]; }
@@ -901,16 +868,13 @@ namespace STR
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
-    {
-      return dbcmaps_;
-    }
+    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
     Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Return locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
+    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
 
     //@}
 
@@ -953,7 +917,7 @@ namespace STR
     bool HaveContactMeshtying() { return (cmtbridge_ != Teuchos::null); }
 
     //! return contact/meshtying manager
-    Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() {return cmtbridge_;}
+    Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() { return cmtbridge_; }
 
     /// do we have this model
     virtual bool HaveModel(INPAR::STR::ModelType model)
@@ -962,9 +926,11 @@ namespace STR
       return false;
     }
 
-    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        INPAR::STR::ModelType mtype)
-    { dserror("new time integration only"); exit(EXIT_FAILURE);}
+    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype)
+    {
+      dserror("new time integration only");
+      exit(EXIT_FAILURE);
+    }
 
     //! return bool indicating if edge based integration is defined
     bool HaveFaceDiscret() { return (facediscret_ != Teuchos::null); }
@@ -978,10 +944,9 @@ namespace STR
     void ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
 
 
-    void AssembleEdgeBasedMatandRHS(Teuchos::ParameterList&  params,
-                                    Teuchos::RCP<Epetra_Vector> & fint,
-                                    const Teuchos::RCP<Epetra_Vector> & disp,
-                                    const Teuchos::RCP<Epetra_Vector> & vel);
+    void AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,
+        Teuchos::RCP<Epetra_Vector>& fint, const Teuchos::RCP<Epetra_Vector>& disp,
+        const Teuchos::RCP<Epetra_Vector>& vel);
 
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND
@@ -1024,7 +989,7 @@ namespace STR
     bool HaveBeamContact() { return (beamcman_ != Teuchos::null); }
 
     //! return beam contact manager
-    Teuchos::RCP<CONTACT::Beam3cmanager> BeamContactManager() {return beamcman_;}
+    Teuchos::RCP<CONTACT::Beam3cmanager> BeamContactManager() { return beamcman_; }
 
     //! Check if beam contact is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
@@ -1036,7 +1001,7 @@ namespace STR
     //@{
 
     //! material displacements (structure with ale)
-   Teuchos::RCP<Epetra_Vector> DispMat() { return dismatn_; }
+    Teuchos::RCP<Epetra_Vector> DispMat() { return dismatn_; }
 
     //! apply material displacements to structure field (structure with ale)
     void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
@@ -1052,7 +1017,7 @@ namespace STR
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
 
-    virtual bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()) ; }
+    virtual bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()); }
 
     //@}
 
@@ -1064,8 +1029,7 @@ namespace STR
 
     //}
 
-  protected:
-
+   protected:
     /// Expand the dbc map by dofs provided in Epetra_Map maptoadd
     virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
@@ -1077,22 +1041,24 @@ namespace STR
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
 
     // face discretization (only initialized for edge-based stabilization)
-    Teuchos::RCP<DRT::DiscretizationFaces>      facediscret_;
+    Teuchos::RCP<DRT::DiscretizationFaces> facediscret_;
 
-    int myrank_;  //!< ID of actual processor in parallel
+    int myrank_;                           //!< ID of actual processor in parallel
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
-    Teuchos::RCP<LINALG::Solver> contactsolver_;  //!< linear algebraic solver (for contact/meshtying)
-    bool solveradapttol_;  //!< adapt solver tolerance
+    Teuchos::RCP<LINALG::Solver>
+        contactsolver_;           //!< linear algebraic solver (for contact/meshtying)
+    bool solveradapttol_;         //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adapted ????
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
 
-    enum INPAR::STR::DivContAct divcontype_ ; //!< what to do when nonlinear solution fails
-    int divconrefinementlevel_;               //!< number of refinement level in case of divercontype_ == adapt_step
-    int divconnumfinestep_;                   //!< number of converged time steps on current refinement level
-                                              //!< in case of divercontype_ == adapt_step
+    enum INPAR::STR::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
+    int divconrefinementlevel_;  //!< number of refinement level in case of divercontype_ ==
+                                 //!< adapt_step
+    int divconnumfinestep_;      //!< number of converged time steps on current refinement level
+                                 //!< in case of divercontype_ == adapt_step
 
     //! structural dynamic parameter list
     Teuchos::ParameterList sdynparams_;
@@ -1102,39 +1068,41 @@ namespace STR
     //! @name Printing and output
     //@{
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    int printscreen_;  //!< print infos to standard out every n steps
-    bool printlogo_;  //!< print the logo (or not)?
-    FILE* errfile_;  //!< error file handle
-    bool printerrfile_;  //!< print infos to error file #errfile_
-    bool printiter_;  //!< print intermediate iterations during solution
-    bool outputeveryiter_; //!< switch
-    int oei_filecounter_; //!< filename counter
-    int outputcounter_; //!< output counter for OutputEveryIter
-    int writerestartevery_;  //!< write restart every given step;
-                             //!< if 0, restart is not written
-    int writereducedrestart_; // Write reduced Restart Data i.e no mesh for mlmc purposes
-    bool writestate_;  //!< write state on/off
-    bool writevelacc_;  //!< write velocity and acceleration on/off
-    int writeresultsevery_;  //!< write state/stress/strain every given step
-    INPAR::STR::StressType writestress_;  //!< stress output type
-    INPAR::STR::StressType writecouplstress_;  //!< output type of coupling stress
-    INPAR::STR::StrainType writestrain_;  //!< strain output type
-    INPAR::STR::StrainType writeplstrain_;  //!< plastic strain output type
+    int printscreen_;                                //!< print infos to standard out every n steps
+    bool printlogo_;                                 //!< print the logo (or not)?
+    FILE* errfile_;                                  //!< error file handle
+    bool printerrfile_;                              //!< print infos to error file #errfile_
+    bool printiter_;           //!< print intermediate iterations during solution
+    bool outputeveryiter_;     //!< switch
+    int oei_filecounter_;      //!< filename counter
+    int outputcounter_;        //!< output counter for OutputEveryIter
+    int writerestartevery_;    //!< write restart every given step;
+                               //!< if 0, restart is not written
+    int writereducedrestart_;  // Write reduced Restart Data i.e no mesh for mlmc purposes
+    bool writestate_;          //!< write state on/off
+    bool writevelacc_;         //!< write velocity and acceleration on/off
+    int writeresultsevery_;    //!< write state/stress/strain every given step
+    INPAR::STR::StressType writestress_;            //!< stress output type
+    INPAR::STR::StressType writecouplstress_;       //!< output type of coupling stress
+    INPAR::STR::StrainType writestrain_;            //!< strain output type
+    INPAR::STR::StrainType writeplstrain_;          //!< plastic strain output type
     INPAR::STR::OptQuantityType writeoptquantity_;  //!< stress output type
-    int writeenergyevery_;  //!< write system energy every given step
-    bool writesurfactant_;  //!< write surfactant output
-    bool writerotation_;  //!< write strutural rotation tensor output
-    Teuchos::RCP<std::ofstream> energyfile_;  //!< outputfile for energy
+    int writeenergyevery_;                          //!< write system energy every given step
+    bool writesurfactant_;                          //!< write surfactant output
+    bool writerotation_;                            //!< write strutural rotation tensor output
+    Teuchos::RCP<std::ofstream> energyfile_;        //!< outputfile for energy
 
-    Teuchos::RCP<std::vector<char> > stressdata_; //!< container for element GP stresses
-    Teuchos::RCP<std::vector<char> > couplstressdata_; //!< container for element GP coupling stresses
-    Teuchos::RCP<std::vector<char> > straindata_; //!< container for element GP strains
-    Teuchos::RCP<std::vector<char> > plstraindata_; //!< container for element GP plastic strains
-    Teuchos::RCP<std::vector<char> > rotdata_; //!< container for element rotation tensor
-    Teuchos::RCP<std::vector<char> > optquantitydata_; //!< container for element GP optional quantities
-    double kinergy_; //!< kinetic energy
-    double intergy_; //!< internal energy
-    double extergy_; //!< external energy
+    Teuchos::RCP<std::vector<char>> stressdata_;  //!< container for element GP stresses
+    Teuchos::RCP<std::vector<char>>
+        couplstressdata_;                           //!< container for element GP coupling stresses
+    Teuchos::RCP<std::vector<char>> straindata_;    //!< container for element GP strains
+    Teuchos::RCP<std::vector<char>> plstraindata_;  //!< container for element GP plastic strains
+    Teuchos::RCP<std::vector<char>> rotdata_;       //!< container for element rotation tensor
+    Teuchos::RCP<std::vector<char>>
+        optquantitydata_;  //!< container for element GP optional quantities
+    double kinergy_;       //!< kinetic energy
+    double intergy_;       //!< internal energy
+    double extergy_;       //!< external energy
     //@}
 
     //! @name Damping
@@ -1142,15 +1110,15 @@ namespace STR
     //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
     //@{
     enum INPAR::STR::DampKind damping_;  //!< damping type
-    double dampk_;  //!< damping factor for stiffness \f$c_\text{K}\f$
-    double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
+    double dampk_;                       //!< damping factor for stiffness \f$c_\text{K}\f$
+    double dampm_;                       //!< damping factor for mass \f$c_\text{M}\f$
     //@}
 
     //! @name Managed stuff
     //@{
 
     //! whatever constraints
-    Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
+    Teuchos::RCP<UTILS::ConstrManager> conman_;      //!< constraint manager
     Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
 
     // for 0D cardiovascular models
@@ -1184,17 +1152,19 @@ namespace STR
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP< ::TIMINT::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
-    double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
-    double timemax_;  //!< final time \f$t_\text{fin}\f$
-    int stepmax_;  //!< final step \f$N\f$
-    int step_;  //!< time step index \f$n\f$
-    int stepn_;  //!< time step index \f$n+1\f$
-    double rand_tsfac_;  //!< random factor for modifying time-step size in case this way of continuing non-linear iteration was chosen
+    Teuchos::RCP<::TIMINT::TimIntMStep<double>> time_;  //!< time \f$t_{n}\f$ of last converged step
+    double timen_;                                      //!< target time \f$t_{n+1}\f$
+    Teuchos::RCP<::TIMINT::TimIntMStep<double>> dt_;    //!< time step size \f$\Delta t\f$
+    double timemax_;                                    //!< final time \f$t_\text{fin}\f$
+    int stepmax_;                                       //!< final step \f$N\f$
+    int step_;                                          //!< time step index \f$n\f$
+    int stepn_;                                         //!< time step index \f$n+1\f$
+    double rand_tsfac_;      //!< random factor for modifying time-step size in case this way of
+                             //!< continuing non-linear iteration was chosen
     bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
-    bool lumpmass_;  //!< flag for lumping the mass matrix, default: false
-    bool young_temp_;  //!< flag deciding if young's modulus is temperature-dependent, default: false
+    bool lumpmass_;          //!< flag for lumping the mass matrix, default: false
+    bool
+        young_temp_;  //!< flag deciding if young's modulus is temperature-dependent, default: false
     //@}
 
     //! @name Global vectors
@@ -1206,22 +1176,22 @@ namespace STR
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > dis_;
+    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dis_;
 
     //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > dismat_;
+    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> dismat_;
 
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > vel_;
+    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> vel_;
 
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > acc_;
+    Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> acc_;
 
     //!< global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
 
     //!< global material displacements
-    Teuchos::RCP<Epetra_Vector> dismatn_;//!< global material displacements
+    Teuchos::RCP<Epetra_Vector> dismatn_;  //!< global material displacements
 
     //!< global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> veln_;
@@ -1238,7 +1208,8 @@ namespace STR
     //!< pure structural global internal force, i.e. no condensation of EAS, plasticity,...
     Teuchos::RCP<Epetra_Vector> fresn_str_;
 
-    //!< pure structural global internal force at \f$t_n\f$, i.e. no condensation of EAS, plasticity,...
+    //!< pure structural global internal force at \f$t_n\f$, i.e. no condensation of EAS,
+    //!< plasticity,...
     Teuchos::RCP<Epetra_Vector> fintn_str_;
 
     //@}
@@ -1258,11 +1229,11 @@ namespace STR
 
     //! @name Time measurement
     //@{
-    Teuchos::RCP<Epetra_Time> timer_; //!< timer for solution technique
-    double dtsolve_; //!< linear solver time
-    double dtele_; //!< element evaluation time
-    double dtcmt_; //!< contact / meshtying evaluation time
-    double inttime_global_; //!< global integration time for contact evaluation
+    Teuchos::RCP<Epetra_Time> timer_;  //!< timer for solution technique
+    double dtsolve_;                   //!< linear solver time
+    double dtele_;                     //!< element evaluation time
+    double dtcmt_;                     //!< contact / meshtying evaluation time
+    double inttime_global_;            //!< global integration time for contact evaluation
     //@}
 
     //! @name Patient specific stuff
@@ -1280,43 +1251,42 @@ namespace STR
     Teuchos::RCP<LINALG::MapExtractor> porositysplitter_;
     //@}
 
-    Teuchos::RCP<UTILS::MOR> mor_; //!< model order reduction
+    Teuchos::RCP<UTILS::MOR> mor_;  //!< model order reduction
 
-  private:
-
+   private:
     //! flag indicating if class is setup
     bool issetup_;
 
     //! flag indicating if class is initialized
     bool isinit_;
 
-  protected:
-
+   protected:
     //! returns true if Setup() was called and is still valid
-    bool IsSetup()
-    {return issetup_;};
+    bool IsSetup() { return issetup_; };
 
     //! returns true if Init(..) was called and is still valid
-    bool IsInit()
-    {return isinit_;};
+    bool IsInit() { return isinit_; };
 
     //! check if \ref Setup() was called
     void CheckIsSetup()
-    {if(not IsSetup()) dserror("Setup() was not called.");};
+    {
+      if (not IsSetup()) dserror("Setup() was not called.");
+    };
 
     //! check if \ref Init() was called
     void CheckIsInit()
-    {if(not IsInit()) dserror("Init(...) was not called.");};
+    {
+      if (not IsInit()) dserror("Init(...) was not called.");
+    };
 
-  public:
-
+   public:
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse){issetup_ = trueorfalse;};
+    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse){isinit_ = trueorfalse;};
+    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
 
-  }; //class TimInt
+  };  // class TimInt
 
 }  // namespace STR
 

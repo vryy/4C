@@ -27,16 +27,17 @@
 
 
 IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
-  : ImmersedBase(),
-    ADAPTER::AlgorithmBase(comm,DRT::Problem::Instance()->CellMigrationParams()),
-    counter_(7)
+    : ImmersedBase(),
+      ADAPTER::AlgorithmBase(comm, DRT::Problem::Instance()->CellMigrationParams()),
+      counter_(7)
 {
   // keep constructor empty
-}// ImmersedPartitioned constructor
+}  // ImmersedPartitioned constructor
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void IMMERSED::ImmersedPartitioned::Timeloop(
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   const Teuchos::ParameterList& immerseddyn = DRT::Problem::Instance()->ImmersedMethodParams();
 
@@ -45,7 +46,7 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
 
   // sublists
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method", "Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
@@ -58,20 +59,22 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
   // log solver iterations
 
   Teuchos::RCP<std::ofstream> log;
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
-           << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
+           << "# Method         = " << nlParams.sublist("Direction").get("Method", "Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
-           << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
-           << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Aitken") << "\n"
-           << "# Predictor      = '" << immerseddyn.sublist("PARTITIONED SOLVER").get<std::string>("PREDICTOR") << "'\n"
+           << "# Preconditioner = " << nlParams.get("Preconditioner", "None") << "\n"
+           << "# Line Search    = " << nlParams.sublist("Line Search").get("Method", "Aitken")
+           << "\n"
+           << "# Predictor      = '"
+           << immerseddyn.sublist("PARTITIONED SOLVER").get<std::string>("PREDICTOR") << "'\n"
            << "#\n"
-           << "# step | time | time/step | #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
-      ;
+           << "# step | time | time/step | #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  "
+              "MF_Res  MF_Jac  User\n";
   }
 
   // construct the timer
@@ -89,12 +92,13 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     PrepareTimeStep();
 
     // reset all counters
-    std::fill(counter_.begin(),counter_.end(),0);
-    lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+    std::fill(counter_.begin(), counter_.end(), 0);
+    lsParams.sublist("Output").set("Total Number of Linear Iterations", 0);
     linsolvcount_.resize(0);
 
     // start time measurement
-    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor =
+        Teuchos::rcp(new Teuchos::TimeMonitor(timer, true));
 
     /*----------------- CSD - predictor for itnum==0 --------------------*/
 
@@ -107,29 +111,29 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
 
     // Create the linear system
     Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-      CreateLinearSystem(nlParams, interface, noxSoln, utils_);
+        CreateLinearSystem(nlParams, interface, noxSoln, utils_);
 
     // Create the Group
     Teuchos::RCP<NOX::Epetra::Group> grp =
-      Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+        Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
     Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
+    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(
+        grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
 
     // solve the whole thing
     NOX::StatusTest::StatusType status = solver->solve();
 
-    if (status != NOX::StatusTest::Converged)
-      dserror("Nonlinear solver failed to converge!");
+    if (status != NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
 
     // End Nonlinear Solver **************************************
 
     // Output the parameter list
     if (utils_->isPrintType(NOX::Utils::Parameters))
-      if (Step()==1 and Comm().MyPID()==0)
+      if (Step() == 1 and Comm().MyPID() == 0)
       {
         utils_->out() << std::endl
                       << "Final Parameters" << std::endl
@@ -143,16 +147,13 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     // stop time measurement
     timemonitor = Teuchos::null;
 
-    if (Comm().MyPID()==0)
+    if (Comm().MyPID() == 0)
     {
-      (*log) << Step()
-             << "\t" << Time()
-             << "\t" << timer.totalElapsedTime()
-             << "\t" << nlParams.sublist("Output").get("Nonlinear Iterations",0)
-             << "\t" << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
-             << "\t" << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
-        ;
-      for (std::vector<int>::size_type i=0; i<counter_.size(); ++i)
+      (*log) << Step() << "\t" << Time() << "\t" << timer.totalElapsedTime() << "\t"
+             << nlParams.sublist("Output").get("Nonlinear Iterations", 0) << "\t"
+             << nlParams.sublist("Output").get("2-Norm of Residual", 0.) << "\t"
+             << lsParams.sublist("Output").get("Total Number of Linear Iterations", 0);
+      for (std::vector<int>::size_type i = 0; i < counter_.size(); ++i)
       {
         (*log) << " " << counter_[i];
       }
@@ -177,10 +178,9 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::
-    DoStep(
-        const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
-        const Teuchos::RCP<Epetra_Vector>& coupling_info)
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::DoStep(
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
+    const Teuchos::RCP<Epetra_Vector>& coupling_info)
 {
   PrintStepInfo();
 
@@ -189,7 +189,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::
 
   // sublists
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method", "Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
@@ -210,12 +210,13 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::
   PrintHeader();
 
   // reset all counters
-  std::fill(counter_.begin(),counter_.end(),0);
-  lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+  std::fill(counter_.begin(), counter_.end(), 0);
+  lsParams.sublist("Output").set("Total Number of Linear Iterations", 0);
   linsolvcount_.resize(0);
 
   // start time measurement
-  Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
+  Teuchos::RCP<Teuchos::TimeMonitor> timemonitor =
+      Teuchos::rcp(new Teuchos::TimeMonitor(timer, true));
 
   /*----------------- CSD - predictor for itnum==0 --------------------*/
 
@@ -228,29 +229,29 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::
 
   // Create the linear system
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-    CreateLinearSystem(nlParams, interface, noxSoln, utils_);
+      CreateLinearSystem(nlParams, interface, noxSoln, utils_);
 
   // Create the Group
   Teuchos::RCP<NOX::Epetra::Group> grp =
-    Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+      Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
 
   // Convergence Tests
   Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
   // Create the solver
-  Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
+  Teuchos::RCP<NOX::Solver::Generic> solver =
+      NOX::Solver::buildSolver(grp, combo, Teuchos::RCP<Teuchos::ParameterList>(&nlParams, false));
 
   // solve the whole thing
   NOX::StatusTest::StatusType status = solver->solve();
 
-  if (status != NOX::StatusTest::Converged)
-    dserror("Nonlinear solver failed to converge!");
+  if (status != NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
 
   // End Nonlinear Solver **************************************
 
   // Output the parameter list
   if (utils_->isPrintType(NOX::Utils::Parameters))
-    if (Step()==1 and Comm().MyPID()==0)
+    if (Step() == 1 and Comm().MyPID() == 0)
     {
       utils_->out() << std::endl
                     << "Final Parameters" << std::endl
@@ -266,52 +267,50 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool IMMERSED::ImmersedPartitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
+bool IMMERSED::ImmersedPartitioned::computeF(
+    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
-  const char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
+  const char* flags[] = {"Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL};
 
   Epetra_Time timer(x.Comm());
   const double startTime = timer.WallTime();
 
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     utils_->out() << "\n "
                   << "Global residual calculation"
                   << ".\n";
-    if (fillFlag!=Residual)
-      utils_->out() << " fillFlag = " << flags[fillFlag] << "\n";
+    if (fillFlag != Residual) utils_->out() << " fillFlag = " << flags[fillFlag] << "\n";
   }
 
   // we count the number of times the residuum is build
   counter_[fillFlag] += 1;
 
-  if (!x.Map().UniqueGIDs())
-    dserror("source map not unique");
+  if (!x.Map().UniqueGIDs()) dserror("source map not unique");
 
 
   // Do the coupling step. The real work is in here.
-  CouplingOp(x,F,fillFlag);
+  CouplingOp(x, F, fillFlag);
 
 
   const double endTime = timer.WallTime();
-  if (Comm().MyPID()==0)
-    utils_->out() << "\nTime for residual calculation: " << endTime-startTime << " secs\n\n";
+  if (Comm().MyPID() == 0)
+    utils_->out() << "\nTime for residual calculation: " << endTime - startTime << " secs\n\n";
   return true;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem>
-IMMERSED::ImmersedPartitioned::CreateLinearSystem(Teuchos::ParameterList& nlParams,
-                                                  const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
-                                                  NOX::Epetra::Vector& noxSoln,
-                                                  Teuchos::RCP<NOX::Utils> utils)
+Teuchos::RCP<NOX::Epetra::LinearSystem> IMMERSED::ImmersedPartitioned::CreateLinearSystem(
+    Teuchos::ParameterList& nlParams,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface, NOX::Epetra::Vector& noxSoln,
+    Teuchos::RCP<NOX::Utils> utils)
 {
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Aitken"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method", "Aitken"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
 
@@ -329,30 +328,32 @@ IMMERSED::ImmersedPartitioned::CreateLinearSystem(Teuchos::ParameterList& nlPara
   std::string preconditioner = nlParams.get("Preconditioner", "None");
 
   // No Jacobian at all. Do a fix point iteration.
-  if (jacobian=="None")
+  if (jacobian == "None")
   {
-    preconditioner="None";
+    preconditioner = "None";
   }
   else
   {
-    dserror("unsupported Jacobian '%s'",jacobian.c_str());
+    dserror("unsupported Jacobian '%s'", jacobian.c_str());
   }
 
   // ==================================================================
 
   // No preconditioning at all.
-  if (preconditioner=="None")
+  if (preconditioner == "None")
   {
     if (Teuchos::is_null(iJac))
     {
       // if no Jacobian has been set this better be the fix point
       // method.
-      if (dirParams.get("Method","Newton")!="User Defined")
+      if (dirParams.get("Method", "Newton") != "User Defined")
       {
-        if (Comm().MyPID()==0)
-          utils->out() << "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << "\n";
+        if (Comm().MyPID() == 0)
+          utils->out() << "Warning: No Jacobian for solver " << dirParams.get("Method", "Newton")
+                       << "\n";
       }
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
+      linSys = Teuchos::rcp(
+          new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
     }
     else
     {
@@ -361,7 +362,7 @@ IMMERSED::ImmersedPartitioned::CreateLinearSystem(Teuchos::ParameterList& nlPara
   }
   else
   {
-    dserror("unsupported preconditioner '%s'",preconditioner.c_str());
+    dserror("unsupported preconditioner '%s'", preconditioner.c_str());
   }
 
   return linSys;
@@ -370,23 +371,25 @@ IMMERSED::ImmersedPartitioned::CreateLinearSystem(Teuchos::ParameterList& nlPara
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo>
-IMMERSED::ImmersedPartitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                                Teuchos::RCP<NOX::Epetra::Group> grp)
+Teuchos::RCP<NOX::StatusTest::Combo> IMMERSED::ImmersedPartitioned::CreateStatusTest(
+    Teuchos::ParameterList& nlParams, Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<NOX::StatusTest::Combo> combo =
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<NOX::StatusTest::Combo> converged =
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters =
+      Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
   combo->addStatusTest(maxiters);
 
   // setup the real tests
-  CreateStatusTest(nlParams,grp,converged);
+  CreateStatusTest(nlParams, grp, converged);
 
   return combo;
 }
@@ -394,29 +397,26 @@ IMMERSED::ImmersedPartitioned::CreateStatusTest(Teuchos::ParameterList& nlParams
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void
-IMMERSED::ImmersedPartitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                   Teuchos::RCP<NOX::Epetra::Group> grp,
-                                   Teuchos::RCP<NOX::StatusTest::Combo> converged)
+void IMMERSED::ImmersedPartitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
+    Teuchos::RCP<NOX::Epetra::Group> grp, Teuchos::RCP<NOX::StatusTest::Combo> converged)
 {
   Teuchos::RCP<NOX::StatusTest::NormF> absresid =
-    Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+      Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
   converged->addStatusTest(absresid);
 
   if (nlParams.isParameter("Norm Update"))
   {
     Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
-      Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+        Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
     converged->addStatusTest(update);
   }
 
   if (nlParams.isParameter("Norm rel F"))
   {
     Teuchos::RCP<NOX::StatusTest::NormF> relresid =
-      Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
+        Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
     converged->addStatusTest(relresid);
   }
-
 }
 
 
@@ -430,7 +430,8 @@ void IMMERSED::ImmersedPartitioned::PrepareOutput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitioned::CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
+void IMMERSED::ImmersedPartitioned::CouplingOp(
+    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   dserror("not implemented in this class. my be overridden by derived class.");
 }
@@ -438,9 +439,9 @@ void IMMERSED::ImmersedPartitioned::CouplingOp(const Epetra_Vector &x, Epetra_Ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::ParameterList& immersedpart, Teuchos::ParameterList& list)
+void IMMERSED::ImmersedPartitioned::SetDefaultParameters(
+    const Teuchos::ParameterList& immersedpart, Teuchos::ParameterList& list)
 {
-
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = list;
 
@@ -458,7 +459,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
   // Set parameters for NOX to chose the solver direction and line
   // search step.
   //
-  switch (DRT::INPUT::IntegralValue<int>(immersedpart,"COUPALGO"))
+  switch (DRT::INPUT::IntegralValue<int>(immersedpart, "COUPALGO"))
   {
     case INPAR::CELL::cell_iter_stagg_fixed_rel_param:
     {
@@ -467,10 +468,10 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
 
       nlParams.set("Jacobian", "None");
 
-      dirParams.set("Method","User Defined");
+      dirParams.set("Method", "User Defined");
       Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-        Teuchos::rcp(new NOX::FSI::FixPointFactory());
-      dirParams.set("User Defined Direction Factory",fixpointfactory);
+          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       lineSearchParams.set("Method", "Full Step");
       lineSearchParams.sublist("Full Step").set("Full Step", immersedpart.get<double>("RELAX"));
@@ -483,14 +484,14 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
 
       nlParams.set("Jacobian", "None");
 
-      dirParams.set("Method","User Defined");
+      dirParams.set("Method", "User Defined");
       Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-        Teuchos::rcp(new NOX::FSI::FixPointFactory());
-      dirParams.set("User Defined Direction Factory",fixpointfactory);
+          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
-        Teuchos::rcp(new NOX::FSI::AitkenFactory());
-      lineSearchParams.set("Method","User Defined");
+          Teuchos::rcp(new NOX::FSI::AitkenFactory());
+      lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
 
       lineSearchParams.sublist("Aitken").set("max step size", immersedpart.get<double>("MAXOMEGA"));
@@ -504,10 +505,10 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
       nlParams.set("Jacobian", "None");
       nlParams.set("Max Iterations", 1);
 
-      dirParams.set("Method","User Defined");
+      dirParams.set("Method", "User Defined");
       Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-        Teuchos::rcp(new NOX::FSI::FixPointFactory());
-      dirParams.set("User Defined Direction Factory",fixpointfactory);
+          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       lineSearchParams.set("Method", "Full Step");
       lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
@@ -515,7 +516,8 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
     }
     default:
     {
-      dserror("coupling method type '%s' unsupported", immersedpart.get<std::string>("COUPALGO").c_str());
+      dserror("coupling method type '%s' unsupported",
+          immersedpart.get<std::string>("COUPALGO").c_str());
       break;
     }
   }
@@ -526,23 +528,21 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
   // set default output flag to no output
   // The field solver will output a lot, anyway.
   printParams.get("Output Information",
-                  ::NOX::Utils::Warning |
-                  ::NOX::Utils::OuterIteration |
-                  ::NOX::Utils::OuterIterationStatusTest
-                  // ::NOX::Utils::Parameters
-    );
+      ::NOX::Utils::Warning | ::NOX::Utils::OuterIteration | ::NOX::Utils::OuterIterationStatusTest
+      // ::NOX::Utils::Parameters
+  );
 
   Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-  solverOptions.set<std::string>("Status Test Check Type","Complete");
+  solverOptions.set<std::string>("Status Test Check Type", "Complete");
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitioned::BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
-                                                 const FillType fillFlag)
+void IMMERSED::ImmersedPartitioned::BackgroundOp(
+    Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values, const FillType fillFlag)
 {
-  if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+  if (Comm().MyPID() == 0 and utils_->isPrintType(NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Background operator" << std::endl;
   return;
 }
@@ -550,10 +550,10 @@ void IMMERSED::ImmersedPartitioned::BackgroundOp(Teuchos::RCP<Epetra_Vector> bac
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
-                                                                      const FillType fillFlag)
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::ImmersedOp(
+    Teuchos::RCP<Epetra_Vector> bdry_traction, const FillType fillFlag)
 {
-  if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+  if (Comm().MyPID() == 0 and utils_->isPrintType(NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Immersed operator" << std::endl;
   return Teuchos::null;
 }

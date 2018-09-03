@@ -1,7 +1,8 @@
 /*!----------------------------------------------------------------------
 \file randomfield.cpp
 Created on: 15 May, 2014
-\brief Class for generating samples of gaussian and non gaussian random fields based on spectral representation
+\brief Class for generating samples of gaussian and non gaussian random fields based on spectral
+representation
 
 
  <pre>
@@ -18,27 +19,27 @@ Maintainer: Jonas Biehler
 #include "../drt_io/io_pstream.H"
 
 // include fftw++ stuff for multidimensional FFT
-#include"fftw3.h"
+#include "fftw3.h"
 
 
 #include "../drt_inpar/inpar_mlmc.H"
 
-UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
-  :marginal_pdf_(none)
+UQ::RandomField::RandomField(
+    Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
+    : marginal_pdf_(none)
 {
- // initialize some common parameters
+  // initialize some common parameters
 
- is_bounded_ = DRT::INPUT::IntegralValue<int>(rfp ,"BOUNDED");
+  is_bounded_ = DRT::INPUT::IntegralValue<int>(rfp, "BOUNDED");
 
- rf_lower_bound_=rfp.get<double>("LOWERBOUND");
+  rf_lower_bound_ = rfp.get<double>("LOWERBOUND");
 
- rf_upper_bound_=rfp.get<double>("UPPERBOUND");
+  rf_upper_bound_ = rfp.get<double>("UPPERBOUND");
 
- // init largest_length
- ComputeBoundingBox(discret);
+  // init largest_length
+  ComputeBoundingBox(discret);
 
- has_spatially_variable_median_=DRT::INPUT::IntegralValue<int>(rfp ,"SPATIAL_VARIABLE_MEDIAN");
-
+  has_spatially_variable_median_ = DRT::INPUT::IntegralValue<int>(rfp, "SPATIAL_VARIABLE_MEDIAN");
 }
 
 void UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
@@ -63,48 +64,40 @@ void UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discr
   bb_min_.push_back(10.0e19);
   bb_min_.push_back(10.0e19);
   {
-    for (int lid = 0; lid <discret->NumMyColNodes(); ++lid)
+    for (int lid = 0; lid < discret->NumMyColNodes(); ++lid)
     {
       const DRT::Node* node = discret->lColNode(lid);
       // check if greater than maxrbb
-      if (maxrbb[0]<node->X()[0])
-        maxrbb[0]=node->X()[0];
-      if (maxrbb[1]<node->X()[1])
-        maxrbb[1]=node->X()[1];
-      if (maxrbb[2]<node->X()[2])
-        maxrbb[2]=node->X()[2];
+      if (maxrbb[0] < node->X()[0]) maxrbb[0] = node->X()[0];
+      if (maxrbb[1] < node->X()[1]) maxrbb[1] = node->X()[1];
+      if (maxrbb[2] < node->X()[2]) maxrbb[2] = node->X()[2];
       // check if smaller than minrbb
-      if (minrbb[0]>node->X()[0])
-        minrbb[0]=node->X()[0];
-      if (minrbb[1]>node->X()[1])
-        minrbb[1]=node->X()[1];
-      if (minrbb[2]>node->X()[2])
-        minrbb[2]=node->X()[2];
+      if (minrbb[0] > node->X()[0]) minrbb[0] = node->X()[0];
+      if (minrbb[1] > node->X()[1]) minrbb[1] = node->X()[1];
+      if (minrbb[2] > node->X()[2]) minrbb[2] = node->X()[2];
     }
   }
 
-  discret->Comm().MaxAll(&maxrbb[0],&bb_max_[0],3);
-  discret->Comm().MinAll(&minrbb[0],&bb_min_[0],3);
+  discret->Comm().MaxAll(&maxrbb[0], &bb_max_[0], 3);
+  discret->Comm().MinAll(&minrbb[0], &bb_min_[0], 3);
 
   discret->Comm().Barrier();
 
-  //compute largest dimension of the problem
-  largestlength_=-10e19;
+  // compute largest dimension of the problem
+  largestlength_ = -10e19;
 
-  for(int i=0;i<3;i++)
+  for (int i = 0; i < 3; i++)
   {
-    if(bb_max_[i]-bb_min_[i]>largestlength_)
-      largestlength_=bb_max_[i]-bb_min_[i];
+    if (bb_max_[i] - bb_min_[i] > largestlength_) largestlength_ = bb_max_[i] - bb_min_[i];
   }
 
   if (myrank_ == 0)
   {
-    IO::cout<< "min " << bb_min_[0] << " "<< bb_min_[1]  << " "<< bb_min_[2] << IO::endl;
-    IO::cout<< "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << IO::endl;
-    IO::cout<< "largest length " << largestlength_ << IO::endl;
+    IO::cout << "min " << bb_min_[0] << " " << bb_min_[1] << " " << bb_min_[2] << IO::endl;
+    IO::cout << "max " << bb_max_[0] << " " << bb_max_[1] << " " << bb_max_[2] << IO::endl;
+    IO::cout << "largest length " << largestlength_ << IO::endl;
   }
-
 }
 
 
-#endif // HAVE_FFTw
+#endif  // HAVE_FFTw

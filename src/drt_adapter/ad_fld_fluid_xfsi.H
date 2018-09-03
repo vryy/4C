@@ -40,7 +40,7 @@ namespace LINALG
 {
   class Solver;
   class MapExtractor;
-}
+}  // namespace LINALG
 
 namespace IO
 {
@@ -54,37 +54,41 @@ namespace FLD
   {
     class MapExtractor;
   }
-}
+}  // namespace FLD
 
 namespace XFEM
 {
   class MeshCouplingFSI;
 }
 
-namespace ADAPTER {
-
+namespace ADAPTER
+{
   class XFluidFSI : public FluidWrapper
   {
-  public:
-
+   public:
     /// Constructor
-    XFluidFSI(Teuchos::RCP<Fluid>              fluid,
-        const std::string                      coupling_name, // name of the FSI coupling condition
-        Teuchos::RCP<LINALG::Solver>           solver,
-        Teuchos::RCP<Teuchos::ParameterList>   params,
+    XFluidFSI(Teuchos::RCP<Fluid> fluid,
+        const std::string coupling_name,  // name of the FSI coupling condition
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// initialize algorithm
     virtual void Init();
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& StructInterface() const { return structinterface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface() const
+    {
+      return structinterface_;
+    }
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const { return interface_; }
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const
+    {
+      return fpsiinterface_;
+    }
 
     /// Velocity-displacement conversion at the fsi interface
     virtual double TimeScaling() const;
@@ -96,8 +100,11 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVeln();
 
     /// Return interface velocity at new time level n+1
-    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVelnp() { dserror("Not implemented, yet!");
-                                                                  return Teuchos::null; }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVelnp()
+    {
+      dserror("Not implemented, yet!");
+      return Teuchos::null;
+    }
 
     /// apply the interface velocities to the fluid
     virtual void ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
@@ -120,27 +127,26 @@ namespace ADAPTER {
 
     Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
 
-    Teuchos::RCP<FLD::XFluid> MyFluid() {return xfluid_; }
+    Teuchos::RCP<FLD::XFluid> MyFluid() { return xfluid_; }
 
     /// return boundary discretization
     const Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
 
-    bool NewtonRestartMonolithic(){ return xfluid_->NewtonRestartMonolithic(); }
+    bool NewtonRestartMonolithic() { return xfluid_->NewtonRestartMonolithic(); }
 
-    Teuchos::RCP<std::map<int, int> > GetPermutationMap(){ return xfluid_->GetPermutationMap(); }
+    Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return xfluid_->GetPermutationMap(); }
 
     /// GmshOutput for background mesh and cut mesh
-    void GmshOutput(
-        const std::string & name,                       ///< name for output file
-        const int step,                                 ///< step number
-        const int count,                                ///< counter for iterations within a global time step
-        Teuchos::RCP<Epetra_Vector> vel,                ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
+    void GmshOutput(const std::string& name,  ///< name for output file
+        const int step,                       ///< step number
+        const int count,                      ///< counter for iterations within a global time step
+        Teuchos::RCP<Epetra_Vector> vel,      ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null  ///< vector holding accelerations
     );
 
-  protected:
+   protected:
     /// A casted pointer to the fluid itself
-    Teuchos::RCP<FLD::XFluid>              xfluid_;
+    Teuchos::RCP<FLD::XFluid> xfluid_;
 
     /// the interface map setup for fsi interface, free surface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
@@ -152,18 +158,17 @@ namespace ADAPTER {
     Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
 
     /// ALE dof map
-    Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
+    Teuchos::RCP<LINALG::MapExtractor> meshmap_;
     Teuchos::RCP<Epetra_Map> permfluidmap_;
     Teuchos::RCP<Epetra_Map> fullfluidmap_;
 
     //! @name local copies of input parameters
-    std::string coupling_name_;              /// the name of the XFEM::MeshCoupling object
-    Teuchos::RCP<XFEM::MeshCouplingFSI>    mesh_coupling_fsi_;
-    Teuchos::RCP<LINALG::Solver>           solver_;
-    Teuchos::RCP<Teuchos::ParameterList>   params_;
+    std::string coupling_name_;  /// the name of the XFEM::MeshCoupling object
+    Teuchos::RCP<XFEM::MeshCouplingFSI> mesh_coupling_fsi_;
+    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<Teuchos::ParameterList> params_;
     //@}
-
   };
-}
+}  // namespace ADAPTER
 
 #endif

@@ -22,7 +22,8 @@
 
 namespace TIMINT
 {
-  template <typename> class TimIntMStep;
+  template <typename>
+  class TimIntMStep;
 }
 namespace ACOU
 {
@@ -35,248 +36,253 @@ namespace DRT
 
 namespace ACOU
 {
+  class PATMonitorManager
+  {
+   public:
+    //! standard constructor
+    PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<Teuchos::ParameterList> params, int illusetup = 0);
 
-class PATMonitorManager
-{
-  public:
-  //! standard constructor
-  PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params, int illusetup = 0);
+    void EvaluateMonitorValues(double time, const std::vector<double>& point, double& value);
 
-  void EvaluateMonitorValues(double time, const std::vector<double> &point, double &value);
+    void GetMonitorPositions(std::vector<double>& positions)
+    {
+      positions = positions_;
+      return;
+    }
 
-  void GetMonitorPositions(std::vector<double>& positions){ positions = positions_; return; }
+    bool CellIdsRequired() { return !cellidsset_; }
 
-  bool CellIdsRequired() { return !cellidsset_; }
+    void SetCellIds(
+        std::vector<int> cellidsin, std::vector<bool> rowelesin, double fullfacemeasure);
 
-  void SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin, double fullfacemeasure);
+    std::vector<unsigned int> GetCellIds() { return cellids_; }
 
-  std::vector<unsigned int> GetCellIds() { return cellids_; }
+    void StoreForwardValues(const double time, const std::vector<double> values);
 
-  void StoreForwardValues(const double time, const std::vector<double> values);
+    double EvaluateError();
 
-  double EvaluateError();
+    void WriteMonitorFileInvana(std::string filename);
 
-  void WriteMonitorFileInvana(std::string filename);
+    void ConvolveSignals();
 
-  void ConvolveSignals();
+   private:
+    // communicator
+    Teuchos::RCP<DRT::Discretization> discret_;
 
-  private:
+    // spatial dimension
+    unsigned int ndim_;
 
-  // communicator
-  Teuchos::RCP<DRT::Discretization> discret_;
+    // number of time steps
+    unsigned int nsteps_;
 
-  // spatial dimension
-  unsigned int ndim_;
+    // number of (local) microphones
+    unsigned int nmics_;
 
-  // number of time steps
-  unsigned int nsteps_;
+    // number of global microphoines
+    unsigned int ngmics_;
 
-  // number of (local) microphones
-  unsigned int nmics_;
+    // time step of acoustical solver
+    double dtacou_;
 
-  // number of global microphoines
-  unsigned int ngmics_;
+    // eps
+    double eps_;
 
-  // time step of acoustical solver
-  double dtacou_;
+    // maximal simulation time
+    double maxtime_;
 
-  // eps
-  double eps_;
+    // vector of times
+    std::vector<double> times_;
 
-  // maximal simulation time
-  double maxtime_;
+    // microphone positions
+    std::vector<double> positions_;
 
-  // vector of times
-  std::vector<double> times_;
+    // cell ids
+    std::vector<unsigned int> cellids_;
 
-  // microphone positions
-  std::vector<double> positions_;
+    // cell flag
+    std::vector<bool> cellrowflag_;
 
-  // cell ids
-  std::vector<unsigned int> cellids_;
+    // measured values
+    std::vector<double> measurementvalues_;
 
-  // cell flag
-  std::vector<bool> cellrowflag_;
+    // simulated values
+    std::vector<double> simulatedvalues_;
 
-  // measured values
-  std::vector<double> measurementvalues_;
+    // source values  (simulated - measured) and potentially convolved with adjoint impulse response
+    std::vector<double> sourcevalues_;
 
-  // simulated values
-  std::vector<double> simulatedvalues_;
+    // tomograph type
+    INPAR::ACOU::TomographType tomotype_;
 
-  // source values  (simulated - measured) and potentially convolved with adjoint impulse response
-  std::vector<double> sourcevalues_;
+    // impulse response
+    std::vector<double> impulse_response_;
 
-  // tomograph type
-  INPAR::ACOU::TomographType tomotype_;
+    // consider impulse response or not
+    bool consider_impulse_response_;
 
-  // impulse response
-  std::vector<double> impulse_response_;
+    // size of entire measurement boundary
+    double fullfacemeasure_;
 
-  // consider impulse response or not
-  bool consider_impulse_response_;
+    // indicator if this has been done
+    bool cellidsset_;
+  };
 
-  // size of entire measurement boundary
-  double fullfacemeasure_;
+  class PATSearchDirection
+  {
+   public:
+    //! standard constructor
+    PATSearchDirection(INPAR::ACOU::OptimizationType opti);
 
-  // indicator if this has been done
-  bool cellidsset_;
-};
+    //! setup for lbfgs
+    void Setup(const Epetra_Map* map, const Epetra_Map* uniquemap);
 
-class PATSearchDirection
-{
-public:
-  //! standard constructor
-  PATSearchDirection(INPAR::ACOU::OptimizationType opti);
+    //! computation of direction
+    Teuchos::RCP<Epetra_Vector> ComputeDirection(
+        Teuchos::RCP<Epetra_Vector> gradient, Teuchos::RCP<Epetra_Vector> params, int iter);
 
-  //! setup for lbfgs
-  void Setup(const Epetra_Map* map, const Epetra_Map* uniquemap);
+   private:
+    //! maximum size of storage
+    int ssize_;
 
-  //! computation of direction
-  Teuchos::RCP<Epetra_Vector> ComputeDirection(Teuchos::RCP<Epetra_Vector> gradient, Teuchos::RCP<Epetra_Vector> params, int iter);
+    //! current size of the storage
+    int actsize_;
 
-private:
-   //! maximum size of storage
-  int ssize_;
+    //! storage of solution delta
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> sstore_;
 
-  //! current size of the storage
-  int actsize_;
+    //! storage of gradient delta
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> ystore_;
 
-  //! storage of solution delta
-  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > sstore_;
+    //! map of parameter and gradient vectors
+    Teuchos::RCP<Epetra_Map> map_;
 
-  //! storage of gradient delta
-  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ystore_;
+    //! unique map of parameter and gradient vectors
+    Teuchos::RCP<Epetra_Map> uniquemap_;
 
-  //! map of parameter and gradient vectors
-  Teuchos::RCP<Epetra_Map> map_;
+    //! previous parameters
+    Teuchos::RCP<Epetra_Vector> oldparams_;
 
-  //! unique map of parameter and gradient vectors
-  Teuchos::RCP<Epetra_Map> uniquemap_;
+    //! previous gradient
+    Teuchos::RCP<Epetra_Vector> oldgradient_;
 
-  //! previous parameters
-  Teuchos::RCP<Epetra_Vector> oldparams_;
+    //! search direction type
+    INPAR::ACOU::OptimizationType opti_;
+  };  // class PATSearchDirection
 
-  //! previous gradient
-  Teuchos::RCP<Epetra_Vector> oldgradient_;
+  class PATLineSearch
+  {
+   public:
+    //! standard constructor
+    PATLineSearch(Teuchos::RCP<PatImageReconstruction> imagereconstruction);
 
-  //! search direction type
-  INPAR::ACOU::OptimizationType opti_;
-}; // class PATSearchDirection
+    //! initialization
+    void Init(double J0, Teuchos::RCP<Epetra_Vector> gradient,
+        Teuchos::RCP<Epetra_Vector> direction, Teuchos::RCP<Epetra_Vector> state,
+        const Epetra_Map* uniquemap);
 
-class PATLineSearch
-{
-public:
-  //! standard constructor
-  PATLineSearch(Teuchos::RCP<PatImageReconstruction> imagereconstruction);
+    //! run
+    bool Run();
 
-  //! initialization
-  void Init(double J0, Teuchos::RCP<Epetra_Vector> gradient, Teuchos::RCP<Epetra_Vector> direction, Teuchos::RCP<Epetra_Vector> state, const Epetra_Map* uniquemap);
+   private:
+    //! pointer to the inverse problem
+    Teuchos::RCP<PatImageReconstruction> imagereconstruction_;
 
-  //! run
-  bool Run();
+    //! processor id
+    int myrank_;
 
-private:
+    //! objective reduction parameter
+    double c1_;
 
-  //! pointer to the inverse problem
-  Teuchos::RCP<PatImageReconstruction> imagereconstruction_;
+    //! gradient reduction parameter
+    double c2_;
 
-  //! processor id
-  int myrank_;
+    //! maximum number of iterations
+    int itermax_;
 
-  //! objective reduction parameter
-  double c1_;
+    //! maximal step length
+    double alpha_max_;
 
-  //! gradient reduction parameter
-  double c2_;
+    //! the current step length
+    double alpha_i_;
 
-  //! maximum number of iterations
-  int itermax_;
+    //! the previous step length
+    double alpha_im1_;
 
-  //! maximal step length
-  double alpha_max_;
+    //! final line search length
+    double alpha_x_;
 
-   //! the current step length
-  double alpha_i_;
+    //! initial objective function value
+    double J_0_;
 
-  //! the previous step length
-  double alpha_im1_;
+    //! current objective function value
+    double J_i_;
 
-  //! final line search length
-  double alpha_x_;
+    //! previous objective function value
+    double J_im1_;
 
-  //! initial objective function value
-  double J_0_;
+    //! initial gradient norm
+    double normgradphi_0_;
 
-  //! current objective function value
-  double J_i_;
+    //! current gradient norm
+    double normgradphi_i_;
 
-  //! previous objective function value
-  double J_im1_;
+    //! direction
+    Teuchos::RCP<Epetra_Vector> dir_;
 
-  //! initial gradient norm
-  double normgradphi_0_;
+    //! direction
+    Teuchos::RCP<Epetra_Vector> step_;
 
-  //! current gradient norm
-  double normgradphi_i_;
+    //! state
+    Teuchos::RCP<Epetra_Vector> state_;
 
-  //! direction
-  Teuchos::RCP<Epetra_Vector> dir_;
+    //! unique map
+    Teuchos::RCP<Epetra_Map> uniquemap_;
 
-  //! direction
-  Teuchos::RCP<Epetra_Vector> step_;
+    //! predict line search step length
+    double PredictStepLength();
 
-  //! state
-  Teuchos::RCP<Epetra_Vector> state_;
+    //! zoom function
+    double Zoom(double alpha_lo, double alpha_hi, double J_alpha_lo, bool turn);
 
-  //! unique map
-  Teuchos::RCP<Epetra_Map> uniquemap_;
+  };  // class PATLineSearch
 
-  //! predict line search step length
-  double PredictStepLength();
+  class PATRegula
+  {
+   public:
+    //! standard constructor
+    PATRegula(INPAR::ACOU::RegulaType regulatype, double tikhweight, double tvdweight,
+        double tvdeps, Teuchos::RCP<DRT::Discretization> discret);
 
-  //! zoom function
-  double Zoom(double alpha_lo, double alpha_hi, double J_alpha_lo, bool turn);
+    //! type
+    INPAR::ACOU::RegulaType type_;
 
-}; // class PATLineSearch
+    //! tikhonov weight
+    double tikhweight_;
 
-class PATRegula
-{
-public:
+    //! total variation weight
+    double tvdweight_;
 
-  //! standard constructor
-  PATRegula(INPAR::ACOU::RegulaType regulatype, double tikhweight, double tvdweight, double tvdeps, Teuchos::RCP<DRT::Discretization> discret);
+    //! epsilon
+    double tvdeps_;
 
-  //! type
-  INPAR::ACOU::RegulaType type_;
+    //! evaluation of objective function
+    void Evaluate(Teuchos::RCP<Epetra_Vector> params, double* val);
 
-  //! tikhonov weight
-  double tikhweight_;
+    //! evaluation of gradient
+    void EvaluateGradient(Teuchos::RCP<Epetra_Vector> params, Teuchos::RCP<Epetra_Vector> gradient);
 
-  //! total variation weight
-  double tvdweight_;
+   private:
+    //! matrix holding weights
+    Teuchos::RCP<Epetra_CrsMatrix> tvdmatrix_;
 
-  //! epsilon
-  double tvdeps_;
+    //! fill tvd matrix
+    void FillTvdMatrix();
 
-  //! evaluation of objective function
-  void Evaluate(Teuchos::RCP<Epetra_Vector> params, double* val);
+    Teuchos::RCP<DRT::Discretization> discret_;
+  };
 
-  //! evaluation of gradient
-  void EvaluateGradient(Teuchos::RCP<Epetra_Vector> params, Teuchos::RCP<Epetra_Vector> gradient);
-
-private:
-
-  //! matrix holding weights
-  Teuchos::RCP<Epetra_CrsMatrix> tvdmatrix_;
-
-  //! fill tvd matrix
-  void FillTvdMatrix();
-
-  Teuchos::RCP<DRT::Discretization> discret_;
-};
-
-}
+}  // namespace ACOU
 
 
 #endif

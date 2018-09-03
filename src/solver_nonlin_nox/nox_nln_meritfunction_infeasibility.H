@@ -19,84 +19,82 @@
 
 #include <NOX_MeritFunction_Generic.H>
 
-namespace Teuchos {
+namespace Teuchos
+{
   class ParameterList;
-} // namespace Teuchos
-namespace NOX {
+}  // namespace Teuchos
+namespace NOX
+{
   class Utils;
-namespace NLN {
-namespace MeritFunction {
-  enum MeritFctName : int;
-
-  class Infeasibility : public NOX::MeritFunction::Generic
+  namespace NLN
   {
-    enum Type
+    namespace MeritFunction
     {
-      type_vague,     //!< undefined type
-      type_two_norm   //!< use a L2-norm of the infeasibility vector
-    };
+      enum MeritFctName : int;
 
-  public:
-    /// constructor
-    Infeasibility(
-        const Teuchos::ParameterList& params,
-        const NOX::Utils& u );
+      class Infeasibility : public NOX::MeritFunction::Generic
+      {
+        enum Type
+        {
+          type_vague,    //!< undefined type
+          type_two_norm  //!< use a L2-norm of the infeasibility vector
+        };
 
-    virtual ~Infeasibility() {};
+       public:
+        /// constructor
+        Infeasibility(const Teuchos::ParameterList& params, const NOX::Utils& u);
 
-    //! Computes the merit function, \f$ f(x) \f$.
-    virtual double computef(const NOX::Abstract::Group& grp) const;
+        virtual ~Infeasibility(){};
 
-    /*! Computes the gradient of the merit function, \f$ \nabla f \f$, and
-     *  returns the result in the \c result vector. */
-    virtual void computeGradient(
-        const NOX::Abstract::Group& group,
-        NOX::Abstract::Vector& result) const;
+        //! Computes the merit function, \f$ f(x) \f$.
+        virtual double computef(const NOX::Abstract::Group& grp) const;
 
-    /*! Computes the inner product of the given direction and the gradient
-     *  associated with the merit function. Returns the steepest descent
-     *  direction in the \c result vector. */
-    virtual double computeSlope(
-        const NOX::Abstract::Vector& dir,
-        const NOX::Abstract::Group& grp) const;
+        /*! Computes the gradient of the merit function, \f$ \nabla f \f$, and
+         *  returns the result in the \c result vector. */
+        virtual void computeGradient(
+            const NOX::Abstract::Group& group, NOX::Abstract::Vector& result) const;
 
-    //! Compute the quadratic model,\f$ m(d) \f$, for the given merit function.
-    virtual double computeQuadraticModel(
-        const NOX::Abstract::Vector& dir,
-        const NOX::Abstract::Group& grp) const;
+        /*! Computes the inner product of the given direction and the gradient
+         *  associated with the merit function. Returns the steepest descent
+         *  direction in the \c result vector. */
+        virtual double computeSlope(
+            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const;
 
-    /*! Computes the vector in the steepest descent direction that minimizes
-     *  the quadratic model. */
-    virtual void computeQuadraticMinimizer(
-        const NOX::Abstract::Group& grp,
-        NOX::Abstract::Vector& result) const;
+        //! Compute the quadratic model,\f$ m(d) \f$, for the given merit function.
+        virtual double computeQuadraticModel(
+            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const;
 
-    //! Returns the name of the merit function.
-    virtual const std::string& name() const;
+        /*! Computes the vector in the steepest descent direction that minimizes
+         *  the quadratic model. */
+        virtual void computeQuadraticMinimizer(
+            const NOX::Abstract::Group& grp, NOX::Abstract::Vector& result) const;
 
-    //! return the name of the merit function as enumerator
-    enum MeritFctName Type() const;
+        //! Returns the name of the merit function.
+        virtual const std::string& name() const;
 
-  private:
-    /// \brief Get a list of currently supported infeasibility merit function types
-    /** This list is a sub-list of the merit function enumerator list.
-     *
-     *  \author hiermeier \date 12/17 */
-    std::map<std::string,MeritFctName> GetSupportedTypeList() const;
+        //! return the name of the merit function as enumerator
+        enum MeritFctName Type() const;
 
-    /// Set the infeasibility merit function type
-    void SetType( const std::string& type_name );
+       private:
+        /// \brief Get a list of currently supported infeasibility merit function types
+        /** This list is a sub-list of the merit function enumerator list.
+         *
+         *  \author hiermeier \date 12/17 */
+        std::map<std::string, MeritFctName> GetSupportedTypeList() const;
 
-  private:
-//    const NOX::Utils& utils_;
+        /// Set the infeasibility merit function type
+        void SetType(const std::string& type_name);
 
-    enum MeritFctName infeasibility_type_;
+       private:
+        //    const NOX::Utils& utils_;
 
-    std::string meritFunctionName_;
-  };
-}
-}
-}
+        enum MeritFctName infeasibility_type_;
+
+        std::string meritFunctionName_;
+      };
+    }  // namespace MeritFunction
+  }    // namespace NLN
+}  // namespace NOX
 
 
 #endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_MERITFUNCTION_INFEASIBILITY_H_ */

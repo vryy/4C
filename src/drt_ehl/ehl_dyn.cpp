@@ -29,51 +29,56 @@ void ehl_dyn()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  //1.- Initialization
+  // 1.- Initialization
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
-  //2.- Parameter reading
-  Teuchos::ParameterList& ehlparams = const_cast<Teuchos::ParameterList&>( problem->ElastoHydroDynamicParams() );
+  // 2.- Parameter reading
+  Teuchos::ParameterList& ehlparams =
+      const_cast<Teuchos::ParameterList&>(problem->ElastoHydroDynamicParams());
   // access lubrication params list
-  Teuchos::ParameterList& lubricationdyn = const_cast<Teuchos::ParameterList&>( problem->LubricationDynamicParams() );
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  Teuchos::ParameterList& sdyn      = const_cast<Teuchos::ParameterList&>( DRT::Problem::Instance()->StructuralDynamicParams() );
+  Teuchos::ParameterList& lubricationdyn =
+      const_cast<Teuchos::ParameterList&>(problem->LubricationDynamicParams());
+  // access structural dynamic params list which will be possibly modified while creating the time
+  // integrator
+  Teuchos::ParameterList& sdyn =
+      const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams());
 
-//  //Modification of time parameter list
+  //  //Modification of time parameter list
   EHL::Utils::ChangeTimeParameter(comm, ehlparams, lubricationdyn, sdyn);
 
-  const INPAR::EHL::SolutionSchemeOverFields coupling
-    = DRT::INPUT::IntegralValue<INPAR::EHL::SolutionSchemeOverFields>(ehlparams,"COUPALGO");
+  const INPAR::EHL::SolutionSchemeOverFields coupling =
+      DRT::INPUT::IntegralValue<INPAR::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
 
-  //3.- Creation of Lubrication + Structure problem. (Discretization called inside)
+  // 3.- Creation of Lubrication + Structure problem. (Discretization called inside)
   Teuchos::RCP<EHL::Base> ehl = Teuchos::null;
 
-  //3.1 choose algorithm depending on solution type
-  switch(coupling)
+  // 3.1 choose algorithm depending on solution type
+  switch (coupling)
   {
-  case INPAR::EHL::ehl_IterStagg:
-    ehl = Teuchos::rcp(new EHL::Partitioned(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
-    break;
-  case INPAR::EHL::ehl_Monolithic:
-    ehl = Teuchos::rcp(new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
-    break;
-  default:
-    dserror("unknown coupling algorithm for EHL!");
-    break;
+    case INPAR::EHL::ehl_IterStagg:
+      ehl = Teuchos::rcp(
+          new EHL::Partitioned(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+      break;
+    case INPAR::EHL::ehl_Monolithic:
+      ehl = Teuchos::rcp(
+          new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+      break;
+    default:
+      dserror("unknown coupling algorithm for EHL!");
+      break;
   }
 
-  //3.2- Read restart if needed. (Discretization called inside)
+  // 3.2- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();
 
   const double restarttime = problem->RestartTime();
   if (restarttime > 0.0)
     ehl->ReadRestartfromTime(restarttime);
 
-  else
-    if (restart)
-      ehl->ReadRestart(restart);
+  else if (restart)
+    ehl->ReadRestart(restart);
 
-  //4.- Run of the actual problem.
+  // 4.- Run of the actual problem.
 
   // 4.1.- Some setup needed for the elastohydrodynamic lubrication problem.
   ehl->SetupSystem();
@@ -86,5 +91,4 @@ void ehl_dyn()
 
   // 5. - perform the result test
   ehl->TestResults(comm);
-
 }

@@ -25,72 +25,54 @@ namespace DRT
   class Discretization;
   class Element;
 
-namespace ELEMENTS
-{
-
-  /// Interface base class for LubricationEleCalc
-  /*!
-    This class exists to provide a common interface for all template
-    versions of LubricationEleCalc.
-   */
-  class LubricationEleInterface : public DRT::SingletonDestruction
+  namespace ELEMENTS
   {
-  public:
-
-    /// Empty constructor
-    LubricationEleInterface(){return;};
-
-    /// Setup element evaluation
-    virtual int SetupCalc(
-        DRT::Element*               ele,
-        DRT::Discretization&        discretization
-        ) = 0;
-
-    /// Evaluate the element
+    /// Interface base class for LubricationEleCalc
     /*!
-      This class does not provide a definition for this function; it
-      must be defined in LubricationEleCalc.
-      The Evaluate() method is meant only for the assembling of the
-      linearized matrix and the right hand side
+      This class exists to provide a common interface for all template
+      versions of LubricationEleCalc.
      */
-    virtual int Evaluate(DRT::Element*                 ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization&          discretization,
-                         DRT::Element::LocationArray&  la,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra) = 0;
+    class LubricationEleInterface : public DRT::SingletonDestruction
+    {
+     public:
+      /// Empty constructor
+      LubricationEleInterface() { return; };
 
-    virtual int EvaluateEHLMon(DRT::Element*                 ele,
-                         Teuchos::ParameterList&       params,
-                         DRT::Discretization&          discretization,
-                         DRT::Element::LocationArray&  la,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra) = 0;
+      /// Setup element evaluation
+      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) = 0;
 
-    /*!
-      This class does not provide a definition for this function; it
-      must be defined in LubricationEleCalc.
-      The EvaluateService() method is meant for everything not related to
-      the assembling of the linearized matrix and the right hand side
-    */
-    virtual int EvaluateService(DRT::Element*                 ele,
-                                Teuchos::ParameterList&       params,
-                                DRT::Discretization&          discretization,
-                                DRT::Element::LocationArray&  la,
-                                Epetra_SerialDenseMatrix&     elemat1_epetra,
-                                Epetra_SerialDenseMatrix&     elemat2_epetra,
-                                Epetra_SerialDenseVector&     elevec1_epetra,
-                                Epetra_SerialDenseVector&     elevec2_epetra,
-                                Epetra_SerialDenseVector&     elevec3_epetra) = 0;
+      /// Evaluate the element
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in LubricationEleCalc.
+        The Evaluate() method is meant only for the assembling of the
+        linearized matrix and the right hand side
+       */
+      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) = 0;
 
-  };
-} // namespace Elements
-} // namespace DRT
+      virtual int EvaluateEHLMon(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) = 0;
+
+      /*!
+        This class does not provide a definition for this function; it
+        must be defined in LubricationEleCalc.
+        The EvaluateService() method is meant for everything not related to
+        the assembling of the linearized matrix and the right hand side
+      */
+      virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) = 0;
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif /* SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_ */

@@ -20,158 +20,142 @@
 
 namespace DRT
 {
-// forward declarations
-class Discretization;
+  // forward declarations
+  class Discretization;
 
-namespace ELEMENTS
-{
-
-  /*----------------------------------------------------------------------*
-   |  QUAD 4 Element                                       |
-   *----------------------------------------------------------------------*/
-  class WallQuad4PoroType : public DRT::ELEMENTS::Wall1Type
+  namespace ELEMENTS
   {
-  public:
+    /*----------------------------------------------------------------------*
+     |  QUAD 4 Element                                       |
+     *----------------------------------------------------------------------*/
+    class WallQuad4PoroType : public DRT::ELEMENTS::Wall1Type
+    {
+     public:
+      std::string Name() const { return "WallQuad4PoroType"; }
 
-    std::string Name() const { return "WallQuad4PoroType"; }
+      static WallQuad4PoroType& Instance();
 
-    static WallQuad4PoroType & Instance();
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual int Initialize(DRT::Discretization& dis);
 
-    virtual int Initialize(DRT::Discretization& dis);
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+     private:
+      static WallQuad4PoroType instance_;
+    };
 
-  private:
+    /*----------------------------------------------------------------------*
+     |  QUAD 9 Element                                       |
+     *----------------------------------------------------------------------*/
+    class WallQuad9PoroType : public DRT::ELEMENTS::Wall1Type
+    {
+     public:
+      std::string Name() const { return "WallQuad9PoroType"; }
 
-    static WallQuad4PoroType instance_;
-  };
+      static WallQuad9PoroType& Instance();
 
-  /*----------------------------------------------------------------------*
-   |  QUAD 9 Element                                       |
-   *----------------------------------------------------------------------*/
-  class WallQuad9PoroType : public DRT::ELEMENTS::Wall1Type
-  {
-  public:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    std::string Name() const { return "WallQuad9PoroType"; }
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-    static WallQuad9PoroType & Instance();
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+      virtual int Initialize(DRT::Discretization& dis);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+     private:
+      static WallQuad9PoroType instance_;
+    };
 
-    virtual int Initialize(DRT::Discretization& dis);
+    /*----------------------------------------------------------------------*
+     |  NURBS 4 Element                                       |
+     *----------------------------------------------------------------------*/
+    class WallNurbs4PoroType : public DRT::ELEMENTS::Wall1Type
+    {
+     public:
+      std::string Name() const { return "WallNurbs4PoroType"; }
 
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      static WallNurbs4PoroType& Instance();
 
-  private:
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    static WallQuad9PoroType instance_;
-  };
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  /*----------------------------------------------------------------------*
-   |  NURBS 4 Element                                       |
-   *----------------------------------------------------------------------*/
-  class WallNurbs4PoroType : public DRT::ELEMENTS::Wall1Type
-  {
-  public:
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    std::string Name() const { return "WallNurbs4PoroType"; }
+      virtual int Initialize(DRT::Discretization& dis);
 
-    static WallNurbs4PoroType & Instance();
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+     private:
+      static WallNurbs4PoroType instance_;
+    };
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+    /*----------------------------------------------------------------------*
+     |  NURBS 9 Element                                       |
+     *----------------------------------------------------------------------*/
+    class WallNurbs9PoroType : public DRT::ELEMENTS::Wall1Type
+    {
+     public:
+      std::string Name() const { return "WallNurbs9PoroType"; }
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      static WallNurbs9PoroType& Instance();
 
-    virtual int Initialize(DRT::Discretization& dis);
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-  private:
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    static WallNurbs4PoroType instance_;
-  };
+      virtual int Initialize(DRT::Discretization& dis);
 
-  /*----------------------------------------------------------------------*
-   |  NURBS 9 Element                                       |
-   *----------------------------------------------------------------------*/
-  class WallNurbs9PoroType : public DRT::ELEMENTS::Wall1Type
-  {
-  public:
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    std::string Name() const { return "WallNurbs9PoroType"; }
+     private:
+      static WallNurbs9PoroType instance_;
+    };
 
-    static WallNurbs9PoroType & Instance();
+    /*----------------------------------------------------------------------*
+     |  TRI 3 Element                                       |
+     *----------------------------------------------------------------------*/
+    class WallTri3PoroType : public DRT::ELEMENTS::Wall1Type
+    {
+     public:
+      std::string Name() const { return "WallTri3PoroType"; }
 
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
+      static WallTri3PoroType& Instance();
 
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
+      virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+      virtual Teuchos::RCP<DRT::Element> Create(
+          const std::string eletype, const std::string eledistype, const int id, const int owner);
 
-    virtual int Initialize(DRT::Discretization& dis);
+      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+      virtual int Initialize(DRT::Discretization& dis);
 
-  private:
+      virtual void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
-    static WallNurbs9PoroType instance_;
-  };
+     private:
+      static WallTri3PoroType instance_;
+    };
 
-  /*----------------------------------------------------------------------*
-   |  TRI 3 Element                                       |
-   *----------------------------------------------------------------------*/
-  class WallTri3PoroType : public DRT::ELEMENTS::Wall1Type
-  {
-  public:
-
-    std::string Name() const { return "WallTri3PoroType"; }
-
-    static WallTri3PoroType & Instance();
-
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                               const std::string eledistype,
-                                               const int id,
-                                               const int owner );
-
-    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
-
-    virtual int Initialize(DRT::Discretization& dis);
-
-    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-  private:
-
-    static WallTri3PoroType instance_;
-  };
-
-}
-}
+  }  // namespace ELEMENTS
+}  // namespace DRT
 
 #endif /* WALL1_PORO_ELETYPES_H_ */

@@ -27,19 +27,15 @@ is just a "control instance".
 
 namespace MAT
 {
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
     class MatListReactions : public virtual MatList
     {
-    public:
-
+     public:
       /// standard constructor
-      MatListReactions(
-        Teuchos::RCP<MAT::PAR::Material> matdata
-        );
+      MatListReactions(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
       virtual ~MatListReactions() { ; }
@@ -51,7 +47,7 @@ namespace MAT
       //@{
 
       /// provide ids of the individual reaction materials
-      const std::vector<int>* ReacIds() const {return reacids_;}
+      const std::vector<int>* ReacIds() const { return reacids_; }
 
       /// length of reaction list
       const int numreac_;
@@ -65,27 +61,24 @@ namespace MAT
 
   }  // namespace PAR
 
-class MatListReactionsType : public DRT::ParObjectType
-{
-public:
+  class MatListReactionsType : public DRT::ParObjectType
+  {
+   public:
+    std::string Name() const { return "MatListReactionsType"; }
 
-  std::string Name() const { return "MatListReactionsType"; }
+    static MatListReactionsType& Instance() { return instance_; };
 
-  static MatListReactionsType & Instance() { return instance_; };
+    virtual DRT::ParObject* Create(const std::vector<char>& data);
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-private:
-
-  static MatListReactionsType instance_;
-};
+   private:
+    static MatListReactionsType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
   class MatListReactions : public virtual MatList
   {
-  public:
-
+   public:
     /// construct empty material object
     MatListReactions();
 
@@ -100,7 +93,10 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MatListReactionsType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return MatListReactionsType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -134,81 +130,67 @@ private:
     virtual void Initialize();
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_reactions; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_matlist_reactions;
+    }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListReactions( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    {
+      return Teuchos::rcp(new MatListReactions(*this));
+    }
 
     /// number of reactions
     int NumReac() const { return paramsreac_->numreac_; }
 
     /// reaction ID by Index
-    int ReacID( const unsigned index ) const;
+    int ReacID(const unsigned index) const;
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::MatListReactions* Parameter() const { return paramsreac_; }
 
-    ///advanced reaction terms
-    double CalcReaBodyForceTerm(
-        const int k,
-        const std::vector<double>& phinp,
-        const double* gpcoord,                                  //!< current Gauss-point coordinates
-        const double scale = 1.0
-    ) const;
+    /// advanced reaction terms
+    double CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+        const double* gpcoord,  //!< current Gauss-point coordinates
+        const double scale = 1.0) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrix(
-            const int k,
-            std::vector<double>& derivs,
-            const std::vector<double>& phinp,
-            const double* gpcoord,                                 //!< current Gauss-point coordinates
-            const double scale = 1.0
-        ) const;
-
-    ///advanced reaction terms
-    double CalcReaBodyForceTerm(
-        const int k,
+    void CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
         const std::vector<double>& phinp,
-        const std::vector<std::pair<std::string,double> >& constants,
-        const double* gpcoord,                                  //!< current Gauss-point coordinates
-        const double scale = 1.0
-    ) const;
+        const double* gpcoord,  //!< current Gauss-point coordinates
+        const double scale = 1.0) const;
+
+    /// advanced reaction terms
+    double CalcReaBodyForceTerm(const int k, const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const double* gpcoord,  //!< current Gauss-point coordinates
+        const double scale = 1.0) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrix(
-            const int k,
-            std::vector<double>& derivs,
-            const std::vector<double>& phinp,
-            const std::vector<std::pair<std::string,double> >& constants,
-            const double* gpcoord,                                  //!< current Gauss-point coordinates
-            const double scale = 1.0
-        ) const;
+    void CalcReaBodyForceDerivMatrix(const int k, std::vector<double>& derivs,
+        const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const double* gpcoord,  //!< current Gauss-point coordinates
+        const double scale = 1.0) const;
 
     // add additional variables to the reaction (only for by-function coupling)
     void AddAdditionalVariables(
-            const int k,
-            const std::vector<std::pair<std::string,double> >& variables
-        ) const;
+        const int k, const std::vector<std::pair<std::string, double>>& variables) const;
 
     /// calculate advanced reaction term derivatives
-    void CalcReaBodyForceDerivMatrixAddVariables(
-            const int k,
-            std::vector<double>& derivs,
-            const std::vector<double>& phinp,
-            const std::vector<std::pair<std::string,double> >& variables,
-            const std::vector<std::pair<std::string,double> >& constants,
-            const double* gpcoord,
-            const double scale = 1.0
-    ) const;
+    void CalcReaBodyForceDerivMatrixAddVariables(const int k, std::vector<double>& derivs,
+        const std::vector<double>& phinp,
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants, const double* gpcoord,
+        const double scale = 1.0) const;
 
 
-  protected:
-
+   protected:
     /// setup of material map
     virtual void SetupMatMap();
 
-  private:
-
+   private:
     /// clear everything
     void Clear();
 
@@ -216,7 +198,6 @@ private:
     MAT::PAR::MatListReactions* paramsreac_;
   };
 
-}
+}  // namespace MAT
 
 #endif
-

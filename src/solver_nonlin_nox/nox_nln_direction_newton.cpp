@@ -21,19 +21,16 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Direction::Newton::Newton(
-    const Teuchos::RCP<NOX::GlobalData>& gd,
-    Teuchos::ParameterList& p) :
-    NOX::Direction::Newton(gd,p),
-    utils_(gd->getUtils())
+    const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& p)
+    : NOX::Direction::Newton(gd, p), utils_(gd->getUtils())
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Newton::compute(NOX::Abstract::Vector& dir,
-    NOX::Abstract::Group& soln,
-    const NOX::Solver::Generic& solver)
+bool NOX::NLN::Direction::Newton::compute(
+    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
 {
   NOX::Abstract::Group::ReturnType status;
 
@@ -42,7 +39,7 @@ bool NOX::NLN::Direction::Newton::compute(NOX::Abstract::Vector& dir,
 
   if (nlnSoln == NULL)
   {
-    throwError("compute","dynamic_cast to nox_nln_group failed!");
+    throwError("compute", "dynamic_cast to nox_nln_group failed!");
   }
 
   // Compute F and Jacobian at current solution at once.
@@ -59,9 +56,9 @@ bool NOX::NLN::Direction::Newton::compute(NOX::Abstract::Vector& dir,
   // direct return, because the isValid flags are already set to true!
   try
   {
-    return NOX::Direction::Newton::compute(dir,soln,solver);
+    return NOX::Direction::Newton::compute(dir, soln, solver);
   }
-  catch ( const char* e )
+  catch (const char* e)
   {
     if (utils_->isPrintType(NOX::Utils::Warning))
     {
@@ -73,9 +70,11 @@ bool NOX::NLN::Direction::Newton::compute(NOX::Abstract::Vector& dir,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Newton::throwError(const std::string& functionName, const std::string& errorMsg)
+void NOX::NLN::Direction::Newton::throwError(
+    const std::string& functionName, const std::string& errorMsg)
 {
-    if (utils_->isPrintType(NOX::Utils::Error))
-      utils_->err() << "NOX::NLN::Direction::Newton::" << functionName << " - " << errorMsg << std::endl;
-    throw "NOX Error";
+  if (utils_->isPrintType(NOX::Utils::Error))
+    utils_->err() << "NOX::NLN::Direction::Newton::" << functionName << " - " << errorMsg
+                  << std::endl;
+  throw "NOX Error";
 }

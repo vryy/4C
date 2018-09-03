@@ -20,13 +20,12 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale)
-  : AleWrapper(ale)
+ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the Wear interface
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
   interface_->Setup(*Discretization());
-  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_wear,interface_);
+  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_wear, interface_);
 
   return;
 }
@@ -34,8 +33,7 @@ ADAPTER::AleWearWrapper::AleWearWrapper(Teuchos::RCP<Ale> ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor>
-ADAPTER::AleWearWrapper::Interface() const
+Teuchos::RCP<const ALE::UTILS::MapExtractor> ADAPTER::AleWearWrapper::Interface() const
 {
   return interface_;
 }

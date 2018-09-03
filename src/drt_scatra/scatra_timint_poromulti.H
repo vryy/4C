@@ -28,19 +28,15 @@
 
 namespace SCATRA
 {
-
   class ScaTraTimIntPoroMulti : public virtual ScaTraTimIntImpl
   {
-    public:
-
+   public:
     /// Standard Constructor
-    ScaTraTimIntPoroMulti(
-        Teuchos::RCP<DRT::Discretization>        dis,
-        Teuchos::RCP<LINALG::Solver>             solver,
-        Teuchos::RCP<Teuchos::ParameterList>     params,
-        Teuchos::RCP<Teuchos::ParameterList>     sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList>     extraparams,
-        Teuchos::RCP<IO::DiscretizationWriter>   output);
+    ScaTraTimIntPoroMulti(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// virtual destructor
     virtual ~ScaTraTimIntPoroMulti(){};
@@ -53,69 +49,68 @@ namespace SCATRA
     virtual void Init();
 
     //! update the solution after convergence of the nonlinear iteration.
-    virtual void Update(
-        const int            num=0 //!< field number
-    ) {return;};
+    virtual void Update(const int num = 0  //!< field number
+    )
+    {
+      return;
+    };
 
     //! set the nodal L2-flux
     virtual void SetL2FluxOfMultiFluid(
-      Teuchos::RCP<const Epetra_MultiVector>   multiflux,
-      const int                                nds_flux
-     );
+        Teuchos::RCP<const Epetra_MultiVector> multiflux, const int nds_flux);
 
     // set solution field of the multiphase fluid
     virtual void SetSolutionFieldOfMultiFluid(
-      Teuchos::RCP<const Epetra_Vector>        phinp_fluid,
-      const int                                nds_phi_fluid
-     );
+        Teuchos::RCP<const Epetra_Vector> phinp_fluid, const int nds_phi_fluid);
 
     //! set the velocity field (zero or field by function)
     virtual void SetVelocityField(const int nds)
-    {dserror("SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
-        " Use SetSolutionFields(...) instead!");};
+    {
+      dserror(
+          "SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
+          " Use SetSolutionFields(...) instead!");
+    };
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
     virtual void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector>   convvel,                   //!< convective velocity/press. vector
-      Teuchos::RCP<const Epetra_Vector>   acc,                       //!< acceleration vector
-      Teuchos::RCP<const Epetra_Vector>   vel,                       //!< velocity vector
-      Teuchos::RCP<const Epetra_Vector>   fsvel,                     //!< fine-scale velocity vector
-      const int                           nds,                       //!< number of the dofset the velocity/pressure state belongs to
-      const bool                          setpressure=false          //!< flag whether the fluid pressure needs to be known for the scatra
-      )
-    {dserror("SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
-        " Use SetSolutionFields(...) instead!");};
+        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity/press. vector
+        Teuchos::RCP<const Epetra_Vector> acc,      //!< acceleration vector
+        Teuchos::RCP<const Epetra_Vector> vel,      //!< velocity vector
+        Teuchos::RCP<const Epetra_Vector> fsvel,    //!< fine-scale velocity vector
+        const int nds,  //!< number of the dofset the velocity/pressure state belongs to
+        const bool setpressure =
+            false  //!< flag whether the fluid pressure needs to be known for the scatra
+    )
+    {
+      dserror(
+          "SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
+          " Use SetSolutionFields(...) instead!");
+    };
 
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 
     //! add parameters depending on the problem
     virtual void AddProblemSpecificParametersAndVectors(
-      Teuchos::ParameterList& params //!< parameter list
+        Teuchos::ParameterList& params  //!< parameter list
     );
 
-    protected:
-
+   protected:
     // do we employ L2-projection for reconstruction of velocity field
     bool L2_projection_;
-
   };
 
 
   class ScaTraTimIntPoroMultiOST : public ScaTraTimIntPoroMulti, public TimIntOneStepTheta
   {
-
-  public:
-
+   public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiOST(
-      Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    ScaTraTimIntPoroMultiOST(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~ScaTraTimIntPoroMultiOST();
@@ -125,24 +120,20 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num=0);
+    void Update(const int num = 0);
 
-  }; // class TimIntPoroMultiOST
+  };  // class TimIntPoroMultiOST
 
 
   class ScaTraTimIntPoroMultiBDF2 : public ScaTraTimIntPoroMulti, public TimIntBDF2
   {
-
-  public:
-
+   public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiBDF2(
-      Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    ScaTraTimIntPoroMultiBDF2(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~ScaTraTimIntPoroMultiBDF2();
@@ -152,24 +143,20 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num=0);
+    void Update(const int num = 0);
 
-  }; // class TimIntPoroMultiBDF2
+  };  // class TimIntPoroMultiBDF2
 
 
   class ScaTraTimIntPoroMultiGenAlpha : public ScaTraTimIntPoroMulti, public TimIntGenAlpha
   {
-
-  public:
-
+   public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiGenAlpha(
-      Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    ScaTraTimIntPoroMultiGenAlpha(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~ScaTraTimIntPoroMultiGenAlpha();
@@ -179,24 +166,20 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num=0);
+    void Update(const int num = 0);
 
-  }; // class TimIntPoroMultiGenAlpha
+  };  // class TimIntPoroMultiGenAlpha
 
 
   class ScaTraTimIntPoroMultiStationary : public ScaTraTimIntPoroMulti, public TimIntStationary
   {
-
-  public:
-
+   public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiStationary(
-      Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+    ScaTraTimIntPoroMultiStationary(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
+        Teuchos::RCP<Teuchos::ParameterList> extraparams,
+        Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
     virtual ~ScaTraTimIntPoroMultiStationary();
@@ -206,10 +189,10 @@ namespace SCATRA
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num=0);
+    void Update(const int num = 0);
 
-  }; // class TimIntPoroMultiStationary
-}
+  };  // class TimIntPoroMultiStationary
+}  // namespace SCATRA
 
 
 

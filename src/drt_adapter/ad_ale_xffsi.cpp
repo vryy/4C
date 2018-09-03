@@ -25,14 +25,13 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale)
-  : AleFsiWrapper(ale)
+ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
 {
   // create the FSI interface
   xff_interface_ = Teuchos::rcp(new ALE::UTILS::XFluidFluidMapExtractor);
   xff_interface_->Setup(*Discretization());
-  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_ff,Interface(),xff_interface_);
-  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_fsi,Interface());
+  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_ff, Interface(), xff_interface_);
+  SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_x_fsi, Interface());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -44,15 +43,13 @@ const Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCM
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleXFFsiWrapper::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> stepinc
-)
+void ADAPTER::AleXFFsiWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   AleFsiWrapper::Evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_x_ff);
 
   // set dispnp_ of xfem dofs to dispn_
-  xff_interface_->InsertXFluidFluidCondVector(xff_interface_->ExtractXFluidFluidCondVector(Dispn()),
-      WriteAccessDispnp());
+  xff_interface_->InsertXFluidFluidCondVector(
+      xff_interface_->ExtractXFluidFluidCondVector(Dispn()), WriteAccessDispnp());
 }
 
 /*----------------------------------------------------------------------------*/

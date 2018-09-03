@@ -19,260 +19,257 @@
 #include "../drt_io/io.H"
 #include "../drt_xfem/xfem_multi_field_mapextractor.H"
 
-namespace DRT {
+namespace DRT
+{
   class DiscretizationInterface;
-} // namespace DRT
-namespace XSTR {
+}  // namespace DRT
+namespace XSTR
+{
   class MultiDiscretizationWrapper;
-namespace IO {
-  class DiscretizationReader;
-  class DiscretizationWriter;
-
-  /*-------------------------------------------------------------------------*/
-  /** \brief create a temporal partial system multi-vector pointer
-   *
-   *  \param vt       (in): desired vector type
-   *  \param num_vecs (in): number of vectors of the multi vector object
-   *  \param dis      (in): discretization */
-  Epetra_MultiVector* CreatePartialMultiVector(
-      const enum ::IO::VectorType& vt,
-      const int & num_vecs,
-      const DRT::DiscretizationInterface & dis);
-
-  /** \class MultiDiscretizationReader
-   *
-   *  \brief Wrapper class to manage the reading process of more than one
-   *  discretization at once.
-   *
-   *  \author hiermeier \date 10/16 */
-  class MultiDiscretizationReader : public ::IO::DiscretizationReader
+  namespace IO
   {
-    typedef std::map<enum XFEM::FieldName, Teuchos::RCP<XSTR::IO::DiscretizationReader> > XReaderMap;
-  public:
-    /** \brief constructor
+    class DiscretizationReader;
+    class DiscretizationWriter;
+
+    /*-------------------------------------------------------------------------*/
+    /** \brief create a temporal partial system multi-vector pointer
      *
-     *   reader for a given discretization to read a particular time step */
-    MultiDiscretizationReader(
-        const Teuchos::RCP<XSTR::MultiDiscretizationWrapper> & dis_wrapper,
-        const Teuchos::RCP< ::IO::InputControl> & input,
-        int step);
+     *  \param vt       (in): desired vector type
+     *  \param num_vecs (in): number of vectors of the multi vector object
+     *  \param dis      (in): discretization */
+    Epetra_MultiVector* CreatePartialMultiVector(const enum ::IO::VectorType& vt,
+        const int& num_vecs, const DRT::DiscretizationInterface& dis);
 
-    /** \brief constructor
+    /** \class MultiDiscretizationReader
      *
-     *  construct reader for a given discretization to read a particular time step */
-    MultiDiscretizationReader(
-        const Teuchos::RCP<XSTR::MultiDiscretizationWrapper> & dis_wrapper,
-        int step);
+     *  \brief Wrapper class to manage the reading process of more than one
+     *  discretization at once.
+     *
+     *  \author hiermeier \date 10/16 */
+    class MultiDiscretizationReader : public ::IO::DiscretizationReader
+    {
+      typedef std::map<enum XFEM::FieldName, Teuchos::RCP<XSTR::IO::DiscretizationReader>>
+          XReaderMap;
 
-    /// destructor
-    virtual ~MultiDiscretizationReader() {};
+     public:
+      /** \brief constructor
+       *
+       *   reader for a given discretization to read a particular time step */
+      MultiDiscretizationReader(const Teuchos::RCP<XSTR::MultiDiscretizationWrapper>& dis_wrapper,
+          const Teuchos::RCP<::IO::InputControl>& input, int step);
 
-    /// read into given vector  [derived]
-    virtual void ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name);
+      /** \brief constructor
+       *
+       *  construct reader for a given discretization to read a particular time step */
+      MultiDiscretizationReader(
+          const Teuchos::RCP<XSTR::MultiDiscretizationWrapper>& dis_wrapper, int step);
 
-    /// read into given vector  [derived]
-    virtual void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
+      /// destructor
+      virtual ~MultiDiscretizationReader(){};
 
-    /// read into given std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >  [derived]
-    virtual void ReadSerialDenseMatrix(
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
-        std::string name);
+      /// read into given vector  [derived]
+      virtual void ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name);
 
-    /// read an integer value from the control file  [derived]
-    virtual int ReadInt(std::string name);
+      /// read into given vector  [derived]
+      virtual void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
-    /// read a double value from the control file  [derived]
-    virtual double ReadDouble(std::string name);
+      /// read into given std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >  [derived]
+      virtual void ReadSerialDenseMatrix(
+          Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata,
+          std::string name);
 
-    /// read into the discretization given in the constructor  [derived]
-    virtual void ReadMesh(int step);
+      /// read an integer value from the control file  [derived]
+      virtual int ReadInt(std::string name);
 
-    /// read nodes into the discretization given in the constructor  [derived]
-    virtual void ReadNodesOnly(int step);
+      /// read a double value from the control file  [derived]
+      virtual double ReadDouble(std::string name);
 
-    /// Read the history data of elements and nodes from restart files  [derived]
-    virtual void ReadHistoryData(int step);
+      /// read into the discretization given in the constructor  [derived]
+      virtual void ReadMesh(int step);
 
-    /// read a non discretisation based vector of doubles  [derived]
-    virtual void ReadRedundantDoubleVector(Teuchos::RCP<std::vector<double> >& doublevec, const std::string name);
+      /// read nodes into the discretization given in the constructor  [derived]
+      virtual void ReadNodesOnly(int step);
 
-    /// read a non discretisation based vector of integers  [derived]
-    virtual void ReadRedundantIntVector( Teuchos::RCP<std::vector<int> >& intvec, const std::string name);
+      /// Read the history data of elements and nodes from restart files  [derived]
+      virtual void ReadHistoryData(int step);
 
-    /// return number of procs which were used for restart output (read from control file) [derived]
-    virtual int GetNumOutputProc(int step);
+      /// read a non discretisation based vector of doubles  [derived]
+      virtual void ReadRedundantDoubleVector(
+          Teuchos::RCP<std::vector<double>>& doublevec, const std::string name);
 
-  protected:
-    /// access the communicator (read-only)
-    virtual const Epetra_Comm& Comm() const;
+      /// read a non discretisation based vector of integers  [derived]
+      virtual void ReadRedundantIntVector(
+          Teuchos::RCP<std::vector<int>>& intvec, const std::string name);
 
-  private:
-    /// pointer to the multi discretization wrapper
-    Teuchos::RCP<XSTR::MultiDiscretizationWrapper> dis_wrapper_;
+      /// return number of procs which were used for restart output (read from control file)
+      /// [derived]
+      virtual int GetNumOutputProc(int step);
 
-    XReaderMap readers_;
-  };  // class MultiDiscretizationReader
+     protected:
+      /// access the communicator (read-only)
+      virtual const Epetra_Comm& Comm() const;
 
-  /*-------------------------------------------------------------------------*/
-  /** \class DiscretizationReader
-   *
-   *  \brief Derived DiscretizationReader which implements additional functionality
-   *  necessary for the MultiDiscretizationReader wrapper class.
-   *
-   *  \author hiermeier \date 10/16 */
-  class DiscretizationReader : public ::IO::DiscretizationReader
-  {
-  public:
-    /// construct reader for a given discretization to read a particular time step [derived]
-    DiscretizationReader(Teuchos::RCP<DRT::DiscretizationInterface> dis,
-        Teuchos::RCP< ::IO::InputControl> input,
-        int step);
+     private:
+      /// pointer to the multi discretization wrapper
+      Teuchos::RCP<XSTR::MultiDiscretizationWrapper> dis_wrapper_;
 
-    /// construct reader for a given discretization to read a particular time step [derived]
-    DiscretizationReader(Teuchos::RCP<DRT::DiscretizationInterface> dis,
-        int step);
+      XReaderMap readers_;
+    };  // class MultiDiscretizationReader
 
-    /// destructor
-    virtual ~DiscretizationReader() {};
+    /*-------------------------------------------------------------------------*/
+    /** \class DiscretizationReader
+     *
+     *  \brief Derived DiscretizationReader which implements additional functionality
+     *  necessary for the MultiDiscretizationReader wrapper class.
+     *
+     *  \author hiermeier \date 10/16 */
+    class DiscretizationReader : public ::IO::DiscretizationReader
+    {
+     public:
+      /// construct reader for a given discretization to read a particular time step [derived]
+      DiscretizationReader(Teuchos::RCP<DRT::DiscretizationInterface> dis,
+          Teuchos::RCP<::IO::InputControl> input, int step);
 
-    /** \brief get the vector type of a given vector name
-     *  \param name (in): name of the vector */
-    enum ::IO::VectorType VectorType(const std::string& name);
-  }; // class DiscretizationReader
+      /// construct reader for a given discretization to read a particular time step [derived]
+      DiscretizationReader(Teuchos::RCP<DRT::DiscretizationInterface> dis, int step);
 
-  /*-------------------------------------------------------------------------*/
-  /** \class MultiDiscretizationWriter
-   *
-   *  \brief Wrapper class to manage the writing process of more than one
-   *  discretization at once.
-   *
-   *  \author hiermeier \date 10/16 */
-  class MultiDiscretizationWriter : public ::IO::DiscretizationWriter
-  {
-    typedef std::map<enum XFEM::FieldName, Teuchos::RCP<XSTR::IO::DiscretizationWriter> > XWriterMap;
-  public:
-    /// constructor
-    MultiDiscretizationWriter(const Teuchos::RCP<XSTR::MultiDiscretizationWrapper> & dis_wrapper);
+      /// destructor
+      virtual ~DiscretizationReader(){};
 
-    /// destructor
-    virtual ~MultiDiscretizationWriter() {};
+      /** \brief get the vector type of a given vector name
+       *  \param name (in): name of the vector */
+      enum ::IO::VectorType VectorType(const std::string& name);
+    };  // class DiscretizationReader
 
-    /// @name Output methods
-    /// @{
-    /// write result header to control file [derived]
-    virtual void NewStep(const int step, const double time);
+    /*-------------------------------------------------------------------------*/
+    /** \class MultiDiscretizationWriter
+     *
+     *  \brief Wrapper class to manage the writing process of more than one
+     *  discretization at once.
+     *
+     *  \author hiermeier \date 10/16 */
+    class MultiDiscretizationWriter : public ::IO::DiscretizationWriter
+    {
+      typedef std::map<enum XFEM::FieldName, Teuchos::RCP<XSTR::IO::DiscretizationWriter>>
+          XWriterMap;
 
-    /// write a result double to control file [derived]
-    virtual void WriteDouble(const std::string name, const double value);
+     public:
+      /// constructor
+      MultiDiscretizationWriter(const Teuchos::RCP<XSTR::MultiDiscretizationWrapper>& dis_wrapper);
 
-    /// write a result integer to control file [derived]
-    virtual void WriteInt(const std::string name, const int value);
+      /// destructor
+      virtual ~MultiDiscretizationWriter(){};
 
-    /// write a result vector [derived]
-    virtual void WriteVector(const std::string name,
-        Teuchos::RCP<const Epetra_MultiVector> vec,
-        ::IO::VectorType vt=::IO::dofvector);
+      /// @name Output methods
+      /// @{
+      /// write result header to control file [derived]
+      virtual void NewStep(const int step, const double time);
 
-    /// write a result vector [derived]
-    virtual void WriteVector(const std::string name,
-        const std::vector<char>& vec,
-        const Epetra_Map& elemap,
-        ::IO::VectorType vt=::IO::dofvector);
+      /// write a result double to control file [derived]
+      virtual void WriteDouble(const std::string name, const double value);
 
-    /// write new mesh and result file next time it is possible
-    virtual void CreateNewResultAndMeshFile();
+      /// write a result integer to control file [derived]
+      virtual void WriteInt(const std::string name, const int value);
 
-    /// write new "field" group to control file including node and element chunks
-    virtual void WriteMesh(const int step, const double time);
+      /// write a result vector [derived]
+      virtual void WriteVector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec,
+          ::IO::VectorType vt = ::IO::dofvector);
 
-    /** for MLMC purposes do not write new meshfile but write name
-     *  of base mesh file to controlfile [derived] */
-    virtual void WriteMesh(const int step, const double time, std::string name_base_file );
+      /// write a result vector [derived]
+      virtual void WriteVector(const std::string name, const std::vector<char>& vec,
+          const Epetra_Map& elemap, ::IO::VectorType vt = ::IO::dofvector);
 
-    /** for particle simulations: write only nodes in new "field"
-     *  group to control file [derived] */
-    virtual void ParticleOutput(const int step,
-        const double time,
-        const bool writerestart);
+      /// write new mesh and result file next time it is possible
+      virtual void CreateNewResultAndMeshFile();
 
-    /// write element data to file [derived]
-    virtual void WriteElementData(bool writeowner);
+      /// write new "field" group to control file including node and element chunks
+      virtual void WriteMesh(const int step, const double time);
 
-    /// write node data to file [derived]
-    virtual void WriteNodeData(bool writeowner);
+      /** for MLMC purposes do not write new meshfile but write name
+       *  of base mesh file to controlfile [derived] */
+      virtual void WriteMesh(const int step, const double time, std::string name_base_file);
 
-    /// write a non discretisation based vector of doubles [derived]
-    virtual void WriteRedundantDoubleVector(const std::string name,
-        Teuchos::RCP<std::vector<double> > doublevec);
+      /** for particle simulations: write only nodes in new "field"
+       *  group to control file [derived] */
+      virtual void ParticleOutput(const int step, const double time, const bool writerestart);
 
-    /// write a non discretisation based vector of integers [derived]
-    virtual void WriteRedundantIntVector(const std::string name,
-        Teuchos::RCP<std::vector<int> > intvec );
+      /// write element data to file [derived]
+      virtual void WriteElementData(bool writeowner);
 
-    /// overwrite result files for the inverse analysis [derived]
-    virtual void OverwriteResultFile();
+      /// write node data to file [derived]
+      virtual void WriteNodeData(bool writeowner);
 
-    /// creating new result files for the inverse analysis [derived]
-    virtual void NewResultFile(int numb_run);
+      /// write a non discretisation based vector of doubles [derived]
+      virtual void WriteRedundantDoubleVector(
+          const std::string name, Teuchos::RCP<std::vector<double>> doublevec);
 
-    /// creating new result files for the mlmc [derived]
-    virtual void NewResultFile(std::string name_appendix, int numb_run);
+      /// write a non discretisation based vector of integers [derived]
+      virtual void WriteRedundantIntVector(
+          const std::string name, Teuchos::RCP<std::vector<int>> intvec);
 
-    /// @}
+      /// overwrite result files for the inverse analysis [derived]
+      virtual void OverwriteResultFile();
 
-    /// @name Data management
-    /// @{
+      /// creating new result files for the inverse analysis [derived]
+      virtual void NewResultFile(int numb_run);
 
-    /// clear all stored map data [derived]
-    virtual void ClearMapCache();
+      /// creating new result files for the mlmc [derived]
+      virtual void NewResultFile(std::string name_appendix, int numb_run);
 
-    /// @}
+      /// @}
 
-    /// get output control [derived]
-    virtual Teuchos::RCP< ::IO::OutputControl> Output() const;
+      /// @name Data management
+      /// @{
 
-    /// set output control [derived]
-    virtual void SetOutput(Teuchos::RCP< ::IO::OutputControl> output);
+      /// clear all stored map data [derived]
+      virtual void ClearMapCache();
 
-  protected:
+      /// @}
 
-    /// access the Epetra_Comm object [derived]
-    virtual const Epetra_Comm& Comm() const;
+      /// get output control [derived]
+      virtual Teuchos::RCP<::IO::OutputControl> Output() const;
 
-    /// pointer to the multi discretization wrapper
-    Teuchos::RCP<XSTR::MultiDiscretizationWrapper> dis_wrapper_;
+      /// set output control [derived]
+      virtual void SetOutput(Teuchos::RCP<::IO::OutputControl> output);
 
-    XWriterMap writers_;
+     protected:
+      /// access the Epetra_Comm object [derived]
+      virtual const Epetra_Comm& Comm() const;
 
-    int curr_step_;
-  }; // MultiDiscretizationWriter
+      /// pointer to the multi discretization wrapper
+      Teuchos::RCP<XSTR::MultiDiscretizationWrapper> dis_wrapper_;
 
-  /*-------------------------------------------------------------------------*/
-  /** \class DiscretizationWriter
-   *
-   *  \brief Derived DiscretizationWriter which implements additional functionality
-   *  necessary for the MultiDiscretizationWriter wrapper class.
-   *
-   *  \author hiermeier \date 11/16 */
-  class DiscretizationWriter : public ::IO::DiscretizationWriter
-  {
-  public:
-    /** Writer constructor always needs a discretization
-     *  Use default control file from global problem. */
-    DiscretizationWriter(Teuchos::RCP<DRT::DiscretizationInterface> dis);
+      XWriterMap writers_;
 
-    /// destructor
-    virtual ~DiscretizationWriter() {};
+      int curr_step_;
+    };  // MultiDiscretizationWriter
 
-    /** Set the output stream at the right position in the control file  */
-    unsigned AugmentControlFile(int step, std::vector<char> & buffer);
+    /*-------------------------------------------------------------------------*/
+    /** \class DiscretizationWriter
+     *
+     *  \brief Derived DiscretizationWriter which implements additional functionality
+     *  necessary for the MultiDiscretizationWriter wrapper class.
+     *
+     *  \author hiermeier \date 11/16 */
+    class DiscretizationWriter : public ::IO::DiscretizationWriter
+    {
+     public:
+      /** Writer constructor always needs a discretization
+       *  Use default control file from global problem. */
+      DiscretizationWriter(Teuchos::RCP<DRT::DiscretizationInterface> dis);
 
-    void AugmentControlFile(const char * buffer, unsigned bufferlength);
+      /// destructor
+      virtual ~DiscretizationWriter(){};
 
-  }; // class DiscretizationReader
+      /** Set the output stream at the right position in the control file  */
+      unsigned AugmentControlFile(int step, std::vector<char>& buffer);
 
-} // namespace IO
-} // namespace XSTR
+      void AugmentControlFile(const char* buffer, unsigned bufferlength);
+
+    };  // class DiscretizationReader
+
+  }  // namespace IO
+}  // namespace XSTR
 
 
 #endif /* SRC_DRT_STRUCTURE_XSTRUCTURE_XSTR_MULTI_IO_H_ */

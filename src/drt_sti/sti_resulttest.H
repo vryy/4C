@@ -39,32 +39,29 @@ namespace STI
   */
   class STIResultTest : public DRT::ResultTest
   {
-    public:
+   public:
+    //! constructor
+    STIResultTest(const Teuchos::RCP<STI::Algorithm>&
+            sti_algorithm  //!< time integrator for scatra-thermo interaction
+    );
 
-      //! constructor
-      STIResultTest(
-          const Teuchos::RCP<STI::Algorithm>&   sti_algorithm   //!< time integrator for scatra-thermo interaction
-          );
+    //! test special quantity not associated with a particular element or node
+    virtual void TestSpecial(
+        DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
+        int& nerr,                        //!< number of failed result tests
+        int& test_count                   ///< number of result tests
+    );
 
-      //! test special quantity not associated with a particular element or node
-      virtual void TestSpecial(
-          DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
-          int&                          nerr,        //!< number of failed result tests
-          int&                          test_count   ///< number of result tests
-          );
+   private:
+    //! get special result to be tested
+    double ResultSpecial(const std::string& quantity  //! name of quantity to be tested
+        ) const;
 
-    private:
+    //! return time integrator for monolithic scatra-thermo interaction
+    const STI::Monolithic& STIMonolithic() const;
 
-      //! get special result to be tested
-      double ResultSpecial(
-          const std::string&   quantity   //! name of quantity to be tested
-          ) const;
-
-      //! return time integrator for monolithic scatra-thermo interaction
-      const STI::Monolithic& STIMonolithic() const;
-
-      //! time integrator for scatra-thermo interaction
-      const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;
+    //! time integrator for scatra-thermo interaction
+    const Teuchos::RCP<const STI::Algorithm> sti_algorithm_;
   };
-}
+}  // namespace STI
 #endif

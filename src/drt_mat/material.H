@@ -29,13 +29,12 @@
 /// MAT: materials
 namespace MAT
 {
-
   namespace PAR
   {
     class Parameter;
   }
 
-  const int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
+  const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /// Interface class for materials in elements
   /*!
@@ -63,8 +62,7 @@ namespace MAT
    */
   class Material : public DRT::ParObject
   {
-  public:
-
+   public:
     /// return type of this material
     virtual INPAR::MAT::MaterialType MaterialType() const = 0;
 
@@ -75,15 +73,11 @@ namespace MAT
     virtual MAT::PAR::Parameter* Parameter() const = 0;
 
     /// create element material object given the number of a material definition
-    static Teuchos::RCP<Material> Factory(
-      int matnum  ///< material ID
-      );
+    static Teuchos::RCP<Material> Factory(int matnum  ///< material ID
+    );
 
     /// Return material density at gauss point (if provided by the specific material)
-    virtual double Density(int gp) const
-    {
-      return Density();
-    }
+    virtual double Density(int gp) const { return Density(); }
 
     /// Return material density (if provided by the specific material)
     virtual double Density() const
@@ -98,9 +92,8 @@ namespace MAT
       dserror("The material you are using does not provide an internal state");
       return 0.0;
     }
-
   };
 
-}
+}  // namespace MAT
 
 #endif

@@ -27,13 +27,10 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntStationary::TimIntStationary(
-    const Teuchos::RCP<DRT::Discretization>&      actdis,
-    const Teuchos::RCP<LINALG::Solver>&           solver,
-    const Teuchos::RCP<Teuchos::ParameterList>&   params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output,
-    bool                                          alefluid /*= false*/)
-: FluidImplicitTimeInt(actdis,solver,params,output,alefluid)
+FLD::TimIntStationary::TimIntStationary(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -48,7 +45,7 @@ void FLD::TimIntStationary::Init()
   // note: this order is important
   FLD::FluidImplicitTimeInt::Init();
 
-  //check, if starting algorithm is desired
+  // check, if starting algorithm is desired
   if (numstasteps_ > 0)
     dserror("no starting algorithm supported for schemes other than af-gen-alpha");
 
@@ -61,10 +58,7 @@ void FLD::TimIntStationary::Init()
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntStationary::~TimIntStationary()
-{
-  return;
-}
+FLD::TimIntStationary::~TimIntStationary() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -121,9 +115,9 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //                         out to screen
     // -------------------------------------------------------------------
-    if (myrank_==0)
+    if (myrank_ == 0)
     {
-     printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+      printf("Stationary Fluid Solver - STEP = %4d/%4d \n", step_, stepmax_);
     }
 
     SetElementTimeParameter();
@@ -136,8 +130,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
     // -------------------------------------------------------------------
-    if (step_==1 and fssgv_ != INPAR::FLUID::no_fssgv)
-      AVM3Preparation();
+    if (step_ == 1 and fssgv_ != INPAR::FLUID::no_fssgv) AVM3Preparation();
 
     // -------------------------------------------------------------------
     //                     solve equation system
@@ -155,7 +148,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     EvaluateDivU();
 
 
-    //Evaluate integral error
+    // Evaluate integral error
     EvaluateErrorComparedToAnalyticalSol();
 
 
@@ -165,32 +158,26 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     Output();
 
-  } // end of time loop
+  }  // end of time loop
 
-} // TimIntStationary::SolveStationaryProblem
+}  // TimIntStationary::SolveStationaryProblem
 
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationary::SetStateTimInt()
 {
-
-  discret_->SetState("velaf",velnp_);
+  discret_->SetState("velaf", velnp_);
   return;
 }
 
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntStationary::CalculateAcceleration(
-    const Teuchos::RCP<const Epetra_Vector>    velnp,
-    const Teuchos::RCP<const Epetra_Vector>    veln,
-    const Teuchos::RCP<const Epetra_Vector>    velnm,
-    const Teuchos::RCP<const Epetra_Vector>    accn,
-    const Teuchos::RCP<Epetra_Vector>          accnp
-)
+void FLD::TimIntStationary::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
+    const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
+    const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
 {
-
   accnp->PutScalar(0.0);
 
   return;
@@ -201,7 +188,7 @@ void FLD::TimIntStationary::CalculateAcceleration(
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationary::SetGamma(Teuchos::ParameterList& eleparams)
 {
-  //do nothing
+  // do nothing
   return;
 }
 
@@ -210,7 +197,7 @@ void FLD::TimIntStationary::SetGamma(Teuchos::ParameterList& eleparams)
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationary::Sep_Multiply()
 {
-  Sep_->Multiply(false,*velnp_,*fsvelaf_);
+  Sep_->Multiply(false, *velnp_, *fsvelaf_);
   return;
 }
 
@@ -218,8 +205,7 @@ void FLD::TimIntStationary::Sep_Multiply()
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
 void FLD::TimIntStationary::OutputofFilteredVel(
-     Teuchos::RCP<Epetra_Vector> outvec,
-     Teuchos::RCP<Epetra_Vector> fsoutvec)
+    Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   // no output since subgrid-scale modeling does not make sense for stationary problems!!!
   return;
@@ -232,22 +218,23 @@ void FLD::TimIntStationary::SetElementTimeParameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",FLD::set_time_parameter);
-  eleparams.set<int>("Physical Type",physicaltype_);
+  eleparams.set<int>("action", FLD::set_time_parameter);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
-  //set time integration scheme
+  // set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
-  eleparams.set("dt",dta_);
-  eleparams.set("theta",theta_);
-  eleparams.set("omtheta",0.0);
+  eleparams.set("dt", dta_);
+  eleparams.set("theta", theta_);
+  eleparams.set("omtheta", 0.0);
 
   // set scheme-specific element parameters and vector values
-  eleparams.set("total time",time_);
+  eleparams.set("total time", time_);
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   return;
 }
 
@@ -257,8 +244,8 @@ void FLD::TimIntStationary::SetElementTimeParameter()
 double FLD::TimIntStationary::TimIntParam() const
 {
   double retval = 0.0;
-    // no FSI with stationary time integrator
-    dserror("FSI does not allow a stationary time integrator.");
+  // no FSI with stationary time integrator
+  dserror("FSI does not allow a stationary time integrator.");
   return retval;
 }
 
@@ -268,7 +255,7 @@ double FLD::TimIntStationary::TimIntParam() const
 void FLD::TimIntStationary::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
 {
   FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
-  if(reconstructder_)
-    FLD::UTILS::ProjectGradientAndSetParam(discret_,eleparams,velnp_,"velafgrad",alefluid_);
+  if (reconstructder_)
+    FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velnp_, "velafgrad", alefluid_);
   return;
 }

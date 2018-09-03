@@ -18,8 +18,8 @@
 
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 
-namespace SCATRA{
-
+namespace SCATRA
+{
   /// Basic algorithm for the transport of passive scalars in the fluid velocity field
   /*!
 
@@ -28,16 +28,14 @@ namespace SCATRA{
    */
   class ScaTraAlgorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
-  public:
-
+   public:
     /// constructor
-    ScaTraAlgorithm(
-        const Epetra_Comm& comm,                     ///< communicator
-        const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
-        const Teuchos::ParameterList& fdyn,          ///< fluid parameter list
-        const std::string scatra_disname,                   ///< scatra discretization name
-        const Teuchos::ParameterList& solverparams   ///< solver parameter list
-        );
+    ScaTraAlgorithm(const Epetra_Comm& comm,        ///< communicator
+        const Teuchos::ParameterList& scatradyn,    ///< scatra parameter list
+        const Teuchos::ParameterList& fdyn,         ///< fluid parameter list
+        const std::string scatra_disname,           ///< scatra discretization name
+        const Teuchos::ParameterList& solverparams  ///< solver parameter list
+    );
 
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraAlgorithm();
@@ -46,12 +44,12 @@ namespace SCATRA{
     virtual void Setup();
 
     /// init
-    virtual void Init(
-        const Teuchos::ParameterList&   prbdyn,              ///< parameter list for global problem
-        const Teuchos::ParameterList&   scatradyn,           ///< parameter list for scalar transport subproblem
-        const Teuchos::ParameterList&   solverparams,        ///< parameter list for scalar transport solver
-        const std::string&              disname = "scatra",  ///< name of scalar transport discretization
-        const bool                      isale = false        ///< ALE flag
+    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+        const Teuchos::ParameterList&
+            scatradyn,  ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
+        const std::string& disname = "scatra",       ///< name of scalar transport discretization
+        const bool isale = false                     ///< ALE flag
     );
 
     /// outer level time loop
@@ -60,8 +58,7 @@ namespace SCATRA{
     /// read restart for preceding turbulent inflow simulation
     void ReadInflowRestart(int restart);
 
-  protected:
-
+   protected:
     /// time loop for one-way coupling
     void TimeLoopOneWay();
 
@@ -69,7 +66,10 @@ namespace SCATRA{
     void TimeLoopTwoWay();
 
     /// provide information about initial field
-    virtual void PrepareTimeLoop(){return;}; // do nothing in base algorithm (only relevant for derived algorithms)
+    virtual void PrepareTimeLoop()
+    {
+      return;
+    };  // do nothing in base algorithm (only relevant for derived algorithms)
 
     /// initial calculations for two-way coupling time loop
     void PrepareTimeLoopTwoWay();
@@ -96,7 +96,7 @@ namespace SCATRA{
     void OuterIterationConvection();
 
     /// take current results for converged and save for next time step
-    void Update(const int num=0);
+    void Update(const int num = 0);
 
     /// take current results for converged and save for next time step
     void UpdateConvection();
@@ -129,6 +129,6 @@ namespace SCATRA{
     const int samstop_;
   };
 
-} // namespace SCATRA
+}  // namespace SCATRA
 
-#endif // SCATRA_ALGORITHM_H
+#endif  // SCATRA_ALGORITHM_H

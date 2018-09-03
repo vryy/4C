@@ -16,16 +16,16 @@
 #include "../drt_inpar/inpar_beamcontact.H"
 
 
-namespace BEAMINTERACTION {
-
+namespace BEAMINTERACTION
+{
   class BeamContactRuntimeVtkOutputParams
   {
-  public:
+   public:
     //! constructor
     BeamContactRuntimeVtkOutputParams();
 
     //! destructor
-    virtual ~BeamContactRuntimeVtkOutputParams() {};
+    virtual ~BeamContactRuntimeVtkOutputParams(){};
 
     //! initialize with the stuff coming from input file
     void Init();
@@ -38,7 +38,7 @@ namespace BEAMINTERACTION {
     bool WriteBinaryOutput() const
     {
       ThrowErrorIfNotInitAndSetup();
-      return ( output_data_format_ == INPAR::BEAMCONTACT::binary );
+      return (output_data_format_ == INPAR::BEAMCONTACT::binary);
     }
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -70,14 +70,12 @@ namespace BEAMINTERACTION {
     };
 
 
-  private:
+   private:
     //! returns the isinit_ flag
-    inline const bool& IsInit() const
-    { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! returns the issetup_ flag
-    inline const bool& IsSetup() const
-    { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! asserts the init and setup status
     void ThrowErrorIfNotInitAndSetup() const;
@@ -86,8 +84,7 @@ namespace BEAMINTERACTION {
     void ThrowErrorIfNotInit() const;
 
 
-  private:
-
+   private:
     bool isinit_;
 
     bool issetup_;
@@ -106,9 +103,8 @@ namespace BEAMINTERACTION {
 
     /// whether to write gaps
     bool output_gaps_;
-
   };
 
-}
+}  // namespace BEAMINTERACTION
 
 #endif

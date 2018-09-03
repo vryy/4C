@@ -19,7 +19,7 @@
 
 // MueLu
 #ifdef HAVE_MueLu
-//Xpetra
+// Xpetra
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MultiVector.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
@@ -30,7 +30,7 @@
 
 /* MueLu typedefs: header files for default types, must be included after all
  * other MueLu/Xpetra headers */
-#include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
+#include <MueLu_UseDefaultTypes.hpp>  // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
@@ -42,32 +42,32 @@
 namespace Teuchos
 {
   class ParameterList;
-} // namespace Teuchos
+}  // namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of methods */
 namespace NLNSOL
 {
-namespace UTILS
-{
-  /*! \brief Convert Baci null space (based on ML) to Xpetra::MultiVector
-   *
-   *  \note This is not specific to the NLNSOL framework. It can also be used at
-   *  other places in Baci like in the AMGnxn preconditioner.
-   *
-   *  ToDo (mayr) Move this to another UTILS place and use it for all MueLu
-   *  applications in order to reduce code redundancy.
-   *
-   *  \author mayr.mt \date 10/2015
-   */
-  Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> >
-  GetXpetraNullSpaceFromBaci(
-      const Teuchos::ParameterList& mlparams, ///< parameter list with null space data created by Baci/ML
-      const Teuchos::RCP<const Xpetra::Map<int,int,Node> > rowmap ///< dof row map
-      );
+  namespace UTILS
+  {
+    /*! \brief Convert Baci null space (based on ML) to Xpetra::MultiVector
+     *
+     *  \note This is not specific to the NLNSOL framework. It can also be used at
+     *  other places in Baci like in the AMGnxn preconditioner.
+     *
+     *  ToDo (mayr) Move this to another UTILS place and use it for all MueLu
+     *  applications in order to reduce code redundancy.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    Teuchos::RCP<Xpetra::MultiVector<double, int, int, Node>> GetXpetraNullSpaceFromBaci(
+        const Teuchos::ParameterList&
+            mlparams,  ///< parameter list with null space data created by Baci/ML
+        const Teuchos::RCP<const Xpetra::Map<int, int, Node>> rowmap  ///< dof row map
+    );
 
-} // namespace UTILS
-} // namespace NLNSOL
+  }  // namespace UTILS
+}  // namespace NLNSOL
 
 #endif
 

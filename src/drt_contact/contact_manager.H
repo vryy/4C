@@ -24,149 +24,145 @@ namespace DRT
 
 namespace CONTACT
 {
-
-// forward declarations
+  // forward declarations
   class CoElement;
 
-/*!
-\brief BACI implementation of main class to control all contact
-
-\author popp (popp@lnm.mw.tum.de)
-*/
-
-class CoManager : public MORTAR::ManagerBase
-{
-public:
-
   /*!
-  \brief Standard Constructor
+  \brief BACI implementation of main class to control all contact
 
-  The constructor takes a discretization  that is expected to have at least
-  two contact boundary conditions. It extracts all contact boundary conditions
-  and constructs one or multiple contact interfaces from them and stores them.
-
-  It calls CONTACT::CoInterface::FillComplete() on all contact interfaces which
-  makes the nodes and elements of a contact interfaces redundant on all
-  processors that either own a node or an element on the interfaces in the
-  input discretization.
-
-  In addition, it creates the necessary solver strategy object which handles
-  the whole contact evaluation.
-
-  \param discret (in): A discretization containing contact boundary conditions
-  \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
-
+  \author popp (popp@lnm.mw.tum.de)
   */
-  CoManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-  /*!
-  \brief Destructor
+  class CoManager : public MORTAR::ManagerBase
+  {
+   public:
+    /*!
+    \brief Standard Constructor
 
-  */
-  virtual ~CoManager() {};
+    The constructor takes a discretization  that is expected to have at least
+    two contact boundary conditions. It extracts all contact boundary conditions
+    and constructs one or multiple contact interfaces from them and stores them.
 
-  //! @name Access methods
+    It calls CONTACT::CoInterface::FillComplete() on all contact interfaces which
+    makes the nodes and elements of a contact interfaces redundant on all
+    processors that either own a node or an element on the interfaces in the
+    input discretization.
 
-  /*!
-  \brief Get discretization
+    In addition, it creates the necessary solver strategy object which handles
+    the whole contact evaluation.
 
-  */
-  DRT::Discretization& Discret() const { return discret_;};
+    \param discret (in): A discretization containing contact boundary conditions
+    \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
-  //@}
+    */
+    CoManager(DRT::Discretization& discret, double alphaf = 0.0);
 
-  //! @name Evaluation methods
+    /*!
+    \brief Destructor
 
-  /*!
-  \brief Write restart information for contact
+    */
+    virtual ~CoManager(){};
 
-  The additionally necessary restart information in the contact
-  case are the current Lagrange multiplier values and the current
-  active set status of each slave node.
+    //! @name Access methods
 
-  \param output (in): IO::Discretization writer for restart
+    /*!
+    \brief Get discretization
 
-  */
-  void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
+    */
+    DRT::Discretization& Discret() const { return discret_; };
 
-  /*!
-  \brief Read restart information for contact
+    //@}
 
-  This method has the inverse functionality of WriteRestart, as
-  it reads the activetoggle / lmold vectors and stores the restart
-  status into each slave node. Moreover, all global maps concerning
-  the active set and the old mortar matrices D,M are rebuilt based
-  on the restart information.
+    //! @name Evaluation methods
 
-  \param reader (in): IO::Discretization reader for restart
-  \param dis (in)   : global dof displacement vector
-  \param zero (in)  : global dof zero vector
+    /*!
+    \brief Write restart information for contact
 
-  */
-  void ReadRestart(IO::DiscretizationReader& reader,
-                   Teuchos::RCP<Epetra_Vector> dis,
-                   Teuchos::RCP<Epetra_Vector> zero);
+    The additionally necessary restart information in the contact
+    case are the current Lagrange multiplier values and the current
+    active set status of each slave node.
 
-  /*!
-  \brief Write interface quantities for postprocessing
+    \param output (in): IO::Discretization writer for restart
 
-  \param output (in): IO::Discretization writer for restart
+    */
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
 
-  */
-  void PostprocessQuantities(IO::DiscretizationWriter& output);
+    /*!
+    \brief Read restart information for contact
 
-  /*!
-  \brief Reconnect Contact Element -- Parent Element Pointers
+    This method has the inverse functionality of WriteRestart, as
+    it reads the activetoggle / lmold vectors and stores the restart
+    status into each slave node. Moreover, all global maps concerning
+    the active set and the old mortar matrices D,M are rebuilt based
+    on the restart information.
 
-  (As during the Restart the initial created structural elements are destructed and created again,
-  the pointer of these elements changes and therefore needs to be reconnected)
-  */
-  void ReconnectParentElements();
+    \param reader (in): IO::Discretization reader for restart
+    \param dis (in)   : global dof displacement vector
+    \param zero (in)  : global dof zero vector
 
-  /*!
-  \brief Set Parent Elements for Poro Face Elements
+    */
+    void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<Epetra_Vector> zero);
 
-  \param output (in): int& type of slave/master elements --> = (-1; //1 poro, 0 struct, -1 default)
-                      Teuchos::RCP<CONTACT::CoElement>& Reference to pointer of contact face element!
-                      Teuchos::RCP<DRT::Element>& Reference to pointer of contact parent element!
+    /*!
+    \brief Write interface quantities for postprocessing
 
-  */
-  void SetPoroParentElement(int& slavetype,int& mastertype,
-      Teuchos::RCP<CONTACT::CoElement>& cele, Teuchos::RCP<DRT::Element>& ele);
+    \param output (in): IO::Discretization writer for restart
 
-  /*!
-  \brief Find Physical Type (Poro or Structure) of Poro Interface
+    */
+    void PostprocessQuantities(IO::DiscretizationWriter& output);
 
-  \param output (in): bool& poromaster, bool& poroslave,
-      bool& structmaster, bool& structslave, int& slavetype, int& mastertype
+    /*!
+    \brief Reconnect Contact Element -- Parent Element Pointers
 
-  */
-  void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave,
-      bool& structmaster, bool& structslave, int& slavetype, int& mastertype);
+    (As during the Restart the initial created structural elements are destructed and created again,
+    the pointer of these elements changes and therefore needs to be reconnected)
+    */
+    void ReconnectParentElements();
 
-  //@}
+    /*!
+    \brief Set Parent Elements for Poro Face Elements
 
-private:
-  /*!
-  \brief Read and check contact input parameters
+    \param output (in): int& type of slave/master elements --> = (-1; //1 poro, 0 struct, -1
+    default) Teuchos::RCP<CONTACT::CoElement>& Reference to pointer of contact face element!
+                        Teuchos::RCP<DRT::Element>& Reference to pointer of contact parent element!
 
-  All specified contact-related input parameters are read from the
-  DRT::Problem::Instance() and stored into a local variable of
-  type Teuchos::ParameterList. Invalid parameter combinations are
-  sorted out and throw a dserror.
+    */
+    void SetPoroParentElement(int& slavetype, int& mastertype,
+        Teuchos::RCP<CONTACT::CoElement>& cele, Teuchos::RCP<DRT::Element>& ele);
 
-  */
-  bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
+    /*!
+    \brief Find Physical Type (Poro or Structure) of Poro Interface
 
-protected:
+    \param output (in): bool& poromaster, bool& poroslave,
+        bool& structmaster, bool& structslave, int& slavetype, int& mastertype
 
-  // don't want = operator and cctor
-  CoManager operator = (const CoManager& old);
-  CoManager(const CoManager& old);
+    */
+    void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
+        bool& structslave, int& slavetype, int& mastertype);
 
-  DRT::Discretization&  discret_; // the underlying problem discretization
+    //@}
 
-}; // class CoManager
-} // namespace CONTACT
+   private:
+    /*!
+    \brief Read and check contact input parameters
+
+    All specified contact-related input parameters are read from the
+    DRT::Problem::Instance() and stored into a local variable of
+    type Teuchos::ParameterList. Invalid parameter combinations are
+    sorted out and throw a dserror.
+
+    */
+    bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
+
+   protected:
+    // don't want = operator and cctor
+    CoManager operator=(const CoManager& old);
+    CoManager(const CoManager& old);
+
+    DRT::Discretization& discret_;  // the underlying problem discretization
+
+  };  // class CoManager
+}  // namespace CONTACT
 
 #endif  // #ifndef CONTACT_MANAGER_H

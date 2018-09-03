@@ -21,15 +21,12 @@
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedModelsStat::TimIntRedModelsStat(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,
-        const Teuchos::RCP<LINALG::Solver>&           solver,
-        const Teuchos::RCP<Teuchos::ParameterList>&   params,
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,
-        bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      TimIntStationary(actdis,solver,params,output,alefluid),
-      TimIntRedModels(actdis,solver,params,output,alefluid)
+FLD::TimIntRedModelsStat::TimIntRedModelsStat(const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
+      TimIntStationary(actdis, solver, params, output, alefluid),
+      TimIntRedModels(actdis, solver, params, output, alefluid)
 {
   return;
 }
@@ -65,8 +62,4 @@ void FLD::TimIntRedModelsStat::ReadRestart(int step)
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntRedModelsStat::~TimIntRedModelsStat()
-{
-  return;
-}
-
+FLD::TimIntRedModelsStat::~TimIntRedModelsStat() { return; }

@@ -25,7 +25,6 @@
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-
   namespace AUX
   {
     class MapExtractor;
@@ -45,23 +44,19 @@ namespace STR
    */
   class TimIntExpl : public TimInt
   {
-
-  public:
-
+   public:
     //! @name Life
     //@{
 
     //! constructor
-    TimIntExpl
-    (
-      const Teuchos::ParameterList& timeparams,  //!< time parameters
-      const Teuchos::ParameterList& ioparams,    //!< ioflags
-      const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,     //!< extra flags
-      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    TimIntExpl(const Teuchos::ParameterList& timeparams,  //!< time parameters
+        const Teuchos::ParameterList& ioparams,           //!< ioflags
+        const Teuchos::ParameterList& sdynparams,         //!< input parameters
+        const Teuchos::ParameterList& xparams,            //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,         //!< current discretisation
+        Teuchos::RCP<LINALG::Solver> solver,              //!< the solver
+        Teuchos::RCP<LINALG::Solver> contactsolver,       //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output     //!< the output
     );
 
     //! Empty constructor
@@ -94,12 +89,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(
-        const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<LINALG::Solver> solver );
+    virtual void Init(const Teuchos::ParameterList& timeparams,
+        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -140,22 +132,22 @@ namespace STR
 
     //! Update Element
     virtual void UpdateStepElement() = 0;
-/*
-    //! Update configuration and time after time step
-    void UpdateStepAndTime()
-    {
-      // system state
-      UpdateStepState();
-      // update time and step
-      time_->UpdateSteps(timen_);
-      step_ = stepn_;
-      //
-      timen_ += (*dt_)[0];
-      stepn_ += 1;
-      // element update
-      UpdateStepElement();
-    }
-*/
+    /*
+        //! Update configuration and time after time step
+        void UpdateStepAndTime()
+        {
+          // system state
+          UpdateStepState();
+          // update time and step
+          time_->UpdateSteps(timen_);
+          step_ = stepn_;
+          //
+          timen_ += (*dt_)[0];
+          stepn_ += 1;
+          // element update
+          UpdateStepElement();
+        }
+    */
     //@}
 
     //! @name Output
@@ -165,9 +157,7 @@ namespace STR
     void PrintStep();
 
     //! The text for summary print, see #PrintStep
-    void PrintStepText
-    (
-      FILE* ofile  //!< output file handle
+    void PrintStepText(FILE* ofile  //!< output file handle
     );
 
     //@}
@@ -198,7 +188,11 @@ namespace STR
     virtual double MethodLinErrCoeffVel() const = 0;
 
     //! return time integration factor
-    virtual double TimIntParam() const { dserror("TimeFac not yet implemented"); return -1.0; }
+    virtual double TimIntParam() const
+    {
+      dserror("TimeFac not yet implemented");
+      return -1.0;
+    }
 
     //@}
 
@@ -243,7 +237,7 @@ namespace STR
       CheckIsSetup();
 
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-      SetTimen( (*time_)[0]+(*dt_)[0] );
+      SetTimen((*time_)[0] + (*dt_)[0]);
 
       // things that need to be done before Predict
       PrePredict();
@@ -259,21 +253,20 @@ namespace STR
 
     //!  Evaluate routine for coupled problems with monolithic approach
     virtual void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> disiterinc ///< iterative solution increment
+        Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
     )
     {
-      dserror("All monolithically coupled problems work with implicit time "
+      dserror(
+          "All monolithically coupled problems work with implicit time "
           "integration schemes. Thus, calling Evaluate() in an explicit scheme "
           "is not possible.");
     }
 
     //! Apply external force
-    void ApplyForceExternal
-    (
-      const double time,  //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
-      Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+    void ApplyForceExternal(const double time,  //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+        const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+        Teuchos::RCP<Epetra_Vector>& fext       //!< external force
     );
 
     /// has to be renamed either here or PrintStep()
@@ -333,21 +326,21 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    virtual const Teuchos::RCP< ::UTILS::ConstrManager> GetConstraintManager()
+    virtual const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager()
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
-    virtual const Teuchos::RCP< ::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    virtual const Teuchos::RCP<::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
       dserror("GetCardiovascular0DManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    virtual const Teuchos::RCP< ::UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    virtual const Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager()
     {
       dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;
@@ -367,18 +360,16 @@ namespace STR
       return Teuchos::null;
     };
 
-    virtual void UpdateIterIncrConstr
-    (
-      Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    virtual void UpdateIterIncrConstr(
+        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
     )
     {
       dserror("UpdateIterIncrConstr() has not been tested for explicit time integrators");
       return;
     }
 
-    virtual void UpdateIterIncrCardiovascular0D
-    (
-      Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
+    virtual void UpdateIterIncrCardiovascular0D(
+        Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
     )
     {
       dserror("UpdateIterIncrCardiovascular0D() has not been tested for explicit time integrators");
@@ -402,12 +393,11 @@ namespace STR
     }
 
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-                                Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
     {
       dserror("UseBlockMatrix() not implemented");
     }
     //@}
-
   };
 
 }  // namespace STR

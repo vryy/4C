@@ -28,58 +28,57 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
   //**********************************************************************
   Teuchos::RCP<DRT::UTILS::IntegrationPoints2D> rule2d;
 
-  switch(eletype)
+  switch (eletype)
   {
-  case DRT::Element::line2:
-  case DRT::Element::line3:
-  case DRT::Element::nurbs2:
-  case DRT::Element::nurbs3:
-  {
-    const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
-    ngp_ = intpoints.nquad;
-    coords_.Reshape(nGP(),2);
-    weights_.resize(nGP());
-    for (int i=0;i<nGP();++i)
+    case DRT::Element::line2:
+    case DRT::Element::line3:
+    case DRT::Element::nurbs2:
+    case DRT::Element::nurbs3:
     {
-      coords_(i,0)=intpoints.qxg[i][0];
-      coords_(i,1)=0.0;
-      weights_[i]=intpoints.qwgt[i];
+      const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
+      ngp_ = intpoints.nquad;
+      coords_.Reshape(nGP(), 2);
+      weights_.resize(nGP());
+      for (int i = 0; i < nGP(); ++i)
+      {
+        coords_(i, 0) = intpoints.qxg[i][0];
+        coords_(i, 1) = 0.0;
+        weights_[i] = intpoints.qwgt[i];
+      }
+      break;
     }
-    break;
-  }
-  case DRT::Element::tri3:
-    rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_tri_7point));
-    break;
-  case DRT::Element::tri6:
-    rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_tri_16point));
-    break;
-  case DRT::Element::quad4:
-    rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_9point));
-    break;
-  case DRT::Element::quad8:
-  case DRT::Element::quad9:
-  case DRT::Element::nurbs4:
-  case DRT::Element::nurbs9:
-    rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_25point));
-    break;
-  default:
-    dserror("ERROR: ElementIntegrator: This contact element type is not implemented!");
-  } // switch(eletype)
+    case DRT::Element::tri3:
+      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_tri_7point));
+      break;
+    case DRT::Element::tri6:
+      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_tri_16point));
+      break;
+    case DRT::Element::quad4:
+      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_9point));
+      break;
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::nurbs4:
+    case DRT::Element::nurbs9:
+      rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_25point));
+      break;
+    default:
+      dserror("ERROR: ElementIntegrator: This contact element type is not implemented!");
+  }  // switch(eletype)
 
   // save Gauss points for all 2D rules
-  if (rule2d!=Teuchos::null)
+  if (rule2d != Teuchos::null)
   {
     ngp_ = rule2d->nquad;
-    coords_.Reshape(nGP(),2);
+    coords_.Reshape(nGP(), 2);
     weights_.resize(nGP());
-    for (int i=0;i<nGP();++i)
+    for (int i = 0; i < nGP(); ++i)
     {
-      coords_(i,0)=rule2d->qxg[i][0];
-      coords_(i,1)=rule2d->qxg[i][1];
-      weights_[i]=rule2d->qwgt[i];
+      coords_(i, 0) = rule2d->qxg[i][0];
+      coords_(i, 1) = rule2d->qxg[i][1];
+      weights_[i] = rule2d->qwgt[i];
     }
   }
 
   return;
 }
-

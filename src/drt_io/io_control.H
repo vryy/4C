@@ -20,48 +20,32 @@
 
 #include <Epetra_Comm.h>
 
-extern "C" {
-
+extern "C"
+{
 #include "../pss_full/pss_types.h"
-
 }
 
 namespace IO
 {
-
   /// control class to manage a control file for output
   class OutputControl
   {
-  public:
-    OutputControl(const Epetra_Comm& comm,
-                  std::string problemtype,
-                  std::string type_of_spatial_approx,
-                  std::string inputfile,
-                  std::string filename,
-                  int ndim,
-                  int restart,
-                  int filesteps,
-                  int create_controlfile);
+   public:
+    OutputControl(const Epetra_Comm& comm, std::string problemtype,
+        std::string type_of_spatial_approx, std::string inputfile, std::string filename, int ndim,
+        int restart, int filesteps, int create_controlfile);
 
-    OutputControl(const Epetra_Comm& comm,
-                  std::string problemtype,
-                  std::string type_of_spatial_approx,
-                  std::string inputfile,
-                  std::string restartfilename,
-                  std::string outputfilename,
-                  int ndim,
-                  int restart,
-                  int filesteps,
-                  int create_controlfile,
-                  bool adaptname = true);
+    OutputControl(const Epetra_Comm& comm, std::string problemtype,
+        std::string type_of_spatial_approx, std::string inputfile, std::string restartfilename,
+        std::string outputfilename, int ndim, int restart, int filesteps, int create_controlfile,
+        bool adaptname = true);
 
     /// \brief copy constructor
     /** \param[in] ocontrol   Copy this object of same type
      *  \param[in] new_prefix Add the prefix to restart and file names (optional)
      *
      *  \author hiermeier \date 08/17 */
-    OutputControl( const OutputControl& ocontrol,
-        const char* new_prefix = NULL );
+    OutputControl(const OutputControl& ocontrol, const char* new_prefix = NULL);
 
     /// output prefix we write to
     /*!
@@ -90,42 +74,33 @@ namespace IO
 
     // modify the number of output steps per binary file
     // (necessary for the structural debugging option "OUTPUTEVERYITER")
-    void SetFileSteps(int filesteps) {filesteps_ = filesteps; }
+    void SetFileSteps(int filesteps) { filesteps_ = filesteps; }
 
     /// input filename
-    std::string InputFileName() const { return inputfile_;}
+    std::string InputFileName() const { return inputfile_; }
 
     int BinIO() const { return create_controlfile_; }
 
     /// overwrites result files for the inverse analysis
-    void OverwriteResultFile( const std::string& spatial_approx );
+    void OverwriteResultFile(const std::string& spatial_approx);
     /// creates new result files for the inverse analysis
-    void NewResultFile( int numb_run, const std::string& spatial_approx);
+    void NewResultFile(int numb_run, const std::string& spatial_approx);
     /// creates new result files for the mlmc
     void NewResultFile(
-        const std::string& name_appendix,
-        int numb_run,
-        const std::string& spatial_approx );
+        const std::string& name_appendix, int numb_run, const std::string& spatial_approx);
 
     /// creates new result files
-    void NewResultFile(
-        std::string name,
-        const std::string& spatial_approx );
+    void NewResultFile(std::string name, const std::string& spatial_approx);
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
 
-  private:
+   private:
+    void WriteHeader(const std::string& control_file_name, const std::string& spatial_approx);
 
-    void WriteHeader(
-        const std::string& control_file_name,
-        const std::string& spatial_approx );
+    void InsertRestartBackReference(int restart, const std::string& outputname);
 
-    void InsertRestartBackReference(
-        int restart,
-        const std::string& outputname );
-
-  private:
+   private:
     std::string problemtype_;
     std::string inputfile_;  ///< input file name
     int ndim_;
@@ -141,8 +116,8 @@ namespace IO
   /// control class to manage a control file for input
   class InputControl
   {
-  public:
-    InputControl(std::string filename, const bool serial=false);
+   public:
+    InputControl(std::string filename, const bool serial = false);
     InputControl(std::string filename, const Epetra_Comm& comm);
     ~InputControl();
 
@@ -151,9 +126,8 @@ namespace IO
     std::string FileName() const { return filename_; }
 
 
-  private:
-
-    InputControl(const InputControl& );
+   private:
+    InputControl(const InputControl&);
     InputControl& operator=(const InputControl&);
 
     std::string filename_;
@@ -170,14 +144,12 @@ namespace IO
   /// \date 11/08
   class ErrorFileControl
   {
-  public:
-
+   public:
     /// constructor
-    ErrorFileControl(
-      const Epetra_Comm& comm,  ///< communicator
-      const std::string filename, ///< output file name prefix
-      int restart,   ///< restart step
-      int create_errorfiles       // do we need to create errorfiles
+    ErrorFileControl(const Epetra_Comm& comm,  ///< communicator
+        const std::string filename,            ///< output file name prefix
+        int restart,                           ///< restart step
+        int create_errorfiles                  // do we need to create errorfiles
     );
 
     /// destructor
@@ -189,8 +161,7 @@ namespace IO
     /// the error file handle
     FILE* Handle() { return errfile_; }
 
-  private:
-
+   private:
     /// output file name prefix
     std::string filename_;
 
@@ -206,6 +177,6 @@ namespace IO
   /// returns std::string::npos if not found
   size_t RestartFinder(const std::string& filename);
 
-}
+}  // namespace IO
 
 #endif

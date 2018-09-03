@@ -24,8 +24,7 @@ namespace ADAPTER
   //! documentation
   class StructureInvana : public StructureTimeLoop
   {
-  public:
-
+   public:
     /// constructor
     explicit StructureInvana(Teuchos::RCP<Structure> structure);
 
@@ -39,16 +38,14 @@ namespace ADAPTER
 
     //! prepare timestep to be integrated
     //! set quantities of the step before
-    void SetTimeStepStateOld(double time,int step,
-        Teuchos::RCP<Epetra_Vector> disp,
-        Teuchos::RCP<Epetra_Vector> vel);
+    void SetTimeStepStateOld(
+        double time, int step, Teuchos::RCP<Epetra_Vector> disp, Teuchos::RCP<Epetra_Vector> vel);
 
-    Teuchos::RCP<std::map<int,Epetra_Vector> > DispSteps(){return sdis_;}
+    Teuchos::RCP<std::map<int, Epetra_Vector>> DispSteps() { return sdis_; }
 
-    Teuchos::RCP<std::map<int, double> > TimeSteps(){return stime_;}
+    Teuchos::RCP<std::map<int, double>> TimeSteps() { return stime_; }
 
-  private:
-
+   private:
     /// resize storage of quantities to be passed out of the time integrator
     void ResizeStorage();
 
@@ -56,21 +53,20 @@ namespace ADAPTER
     //@{
 
     //! time_
-    Teuchos::RCP<std::map<int, double> > stime_;
+    Teuchos::RCP<std::map<int, double>> stime_;
 
     //! displacements
-    Teuchos::RCP<std::map<int,Epetra_Vector> > sdis_;
+    Teuchos::RCP<std::map<int, Epetra_Vector>> sdis_;
 
     //! veclocities
-    Teuchos::RCP<std::map<int,Epetra_Vector> > svel_;
+    Teuchos::RCP<std::map<int, Epetra_Vector>> svel_;
 
     //@}
 
     //! integrate single step only
     bool singlesteponly_;
-
   };
 
-}
+}  // namespace ADAPTER
 
 #endif
