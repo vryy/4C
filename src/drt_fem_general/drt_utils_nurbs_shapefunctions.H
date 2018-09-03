@@ -36,7 +36,7 @@ namespace DRT
               --+XXX+XXX+-->    ------>   ****+XXX+**** --->
                -1      +1   u                             xi
                       \            knot(degree)   knot(degree+1)D
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -45,7 +45,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
                       ^           \             |       /
                       N_{i}(u,v)   \            |      +----
@@ -83,7 +83,7 @@ namespace DRT
                             w_{i} * B_{i}(xi)
                 N_{i} = --------------------------
                          +----+
-                          \
+
                            +    w_{k} * B_{k}(xi)
                           /
                          +----+
@@ -146,7 +146,7 @@ namespace DRT
                -1      +1   u                             xi
 
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -155,7 +155,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
                       ^           \             |       /
                       N_{i}(u,v)   \            |      +----
@@ -246,7 +246,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i} * B_{i}(xi)
                                 /
                                +----+
@@ -266,7 +266,7 @@ namespace DRT
 
              N_{i} = ------------------------
                      +----+
-                      \
+
                        +    w_{k} * B_{k}(xi)
                       /
                      +----+
@@ -297,7 +297,7 @@ namespace DRT
               --+XXX+XXX+-->    ------>   ****+XXX+**** --->
                -1      +1   u                             xi
                       \            knot(degree)   knot(degree+1)D
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -306,7 +306,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
                       ^           \             |       /
                       N_{i}(u,v)   \            |      +----
@@ -349,7 +349,7 @@ namespace DRT
                           w_{i} * B_{i}(xi)
               N_{i} = --------------------------
                       +----+
-                       \
+
                         +    w_{k} * B_{k}(xi)
                        /
                       +----+
@@ -427,7 +427,7 @@ namespace DRT
                -1      +1   u                             xi
 
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -436,7 +436,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
                       ^           \             |       /
                       N_{i}(u,v)   \            |      +----
@@ -539,7 +539,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i} * B_{i}(xi)
                                 /
                                +----+
@@ -568,7 +568,7 @@ namespace DRT
 
              N_{i} = ------------------------
                      +----+
-                      \
+
                        +    w_{k} * B_{k}(xi)
                       /
                      +----+
@@ -782,7 +782,7 @@ namespace DRT
                -1   |  +1                 *   *   *   *
                                               *   *
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -791,7 +791,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i,j}(xi,eta)*f_{i,j}
                     ^             \             |       /
                     N_{i,j}(u,v)   \            |      +----
@@ -829,7 +829,7 @@ namespace DRT
 
              N_{i,j} = ----------------------------------
                         +----+
-                         \
+
                           +    w_{k,l} * B_{k,l}(xi,eta)
                          /
                         +----+
@@ -897,7 +897,7 @@ namespace DRT
                -1   |  +1                 *   *   *   *
                                               *   *
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -906,7 +906,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i,j}(xi,eta)*f_{i,j}
                     ^             \             |       /
                     N_{i,j}(u,v)   \            |      +----
@@ -1022,7 +1022,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i,j} * B_{i,j}(xi,eta)
                                 /
                                +----+
@@ -1042,7 +1042,7 @@ namespace DRT
 
              N_{i,j} = ----------------------------------
                         +----+
-                         \
+
                           +    w_{k,l} * B_{k,l}(xi,eta)
                          /
                         +----+
@@ -1080,7 +1080,7 @@ namespace DRT
                -1   |  +1                  *   *   *   *
                                               *   *
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -1089,7 +1089,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i,j}(xi,eta)*f_{i,j}
                     ^             \             |       /
                     N_{i,j}(u,v)   \            |      +----
@@ -1138,7 +1138,7 @@ namespace DRT
 
              N_{i,j} = ----------------------------------
                         +----+
-                         \
+
                           +    w_{k,l} * B_{k,l}(xi,eta)
                          /
                         +----+
@@ -1223,7 +1223,7 @@ namespace DRT
                -1   |  +1                 *   *   *   *
                                               *   *
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -1232,7 +1232,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i,j}(xi,eta)*f_{i,j}
                     ^             \             |       /
                     N_{i,j}(u,v)   \            |      +----
@@ -1366,7 +1366,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i,j} * B_{i,j}(xi,eta)
                                 /
                                +----+
@@ -1398,7 +1398,7 @@ namespace DRT
 
              N_{i,j} = ----------------------------------
                         +----+
-                         \
+
                           +    w_{k,l} * B_{k,l}(xi,eta)
                          /
                         +----+
@@ -1407,7 +1407,7 @@ namespace DRT
 
         // Nurbs derivatives are defined by the chain rule
         //
-        //                             +- +----+              -+                   +- +----+ -+ | \
+        //                             +- +----+              -+                   +- +----+ -+ |
         //                             |                   |   \             dB_{k,l} |
         //                    dB_{i,j} |    +  w_{k,l}*B_{k,l} |                   |    +
         //                    w_{k,l}*-------- |
@@ -1489,7 +1489,7 @@ namespace DRT
                -1   |  +1                 *   *   *   *
                                               *   *
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -1498,7 +1498,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i,j}(xi,eta)*f_{i,j}
                     ^             \             |       /
                     N_{i,j}(u,v)   \            |      +----
@@ -1547,7 +1547,7 @@ namespace DRT
 
              N_{i,j} = ----------------------------------
                         +----+
-                         \
+
                           +    w_{k,l} * B_{k,l}(xi,eta)
                          /
                         +----+
@@ -1637,7 +1637,7 @@ namespace DRT
                -1   |  +1                 *   *   *   *
                                               *   *
                       \       (knot[0])(degree)   (knot[0])(degree+1)
-                       \
+
                         \                       |
                          \                      |
                           \                     |
@@ -1646,7 +1646,7 @@ namespace DRT
                              \                  |
                               \                 |
                                \                |      +----
-                                \               |       \
+                                \               |
                      Phi o Psi   \              | Phi =  +  N_{i,j}(xi,eta)*f_{i,j}
                     ^             \             |       /
                     N_{i,j}(u,v)   \            |      +----
@@ -1816,7 +1816,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i,j} * B_{i,j}(xi,eta)
                                 /
                                +----+
@@ -1877,7 +1877,7 @@ namespace DRT
 
              N_{i,j} = ----------------------------------
                         +----+
-                         \
+
                           +    w_{k,l} * B_{k,l}(xi,eta)
                          /
                         +----+
@@ -1886,7 +1886,7 @@ namespace DRT
 
         /* Nurbs derivatives are defined by the chain rule
 
-                                       +- +----+              -+                   +- +----+ -+ | \
+                                       +- +----+              -+                   +- +----+ -+ |
            |                   |   \             dB_{k,l} | dB_{i,j} |    +  w_{k,l}*B_{k,l} | | +
            w_{k,l}*-------- | w_{i,j}*--------*|   /                   | - w_{i,j}*B_{i,j}*|   / dxi
            | dxi  |  +----+               |                   |  +----+                  | dN_{i,j}
@@ -1966,7 +1966,7 @@ namespace DRT
                        +-   n,m                           -+
 
 
-                               +- +----+                            -+   +- +----+ -+  -+ |   \
+                               +- +----+                            -+   +- +----+ -+  -+ |
            dB_{n,m}          |   |   \               dB_{n,m}          |   | |    +    w_{n,m} *
            ---------(xi,eta) |   |    +    w_{n,m} * ---------(xi,eta) |   | 2 * B_{i,j} * |   / dxi
            | * |   /                 dxi             |   | |  +----+                k            |
@@ -2098,7 +2098,7 @@ namespace DRT
                           \                      |         |
                            \                     |         |
                             \       (knot[0])(degree)   (knot[0])(degree+1)
-                             \
+
                               \                       |
                                \                      |
                                 \                     |
@@ -2107,7 +2107,7 @@ namespace DRT
                                    \                  |
                                     \                 |
                                      \                |      +----
-                                      \               |       \
+                                      \               |
                            Phi o Psi   \              | Phi =  +  N_{i,j,k}(xi,eta,nu)*f_{i,j,k}
                       ^                 \             |       /
                       N_{i,j,k}(u,v,w)   \            |      +----
@@ -2119,7 +2119,7 @@ namespace DRT
 
                                                    _____
                                                 +--     --+
-                                               /         / \
+                                               /         /
                                               /         /   |
                                              /         /    |
                                             /         /     |
@@ -2152,7 +2152,7 @@ namespace DRT
 
              N_{i,j,k} = ---------------------------------------
                          +----+
-                          \
+
                            +    w_{s,t,r} * B_{s,t,r}(xi,eta,nu)
                           /
                          +----+
@@ -2238,7 +2238,7 @@ namespace DRT
                           \                      |         |
                            \                     |         |
                             \       (knot[0])(degree)   (knot[0])(degree+1)
-                             \
+
                               \                       |
                                \                      |
                                 \                     |
@@ -2247,7 +2247,7 @@ namespace DRT
                                    \                  |
                                     \                 |
                                      \                |      +----
-                                      \               |       \
+                                      \               |
                            Phi o Psi   \              | Phi =  +  N_{i,j,k}(xi,eta,nu)*f_{i,j,k}
                       ^                 \             |       /
                       N_{i,j,k}(u,v,w)   \            |      +----
@@ -2259,7 +2259,7 @@ namespace DRT
 
                                                    _____
                                                 +--     --+
-                                               /         / \
+                                               /         /
                                               /         /   |
                                              /         /    |
                                             /         /     |
@@ -2392,7 +2392,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
                                 /
                                +----+
@@ -2416,7 +2416,7 @@ namespace DRT
 
              N_{i,j,k} = ---------------------------------------
                          +----+
-                          \
+
                            +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu)
                           /
                          +----+
@@ -2467,7 +2467,7 @@ namespace DRT
                           \                      |         |
                            \                     |         |
                             \       (knot[0])(degree)   (knot[0])(degree+1)
-                             \
+
                               \                       |
                                \                      |
                                 \                     |
@@ -2476,7 +2476,7 @@ namespace DRT
                                    \                  |
                                     \                 |
                                      \                |      +----
-                                      \               |       \
+                                      \               |
                            Phi o Psi   \              | Phi =  +  N_{i,j,k}(xi,eta,nu)*f_{i,j,k}
                       ^                 \             |       /
                       N_{i,j,k}(u,v,w)   \            |      +----
@@ -2488,7 +2488,7 @@ namespace DRT
 
                                                    _____
                                                 +--     --+
-                                               /         / \
+                                               /         /
                                               /         /   |
                                              /         /    |
                                             /         /     |
@@ -2537,7 +2537,7 @@ namespace DRT
 
              N_{i,j,k} = ---------------------------------------
                          +----+
-                          \
+
                            +    w_{s,t,r} * B_{s,t,r}(xi,eta,nu)
                          /
                         +----+
@@ -2644,7 +2644,7 @@ namespace DRT
                           \                      |         |
                            \                     |         |
                             \       (knot[0])(degree)   (knot[0])(degree+1)
-                             \
+
                               \                       |
                                \                      |
                                 \                     |
@@ -2653,7 +2653,7 @@ namespace DRT
                                    \                  |
                                     \                 |
                                      \                |      +----
-                                      \               |       \
+                                      \               |
                            Phi o Psi   \              | Phi =  +  N_{i,j,k}(xi,eta,nu)*f_{i,j,k}
                       ^                 \             |       /
                       N_{i,j,k}(u,v,w)   \            |      +----
@@ -2665,7 +2665,7 @@ namespace DRT
 
                                                    _____
                                                 +--     --+
-                                               /         / \
+                                               /         /
                                               /         /   |
                                              /         /    |
                                             /         /     |
@@ -2831,7 +2831,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
                                 /
                                +----+
@@ -2879,7 +2879,7 @@ namespace DRT
 
              N_{i,j,k} = ---------------------------------------
                          +----+
-                          \
+
                            +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu)
                           /
                          +----+
@@ -2890,7 +2890,7 @@ namespace DRT
           /* Nurbs derivatives are defined by the chain rule
 
                                              +- +----+                  -+                       +-
-           +----+                     -+ |   \                       |                       |   \
+           +----+                     -+ |   \                       |                       |
            dB_{r,s,t} | dB_{i,j,k} |    +  w_{r,s,t}*B_{r,s,t} |                       |    +
            w_{r,s,t}*---------- | w_{i,j,k}*----------*|   /                       | -
            w_{i,j,k}*B_{i,j,k}*|   /                   dxi    | dxi    |  +----+                   |
@@ -2989,7 +2989,7 @@ namespace DRT
                           \                      |         |
                            \                     |         |
                             \       (knot[0])(degree)   (knot[0])(degree+1)
-                             \
+
                               \                       |
                                \                      |
                                 \                     |
@@ -2998,7 +2998,7 @@ namespace DRT
                                    \                  |
                                     \                 |
                                      \                |      +----
-                                      \               |       \
+                                      \               |
                            Phi o Psi   \              | Phi =  +  N_{i,j,k}(xi,eta,nu)*f_{i,j,k}
                       ^                 \             |       /
                       N_{i,j,k}(u,v,w)   \            |      +----
@@ -3010,7 +3010,7 @@ namespace DRT
 
                                                    _____
                                                 +--     --+
-                                               /         / \
+                                               /         /
                                               /         /   |
                                              /         /    |
                                             /         /     |
@@ -3092,7 +3092,7 @@ namespace DRT
 
              N_{i,j,k} = ---------------------------------------
                          +----+
-                          \
+
                            +    w_{s,t,r} * B_{s,t,r}(xi,eta,nu)
                           /
                          +----+
@@ -3253,7 +3253,7 @@ namespace DRT
                           \                      |         |
                            \                     |         |
                             \       (knot[0])(degree)   (knot[0])(degree+1)
-                             \
+
                               \                       |
                                \                      |
                                 \                     |
@@ -3262,7 +3262,7 @@ namespace DRT
                                    \                  |
                                     \                 |
                                      \                |      +----
-                                      \               |       \
+                                      \               |
                            Phi o Psi   \              | Phi =  +  N_{i,j,k}(xi,eta,nu)*f_{i,j,k}
                       ^                 \             |       /
                       N_{i,j,k}(u,v,w)   \            |      +----
@@ -3274,7 +3274,7 @@ namespace DRT
 
                                                    _____
                                                 +--     --+
-                                               /         / \
+                                               /         /
                                               /         /   |
                                              /         /    |
                                             /         /     |
@@ -3501,7 +3501,7 @@ namespace DRT
         /*loop all control points, compute sums
 
                                +----+
-                                \
+
              sum_funct_weight =  +    w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
                                 /
                                +----+
@@ -3597,7 +3597,7 @@ namespace DRT
 
              N_{i,j,k} = ---------------------------------------
                          +----+
-                          \
+
                            +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu)
                           /
                          +----+
@@ -3608,7 +3608,7 @@ namespace DRT
           /* Nurbs derivatives are defined by the chain rule
 
                                              +- +----+                  -+                       +-
-           +----+                     -+ |   \                       |                       |   \
+           +----+                     -+ |   \                       |                       |
            dB_{r,s,t} | dB_{i,j,k} |    +  w_{r,s,t}*B_{r,s,t} |                       |    +
            w_{r,s,t}*---------- | w_{i,j,k}*----------*|   /                       | -
            w_{i,j,k}*B_{i,j,k}*|   /                   dxi    | dxi    |  +----+                   |
@@ -3706,7 +3706,7 @@ namespace DRT
               +
            --------------------------------------------------------------------------------------------------------------
            |
-                                             +- +----+                                 -+ 2 | |   \
+                                             +- +----+                                 -+ 2 | |
            |                                        | |    +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu) | |
                                              |   /                                      | | | +----+
            |                                        |
