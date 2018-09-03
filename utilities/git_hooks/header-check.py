@@ -43,6 +43,7 @@ def file_contents(filename):
   " Return a file's contents for this transaction. "
   output=command_output("cat %s" %filename)
   output=output.decode()
+
   return output
 
 def pretty_print_error(allerrors):

@@ -17,13 +17,12 @@
 # Commit rejection can only be triggered by non-compliant headers
 
 
-# Author: Jonas Nitzler
-#         Maximilian Grill
-# Date:   31.08.2018
-# Version: 1.1
+# Author:    Jonas Nitzler
+#            Maximilian Grill
+# Date:      03.09.2018
+# Version:   1.2
 
 ########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
-
 if [ -f utilities/code_styles/clang-format ]
 then
   # set the field separator to new line
@@ -35,27 +34,31 @@ then
     if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
     then
       # format the file
-      clang-format -i -style=file $(pwd)/${line}
-
- ####### Inform user about clang changes ##########
-      echo "####################################################################"
-      echo "In the following the changes by clang are presented...              "
-      echo "####################################################################"
-
-      git diff --diff-filter=ACMR $(pwd)/${line}
-
-      # and then add the file (so that any formatting changes get committed)
-      git add $(pwd)/${line}
-      echo "################ END OF CLANG CHANGES ##############################"
-
+      if [[ $(clang-format -style=file $(pwd)/${line}) ]]
+         then
+             uncompliant_files+="$(pwd)/${line}\n"
+         fi
     fi
   done
+
+  if [ ! -z "$uncompliant_files" ]
+  then
+    echo "########################################################################"
+    printf "The following files are not clang compliant:\n"
+    echo "########################################################################"
+    printf "$uncompliant_files"
+    echo "--> Please run clang-format manually for those files using: <clang-format -i -style=file path/to/file>"
+    echo "########################################################################"
+   exit 1
+  fi
+
+
 else
   echo "ERROR: clang-format was not found, cannot format files!"
   exit 1
 fi
 ### Header check ################################################
-utilities/git_hooks/header-check.py || exit 1
+python utilities/git_hooks/header-check.py || exit 1
 exit 0
 
 
