@@ -80,8 +80,6 @@ void MORTAR::MortarEleDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add area_
   DRT::ParObject::AddtoPack(data, area_);
-  // add searchelements_
-  DRT::ParObject::AddtoPack(data, &searchelements_, (int)searchelements_.size());
 
   return;
 }
@@ -95,8 +93,6 @@ void MORTAR::MortarEleDataContainer::Unpack(
 {
   // area_
   DRT::ParObject::ExtractfromPack(position, data, area_);
-  // searchelements_
-  DRT::ParObject::ExtractfromPack(position, data, &searchelements_, (int)searchelements_.size());
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
