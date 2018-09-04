@@ -164,7 +164,6 @@ checkcode:
 imcs-buildtest_minimal:
     << : *buildtest_minimal
     variables:
-        CTEST_CONFIGURE_PREFIX: "bash "
         CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -179,7 +178,6 @@ imcs-buildtest_minimal:
 imcs-buildtest_full:
     << : *buildtest_full
     variables:
-        CTEST_CONFIGURE_PREFIX: "bash "
         CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -194,7 +192,6 @@ imcs-buildtest_full:
 imcs-buildtest_daily:
     << : *buildtest_daily
     variables:
-        CTEST_CONFIGURE_PREFIX: "bash "
         CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -209,7 +206,6 @@ imcs-buildtest_daily:
 imcs-buildtest_daily_debug:
     << : *buildtest_daily_debug
     variables:
-        CTEST_CONFIGURE_PREFIX: "bash "
         CTEST_EXCLUDE_STRING: "-pp|-energy"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make full -j3"
@@ -224,7 +220,6 @@ imcs-buildtest_daily_debug:
 .imcs-doxygen:
     << : *doxygen
     variables:
-        CTEST_CONFIGURE_PREFIX: "bash "
         CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
         CTEST_CONFIGURE_POSTFIX: ""
         CTEST_MAKE: "make documentation"
