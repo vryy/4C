@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ln -s /usr/lib/blitz/include/blitz/gnu /usr/include/blitz
 
