@@ -3,19 +3,17 @@
 
 \brief A class for performing mortar search in 2D/3D based on binarytrees
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
 
+\maintainer Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include "mortar_binarytree.H"
-#include "mortar_node.H"
-#include "mortar_element.H"
+
 #include "mortar_defines.H"
+#include "mortar_element.H"
+#include "mortar_node.H"
+
 #include "../drt_contact/contact_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -76,7 +74,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
   EnlargeGeometry(enlarge);
 
   // if current treenode is inner treenode
-  if (type_ == 0 || type_ == 2)
+  if (type_ == SLAVE_INNER || type_ == MASTER_INNER)
   {
     // divide treenode
     DivideTreeNode();
@@ -90,9 +88,9 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
     else
     {
       // if leftchild is slave leaf
-      if (leftchild_->Type() == 1) sleafsmap_[0].push_back(leftchild_);
+      if (leftchild_->Type() == SLAVE_LEAF) sleafsmap_[0].push_back(leftchild_);
       // if leaftchild is master leaf
-      if (leftchild_->Type() == 3) mleafsmap_[0].push_back(leftchild_);
+      if (leftchild_->Type() == MASTER_LEAF) mleafsmap_[0].push_back(leftchild_);
 
       // recursively initialize the whole tree
       leftchild_->InitializeTree(enlarge);
@@ -107,9 +105,9 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
     else
     {
       // if rightchild is slave leaf
-      if (rightchild_->Type() == 1) sleafsmap_[1].push_back(rightchild_);
+      if (rightchild_->Type() == SLAVE_LEAF) sleafsmap_[1].push_back(rightchild_);
       // if rightchild is master leaf
-      if (rightchild_->Type() == 3) mleafsmap_[1].push_back(rightchild_);
+      if (rightchild_->Type() == MASTER_LEAF) mleafsmap_[1].push_back(rightchild_);
 
       // recursively initialize the whole tree
       rightchild_->InitializeTree(enlarge);
@@ -212,7 +210,7 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop()
 void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
 {
   // if current treenode is inner node
-  if (type_ == 0 || type_ == 2)
+  if (type_ == SLAVE_INNER || type_ == MASTER_INNER)
   {
     // std::cout <<"\n"<< Comm().MyPID() << " Treenode "<< j <<" is a inner treenode!";
     for (int k = 0; k < kdop_ / 2; k++)
@@ -232,7 +230,7 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double& enlarge)
   }
 
   // if current treenode is leafnode
-  if (type_ == 1 || type_ == 3)
+  if (type_ == SLAVE_LEAF || type_ == MASTER_LEAF)
   {
     // initialize slabs
     for (int j = 0; j < kdop_ / 2; j++)
@@ -435,18 +433,18 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
     // is the new left child treenode a leaf node?
     if (leftelements.size() == 1)
     {
-      if (type_ == 0)
+      if (type_ == SLAVE_INNER)
         lefttype = SLAVE_LEAF;
-      else if (type_ == 2)
+      else if (type_ == MASTER_INNER)
         lefttype = MASTER_LEAF;
       else
         dserror("ERROR: Invalid TreeNodeType");
     }
     else
     {
-      if (type_ == 0)
+      if (type_ == SLAVE_INNER)
         lefttype = SLAVE_INNER;
-      else if (type_ == 2)
+      else if (type_ == MASTER_INNER)
         lefttype = MASTER_INNER;
       else
         dserror("ERROR: Invalid TreeNodeType");
@@ -455,18 +453,18 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
     // is the new right child treenode a leaf node?
     if (rightelements.size() == 1)
     {
-      if (type_ == 0)
+      if (type_ == SLAVE_INNER)
         righttype = SLAVE_LEAF;
-      else if (type_ == 2)
+      else if (type_ == MASTER_INNER)
         righttype = MASTER_LEAF;
       else
         dserror("ERROR: Invalid TreeNodeType");
     }
     else
     {
-      if (type_ == 0)
+      if (type_ == SLAVE_INNER)
         righttype = SLAVE_INNER;
-      else if (type_ == 2)
+      else if (type_ == MASTER_INNER)
         righttype = MASTER_INNER;
       else
         dserror("ERROR: Invalid TreeNodeType");
@@ -484,7 +482,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
     // update slave and mastertreenodes map
     // if parent treenode is slave
-    if (type_ == 0)
+    if (type_ == SLAVE_INNER)
     {
       // if map of treenodes does not have enogh rows-->resize!
       if ((int)(streenodesmap_.size()) <= (layer_ + 1)) streenodesmap_.resize((layer_ + 2));
@@ -495,7 +493,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
     }
 
     // if parent treenode is master
-    if (type_ == 2)
+    if (type_ == MASTER_INNER)
     {
       // if map of treenodes does not have enogh rows-->resize!
       if ((int)(mtreenodesmap_.size()) <= (layer_ + 1)) mtreenodesmap_.resize((layer_ + 2));
@@ -517,20 +515,35 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::PrintType()
 {
-  if (type_ == 0)
-    std::cout << std::endl << "SLAVE_INNER ";
-  else if (type_ == 1)
-    std::cout << std::endl << "SLAVE_LEAF ";
-  else if (type_ == 2)
-    std::cout << std::endl << "MASTER_INNER ";
-  else if (type_ == 3)
-    std::cout << std::endl << "MASTER_LEAF ";
-  else if (type_ == 4)
-    std::cout << std::endl << "TreeNode contains no Slave-Elements=NO_SLAVEELEMENTS ";
-  else if (type_ == 5)
-    std::cout << std::endl << "TreeNode contains no Master-Elements=NO_MASTERELEMENTS ";
-  else
-    std::cout << std::endl << "UNDEFINED ";
+  switch (type_)
+  {
+    case SLAVE_INNER:
+      std::cout << std::endl << "SLAVE_INNER ";
+      break;
+    case SLAVE_LEAF:
+      std::cout << std::endl << "SLAVE_LEAF ";
+      break;
+    case MASTER_INNER:
+      std::cout << std::endl << "MASTER_INNER ";
+      break;
+    case MASTER_LEAF:
+      std::cout << std::endl << "MASTER_LEAF ";
+      break;
+    case NOSLAVE_ELEMENTS:
+      std::cout << std::endl << "TreeNode contains no Slave-Elements=NO_SLAVEELEMENTS ";
+      break;
+    case NOMASTER_ELEMENTS:
+      std::cout << std::endl << "TreeNode contains no Master-Elements=NO_MASTERELEMENTS ";
+      break;
+    case UNDEFINED:
+      std::cout << std::endl << "UNDEFINED ";
+      break;
+    default:
+      dserror("Unknown MORTAR::BinaryTreeNodeType detected.");
+      break;
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -911,7 +924,7 @@ MORTAR::BinaryTree::BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra
   sleafsmap_.resize(2);
   mleafsmap_.resize(2);
 
-  // claculates minimal element length
+  // calculate minimal element length
   SetEnlarge();
 
   //**********************************************************************
@@ -1210,7 +1223,7 @@ void MORTAR::BinaryTree::SetEnlarge()
 void MORTAR::BinaryTree::PrintTree(Teuchos::RCP<BinaryTreeNode> treenode)
 {
   // if treenode has no elements (NOSLAVE_ELEMENTS,NOMASTER_ELEMENTS)
-  if (treenode->Type() == 4 || treenode->Type() == 5)
+  if (treenode->Type() == NOSLAVE_ELEMENTS || treenode->Type() == NOMASTER_ELEMENTS)
   {
     std::cout << "\n" << Comm().MyPID() << " Tree has no element to print";
     return;
@@ -1220,7 +1233,7 @@ void MORTAR::BinaryTree::PrintTree(Teuchos::RCP<BinaryTreeNode> treenode)
     std::cout << " " << treenode->Elelist()[i];
 
   // while treenode is inner node
-  if (treenode->Type() == 0 || treenode->Type() == 2)
+  if (treenode->Type() == SLAVE_INNER || treenode->Type() == MASTER_INNER)
   {
     PrintTree(treenode->Leftchild());
     PrintTree(treenode->Rightchild());
@@ -1265,7 +1278,7 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> 
   treenode->CalculateSlabsDop();
   treenode->EnlargeGeometry(enlarge_);
 
-  if (treenode->Type() == 0 || treenode->Type() == 2)
+  if (treenode->Type() == SLAVE_INNER || treenode->Type() == MASTER_INNER)
   {
     EvaluateUpdateTreeTopDown(treenode->Leftchild());
     EvaluateUpdateTreeTopDown(treenode->Rightchild());
@@ -1299,7 +1312,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
   // tree needs to be updated before running contact search!
 
   // if there are no elements
-  if (streenode->Type() == 4 || mtreenode->Type() == 5) return;
+  if (streenode->Type() == NOSLAVE_ELEMENTS || mtreenode->Type() == NOMASTER_ELEMENTS) return;
 
   // check if treenodes intercept
   // (they only intercept if ALL slabs intercept!)
@@ -1327,7 +1340,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
   if (nintercepts == kdop_ / 2)
   {
     // slave and master treenodes are inner nodes
-    if (streenode->Type() == 0 && mtreenode->Type() == 2)
+    if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_INNER)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
       EvaluateSearchSeparate(streenode->Leftchild(), mtreenode->Leftchild());
@@ -1337,7 +1350,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
     }
 
     // slave treenode is inner, master treenode is leaf
-    if (streenode->Type() == 0 && mtreenode->Type() == 3)
+    if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_LEAF)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
       EvaluateSearchSeparate(streenode->Leftchild(), mtreenode);
@@ -1345,7 +1358,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
     }
 
     // slave treenode is leaf,  master treenode is inner
-    if (streenode->Type() == 1 && mtreenode->Type() == 2)
+    if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_INNER)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
       EvaluateSearchSeparate(streenode, mtreenode->Leftchild());
@@ -1353,7 +1366,7 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
     }
 
     // both treenodes are leaf --> feasible pair
-    if (streenode->Type() == 1 && mtreenode->Type() == 3)
+    if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF)
     {
       int sgid = (int)streenode->Elelist()[0];  // global id of slave element
       int mgid = (int)mtreenode->Elelist()[0];  // global id of masterelement
@@ -1366,7 +1379,8 @@ void MORTAR::BinaryTree::EvaluateSearchSeparate(
   }
 
 #ifdef MORTARGMSHCTN  // for plotting contacting treenodes
-  if (streenode->Type() == 1 && mtreenode->Type() == 3 && nintercepts == kdop_ / 2)
+  if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF &&
+      nintercepts == kdop_ / 2)
   {
     couplingmap_[0].push_back(streenode);
     couplingmap_[1].push_back(mtreenode);
@@ -1385,7 +1399,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(
   // root nodes need to be updated before running combined contact search!
 
   // if there are no elements
-  if (streenode->Type() == 4 || mtreenode->Type() == 5) return;
+  if (streenode->Type() == NOSLAVE_ELEMENTS || mtreenode->Type() == NOMASTER_ELEMENTS) return;
 
   // check if treenodes intercept
   // (they only intercept if ALL slabs intercept!)
@@ -1413,7 +1427,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(
   if (nintercepts == kdop_ / 2)
   {
     // slave and master treenodes are inner nodes
-    if (streenode->Type() == 0 && mtreenode->Type() == 2)
+    if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_INNER)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
       streenode->Leftchild()->CalculateSlabsDop();
@@ -1432,7 +1446,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(
     }
 
     // slave treenode is inner,  master treenode is leaf
-    if (streenode->Type() == 0 && mtreenode->Type() == 3)
+    if (streenode->Type() == SLAVE_INNER && mtreenode->Type() == MASTER_LEAF)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
       streenode->Leftchild()->CalculateSlabsDop();
@@ -1445,7 +1459,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(
     }
 
     // slave treenode is leaf,  master treenode is inner
-    if (streenode->Type() == 1 && mtreenode->Type() == 2)
+    if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_INNER)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
       mtreenode->Leftchild()->CalculateSlabsDop();
@@ -1458,7 +1472,7 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(
     }
 
     // both treenodes are leaf --> feasible pair
-    if (streenode->Type() == 1 && mtreenode->Type() == 3)
+    if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF)
     {
       // std::cout <<"\n"<< Comm().MyPID() << " 2 leaf nodes!";
       int sgid = (int)streenode->Elelist()[0];  // global id of slave element
@@ -1472,7 +1486,8 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(
   }
 
 #ifdef MORTARGMSHCTN  // for plotting contacting treenodes
-  if (streenode->Type() == 1 && mtreenode->Type() == 3 && nintercepts == kdop_ / 2)
+  if (streenode->Type() == SLAVE_LEAF && mtreenode->Type() == MASTER_LEAF &&
+      nintercepts == kdop_ / 2)
   {
     couplingmap_[0].push_back(streenode);
     couplingmap_[1].push_back(mtreenode);
