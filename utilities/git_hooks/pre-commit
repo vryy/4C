@@ -5,24 +5,20 @@
 #####################################################
 
 # This pre - commit hook will be executed by Git before every new commit
-# In the version at hand, the clang-format style changes will be enforced automatically after the commit by this hook
-# Hence, clang-format will not lead to a rejection of any commit but will be executed automatically
-# Nevertheless, the user will get a shell output of the clang-format changes
+# In the version at hand, clang-format will only write out non-compliant files to the shell output and will not perfom any formatting automatically
+# In the case that the script detects files that are not compliant with the current clang-format BACI style, the commit will be rejected (script exits 1)
 
-# In a second phase a set of python scripts checks the commited files for compliance with the BACI header requirements
-# If a header is missing or does not follow the BACI standards, the python scripts will generate according error messages in the shell output
-# The commit will be rejected if errors appear. The user has to change the headers manually until all requirements are fulfilled
+# In a second phase a set of Python scripts checks the staged files for compliance with the BACI header requirements
+# If a header is missing or does not follow the BACI standards, the Python scripts will generate error messages in the shell output
+# The commit will be rejected if errors appear (script exit 1). The user has to change the headers manually until all requirements are fulfilled
 
-# The commit will be rejected if this hook script returns the value 1 and will be accepted if it returns 0
-# Commit rejection can only be triggered by non-compliant headers
-
+# The commit will be accepted if the script exits with 0 (no uncompliant headers or style formats found)
 
 # Author:    Jonas Nitzler
 #            Maximilian Grill
 # Date:      03.09.2018
 # Version:   1.3
 
-########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
 if [ -f ./utilities/code_styles/clang-format ]
 then
   # set the field separator to new line
@@ -53,7 +49,7 @@ then
     echo "--> Please run clang-format manually for those files using:"
     echo "./utilities/code_styles/clang-format -i -style=file <path/to/file>"
     echo "(Path above is given from <Source> directory)"
-    echo "--> Please add all formated files afterwards to the git staging area using: git add <path/to/file>"
+    echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
     printf "\n"
     exit 1
   fi
@@ -66,5 +62,3 @@ fi
 ### Header check ################################################
 python ./utilities/git_hooks/header-check.py || exit 1
 exit 0
-
-
