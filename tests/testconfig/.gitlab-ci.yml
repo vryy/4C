@@ -62,7 +62,7 @@ variables:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_full.log
         # Output 200 lines for any failing test
-        - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
+        - "grep -B 200 '*Failed' ../buildtest_full.log || true"
         - sed -n '/tests passed,/,//p' ../buildtest_full.log
     only:
         refs:
@@ -83,7 +83,7 @@ variables:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily.log
         # Output 200 lines for any failing test 
-        - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
+        - "grep -B 200 '*Failed' ../buildtest_daily.log || true"
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
     only:
         variables:
@@ -103,7 +103,7 @@ variables:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily_debug.log
         # Output 200 lines for any failing test
-        - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
+        - "grep -B 200 '*Failed' ../buildtest_daily_debug.log || true"
         - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
     only:
         variables:
