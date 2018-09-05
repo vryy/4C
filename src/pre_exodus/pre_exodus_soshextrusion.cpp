@@ -650,7 +650,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
          //      Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new
          //      ElementBlock(newshape,newconn,blockname.str()));
          //      neweblocks.insert(std::pair<int,Teuchos::RCP<EXODUS::ElementBlock>
-        //      >(highestblock,neweblock)); highestblock ++; break;
+         //      >(highestblock,neweblock)); highestblock ++; break;
       }
       case sideset:
       {  // SideSets can have different types of eles and have to be checked individually

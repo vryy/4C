@@ -22,7 +22,7 @@
 #include "beam3_base.H"
 
 //#define BEAM3DISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as
-//discrete force at given element parameter position DISCRETELINENEUMANN Default: off //for all
+// discrete force at given element parameter position DISCRETELINENEUMANN Default: off //for all
 // elements contained in the corresponding design line!
 
 //! \brief DRT: namespace of the ccarat discretization module
@@ -548,11 +548,11 @@ namespace DRT
 
 
             // the here employed beam element does not need data about the current position of the
-            // nodal directors so that initilization of those can be skipped (the nodal displacements
-            // handeled in beam3_evaluate.cpp are not the current angles, but only the differences
-            // between current angles and angles in reference configuration, respectively. Thus the
-            // director orientation in reference configuration cancels out and can be assumed to be
-            // zero without loss of generality
+            // nodal directors so that initilization of those can be skipped (the nodal
+            // displacements handeled in beam3_evaluate.cpp are not the current angles, but only the
+            // differences between current angles and angles in reference configuration,
+            // respectively. Thus the director orientation in reference configuration cancels out
+            // and can be assumed to be zero without loss of generality
 
             curvconv_[numgp].Clear();
           }  // for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -780,7 +780,8 @@ namespace DRT
       //! by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
       std::vector<LINALG::Matrix<3, 1>> thetaconv_;
       //! angle displacement taken from discretization and interpolated for a specific Gauss point
-      //! by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
+      //! by Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration
+      //! step
       std::vector<LINALG::Matrix<3, 1>> thetaold_;
       //! angle displacement taken from discretization and interpolated for a specific Gauss point
       //! by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
@@ -904,15 +905,12 @@ namespace DRT
           int randompergauss>  // number of nodes, number of dimensions of embedding space, number
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
-                               void
-                               CalcBrownianForcesAndStiff(
-                                   Teuchos::ParameterList& params,   //!< parameter list
-                                   const std::vector<double>& vel,   //!< element velocity vector
-                                   const std::vector<double>& disp,  //!< element disp vector
-                                   Epetra_SerialDenseMatrix*
-                                       stiffmatrix,  //!< element stiffness matrix
-                                   Epetra_SerialDenseVector*
-                                       force);  //!< element internal force vector
+      void
+      CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                         //!< element velocity vector
+          const std::vector<double>& disp,                        //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,                  //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);                       //!< element internal force vector
 
       //! computes damping coefficients for employed friction model
       void MyDampingConstants(LINALG::Matrix<3, 1>& gamma);
@@ -929,27 +927,24 @@ namespace DRT
       template <int nnode, int ndim,
           int dof>  // number of nodes, number of dimensions of embedding space, number of degrees
                     // of freedom per node
-                    void
-                    MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-                        const std::vector<double>& vel,         //!< element velocity vector
-                        const std::vector<double>& disp,        //!< element disp vector
-                        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                        Epetra_SerialDenseVector* force);       //!< element internal force vector
+      void
+      MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                     //!< element velocity vector
+          const std::vector<double>& disp,                    //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,              //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);                   //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <int nnode, int ndim, int dof,
           int randompergauss>  // number of nodes, number of dimensions of embedding space, number
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
-                               void
-                               MyStochasticForces(
-                                   Teuchos::ParameterList& params,   //!< parameter list
-                                   const std::vector<double>& vel,   //!< element velocity vector
-                                   const std::vector<double>& disp,  //!< element disp vector
-                                   Epetra_SerialDenseMatrix*
-                                       stiffmatrix,  //!< element stiffness matrix
-                                   Epetra_SerialDenseVector*
-                                       force);  //!< element internal force vector
+      void
+      MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+          const std::vector<double>& vel,                 //!< element velocity vector
+          const std::vector<double>& disp,                //!< element disp vector
+          Epetra_SerialDenseMatrix* stiffmatrix,          //!< element stiffness matrix
+          Epetra_SerialDenseVector* force);               //!< element internal force vector
 
       //! computes stochastic rotational moments and resulting stiffness
       template <int nnode,
@@ -968,7 +963,7 @@ namespace DRT
       void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
           const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity
                                                            //!< and its gradient has to be computed
-          LINALG::Matrix<ndim, 1>& velbackground,  //!< velocity of background fluid
+          LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
           LINALG::Matrix<ndim, ndim>&
               velbackgroundgrad);  //!< gradient of velocity of background fluid
 

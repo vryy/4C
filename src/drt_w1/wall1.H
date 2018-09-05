@@ -261,7 +261,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element. If NULL on input,
                                               ///< the controlling method does not epxect the
                                               ///< element to fill this vector
-          Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element. If NULL on input,
+          Epetra_SerialDenseVector& elevec3   ///< vector to be filled by element. If NULL on input,
                                              ///< the controlling method does not epxect the element
                                              ///< to fill this vector
       );

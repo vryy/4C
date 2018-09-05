@@ -337,7 +337,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
       //      DefineProblemTypeHDG<DRT::Element::quad9,2>(problem,numdofpernode,numscal,disname);
       ////    else if(ndim==3)
       ////      return
-      ///DefineProblemType<DRT::Element::quad9,3>(problem,numdofpernode,numscal,disname);
+      /// DefineProblemType<DRT::Element::quad9,3>(problem,numdofpernode,numscal,disname);
       //    else
       //      dserror("QUAD9 transport element not implemented as part of %i-dimensional problem.
       //      Just do it",ndim);
@@ -355,7 +355,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
       //      DefineProblemTypeHDG<DRT::Element::nurbs9,2>(problem,numdofpernode,numscal,disname);
       ////    else if(ndim==3)
       ////      return
-      ///DefineProblemType<DRT::Element::nurbs9,3>(problem,numdofpernode,numscal,disname);
+      /// DefineProblemType<DRT::Element::nurbs9,3>(problem,numdofpernode,numscal,disname);
       //    else
       //      dserror("NURBS9 transport element not implemented as part of %i-dimensional problem.
       //      Just do it",ndim);
@@ -391,9 +391,9 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
       //      DefineProblemType<DRT::Element::line3,1>(problem,numdofpernode,numscal,disname);
       ////    else if(ndim==2)
       ////      return
-      ///DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname); /    else
-      ///if(ndim==3) /      return
-      ///DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
+      /// DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname); /    else
+      /// if(ndim==3) /      return
+      /// DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
       //    else
       //      dserror("LINE3 transport element not implemented as part of %i-dimensional problem.
       //      Just do it",ndim);

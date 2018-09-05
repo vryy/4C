@@ -567,7 +567,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   err = invd->ReplaceDiagonalValues(*diag);
   invd->Complete();
   //------------------------------End of Invert D
-  //Matrix!-----------------------------------------------
+  // Matrix!-----------------------------------------------
 
   // Transform also colum map of D-Matrix
   (*k_D_transform_)(*FluidField()->Interface()->FSICondMap(),

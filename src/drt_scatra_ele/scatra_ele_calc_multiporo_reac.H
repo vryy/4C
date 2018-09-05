@@ -673,7 +673,7 @@ namespace DRT
           {
             // linearization of porosity
             //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd =
-            //dporosity/dJ * J * N_x
+            // dporosity/dJ * J * N_x
             // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X )
             // = det (dx/ds) * ( det(dX/ds) )^-1 in our case: prefac is scaled with density, i.e.
             // porosity --> scale it with 1.0/porosity here
@@ -1036,7 +1036,7 @@ namespace DRT
             // with
             // linearization of porosity
             //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd =
-            //dporosity/dJ * J * N_x
+            // dporosity/dJ * J * N_x
             // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X )
             // = det (dx/ds) * ( det(dX/ds) )^-1 in our case: prefac is scaled with density, i.e.
             // porosity --> scale it with 1.0/porosity here

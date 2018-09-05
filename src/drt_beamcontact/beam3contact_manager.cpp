@@ -778,12 +778,12 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     {
       // The IDs of the surface elements of each conditions begin with zero. Therefore we have to
       // add ggsize in order to get unique element IDs in the end. Furthermore, only the solid
-      // elements are added to the contact discretization btsoldiscret_ via the btscontactconditions,
-      // whereas all beam elements with their original ID are simply cloned from the problem
-      // discretization into the contact discretization. In order to avoid solid element IDs being
-      // identical to these beam element IDs within the contact discretization we have to add the
-      // additional offset maxproblemid, which is identical to the maximal element ID in the problem
-      // discretization.
+      // elements are added to the contact discretization btsoldiscret_ via the
+      // btscontactconditions, whereas all beam elements with their original ID are simply cloned
+      // from the problem discretization into the contact discretization. In order to avoid solid
+      // element IDs being identical to these beam element IDs within the contact discretization we
+      // have to add the additional offset maxproblemid, which is identical to the maximal element
+      // ID in the problem discretization.
       Teuchos::RCP<DRT::Element> ele = fool->second;
       Teuchos::RCP<CONTACT::CoElement> cele =
           Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
@@ -855,12 +855,12 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     {
       // The IDs of the surface elements of each conditions begin with zero. Therefore we have to
       // add ggsize in order to get unique element IDs in the end. Furthermore, only the solid
-      // elements are added to the contact discretization btsoldiscret_ via the btscontactconditions,
-      // whereas all beam elements with their original ID are simply cloned from the problem
-      // discretization into the contact discretization. In order to avoid solid element IDs being
-      // identical to these beam element IDs within the contact discretization we have to add the
-      // additional offset maxproblemid, which is identical to the maximal element ID in the problem
-      // discretization.
+      // elements are added to the contact discretization btsoldiscret_ via the
+      // btscontactconditions, whereas all beam elements with their original ID are simply cloned
+      // from the problem discretization into the contact discretization. In order to avoid solid
+      // element IDs being identical to these beam element IDs within the contact discretization we
+      // have to add the additional offset maxproblemid, which is identical to the maximal element
+      // ID in the problem discretization.
       Teuchos::RCP<DRT::Element> ele = fool->second;
       Teuchos::RCP<MORTAR::MortarElement> mtele =
           Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize + maxproblemid + 1,
@@ -3406,7 +3406,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
                       << std::endl;
 #endif
       //***************************end: solid
-      //visualization*************************************************************
+      // visualization*************************************************************
 
       // write content into file and close
       fprintf(fp, gmshfilecontent.str().c_str());
@@ -3434,7 +3434,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
   Comm().Barrier();
 
 //*************************begin: gmsh output of contact forces for
-//solids************************************
+// solids************************************
 #ifdef GMSHFORCE
   // Draw contact forces acting on solid element using an extra Gmsh output file
   FILE* fp_fc2 = NULL;
@@ -3540,7 +3540,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
   fclose(fp_fc2);
 #endif
   //*************************end: gmsh output of contact forces for
-  //solids************************************
+  // solids************************************
 
   return;
 }

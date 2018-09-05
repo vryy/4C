@@ -1560,7 +1560,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     {
       /*------------------------------------------------------------------*/
       //// 2.3) gravity, pressure gradient and viscous stress term = m_b * g + vol_b * ( -grad_p +
-      ///dTau/dx )
+      /// dTau/dx )
 
       static LINALG::Matrix<3, 1> grad_p(false);
       static LINALG::Matrix<3, 1> visc_stress(false);
@@ -1583,7 +1583,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     //// 2.4) virtual/added mass = c_VM * rho_l * vol_b * ( Du/Dt - Dv/Dt )
     //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
     //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * vol_b * Du/Dt }{ 1 +
-    ///c_VM * rho_l * vol_b / m_b } / final force = \frac{ sum all forces (2.1, 2.2, 2.3) + coeff3
+    /// c_VM * rho_l * vol_b / m_b } / final force = \frac{ sum all forces (2.1, 2.2, 2.3) + coeff3
     ///* Du/Dt }{          coeff4          }
     const double c_VM = 0.5;
     const double coeff3 = c_VM * rho_l * vol_b;
@@ -1603,7 +1603,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
       /*------------------------------------------------------------------*/
       //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
       //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * vol_b * Du/Dt }{ 1 +
-      ///c_VM * rho_l * vol_b / m_b } / final force = \frac{ sum all forces (2.1, 2.2, 2.3) + coeff3
+      /// c_VM * rho_l * vol_b / m_b } / final force = \frac{ sum all forces (2.1, 2.2, 2.3) +
+      /// coeff3
       ///* Du/Dt }{          coeff4          }
       const double coeff4 = 1.0 + c_VM * rho_l * vol_b / m_b;
       const double invcoeff4 = 1.0 / coeff4;
@@ -1685,7 +1686,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
         addedmassforce.Update(coeff3, Du_Dt, -coeff3 / m_b, bubbleforce);
 
         //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus
-        ///sign
+        /// sign
         couplingforce.Update(-1.0, addedmassforce, -1.0);
 
         // do not assemble forces for an inflow particle

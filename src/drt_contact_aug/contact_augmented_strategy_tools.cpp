@@ -24,9 +24,9 @@
 #include "../drt_fsi/fsi_matrixtransform.H"
 
 //#define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient
-//w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
-//dGLmLinMatrix w.r.t. displ. */ #define CONTACTFD_DGGLINMATRIX         /* flag for global FD-check
-//of the dGGLinMatrix w.r.t. displ. */
+// w.r.t. displ. */ #define CONTACTFD_DGLMLINMATRIX        /* flag for global FD-check of the
+// dGLmLinMatrix w.r.t. displ. */ #define CONTACTFD_DGGLINMATRIX         /* flag for global FD-check
+// of the dGGLinMatrix w.r.t. displ. */
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

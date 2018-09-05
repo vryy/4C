@@ -1261,7 +1261,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
 
   // loop over my elements and collect data about orientation and length of elements/filaments
   //(assignment of elements to filaments not needed in case as parameter is calculated as sum over
-  //all elements)
+  // all elements)
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
     const DRT::Element* ele =

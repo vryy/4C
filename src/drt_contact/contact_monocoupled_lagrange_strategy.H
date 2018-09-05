@@ -139,7 +139,7 @@ namespace CONTACT
     //! pure useage safty flags
     bool has_to_evaluate_;  // checks if ApplyForceStiffCmtCoupled() after every call of
                             // ApplyForceStiffCmt()
-    bool has_to_recover_;  // checks if RecoverCoupled() after every call of Recover()
+    bool has_to_recover_;   // checks if RecoverCoupled() after every call of Recover()
 
   };  // class MonoCoupledLagrangeStrategy
 }  // namespace CONTACT

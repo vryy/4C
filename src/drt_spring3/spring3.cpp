@@ -182,11 +182,11 @@ void DRT::ELEMENTS::Spring3::GetCurrTangents(
 
     // This shift is necessary, since our beam formulation and the corresponding linearization is
     // based on multiplicative increments, while in BACI (Newtonfull()) the displacement of the last
-    // iteration and the rotation increment of the current iteration are added in an additive manner.
-    // This step is reversed in the next two lines in order to recover the multiplicative rotation
-    // increment between the last and the current Newton step. This also means that dispthetanew_ has
-    // no physical meaning since it is the additive sum of non-additive rotation increments(meier,
-    // 03.2014)
+    // iteration and the rotation increment of the current iteration are added in an additive
+    // manner. This step is reversed in the next two lines in order to recover the multiplicative
+    // rotation increment between the last and the current Newton step. This also means that
+    // dispthetanew_ has no physical meaning since it is the additive sum of non-additive rotation
+    // increments(meier, 03.2014)
     for (int i = 0; i < 3; i++) dispthetanew_[node](i) = disp[6 * node + 3 + i];
 
     deltatheta = dispthetanew_[node];

@@ -757,7 +757,7 @@ double Myocard_Inada::ReaCoeff(const double phi, const double dt)
            (1.5 + (exp((-(s_[0] + 60.0) / 40.0))));
   a_[51] = c_[15] * (s_[0] - c_[16]);
   a_[17] = 0.0;  //(VOI_>=c_[4]&&VOI_<=c_[5]&&(VOI_ - c_[4]) -  (floor(((VOI_ -
-                 //c_[4])/c_[6])))*c_[6]<=c_[7] ? c_[8] : 0.0);
+                 // c_[4])/c_[6])))*c_[6]<=c_[7] ? c_[8] : 0.0);
 
   // Compute reaction coefficient (I_Na + I_CaL + I_to + I_Kr + I_f + I_st + I_K1 + I_NaCa + I_p +
   // I_b + I_ACh)/C

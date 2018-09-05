@@ -370,8 +370,8 @@ namespace MAT
       ///
       /// where \f$ \boldsymbol{a}_i \f$ is one fiber direction and \f$ \boldsymbol A_i= \boldsymbol
       /// a_i \otimes \boldsymbol a_i\f$, \f$ \boldsymbol{A}_1\boldsymbol{A}_2 = \left( \boldsymbol
-      ///a_1 \otimes \boldsymbol a_2 + \boldsymbol a_2 \otimes \boldsymbol a_1 \right) \f$, cf.
-      ///Holzapfel [1], p. 274
+      /// a_1 \otimes \boldsymbol a_2 + \boldsymbol a_2 \otimes \boldsymbol a_1 \right) \f$, cf.
+      /// Holzapfel [1], p. 274
       ///
       ///\f[
       /// \bold{S} = \gamma^{aniso}_1 \ \boldsymbol{A}_1 + \gamma^{aniso}_2 \ \boldsymbol{A}_2 +

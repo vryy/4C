@@ -107,7 +107,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           //"use abs. norm (ccarat)",
           "compute L2 errors of increments (relative) and residuals (absolute)"
           //"same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for
-          //turbulence calculations, startup phase)"
+          // turbulence calculations, startup phase)"
           ),
       tuple<int>(
           // fncc_Linf,

@@ -224,9 +224,9 @@ namespace BEAMCONTACT
     double unrounded_id = 0.0;
 
     // With the following formula we would get the exact interval Ids when inserting the coordinate
-    // of the left bound of the interval. By inserting any double value lying within the interval, we
-    // get as result a double value that is larger than the sought-after interval ID but smaller than
-    // the next highter ID, i.e. we have to round down the solution.
+    // of the left bound of the interval. By inserting any double value lying within the interval,
+    // we get as result a double value that is larger than the sought-after interval ID but smaller
+    // than the next highter ID, i.e. we have to round down the solution.
     unrounded_id = (point + 1.0) / 2.0 * numberofintervals;
     interval_id = floor(unrounded_id);
 

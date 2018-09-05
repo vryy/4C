@@ -874,7 +874,7 @@ bool GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
 {
   // 1// create map which stores references to all points cycles, which should be matched!
   //(this function uses the fact, that ordering of the points in holes is opposite to the ordering
-  //of the outer points cycle!)
+  // of the outer points cycle!)
   std::map<std::vector<Point*>*, std::vector<Point*>*> matchingcycles;
   matchingcycles[&(corner_points_)] = &(f->corner_points_);  // outer points cycles
   if (HasHoles())  // outer point cycle with inner hole point cycles

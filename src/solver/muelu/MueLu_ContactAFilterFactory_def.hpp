@@ -220,8 +220,8 @@ namespace MueLu
       Ain->getLocalRowView(row, indices, vals);
 
       // TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz,
-      // Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: number of nonzeros not equal
-      // to number of indices? Error.");
+      // Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: number of nonzeros not
+      // equal to number of indices? Error.");
 
       // just copy all values in output
       Teuchos::ArrayRCP<GlobalOrdinal> indout(

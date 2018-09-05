@@ -47,13 +47,14 @@ namespace LARGEROTATIONS
   class TriadInterpolationLocalRotationVectors;
 }
 
-#define BEAM3RLENGTHCALCNEWTONTOL 10e-12  // Tolerance for iterative determination of element
-                                          // length.
+#define BEAM3RLENGTHCALCNEWTONTOL \
+  10e-12  // Tolerance for iterative determination of element
+          // length.
 // DEFAULT: 10e-12
 
 //#define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the element
-//length and to only provide random numbers for the 3 translational DoFs (needed in order to compare
-//with beam3eb)
+// length and to only provide random numbers for the 3 translational DoFs (needed in order to
+// compare with beam3eb)
 
 namespace DRT
 {
@@ -1074,17 +1075,12 @@ namespace DRT
       template <unsigned int nnodecl, unsigned int vpernode,
           unsigned int ndim>  // number of nodes, number of dimensions of embedding space, number of
                               // degrees of freedom per node
-                              void
-                              EvaluateTranslationalDamping(
-                                  Teuchos::ParameterList& params,  //!< parameter list
-                                  const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>&
-                                      vel_centerline,
-                                  const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>&
-                                      disp_totlag_centerline,
-                                  Epetra_SerialDenseMatrix*
-                                      stiffmatrix,  //!< element stiffness matrix
-                                  Epetra_SerialDenseVector* force)
-                                  const;  //!< element internal force vector
+      void
+      EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+          const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& vel_centerline,
+          const LINALG::TMatrix<double, ndim * vpernode * nnodecl, 1>& disp_totlag_centerline,
+          Epetra_SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
+          Epetra_SerialDenseVector* force) const;  //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim,

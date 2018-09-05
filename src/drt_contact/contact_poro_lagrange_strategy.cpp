@@ -128,8 +128,8 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(
     ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit)
 {
   if (fullinit)  // fullinit is true by default, but needed when this method is called for
-                 // meshtying, as the maps and matrix mapping stay the same for meshtying. would work
-                 // without this but would do things repeatedly unnecessarily
+                 // meshtying, as the maps and matrix mapping stay the same for meshtying. would
+                 // work without this but would do things repeatedly unnecessarily
   {
     if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
     {
@@ -398,14 +398,14 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(
       flinTangentiallambda_->Complete(*gsdofrowmap_, *fgactivet_);
 
 #if (0)  // just in case
-      // only for parallel redistribution case
-      //     if (parredist) //care about that if its in contact ... ChrAg Todo
-      //     {
-      //       NCoup_lindisp_    = MORTAR::MatrixRowColTransform(NCoup_lindisp_,
-      //       interface_[i]->NormalDofs(), masterdofrowmap_); NCoup_linvel_     =
-      //       MORTAR::MatrixRowColTransform(NCoup_linvel_, interface_[i]->NormalDofs(),
-      //       slavedofrowmap_);
-      //     }
+         // only for parallel redistribution case
+         //     if (parredist) //care about that if its in contact ... ChrAg Todo
+         //     {
+         //       NCoup_lindisp_    = MORTAR::MatrixRowColTransform(NCoup_lindisp_,
+         //       interface_[i]->NormalDofs(), masterdofrowmap_); NCoup_linvel_     =
+         //       MORTAR::MatrixRowColTransform(NCoup_linvel_, interface_[i]->NormalDofs(),
+         //       slavedofrowmap_);
+         //     }
 
       // only for parallel redistribution case
       //     if (parredist) //care about that if its in contact ... ChrAg Todo
@@ -664,7 +664,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(
 
   // kns: nothing to do
   //---------------------------------------------------------- SECOND LINE --- Will just exist when
-  //starting with two sided poro contact!!!
+  // starting with two sided poro contact!!!
   Teuchos::RCP<LINALG::SparseMatrix> k_fs_mnmod;
 
   Teuchos::RCP<LINALG::SparseMatrix> k_fs_mmmod;
@@ -1130,7 +1130,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(
   //----------------------------------------------------------- FIRST LINE
   // kn: nothing to do
   //---------------------------------------------------------- SECOND LINE --- Will just exist when
-  //starting with two sided poro contact!!!
+  // starting with two sided poro contact!!!
   // km: add T(mhataam)*kan
   Teuchos::RCP<LINALG::SparseMatrix> F_mmod =
       Teuchos::rcp(new LINALG::SparseMatrix(*fgmdofrowmap_, 100));
@@ -1147,7 +1147,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(
   //------------------- FOR 3D QUADRATIC CASE ----------------------------
 
   //--- For using non diagonal D-Matrix, it should be checked if this assumtion isn't anywhere
-  //else!!!
+  // else!!!
 
   // kin: subtract T(dhat)*kan --
   Teuchos::RCP<LINALG::SparseMatrix> F_imod = Teuchos::rcp(new LINALG::SparseMatrix(*fgidofs, 100));
@@ -1354,7 +1354,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(
 
       lambda_->Scale(
           (1 - alphaf_) / (1 - nopenalpha_));  //-- is already scaled by this factor by scaling
-                                               //invda_!!! --- scale it back to with nopenalpha_...
+                                               // invda_!!! --- scale it back to with nopenalpha_...
     }
   }
   // store updated LM into nodes

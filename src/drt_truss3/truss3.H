@@ -298,8 +298,7 @@ namespace DRT
        */
       template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
                                                // space, number of degrees of freedom per node
-                                               void EvaluatePTC(Teuchos::ParameterList& params,
-                                                   Epetra_SerialDenseMatrix& elemat1);
+      void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
 
       //!\brief return cross section of the truss
       const double& CSec() const { return crosssec_; }
@@ -551,15 +550,12 @@ namespace DRT
           int randompergauss>  // number of nodes, number of dimensions of embedding space, number
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
-                               void
-                               CalcBrownian(Teuchos::ParameterList& params,  //!< parameter list
-                                   const LINALG::Matrix<1, 6>&
-                                       DummyVel,  //!< element velocity vector
-                                   const LINALG::Matrix<1, 6>& DummyDisp,  //!< element disp vector
-                                   Epetra_SerialDenseMatrix&
-                                       DummyStiffMatrix,  //!< element stiffness matrix
-                                   Epetra_SerialDenseVector&
-                                       DummyForce);  //!< element internal force vector
+      void
+      CalcBrownian(Teuchos::ParameterList& params,     //!< parameter list
+          const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
+          const LINALG::Matrix<1, 6>& DummyDisp,       //!< element disp vector
+          Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
+          Epetra_SerialDenseVector& DummyForce);       //!< element internal force vector
 
       //! computes damping coefficients for employed friction model
       void MyDampingConstants(Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma);
@@ -568,28 +564,24 @@ namespace DRT
       template <int nnode, int ndim,
           int dof>  // number of nodes, number of dimensions of embedding space, number of degrees
                     // of freedom per node
-                    void
-                    MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-                        const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
-                        const LINALG::Matrix<1, 6>& DummyDisp,       //!< element disp vector
-                        Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
-                        Epetra_SerialDenseVector& DummyForce);  //!< element internal force vector
+      void
+      MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+          const LINALG::Matrix<1, 6>& DummyVel,               //!< element velocity vector
+          const LINALG::Matrix<1, 6>& DummyDisp,              //!< element disp vector
+          Epetra_SerialDenseMatrix& DummyStiffMatrix,         //!< element stiffness matrix
+          Epetra_SerialDenseVector& DummyForce);              //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <int nnode, int ndim, int dof,
           int randompergauss>  // number of nodes, number of dimensions of embedding space, number
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
-                               void
-                               MyStochasticForces(
-                                   Teuchos::ParameterList& params,  //!< parameter list
-                                   const LINALG::Matrix<1, 6>&
-                                       DummyVel,  //!< element velocity vector
-                                   const LINALG::Matrix<1, 6>& DummyDisp,  //!< element disp vector
-                                   Epetra_SerialDenseMatrix&
-                                       DummyStiffMatrix,  //!< element stiffness matrix
-                                   Epetra_SerialDenseVector&
-                                       DummyForce);  //!< element internal force vector
+      void
+      MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+          const LINALG::Matrix<1, 6>& DummyVel,           //!< element velocity vector
+          const LINALG::Matrix<1, 6>& DummyDisp,          //!< element disp vector
+          Epetra_SerialDenseMatrix& DummyStiffMatrix,     //!< element stiffness matrix
+          Epetra_SerialDenseVector& DummyForce);          //!< element internal force vector
 
       //! computes velocity of background fluid and gradient of that velocity at a certain
       //! evaluation point in the physical space and adds respective terms to internal forces and
@@ -598,7 +590,7 @@ namespace DRT
       void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
           const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity
                                                            //!< and its gradient has to be computed
-          LINALG::Matrix<ndim, 1>& velbackground,  //!< velocity of background fluid
+          LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
           LINALG::Matrix<ndim, ndim>&
               velbackgroundgrad);  //!< gradient of velocity of background fluid
 

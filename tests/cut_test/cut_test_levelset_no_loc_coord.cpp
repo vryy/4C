@@ -1053,7 +1053,7 @@ void test_ls_hex8_magnus6()
 #ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
   //!!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!eleID=1  ve=9.86254e-13  vc=9.28731e-13
-  //!vd= 5.75238e-14  err=0.0583255
+  //! vd= 5.75238e-14  err=0.0583255
   xyze(0, 0) = 0.00129103448275862077096465;
   xyze(1, 0) = -0.00069517241379310349205789;
   xyze(2, 0) = 5.00000000000000023960868e-05;
@@ -1518,7 +1518,7 @@ void test_ls_hex8_magnus7()
 //
 ////  WARNING: In eleId=37941 area mismatch: a1=0 a2=6.36112e-05 diff=-6.36112e-05
 ////   !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!eleID=37941  ve=0.000125  vc=0.000124945
-///vd= 5.48009e-08  err=0.000438408
+/// vd= 5.48009e-08  err=0.000438408
 //  // ELEID: 37941 PREC: 16
 //  //  xyze(  0,0 ) = 0.15;
 //  //  xyze(  1,0 ) = 0.3999999999999999;
@@ -1610,7 +1610,7 @@ void test_ls_hex8_magnus7()
 //  GEO::CUT::Mesh mesh = lsi.NormalMesh();
 //
 ////  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation,
-///INPAR::CUT::BCellGaussPts_Tessellation, false, true );
+/// INPAR::CUT::BCellGaussPts_Tessellation, false, true );
 //
 //  //Gmsh-output
 //  mesh.DumpGmsh("xxx_cut_test_ls_hex8_magnus3.CUT.pos");

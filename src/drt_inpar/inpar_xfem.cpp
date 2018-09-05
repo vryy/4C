@@ -118,8 +118,8 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::XFEM::XFFSI_FixedALE_Interpolation,  // xffsi with fixed xfem-coupling in every
                                                       // newtonstep and interpolations for
                                                       // embedded-dis afterwards
-          INPAR::XFEM::XFFSI_FixedALE_Partitioned  // xffsi with fixed xfem-coupling in every
-                                                   // newtonstep and solving fluid-field again
+          INPAR::XFEM::XFFSI_FixedALE_Partitioned     // xffsi with fixed xfem-coupling in every
+                                                      // newtonstep and solving fluid-field again
           ),
       &xfluid_general);
 

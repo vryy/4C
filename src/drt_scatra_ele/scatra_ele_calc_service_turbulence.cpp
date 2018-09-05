@@ -1163,8 +1163,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
   //  if (eid_ == 100){
   ////    std::cout << "sqrt(kappa_phi)  " << std::setprecision(10) << sqrt(kappa_phi) << std::endl;
   ////    std::cout << "pow(2.0,-gamma*Nphi/2.0)  " << std::setprecision(10) <<
-  ///pow(2.0,-gamma*Nphi/2.0) << std::endl; /    std::cout << "sqrt((pow(2.0,gamma*Nphi)-1))  " <<
-  ///std::setprecision(10) << sqrt((pow(2.0,gamma*Nphi)-1)) << std::endl;
+  /// pow(2.0,-gamma*Nphi/2.0) << std::endl; /    std::cout << "sqrt((pow(2.0,gamma*Nphi)-1))  " <<
+  /// std::setprecision(10) << sqrt((pow(2.0,gamma*Nphi)-1)) << std::endl;
   //    std::cout << "D  " << std::setprecision(10) << D_mfs << std::endl;
   //    std::cout << "B  " << std::setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " <<
   //    B_mfs(2,0) << "  " << std::endl; if (nwl_scatra and nwl)

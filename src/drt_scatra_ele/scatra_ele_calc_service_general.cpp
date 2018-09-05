@@ -897,7 +897,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           globalproblem->CellMigrationParams()
               .sublist("PROTRUSION MODULE")
               .get<double>("K_BR");  //< branching base rate (assumed to be half as fast as filament
-                                     //polymerization)
+                                     // polymerization)
       if (k_on <= 0.0 or k_br <= 0.0)
         dserror("Invalid Parameters K_ON = %f or K_BR = %f in --CELL DYNAMIC/PROTRUSION MODULE !",
             k_on, k_br);

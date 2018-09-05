@@ -289,8 +289,7 @@ namespace DRT
        */
       template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
                                                // space, number of degrees of freedom per node
-                                               void EvaluatePTC(Teuchos::ParameterList& params,
-                                                   Epetra_SerialDenseMatrix& elemat1);
+      void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
 
       double ReturnNormMoment() const
       {
@@ -484,7 +483,7 @@ namespace DRT
       void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
           const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity
                                                            //!< and its gradient has to be computed
-          LINALG::Matrix<ndim, 1>& velbackground,  //!< velocity of background fluid
+          LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
           LINALG::Matrix<ndim, ndim>&
               velbackgroundgrad);  //!< gradient of velocity of background fluid
 

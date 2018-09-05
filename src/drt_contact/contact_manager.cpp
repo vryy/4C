@@ -1087,8 +1087,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         dserror(
             "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers
                                                                            // to Parent Elements,
-                                                                           // which are not copied to
-                                                                           // other procs!
+                                                                           // which are not copied
+                                                                           // to other procs!
 
       if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
               INPAR::CONTACT::solution_lagmult &&

@@ -263,7 +263,7 @@ namespace MAT
     bool viscogeneralizedgenmax_;  ///< global indicator for viscous contribution of the branches
                                    ///< according to the generalized Maxwell model
     bool viscofract_;  ///< global indicator for viscous contribution according the FSLS-Model
-    //@}
+                       //@}
 
    private:
     /// viscous history Cauchy-Green-Tensor

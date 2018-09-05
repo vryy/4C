@@ -127,7 +127,7 @@ namespace DRT
     Teuchos::RCP<std::set<int>> slavenodeids_;
 
     //!\brief slave node to master node connectivity for periodic boundary conditions (key=slave
-    //!nid, value=master nid)
+    //! nid, value=master nid)
     Teuchos::RCP<std::map<int, int>> perbnd_slavetomaster_;
 
   };  // class PBCDofSet

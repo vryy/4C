@@ -130,7 +130,7 @@ namespace SCATRA
                                          //!< volume at the last entry
     Teuchos::RCP<std::vector<double>>
         internalization_vec_;  //<! Vector containing the endoexo_delay_/dta_ step values of
-                               //internalized molecules
+                               // internalized molecules
     //@}
 
     //! initially exocytosed number of molecules (if required)

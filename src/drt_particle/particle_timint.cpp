@@ -684,8 +684,8 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
   {
     // Density update via continuity equation: This is only required as initialization for density
     // summation below in case of free-surface flows Attention: Here, r_{n+1} and v_{n+1/2} are
-    // applied for calculation of densityDotn_ instead of r_{n+1/2} and v_{n+1/2} as in Adami 2012 or
-    // r_{n} and v_{n+1/2} as in Zhang 2017. This procedure is simpler here since otherwise
+    // applied for calculation of densityDotn_ instead of r_{n+1/2} and v_{n+1/2} as in Adami 2012
+    // or r_{n} and v_{n+1/2} as in Zhang 2017. This procedure is simpler here since otherwise
     // determination of particle positions and neighbors would have to be done twice. On the other
     // hand, the error should be negligible since densityDotn_ is only required for density
     // initialization before applying the summation formula.

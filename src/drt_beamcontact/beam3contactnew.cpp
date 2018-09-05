@@ -305,8 +305,8 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate(LINALG::Sparse
       if (tangentproduct_ > PARALLEL_DEACTIVATION_VAL)
       {
         // For very small tangent angles the contact is not evaluated. This would lead to a bad
-        // conditioned problem. Therefore, the problem of almost parallel beams have to be modeled by
-        // an alternative contact approach
+        // conditioned problem. Therefore, the problem of almost parallel beams have to be modeled
+        // by an alternative contact approach
         beamsalmostparallel_ = true;
       }
       if (tangentproduct_ < PARALLEL_ACTIVATION_VAL)
@@ -1129,8 +1129,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForc
   else
   {
     // Attention: The velocities vc1 and vc2 are not the total contact point velocities, since they
-    // do not contain the velocity contribution due to the change in xi and eta. However, since these
-    // contributions are perpendicular on the normal_ vector, they are not needed in order to
+    // do not contain the velocity contribution due to the change in xi and eta. However, since
+    // these contributions are perpendicular on the normal_ vector, they are not needed in order to
     // calculate g_t (this case is similar to the calculation of the gap variation).
     for (int i = 0; i < 3; i++)
     {
@@ -1358,8 +1358,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
   else
   {
     // Attention: The velocities vc1 and vc2 are not the total contact point velocities, since they
-    // do not contain the velocity contribution due to the change in xi and eta. However, since these
-    // contributions are perpendicular on the normal_ vector, they are not needed in order to
+    // do not contain the velocity contribution due to the change in xi and eta. However, since
+    // these contributions are perpendicular on the normal_ vector, they are not needed in order to
     // calculate g_t (this case is similar to the calculation of the gap variation).
     for (int i = 0; i < 3; i++)
     {
@@ -2044,8 +2044,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinGapt(
   else
   {
     // Attention: The velocities vc1 and vc2 are not the total contact point velocities, since they
-    // do not contain the velocity contribution due to the change in xi and eta. However, since these
-    // contributions are perpendicular on the normal_ vector, they are not needed in order to
+    // do not contain the velocity contribution due to the change in xi and eta. However, since
+    // these contributions are perpendicular on the normal_ vector, they are not needed in order to
     // calculate g_t (this case is similar to the calculation of the gap variation).
     for (int i = 0; i < 3; i++)
     {
@@ -3336,17 +3336,17 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesSte
   // No contact should happen in the first time step an element has been found by the search
   // algorithm (since we need history variables like normal_old_ in order to detect contact).
   // However, there is the following dilemma when this criterion has to be checked: On the one hand,
-  // the vector normal_old is needed in order to decide, if we have contact in the first step or not.
-  // On the other hand, the vector normal_old_ can only be calculated correctly, when we guarantee,
-  // that no contact has happened in the first step. Thus, we choose a heuristic criterion: when at
-  // the end of the first time step the distance between the two elements is larger than
-  // 2*MAXDELTADFAC*searchboxinc_ no contact has happened. The reason for this choice is as follows:
-  // If the elements had crossed in the current time step (contact active) and the distance at the
-  // end of the time step is 2*MAXDELTADFAC*searchboxinc_, the distance in the beginning of this time
-  // step (=distance at the end of last time step) would have been zero in the worst case. In this
-  // case, the contact pair would have already been found in the last time step (2*searchboxinc_ >
-  // 2*MAXDELTADFAC*searchboxinc_). These assumption do not hold for the first time step in the
-  // simulation, where pairs can be found that already penetrate each other!
+  // the vector normal_old is needed in order to decide, if we have contact in the first step or
+  // not. On the other hand, the vector normal_old_ can only be calculated correctly, when we
+  // guarantee, that no contact has happened in the first step. Thus, we choose a heuristic
+  // criterion: when at the end of the first time step the distance between the two elements is
+  // larger than 2*MAXDELTADFAC*searchboxinc_ no contact has happened. The reason for this choice is
+  // as follows: If the elements had crossed in the current time step (contact active) and the
+  // distance at the end of the time step is 2*MAXDELTADFAC*searchboxinc_, the distance in the
+  // beginning of this time step (=distance at the end of last time step) would have been zero in
+  // the worst case. In this case, the contact pair would have already been found in the last time
+  // step (2*searchboxinc_ > 2*MAXDELTADFAC*searchboxinc_). These assumption do not hold for the
+  // first time step in the simulation, where pairs can be found that already penetrate each other!
   if (firsttimestep_ and numstep_ != 0)
   {
     LINALG::Matrix<3, 1> midpos1(true);
@@ -3618,9 +3618,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
 
   // If the considered pair had no valid closest point pair in the last time step (see
   // ClosestPointProjection: eta1=eta2=1e+12), we can not find the correct neighbor element pair! If
-  // the coordinate values of xi1 and xi2 are larger than NEIGHBORNORMALTOL, the normal of the direct
-  // neighbor does not provide a good approximation for the own normal_old_ vector. In both cases, we
-  // exit here and calculate no approximation for normal_old_;
+  // the coordinate values of xi1 and xi2 are larger than NEIGHBORNORMALTOL, the normal of the
+  // direct neighbor does not provide a good approximation for the own normal_old_ vector. In both
+  // cases, we exit here and calculate no approximation for normal_old_;
   if (fabs(xi1_old_) < NEIGHBORNORMALTOL and fabs(xi2_old_) < NEIGHBORNORMALTOL and beamsclose and
       tangentproduct_ < PARALLEL_DEACTIVATION_VAL)
   {

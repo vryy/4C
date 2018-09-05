@@ -298,8 +298,8 @@ namespace INPAR
       X_LB_Rhs,  // ==||== slave fluid sided (used only for two phase flow atm)
       F_TJ_Rhs,  // Traction jump term with given traction jump vector master fluid sided (used only
                  // for two phase flow atm)
-      X_TJ_Rhs  // Traction jump term with given traction jump vector slave fluid sided (used only
-                // for two phase flow atm)
+      X_TJ_Rhs   // Traction jump term with given traction jump vector slave fluid sided (used only
+                 // for two phase flow atm)
     };
 
     /// set the xfem parameters

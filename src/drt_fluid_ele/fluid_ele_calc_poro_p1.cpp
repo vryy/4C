@@ -757,10 +757,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(Teuchos::Par
     static LINALG::Matrix<1, my::nsd_ * my::nen_> dphi_dus(false);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
-    //N_x
+    // N_x
     static LINALG::Matrix<1, my::nsd_ * my::nen_> dJ_dus(false);
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) +
-    //d\phi/(dp*du_s) * dp/dx
+    // d\phi/(dp*du_s) * dp/dx
     static LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_> dgradphi_dus(false);
 
     //------------------------------------ build F^-T as vector 9x1
@@ -1145,7 +1145,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(const do
     LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>& dgradphi_dus)
 {
   //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
-  //N_x
+  // N_x
   for (int i = 0; i < my::nen_; i++)
     for (int j = 0; j < my::nsd_; j++) dJ_dus(j + i * my::nsd_) = my::J_ * my::derxy_(j, i);
 
@@ -1161,7 +1161,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(const do
       my::visceff_)
   {
     //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J *
-    //F^-T : N_X_x
+    // F^-T : N_X_x
 
     // dF^-T/dus : dF/dx = - (F^-1. dN/dx . u_s)^T  : dF/dx
     static LINALG::Matrix<my::nsd_, my::nsd_ * my::nen_> dFinvdus_dFdx(false);

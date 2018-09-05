@@ -27,9 +27,9 @@
 #include <boost/unordered_map.hpp>
 
 //*********************************SPH and
-//DEM************************************************************************************************************************************
+// DEM************************************************************************************************************************************
 //#define PARTICLE_MINMAXOUTPUT_EVRY 25            //Ouput of minimal/maximal pressures, particle
-//distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
+// distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
 
 //*********************************SPH********************************************************************************************************************************************
 // Usefull defines (tolerances and constants)
@@ -60,20 +60,20 @@
        // factor 1.0+PARTICLE_ST_BOUNDARYSCALEFAC
 #define PARTICLE_ST_CFGEXTRAPLATION  // Extrapolate direction of CFG vector
 //#define PARTICLE_ONLYPHASE1ACC                      //Apply surface tension forces only to the
-//phase with higher density
+// phase with higher density
 
 // Usefull defines (additional functionalities and debugging tools)
 //#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force
-//calculation according to variant 1 (this is sufficient for incompressible flows) #define
-//PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required
-//for colorfield and density reinitialization on the basis of pressure extrapolation (similar to
-//Adami et al. 2012) #define PARTICLE_WRITECOLORFIELD                  //Output of colorField_ and
-//fspType_ (free-surface particle type) for paraview
+// calculation according to variant 1 (this is sufficient for incompressible flows) #define
+// PARTICLE_BOUNDARYDENSITY                  //Determine the density of boundary particles required
+// for colorfield and density reinitialization on the basis of pressure extrapolation (similar to
+// Adami et al. 2012) #define PARTICLE_WRITECOLORFIELD                  //Output of colorField_ and
+// fspType_ (free-surface particle type) for paraview
 
 //*********************************DEM********************************************************************************************************************************************
 #define PARTICLE_BINNINGCONST 5  // Constant required for binning strategy
 //#define PARTICLE_NOTIMESTEPDSERROR                  //Only throw warning (no dserror), if yield
-//strength criterion is violated!
+// strength criterion is violated!
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

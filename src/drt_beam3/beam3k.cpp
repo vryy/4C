@@ -493,12 +493,12 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
   // the corresponding values of the analytical geometry at these nodes yields a worse approximation
   // than that following from a third order Lagrange polynomial interpolation based on nodal
   // positions that coincide with the analytical values at the four element nodes. This worse
-  // approximation appears in terms of a larger error in the jacobian, the derivative of the relative
-  // angle theta_s and finally of the initial curvature K0_. For strongly curved initial
+  // approximation appears in terms of a larger error in the jacobian, the derivative of the
+  // relative angle theta_s and finally of the initial curvature K0_. For strongly curved initial
   // configurations where the error in the initial geometry representation might dominate the
   // discretization error it can be useful to consider strategies which yield in a better Hermite
-  // approximation of the initial geometry e.g. by determining the initial nodal values (or the shape
-  // function parameter c=c_{opt} instead of c=l) based on optimization strategies.
+  // approximation of the initial geometry e.g. by determining the initial nodal values (or the
+  // shape function parameter c=c_{opt} instead of c=l) based on optimization strategies.
 
   if (!isinit_ || secondinit)
   {
@@ -702,12 +702,12 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
   // the corresponding values of the analytical geometry at these nodes yields a worse approximation
   // than that following from a third order Lagrange polynomial interpolation based on nodal
   // positions that coincide with the analytical values at the four element nodes. This worse
-  // approximation appears in terms of a larger error in the jacobian, the derivative of the relative
-  // angle theta_s and finally of the initial curvature K0_. For strongly curved initial
+  // approximation appears in terms of a larger error in the jacobian, the derivative of the
+  // relative angle theta_s and finally of the initial curvature K0_. For strongly curved initial
   // configurations where the error in the initial geometry representation might dominate the
   // discretization error it can be useful to consider strategies which yield in a better Hermite
-  // approximation of the initial geometry e.g. by determining the initial nodal values (or the shape
-  // function parameter c=c_{opt} instead of c=l) based on optimization strategies.
+  // approximation of the initial geometry e.g. by determining the initial nodal values (or the
+  // shape function parameter c=c_{opt} instead of c=l) based on optimization strategies.
 
   if (!isinit_ || secondinit)
   {

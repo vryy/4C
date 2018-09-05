@@ -153,8 +153,8 @@ namespace MueLu
     else
     {
       // GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for
-      // Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << " with
-      // lagr_offset=" << lagr_offset << std::endl;
+      // Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << "
+      // with lagr_offset=" << lagr_offset << std::endl;
     }
 
     // extract aggregates built using the displacement DOFs (from matrix block A00)
