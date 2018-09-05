@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ln -s /usr/lib/blitz/include/blitz/gnu /usr/include/blitz
 
@@ -94,38 +94,39 @@ BUILD_FOLDER_SAFE=$BUILD_FOLDER
 BACI_HOME=`cd $BACI_HOME; pwd -P`
 
 if [[ $USE_FORCEBUILD == 0 ]]; then
-	# check whether BUILD_FOLDER is "out-of-source"
-	while true; do
-		if [[ "x$BUILD_FOLDER" == "x$BACI_HOME" ]]; then
+  # check whether BUILD_FOLDER is "out-of-source"
+  while true; do
+    if [[ "x$BUILD_FOLDER" == "x$BACI_HOME" ]]; then
 
-		    PROPOSED_BUILDDIR="`dirname $(echo $BACI_HOME | sed -e 's/\/$//')`/build-${BUILD_TYPE,,}"
+      PROPOSED_BUILDDIR="`dirname $(echo $BACI_HOME | sed -e 's/\/$//')`/build-${BUILD_TYPE,,}"
 
-		    echo "********************************************************************************************"
-			echo "No in-source build of BACI allowed..."
-			echo "Please choose a path for building BACI outside of $BACI_HOME"
-			echo "For example: $PROPOSED_BUILDDIR"
-			echo ""
-			echo "HOWTO:"
-			echo "  mkdir -p \"$PROPOSED_BUILDDIR\""
-			echo "  cd \"$PROPOSED_BUILDDIR\""
-			echo "  $BACI_HOME/do-configure [--debug] [--experimental] [--useACML] [...]"
-			echo "  make -j 6 baci"
-		    echo "********************************************************************************************"
+      echo "********************************************************************************************"
+      echo "No in-source build of BACI allowed..."
+      echo "Please choose a path for building BACI outside of $BACI_HOME"
+      echo "For example: $PROPOSED_BUILDDIR"
+      echo ""
+      echo "HOWTO:"
+      echo "  mkdir -p \"$PROPOSED_BUILDDIR\""
+      echo "  cd \"$PROPOSED_BUILDDIR\""
+      echo "  $BACI_HOME/do-configure [--debug] [--experimental] [--useACML] [...]"
+      echo "  make -j 6 baci"
+      echo "********************************************************************************************"
 
-	    	exit 2
-	    fi
+      exit 2
+    fi
 
-	    BUILD_FOLDER="`dirname $(echo $BUILD_FOLDER | sed -e 's/\/$//')`"
+    BUILD_FOLDER="`dirname $(echo $BUILD_FOLDER | sed -e 's/\/$//')`"
 
-	    if [[ "x$BUILD_FOLDER" == "x/" ]]; then
-	    	break;   # no in-source build -> all is fine
-	    fi
-	done
+    if [[ "x$BUILD_FOLDER" == "x/" ]]; then
+      break;   # no in-source build -> all is fine
+    fi
+  done
 fi
 
 # set valid folder for baci build
 BUILD_FOLDER=$BUILD_FOLDER_SAFE
 
+##############################################################
 # Print source and build folder locations to screen
 echo "Source and build directory:"
 echo "-- Path to source code:    " $BACI_HOME
@@ -134,6 +135,7 @@ echo "-- Path to build directory:" $BUILD_FOLDER
 # remove CMakeCache.txt
 rm -f CMakeCache.txt
 
+##############################################################
 # read in configuration
 if [[ -f $CONFIGURATION_FILE ]]; then
   echo "Configuration file:" $CONFIGURATION_FILE
@@ -165,70 +167,67 @@ fi
 
 Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 echo $Trilinos_DIR
-############################################################
-# prepare source for modules
 
 ############################################################
 # run cmake
 
 $CMAKE_COMMAND \
-    --no-warn-unused-cli \
-    -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
-    -D CMAKE_CXX_COMPILER:FILEPATH="$CXXCOMPILER" \
-    -D CMAKE_C_COMPILER:FILEPATH="$CCOMPILER" \
-    -D CMAKE_Fortran_COMPILER:FILEPATH="$FCOMPILER" \
-    -D CMAKE_CXX_FLAGS:STRING="$CXXFLAGS" \
-    -D CMAKE_CXX_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
-    -D CMAKE_C_FLAGS:STRING="$CFLAGS" \
-    -D CMAKE_C_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
-    -D CMAKE_EXE_LINKER_FLAGS:STRING="$LINKERFLAGS" \
-    -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING="$LINKERFLAGSRELEASE" \
-    -D CMAKE_Fortran_FLAGS:STRING="$FFLAGS" \
-    -D CMAKE_Fortran_FLAGS_RELEASE:STRING="$FFLAGSRELEASE" \
-    -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-    -D BUILD_SHARED_LIBS:BOOL=$SHARED_LIBS \
-    -D CMAKE_LIBRARY_OUTPUT_DIRECTORY:FILEPATH="./src" \
-    -D HAVENOT_SUPERLU:BOOL=$FOUND_NO_SUPERLU \
-    -D HAVENOT_UMFPACK:BOOL=$FOUND_NO_UMFPACK \
-    -D HAVE_DEAL_II:BOOL=$BUILD_Deal \
-    -D HAVE_TEKO:BOOL=$BUILD_Teko \
-    -D HAVE_MueLu:BOOL=$BUILD_MueLu \
-    -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
-    -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
-    -D HAVE_Trilinos_Q1_2014:BOOL=$BUILD_HAVE_Trilinos_Q1_2014 \
-    -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
-    -D HAVE_OpenMP:BOOL=OFF \
-    -D HAVE_Kokkos:BOOL=$BUILD_MueLu \
-    -D TRILINOS_DEV:BOOL=OFF \
-    -D DEAL_II_DIR=$DEAL_II_DIR \
-    -D TRAP_FE:BOOL=ON \
-    -D PARMETIS:BOOL=ON \
-    -D COLOROUTPUT:BOOL=OFF \
-    -D D_ALE:BOOL=ON \
-    -D D_FLUID3:BOOL=ON \
-    -D D_SHELL8:BOOL=ON \
-    -D D_THERMO:BOOL=ON \
-    -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
-    -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \
-    -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
-    -D USE_NO_SYSTEM_PATHS=$BOOST_EXCLUDE_SYSTEM_PATHS \
-    -D BOOST_INCLUDEDIR:FILEPATH=$BOOST_INCLUDEDIR \
-    -D BOOST_LIBRARYDIR:FILEPATH=$BOOST_LIBRARYDIR \
-    -D Boost_NO_BOOST_CMAKE:BOOL=$USE_USERSPECIFIED_BOOST \
-    -D QHULL_LIBRARY_DIR:FILEPATH=$LIB_INSTALL_DIR \
-    -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
-    -D MPI_DIR:FILEPATH=$MPIDIR \
-    -D MPI_RUN:FILEPATH=$MPIRUN \
-    -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
-    -D BLA_VENDOR:STRING=$BLA_VENDORSTRING \
-    -D BLAS_LIBRARIES:FILEPATH=$BLAS_LIBS \
-    -D LAPACK_LIBRARIES:FILEPATH=$LAPACK_LIBS \
-    -D ACMLDIR:STRING=$ACMLDIR_PATH \
-    -D AMDLIBMDIR:FILEPATH=$AMDLIBMDIR_PATH \
-    -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
-    $EXTRA_ARGS \
-    ${BACI_HOME}
-
+  --no-warn-unused-cli \
+  -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
+  -D CMAKE_CXX_COMPILER:FILEPATH="$CXXCOMPILER" \
+  -D CMAKE_C_COMPILER:FILEPATH="$CCOMPILER" \
+  -D CMAKE_Fortran_COMPILER:FILEPATH="$FCOMPILER" \
+  -D CMAKE_CXX_FLAGS:STRING="$CXXFLAGS" \
+  -D CMAKE_CXX_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
+  -D CMAKE_C_FLAGS:STRING="$CFLAGS" \
+  -D CMAKE_C_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
+  -D CMAKE_EXE_LINKER_FLAGS:STRING="$LINKERFLAGS" \
+  -D CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING="$LINKERFLAGSRELEASE" \
+  -D CMAKE_Fortran_FLAGS:STRING="$FFLAGS" \
+  -D CMAKE_Fortran_FLAGS_RELEASE:STRING="$FFLAGSRELEASE" \
+  -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+  -D BUILD_SHARED_LIBS:BOOL=$SHARED_LIBS \
+  -D CMAKE_LIBRARY_OUTPUT_DIRECTORY:FILEPATH="./src" \
+  -D HAVENOT_SUPERLU:BOOL=$FOUND_NO_SUPERLU \
+  -D HAVENOT_UMFPACK:BOOL=$FOUND_NO_UMFPACK \
+  -D HAVE_DEAL_II:BOOL=$BUILD_Deal \
+  -D HAVE_TEKO:BOOL=$BUILD_Teko \
+  -D HAVE_MueLu:BOOL=$BUILD_MueLu \
+  -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
+  -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
+  -D HAVE_Trilinos_Q1_2014:BOOL=$BUILD_HAVE_Trilinos_Q1_2014 \
+  -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
+  -D HAVE_OpenMP:BOOL=OFF \
+  -D HAVE_Kokkos:BOOL=$BUILD_MueLu \
+  -D TRILINOS_DEV:BOOL=OFF \
+  -D DEAL_II_DIR=$DEAL_II_DIR \
+  -D TRAP_FE:BOOL=ON \
+  -D PARMETIS:BOOL=ON \
+  -D COLOROUTPUT:BOOL=OFF \
+  -D D_ALE:BOOL=ON \
+  -D D_FLUID3:BOOL=ON \
+  -D D_SHELL8:BOOL=ON \
+  -D D_THERMO:BOOL=ON \
+  -D INCLUDE_INSTALL_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
+  -D LIB_INSTALL_DIR:FILEPATH=$LIB_INSTALL_DIR \
+  -D Trilinos_DIR:FILEPATH=$Trilinos_DIR \
+  -D USE_NO_SYSTEM_PATHS=$BOOST_EXCLUDE_SYSTEM_PATHS \
+  -D BOOST_INCLUDEDIR:FILEPATH=$BOOST_INCLUDEDIR \
+  -D BOOST_LIBRARYDIR:FILEPATH=$BOOST_LIBRARYDIR \
+  -D Boost_NO_BOOST_CMAKE:BOOL=$USE_USERSPECIFIED_BOOST \
+  -D QHULL_LIBRARY_DIR:FILEPATH=$LIB_INSTALL_DIR \
+  -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
+  -D MPI_DIR:FILEPATH=$MPIDIR \
+  -D MPI_RUN:FILEPATH=$MPIRUN \
+  -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
+  -D BLA_VENDOR:STRING=$BLA_VENDORSTRING \
+  -D BLAS_LIBRARIES:FILEPATH=$BLAS_LIBS \
+  -D LAPACK_LIBRARIES:FILEPATH=$LAPACK_LIBS \
+  -D ACMLDIR:STRING=$ACMLDIR_PATH \
+  -D AMDLIBMDIR:FILEPATH=$AMDLIBMDIR_PATH \
+  -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
+  $EXTRA_ARGS \
+  ${BACI_HOME}
 
 cd "$BACI_HOME"
 
