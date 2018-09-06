@@ -364,6 +364,8 @@ namespace MORTAR
     \param selements (in):   All slave elements (column map)
     \param melements (in):   All master elements (fully overlapping map)
     \param dim (in):         The problem dimension
+    \param eps (in):
+    \param useauxpos (in):
 
     */
     BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
@@ -561,7 +563,7 @@ namespace MORTAR
     */
     void SearchCombined()
     {  // if proc has no slave elements --> return;
-      if (sroot_->Type() == 4) return;
+      if (sroot_->Type() == NOSLAVE_ELEMENTS) return;
       sroot_->CalculateSlabsDop();
       sroot_->EnlargeGeometry(enlarge_);
       mroot_->CalculateSlabsDop();
