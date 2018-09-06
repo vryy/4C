@@ -40,7 +40,7 @@ then
   if [ ! -z "$uncompliant_files" ]
   then
     printf "\n"
-    printf "The following files are not clang compliant:\n"
+    printf "The following file(s) are not compliant with BACI's coding style:\n"
     printf "\n"
     echo "########################################################################"
     printf "$uncompliant_files"
@@ -48,14 +48,15 @@ then
     printf "\n"
     echo "--> Please run clang-format manually for those files using:"
     echo "./utilities/code_styles/clang-format -i -style=file <path/to/file>"
-    echo "(Path above is given from <Source> directory)"
+    echo "(Run this from BACI's top-level directory)"
+    printf "\n"
     echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
     printf "\n"
     exit 1
   fi
 
 else
-  echo "ERROR: clang-format was not found, cannot format files!"
+  echo "ERROR: clang-format was not found, cannot check file formatting!"
   exit 1
 fi
 
