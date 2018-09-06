@@ -58,6 +58,39 @@ def pretty_print_error(allerrors):
   sys.stderr.write("E"+" "*(max_width+2)+"E\n"+"E"*(max_width+4)+"\n")
   return
 
+# CHECK FOR TABS
+
+def contains_tabs(filename):
+  " Return True if this version of the file contains tabs. "
+  return "\t" in file_contents(filename)
+
+def check_support_files_for_tabs(look_cmd, allerrors):
+  " Check support files in this transaction are tab-free. "
+  support_files_with_tabs = [ff for ff in files_changed(look_cmd) if is_support_file(ff) and contains_tabs(ff)]
+  if len(support_files_with_tabs) > 0:
+    if len(allerrors) > 0:
+      allerrors.append("")
+    allerrors.append("The following support files contain tabs:")
+    allerrors += support_files_with_tabs
+  return len(support_files_with_tabs)
+
+# CHECK FOR TRAILING WHITESPACES
+
+def trailing_whitespace(filename):
+  " Return True if this version of the file contains a trailing whitespace. "
+  return " \n" in file_contents(filename)
+
+def check_support_files_for_trailing_whitespace(look_cmd, allerrors):
+  " Check support files in this transaction are trailing whitespace-free. "
+  support_files_with_trailing_whitespace = [ff for ff in files_changed(look_cmd) if is_support_file(ff) and trailing_whitespace(ff)]
+  if len(support_files_with_trailing_whitespace) > 0:
+    if len(allerrors) > 0:
+      allerrors.append("")
+    allerrors.append("The following support files contain trailing whitespaces:")
+    allerrors += support_files_with_trailing_whitespace
+  return len(support_files_with_trailing_whitespace)
+
+
 #CHECK HEADER
 def check_cpp_files_for_header(look_cmd, allerrors):
   " Check C/C++ files in this transaction have a maintainer. "
@@ -143,6 +176,8 @@ def main():
     look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
     errors += check_cpp_files_for_header(look_cmd, allerrors)
     errors += check_input_files_for_header(look_cmd, allerrors)
+    errors += check_support_files_for_tabs(look_cmd, allerrors)
+    errors += check_support_files_for_trailing_whitespace(look_cmd, allerrors)
     #errors += check_all_files_for_gitignore(look_cmd, allerrors)  # Did not work in latest Python env.
   except ValueError:
     print("Something went wrong! Check the error functions in this script again!")
