@@ -830,7 +830,8 @@ namespace IMMERSED
 
               // DEBUG output
               // std::cout<<"Tgt. Ele: "<<targetele.Id()<<" lies in src. ele:
-              // "<<curr->second->Id()<<" at  pos. ["<<std::setprecision(5)<<xvec[0]<<" "<<xvec[1]<<"
+              // "<<curr->second->Id()<<" at  pos. ["<<std::setprecision(5)<<xvec[0]<<"
+              // "<<xvec[1]<<"
               // "<<xvec[2]<<"]"<<std::endl;
 
               break;  // break loop over all source eles

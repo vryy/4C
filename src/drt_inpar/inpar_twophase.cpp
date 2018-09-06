@@ -54,16 +54,16 @@ void INPAR::TWOPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<std::string>("surface_tension_approx_none",  // none
           "surface_tension_approx_fixed_curvature",      // prescribed curvature, gamma = curv*gamma
           //"surface_tension_approx_divgrad",                      //calcs curvature at GP using the
-          //smoothed grad_phi and smoothed grad_phi for normal  //Do Not Migrate.
-          "surface_tension_approx_divgrad_normal",  // calcs curvature at GP using the smoothed
-                                                    // grad_phi and normal on Boundary Cell for
-                                                    // normal
-          "surface_tension_approx_nodal_curvature",  // calcs curvature at nodes and normal on
-                                                     // Boundary Cell for normal
+          // smoothed grad_phi and smoothed grad_phi for normal  //Do Not Migrate.
+          "surface_tension_approx_divgrad_normal",    // calcs curvature at GP using the smoothed
+                                                      // grad_phi and normal on Boundary Cell for
+                                                      // normal
+          "surface_tension_approx_nodal_curvature",   // calcs curvature at nodes and normal on
+                                                      // Boundary Cell for normal
           "surface_tension_approx_laplacebeltrami"),  // standard Laplace-Beltrami (see e.g. Fries
                                                       // 2009)
       //"surface_tension_approx_laplacebeltrami_smoothed"),    //         Laplace-Beltrami, includes
-      //additional projection based on the smoothed normal (see e.g. Gross, Reusken 2009)
+      // additional projection based on the smoothed normal (see e.g. Gross, Reusken 2009)
       tuple<int>(surface_tension_approx_none, surface_tension_approx_fixed_curvature,
           // surface_tension_approx_divgrad,
           surface_tension_approx_divgrad_normal, surface_tension_approx_nodal_curvature,

@@ -167,7 +167,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
     if (scatrapara_->IsConservative()) GetDivergence(vdiv, evelnp_);
 
     //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} =
-    //J * N_x
+    // J * N_x
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds)
     static LINALG::Matrix<1, nsd_ * nen_> dJ_dmesh(false);

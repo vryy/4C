@@ -12668,7 +12668,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement
   // for meshtying shape_dual is the only allowed case as long as porofluid and skeleton
   // meshtying conditions share the same input lines
   //(for contact they still share the input lines but shape_petrovgalerkin is allowed for
-  //skeleton/structural contact) shape_petrovgalerkin
+  // skeleton/structural contact) shape_petrovgalerkin
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach

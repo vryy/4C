@@ -288,8 +288,8 @@ namespace DRT
       /// \return 0 if successful, negative otherwise
       int Evaluate(Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication
                                                     ///< between control routine and elements
-          DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
-          std::vector<int>& lm,                 ///< (in) location matrix for de-assembly
+          DRT::Discretization& discretization,      ///< pointer to discretization for de-assembly
+          std::vector<int>& lm,                     ///< (in) location matrix for de-assembly
           Epetra_SerialDenseMatrix& elemat1,  ///< (out) (stiffness-)matrix to be filled by element.
                                               ///< If NULL on input, the controling method does not
                                               ///< expect the element to fill this matrix.
@@ -302,9 +302,9 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2,  ///< (out)  vector to be filled by element. If NULL on
                                               ///< input, the controlling method does not expect the
                                               ///< element to fill this vector
-          Epetra_SerialDenseVector& elevec3  ///< (out) vector to be filled by element. If NULL on
-                                             ///< input, the controlling method does not expect the
-                                             ///< element to fill this vector
+          Epetra_SerialDenseVector& elevec3   ///< (out) vector to be filled by element. If NULL on
+                                              ///< input, the controlling method does not expect the
+                                              ///< element to fill this vector
       );
 
 

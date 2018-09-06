@@ -1779,10 +1779,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     static LINALG::Matrix<1, my::nsd_ * my::nen_> dphi_dus(false);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
-    //N_x
+    // N_x
     static LINALG::Matrix<1, my::nsd_ * my::nen_> dJ_dus(false);
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) +
-    //d\phi/(dp*du_s) * dp/dx
+    // d\phi/(dp*du_s) * dp/dx
     static LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_> dgradphi_dus(false);
 
     //------------------------------------ build F^-T as vector 9x1
@@ -2400,7 +2400,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
     }
   }
   //*************************** linearisation of mesh motion in momentum
-  //balance**********************************
+  // balance**********************************
   // mass
   if (porofldpara_->IsStationaryMomentum() == false)
   {
@@ -3299,7 +3299,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
   const double convvelint_2 = my::convvelint_(2);
 
   //*************************** linearisation of mesh motion in continuity
-  //equation**********************************
+  // equation**********************************
 
   const double timefacfac_det = timefacfac / my::det_;
 
@@ -3900,7 +3900,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
   }
 
   //*************************** linearisation of mesh motion in momentum
-  //balance**********************************
+  // balance**********************************
   // mass
   if (porofldpara_->IsStationaryMomentum() == false)
   {
@@ -4860,7 +4860,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
     LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>& dgradphi_dus)
 {
   //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
-  //N_x
+  // N_x
   for (int i = 0; i < my::nen_; i++)
     for (int j = 0; j < my::nsd_; j++) dJ_dus(j + i * my::nsd_) = J_ * my::derxy_(j, i);
 
@@ -4870,7 +4870,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
   if ((porofldpara_->PoroContiPartInt() == false) or my::visceff_)
   {
     //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J *
-    //F^-T : N_X_x
+    // F^-T : N_X_x
 
     // dF^-T/dus : dF/dx = - (F^-1. dN/dx . u_s)^T  : dF/dx
     static LINALG::Matrix<my::nsd_, my::nsd_ * my::nen_> dFinvdus_dFdx(false);
@@ -4931,7 +4931,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
     dgradJ_dus.Update(J_, FinvT_dFx_dus, 1.0);
 
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) +
-    //d\phi/(dp*du_s) * dp/dx
+    // d\phi/(dp*du_s) * dp/dx
     dgradphi_dus.Multiply(dphi_dJJ, gradJ, dJ_dus);
     dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
     dgradphi_dus.Multiply(dphi_dJp, my::gradp_, dJ_dus, 1.0);

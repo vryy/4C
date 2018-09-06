@@ -1564,9 +1564,9 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
 
           // Here we have introduced an criteria in order to sort neighboring contact element pairs
           // out. This method is based on the assumption, that two elements sharing the same node
-          // should not get into contact. In contrary to a former criterion based on filament numbers
-          // (which forbids self contact), this method works for arbitrary element types and still
-          // allows for self contact!!!
+          // should not get into contact. In contrary to a former criterion based on filament
+          // numbers (which forbids self contact), this method works for arbitrary element types and
+          // still allows for self contact!!!
           if (BEAMCONTACT::ElementsShareNode(*element1, *element2)) considerpair = false;
         }
         if (considerpair)

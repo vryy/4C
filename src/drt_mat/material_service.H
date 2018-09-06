@@ -294,8 +294,8 @@ namespace MAT
       LINALG::Matrix<6, 1>* pk2iso,  ///< isochoric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
                                      ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31}
                                      ///< ]_\text{iso}\f$, if != NULL
-      LINALG::Matrix<6, 6>* ciso,  ///< isochoric contribution to constitutive tensor,
-                                   ///< if != NULL
+      LINALG::Matrix<6, 6>* ciso,    ///< isochoric contribution to constitutive tensor,
+                                     ///< if != NULL
       const LINALG::Matrix<6, 1>&
           gl,  ///< Green--Lagrange 6-Voigt strain, i.e.
                ///< \f$[ E_{11}\; E_{22}\; E_{33}\; 2E_{12}\; 2E_{23}\; 2E_{31} ]\f$

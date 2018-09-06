@@ -63,7 +63,7 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
   int globalnodeId = 0;
 
   //*******************local node 1 of element1 --> xi(element1)=-1 --> left
-  //neighbor******************
+  // neighbor******************
   globalnodeId = *element1->NodeIds();
 
   // only one neighbor element on each side of the considered element is allowed
@@ -99,7 +99,7 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
   //*************************************************************************************************
 
   //*******************************local node n_right of element1 --> xi(element1)=1 --> right
-  //neighbor*******************
+  // neighbor*******************
   globalnodeId = *(element1->NodeIds() + n_right);
 
   // only one neighbor element on each side of the considered element is allowed

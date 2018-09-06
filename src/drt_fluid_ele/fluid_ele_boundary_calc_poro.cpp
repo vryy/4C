@@ -368,7 +368,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   const DRT::UTILS::IntPointsAndWeights<my::bdrynsd_> intpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
   //(const DRT::UTILS::IntPointsAndWeights<my::nsd_>
-  //pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+  // pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get node coordinates
   // (we have a my::nsd_ dimensional domain, since my::nsd_ determines the dimension of
@@ -2800,7 +2800,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
-    //N_x
+    // N_x
     LINALG::Matrix<1, my::nsd_ * nenparent> dJ_dus;
     // global derivatives of shape functions w.r.t x,y,z
     LINALG::Matrix<my::nsd_, nenparent> derxy;
@@ -4765,7 +4765,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     double press = pepressnp.Dot(pfunct);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
-    //N_x
+    // N_x
     LINALG::Matrix<1, my::nsd_ * nenparent> dJ_dus;
     // global derivatives of shape functions w.r.t x,y,z
     LINALG::Matrix<my::nsd_, nenparent> derxy;

@@ -216,8 +216,8 @@ namespace LINALG
       /*! @brief factory class which generates permutation data using input matrix A */
       Teuchos::RCP<MueLu::PermutationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
           PermFact_;  // permutation factory
-      //@}
-#endif  // HAVE_MueLu
+                      //@}
+#endif                // HAVE_MueLu
 
 #ifdef WRITEOUTSTATISTICS
       double dtimeprecondsetup_;

@@ -280,7 +280,7 @@ namespace IMMERSED
     Teuchos::RCP<Epetra_Map> dbcmap_immersed_;  //!< dirichlet bc map of immersed values
     Teuchos::RCP<Epetra_Map>
         dbcmap_immersed_scatra_;  //!< dirichlet bc map of immersed scatra values
-    //@}
+                                  //@}
 
    private:
     /// improve quality of solution near the interface

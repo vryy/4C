@@ -1727,7 +1727,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,
 
   // linearization of porosity
   //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd =
-  //dporosity/dJ * J * N_x
+  // dporosity/dJ * J * N_x
   // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det
   // (dx/ds) * ( det(dX/ds) )^-1 in our case: vtrans is scaled with porosity in GetRhsTrans -->
   // scale it with 1.0/porosity here
@@ -2001,7 +2001,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSolidPressure<nsd,
 
   // linearization of porosity
   //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd =
-  //dporosity/dJ * J * N_x
+  // dporosity/dJ * J * N_x
   // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det
   // (dx/ds) * ( det(dX/ds) )^-1 in our case: vtrans is scaled with (1.0-porosity) in GetRhsTrans
   // --> scale it with 1.0/(1.0-porosity) here
@@ -2362,7 +2362,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,
 
   // linearization of porosity
   //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd =
-  //dporosity/dJ * J * N_x
+  // dporosity/dJ * J * N_x
   // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det
   // (dx/ds) * ( det(dX/ds) )^-1 in our case: vtrans is scaled with porosity in GetRhsTrans -->
   // scale it with 1.0/porosity here
@@ -3665,7 +3665,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracInstat<nsd,
 
     // linearization of mesh motion
     //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} =
-    //J * N_x
+    // J * N_x
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds) in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac *
     // N_x
@@ -4237,7 +4237,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracReac<nsd,
 
       // linearization of porosity (may appear in reaction term)
       //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ *
-      //dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
+      // dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
       // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det
       // (dx/ds) * ( det(dX/ds) )^-1
 
@@ -4989,7 +4989,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureReac<nsd,
 
       // linearization of porosity (may appear in reaction term)
       //-------------dreac/dd = dreac/dporosity * dporosity/dd = dreac/dporosity * dporosity/dJ *
-      //dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
+      // dJ/dd = dreac/dporosity * dporosity/dJ * J * N_x
       // J denotes the determinant of the deformation gradient, i.e. det F = det ( d x / d X ) = det
       // (dx/ds) * ( det(dX/ds) )^-1
 

@@ -1475,14 +1475,14 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass(Teuchos::ParameterList& params,
                 << std::endl;
       // According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory:
       // implementation of a strain-invariant finite element for statics and dynamics, 1999, page
-      // 146, a time integration scheme that delivers angular velocities and angular accelerations as
-      // needed for the inertia terms of geometrically exact beams has to be based on multiplicative
-      // rotation angle increments between two successive time steps. Since BACI does all
-      // displacement updates in an additive manner, the global vector of rotational displacements
-      // has no physical meaning and, consequently the global velocity and acceleration vectors
-      // resulting from the BACI time integration schemes have no physical meaning, too. Therefore,
-      // a mass matrix in combination with this global acceleration vector is meaningless from a
-      // physical point of view. (Christoph Meier, 04.14)
+      // 146, a time integration scheme that delivers angular velocities and angular accelerations
+      // as needed for the inertia terms of geometrically exact beams has to be based on
+      // multiplicative rotation angle increments between two successive time steps. Since BACI does
+      // all displacement updates in an additive manner, the global vector of rotational
+      // displacements has no physical meaning and, consequently the global velocity and
+      // acceleration vectors resulting from the BACI time integration schemes have no physical
+      // meaning, too. Therefore, a mass matrix in combination with this global acceleration vector
+      // is meaningless from a physical point of view. (Christoph Meier, 04.14)
 
       for (int i = 0; i < 6 * nnode; i++)
       {
@@ -1702,8 +1702,8 @@ template <int ndim>  // number of dimensions of embedding space
 void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
     const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity and its
                                                      //!< gradient has to be computed
-    LINALG::Matrix<ndim, 1>& velbackground,         //!< velocity of background fluid
-    LINALG::Matrix<ndim, ndim>& velbackgroundgrad)  //!< gradient of velocity of background fluid
+    LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
+    LINALG::Matrix<ndim, ndim>& velbackgroundgrad)   //!< gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the
    * velocity of the background fluid is always directed in direction
@@ -1856,13 +1856,12 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(
 template <int nnode, int ndim,
     int dof>  // number of nodes, number of dimensions of embedding space, number of degrees of
               // freedom per node
-              inline void
-              DRT::ELEMENTS::Beam3::MyTranslationalDamping(
-                  Teuchos::ParameterList& params,         //!< parameter list
-                  const std::vector<double>& vel,         //!< element velocity vector
-                  const std::vector<double>& disp,        //!< element disp vector
-                  Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                  Epetra_SerialDenseVector* force)        //!< element internal force vector
+inline void
+DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+    const std::vector<double>& vel,         //!< element velocity vector
+    const std::vector<double>& disp,        //!< element disp vector
+    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
   // get time step size
   double dt = 1000;
@@ -1977,13 +1976,12 @@ template <int nnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-                         inline void
-                         DRT::ELEMENTS::Beam3::MyStochasticForces(
-                             Teuchos::ParameterList& params,         //!< parameter list
-                             const std::vector<double>& vel,         //!< element velocity vector
-                             const std::vector<double>& disp,        //!< element disp vector
-                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force)  //!< element internal force vector
+inline void
+DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+    const std::vector<double>& vel,         //!< element velocity vector
+    const std::vector<double>& disp,        //!< element disp vector
+    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3, 1> gamma(true);
@@ -2066,13 +2064,12 @@ template <int nnode, int ndim, int dof,
 template <int nnode,
     int randompergauss>  // number of nodes, number of random numbers required per Gauss point,
                          // number of random numbers required per Gauss point
-                         inline void
-                         DRT::ELEMENTS::Beam3::MyStochasticMoments(
-                             Teuchos::ParameterList& params,         //!< parameter list
-                             const std::vector<double>& vel,         //!< element velocity vector
-                             const std::vector<double>& disp,        //!< element disp vector
-                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force)  //!< element internal force vector
+inline void
+DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& params,  //!< parameter list
+    const std::vector<double>& vel,         //!< element velocity vector
+    const std::vector<double>& disp,        //!< element disp vector
+    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3, 1> gamma(true);
@@ -2144,13 +2141,12 @@ template <int nnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-                         inline void
-                         DRT::ELEMENTS::Beam3::CalcBrownianForcesAndStiff(
-                             Teuchos::ParameterList& params,
-                             const std::vector<double>& vel,   //!< element velocity vector
-                             const std::vector<double>& disp,  //!< element displacement vector
-                             Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force)  //!< element internal force vector
+inline void
+DRT::ELEMENTS::Beam3::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+    const std::vector<double>& vel,         //!< element velocity vector
+    const std::vector<double>& disp,        //!< element displacement vector
+    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
   // add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode, ndim, dof>(params, vel, disp, stiffmatrix, force);

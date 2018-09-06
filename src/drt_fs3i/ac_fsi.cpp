@@ -924,8 +924,8 @@ void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
   }
 
   // NOTE: we can not reset the mean manager here, since we first need to write its data, to be able
-  // to restart. Hence the correct order is: 1. Calculate mean values; 2. Write output; 3. Reset mean
-  // Manager (in next time step)
+  // to restart. Hence the correct order is: 1. Calculate mean values; 2. Write output; 3. Reset
+  // mean Manager (in next time step)
 
   // NOTE: it is important to update the periodic flags AFTER doing the windkessel
   // time update and BEFORE writing the output. So be careful with the order here!!

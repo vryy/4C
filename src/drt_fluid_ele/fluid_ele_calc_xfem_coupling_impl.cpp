@@ -1047,7 +1047,7 @@ namespace DRT
 
         if (configmap.at(INPAR::XFEM::F_Con_n_Col)
                 .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
-                         //cases)
+                         // cases)
         {
           NIT_p_Consistency_MasterTerms(pres_m, funct_m, normal_pres_timefacfac_,
               configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
@@ -1098,7 +1098,7 @@ namespace DRT
 
         if (configmap.at(INPAR::XFEM::F_Adj_n_Row)
                 .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
-                         //cases)
+                         // cases)
         {
           //-----------------------------------------------------------------
           // +++ qnuP option added! +++
@@ -1187,7 +1187,7 @@ namespace DRT
 
           if (configmap.at(INPAR::XFEM::XF_Con_n_Col)
                   .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
-                           //cases)
+                           // cases)
           {
             NIT_p_Consistency_SlaveTerms(pres_s, funct_m, normal_pres_timefacfac_,
                 configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
@@ -1205,7 +1205,7 @@ namespace DRT
           }
           if (configmap.at(INPAR::XFEM::XF_Adj_n_Row)
                   .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
-                           //cases)
+                           // cases)
           {
             NIT_p_AdjointConsistency_SlaveTerms(normal_pres_timefacfac_,
                 velint_diff_normal_pres_timefacfac_, configmap.at(INPAR::XFEM::XF_Adj_n_Row),
@@ -1824,7 +1824,7 @@ namespace DRT
 
           if (configmap.at(INPAR::XFEM::F_Con_n_Col)
                   .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for our
-                           //cases)
+                           // cases)
           {
             NIT_p_Consistency_MasterTerms(pres_m, funct_m, normal_pres_timefacfac_,
                 configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
@@ -1843,8 +1843,9 @@ namespace DRT
           NIT_visc_Consistency_MasterTerms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
               configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::F_Con_Col), true);
 #else
-          dserror("ENFORCE_URQUIZA_GNBC for NIT_visc_Consistency_MasterRHS?");  //@Magnus: What
-                                                                                //should we do here?
+          dserror(
+              "ENFORCE_URQUIZA_GNBC for NIT_visc_Consistency_MasterRHS?");  //@Magnus: What
+                                                                            // should we do here?
 #endif
         }
         if (configmap.at(INPAR::XFEM::F_Con_n_Col).first) dserror("F_Con_n_Col will come soon");
@@ -1867,7 +1868,7 @@ namespace DRT
 
             if (configmap.at(INPAR::XFEM::F_Adj_n_Row)
                     .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
-                             //our cases)
+                             // our cases)
             {
               //-----------------------------------------------------------------
               // +++ qnuP option added! +++
@@ -1931,7 +1932,7 @@ namespace DRT
 
               if (configmap.at(INPAR::XFEM::XF_Con_n_Col)
                       .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
-                               //our cases)
+                               // our cases)
               {
                 NIT_p_Consistency_SlaveTerms(presn_s, funct_m, normal_pres_timefacfac_,
                     configmap.at(INPAR::XFEM::F_Con_n_Row), configmap.at(INPAR::XFEM::X_Con_n_Row),
@@ -1983,7 +1984,7 @@ namespace DRT
               }
               if (configmap.at(INPAR::XFEM::XF_Adj_n_Row)
                       .first)  //(COMMENT: evaluating this seperatly seems to be more efficient for
-                               //our cases)
+                               // our cases)
               {
                 NIT_p_AdjointConsistency_SlaveTerms(normal_pres_timefacfac_,
                     velint_diff_normal_pres_timefacfac_, configmap.at(INPAR::XFEM::XF_Adj_n_Row),
@@ -4265,8 +4266,8 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9, 3>;
 // template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri3,3>; template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri6,3>;
+// DRT::Element::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4, 3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9, 3>;
@@ -4331,8 +4332,8 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9, 4>;
 // template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri3,4>; template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri6,4>;
+// DRT::Element::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4, 4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9, 4>;
@@ -4383,8 +4384,8 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex27, 4>;
 // template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10,
 // DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet10,4>;
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet4,4>; template
+// class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet10,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex8, 4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex20, 4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex27, 4>;
@@ -4424,14 +4425,14 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8, DRT::
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8, DRT::Element::quad9, 3>;
 // template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20,
-// DRT::Element::tri3,3>; template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20,
-// DRT::Element::tri6,3>;
+// DRT::Element::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::quad4, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::quad9, 3>;
 // template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27,
-// DRT::Element::tri3,3>; template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27,
-// DRT::Element::tri6,3>;
+// DRT::Element::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::quad4, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::quad9, 3>;
@@ -4441,8 +4442,8 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4, DRT::
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4, DRT::Element::quad9, 3>;
 // template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10,
-// DRT::Element::tri3,3>; template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10,
-// DRT::Element::tri6,3>;
+// DRT::Element::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::tri6,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad4, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad8, 3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad9, 3>;
@@ -4488,14 +4489,14 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8, DRT::
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8, DRT::Element::quad9, 4>;
 // template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20,
-// DRT::Element::tri3,4>; template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20,
-// DRT::Element::tri6,4>;
+// DRT::Element::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::quad4, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::quad9, 4>;
 // template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27,
-// DRT::Element::tri3,4>; template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27,
-// DRT::Element::tri6,4>;
+// DRT::Element::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::quad4, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::quad9, 4>;
@@ -4505,8 +4506,8 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4, DRT::
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4, DRT::Element::quad9, 4>;
 // template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10,
-// DRT::Element::tri3,4>; template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10,
-// DRT::Element::tri6,4>;
+// DRT::Element::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::tri6,4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad4, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad8, 4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad9, 4>;

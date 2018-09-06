@@ -3533,7 +3533,7 @@ void FLD::FluidImplicitTimeInt::Output()
   }
 
 //#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current
-//configuration - only works for 1 processor  devaal 02.2011
+// configuration - only works for 1 processor  devaal 02.2011
 
 // output ALE nodes and xspatial in current configuration - devaal 02.2011
 #ifdef PRINTALEDEFORMEDNODECOORDS

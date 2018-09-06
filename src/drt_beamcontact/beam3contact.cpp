@@ -190,8 +190,8 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discret
 
   // Check, if we have enough gauss points in order to find every contact point!!
   // Calculate maximal length distance between two gauss points (the factor 1.5 takes into account
-  // the not evenly distributed locations of the Gauss points -> this does hold for a number of Gauss
-  // points <= 10!!!)
+  // the not evenly distributed locations of the Gauss points -> this does hold for a number of
+  // Gauss points <= 10!!!)
   DRT::UTILS::IntegrationPoints1D gausspoints =
       DRT::UTILS::IntegrationPoints1D(DRT::UTILS::BEAMCONTACTGAUSSRULE);
   int intintervals = bcparams_.get<int>("BEAMS_NUMINTEGRATIONINTERVAL");
@@ -578,13 +578,13 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
         {
           // Determine if the projection eta1_boundary_trial is a left boundary of the integration
           // segment or a right boundary of the integration segment This is done in the following
-          // way: First, we determine the tangent of the master boundary node in a way, such that the
-          // tangent points into the elements interior. Then, we determine the tangent on slave beam
-          // at the projection point eta1_boundary_trial. This tangent automatically points into
-          // positive eta1-direction=integration direction. Thus, if the scalar product of these two
-          // tangents is positive, the master element evolves in positive eta1-direction and
-          // consequently, eta1_boundary_trial is the left boundary of the integration segment. If
-          // the scalar product is negative, eta1_boundary_trial is the right boundary of the
+          // way: First, we determine the tangent of the master boundary node in a way, such that
+          // the tangent points into the elements interior. Then, we determine the tangent on slave
+          // beam at the projection point eta1_boundary_trial. This tangent automatically points
+          // into positive eta1-direction=integration direction. Thus, if the scalar product of
+          // these two tangents is positive, the master element evolves in positive eta1-direction
+          // and consequently, eta1_boundary_trial is the left boundary of the integration segment.
+          // If the scalar product is negative, eta1_boundary_trial is the right boundary of the
           // integration segment
           LINALG::TMatrix<TYPE, 3, 1> inward_tangent_master = r_xi(eta2_segleft, element2_);
           LINALG::TMatrix<TYPE, 3, 1> tangent_slave = r_xi(eta1_boundary_trial, element1_);
@@ -649,13 +649,13 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
         {
           // Determine if the projection eta1_boundary_trial is a left boundary of the integration
           // segment or a right boundary of the integration segment This is done in the following
-          // way: First, we determine the tangent of the master boundary node in a way, such that the
-          // tangent points into the elements interior. Then, we determine the tangent on slave beam
-          // at the projection point eta1_boundary_trial. This tangent automatically points into
-          // positive eta1-direction=integration direction. Thus, if the scalar product of these two
-          // tangents is positive, the master element evolves in positive eta1-direction and
-          // consequently, eta1_boundary_trial is the left boundary of the integration segment. If
-          // the scalar product is negative, eta1_boundary_trial is the right boundary of the
+          // way: First, we determine the tangent of the master boundary node in a way, such that
+          // the tangent points into the elements interior. Then, we determine the tangent on slave
+          // beam at the projection point eta1_boundary_trial. This tangent automatically points
+          // into positive eta1-direction=integration direction. Thus, if the scalar product of
+          // these two tangents is positive, the master element evolves in positive eta1-direction
+          // and consequently, eta1_boundary_trial is the left boundary of the integration segment.
+          // If the scalar product is negative, eta1_boundary_trial is the right boundary of the
           // integration segment
           LINALG::TMatrix<TYPE, 3, 1> inward_tangent_master = r_xi(eta2_segright, element2_);
           // Scale tangent of right element node (eta2=1.0) in order to get inward tangent!
@@ -747,8 +747,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
     int size = inversepairs.size();
 
     // All segment pairs for which the segment on the slave beam 1 intersects with the considered
-    // integration interval are filtered out and stored in the vector curintsegpairs. These pairs are
-    // relevant for the integration procedure on the current interval.
+    // integration interval are filtered out and stored in the vector curintsegpairs. These pairs
+    // are relevant for the integration procedure on the current interval.
     for (int k = 0; k < size; k++)
     {
       double eta1_segleft = (inversepairs[size - 1 - k]).first;
@@ -757,8 +757,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
       // (the slave segment with the lowest bounding parameter coordinates eta1_segleft and
       // eta1_segright lie on the last position of the vector inversepairs), it is sufficient to
       // start with the last element and leave the k-loop as soon as we have found the first segment
-      // pair without intersection. This procedure only works, if we delete a segment pair as soon as
-      // we realize that it will not be relevant for the next integration interval anymore, see
+      // pair without intersection. This procedure only works, if we delete a segment pair as soon
+      // as we realize that it will not be relevant for the next integration interval anymore, see
       // comment at (*).
       if (eta1_segleft < eta1_max + 1.0e-10)
       {
@@ -766,7 +766,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
         curintsegpairs.push_back(inversepairs[size - 1 - k]);
 
         //(*) In case eta1_segright (the largest parameter coordinate lying within the slave
-        //segment) is smaller than eta1_max(the upper bound of the integration interval), the
+        // segment) is smaller than eta1_max(the upper bound of the integration interval), the
         // considered segment will not be relevant for the next integration interval at i+1 and can
         // be deleted.
         if (eta1_segright < eta1_max - 1.0e-10)
@@ -997,10 +997,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveSmallAnglePa
 #endif
 
     // TODO: Here we apply an element jacobian that is constant along the beam element. This works
-    // only for initially straight elements! Furthermore we assume, that the element is subdivided in
-    // a total of intintervals integration intervals of equal length! The intfac has NOT to be of
-    // TYPE FAD in order to deal with non-constant jacobis (in case of ENDPOINTSEGMENTATION) since we
-    // explicitly consider the linearization of the jacobi in EvaluateStiffcContactIntSeg()!
+    // only for initially straight elements! Furthermore we assume, that the element is subdivided
+    // in a total of intintervals integration intervals of equal length! The intfac has NOT to be of
+    // TYPE FAD in order to deal with non-constant jacobis (in case of ENDPOINTSEGMENTATION) since
+    // we explicitly consider the linearization of the jacobi in EvaluateStiffcContactIntSeg()!
     double intfac = FADUTILS::CastToDouble(jacobi) * weight;
 
     // Convert the length specific energy into a 'real' energy
@@ -1988,7 +1988,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments(
       angle = BEAMCONTACT::CalcAngle(t1, t2);
 
       //*******1) intersection between two parallel
-      //cylinders*********************************************************
+      // cylinders*********************************************************
       if (fabs(angle) < ANGLETOL)
       {
         if (BEAMCONTACT::IntersectParallelCylinders(r1_a, r1_b, r2_a, r2_b, distancelimit))
@@ -2015,7 +2015,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments(
         }
       }
       //*******2) intersection between two arbitrary oriented
-      //cylinders************************************************
+      // cylinders************************************************
       else
       {
         std::pair<double, double> closestpoints(std::make_pair(0.0, 0.0));

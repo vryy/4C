@@ -206,7 +206,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
     //------------------- FOR 3D QUADRATIC CASE ----------------------------
 
     //--- For using non diagonal D-Matrix, it should be checked if this assumtion isn't anywhere
-    //else!!!
+    // else!!!
 
     // kin: subtract T(dhat)*kan --
     Teuchos::RCP<LINALG::SparseMatrix> kimod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));

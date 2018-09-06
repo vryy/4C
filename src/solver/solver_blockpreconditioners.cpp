@@ -131,8 +131,9 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
           Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(xA22->getRowMap(), stridingInfo,
               xA22->getRowMap()->getIndexBase(), 1 /* stridedBlockId */, 0 /* globalOffset */));
       // Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(),
-      // stridingInfo, 0 /* stridedBlock */, 0 /*globalOffset*/)); Teuchos::RCP<StridedMap> strMap2 =
-      // Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo, 1 /* stridedBlock */, 0 /*0*/
+      // stridingInfo, 0 /* stridedBlock */, 0 /*globalOffset*/)); Teuchos::RCP<StridedMap> strMap2
+      // = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo, 1 /* stridedBlock */, 0
+      // /*0*/
       // /*globalOffset*/));
 
       // build map extractor

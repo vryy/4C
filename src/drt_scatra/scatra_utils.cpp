@@ -112,7 +112,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     // get adjacent elements for this node
     const DRT::Element* const* adjelements = ptToNode->Elements();
 
-    const DRT::Element::DiscretizationType DISTYPE = adjelements[0]->Shape();  // DRT::Element::hex8;
+    const DRT::Element::DiscretizationType DISTYPE =
+        adjelements[0]->Shape();  // DRT::Element::hex8;
 
     for (int iele = 0; iele < ptToNode->NumElement(); iele++)
     {

@@ -1034,9 +1034,9 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
             ////            for (std::size_t kk=0; kk<localtrafomap.size(); kk++)
             ////            {
             ////              std::cout << "master node id " << nodes_face_master[kk]->Id() <<
-            ///std::endl; /              std::cout << "slave node id " << slave_nodes[kk]->Id() <<
-            ///std::endl; /              std::cout << "slave node position " << localtrafomap[kk] <<
-            ///std::endl; /            }
+            /// std::endl; /              std::cout << "slave node id " << slave_nodes[kk]->Id() <<
+            /// std::endl; /              std::cout << "slave node position " << localtrafomap[kk]
+            /// << std::endl; /            }
             //            }
           }
         }

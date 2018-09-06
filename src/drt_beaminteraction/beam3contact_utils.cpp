@@ -299,7 +299,8 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(LINALG::TMatrix<double, 3, 1>& r1_
         return true;
       }
       // 3)Check, if a local minimum exists at one of the four 1D boundaries eta1_seg=-1.0,
-      // eta1_seg=1.0, eta2_seg=-1.0 and eta2_seg=1.0 of the domain eta1_seg, eta2_seg \in [-1.0;1.0]
+      // eta1_seg=1.0, eta2_seg=-1.0 and eta2_seg=1.0 of the domain eta1_seg, eta2_seg \in
+      // [-1.0;1.0]
       else
       {
         double etapoint = 0.0;

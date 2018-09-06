@@ -1354,8 +1354,9 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   //-------------------------------
   // get length of the structural and fluid vector
   //-------------------------------
-  ns_ = (*(Extractor_MergedPoro().ExtractVector(rhs_, structp_block_))).GlobalLength();  // structure
-  nf_ = (*(Extractor().ExtractVector(rhs_, fluid_block_))).GlobalLength();               // fluid
+  ns_ =
+      (*(Extractor_MergedPoro().ExtractVector(rhs_, structp_block_))).GlobalLength();  // structure
+  nf_ = (*(Extractor().ExtractVector(rhs_, fluid_block_))).GlobalLength();             // fluid
   nfv_ = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 0)))
              .GlobalLength();  // fluid velocity
   nfp_ = (*(fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 1)))

@@ -1745,7 +1745,7 @@ namespace DRT
         if (!cond_manager->IsCoupling(coup_sid, my::eid_))
         {
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
-                                    //field, currently only one-sided
+                                    // field, currently only one-sided
           {
             ci[coup_sid] = DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>::
                 CreateHybridLMCoupling_XFluidWDBC(fldparaxfem_->IsViscousAdjointSymmetric());
@@ -3559,7 +3559,7 @@ namespace DRT
         if (!cond_manager->IsCoupling(coup_sid, my::eid_))
         {
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
-                                    //field, currently only one-sided
+                                    // field, currently only one-sided
           {
             ci = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
                 elemat1_epetra, elevec1_epetra, *fldparaxfem_);

@@ -288,9 +288,8 @@ int DRT::ELEMENTS::Spring3::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
                                          // space, number of degrees of freedom per node
-                                         void DRT::ELEMENTS::Spring3::EvaluatePTC(
-                                             Teuchos::ParameterList& params,
-                                             Epetra_SerialDenseMatrix& elemat1)
+void DRT::ELEMENTS::Spring3::EvaluatePTC(
+    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
 {
   dserror("PTC is not implemented for Spring3 elements!");
 

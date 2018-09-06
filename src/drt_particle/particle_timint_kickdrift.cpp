@@ -103,7 +103,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
 
   // Apply Dirichlet BCs
   //(Accelerations accn_ at Dirichlet DoFs are required for boundary particles due to pressure
-  //averaging as suggested in Adami2012)
+  // averaging as suggested in Adami2012)
   ApplyDirichletBC(timen_, disn_, Teuchos::null, accn_, false);
   ApplyDirichletBC(timen_ - dthalf, Teuchos::null, veln_, Teuchos::null, false);
 

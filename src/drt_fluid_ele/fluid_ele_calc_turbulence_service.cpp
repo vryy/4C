@@ -304,7 +304,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
   }
   // Vreman turbulence model according to
   //"An eddy-viscosity subgrid-scale model for turbulent shear flow: Algebraic theory and
-  //applications", 2004
+  // applications", 2004
   else if (fldpara_->TurbModAction() == INPAR::FLUID::vreman or
            fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
   {

@@ -284,7 +284,7 @@ class Beam3ContactOctTree
   std::vector<LINALG::Matrix<6, 1>> octreelimits_;
 
   //!\brief vector holding information on how many times a bounding box is shifted due to periodic
-  //!boundary conditions
+  //! boundary conditions
   Teuchos::RCP<Epetra_Vector> numshifts_;
 
   //!\brief Bounding Box type

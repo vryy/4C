@@ -19,7 +19,7 @@
 /************************************************************************/
 #define RELCONSTRTOL /* flag for relative evaluation of the constraint tolerance */
 //#define MEASURETIME             /* flag for time measurement of octree setup and intermediate
-//steps */ #define OCTREEDEBUG             /* flag for debug options in octree search routine*/
+// steps */ #define OCTREEDEBUG             /* flag for debug options in octree search routine*/
 
 /************************************************************************/
 /* Beam contact algorithm parameters                                    */
@@ -72,10 +72,10 @@ bending stiffness */
   1.0 /* with this parameter the geometrical radius used for gmsh visualization can be          \
 //default: 1                         chosen different from the physical radius appearing in the \
 bending stiffness */
-#define NEIGHBORTOL                                                                         \
-  2 /* parameter that allows to also evaluate the contact normal of neighbor elements       \
-//default: 3                         needed for new gap function. It has proven useful that \
-NEIGHBORTOL ca. 3, since the sum of |xi1| and |xi2| has to be larger than three for a contact pair            \
+#define NEIGHBORTOL                                                                                \
+  2 /* parameter that allows to also evaluate the contact normal of neighbor elements              \
+//default: 3                         needed for new gap function. It has proven useful that        \
+NEIGHBORTOL ca. 3, since the sum of |xi1| and |xi2| has to be larger than three for a contact pair \
         consisting of element i and element i+2 of the same physical beam! */
 #define PARALLELTOL \
   1.0e-10  // Tolerance necessary for start values eta1_0 and eta2_0 of closest point projection
@@ -102,7 +102,7 @@ NEIGHBORTOL ca. 3, since the sum of |xi1| and |xi2| has to be larger than three 
        // parallel
 
 //#define AUTOMATICDIFF           //Decide whether automatic differentiation via Sacado is used or
-//not default: Off
+// not default: Off
 #ifdef AUTOMATICDIFF
 // TODO
 dserror(
@@ -119,14 +119,15 @@ typedef double TYPE;
 // default: true
 
 //#define MAXFORCE           50      //prescribe maximum penalty force (cut off value in combination
-//with secant stiffness) #define BASICSTIFFWEIGHT    1.1    //Additional weighting of the basis
-//stiffness term
+// with secant stiffness) #define BASICSTIFFWEIGHT    1.1    //Additional weighting of the basis
+// stiffness term
 
 #define ITERMAX 15  // Newton iteration at which PTC or ALGORITHMICDAMP is applied
 //#define ALGORITHMICDAMP      50      //Apply algorithmicdamp proportional to iterative gap change
 //(tends to zero in converged configuration) #define ALGDAMPREGFAC1       0.001 #define
-//ALGDAMPREGFAC2      -0.03 #define ALGDAMPBASICSTIFFFAC 1.0 #define ALGCOMPLETESTIFF #define
-//BEAMCONTACTPTC       10        //Apply PTC terms to contact elements #define BEAMCONTACTPTCROT 0.0
+// ALGDAMPREGFAC2      -0.03 #define ALGDAMPBASICSTIFFFAC 1.0 #define ALGCOMPLETESTIFF #define
+// BEAMCONTACTPTC       10        //Apply PTC terms to contact elements #define BEAMCONTACTPTCROT
+// 0.0
 
 
 #define MAXNUMSEG 256  // default: 256         //maximal number of segments
@@ -141,20 +142,21 @@ typedef double TYPE;
 // default: 5 GP
 
 //#define CONSISTENTTRANSITION 2                    //apply moment based transition: 1 -> variant 1,
-//2 -> variant 2 #define ENDPOINTSEGMENTATION                       //build integration segments at
-//the physical beam endpoints
+// 2 -> variant 2 #define ENDPOINTSEGMENTATION                       //build integration segments at
+// the physical beam endpoints
 #define RELSEGMENTTOL \
   0.0000000001  // default:0.0000000001              //minimal (relative) size of a cut integration
                 // interval
 //#define CONVERGENCECONTROLE                      //check, if all local Newton loops converge
 
 //#define CHANGEENDPOINTPROJECTION                 //If CHANGEENDPOINTPROJECTION is defined, the
-//endpoint projection necessary for ENDPOINTSEGMENTATION is done as an orthogonal projection and not
+// endpoint projection necessary for ENDPOINTSEGMENTATION is done as an orthogonal projection and
+// not
 // as an closest point projection
 
 // TODO
 //#define ONLYLEFTENDPOINTCONTACT                  //hack necessary for example "dynamic failure of
-//rope" -> endpoint contact is only considered at one end of the ropes
+// rope" -> endpoint contact is only considered at one end of the ropes
 
 #define CPP_APPROX  // Use approximation based on point-to-line projection in case of non-converent
                     // cpp
@@ -165,7 +167,7 @@ typedef double TYPE;
 #define INITSEG1 1  // minimal number of segments of element1 (necessary for debugging)
 #define INITSEG2 1  // minimal number of segments of element2 (necessary for debugging)
 //#define NOSEGMENTATION                             //switch segmentation of -> one element=one
-//segment
+// segment
 
 // TODO: Change back to default
 #define MAXPENETRATIONSAFETYFAC \
@@ -185,8 +187,9 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 #endif
 
 // For the CONSISTENTTRANSITION case, the variations of the contact point coordinates are necessary.
-// For the small-angle contact formulation, this is only implemented in a way that considers variable
-// eta while xi is fixed. However, in case of ENDPOINTSEGMENTATION both, xi and eta, are variable!
+// For the small-angle contact formulation, this is only implemented in a way that considers
+// variable eta while xi is fixed. However, in case of ENDPOINTSEGMENTATION both, xi and eta, are
+// variable!
 #if defined(CONSISTENTTRANSITION) and defined(ENDPOINTSEGMENTATION)
     dserror("CONSISTENTTRANSITION does not work in combination with ENDPOINTSEGMENTATION!")
 #endif
@@ -232,7 +235,7 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
   intrule_line_6point  // Define gauss rule for integrating residual and stiffness terms
 
 //#define AUTOMATICDIFFBTS                        // Decide if automatic differentiation via Sacado
-//is used default: Off
+// is used default: Off
 #ifdef AUTOMATICDIFFBTS
         typedef Sacado::Fad::DFad<double> TYPEBTS;
 //  #define FADCHECKSTIFFNESS                     // Decide if FAD checks for contact stiffness are
@@ -249,14 +252,14 @@ typedef double TYPEBTS;
 #endif
 
 //#define FDCHECKSTIFFNESS                        // Decide if differentiation via finite difference
-//for calculating contact stiffness is used default: Off
+// for calculating contact stiffness is used default: Off
 
 #ifndef AUTOMATICDIFFBTS
 //#define BTSOLGMSH                           // gmsh output of solids
 //#define GMSHDEBUG                             // Draw gap as 3D text at each Gauss point in Gmsh
 //#define GMSHFORCE                             // Create extra Gmsh file with contact forces acting
-//on solid element #define SAVEFORCE                             // Create text file with contact
-//forces at all contact interval borders and Gauss points
+// on solid element #define SAVEFORCE                             // Create text file with contact
+// forces at all contact interval borders and Gauss points
 #endif
 // -----------------------------------------------------------------
 

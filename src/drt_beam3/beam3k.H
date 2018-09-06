@@ -106,7 +106,7 @@ dserror(
 
 
 //#define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector
-//component as test function for strong Kirchhoff
+// component as test function for strong Kirchhoff
 //-> this interpolation enables exact energy and angular momentum balances
 
 // forward declaration
@@ -1629,7 +1629,7 @@ namespace DRT
 
 
       //******************************Begin: Class variables required for time
-      //integration**************************************************//
+      // integration**************************************************//
       //! triads at Gauss points for exact integration in quaternion at the end of the preceeding
       //! time step (required for computation of angular velocity)
       std::vector<LINALG::Matrix<4, 1>> Qconvmass_;
@@ -1681,7 +1681,7 @@ namespace DRT
       //! for computation of inertia terms)
       std::vector<LINALG::Matrix<3, 1>> rnewmass_;
       //******************************End: Class variables required for time
-      //integration**************************************************//
+      // integration**************************************************//
 
 
       //! strain resultant values at GPs

@@ -280,7 +280,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
           }
         }  // for (int i=0; i<nummis; ++i)
            // printf("Proc %d Ele %d TotWeight %15.10e\n",Owner(),Id(),totweight);
-        // std::cout << stresstest;
+           // std::cout << stresstest;
 #endif
 
         //----------------------------------------------- add final stress to storage

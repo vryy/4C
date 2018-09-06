@@ -754,7 +754,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(Teuchos::ParameterList& 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
     //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) =
-    //dJ/dF : dF/dus = J * F^-T * N,X
+    // dJ/dF : dF/dus = J * F^-T * N,X
     static LINALG::Matrix<1, numdof_> dJ_dus;
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
@@ -892,7 +892,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop_presbased(Teuchos::Param
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
     //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) =
-    //dJ/dF : dF/dus = J * F^-T * N,X
+    // dJ/dF : dF/dus = J * F^-T * N,X
     static LINALG::Matrix<1, numdof_> dJ_dus;
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
@@ -1462,7 +1462,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList
       for (int j = 0; j < numdim_; j++) velint(j) += nodalvel(j, i) * shapefct(i);
 
     //**************************************************+auxilary variables for computing the
-    //porosity and linearization
+    // porosity and linearization
     double dphi_dp = 0.0;
     double porosity = 0.0;
 
@@ -2242,7 +2242,7 @@ inline void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfJacobian(
   defgrd_inv_vec(3) = defgrd_inv(1, 1);
 
   //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) =
-  //dJ/dF : dF/dus = J * F^-T * N,X
+  // dJ/dF : dF/dus = J * F^-T * N,X
   dJ_dus.MultiplyTN(J, defgrd_inv_vec, N_X);
 }
 

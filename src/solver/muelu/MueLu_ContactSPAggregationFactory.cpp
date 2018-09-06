@@ -28,5 +28,5 @@ template class MueLu::ContactSPAggregationFactory<double, int, long long int, Ko
 //#include <complex>
 // template class MueLu::ContactSPAggregationFactory<std::complex<double>, int, int,
 // KokkosSerialNode>; # else # warning To compile MueLu with 'complex' support, please turn on
-//Teuchos_ENABLE_COMPLEX # endif #endif
+// Teuchos_ENABLE_COMPLEX # endif #endif
 #endif  // HAVE_MueLu

@@ -118,7 +118,7 @@ void FS3I::PartFPS3I::Init()
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   //##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called
-  //inside)     //##################
+  // inside)     //##################
   Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
 
   fpsi_algo = FPSI_UTILS->SetupDiscretizations(comm_, fpsidynparams, poroelastdynparams);

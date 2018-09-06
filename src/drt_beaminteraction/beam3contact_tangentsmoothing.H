@@ -97,7 +97,7 @@ namespace CONTACT
       const DRT::Element::DiscretizationType distype1 = ele1->Shape();
 
       //******************************contribution of element
-      //1*****************************************
+      // 1*****************************************
       for (int node = 1; node < numnode1 + 1; node++)
       {
         // calculate nodal derivatives
@@ -112,10 +112,10 @@ namespace CONTACT
         }
       }
       //******************************end: contribution of element
-      //1*****************************************
+      // 1*****************************************
 
       //****************************** contribution of left neighbor of element
-      //1*****************************************
+      // 1*****************************************
       if (neighbors1->GetLeftNeighbor() != NULL)
       {
         DRT::Element::DiscretizationType distype_ele1l = neighbors1->GetLeftNeighbor()->Shape();
@@ -158,10 +158,10 @@ namespace CONTACT
         }
       }
       //******************************end: contribution of left neighbor of element
-      //1*****************************************
+      // 1*****************************************
 
       //******************************contribution of right neighbor of element
-      //1*****************************************
+      // 1*****************************************
       if (neighbors1->GetRightNeighbor() != NULL)
       {
         DRT::Element::DiscretizationType distype_ele1r = neighbors1->GetRightNeighbor()->Shape();
@@ -204,11 +204,11 @@ namespace CONTACT
         }
       }
       //******************************end: contribution of right neighbor of element
-      //1*****************************************
+      // 1*****************************************
 
       return node_tangent1;
       //***************** Uncomment this output to check the tangent
-      //calculation*************************
+      // calculation*************************
       //             std::cout << "nodal tangents Element " << element1_->Id() << " : " <<
       //             ele1tangent_ << std::endl;
     }

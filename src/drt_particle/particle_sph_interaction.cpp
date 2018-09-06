@@ -377,8 +377,8 @@ void PARTICLE::ParticleSPHInteractionHandler::InitBoundaryData(
           interData_ij.rRelVersor_ij_, 1.0);
 
       // sum up difference velocity required for boundary treatment of tensor A in transport
-      // velocity formulation according to Adami2013. Note: In the original formulation Adami2013, no
-      // boundary treatment of tensor A has been applied.
+      // velocity formulation according to Adami2013. Note: In the original formulation Adami2013,
+      // no boundary treatment of tensor A has been applied.
       sumjVDiffjWij.Update(interData_ij.w_ij_, particle_j.velConv_, 1.0);
       sumjVDiffjWij.Update(-interData_ij.w_ij_, particle_j.vel_, 1.0);
     }
@@ -407,7 +407,7 @@ void PARTICLE::ParticleSPHInteractionHandler::InitBoundaryData(
     {
       particle_i->boundarydata_.pressureMod_ =
           -1000;  //-1000 means there are no relevant fluid particle neighbours for this boundary
-                  //particle
+                  // particle
     }
   }
 
@@ -601,7 +601,7 @@ void PARTICLE::ParticleSPHInteractionHandler::AddNewNeighbours()
   std::set<int> examinedbins;
 
   //***********loop over the (real/fluid) particles (no
-  //superpositions)****************************************************************************************************************
+  // superpositions)****************************************************************************************************************
   const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
   for (int rowPar_i = 0; rowPar_i < numrowparticles; ++rowPar_i)
   {
@@ -642,7 +642,7 @@ void PARTICLE::ParticleSPHInteractionHandler::AddNewNeighbours()
   }
 
   //*************loop over the boundary particles (for boundary particles we need superposition -->
-  //column map)**************************************************
+  // column map)**************************************************
   // clear bin checker
   examinedbins.clear();
 
@@ -729,8 +729,8 @@ void PARTICLE::ParticleSPHInteractionHandler::AddNewNeighbours_p(
 
 #ifdef PARTICLE_TENSILESAFETYFAC
       // Check that the particle distance does not become to small (danger of tensile
-      // instabilities). The quantity initAverageDist represents the average initial distance between
-      // particles considering there mass and initial density.
+      // instabilities). The quantity initAverageDist represents the average initial distance
+      // between particles considering there mass and initial density.
       double initAverageDist =
           PARTICLE::Utils::Volume2EffDist(particle_i.mass_ / particle_i.density0_, WF_DIM_);
       if (rRelNorm2 < PARTICLE_TENSILESAFETYFAC * initAverageDist)
@@ -811,8 +811,8 @@ void PARTICLE::ParticleSPHInteractionHandler::AddNewNeighbours_bp(
 
 #ifdef PARTICLE_TENSILESAFETYFAC
       // Check that the particle distance does not become to small (danger of tensile
-      // instabilities). The quantity initAverageDist represents the average initial distance between
-      // particles considering there mass and initial density.
+      // instabilities). The quantity initAverageDist represents the average initial distance
+      // between particles considering there mass and initial density.
       double initAverageDist =
           PARTICLE::Utils::Volume2EffDist(particle_i.mass_ / particle_i.density0_, WF_DIM_);
       if (rRelNorm2 < PARTICLE_TENSILESAFETYFAC * initAverageDist)
@@ -1941,7 +1941,7 @@ void PARTICLE::ParticleSPHInteractionHandler::InitFreeSurfaceParticles(
   }
 
   //************loop over free surface particles and search for neighbours (for free-surface
-  //particles we need superposition --> column map)********
+  // particles we need superposition --> column map)********
   // bin checker
   std::set<int> examinedbins;
 
@@ -2005,7 +2005,7 @@ void PARTICLE::ParticleSPHInteractionHandler::InitFreeSurfaceParticles(
   //***********************************************************************************************************************************************
 
   //************loop over free surface particles and search for neighbours (for free-surface
-  //particles we need superposition --> column map)********
+  // particles we need superposition --> column map)********
   // clear bin checker
   examinedbins.clear();
 

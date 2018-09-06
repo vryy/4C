@@ -426,8 +426,8 @@ double PARTICLE::WeightFunction_CubicBspline::RszDim(const double &radius)
 double PARTICLE::WeightFunction_QuinticBspline::W(const double &disRel, const double &radius)
 {
   // See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in
-  // different space dimensions! Attention: The support of our kernel functions is (in 3D) defined by
-  // a sphere with radius measured by our variable "radius". In the SLM literature, typically the
+  // different space dimensions! Attention: The support of our kernel functions is (in 3D) defined
+  // by a sphere with radius measured by our variable "radius". In the SLM literature, typically the
   // smoothing length !!!h:=radius/3!!! is used for defining the quintic kernel functions!!!
   // q:=||r_{ij}||/h=3*||r_{ij}||/radius
   const double h = radius / 3.0;
@@ -461,8 +461,8 @@ double PARTICLE::WeightFunction_QuinticBspline::W(const double &disRel, const do
 FAD PARTICLE::WeightFunction_QuinticBspline::W(const FAD &disRel, const double &radius)
 {
   // See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in
-  // different space dimensions! Attention: The support of our kernel functions is (in 3D) defined by
-  // a sphere with radius measured by our variable "radius". In the SLM literature, typically the
+  // different space dimensions! Attention: The support of our kernel functions is (in 3D) defined
+  // by a sphere with radius measured by our variable "radius". In the SLM literature, typically the
   // smoothing length !!!h:=radius/3!!! is used for defining the quintic kernel functions!!!
   // q:=||r_{ij}||/h=3*||r_{ij}||/radius
   const double h = radius / 3.0;

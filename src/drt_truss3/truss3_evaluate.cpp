@@ -381,9 +381,8 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
                                          // space, number of degrees of freedom per node
-                                         void DRT::ELEMENTS::Truss3::EvaluatePTC(
-                                             Teuchos::ParameterList& params,
-                                             Epetra_SerialDenseMatrix& elemat1)
+void DRT::ELEMENTS::Truss3::EvaluatePTC(
+    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
 {
   dserror(
       "Truss3::EvaluatePTC is deprecated; if needed adapt parameter handling according to "
@@ -2563,8 +2562,8 @@ void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(
     Teuchos::ParameterList& params,                  //!< parameter list
     const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity and its
                                                      //!< gradient has to be computed
-    LINALG::Matrix<ndim, 1>& velbackground,         //!< velocity of background fluid
-    LINALG::Matrix<ndim, ndim>& velbackgroundgrad)  //!< gradient of velocity of background fluid
+    LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
+    LINALG::Matrix<ndim, ndim>& velbackgroundgrad)   //!< gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the
    * velocity of the background fluid is always directed in x-direction. In 3D the velocity
@@ -2619,13 +2618,12 @@ void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(
 template <int nnode, int ndim,
     int dof>  // number of nodes, number of dimensions of embedding space, number of degrees of
               // freedom per node
-              inline void
-              DRT::ELEMENTS::Truss3::MyTranslationalDamping(
-                  Teuchos::ParameterList& params,              //!< parameter list
-                  const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
-                  const LINALG::Matrix<1, 6>& DummyDisp,       //!< element disp vector
-                  Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
-                  Epetra_SerialDenseVector& DummyForce)        //!< element internal force vector
+inline void
+DRT::ELEMENTS::Truss3::MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
+    const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
+    const LINALG::Matrix<1, 6>& DummyDisp,       //!< element disp vector
+    Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector& DummyForce)        //!< element internal force vector
 {
   // get time step size
   double dt = params.get<double>("delta time", 0.0);
@@ -2739,15 +2737,12 @@ template <int nnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-                         inline void
-                         DRT::ELEMENTS::Truss3::MyStochasticForces(
-                             Teuchos::ParameterList& params,         //!< parameter list
-                             const LINALG::Matrix<1, 6>& DummyVel,   //!< element velocity vector
-                             const LINALG::Matrix<1, 6>& DummyDisp,  //!< element disp vector
-                             Epetra_SerialDenseMatrix&
-                                 DummyStiffMatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector&
-                                 DummyForce)  //!< element internal force vector
+inline void
+DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
+    const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
+    const LINALG::Matrix<1, 6>& DummyDisp,       //!< element disp vector
+    Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector& DummyForce)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotational degree of freedom
   LINALG::Matrix<3, 1> gamma(true);
@@ -2830,15 +2825,12 @@ template <int nnode, int ndim, int dof,
     int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
-                         inline void
-                         DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList& params,
-                             const LINALG::Matrix<1, 6>& DummyVel,  //!< element velocity vector
-                             const LINALG::Matrix<1, 6>&
-                                 DummyDisp,  //!< element displacement vector
-                             Epetra_SerialDenseMatrix&
-                                 DummyStiffMatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector&
-                                 DummyForce)  //!< element internal force vector
+inline void
+DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList& params,
+    const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
+    const LINALG::Matrix<1, 6>& DummyDisp,       //!< element displacement vector
+    Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector& DummyForce)        //!< element internal force vector
 {
   // if no random numbers for generation of stochastic forces are passed to the element no Brownian
   // dynamics calculations are conducted

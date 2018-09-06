@@ -302,7 +302,7 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
     Teuchos::ParameterList& params,                      //!< parameter list
     const LINALG::TMatrix<T, ndim, 1>& evaluationpoint,  //!< point at which background velocity and
                                                          //!< its gradient has to be computed
-    LINALG::TMatrix<T, ndim, 1>& velbackground,  //!< velocity of background fluid
+    LINALG::TMatrix<T, ndim, 1>& velbackground,          //!< velocity of background fluid
     LINALG::TMatrix<T, ndim, ndim>& velbackgroundgrad)
     const  //!< gradient of velocity of background fluid
 {

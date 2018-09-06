@@ -250,5 +250,5 @@ template class CONTACT::Beam3tosolidmeshtying<4, 2,
     2>;  // Hermite beam element, quad4 surface element
 // template class CONTACT::Beam3tosolidmeshtying<6,2,2>;     // Hermite beam element, tri6 surface
 // element template class CONTACT::Beam3tosolidmeshtying<8,2,2>;     // Hermite beam element, quad8
-// surface element template class CONTACT::Beam3tosolidmeshtying<9,2,2>;     // Hermite beam element,
-// quad9 surface element
+// surface element template class CONTACT::Beam3tosolidmeshtying<9,2,2>;     // Hermite beam
+// element, quad9 surface element

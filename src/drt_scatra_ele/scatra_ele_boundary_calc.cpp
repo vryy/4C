@@ -1570,7 +1570,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   //------------get membrane concentration at the interface (i.e. within the
-  //membrane)------------------
+  // membrane)------------------
   Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
   if (phibar == Teuchos::null) dserror("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
@@ -1710,7 +1710,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
 
 
   //------------get membrane concentration at the interface (i.e. within the
-  //membrane)------------------
+  // membrane)------------------
   Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
   if (phibar == Teuchos::null) dserror("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector

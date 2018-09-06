@@ -1380,7 +1380,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
 
     //*****************************************************************************************************************************
     //************************Begin: Determine "v"-vectors representing the discrete strain
-    //variations*****************************
+    // variations*****************************
     //*****************************************************************************************************************************
     // Auxilliary quantities
     abs_r_s = 0.0;
@@ -1432,7 +1432,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     v_theta_s.Update(1.0, v_thetapartheta_s, 1.0);
 
     //************** II) Compute v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which is
-    //required for inertia forces ********
+    // required for inertia forces ********
     // II a) v_thetapartheta contribution
     v_theta_gp[numgp].Clear();
     for (unsigned int row = 0; row < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; row++)
@@ -1454,7 +1454,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
 // Compute contributions stemming from CONSISTENTSPINSK
 #ifdef CONSISTENTSPINSK
     //************** to I) Compute v_thetapard_s of
-    //v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s) *******************
+    // v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s) *******************
     LINALG::TMatrix<FAD, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1> auxmatrix3(true);
     LINALG::TMatrix<FAD, 1, 1> auxscalar1(true);
 
@@ -1535,7 +1535,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
 #endif
     //***************************************************************************************************************************
     //************************End: Determine "v"-vectors representing the discrete strain
-    //variations*****************************
+    // variations*****************************
     //***************************************************************************************************************************
 
     // Compute material triad and centerline curvature at Gauss point

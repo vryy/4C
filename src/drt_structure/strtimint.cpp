@@ -1202,7 +1202,8 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0, "velocity", (*vel_)(0));
 
     // The acceleration is only used as a dummy here and should not be applied inside an element,
-    // since this is not the consistent initial acceleration vector which will be determined later on
+    // since this is not the consistent initial acceleration vector which will be determined later
+    // on
     discret_->SetState(0, "acceleration", acc_aux);
 
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", (*vel_)(0));

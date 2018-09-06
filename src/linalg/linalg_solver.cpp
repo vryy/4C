@@ -363,7 +363,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(inparams, "SOLVER"))
   {
     case INPAR::SOLVER::stratimikos_amesos:  //==================================================
-                                             //Lapack
+                                             // Lapack
     {
       outparams.set("Linear Solver Type", "Amesos");
       Teuchos::ParameterList& alist = outparams.sublist("Linear Solver Types").sublist("Amesos");
@@ -371,7 +371,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(
     }
     break;
     case INPAR::SOLVER::stratimikos_belos:  //===================================================
-                                            //Belos
+                                            // Belos
     {
       outparams.set("Linear Solver Type", "Belos");
       Teuchos::ParameterList& alist = outparams.sublist("Linear Solver Types").sublist("Belos");
@@ -379,7 +379,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(
     }
     break;
     case INPAR::SOLVER::stratimikos_aztec:  //=================================================
-                                            //AztecOO
+                                            // AztecOO
     {
       outparams.set("Linear Solver Type", "AztecOO");
       Teuchos::ParameterList& alist = outparams.sublist("Linear Solver Types").sublist("AztecOO");

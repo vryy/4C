@@ -369,7 +369,7 @@ namespace MORTAR
     bool& parredist_;  //!< ref. to flag indicating parallel redistribution status
     int& maxdof_;      //!< ref. to highest dof number in problem discretization
     INPAR::CONTACT::SystemType& systype_;  //!< ref. to current used system type
-    //! @}
+                                           //! @}
 
    private:
     //! pointer to the data container object

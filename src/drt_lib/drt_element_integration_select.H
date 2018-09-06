@@ -331,9 +331,9 @@ namespace DRT
     };
     // template<> struct IsHigherOrder<DRT::Element::line2>   {static const bool ishigherorder =
     // false; }; template<> struct IsHigherOrder<DRT::Element::line3>   {static const bool
-    // ishigherorder = false; }; template<> struct IsHigherOrder<DRT::Element::nurbs2>  {static const
-    // bool ishigherorder = true; }; template<> struct IsHigherOrder<DRT::Element::nurbs3>  {static
-    // const bool ishigherorder = true; };
+    // ishigherorder = false; }; template<> struct IsHigherOrder<DRT::Element::nurbs2>  {static
+    // const bool ishigherorder = true; }; template<> struct IsHigherOrder<DRT::Element::nurbs3>
+    // {static const bool ishigherorder = true; };
     template <>
     struct IsHigherOrder<DRT::Element::nurbs4>
     {

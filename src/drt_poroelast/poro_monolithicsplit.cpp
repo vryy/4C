@@ -73,8 +73,9 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
   if (evaluateinterface_)
   {
     // here we account for DBCs and preconditioning on the FSI-Interface. In both cases the
-    // structure field decides, what to do (I don't think this is the best solution, but at least the
-    //easiest one)
+    // structure field decides, what to do (I don't think this is the best solution, but at least
+    // the
+    // easiest one)
 
     double timescale = FluidField()->TimeScaling();
 

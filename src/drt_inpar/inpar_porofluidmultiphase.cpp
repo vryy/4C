@@ -141,8 +141,8 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
           // "gradient reconstruction via superconvergent patch recovery",
           "gracient reconstruction via l2-projection"),
       tuple<int>(gradreco_none,  // no convective streamline edge-based stabilization
-          //   gradreco_spr,    // convective streamline edge-based stabilization on the entire
-          //   domain
+                                 //   gradreco_spr,    // convective streamline edge-based
+                                 //   stabilization on the entire domain
           gradreco_l2  // pressure edge-based stabilization as ghost penalty around cut elements
           ),
       &porofluidmultiphasedyn);

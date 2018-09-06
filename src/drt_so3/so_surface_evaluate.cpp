@@ -1695,7 +1695,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // f(phi) : modeled interaction force depending on porosity phi
       //
       //#define VELOCITYDEPENENCY // todo get disp_old and build scalarproduct_sip with
-      //incrementvector d_n+1 - dn !!! #define ECM_INTERACTION_SIMPLE
+      // incrementvector d_n+1 - dn !!! #define ECM_INTERACTION_SIMPLE
       /////////////////////////////////////////////////////////////////////////////
 
       // get exchange manager pointer

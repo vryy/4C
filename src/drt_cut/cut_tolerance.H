@@ -22,7 +22,7 @@
 
 // derived tolerances
 //--> do not change the relation of these tolerances from the basictolerance, if there isn't a
-//reasonable argument to do that!!!
+// reasonable argument to do that!!!
 
 // to check l2-norm of vector with 3-entries of magnitude 1.0!
 #define LINSOLVETOL (BASICTOL / sqrt(3) * 10.0)

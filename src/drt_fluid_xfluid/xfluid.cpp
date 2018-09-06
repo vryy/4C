@@ -1531,7 +1531,8 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
   if (alefluid_)
   {
     // dserror("which vectors have to be set for gradient penalty for timeintegration in
-    // alefluid?!"); In principle we would not need gridv, as tau is anyway set to 1.0 at the end ...
+    // alefluid?!"); In principle we would not need gridv, as tau is anyway set to 1.0 at the end
+    // ...
     discret_->SetState("dispnp", state_->dispnp_);
     discret_->SetState("gridv", state_->gridvnp_);
   }
@@ -3348,7 +3349,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 #endif
 
   //---------------------------------- GMSH SOLUTION OUTPUT (reference/predicted solution fields for
-  //pressure, velocity, acc) ------------------------
+  // pressure, velocity, acc) ------------------------
 
   // write gmsh-output for reference solution fields
   // reference solution output
@@ -4435,7 +4436,7 @@ void FLD::XFluid::Output()
   output_service_->GmshOutputEOS(step_, edgestab_);
 
   //---------------------------------- PARAVIEW SOLUTION OUTPUT (solution fields for pressure,
-  //velocity) ------------------------
+  // velocity) ------------------------
 
   if (step_ % upres_ == 0)
   {
@@ -4813,7 +4814,7 @@ void FLD::XFluid::SetInitialFlowField(
   }
 
   //---------------------------------- GMSH START OUTPUT (reference solution fields for pressure,
-  //velocity) ------------------------
+  // velocity) ------------------------
 
   // write gmsh-output for start fields
   output_service_->GmshSolutionOutputPrevious("START", step_, state_);
