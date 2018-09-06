@@ -91,7 +91,7 @@ SOLVER                          Aztec_MSR
 AZOUTPUT                        10                             // output every so often, 0 no output
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_mono_tumor_BGS-AMG_3x3.xml
+AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_mono_tumor_BGS-AMG_2x2.xml
 -------------------------------------------------------------------MATERIALS
 MAT 2 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.82e-9 NUMMAT 3 MATIDS 10 11 12 NUMFLUIDPHASES 3 NUMREAC 1 REACIDS 20 END
 // 1 = healthy

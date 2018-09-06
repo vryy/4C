@@ -92,6 +92,9 @@ namespace ADAPTER
     //! return primary field at time n+1
     Teuchos::RCP<const Epetra_Vector> Phinp() const;
 
+    //! return primary field at time n
+    Teuchos::RCP<const Epetra_Vector> Phin() const;
+
     //! return solid pressure field at time n+1
     Teuchos::RCP<const Epetra_Vector> SolidPressure() const;
 
@@ -101,8 +104,8 @@ namespace ADAPTER
     //! return saturation field at time n+1
     Teuchos::RCP<const Epetra_Vector> Saturation() const;
 
-    //! return saturation field at time n+1
-    Teuchos::RCP<const Epetra_Vector> ValidVolFracPressDofs() const;
+    //! return valid volume fraction species dof vector
+    Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const;
 
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> Flux() const;

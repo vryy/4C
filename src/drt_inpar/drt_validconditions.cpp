@@ -44,6 +44,7 @@
 #include "inpar_cavitation.H"
 #include "inpar_beampotential.H"
 #include "inpar_beaminteraction.H"
+#include "inpar_poromultiphase_scatra.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -1183,6 +1184,8 @@ DRT::INPUT::ValidConditions()
   INPAR::BEAMINTERACTION::SetValidConditions(condlist);
 
   INPAR::EHL::SetValidConditions(condlist);
+
+  INPAR::POROMULTIPHASESCATRA::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
   SetMiscellaneousConditions(condlist);

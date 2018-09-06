@@ -74,9 +74,8 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<IO::DiscretizationWriter> output  //!< output writer
     );
 
-    /// redistribute the continous and artery-discretization
-    void RedistributeDiscretizations(Teuchos::RCP<DRT::Discretization> contdis,
-        Teuchos::RCP<DRT::Discretization> artdis, const bool ghost_artdis);
+    /// ghost the artery discretization on all procs.
+    void GhostArteryDiscretizationOnAllProcs(Teuchos::RCP<DRT::Discretization> artdis);
 
     //! Determine norm of vector
     double CalculateVectorNorm(

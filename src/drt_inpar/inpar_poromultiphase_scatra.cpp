@@ -19,6 +19,7 @@
 #include "inpar_poromultiphase_scatra.H"
 #include "inpar_scatra.H"
 #include "inpar_poroelast.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 
 
@@ -56,6 +57,12 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
   // coupling with 1D artery network active
   BoolParameter(
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &poromultiphasescatradyn);
+
+  // no convergence of coupling scheme
+  setStringToIntegralParameter<int>("DIVERCONT", "stop",
+      "What to do with time integration when Poromultiphase-Scatra iteration failed",
+      tuple<std::string>("stop", "continue"), tuple<int>(divcont_stop, divcont_continue),
+      &poromultiphasescatradyn);
 
   // ----------------------------------------------------------------------
   // (2) monolithic parameters
@@ -125,6 +132,66 @@ void INPAR::POROMULTIPHASESCATRA::SetValidParameters(Teuchos::RCP<Teuchos::Param
       &poromultiphasescatradynpart);
 }
 
+void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
+    std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
+{
+  using namespace DRT::INPUT;
+
+  /*--------------------------------------------------------------------*/
+  // oxygen partial pressure calculation condition
+  {
+    // definition of oxygen partial pressure calculation condition
+    Teuchos::RCP<ConditionDefinition> oxypartpressline = Teuchos::rcp(
+        new ConditionDefinition("DESIGN OXYGEN PARTIAL PRESSURE CALCULATION LINE CONDITIONS",
+            "PoroMultiphaseScatraOxyPartPressCalcCond",
+            "PoroMultiphaseScatra Oxygen Partial Pressure Calculation line condition",
+            DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Line));
+    Teuchos::RCP<ConditionDefinition> oxypartpresssurf = Teuchos::rcp(new ConditionDefinition(
+        "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION SURF CONDITIONS",
+        "PoroMultiphaseScatraOxyPartPressCalcCond",
+        "PoroMultiphaseScatra Oxygen Partial Pressure Calculation surface condition",
+        DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Surface));
+    Teuchos::RCP<ConditionDefinition> oxypartpressvol = Teuchos::rcp(new ConditionDefinition(
+        "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION VOL CONDITIONS",
+        "PoroMultiphaseScatraOxyPartPressCalcCond",
+        "PoroMultiphaseScatra Oxygen Partial Pressure Calculation volume condition",
+        DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Volume));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent>> oxypartpresscomponents;
+
+    {
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("SCALARID")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new IntConditionComponent("SCALARID")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("n")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("n")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Pb50")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("Pb50")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CaO2_max")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("CaO2_max")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("alpha")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("rho_oxy")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("rho_oxy")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("rho_bl")));
+      oxypartpresscomponents.push_back(Teuchos::rcp(new RealConditionComponent("rho_bl")));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i = 0; i < oxypartpresscomponents.size(); ++i)
+    {
+      oxypartpressline->AddComponent(oxypartpresscomponents[i]);
+      oxypartpresssurf->AddComponent(oxypartpresscomponents[i]);
+      oxypartpressvol->AddComponent(oxypartpresscomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(oxypartpressline);
+    condlist.push_back(oxypartpresssurf);
+    condlist.push_back(oxypartpressvol);
+  }
+  return;
+}
 
 
 #endif /* SRC_DRT_INPAR_INPAR_POROMULTIPHASE_SCATRA_CPP_ */

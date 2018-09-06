@@ -289,11 +289,6 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
         tmpevaluator = Teuchos::rcp(new EvaluatorVolFracPressureReac<nsd, nen>(assembler, -1));
         evaluator_volfrac->AddEvaluator(tmpevaluator);
 
-        // identify DOFs with valid volume fraction pressures
-        assembler = Teuchos::rcp(new AssembleStandard(-1, inittimederiv));
-        tmpevaluator = Teuchos::rcp(new EvaluatorValidVolFracPressures<nsd, nen>(assembler, -1));
-        evaluator_volfrac->AddEvaluator(tmpevaluator);
-
         // add the evaluator of the volfractions to the multiphase evaluator
         evaluator_multiphase->AddEvaluator(evaluator_volfrac);
       }
@@ -364,6 +359,13 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
         evaluator_multiphase->AddEvaluator(tmpevaluator);
       }
       evaluator = evaluator_multiphase;
+
+      break;
+    }
+    case POROFLUIDMULTIPHASE::calc_valid_dofs:
+    {
+      Teuchos::RCP<AssembleInterface> assembler = Teuchos::rcp(new AssembleStandard(-1, false));
+      evaluator = Teuchos::rcp(new EvaluatorValidVolFracPressures<nsd, nen>(assembler, -1));
 
       break;
     }
@@ -2656,6 +2658,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
   const int numvolfrac = phasemanager.NumVolFrac();
 
   Epetra_SerialDenseVector& valid_volfracpress = *elevec[1];
+  Epetra_SerialDenseVector& valid_volfracspec = *elevec[2];
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -2663,12 +2666,18 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorValidVolFracPressures<nsd,
     {
       const int fvi = inode * numdofpernode + idof;
 
-      bool evaluatevolfracpress =
+      const bool evaluatevolfracpress =
           variablemanager.ElementHasValidVolFracPressure(idof - numfluidphases - numvolfrac);
 
+      const bool evaluatevolfracspec =
+          variablemanager.ElementHasValidVolFracSpecies(idof - numfluidphases - numvolfrac);
+
       if (evaluatevolfracpress) valid_volfracpress[fvi] = 1.0;
+      if (evaluatevolfracspec) valid_volfracspec[fvi] = 1.0;
     }
   }
+
+  return;
 };
 
 /*----------------------------------------------------------------------*

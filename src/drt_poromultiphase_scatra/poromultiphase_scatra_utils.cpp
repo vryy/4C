@@ -18,6 +18,7 @@
 
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "poromultiphase_scatra_artery_coupling_linebased.H"
+#include "poromultiphase_scatra_artery_coupling_defines.H"
 
 #include "../drt_poromultiphase/poromultiphase_utils.H"
 #include "../drt_art_net/art_net_utils.H"
@@ -198,9 +199,9 @@ void POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(const Epe
     Teuchos::RCP<DRT::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
     Teuchos::RCP<DRT::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
 
-    // curr_ele_length: defined as element-wise quantity
+    // curr_seg_lengths: defined as element-wise quantity
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, 1, 0, false));
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, MAXNUMSEGPERELE, 0, false));
     // add it to artery-scatra discretization
     artscatradis->AddDofSet(dofsetaux);
 

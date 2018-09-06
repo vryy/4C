@@ -142,6 +142,7 @@ namespace DRT
         virtual const std::vector<double>* Phinp() const = 0;
         virtual const LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
         virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const = 0;
+        virtual bool ElementHasValidVolFracSpecies(const int ivolfrac) const = 0;
         virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradPhinp() const = 0;
         virtual const std::vector<double>* Phidtnp() const = 0;
         virtual const std::vector<double>* Hist() const = 0;
@@ -212,6 +213,13 @@ namespace DRT
         {
           dserror(
               "Access method ElementHasValidVolFracPressure() not implemented! Wrong "
+              "VariableManager?");
+          return 0.0;
+        };
+        virtual bool ElementHasValidVolFracSpecies(const int ivolfrac) const
+        {
+          dserror(
+              "Access method ElementHasValidVolFracSpecies() not implemented! Wrong "
               "VariableManager?");
           return 0.0;
         };
@@ -421,6 +429,10 @@ namespace DRT
         virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const
         {
           return varmanager_->ElementHasValidVolFracPressure(ivolfrac);
+        };
+        virtual bool ElementHasValidVolFracSpecies(const int ivolfrac) const
+        {
+          return varmanager_->ElementHasValidVolFracSpecies(ivolfrac);
         };
         virtual const LINALG::Matrix<nsd, nen>* EConVelnp() const
         {
@@ -706,6 +718,7 @@ namespace DRT
             : VariableManagerDecorator<nsd, nen>(varmanager),
               numvolfrac_(numvolfrac),
               ele_has_valid_volfrac_press_(numvolfrac_, false),
+              ele_has_valid_volfrac_spec_(numvolfrac_, false),
               multiphasemat_(multiphasemat){};
 
         //! destructor
@@ -729,19 +742,33 @@ namespace DRT
         bool ElementHasValidVolFracPressure(const int ivolfrac) const
         {
           this->varmanager_->CheckIsExtracted();
-          if (ivolfrac > numvolfrac_)
+          if (ivolfrac >= numvolfrac_)
             dserror("%i is bigger than the number of volume fractions %i in the VariableManager",
                 ivolfrac + 1, numvolfrac_);
 
           return ele_has_valid_volfrac_press_[ivolfrac];
         }
+
+        bool ElementHasValidVolFracSpecies(const int ivolfrac) const
+        {
+          this->varmanager_->CheckIsExtracted();
+          if (ivolfrac >= numvolfrac_)
+            dserror("%i is bigger than the number of volume fractions %i in the VariableManager",
+                ivolfrac + 1, numvolfrac_);
+
+          return ele_has_valid_volfrac_spec_[ivolfrac];
+        }
+
         //@}
 
        private:
         const int numvolfrac_;
 
-        //! state variables at t_(n+1) or t_(n+alpha_F)
+        //! check if volume fraction pressure equation can be evaluated within this element
         std::vector<bool> ele_has_valid_volfrac_press_;
+
+        //! check if volume fraction species equation can be evaluated within this element
+        std::vector<bool> ele_has_valid_volfrac_spec_;
 
         Teuchos::RCP<MAT::Material> multiphasemat_;
       };

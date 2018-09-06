@@ -253,8 +253,8 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
           "*******************************************************\n");
       printf("\n");
       printf("\n");
-      dserror("Exit from loop");
     }
+    HandleDivergence();
   }
 
   return stopnonliniter;

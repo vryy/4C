@@ -50,6 +50,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
     case POROFLUIDMULTIPHASE::calc_porosity:
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
     case POROFLUIDMULTIPHASE::calc_initial_time_deriv:
+    case POROFLUIDMULTIPHASE::calc_valid_dofs:
     {
       std::vector<Epetra_SerialDenseMatrix*> elemat(2);
       elemat[0] = &elemat1;

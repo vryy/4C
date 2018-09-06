@@ -136,6 +136,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Phinp() c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Phin() const
+{
+  return porofluid_->Phin();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::SolidPressure() const
 {
   return porofluid_->SolidPressure();
@@ -157,9 +164,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::Saturatio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::ValidVolFracPressDofs() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::PoroFluidMultiphaseWrapper::ValidVolFracSpecDofs() const
 {
-  return porofluid_->ValidVolFracPressDofs();
+  return porofluid_->ValidVolFracSpecDofs();
 }
 
 /*----------------------------------------------------------------------*/

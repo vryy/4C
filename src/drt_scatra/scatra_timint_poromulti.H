@@ -59,9 +59,9 @@ namespace SCATRA
     virtual void SetL2FluxOfMultiFluid(
         Teuchos::RCP<const Epetra_MultiVector> multiflux, const int nds_flux);
 
-    // set solution field of the multiphase fluid
-    virtual void SetSolutionFieldOfMultiFluid(
-        Teuchos::RCP<const Epetra_Vector> phinp_fluid, const int nds_phi_fluid);
+    //! set solution field of the multiphase fluid
+    virtual void SetSolutionFieldOfMultiFluid(Teuchos::RCP<const Epetra_Vector> phinp_fluid,
+        Teuchos::RCP<const Epetra_Vector> phin_fluid, const int nds_phi_fluid);
 
     //! set the velocity field (zero or field by function)
     virtual void SetVelocityField(const int nds)
@@ -91,13 +91,18 @@ namespace SCATRA
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 
+    //! problem specific output
+    void OutputProblemSpecific();
+
     //! add parameters depending on the problem
     virtual void AddProblemSpecificParametersAndVectors(
         Teuchos::ParameterList& params  //!< parameter list
     );
 
    protected:
-    // do we employ L2-projection for reconstruction of velocity field
+    //! output of oxygen partial pressure
+    void OutputOxygenPartialPressure();
+    //! do we employ L2-projection for reconstruction of velocity field
     bool L2_projection_;
   };
 

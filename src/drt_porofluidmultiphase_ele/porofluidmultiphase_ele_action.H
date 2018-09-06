@@ -37,7 +37,8 @@ namespace POROFLUIDMULTIPHASE
     calc_error,                   // calc_error
     recon_flux_at_nodes,          // reconstruct flux at nodes
     get_access_from_scatra,       // get access from scatra-framework to evaluate variables
-    get_access_from_artcoupling   // get access from artery-coupling to evaluate variables
+    get_access_from_artcoupling,  // get access from artery-coupling to evaluate variables
+    calc_valid_dofs               // calculate the valid volume fraction pressure and species dofs
   };                              // enum Action
 
   /*--------------------------------------------------------------------------*/

@@ -203,6 +203,14 @@ namespace DRT
           const bool jacobian_needed  //!< necessary to compute Jacobian at node
       );
 
+      //! evaluate just the element
+      void EvaluateOnlyElement(DRT::Element* ele,          //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
+      );
+
      private:
       /*========================================================================*/
       //! @name can be very useful

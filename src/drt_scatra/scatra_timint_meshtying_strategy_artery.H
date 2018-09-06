@@ -109,7 +109,7 @@ namespace SCATRA
     void SetArteryPressure() const;
 
     //! apply mesh movement
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp);
+    void ApplyMeshMovement();
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> CombinedSystemMatrix()

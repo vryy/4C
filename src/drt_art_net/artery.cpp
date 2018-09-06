@@ -177,6 +177,16 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                       kremheller 10/18 |
+ *----------------------------------------------------------------------*/
+std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Artery::Lines()
+{
+  std::vector<Teuchos::RCP<Element>> lines(1);
+  lines[0] = Teuchos::rcp(this, false);
+  return lines;
+}
+
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           ismail 01/09|

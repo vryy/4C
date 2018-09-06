@@ -188,7 +188,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   arteryelelengthref_ = dist.Norm2();
 
   // get initial direction of artery elemetn
-  t0_.Update(1.0 / arteryelelengthref_, dist, 0.0);
+  lambda0_.Update(1.0 / arteryelelengthref_, dist, 0.0);
 
   // Set reference nodal positions for continuous discretization element
   for (unsigned int inode = 0; inode < numnodescont_; ++inode)
@@ -220,7 +220,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
       DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname);
 
+  double arterydens = 0.0;
+
   Teuchos::RCP<MAT::FluidPoroMultiPhase> multiphasemat = Teuchos::null;
+  Teuchos::RCP<MAT::MatList> contscatramat = Teuchos::null;
   switch (coupltype_)
   {
     case type_porofluid:
@@ -274,6 +277,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (arterymat == Teuchos::null)
         dserror("cast to artery material failed for porofluid-artery coupling!");
       arterydiam_ = arterymat->Diam();
+      arterydens = arterymat->Density();
 
       break;
     }
@@ -288,15 +292,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (multiphasemat == Teuchos::null)
         dserror("cast to MAT::FluidPoroMultiPhase failed for arteryscatra-scatra coupling!");
 
-      Teuchos::RCP<MAT::MatList> scatramat =
-          Teuchos::rcp_static_cast<MAT::MatList>(element2_->Material(0));
-      if (scatramat == Teuchos::null)
+      contscatramat = Teuchos::rcp_static_cast<MAT::MatList>(element2_->Material(0));
+      if (contscatramat == Teuchos::null)
         dserror("cast to ScatraMat failed for arteryscatra-scatra coupling!");
 
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
-        const int matid = scatramat->MatID(coupleddofs_cont_[idof]);
-        Teuchos::RCP<MAT::Material> singlemat = scatramat->MaterialById(matid);
+        const int matid = contscatramat->MatID(coupleddofs_cont_[idof]);
+        Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
         if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
@@ -324,6 +327,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (arterymat == Teuchos::null)
         dserror("cast to artery material failed for arteryscatra-scatra coupling!");
       arterydiam_ = arterymat->Diam();
+      arterydens = arterymat->Density();
       break;
     }
     default:
@@ -362,7 +366,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (funct_vec_[i][idof] != 0) InitializeFunction(funct_vec_[i][idof]);
 
   // set time fac for right hand side evaluation of coupling
-  SetTimeFacRhs();
+  SetTimeFacRhs(arterydens, contscatramat);
 
   return;
 }
@@ -380,9 +384,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // we check at NUMPROJCHECKS (default = 11) positions from [-0.99, ..., 0, ..., 0.99]
   // if these points on the artery element can be projected
   std::vector<double> check_proj(NUMPROJCHECKS);
-  check_proj[0] = -0.99;
-  const double dist = 1.98 / ((double)(NUMPROJCHECKS)-1.0);
-  for (int i = 1; i < NUMPROJCHECKS; i++) check_proj[i] = -0.99 + (double)(i)*dist;
+  check_proj[0] = -0.999;
+  const double dist = 1.998 / ((double)(NUMPROJCHECKS)-1.0);
+  for (int i = 1; i < NUMPROJCHECKS; i++) check_proj[i] = -0.999 + (double)(i)*dist;
   std::vector<bool> validprojections(NUMPROJCHECKS, false);
 
   std::vector<double> xi(numdim_);
@@ -473,34 +477,33 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::ResetState(const std::vector<double>& contelephinp,
-    const std::vector<double>& artelephinp, Teuchos::RCP<DRT::Discretization> contdis,
+    distypeCont>::ResetState(Teuchos::RCP<DRT::Discretization> contdis,
     Teuchos::RCP<DRT::Discretization> artdis)
 {
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
-  if (contelephinp.size() != numnodescont_ * numdof_cont_)
-    dserror("Mismatch in size for continuous element, expected %d Dofs, but got %d",
-        numnodescont_ * numdof_cont_, contelephinp.size());
+  // get location array for continuous ele
+  DRT::Element::LocationArray la_cont(contdis->NumDofSets());
+  element2_->LocationVector(*contdis, la_cont, false);
 
-  if (artelephinp.size() != numnodesart_ * numdof_art_)
-    dserror("Mismatch in size for artery element, expected %d Dofs, but got %d",
-        numnodesart_ * numdof_art_, artelephinp.size());
-
-  // reset
-  contelephinp_ = contelephinp;
-  artelephinp_ = artelephinp;
-
-  DRT::Element::LocationArray la(contdis->NumDofSets());
-  element2_->LocationVector(*contdis, la, false);
-
+  // get location array for artery ele
+  DRT::Element::LocationArray la_art(artdis->NumDofSets());
+  element1_->LocationVector(*artdis, la_art, false);
 
   switch (coupltype_)
   {
     case type_porofluid:
     {
       // extract element and node values of fluid
-      variablemanager_->ExtractElementAndNodeValues(*element2_, *contdis, la, ele2pos_, 0);
+      variablemanager_->ExtractElementAndNodeValues(*element2_, *contdis, la_cont, ele2pos_, 0);
+
+      // get contelephinp_ and artelephinp_
+      DRT::UTILS::ExtractMyValues(*contdis->GetState("phinp_fluid"), contelephinp_, la_cont[0].lm_);
+      DRT::UTILS::ExtractMyValues(
+          *artdis->GetState("one_d_artery_pressure"), artelephinp_, la_art[0].lm_);
+
+      // extract velocity of solid phase
+      ExtractSolidVel(contdis);
 
       // extract values of artery-scatra discretization
       if (numscalart_ > 0)
@@ -545,7 +548,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     case type_scatra:
     {
       // extract element and node values of fluid
-      variablemanager_->ExtractElementAndNodeValues(*element2_, *contdis, la, ele2pos_, 2);
+      variablemanager_->ExtractElementAndNodeValues(*element2_, *contdis, la_cont, ele2pos_, 2);
+
+      // get contelephinp_ and artelephinp_
+      DRT::UTILS::ExtractMyValues(*contdis->GetState("phinp"), contelephinp_, la_cont[0].lm_);
+      DRT::UTILS::ExtractMyValues(
+          *artdis->GetState("one_d_artery_phinp"), artelephinp_, la_art[0].lm_);
+
       // extract artery pressure
       Teuchos::RCP<const Epetra_Vector> artpressnp =
           artdis->GetState(ndsscatra_artery_, "one_d_artery_pressure");
@@ -620,6 +629,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     EvaluateFunctionCoupling(myEta, myXi, segmentlengths, forcevec1, forcevec2, stiffmat11,
         stiffmat12, stiffmat21, stiffmat22);
 
+  // evaluate divergence of solid velocity
+  EvaluateDivSolidVel(myEta, myXi, segmentlengths, *forcevec1);
+
   return;
 }
 
@@ -668,14 +680,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp,
-    Teuchos::RCP<DRT::Discretization> contdis)
+    distypeCont>::ApplyMeshMovement(const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis)
 {
   // nodal displacement values for ALE
   LINALG::Matrix<numdim_, numnodescont_> edispnp(true);
 
-  if (disp != Teuchos::null)
+  if (!firstcall)
   {
+    Teuchos::RCP<const Epetra_Vector> dispnp = contdis->GetState(1, "dispnp");
     DRT::Element::LocationArray la(contdis->NumDofSets());
     element2_->LocationVector(*contdis, la, false);
 
@@ -686,7 +698,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
         lmdisp[inode * numdim_ + idim] = la[1].lm_[inode * numdim_ + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<numdim_, numnodescont_>>(*disp, edispnp, lmdisp);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<numdim_, numnodescont_>>(*dispnp, edispnp, lmdisp);
   }
   else
     return (eta_b_ - eta_a_) / 2.0 * arteryelelengthref_;
@@ -713,7 +725,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     N2_XYZ.Multiply(invJ_[i_gp], N2_xi);
     // dx/dX = x * N_XYZ^T
     defgrad.MultiplyNT(ele2pos_, N2_XYZ);
-    Ft0.Multiply(defgrad, t0_);
+    Ft0.Multiply(defgrad, lambda0_);
     curr_segment_length_ += Ft0.Norm2() * wgp_[i_gp] * jacobi_;
   }
 
@@ -996,8 +1008,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
     derxy.Multiply(xji, N2_xi);
 
-    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
-    // )^-1
+    // determinant of deformationgradient
+    // det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
     const double JacobianDefGradient = det / det0;
 
     // clear current gauss point data for safety
@@ -1010,6 +1022,86 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
         *stiffmat21, *stiffmat22);
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate divergence of solid velocity               kremheller 10/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::EvaluateDivSolidVel(const std::vector<double>& eta,
+    const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
+    LINALG::SerialDenseVector& forcevec1)
+{
+  if (evaluate_in_ref_config_ || coupltype_ == type_scatra) return;
+
+  // Vectors for shape functions and their derivatives
+  static LINALG::Matrix<1, numnodesart_> N1(true);      // = N1
+  static LINALG::Matrix<1, numnodesart_> N1_eta(true);  // = N1,eta
+
+  static LINALG::Matrix<1, numnodescont_> N2(true);            // = N2
+  static LINALG::Matrix<numnodescont_, 1> N2_transpose(true);  // = N2^T
+
+  static LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);   // = N2,xi1
+  static LINALG::Matrix<numdim_, numnodescont_> derxy(true);   // = N2,x
+  static LINALG::Matrix<numdim_, numnodescont_> N2_XYZ(true);  // = N2,X
+  static LINALG::Matrix<numdim_, numdim_> defgrad(true);       // = dx/dX = F
+
+  static LINALG::Matrix<numdim_, numdim_> xjm;
+  static LINALG::Matrix<numdim_, numdim_> xjm0;
+  static LINALG::Matrix<numdim_, numdim_> invJ;
+  static LINALG::Matrix<numdim_, numdim_> xji;
+
+  static LINALG::Matrix<numdim_, 1> lambda_t;     // direction in current conf.
+  static LINALG::Matrix<numdim_, numdim_> dvs_x;  // dv^s/dx
+  static LINALG::Matrix<numdim_, 1> dvs_eta;      // dv^s/deta
+
+  const double curr_seg_length = segmentlengths[segmentid_];
+
+  for (int i_gp = 0; i_gp < n_gp_; i_gp++)
+  {
+    // Get constant values from projection
+    const double w_gp = wgp_[i_gp];
+    const double myeta = eta[i_gp];
+    const std::vector<double> myxi = xi[i_gp];
+
+    const double jac = curr_seg_length / 2.0;
+
+    // Update shape functions and their derivatives for 1D and 2D/3D element
+    Get1DShapeFunctions<double>(N1, N1_eta, myeta);
+    Get2D3DShapeFunctions<double>(N2, N2_xi, myxi);
+
+    xjm.MultiplyNT(N2_xi, ele2pos_);
+    xji.Invert(xjm);
+
+    // dX/dpsi
+    xjm0.MultiplyNT(N2_xi, ele2posref_);
+    // dpsi/dX
+    // note: cannot use invJ_ here -> defined at original Gauss points
+    invJ.Invert(xjm0);
+    // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
+    N2_XYZ.Multiply(invJ, N2_xi);
+    // dx/dX = x * N_XYZ^T
+    defgrad.MultiplyNT(ele2pos_, N2_XYZ);
+
+    // current direction of artery element at GP
+    lambda_t.Multiply(defgrad, lambda0_);
+    lambda_t.Scale(1.0 / lambda_t.Norm2());
+
+    // dN/dx
+    derxy.Multiply(xji, N2_xi);
+    // dv^s/dx = v^s * N_x^T
+    dvs_x.MultiplyNT(ele2vel_, derxy);
+
+    // dv^s/deta = dv^s/dx * lambda_t
+    dvs_eta.Multiply(dvs_x, lambda_t);
+    // dv^s/deta (in direction of lambda_t) = dv^s/deta * lambda_t
+    const double dvetadeta = dvs_eta.Dot(lambda_t);
+
+    for (unsigned int i = 0; i < numnodesart_; i++)
+      forcevec1(i) -= N1(i) * w_gp * jac * dvetadeta * arterydiam_ * arterydiam_ * M_PI / 4.0;
+  }
   return;
 }
 
@@ -1284,8 +1376,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       EvaluateFunctionAndDeriv(funct_vec_[1][i_cont], artpressAtGP, artscalarnpAtGP,
           contscalarnpAtGP, functval, artderivs, contderivs);
       AssembleFunctionCouplingIntoForceStiffCont(cont_dofs_to_assemble_functions_into_[i_cont],
-          w_gp, N1, N2, jacobi, scale_vec_[1][i_cont], functval, artderivs, contderivs, forcevec2,
-          stiffmat21, stiffmat22);
+          w_gp, N1, N2, jacobi, scale_vec_[1][i_cont], timefacrhs_cont_[i_cont], functval,
+          artderivs, contderivs, forcevec2, stiffmat21, stiffmat22);
     }
   }
 
@@ -1297,30 +1389,98 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::SetTimeFacRhs()
+    distypeCont>::SetTimeFacRhs(const double& arterydensity,
+    Teuchos::RCP<MAT::MatList> contscatramat)
 {
+  // resize
+  timefacrhs_cont_.resize(numdof_cont_);
+
+  // fill fluid densities vector
+  std::vector<double> fluiddensities(numfluidphases_ + 2 * numvolfrac_);
+  for (int ifluidphase = 0; ifluidphase < numfluidphases_; ifluidphase++)
+    fluiddensities[ifluidphase] = phasemanager_->Density(ifluidphase);
+  for (int ivolfrac = 0; ivolfrac < numvolfrac_; ivolfrac++)
+  {
+    fluiddensities[numfluidphases_ + ivolfrac] = phasemanager_->VolFracDensity(ivolfrac);
+    fluiddensities[numfluidphases_ + numvolfrac_ + ivolfrac] =
+        phasemanager_->VolFracDensity(ivolfrac);
+  }
+
   switch (coupltype_)
   {
     case type_porofluid:
     {
       DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* eleparams =
           DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance("porofluid");
-      timefacrhs_art_ = 1.0;
-      timefacrhs_cont_ = eleparams->TimeFacRhs();
+      // artery
+      timefacrhs_art_ = 1.0 / arterydensity;
+      // continuous
+      for (int idof = 0; idof < numdof_cont_; idof++)
+        timefacrhs_cont_[idof] = eleparams->TimeFacRhs() / fluiddensities[idof];
+
       break;
     }
     case type_scatra:
     {
       DRT::ELEMENTS::ScaTraEleParameterTimInt* eleparams =
           DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra");
-      timefacrhs_art_ = eleparams->TimeFacRhs();
-      timefacrhs_cont_ = eleparams->TimeFacRhs();
+      timefacrhs_art_ = eleparams->TimeFacRhs() / arterydensity;
+      for (int idof = 0; idof < numdof_cont_; idof++)
+      {
+        const int matid = contscatramat->MatID(idof);
+        Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
+        int phaseid = -1;
+        if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
+        {
+          const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
+              Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(singlemat);
+          phaseid = poromat->PhaseID();
+        }
+        else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+        {
+          const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
+              Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
+          phaseid = poromat->PhaseID();
+        }
+        else
+          dserror(
+              "Only MAT::ScatraMatMultiPoroVolFrac and MAT::ScatraMatMultiPoroFluid, your material "
+              "is of type %d",
+              singlemat->MaterialType());
+        timefacrhs_cont_[idof] = eleparams->TimeFacRhs() / fluiddensities[phaseid];
+      }
       break;
     }
     default:
       dserror("Unknown coupling type");
       break;
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | extract divergence of solid phase velocity field    kremheller 10/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::ExtractSolidVel(Teuchos::RCP<DRT::Discretization> contdis)
+{
+  // no need for this
+  if (evaluate_in_ref_config_) return;
+
+  Teuchos::RCP<const Epetra_Vector> velocity = contdis->GetState(1, "velocity field");
+  DRT::Element::LocationArray la(contdis->NumDofSets());
+  element2_->LocationVector(*contdis, la, false);
+
+  // construct location vector for displacement related dofs
+  std::vector<int> lmdisp(numdim_ * numnodescont_, -1);
+  for (unsigned int inode = 0; inode < numnodescont_; ++inode)
+    for (unsigned int idim = 0; idim < numdim_; ++idim)
+      lmdisp[inode * numdim_ + idim] = la[1].lm_[inode * numdim_ + idim];
+
+  // extract local values of displacement field from global state vector
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<numdim_, numnodescont_>>(*velocity, ele2vel_, lmdisp);
 
   return;
 }
@@ -1350,7 +1510,7 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // t0
   static LINALG::TMatrix<FAD, numdim_, 1> t0;
-  for (unsigned int i = 0; i < numdim_; i++) t0(i).val() = t0_(i);
+  for (unsigned int i = 0; i < numdim_; i++) t0(i).val() = lambda0_(i);
   // ele2posref
   static LINALG::TMatrix<FAD, numdim_, numnodescont_> ele2posref;
   for (unsigned int i = 0; i < numdim_; i++)
@@ -1513,7 +1673,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::AssembleFunctionCouplingIntoForceStiffCont(const std::vector<int>& assembleInto,
     const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
     const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const int& scale,
-    const double& functval, const std::vector<double>& artderivs,
+    const double& timefacrhs_cont, const double& functval, const std::vector<double>& artderivs,
     const std::vector<double>& contderivs, LINALG::SerialDenseVector& forcevec2,
     LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22)
 {
@@ -1522,7 +1682,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // rhs ---> +
   for (unsigned int i = 0; i < numnodescont_; i++)
   {
-    const double rhsval = N2(i) * myscale * w_gp * jacobi * functval * timefacrhs_cont_;
+    const double rhsval = N2(i) * myscale * w_gp * jacobi * functval * timefacrhs_cont;
     for (unsigned int idof = 0; idof < assembleInto.size(); idof++)
       forcevec2(i * numdof_cont_ + assembleInto[idof]) += rhsval;
   }
@@ -1531,7 +1691,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   for (unsigned int i = 0; i < numnodescont_; i++)
     for (unsigned int j = 0; j < numnodesart_; j++)
     {
-      const double massmatrixfac = N2(i) * N1(j) * myscale * w_gp * jacobi * timefacrhs_cont_;
+      const double massmatrixfac = N2(i) * N1(j) * myscale * w_gp * jacobi * timefacrhs_cont;
       for (int j_art = 0; j_art < numdof_art_; j_art++)
       {
         const double stiffval = massmatrixfac * artderivs[j_art];
@@ -1544,7 +1704,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   for (unsigned int i = 0; i < numnodescont_; i++)
     for (unsigned int j = 0; j < numnodescont_; j++)
     {
-      const double massmatrixfac = N2(i) * N2(j) * myscale * w_gp * jacobi * timefacrhs_cont_;
+      const double massmatrixfac = N2(i) * N2(j) * myscale * w_gp * jacobi * timefacrhs_cont;
       for (int j_cont = 0; j_cont < numdof_cont_; j_cont++)
       {
         const double stiffval = massmatrixfac * contderivs[j_cont];

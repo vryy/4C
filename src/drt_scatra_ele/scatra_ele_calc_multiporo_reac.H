@@ -909,9 +909,13 @@ namespace DRT
           }
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
-            // d volfrac_j / d volfrac_j = 1.0; scaling with 1.0/volfrac since diffcoeff =
-            // diffcoeff'*rho*volfrac
-            (*prefacdiffodfluid)[curphase] += rhsfac * diffcoeff / VolFrac(k);
+            const double delta = GetDelta(k);
+            // diffusivity is scaled with volfrac^(delta + 1) --> scale it
+            // with 1.0/volfrac^(delta + 1) here
+            // and build derivative d diff/d volfrac = (delta + 1) * volfrac^delta
+            (*prefacdiffodfluid)[curphase] += rhsfac * diffcoeff /
+                                              std::pow(VolFrac(k), delta + 1.0) * (delta + 1.0) *
+                                              std::pow(VolFrac(k), delta);
             break;
           }
           default:
@@ -1003,8 +1007,8 @@ namespace DRT
           }
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
-            // if smaller than maximum nodal volume fraction in element we do not evaluate
-            evaluate_scalar_[k] = variablemanager_->ElementHasValidVolFracPressure(
+            // if smaller than minimum nodal volume fraction in element we do not evaluate
+            evaluate_scalar_[k] = variablemanager_->ElementHasValidVolFracSpecies(
                 scalartophaseID_[k] - numfluidphases);
             break;
           }

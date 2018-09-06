@@ -102,6 +102,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
       saturation_(Teuchos::null),
       solidpressure_(Teuchos::null),
       valid_volfracpress_dofs_(Teuchos::null),
+      valid_volfracspec_dofs_(Teuchos::null),
       flux_(Teuchos::null),
       nds_disp_(-1),
       nds_vel_(-1),
@@ -192,6 +193,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(
   pressure_ = LINALG::CreateVector(*dofrowmap, true);
   // valid (physically meaningful) volume fraction dofs
   valid_volfracpress_dofs_ = LINALG::CreateVector(*dofrowmap, true);
+  valid_volfracspec_dofs_ = LINALG::CreateVector(*dofrowmap, true);
   // saturation at time n+1
   saturation_ = LINALG::CreateVector(*dofrowmap, true);
   // solid pressure at time n+1
@@ -368,6 +370,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareTimeStep()
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
   ApplyNeumannBC(neumann_loads_);
 
+  // volume fraction pressure specific stuff
+  EvaluateValidVolumeFracPressAndSpec();
+  ApplyAdditionalDBCForVolFracPress();
+
   // do the same also for meshtying
   strategy_->PrepareTimeStep();
 
@@ -490,7 +496,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetr
   SetState(nds_disp_, "dispnp", dispnp);
 
   // apply mesh movement also on the strategy
-  strategy_->ApplyMeshMovement(dispnp);
+  strategy_->ApplyMeshMovement();
 
   return;
 }  // TimIntImpl::ApplyMeshMovement
@@ -671,9 +677,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleMatAndRHS()
   // reset the residual vector
   residual_->PutScalar(0.0);
 
-  // scale valid_volfracpress_dofs-vector (will store how many times the node has been evaluated)
-  valid_volfracpress_dofs_->PutScalar(0.0);
-
   // create parameter list for elements
   Teuchos::ParameterList eleparams;
 
@@ -687,9 +690,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleMatAndRHS()
   // add state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  // call loop over elements (with valid volume fraction pressure DOFs)
-  discret_->Evaluate(
-      eleparams, sysmat_, Teuchos::null, residual_, valid_volfracpress_dofs_, Teuchos::null);
+  // call loop over elements
+  discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
 
   // clean up
   discret_->ClearState();
@@ -706,6 +708,116 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleMatAndRHS()
 
   return;
 }  // TimIntImpl::AssembleMatAndRHS
+
+/*------------------------------------------------------------------------*
+ | contains the assembly process for 'valid...-vectors'  kremheller 09/18 |
+ *------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateValidVolumeFracPressAndSpec()
+{
+  // time measurement: element calls
+  TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + element calls");
+
+  // reset valid_volfracpress_dofs and _spec_dofs-vector
+  valid_volfracpress_dofs_->PutScalar(0.0);
+  valid_volfracspec_dofs_->PutScalar(0.0);
+
+  // create parameter list for elements
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_valid_dofs);
+
+  // clean up, just in case ...
+  discret_->ClearState();
+
+  // set vector values needed by elements
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // call loop over elements (with valid volume fraction pressure DOFs)
+  discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
+      valid_volfracpress_dofs_, valid_volfracspec_dofs_);
+
+  // clean up
+  discret_->ClearState();
+
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ | apply the additional DBC for the volume fraction pressures  kremheller 09/18 |
+ *------------------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
+{
+  const Epetra_Map* elecolmap = discret_->ElementColMap();
+  std::vector<int> mydirichdofs(0);
+
+  // we identify the volume fraction pressure dofs which do not have a physical meaning and set
+  // a DBC on them
+  for (int i = 0; i < elecolmap->NumMyElements(); ++i)
+  {
+    // dynamic_cast necessary because virtual inheritance needs runtime information
+    DRT::ELEMENTS::PoroFluidMultiPhase* myele =
+        dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(discret_->gElement(elecolmap->GID(i)));
+
+    const MAT::Material& material = *(myele->Material());
+
+    // check the material
+    if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+        material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+      dserror("only poro multiphase and poro multiphase reactions material valid");
+
+    // cast
+    const MAT::FluidPoroMultiPhase& multiphasemat =
+        static_cast<const MAT::FluidPoroMultiPhase&>(material);
+
+    const int numfluidphases = multiphasemat.NumFluidPhases();
+    const int numvolfrac = multiphasemat.NumVolFrac();
+    const int nummat = multiphasemat.NumMat();
+
+    // this is only necessary if we have volume fractions present
+    // TODO: this works only if we have the same number of phases in every element
+    if (nummat == numfluidphases) return;
+
+    DRT::Node** nodes = myele->Nodes();
+    for (int inode = 0; inode < (myele->NumNode()); inode++)
+    {
+      if (nodes[inode]->Owner() == myrank_)
+      {
+        std::vector<int> dofs = discret_->Dof(0, nodes[inode]);
+
+        for (int idof = numfluidphases + numvolfrac; idof < nummat; ++idof)
+        {
+          // if not already in original dirich map     &&   if it is not a valid volume fraction
+          // pressure dof identified with < 1
+          if (dbcmaps_->CondMap()->LID(dofs[idof]) == -1 &&
+              (int)(*valid_volfracpress_dofs_)[discret_->DofRowMap()->LID(dofs[idof])] < 1)
+            if (not(std::find(mydirichdofs.begin(), mydirichdofs.end(), dofs[idof]) !=
+                    mydirichdofs.end()))
+            {
+              mydirichdofs.push_back(dofs[idof]);
+            }
+        }
+      }
+    }
+  }
+
+  // build map
+  int nummydirichvals = mydirichdofs.size();
+  Teuchos::RCP<Epetra_Map> dirichmap =
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, discret_->Comm()));
+
+  // build vector of maps
+  std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+  condmaps.push_back(dirichmap);
+  condmaps.push_back(dbcmaps_->CondMap());
+
+  // combined map
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_with_volfracpress_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | assembly process for fluid-structure-coupling matrix kremheller 03/17 |
@@ -1472,72 +1584,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
   {
     // time measurement: application of DBC to system
     TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + apply DBC to system");
-
-    const Epetra_Map* elecolmap = discret_->ElementColMap();
-    std::vector<int> mydirichdofs(0);
-
-    // we identify the volume fraction pressure dofs which do not have a physical meaning and set a
-    // DBC on them
-    for (int i = 0; i < elecolmap->NumMyElements(); ++i)
-    {
-      // dynamic_cast necessary because virtual inheritance needs runtime information
-      DRT::ELEMENTS::PoroFluidMultiPhase* myele =
-          dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(discret_->gElement(elecolmap->GID(i)));
-
-      const MAT::Material& material = *(myele->Material());
-
-      // check the material
-      if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-          material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-        dserror("only poro multiphase and poro multiphase reactions material valid");
-
-      // cast
-      const MAT::FluidPoroMultiPhase& multiphasemat =
-          static_cast<const MAT::FluidPoroMultiPhase&>(material);
-
-      const int numfluidphases = multiphasemat.NumFluidPhases();
-      const int numvolfrac = multiphasemat.NumVolFrac();
-      const int nummat = multiphasemat.NumMat();
-
-      // this is only necessary if we have volume fractions present
-      if (nummat == numfluidphases) continue;
-
-      DRT::Node** nodes = myele->Nodes();
-      for (int inode = 0; inode < (myele->NumNode()); inode++)
-      {
-        if (nodes[inode]->Owner() == myrank_)
-        {
-          std::vector<int> dofs = discret_->Dof(0, nodes[inode]);
-
-          for (int idof = numfluidphases + numvolfrac; idof < nummat; ++idof)
-          {
-            // if not already in original dirich map     &&   if it is not a valid volume fraction
-            // pressure dof identified with < 1
-            if (dbcmaps_->CondMap()->LID(dofs[idof]) == -1 &&
-                (int)(*valid_volfracpress_dofs_)[discret_->DofRowMap()->LID(dofs[idof])] < 1)
-              if (not(std::find(mydirichdofs.begin(), mydirichdofs.end(), dofs[idof]) !=
-                      mydirichdofs.end()))
-              {
-                mydirichdofs.push_back(dofs[idof]);
-              }
-          }
-        }
-      }
-    }
-
-    // build map
-    int nummydirichvals = mydirichdofs.size();
-    Teuchos::RCP<Epetra_Map> dirichmap =
-        Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, discret_->Comm()));
-
-    // build vector of maps
-    std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
-    condmaps.push_back(dirichmap);
-    condmaps.push_back(dbcmaps_->CondMap());
-
-    // combined map
-    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    *dbcmaps_with_volfracpress_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
 
     // apply combined map
     LINALG::ApplyDirichlettoSystem(

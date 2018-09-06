@@ -124,8 +124,4 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::CheckInitialFields(
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::ApplyMeshMovement(
-    Teuchos::RCP<const Epetra_Vector> disp) const
-{
-  return;
-}
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::ApplyMeshMovement() const { return; }

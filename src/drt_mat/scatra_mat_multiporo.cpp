@@ -115,7 +115,8 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : ScatraMat(matdata), phaseID_(matdata->GetInt("PHASEID"))
+    : ScatraMat(matdata), phaseID_(matdata->GetInt("PHASEID")), delta_(matdata->GetDouble("DELTA"))
+
 {
 }
 
