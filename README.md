@@ -26,6 +26,9 @@ using modern software design and is parallelized with MPI for distributed memory
 
 ### Set-up Git
 
+A Git version >= 2.9 is required. <!-- We need at least this version to be able to configure the path to the git-hooks as outlined below. --> 
+Consult the official [Git documentation](www.git-scm.org) to obtain a more recent Git installation if necessary.
+
 1. Set your username to your full name, i.e., first name followed by last name,
 and your email address to your institute email address with the following commands:
 
@@ -41,6 +44,15 @@ and your email address to your institute email address with the following comman
     ```
 
     > **Note:** Another popular choice is `vim`.
+
+1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>`, run
+
+    ```bash
+    cd <someBaseDir>/<sourceDir>
+    git config core.hooksPath ./utilities/git_hooks/
+    ```
+    
+    > **Note:** Before actually executing these command, first [setup your LRZ GitLab account](#set-up-lrz-gitlab) and [clone the repository](#clone-the-repository).
 
 Our Wiki provides a [detailed setup guide for your local git configuration](https://gitlab.lrz.de/baci/baci/wikis/Set-up-Git).
 

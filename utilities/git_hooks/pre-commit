@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#####################################################
+########## DESCRIPTION ##############################
+#####################################################
+
+# This pre - commit hook will be executed by Git before every new commit
+# In the version at hand, clang-format will only write out non-compliant files to the shell output and will not perfom any formatting automatically
+# In the case that the script detects files that are not compliant with the current clang-format BACI style, the commit will be rejected (script exits 1)
+
+# In a second phase a set of Python scripts checks the staged files for compliance with the BACI header requirements
+# If a header is missing or does not follow the BACI standards, the Python scripts will generate error messages in the shell output
+# The commit will be rejected if errors appear (script exit 1). The user has to change the headers manually until all requirements are fulfilled
+
+# The commit will be accepted if the script exits with 0 (no uncompliant headers or style formats found)
+
+# Author:    Jonas Nitzler
+#            Maximilian Grill
+# Date:      03.09.2018
+# Version:   1.3
+
+if [ -f ./utilities/code_styles/clang-format ]
+then
+  # set the field separator to new line
+  IFS=$'\n'
+
+  for line in $(git diff --cached --name-only --diff-filter=ACMR)
+  do
+    # check if the file is a c or cpp file
+    if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]
+    then
+      # Check if clang would format the file
+      if [[  $(diff -u <(./utilities/code_styles/clang-format -style=file $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+      then
+        uncompliant_files+="$(pwd)/${line}\n"
+      fi
+    fi
+  done
+
+  if [ ! -z "$uncompliant_files" ]
+  then
+    printf "\n"
+    printf "The following file(s) are not compliant with BACI's coding style:\n"
+    printf "\n"
+    echo "########################################################################"
+    printf "$uncompliant_files"
+    echo "########################################################################"
+    printf "\n"
+    echo "--> Please run clang-format manually for those files using:"
+    echo "./utilities/code_styles/clang-format -i -style=file <path/to/file>"
+    echo "(Run this from BACI's top-level directory)"
+    printf "\n"
+    echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
+    printf "\n"
+    exit 1
+  fi
+
+else
+  echo "ERROR: clang-format was not found, cannot check file formatting!"
+  exit 1
+fi
+
+### Header check ################################################
+python ./utilities/git_hooks/header-check.py || exit 1
+exit 0
