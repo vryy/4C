@@ -148,6 +148,11 @@ checkcode:
     stage: checkcode
     script:
         - "echo code check"
+        - cd ../baci
+        - bash tests/code_test/check_format_and_header
+        # it would be nice to get the content of wrong_headers.txt and
+        # wrong_clang_format.txt uploaded to GitLab and/or CDash
+        - cd ../baci-build
     only:
         - master
         - web
