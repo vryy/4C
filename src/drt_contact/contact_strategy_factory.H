@@ -48,9 +48,6 @@ namespace CONTACT
       //! derived
       virtual void Setup();
 
-      //! Check the problem dimension
-      void CheckDimension() const;
-
       /*! \brief Read and check contact input parameters
        *
        *  All specified contact-related input parameters are read from the
@@ -117,11 +114,6 @@ namespace CONTACT
       void Print(const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
           const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
           const Teuchos::ParameterList& cparams) const;
-
-      /*! \brief print strategy banner
-       *
-       *  \param soltype (in) : contact solving strategy type */
-      static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
 
      protected:
       /*! \brief Set Parent Elements for Poro Face Elements

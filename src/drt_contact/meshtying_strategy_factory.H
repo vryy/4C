@@ -50,9 +50,6 @@ namespace MORTAR
       //! derived
       virtual void Setup();
 
-      //! Check the problem dimension
-      void CheckDimension() const;
-
       /*! \brief Read and check contact input parameters
        *
        *  All specified contact-related input parameters are read from the
@@ -69,27 +66,6 @@ namespace MORTAR
       void BuildInterfaces(const Teuchos::ParameterList& mtparams,
           std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
-
-      /** \brief Create a contact interface object based on the given information
-       *
-       *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<::MORTAR::MortarInterface> CreateInterface(const int id,
-          const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-          const bool selfcontact, const enum INPAR::MORTAR::RedundantStorage redundant,
-          const Teuchos::RCP<std::pair<enum XFEM::FieldName,
-              Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-          Teuchos::RCP<MORTAR::IDataContainer> idata_ptr = Teuchos::null);
-
-      /** \brief Create a contact interface object based on the given information
-       *
-       *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<::MORTAR::MortarInterface> CreateInterface(
-          const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
-          const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const enum INPAR::MORTAR::RedundantStorage redundant,
-          const Teuchos::RCP<std::pair<enum XFEM::FieldName,
-              Teuchos::RCP<const DRT::DiscretizationInterface>>>& parent_dis_pair,
-          Teuchos::RCP<MORTAR::IDataContainer> idata_ptr);
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
@@ -111,15 +87,6 @@ namespace MORTAR
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
           Teuchos::RCP<MORTAR::StratDataContainer> data_ptr);
-
-      //! Create the desired search tree object
-      void BuildSearchTree(
-          const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const;
-
-      /*! \brief print strategy banner
-       *
-       *  \param soltype (in) : contact solving strategy type */
-      static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
 
      protected:
     };  // class FactoryMT
