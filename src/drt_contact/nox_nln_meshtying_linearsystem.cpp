@@ -41,8 +41,7 @@ NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printPar
     : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
       iConstr_(iConstr),
-      iConstrPrec_(iConstrPrec),
-      p_lin_prob_(*this)
+      iConstrPrec_(iConstrPrec)
 {
   // empty
 }
@@ -61,8 +60,7 @@ NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printPar
     : NOX::NLN::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
       iConstr_(iConstr),
-      iConstrPrec_(iConstrPrec),
-      p_lin_prob_(*this)
+      iConstrPrec_(iConstrPrec)
 {
   // empty
 }
@@ -147,252 +145,12 @@ void NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::SetLinearProblemForSolve(
-    Epetra_LinearProblem& linear_problem, LINALG::SparseOperator& jac, Epetra_Vector& lhs,
-    Epetra_Vector& rhs) const
-{
-  switch (jacType_)
-  {
-    case NOX::NLN::LinSystem::LinalgSparseMatrix:
-      NOX::NLN::LinearSystem::SetLinearProblemForSolve(linear_problem, jac, lhs, rhs);
-
-      break;
-    case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
-    {
-      p_lin_prob_.ExtractActiveBlocks(jac, lhs, rhs);
-      NOX::NLN::LinearSystem::SetLinearProblemForSolve(
-          linear_problem, *p_lin_prob_.p_jac_, *p_lin_prob_.p_lhs_, *p_lin_prob_.p_rhs_);
-
-      break;
-    }
-    default:
-    {
-      dserror("Unsupported matrix type! Type = %s",
-          NOX::NLN::LinSystem::OperatorType2String(jacType_).c_str());
-
-      exit(EXIT_FAILURE);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::CompleteSolutionAfterSolve(
-    const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
-{
-  p_lin_prob_.InsertIntoGlobalLhs(lhs);
-  p_lin_prob_.Reset();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 NOX::NLN::SolutionType NOX::NLN::MESHTYING::LinearSystem::GetActiveLinSolver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
     Teuchos::RCP<LINALG::Solver>& currSolver)
 {
   currSolver = solvers.at(NOX::NLN::sol_meshtying);
   return NOX::NLN::sol_meshtying;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
-    Epetra_Vector& glhs) const
-{
-  if (p_lhs_.is_null() or p_lhs_.get() == &glhs) return;
-
-  LINALG::AssembleMyVector(0.0, glhs, 1.0, *p_lhs_);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::LinearSubProblem::SetOriginalSystem(
-    LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
-{
-  p_jac_ = Teuchos::rcpFromRef(mat);
-  p_rhs_ = Teuchos::rcpFromRef(rhs);
-  p_lhs_ = Teuchos::rcpFromRef(lhs);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
-    LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
-{
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>& block_mat =
-      dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>&>(mat);
-
-  const int numrows = block_mat.Rows();
-  const int numcols = block_mat.Cols();
-
-  if (numrows != numcols)
-    dserror("The number of row blocks must be equal the number of column blocks.");
-
-  std::vector<std::vector<bool>> isempty(numrows, std::vector<bool>(numcols, false));
-
-  std::vector<bool> isdiagonal(numrows, false);
-
-  for (int r = 0; r < numrows; ++r)
-  {
-    for (int c = 0; c < numcols; ++c)
-    {
-      if (block_mat(r, c).EpetraMatrix()->GlobalMaxNumEntries() == 0 or
-          block_mat(r, c).EpetraMatrix()->NormFrobenius() == 0.0)
-        isempty[r][c] = true;
-    }
-
-    if (block_mat(r, r).EpetraMatrix()->NumGlobalDiagonals() ==
-            block_mat(r, r).EpetraMatrix()->NumGlobalNonzeros() &&
-        !isempty[r][r])
-      isdiagonal[r] = true;
-  }
-
-#if 0
-  std::cout << "isempty = {";
-  for ( unsigned r = 0; r < isempty.size(); ++r )
-  {
-    std::cout << "{";
-    for (unsigned c = 0; c < isempty[r].size(); ++c)
-    {
-      std::cout << ( isempty[r][c] ? "TRUE " : "FALSE" );
-      if (c < isempty[r].size() - 1)
-      {
-        std::cout << " ";
-      }
-    }
-    std::cout << "}";
-    if (r < isempty.size() - 1)
-      std::cout << "\n           ";
-    else
-      std::cout << "}\n";
-  }
-
-  std::cout << "isdiagonal = {";
-  for ( unsigned r = 0; r < isdiagonal.size(); ++r )
-  {
-    std::cout << ( isdiagonal[r] ? "TRUE " : "FALSE" );
-    if (r < isdiagonal.size() - 1)
-    {
-      std::cout << " ";
-    }
-  }
-  std::cout << "}\n";
-#endif
-
-  // find row/col index with empty off-diagonal blocks and
-  // a diagonal matrix in the diagonal block. These rows/cols
-  // can be identified by a skip_row_col value of one. These
-  // sub-systems can be solved directly.
-  std::vector<unsigned> skip_row_col_index;
-  skip_row_col_index.reserve(isempty.size());
-
-  std::vector<unsigned> keep_row_col_index;
-  keep_row_col_index.reserve(isempty.size());
-
-  for (unsigned i = 0; i < isempty.size(); ++i)
-  {
-    int skip_row_col = 0;
-    for (unsigned j = 0; j < isempty.size(); ++j)
-      skip_row_col += (!isempty[i][j]) + (!isempty[j][i]);
-    skip_row_col -= isdiagonal[i];
-
-    switch (skip_row_col)
-    {
-      case 1:
-      {
-        skip_row_col_index.push_back(i);
-        break;
-      }
-      default:
-      {
-        keep_row_col_index.push_back(i);
-        break;
-      }
-    }
-  }
-
-  // solve sub-systems if possible
-  for (std::vector<unsigned>::const_iterator it = skip_row_col_index.begin();
-       it != skip_row_col_index.end(); ++it)
-    linsys_.applyDiagonalInverse(block_mat(*it, *it), lhs, rhs);
-
-  // build remaining active linear problem
-  const unsigned num_remaining_row_col = keep_row_col_index.size();
-  const unsigned num_skip_row_col = skip_row_col_index.size();
-
-  // nothing to skip, use the given linear problem
-  switch (num_skip_row_col)
-  {
-    case 0:
-    {
-      SetOriginalSystem(mat, lhs, rhs);
-      return;
-    }
-    default:
-      break;
-  }
-
-  switch (num_remaining_row_col)
-  {
-    case 0:
-    {
-      dserror(
-          "You are trying to solve a pure diagonal matrix. This is currently not"
-          "supported, but feel free to extend the functionality.");
-
-      exit(EXIT_FAILURE);
-    }
-    case 1:
-    {
-      const unsigned rc_id = keep_row_col_index[0];
-      p_jac_ = Teuchos::rcpFromRef(block_mat(rc_id, rc_id));
-
-      Teuchos::RCP<LINALG::SparseMatrix> active_sparse_mat =
-          Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(p_jac_, true);
-
-      p_rhs_ = LINALG::ExtractMyVector(rhs, active_sparse_mat->RangeMap());
-      p_lhs_ = LINALG::ExtractMyVector(lhs, active_sparse_mat->DomainMap());
-
-      break;
-    }
-    default:
-    {
-      p_jac_ = block_mat.Clone(LINALG::View, keep_row_col_index, keep_row_col_index);
-      p_jac_->Complete();
-
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> active_block_mat =
-          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(p_jac_, true);
-
-      p_rhs_ = LINALG::ExtractMyVector(rhs, active_block_mat->FullRangeMap());
-      p_lhs_ = LINALG::ExtractMyVector(lhs, active_block_mat->FullDomainMap());
-
-      break;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::applyDiagonalInverse(
-    LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
-{
-  if (mat.EpetraMatrix()->NumGlobalDiagonals() != mat.EpetraMatrix()->NumGlobalNonzeros())
-    dserror("The given matrix seems to be no diagonal matrix!");
-
-  Epetra_Vector lhs_block(mat.DomainMap(), true);
-  LINALG::ExtractMyVector(lhs, lhs_block);
-
-  Epetra_Vector rhs_block(mat.RangeMap(), true);
-  LINALG::ExtractMyVector(rhs, rhs_block);
-
-  Epetra_Vector diag_mat(mat.RangeMap(), true);
-  int err = mat.ExtractDiagonalCopy(diag_mat);
-  if (err) dserror("ExtractDiagonalCopy failed! (err=%d)", err);
-
-  err = lhs_block.ReciprocalMultiply(1.0, diag_mat, rhs_block, 0.0);
-  if (err) dserror("ReciprocalMultiply failed! (err=%d)", err);
-
-  LINALG::AssembleMyVector(0.0, lhs, 1.0, lhs_block);
 }
 
 /*----------------------------------------------------------------------*
