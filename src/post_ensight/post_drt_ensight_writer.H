@@ -189,7 +189,7 @@ class EnsightWriter : public PostWriterBase
   );
 
   /*! \brief Write the coordinates for a Polynomial discretization
-      The cordinates of the vizualisation points (i.e. the corner
+      The coordinates of the vizualisation points (i.e. the corner
       nodes of elements displayed in paraview) are just the node
       coordinates of the nodes in the discretization.
     */
@@ -197,7 +197,7 @@ class EnsightWriter : public PostWriterBase
       const Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   /*! \brief Write the coordinates for a Nurbs discretization
-    The cordinates of the vizualisation points (i.e. the corner
+    The coordinates of the vizualisation points (i.e. the corner
     nodes of elements displayed in paraview) are not the control point
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
@@ -286,12 +286,12 @@ class EnsightWriter : public PostWriterBase
   /*! \brief Write the results for a NURBS discretisation
     (dof based).
 
-    On input, result data for an ndimensional computation
+    On input, result data for an n-dimensional computation
     is provided (from the result file)
 
     This element data is communicated in such a way that
     all elements have access to their (dof-accessible) data.
-    Here we seperate velocity/displacement and pressure
+    Here we separate velocity/displacement and pressure
     output, since for velocity/displacement and pressure
     different dofs are required.
 

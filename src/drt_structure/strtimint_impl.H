@@ -880,14 +880,9 @@ namespace STR
       return;
     }
 
-    //! Output routine for coupled problems with monolithic approach
-    void Output(bool forced_writerestart = false)
-    {
-      PreOutput();
-      OutputStep(forced_writerestart);
-      // write Gmsh output
-      writeGmshStrucOutputStep();
-    }
+    //! Output results to binary file on disk
+    void Output(const bool forced_writerestart = false  ///< [in] Force writing of restart data
+    );
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     void SetDisResidual(

@@ -186,7 +186,9 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // Write element and node owners
   WriteElementResults(field);
-  //  WriteNod eResults(field); // Uncomment to visualize owner proc on a nodal basis
+  //  WriteNodeResults(field); // Uncomment to visualize owner proc on a nodal basis
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

@@ -258,7 +258,8 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
     }
 
     // this is a regular time step (neither t=0 nor restart)
-    else
+    else  // ToDo (mayr.mt) Does this case make sense? According to above's comment, we should never
+          // end up here.
     {
       // compute average balance factors of last time step
       for (int k = 0; k < (int)tunbalance_.size(); ++k) taverage += tunbalance_[k];

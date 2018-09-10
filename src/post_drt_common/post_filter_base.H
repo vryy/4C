@@ -28,12 +28,12 @@ class PostWriterBase;
 //! defines different result types (node-based, element-based, Gauss-Points?)
 enum ResultType
 {
-  no_restype,    // unknown result type
-  dofbased,      // result values based on dofrowmap
-  nodebased,     // result values based on noderowmap
-  elementbased,  // result values based on elementrowmap
-  elementdof,    // result values based on elementdofrowmap (unused)
-  max_restype    // end marker. must be the last entry
+  no_restype,    ///< unknown result type
+  dofbased,      ///< result values based on dofrowmap
+  nodebased,     ///< result values based on noderowmap
+  elementbased,  ///< result values based on elementrowmap
+  elementdof,    ///< result values based on elementdofrowmap (unused)
+  max_restype    ///< end marker. must be the last entry
 };
 
 

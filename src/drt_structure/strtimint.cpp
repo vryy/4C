@@ -2137,7 +2137,7 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void STR::TimInt::OutputStep(bool forced_writerestart)
+void STR::TimInt::OutputStep(const bool forced_writerestart)
 {
   // print iterations instead of steps
   if (outputeveryiter_)
@@ -2818,7 +2818,7 @@ void STR::TimInt::OutputContact()
     INPAR::CONTACT::EmOutputType emtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(
         cmtbridge_->GetStrategy().Params(), "EMOUTPUT");
 
-    // get out of here if no enrgy momentum output wanted
+    // get out of here if no energy/momentum output wanted
     if (emtype == INPAR::CONTACT::output_none) return;
 
     // get some parameters from parameter list
