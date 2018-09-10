@@ -179,7 +179,7 @@ namespace CONTACT
     \brief evaluate mortar coupling (MT)
 
     */
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
 
     /*!
     \brief Recovery method

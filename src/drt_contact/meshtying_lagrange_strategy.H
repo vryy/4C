@@ -50,7 +50,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
 
     /*!
     \brief Mesh intialization for rotational invariance

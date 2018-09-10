@@ -44,7 +44,7 @@ CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
   // print message
   if (Comm().MyPID() == 0)

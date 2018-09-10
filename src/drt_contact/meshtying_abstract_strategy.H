@@ -238,7 +238,7 @@ namespace CONTACT
     use the overloaded function call in the derived class and refer back to this function.
 
     */
-    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis);
+    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
 
     //@}
 
@@ -662,7 +662,8 @@ namespace CONTACT
 
     bool dualquadslavetrafo_;                   // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix> trafo_;  // transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;  ///< transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix>
+        systrafo_;  ///< transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>
         invtrafo_;    // inverse trafo matrix T^(-1) for dual quad 3D case
     double inttime_;  // Integration time

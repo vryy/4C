@@ -1367,7 +1367,7 @@ namespace CONTACT
     }
     Teuchos::RCP<Epetra_Vector> MeshInitialization() { return Teuchos::null; };
 
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis) {}
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) {}
     //! @}
 
    protected:

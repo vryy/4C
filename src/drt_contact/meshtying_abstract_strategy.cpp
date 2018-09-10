@@ -333,7 +333,7 @@ void CONTACT::MtAbstractStrategy::SetState(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
