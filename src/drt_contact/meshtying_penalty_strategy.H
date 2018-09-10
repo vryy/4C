@@ -146,6 +146,9 @@ namespace CONTACT
     */
     void UpdateUzawaAugmentedLagrange();
 
+    /*!
+    \brief Tell that this is a penalty strategy
+    */
     bool IsPenalty() const override { return true; };
     //@}
 
