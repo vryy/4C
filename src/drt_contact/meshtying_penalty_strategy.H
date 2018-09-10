@@ -203,8 +203,8 @@ namespace CONTACT
     MtPenaltyStrategy operator=(const MtPenaltyStrategy& old);
     MtPenaltyStrategy(const MtPenaltyStrategy& old);
 
-    double constrnorm_;      // L2-norm of normal contact constraints
-    double initialpenalty_;  // initial penalty parameter
+    double constrnorm_;      ///< L2-norm of normal contact constraints
+    double initialpenalty_;  ///< initial penalty parameter
 
     Teuchos::RCP<LINALG::SparseMatrix> mtm_;  ///< mortar matrix product: M(^T)*M
     Teuchos::RCP<LINALG::SparseMatrix> mtd_;  ///< mortar matrix product: M(^T)*D
