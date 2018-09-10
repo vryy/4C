@@ -17,6 +17,7 @@
 
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 
 // forward declarations
@@ -34,9 +35,19 @@ namespace LINALG
 {
   class SparseMatrix;
 }
+namespace NOX
+{
+  namespace NLN
+  {
+    class Group;
+  }  // namespace NLN
+}  // namespace NOX
 
 namespace CONTACT
 {
+  // forward declarations
+  class MtNoxInterface;
+
   /*! \brief Main abstract class for meshtying solution strategies
 
   This is the templating abstract class for all meshtying solution algorithms.
@@ -60,7 +71,7 @@ namespace CONTACT
     */
     MtAbstractStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -127,13 +138,13 @@ namespace CONTACT
     dual Lagrange mutliplier shape functions in any interface.
 
     */
-    virtual const bool& Dualquadslavetrafo() { return dualquadslavetrafo_; };
+    virtual const bool& Dualquadslavetrafo() const { return dualquadslavetrafo_; };
 
     /*!
     \brief Return parallel redistribution status (yes or no)
 
     */
-    bool ParRedist()
+    bool ParRedist() const
     {
       INPAR::MORTAR::ParRedist partype =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(), "PARALLEL_REDIST");
@@ -227,7 +238,7 @@ namespace CONTACT
     use the overloaded function call in the derived class and refer back to this function.
 
     */
-    virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis);
 
     //@}
 
@@ -433,6 +444,100 @@ namespace CONTACT
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() { return Teuchos::null; }
     //@}
 
+    //! @name new time integration
+
+    //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
+    const Teuchos::RCP<CONTACT::MtNoxInterface>& NoxInterfacePtr() { return noxinterface_ptr_; };
+
+    /*! \brief Return the desired right-hand-side block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint, ...
+     *
+     *  \date 05/2016
+     *  \author hiermeier */
+    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const
+    {
+      dserror("Not yet implemented!");
+      exit(EXIT_FAILURE);
+    };
+
+    /*! \brief Return the desired matrix block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...
+     *
+     *  \date 05/2016
+     *  \author hiermeier */
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const
+    {
+      dserror("Not yet implemented!");
+      exit(EXIT_FAILURE);
+    };
+
+    /*! \brief Return the Lagrange multiplier dof row map
+     *
+     *  \param redist (in): If TRUE, the redistributed map is returned, otherwise the
+     *                      original map before any redistribution took place.
+     *
+     *  \date 04/2016
+     *  \author hiermeier */
+    virtual Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const
+    {
+      if ((not redist) and ParRedist()) return pglmdofrowmap_;
+
+      return glmdofrowmap_;
+    };
+
+    //! modify system before linear solve
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+    { /* do nothing */
+      ;
+    }
+
+    //! modify result after linear solve
+    virtual void RunPostApplyJacobianInverse(Epetra_Vector& result)
+    { /* do nothing */
+      ;
+    }
+
+    //! evaluate force terms
+    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
+    {
+      dserror("not yet implemented");
+      return false;
+    }
+
+    //! evaluate stiffness terms
+    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+    {
+      dserror("not yet implemented");
+      return false;
+    }
+
+    //! evaluate force and stiffness terms
+    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+    {
+      dserror("not yet implemented");
+      return false;
+    }
+
+    //! after applying Newton increment
+    virtual void RunPostComputeX(
+        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew){};
+
+    //! get the correct RHS for covnergence check
+    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const {};
+
+    //@}
+
    protected:
     /*!
     \brief Assemble global coordinate vector
@@ -557,9 +662,20 @@ namespace CONTACT
 
     bool dualquadslavetrafo_;                   // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix> trafo_;  // transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;  // transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>
         invtrafo_;    // inverse trafo matrix T^(-1) for dual quad 3D case
     double inttime_;  // Integration time
+
+    Teuchos::RCP<Epetra_Vector> f_;                      // structural force
+    Teuchos::RCP<Epetra_Vector> fs_;                     // structural force (slave)
+    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_;       // matrix containing D and -M
+    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_t_;     // matrix containing D and -M. transposed
+    Teuchos::RCP<LINALG::SparseMatrix> lm_diag_matrix_;  // LM diagonal block
+
+   private:
+    //! pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
+    Teuchos::RCP<CONTACT::MtNoxInterface> noxinterface_ptr_;
 
   };  // class MtAbstractStrategy
 }  // namespace CONTACT

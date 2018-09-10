@@ -609,6 +609,16 @@ void STR::ModelEvaluator::RunPostApplyJacobianInverse(const Epetra_Vector& rhs,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RunPreApplyJacobianInverse(const Epetra_Vector& rhs,
+    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp) const
+{
+  Vector::iterator me_iter;
+  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
+    (*me_iter)->RunPreApplyJacobianInverse(rhs, result, xold, grp);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataGlobalState& STR::ModelEvaluator::GetGlobalState() const
 {
   CheckInitSetup();

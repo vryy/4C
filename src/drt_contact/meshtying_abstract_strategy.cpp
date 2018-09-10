@@ -14,6 +14,7 @@
 #include "Epetra_SerialComm.h"
 
 #include "meshtying_abstract_strategy.H"
+#include "meshtying_noxinterface.H"
 #include "meshtying_defines.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_interface.H"
@@ -33,7 +34,7 @@
 CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf,
+    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf,
     int maxdof)
     : MORTAR::StrategyBase(Teuchos::rcp(new MORTAR::StratDataContainer()),  // no shared data!
           DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
@@ -53,6 +54,9 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* DofRowMap,
     pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
     pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
   }
+
+  // build the NOX::NLN::CONSTRAINT::Interface::Required object
+  noxinterface_ptr_ = Teuchos::rcp(new CONTACT::MtNoxInterface());
 
   return;
 }
@@ -329,7 +333,7 @@ void CONTACT::MtAbstractStrategy::SetState(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces

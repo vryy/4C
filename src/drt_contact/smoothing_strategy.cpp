@@ -998,7 +998,7 @@ void CONTACT::SmoothingStrategy::SetState(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration            farah 01/15|
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::SmoothingStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces

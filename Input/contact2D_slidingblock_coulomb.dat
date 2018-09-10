@@ -50,7 +50,7 @@ M_DAMP                          0.5
 K_DAMP                          0.5
 PREDICT                         ConstDis
 TOLRES                          1.0E-7
-TOLDISP                         1.0E-7
+TOLDISP                         1.0E-10
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
@@ -59,6 +59,7 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         50
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
+INT_STRATEGY                    Standard
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5

@@ -29,7 +29,6 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
-DAMPING                         Material
 DIVERCONT                       stop
 DYNAMICTYP                      Statics//OneStepTheta //OneStepTheta Statics
 ITERNORM                        L2
@@ -65,6 +64,7 @@ UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
 LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 -------------------------------------------------------------CONTACT DYNAMIC

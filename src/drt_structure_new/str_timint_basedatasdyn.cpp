@@ -537,6 +537,18 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
            (qtype_1 == NOX::NLN::StatusTest::quantity_contact_normal and
                qtype_2 == NOX::NLN::StatusTest::quantity_structure))
     return normcombo_fres_contact_res_;
+  // combination: STRUCTURE <--> frictional CONTACT
+  else if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
+               qtype_2 == NOX::NLN::StatusTest::quantity_contact_friction) or
+           (qtype_1 == NOX::NLN::StatusTest::quantity_contact_friction and
+               qtype_2 == NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_contact_res_;
+  // combination: STRUCTURE <--> mesh tying
+  else if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
+               qtype_2 == NOX::NLN::StatusTest::quantity_meshtying) or
+           (qtype_1 == NOX::NLN::StatusTest::quantity_meshtying and
+               qtype_2 == NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_contact_res_;
   // combination: STRUCTURE <--> CARDIOVASCULAR0D
   else if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
                qtype_2 == NOX::NLN::StatusTest::quantity_cardiovascular0d) or
@@ -599,6 +611,18 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
   else if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
                qtype_2 == NOX::NLN::StatusTest::quantity_contact_normal) or
            (qtype_1 == NOX::NLN::StatusTest::quantity_contact_normal and
+               qtype_2 == NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_contact_lm_incr_;
+  // combination: STRUCTURE <--> frictional CONTACT
+  else if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
+               qtype_2 == NOX::NLN::StatusTest::quantity_contact_friction) or
+           (qtype_1 == NOX::NLN::StatusTest::quantity_contact_friction and
+               qtype_2 == NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_contact_lm_incr_;
+  // combination: STRUCTURE <--> mesh tying
+  else if ((qtype_1 == NOX::NLN::StatusTest::quantity_structure and
+               qtype_2 == NOX::NLN::StatusTest::quantity_meshtying) or
+           (qtype_1 == NOX::NLN::StatusTest::quantity_meshtying and
                qtype_2 == NOX::NLN::StatusTest::quantity_structure))
     return normcombo_disp_contact_lm_incr_;
   // combination: STRUCTURE <--> CARDIOVASCULAR0D

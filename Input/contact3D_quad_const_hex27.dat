@@ -42,9 +42,6 @@ NLNSOL                          fullnewton                    // fullnewton modn
 TIMESTEP                        0.02
 NUMSTEP                         10
 MAXTIME                         0.2
-DAMPING                         Yes
-M_DAMP                          0.00001
-K_DAMP                          0.00001
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
@@ -52,6 +49,7 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
 PREDICT                         TangDis
+INT_STRATEGY                    Standard
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25

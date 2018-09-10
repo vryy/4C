@@ -461,6 +461,7 @@ namespace XCONTACT
     virtual void ModifyPenalty() { dserror("Wrong strategy!"); }
     virtual void UpdateUzawaAugmentedLagrange() { dserror("Wrong strategy!"); }
     virtual void UpdateConstraintNorm(int uzawaiter = 0) { dserror("Wrong strategy!"); }
+    bool IsPenalty() const override { return false; };
     //! @}
 
     //! @name Deprecated methods

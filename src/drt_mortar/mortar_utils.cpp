@@ -908,9 +908,6 @@ void MORTAR::UTILS::MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>&
   LINALG::SplitMatrix2x2(ksmn, gsrow, gmrow, gncol, tempmap, ksn, tempmtx1, kmn, tempmtx2);
   LINALG::SplitMatrix2x2(knsm, gnrow, tempmap, gscol, gmcol, kns, knm, tempmtx1, tempmtx2);
 
-  if (kms->NormOne() > 1.e-12) dserror("stop");
-  if (ksm->NormOne() > 1.e-12) dserror("stop");
-
   Teuchos::RCP<LINALG::SparseMatrix> kteffnew =
       Teuchos::rcp(new LINALG::SparseMatrix(k->RowMap(), 81, true, false, k->GetMatrixtype()));
 
@@ -921,6 +918,8 @@ void MORTAR::UTILS::MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>&
   kteffnew->Add(*kmm, false, 1.0, 1.0);
   kteffnew->Add(*LINALG::Multiply(*kns, false, *p_col, false, true, false, true), false, 1., 1.);
   kteffnew->Add(*LINALG::Multiply(*p_row, true, *ksn, false, true, false, true), false, 1., 1.);
+  kteffnew->Add(*LINALG::Multiply(*kms, false, *p_col, false, true, false, true), false, 1., 1.);
+  kteffnew->Add(*LINALG::Multiply(*p_row, true, *ksm, false, true, false, true), false, 1., 1.);
   kteffnew->Add(*LINALG::Multiply(*p_row, true,
                     *LINALG::Multiply(*kss, false, *p_col, false, true, false, true), false, true,
                     false, true),

@@ -145,12 +145,31 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
       {
         return NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint;
       }
+      else if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
+               linsolvers.find(NOX::NLN::sol_meshtying) != ci_end)
+      {
+        return NOX::NLN::LinSystem::linear_system_structure_meshtying;
+      }
       // --- ToDo has to be extended
 
       dserror(
           "There is no capable linear system type for the given linear "
           "solver combination ( 2 linear solvers )!");
       exit(EXIT_FAILURE);
+    }
+    case 3:
+    {
+      // --- Structure/Contact case (+ spring dashpot)
+      if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
+          linsolvers.find(NOX::NLN::sol_contact) != ci_end and
+          linsolvers.find(NOX::NLN::sol_meshtying) != ci_end)
+      {
+        return NOX::NLN::LinSystem::linear_system_structure_contact;
+
+        dserror(
+            "There is no capable linear system type for the given linear "
+            "solver combination ( 3 linear solvers )!");
+      }
     }
     default:
     {

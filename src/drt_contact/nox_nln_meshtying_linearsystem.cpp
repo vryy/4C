@@ -1,19 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file nox_nln_contact_linearsystem.cpp
+\file nox_nln_meshtying_linearsystem.cpp
 
 \brief Derived class which manages the special requirements to the linear
-       solver for contact problems.
+       solver for mesh tying problems.
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Jul 14, 2015
+\maintainer Alexander Seitz
 
 */
 /*----------------------------------------------------------------------*/
-#include "nox_nln_contact_linearsystem.H"  // base class
+#include "nox_nln_meshtying_linearsystem.H"  // base class
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -30,7 +28,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -51,7 +49,7 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -71,7 +69,7 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p,
+void NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p,
     Teuchos::RCP<LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType)
 {
   bool isAdaptiveControl = p.get<bool>("Adaptive Control");
@@ -149,8 +147,9 @@ void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
-    LINALG::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const
+void NOX::NLN::MESHTYING::LinearSystem::SetLinearProblemForSolve(
+    Epetra_LinearProblem& linear_problem, LINALG::SparseOperator& jac, Epetra_Vector& lhs,
+    Epetra_Vector& rhs) const
 {
   switch (jacType_)
   {
@@ -178,7 +177,7 @@ void NOX::NLN::CONTACT::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProb
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::CompleteSolutionAfterSolve(
+void NOX::NLN::MESHTYING::LinearSystem::CompleteSolutionAfterSolve(
     const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
 {
   p_lin_prob_.InsertIntoGlobalLhs(lhs);
@@ -187,63 +186,17 @@ void NOX::NLN::CONTACT::LinearSystem::CompleteSolutionAfterSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
+NOX::NLN::SolutionType NOX::NLN::MESHTYING::LinearSystem::GetActiveLinSolver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
     Teuchos::RCP<LINALG::Solver>& currSolver)
 {
-  // ---------------------------------------------------------------------
-  // Solving a saddle point system
-  // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
-  // (2) Direct Augmented Lagrange strategy
-  // ---------------------------------------------------------------------
-  NOX::NLN::CONSTRAINT::PrecInterfaceMap::const_iterator cit;
-  bool issaddlepoint = false;
-  for (cit = iConstrPrec_.begin(); cit != iConstrPrec_.end(); ++cit)
-  {
-    if (cit->second->IsSaddlePointSystem())
-    {
-      issaddlepoint = true;
-      break;
-    }
-  }
-  // ---------------------------------------------------------------------
-  // Solving a purely displacement based system
-  // (1) Dual (not Standard) Lagrange multipliers -> Condensed
-  // (2) Penalty and Uzawa Augmented Lagrange strategies
-  // ---------------------------------------------------------------------
-  bool iscondensed = false;
-  for (cit = iConstrPrec_.begin(); cit != iConstrPrec_.end(); ++cit)
-  {
-    if (cit->second->IsCondensedSystem())
-    {
-      iscondensed = true;
-      break;
-    }
-  }
-
-  if (issaddlepoint or iscondensed)
-  {
-    currSolver = solvers.at(NOX::NLN::sol_contact);
-    return NOX::NLN::sol_contact;
-  }
-  // ----------------------------------------------------------------------
-  // check if contact contributions are present,
-  // if not we make a standard solver call to speed things up
-  // ----------------------------------------------------------------------
-  if (!issaddlepoint and !iscondensed)
-  {
-    currSolver = solvers.at(NOX::NLN::sol_structure);
-    return NOX::NLN::sol_structure;
-  }
-
-  // default return
-  currSolver = solvers.at(NOX::NLN::sol_contact);
-  return NOX::NLN::sol_contact;
+  currSolver = solvers.at(NOX::NLN::sol_meshtying);
+  return NOX::NLN::sol_meshtying;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
+void NOX::NLN::MESHTYING::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
     Epetra_Vector& glhs) const
 {
   if (p_lhs_.is_null() or p_lhs_.get() == &glhs) return;
@@ -253,7 +206,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
+void NOX::NLN::MESHTYING::LinearSystem::LinearSubProblem::SetOriginalSystem(
     LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
 {
   p_jac_ = Teuchos::rcpFromRef(mat);
@@ -263,7 +216,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
+void NOX::NLN::MESHTYING::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
     LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
 {
   LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>& block_mat =
@@ -420,7 +373,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::applyDiagonalInverse(
+void NOX::NLN::MESHTYING::LinearSystem::applyDiagonalInverse(
     LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
 {
   if (mat.EpetraMatrix()->NumGlobalDiagonals() != mat.EpetraMatrix()->NumGlobalNonzeros())
@@ -444,7 +397,7 @@ void NOX::NLN::CONTACT::LinearSystem::applyDiagonalInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::throwError(
+void NOX::NLN::MESHTYING::LinearSystem::throwError(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(NOX::Utils::Error))

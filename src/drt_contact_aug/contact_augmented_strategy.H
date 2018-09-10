@@ -1291,6 +1291,7 @@ namespace CONTACT
       void ModifyPenalty() override { dserror("Wrong strategy!"); };
       void UpdateUzawaAugmentedLagrange() override { dserror("Wrong strategy!"); };
       void UpdateConstraintNorm(int uzawaiter = 0) override { dserror("Wrong strategy!"); };
+      bool IsPenalty() const override { return false; };
       //! @}
       //! @}
 

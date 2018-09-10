@@ -105,9 +105,6 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum DRT::UTILS::VecBlockType& bt) const;
 
-    virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
-        Epetra_Vector& f, const double& timefac_np) const;
-
 
     /*! \brief Recover the current state
      *
@@ -136,11 +133,20 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const;
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
-        Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const;
+    //! Apply modifications (e.g. condensation) directly before linear solve
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
-    //! Evaluate contact contributions to stiff matrix
-    virtual void AssembleContactStiff();
+    //! perform condensation of frictionless contact
+    virtual void CondenseFrictionless(Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+
+    //! perform condensation of frictionlal contact
+    virtual void CondenseFriction(Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+
+    //! Recover condensed Lagrange multiplier after linear solve
+    virtual void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp);
 
     //! The contributions to the structural right-hand-side block are calculated.
     virtual void EvalStrContactRHS();
@@ -148,9 +154,14 @@ namespace CONTACT
     //! Assemble contact contributions to the rhs
     virtual void AssembleContactRHS();
 
-    //! Assemble all contact contributions for condensed contact
+    //! Assemble all contact contributions
     virtual void AssembleAllContactTerms();
-    virtual void StoreInitialContributions(CONTACT::ParamsInterface& cparams);
+
+    //! Assemble all contact contributions (frictionless contact)
+    virtual void AssembleAllContactTermsFrictionless();
+
+    //! Assemble all contact contributions (frictional contact)
+    virtual void AssembleAllContactTermsFriction();
 
     virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
     {
@@ -167,11 +178,7 @@ namespace CONTACT
     };
 
     //! Get the slip node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    {
-      dserror("Currently unsupported for the Lagrangian strategies!");
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return gOldslipnodes_; };
 
     //@}
 
@@ -364,6 +371,7 @@ namespace CONTACT
     void ModifyPenalty() {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
@@ -411,22 +419,22 @@ namespace CONTACT
     \brief Add penalty terms for LTL edge contact
 
     */
-    void AddLineToLinContributions(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void AddLineToLinContributions(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for master contact
 
     */
-    void AddMasterContributions(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void AddMasterContributions(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for LTL edge contact
 
     */
-    void AddLineToLinContributionsFriction(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void AddLineToLinContributionsFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
     CoLagrangeStrategy operator=(const CoLagrangeStrategy& old);
@@ -484,11 +492,17 @@ namespace CONTACT
 
     Teuchos::RCP<Epetra_Map> gOldActiveSlaveNodes_;  // active slave nodes from previous newton step
 
+    Teuchos::RCP<Epetra_Map> gOldslipnodes_;  // active slave nodes from previous newton step
+
     Teuchos::RCP<Epetra_Vector> fLTLOld_;        //< old line to line forces
     Teuchos::RCP<Epetra_Vector> fLTL_;           //< current line to line forces combined
     Teuchos::RCP<Epetra_Vector> fLTLn_;          //< current line to line forces normal
     Teuchos::RCP<Epetra_Vector> fLTLt_;          //< current line to line forces tangent
     Teuchos::RCP<Epetra_Vector> fconservation_;  //< current line to line forces normal
+
+    Teuchos::RCP<Epetra_Vector> nonsmooth_Penalty_force_;  //< penalty forces of non-smooth contact
+    Teuchos::RCP<LINALG::SparseMatrix>
+        nonsmooth_Penalty_stiff_;  //< tangent to penalty forces of non-smooth contact
 
   };  // class CoLagrangeStrategy
 }  // namespace CONTACT

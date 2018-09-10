@@ -60,6 +60,7 @@ NORMCOMBI_RESFDISP              And
 MAXITER                         1
 DIVERCONT                       continue
 LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint

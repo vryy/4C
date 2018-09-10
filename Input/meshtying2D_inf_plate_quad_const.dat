@@ -51,6 +51,7 @@ NORM_DISP             Abs
 NORMCOMBI_RESFDISP    And
 MAXITER      10
 DIVERCONT    continue
+INT_STRATEGY Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 SYSTEM               cond

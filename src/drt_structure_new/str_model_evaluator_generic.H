@@ -260,6 +260,23 @@ namespace STR
       { /* empty */
       }
 
+
+      /*! \brief Executed at the beginning of the NOX::NLN::LinearSystem::applyJacobianInverse()
+       *  method
+       *
+       *  \note See comment in the NOX::NLN::PrePostOp::IMPLICIT::Generic class.
+       *
+       *  \param rhs   : read-only access to the rhs vector
+       *  \param result: full access to the result vector of the linear system
+       *  \param xold  : read-only access to the old x state vector
+       *  \param grp   : read only access to the group object
+       *
+       *  \author hiermeier \date 12/17 */
+      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+      { /* empty */
+      }
+
       virtual bool CorrectParameters(NOX::NLN::CorrectionType type) { return true; };
 
       /// update the model state corresponding to the time/load-step

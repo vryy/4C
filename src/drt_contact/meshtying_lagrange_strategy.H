@@ -36,7 +36,7 @@ namespace CONTACT
     */
     MtLagrangeStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -50,7 +50,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis);
 
     /*!
     \brief Mesh intialization for rotational invariance
@@ -143,7 +143,30 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
+    bool IsPenalty() const override { return false; };
 
+    //@}
+
+    //! @name New time integration
+
+    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis);
+    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis);
+    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis);
+    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const;
+
+
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+
+    virtual void RunPostApplyJacobianInverse(Epetra_Vector& result);
+
+    virtual void RunPostComputeX(
+        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+
+    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
     //@}
 
    protected:

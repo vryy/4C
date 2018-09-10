@@ -118,12 +118,12 @@ namespace MORTAR
       //! setup flag
       bool issetup_;
 
+      //! pointer to the structural problem discretization
+      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
+
      private:
       //! pointer to the structural global state data container
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
-
-      //! pointer to the structural problem discretization
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
 
       //! pointer to a COPY of the structural communicator
       Teuchos::RCP<Epetra_Comm> comm_ptr_;

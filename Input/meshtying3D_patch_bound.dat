@@ -45,15 +45,13 @@ NLNSOL               fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP             0.003
 NUMSTEP              1
 MAXTIME              1.0
-DAMPING              Yes//Yes
-M_DAMP               0.0005
-K_DAMP               0.0005
 TOLRES               1.0E-7
 TOLDISP              1.0E-7
 NORM_RESF            Abs
 NORM_DISP            Abs
 NORMCOMBI_RESFDISP   And
 MAXITER              50
+INT_STRATEGY         Standard
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG               TrLike
 BETA                 0.25

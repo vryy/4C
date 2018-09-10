@@ -47,6 +47,8 @@
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
 #include "contact_nitsche_strategy.H"
+#include "contact_penalty_strategy.H"
+#include "contact_wear_lagrange_strategy.H"
 // --augmented strategies and interfaces
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact_aug/contact_augmented_strategy.H"
@@ -604,6 +606,12 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cpara
             << "Anyway, you should not use the \"TIMESTEP\" variable inside of "
             << "the new structural/contact framework!" << std::endl;
       cparams.set<double>("TIMESTEP", timestep);
+      break;
+    }
+    case prb_structure:
+    {
+      cparams.set<double>(
+          "TIMESTEP", DRT::Problem::Instance()->StructuralDynamicParams().get<double>("TIMESTEP"));
       break;
     }
     default:
@@ -1604,19 +1612,29 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   INPAR::MORTAR::AlgorithmType algo =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(cparams, "ALGORITHM");
 
+  double alphaf = 0.0;
+  bool do_endtime = DRT::INPUT::IntegralValue<int>(cparams, "CONTACTFORCE_ENDTIME");
+  if (!do_endtime)
+  {
+    const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+        INPAR::STR::dyna_genalpha)
+      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+        INPAR::STR::dyna_gemm)
+      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+        INPAR::STR::dyna_onesteptheta)
+      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+  }
+
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wlaw != INPAR::WEAR::wear_none &&
       (wtype == INPAR::WEAR::wear_intstate || wtype == INPAR::WEAR::wear_primvar))
   {
-    dserror("This contact strategy is not yet considered!");
-    //    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
-    //        dof_row_map,
-    //        node_row_map,
-    //        cparams,
-    //        interfaces,
-    //        dim,
-    //        comm_ptr,
-    //        maxdof));
+    data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
+        cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
@@ -1636,22 +1654,6 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     }
     else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
-      double alphaf = 0.0;
-      bool do_endtime = DRT::INPUT::IntegralValue<int>(cparams, "CONTACTFORCE_ENDTIME");
-      if (!do_endtime)
-      {
-        const Teuchos::ParameterList& sdynparams =
-            DRT::Problem::Instance()->StructuralDynamicParams();
-        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-            INPAR::STR::dyna_genalpha)
-          alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-            INPAR::STR::dyna_gemm)
-          alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-            INPAR::STR::dyna_onesteptheta)
-          alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-      }
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, dof_row_map, node_row_map,
           cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
@@ -1660,23 +1662,30 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-          cparams, interfaces, dim, comm_ptr,
-          0.0,  // TODO: time integration factor --> 0.0 for statics. remove this!
-          dof_offset));
+          cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
     }
   }
-  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) ||
-           stype == INPAR::CONTACT::solution_uzawa)
+  else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) &&
+           stype != INPAR::CONTACT::solution_uzawa)
   {
-    dserror("This contact strategy is not yet considered!");
-    //    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
-    //        dof_row_map,
-    //        node_row_map,
-    //        cparams,
-    //        interfaces,
-    //        dim,
-    //        Comm(),
-    //        maxdof));
+    double alphaf = 0.0;
+    bool do_endtime = DRT::INPUT::IntegralValue<int>(cparams, "CONTACTFORCE_ENDTIME");
+    if (!do_endtime)
+    {
+      const Teuchos::ParameterList& sdynparams =
+          DRT::Problem::Instance()->StructuralDynamicParams();
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+          INPAR::STR::dyna_genalpha)
+        alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+          INPAR::STR::dyna_gemm)
+        alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
+          INPAR::STR::dyna_onesteptheta)
+        alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+    }
+    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
+        dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_uzawa)
   {

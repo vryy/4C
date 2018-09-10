@@ -52,6 +52,9 @@ NORM_DISP    Abs
 NORMCOMBI_RESFDISP And
 MAXITER      50
 PREDICT      TangDis
+INT_STRATEGY Standard
+---------------------------------------------STRUCT NOX/Status Test
+XML File                        = compressed_tape.xml
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG       TrLike
 BETA         0.25

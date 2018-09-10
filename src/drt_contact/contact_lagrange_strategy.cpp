@@ -1674,7 +1674,8 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
  |  add penalty terms for ltl contact                        farah 11/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::AddMasterContributions(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+    bool add_time_integration)
 {
   // create new contact force vector for LTL contact
   Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(feff->Map()), true);
@@ -1702,15 +1703,21 @@ void CONTACT::CoLagrangeStrategy::AddMasterContributions(
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
   if (fLTL_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
 
-  if (fLTLOld_ != Teuchos::null)
-    if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
+  if (add_time_integration)
+    if (fLTLOld_ != Teuchos::null)
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
 
-  if (feff->Update(1.0 - alphaf_, *fc, 1.)) dserror("ERROR: Update went wrong");
+  double fac = 0.;
+  if (add_time_integration)
+    fac = 1. - alphaf_;
+  else
+    fac = 1.;
+  if (feff->Update(fac, *fc, 1.)) dserror("ERROR: Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
   kteff->UnComplete();
-  kteff->Add(*kc, false, 1.0 - alphaf_, 1.);
+  kteff->Add(*kc, false, fac, 1.);
   kteff->Complete();
 
   // bye bye
@@ -1722,7 +1729,8 @@ void CONTACT::CoLagrangeStrategy::AddMasterContributions(
  |  add penalty terms for ltl contact                        farah 10/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+    bool add_time_integration)
 {
   // create new contact force vector for LTL contact
   Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(feff->Map()), true);
@@ -1751,15 +1759,21 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
   if (fLTL_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
 
-  if (fLTLOld_ != Teuchos::null)
-    if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
+  if (add_time_integration)
+    if (fLTLOld_ != Teuchos::null)
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
 
-  if (feff->Update(1.0 - alphaf_, *fc, 1.)) dserror("ERROR: Update went wrong");
+  double fac = 0.;
+  if (add_time_integration)
+    fac = 1. - alphaf_;
+  else
+    fac = 1.;
+  if (feff->Update(fac, *fc, 1.)) dserror("ERROR: Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
   kteff->UnComplete();
-  kteff->Add(*kc, false, 1.0 - alphaf_, 1.);
+  kteff->Add(*kc, false, fac, 1.);
   kteff->Complete();
 
   // bye bye
@@ -1770,7 +1784,8 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
  |  add frictional penalty terms for ltl contact             farah 10/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+    bool add_time_integration)
 {
   // create new contact force vector for LTL contact
   Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(feff->Map()), true);
@@ -1815,15 +1830,21 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
   if (fLTL_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
 
-  if (fLTLOld_ != Teuchos::null)
-    if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
+  if (add_time_integration)
+    if (fLTLOld_ != Teuchos::null)
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
 
-  if (feff->Update(1.0 - alphaf_, *fc, 1.)) dserror("ERROR: Update went wrong");
+  double fac = 0.;
+  if (add_time_integration)
+    fac = 1. - alphaf_;
+  else
+    fac = 1.;
+  if (feff->Update(fac, *fc, 1.)) dserror("ERROR: Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
   kteff->UnComplete();
-  kteff->Add(*kc, false, 1.0 - alphaf_, 1.);
+  kteff->Add(*kc, false, fac, 1.);
   kteff->Complete();
 
   // bye bye
@@ -3000,7 +3021,6 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
       if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_, false, 1.0, 1.0);
     }
     kzd->Complete(*gdisprowmap_, *gsdofrowmap_);
-    ;
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3277,12 +3297,10 @@ void CONTACT::CoLagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 
   // apply contact forces and stiffness
   Initialize();  // init lin-matrices
+  AssembleAllContactTerms();
 
   if (SystemType() != INPAR::CONTACT::system_condensed)
   {
-    // --- Assemble the ride hand side terms -------------------------------
-    AssembleContactRHS();
-
     EvalStrContactRHS();  // evaluate the structure/displacement rhs
     EvalConstrRHS();      // evaluate the constraint rhs (saddle-point system only)
 
@@ -3290,110 +3308,317 @@ void CONTACT::CoLagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
       constrrhs_->Scale(-1.0);  // scale with -1.0 --> when old structure is deleted change this!!!
   }
   else
+    EvalStrContactRHS();
+
+  INPAR::MORTAR::LagMultQuad lagmultquad =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+  if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
   {
-    AssembleAllContactTerms();
-    StoreInitialContributions(cparams);
+    systrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
+    Teuchos::RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
+    systrafo_->Add(*eye, false, 1.0, 1.0);
+    if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+    systrafo_->Add(*trafo_, false, 1.0, 1.0);
+    systrafo_->Complete();
+
+    invsystrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
+    invsystrafo_->Add(*eye, false, 1.0, 1.0);
+    if (ParRedist())
+      invtrafo_ = MORTAR::MatrixRowColTransform(invtrafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+    invsystrafo_->Add(*invtrafo_, false, 1.0, 1.0);
+    invsystrafo_->Complete();
   }
 
   // bye bye
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::StoreInitialContributions(CONTACT::ParamsInterface& cparams)
+void CONTACT::CoLagrangeStrategy::AssembleAllContactTerms()
 {
-  // ***************************************************************
-  // Jacobian (KTEFF)
-  // ***************************************************************
-  const STR::MODELEVALUATOR::Contact& cmodel =
-      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
+  if (nonSmoothContact_)
+  {
+    nonsmooth_Penalty_force_ = Teuchos::rcp(new Epetra_Vector(*probdofs_));
+    nonsmooth_Penalty_stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*probdofs_, 100, true, true));
+    Teuchos::RCP<LINALG::SparseOperator> k =
+        Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(nonsmooth_Penalty_stiff_);
+    if (!friction_)
+    {
+      // LTL contributions:
+      AddLineToLinContributions(k, nonsmooth_Penalty_force_, false);
 
-  // TODO: this is the basic routine for submatrix storage
-  // However, there is a bug in GetAuxDisplJacobian(), which modifies
-  // or resets the stiffness matrix --> wrong results
+      // penalty support for master side quantities:
+      AddMasterContributions(k, nonsmooth_Penalty_force_, false);
+    }
+    else
+    {
+      // AddLineToLinContributions(kteff,feff);
+      AddLineToLinContributionsFriction(k, nonsmooth_Penalty_force_, false);
+    }
 
-  //  Teuchos::RCP<LINALG::SparseOperator> jac =
-  //      cmodel.GetAuxDisplJacobian();
-  //
-  ////    Teuchos::RCP<LINALG::SparseMatrix> jac =
-  ////        cmodel.GState().ExtractDisplBlock(*jacaux);
-  //
-  //
-  //  Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix =
-  //      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(jac);
-  //
-  //  kteffmatrix->UnComplete();
-  //  kteffmatrix->Add(*lindmatrix_,false,1.0-alphaf_,1.0);
-  //  kteffmatrix->Add(*linmmatrix_,false,1.0-alphaf_,1.0);
-  //  kteffmatrix->Complete();
-  //
-  //  // we want to split k into 3 groups s,m,n = 9 blocks
-  //  Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
-  //
-  //  // temporarily we need the blocks ksmsm, ksmn, knsm
-  //  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  //  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-  //
-  //  // some temporary Teuchos::RCPs
-  //  Teuchos::RCP<Epetra_Map> tempmap;
-  //  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-  //  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-  //  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
-  //
-  //  // split into slave/master part + structure part
-  //  // only split, no need to transform
-  //  LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-  //
-  //  // further splits into slave part + master part
-  //  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
-  //  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-  //  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
-  //
-  ////  // store some stuff for static condensation of LM
-  ////  fs_   = fs;
-  ////  invd_ = invd;
-  //  ksn_  = ksn;
-  //  ksm_  = ksm;
-  //  kss_  = kss;
-  //
-  //  kteffmatrix->UnComplete();
-  //  kteffmatrix->Add(*lindmatrix_,false,-(1.0-alphaf_),1.0);
-  //  kteffmatrix->Add(*linmmatrix_,false,-(1.0-alphaf_),1.0);
-  //  kteffmatrix->Complete();
+    nonsmooth_Penalty_stiff_->Complete();
+    nonsmooth_Penalty_force_->Scale(-1.);
+  }
 
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
 
-  // ***************************************************************
-  // f
-  // ***************************************************************
-
-  Teuchos::RCP<Epetra_Vector> feff = cmodel.AssembleForceOfModels();
-
-  // we want to split f into 3 groups s.m,n
-  Teuchos::RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  Teuchos::RCP<Epetra_Vector> fsm;
-
-  // do the vector splitting smn -> sm+n
-  // only split, no need to transform
-  LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
-
-  // we want to split fsm into 2 groups s,m
-  fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
-
-  //  // store some stuff for static condensation of LM
-  fs_ = fs;
+  if (friction_)
+    AssembleAllContactTermsFriction();
+  else
+    AssembleAllContactTermsFrictionless();
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AssembleAllContactTerms()
+void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
+{
+  /**********************************************************************/
+  /* build global matrix t with tangent vectors of active nodes         */
+  /* and global matrix s with normal derivatives of active nodes        */
+  /* and global matrix linstick with derivatives of stick nodes         */
+  /* and global matrix linslip with derivatives of slip nodes           */
+  /* and inactive right-hand side with old lagrange multipliers (incr)  */
+  /**********************************************************************/
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->AssembleS(*smatrix_);
+    interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
+    interface_[i]->AssembleLinStick(*linstickLM_, *linstickDIS_, *linstickRHS_);
+    interface_[i]->AssembleLinSlip(*linslipLM_, *linslipDIS_, *linslipRHS_);
+    if (SystemType() != INPAR::CONTACT::system_condensed)
+      interface_[i]->AssembleInactiverhs(*inactiverhs_);
+  }
+  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+  {
+    smatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
+  }
+  else
+  {
+    // FillComplete() global matrix S
+    smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
+  }
+
+  // FillComplete() global matrices LinD, LinM
+  // (again for linD gsdofrowmap_ is sufficient as domain map,
+  // but in the edge node modification case, master entries occur!)
+  lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
+  linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
+
+  // FillComplete global Matrix linstickLM_, linstickDIS_
+  Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_, *gslipt_);
+  Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_, *gslipdofs_);
+
+  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+  {
+    linstickLM_->Complete(*gstickdofs, *gstickdofs);
+    linstickDIS_->Complete(*gsmdofrowmap_, *gstickdofs);
+    linslipLM_->Complete(*gslipdofs_, *gslipdofs_);
+    linslipDIS_->Complete(*gsmdofrowmap_, *gslipdofs_);
+  }
+  else
+  {
+    linstickLM_->Complete(*gstickdofs, *gstickt);
+    linstickDIS_->Complete(*gsmdofrowmap_, *gstickt);
+
+    // FillComplete global Matrix linslipLM_ and linslipDIS_
+    linslipLM_->Complete(*gslipdofs_, *gslipt_);
+    linslipDIS_->Complete(*gsmdofrowmap_, *gslipt_);
+  }
+
+  INPAR::MORTAR::LagMultQuad lagmultquad =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+  if (Dualquadslavetrafo())
+  {
+    if (lagmultquad == INPAR::MORTAR::lagmult_lin)
+      dserror("no linear LM interpolation for frictional contact");
+    else
+    {
+      // modify lindmatrix_
+      Teuchos::RCP<LINALG::SparseMatrix> temp1 =
+          LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+      lindmatrix_ = temp1;
+    }
+  }
+
+  if (SystemType() == INPAR::CONTACT::system_condensed)
+  {
+    /**********************************************************************/
+    /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
+    /**********************************************************************/
+    Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
+
+    // for nonsmooth contact inverting D is more complex:
+    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // are involved. For a falling coin (only surface and edge nodes), a special but
+    // more easy implementation is needed.
+    if (nonSmoothContact_)
+    {
+      // 1. split d matrix in vertex edge and surf part
+      Teuchos::RCP<LINALG::SparseMatrix> dss, dsev, devs, devev;
+      Teuchos::RCP<Epetra_Map> gEVdofs;  // merged edge and vertex dofs
+
+      // get dss
+      LINALG::SplitMatrix2x2(
+          dmatrix_, gsdofSurf_, gEVdofs, gsdofSurf_, gEVdofs, dss, dsev, devs, devev);
+
+      // get dse and dsv
+      Teuchos::RCP<Epetra_Map> temp;
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2;
+      Teuchos::RCP<LINALG::SparseMatrix> dse, dsv;
+
+      LINALG::SplitMatrix2x2(
+          dsev, gsdofSurf_, temp, gsdofEdge_, gsdofVertex_, dse, dsv, tempmtx1, tempmtx2);
+
+      // get dee dev dve dvv
+      Teuchos::RCP<LINALG::SparseMatrix> dee, dev, dve, dvv;
+      LINALG::SplitMatrix2x2(
+          devev, gsdofEdge_, gsdofVertex_, gsdofEdge_, gsdofVertex_, dee, dev, dve, dvv);
+
+      // 2. invert diagonal matrices dss dee dvv
+      Teuchos::RCP<Epetra_Vector> diagV = LINALG::CreateVector(*gsdofVertex_, true);
+      Teuchos::RCP<Epetra_Vector> diagE = LINALG::CreateVector(*gsdofEdge_, true);
+      Teuchos::RCP<Epetra_Vector> diagS = LINALG::CreateVector(*gsdofSurf_, true);
+      Teuchos::RCP<LINALG::SparseMatrix> invdV = Teuchos::rcp(new LINALG::SparseMatrix(*dvv));
+      Teuchos::RCP<LINALG::SparseMatrix> invdE = Teuchos::rcp(new LINALG::SparseMatrix(*dee));
+      Teuchos::RCP<LINALG::SparseMatrix> invdS = Teuchos::rcp(new LINALG::SparseMatrix(*dss));
+
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invdV->ExtractDiagonalCopy(*diagV);
+      invdE->ExtractDiagonalCopy(*diagE);
+      invdS->ExtractDiagonalCopy(*diagS);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i = 0; i < diagV->MyLength(); ++i)
+        if (abs((*diagV)[i]) < 1e-12) (*diagV)[i] = 1.0;
+      for (int i = 0; i < diagE->MyLength(); ++i)
+        if (abs((*diagE)[i]) < 1e-12) (*diagE)[i] = 1.0;
+      for (int i = 0; i < diagS->MyLength(); ++i)
+        if (abs((*diagS)[i]) < 1e-12) (*diagS)[i] = 1.0;
+
+      // scalar inversion of diagonal values
+      err = diagV->Reciprocal(*diagV);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagE->Reciprocal(*diagE);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagS->Reciprocal(*diagS);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      // re-insert inverted diagonal into invd
+      err = invdV->ReplaceDiagonalValues(*diagV);
+      err = invdE->ReplaceDiagonalValues(*diagE);
+      err = invdS->ReplaceDiagonalValues(*diagS);
+
+      // 3. multiply all sub matrices
+      invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
+
+      dse->Scale(-1.0);
+      dsv->Scale(-1.0);
+      dev->Scale(-1.0);
+
+      // inv_dse
+      Teuchos::RCP<LINALG::SparseMatrix> dum1;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dse;
+      dum1 = LINALG::MLMultiply(*dse, false, *invdE, false, false, false, true);
+      dinv_dse = LINALG::MLMultiply(*invdS, false, *dum1, false, false, false, true);
+
+      // inv_dev
+      Teuchos::RCP<LINALG::SparseMatrix> dum2;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dev;
+      dum2 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
+      dinv_dev = LINALG::MLMultiply(*invdE, false, *dum2, false, false, false, true);
+
+      // inv_dsv part1
+      Teuchos::RCP<LINALG::SparseMatrix> dum3;
+      Teuchos::RCP<LINALG::SparseMatrix> dum4;
+      Teuchos::RCP<LINALG::SparseMatrix> dum5;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv1;
+      dum3 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
+      dum4 = LINALG::MLMultiply(*invdE, false, *dum3, false, false, false, true);
+      dum5 = LINALG::MLMultiply(*dse, false, *dum4, false, false, false, true);
+      dinv_dsv1 = LINALG::MLMultiply(*invdS, false, *dum5, false, false, false, true);
+
+      // inv_dsv part2
+      Teuchos::RCP<LINALG::SparseMatrix> dum6;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv2;
+      dum6 = LINALG::MLMultiply(*dsv, false, *invdV, false, false, false, true);
+      dinv_dsv2 = LINALG::MLMultiply(*invdS, false, *dum6, false, false, false, true);
+
+      // diagonal entries
+      invd->Add(*invdS, false, 1.0, 1.0);
+      invd->Add(*invdE, false, 1.0, 1.0);
+      invd->Add(*invdV, false, 1.0, 1.0);
+
+      invd->Add(*dinv_dev, false, 1.0, 1.0);
+      invd->Add(*dinv_dse, false, 1.0, 1.0);
+      invd->Add(*dinv_dsv1, false, 1.0, 1.0);
+      invd->Add(*dinv_dsv2, false, 1.0, 1.0);
+
+      // complete
+      invd->Complete();
+    }
+    // standard inverse diagonal matrix:
+    else
+    {
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invd->ExtractDiagonalCopy(*diag);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i = 0; i < diag->MyLength(); ++i)
+        if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+
+      // scalar inversion of diagonal values
+      err = diag->Reciprocal(*diag);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
+      LINALG::Export(*pgsdirichtoggle_, *lmDBC);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_, true);
+      tmp->Multiply(1., *diag, *lmDBC, 0.);
+      diag->Update(-1., *tmp, 1.);
+
+      // re-insert inverted diagonal into invd
+      err = invd->ReplaceDiagonalValues(*diag);
+    }
+
+    invd_ = invd;
+
+    // do the multiplication mhat = inv(D) * M
+    mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
+  }
+
+  if (Dualquadslavetrafo() && lagmultquad != INPAR::MORTAR::lagmult_lin)
+  {
+    // modify dmatrix_, invd_ and mhatmatrix_
+    Teuchos::RCP<LINALG::SparseMatrix> temp2 =
+        LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+    dmatrix_ = temp2;
+    if (SystemType() == INPAR::CONTACT::system_condensed)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> temp3 =
+          LINALG::MLMultiply(*trafo_, false, *invd_, false, false, false, true);
+      Teuchos::RCP<LINALG::SparseMatrix> temp4 =
+          LINALG::MLMultiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+      invd_ = temp3;
+      mhatmatrix_ = temp4;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 {
   /**********************************************************************/
   /* calculate                                                          */
@@ -3458,163 +3683,193 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTerms()
   lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
 
-
-  /**********************************************************************/
-  /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
-  /**********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
-
-  // for nonsmooth contact inverting D is more complex:
-  // Note: this invertation if only applicable when vertex, edge and surface nodes
-  // are involved. For a falling coin (only surface and edge nodes), a special but
-  // more easy implementation is needed.
-  if (nonSmoothContact_)
+  INPAR::MORTAR::LagMultQuad lagmultquad =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+  if (Dualquadslavetrafo())
   {
-    // 1. split d matrix in vertex edge and surf part
-    Teuchos::RCP<LINALG::SparseMatrix> dss, dsev, devs, devev;
-    Teuchos::RCP<Epetra_Map> gEVdofs;  // merged edge and vertex dofs
-
-    // get dss
-    LINALG::SplitMatrix2x2(
-        dmatrix_, gsdofSurf_, gEVdofs, gsdofSurf_, gEVdofs, dss, dsev, devs, devev);
-
-    // get dse and dsv
-    Teuchos::RCP<Epetra_Map> temp;
-    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2;
-    Teuchos::RCP<LINALG::SparseMatrix> dse, dsv;
-
-    LINALG::SplitMatrix2x2(
-        dsev, gsdofSurf_, temp, gsdofEdge_, gsdofVertex_, dse, dsv, tempmtx1, tempmtx2);
-
-    // get dee dev dve dvv
-    Teuchos::RCP<LINALG::SparseMatrix> dee, dev, dve, dvv;
-    LINALG::SplitMatrix2x2(
-        devev, gsdofEdge_, gsdofVertex_, gsdofEdge_, gsdofVertex_, dee, dev, dve, dvv);
-
-    // 2. invert diagonal matrices dss dee dvv
-    Teuchos::RCP<Epetra_Vector> diagV = LINALG::CreateVector(*gsdofVertex_, true);
-    Teuchos::RCP<Epetra_Vector> diagE = LINALG::CreateVector(*gsdofEdge_, true);
-    Teuchos::RCP<Epetra_Vector> diagS = LINALG::CreateVector(*gsdofSurf_, true);
-    Teuchos::RCP<LINALG::SparseMatrix> invdV = Teuchos::rcp(new LINALG::SparseMatrix(*dvv));
-    Teuchos::RCP<LINALG::SparseMatrix> invdE = Teuchos::rcp(new LINALG::SparseMatrix(*dee));
-    Teuchos::RCP<LINALG::SparseMatrix> invdS = Teuchos::rcp(new LINALG::SparseMatrix(*dss));
-
-    int err = 0;
-
-    // extract diagonal of invd into diag
-    invdV->ExtractDiagonalCopy(*diagV);
-    invdE->ExtractDiagonalCopy(*diagE);
-    invdS->ExtractDiagonalCopy(*diagS);
-
-    // set zero diagonal values to dummy 1.0
-    for (int i = 0; i < diagV->MyLength(); ++i)
-      if (abs((*diagV)[i]) < 1e-12) (*diagV)[i] = 1.0;
-    for (int i = 0; i < diagE->MyLength(); ++i)
-      if (abs((*diagE)[i]) < 1e-12) (*diagE)[i] = 1.0;
-    for (int i = 0; i < diagS->MyLength(); ++i)
-      if (abs((*diagS)[i]) < 1e-12) (*diagS)[i] = 1.0;
-
-    // scalar inversion of diagonal values
-    err = diagV->Reciprocal(*diagV);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = diagE->Reciprocal(*diagE);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = diagS->Reciprocal(*diagS);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    // re-insert inverted diagonal into invd
-    err = invdV->ReplaceDiagonalValues(*diagV);
-    // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = invdE->ReplaceDiagonalValues(*diagE);
-    // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = invdS->ReplaceDiagonalValues(*diagS);
-    // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    // 3. multiply all sub matrices
-    invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
-
-    dse->Scale(-1.0);
-    dsv->Scale(-1.0);
-    dev->Scale(-1.0);
-
-    // inv_dse
-    Teuchos::RCP<LINALG::SparseMatrix> dum1;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dse;
-    dum1 = LINALG::MLMultiply(*dse, false, *invdE, false, false, false, true);
-    dinv_dse = LINALG::MLMultiply(*invdS, false, *dum1, false, false, false, true);
-
-    // inv_dev
-    Teuchos::RCP<LINALG::SparseMatrix> dum2;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dev;
-    dum2 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
-    dinv_dev = LINALG::MLMultiply(*invdE, false, *dum2, false, false, false, true);
-
-    // inv_dsv part1
-    Teuchos::RCP<LINALG::SparseMatrix> dum3;
-    Teuchos::RCP<LINALG::SparseMatrix> dum4;
-    Teuchos::RCP<LINALG::SparseMatrix> dum5;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv1;
-    dum3 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
-    dum4 = LINALG::MLMultiply(*invdE, false, *dum3, false, false, false, true);
-    dum5 = LINALG::MLMultiply(*dse, false, *dum4, false, false, false, true);
-    dinv_dsv1 = LINALG::MLMultiply(*invdS, false, *dum5, false, false, false, true);
-
-    // inv_dsv part2
-    Teuchos::RCP<LINALG::SparseMatrix> dum6;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv2;
-    dum6 = LINALG::MLMultiply(*dsv, false, *invdV, false, false, false, true);
-    dinv_dsv2 = LINALG::MLMultiply(*invdS, false, *dum6, false, false, false, true);
-
-    // diagonal entries
-    invd->Add(*invdS, false, 1.0, 1.0);
-    invd->Add(*invdE, false, 1.0, 1.0);
-    invd->Add(*invdV, false, 1.0, 1.0);
-
-    invd->Add(*dinv_dev, false, 1.0, 1.0);
-    invd->Add(*dinv_dse, false, 1.0, 1.0);
-    invd->Add(*dinv_dsv1, false, 1.0, 1.0);
-    invd->Add(*dinv_dsv2, false, 1.0, 1.0);
-
-    invd->Complete();
-  }
-  // standard inverse diagonal matrix:
-  else
-  {
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
-    int err = 0;
-
-    // extract diagonal of invd into diag
-    invd->ExtractDiagonalCopy(*diag);
-
-    // set zero diagonal values to dummy 1.0
-    for (int i = 0; i < diag->MyLength(); ++i)
-      if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
-
-    // scalar inversion of diagonal values
-    err = diag->Reciprocal(*diag);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
-    LINALG::Export(*pgsdirichtoggle_, *lmDBC);
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_, true);
-    tmp->Multiply(1., *diag, *lmDBC, 0.);
-    diag->Update(-1., *tmp, 1.);
-
-    // re-insert inverted diagonal into invd
-    err = invd->ReplaceDiagonalValues(*diag);
-    // we cannot use this check, as we deliberately replaced zero entries
-    // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+    if (lagmultquad == INPAR::MORTAR::lagmult_lin)
+    {
+    }
+    else
+    {
+      // modify lindmatrix_
+      Teuchos::RCP<LINALG::SparseMatrix> temp1 =
+          LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+      lindmatrix_ = temp1;
+    }
   }
 
-  invd_ = invd;
+  if (SystemType() == INPAR::CONTACT::system_condensed)
+  {
+    /**********************************************************************/
+    /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
+    /**********************************************************************/
+    Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
 
-  // do the multiplication mhat = inv(D) * M
-  mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
+    // for nonsmooth contact inverting D is more complex:
+    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // are involved. For a falling coin (only surface and edge nodes), a special but
+    // more easy implementation is needed.
+    if (nonSmoothContact_)
+    {
+      // 1. split d matrix in vertex edge and surf part
+      Teuchos::RCP<LINALG::SparseMatrix> dss, dsev, devs, devev;
+      Teuchos::RCP<Epetra_Map> gEVdofs;  // merged edge and vertex dofs
 
+      // get dss
+      LINALG::SplitMatrix2x2(
+          dmatrix_, gsdofSurf_, gEVdofs, gsdofSurf_, gEVdofs, dss, dsev, devs, devev);
 
-  //  // do reagularization scaling
-  //  if(regularized_)
-  //    EvaluateRegularizationScaling(gact);
+      // get dse and dsv
+      Teuchos::RCP<Epetra_Map> temp;
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2;
+      Teuchos::RCP<LINALG::SparseMatrix> dse, dsv;
+
+      LINALG::SplitMatrix2x2(
+          dsev, gsdofSurf_, temp, gsdofEdge_, gsdofVertex_, dse, dsv, tempmtx1, tempmtx2);
+
+      // get dee dev dve dvv
+      Teuchos::RCP<LINALG::SparseMatrix> dee, dev, dve, dvv;
+      LINALG::SplitMatrix2x2(
+          devev, gsdofEdge_, gsdofVertex_, gsdofEdge_, gsdofVertex_, dee, dev, dve, dvv);
+
+      // 2. invert diagonal matrices dss dee dvv
+      Teuchos::RCP<Epetra_Vector> diagV = LINALG::CreateVector(*gsdofVertex_, true);
+      Teuchos::RCP<Epetra_Vector> diagE = LINALG::CreateVector(*gsdofEdge_, true);
+      Teuchos::RCP<Epetra_Vector> diagS = LINALG::CreateVector(*gsdofSurf_, true);
+      Teuchos::RCP<LINALG::SparseMatrix> invdV = Teuchos::rcp(new LINALG::SparseMatrix(*dvv));
+      Teuchos::RCP<LINALG::SparseMatrix> invdE = Teuchos::rcp(new LINALG::SparseMatrix(*dee));
+      Teuchos::RCP<LINALG::SparseMatrix> invdS = Teuchos::rcp(new LINALG::SparseMatrix(*dss));
+
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invdV->ExtractDiagonalCopy(*diagV);
+      invdE->ExtractDiagonalCopy(*diagE);
+      invdS->ExtractDiagonalCopy(*diagS);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i = 0; i < diagV->MyLength(); ++i)
+        if (abs((*diagV)[i]) < 1e-12) (*diagV)[i] = 1.0;
+      for (int i = 0; i < diagE->MyLength(); ++i)
+        if (abs((*diagE)[i]) < 1e-12) (*diagE)[i] = 1.0;
+      for (int i = 0; i < diagS->MyLength(); ++i)
+        if (abs((*diagS)[i]) < 1e-12) (*diagS)[i] = 1.0;
+
+      // scalar inversion of diagonal values
+      err = diagV->Reciprocal(*diagV);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagE->Reciprocal(*diagE);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagS->Reciprocal(*diagS);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      // re-insert inverted diagonal into invd
+      err = invdV->ReplaceDiagonalValues(*diagV);
+      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = invdE->ReplaceDiagonalValues(*diagE);
+      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = invdS->ReplaceDiagonalValues(*diagS);
+      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      // 3. multiply all sub matrices
+      invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
+
+      dse->Scale(-1.0);
+      dsv->Scale(-1.0);
+      dev->Scale(-1.0);
+
+      // inv_dse
+      Teuchos::RCP<LINALG::SparseMatrix> dum1;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dse;
+      dum1 = LINALG::MLMultiply(*dse, false, *invdE, false, false, false, true);
+      dinv_dse = LINALG::MLMultiply(*invdS, false, *dum1, false, false, false, true);
+
+      // inv_dev
+      Teuchos::RCP<LINALG::SparseMatrix> dum2;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dev;
+      dum2 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
+      dinv_dev = LINALG::MLMultiply(*invdE, false, *dum2, false, false, false, true);
+
+      // inv_dsv part1
+      Teuchos::RCP<LINALG::SparseMatrix> dum3;
+      Teuchos::RCP<LINALG::SparseMatrix> dum4;
+      Teuchos::RCP<LINALG::SparseMatrix> dum5;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv1;
+      dum3 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
+      dum4 = LINALG::MLMultiply(*invdE, false, *dum3, false, false, false, true);
+      dum5 = LINALG::MLMultiply(*dse, false, *dum4, false, false, false, true);
+      dinv_dsv1 = LINALG::MLMultiply(*invdS, false, *dum5, false, false, false, true);
+
+      // inv_dsv part2
+      Teuchos::RCP<LINALG::SparseMatrix> dum6;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv2;
+      dum6 = LINALG::MLMultiply(*dsv, false, *invdV, false, false, false, true);
+      dinv_dsv2 = LINALG::MLMultiply(*invdS, false, *dum6, false, false, false, true);
+
+      // diagonal entries
+      invd->Add(*invdS, false, 1.0, 1.0);
+      invd->Add(*invdE, false, 1.0, 1.0);
+      invd->Add(*invdV, false, 1.0, 1.0);
+
+      invd->Add(*dinv_dev, false, 1.0, 1.0);
+      invd->Add(*dinv_dse, false, 1.0, 1.0);
+      invd->Add(*dinv_dsv1, false, 1.0, 1.0);
+      invd->Add(*dinv_dsv2, false, 1.0, 1.0);
+
+      invd->Complete();
+    }
+    // standard inverse diagonal matrix:
+    else
+    {
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invd->ExtractDiagonalCopy(*diag);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i = 0; i < diag->MyLength(); ++i)
+        if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+
+      // scalar inversion of diagonal values
+      err = diag->Reciprocal(*diag);
+      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
+      LINALG::Export(*pgsdirichtoggle_, *lmDBC);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_, true);
+      tmp->Multiply(1., *diag, *lmDBC, 0.);
+      diag->Update(-1., *tmp, 1.);
+
+      // re-insert inverted diagonal into invd
+      err = invd->ReplaceDiagonalValues(*diag);
+      // we cannot use this check, as we deliberately replaced zero entries
+      // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+    }
+
+    invd_ = invd;
+
+    // do the multiplication mhat = inv(D) * M
+    mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
+  }
+
+  if (Dualquadslavetrafo() && lagmultquad != INPAR::MORTAR::lagmult_lin)
+  {
+    // modify dmatrix_, invd_ and mhatmatrix_
+    Teuchos::RCP<LINALG::SparseMatrix> temp2 =
+        LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+    dmatrix_ = temp2;
+    if (SystemType() == INPAR::CONTACT::system_condensed)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> temp3 =
+          LINALG::MLMultiply(*trafo_, false, *invd_, false, false, false, true);
+      Teuchos::RCP<LINALG::SparseMatrix> temp4 =
+          LINALG::MLMultiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+      invd_ = temp3;
+      mhatmatrix_ = temp4;
+    }
+  }
 
   return;
 }
@@ -3632,7 +3887,7 @@ void CONTACT::CoLagrangeStrategy::AssembleContactRHS()
     if (SystemType() != INPAR::CONTACT::system_condensed)
     {
       interface_[i]->AssembleInactiverhs(*inactiverhs_);
-      interface_[i]->AssembleTangrhs(*tangrhs_);
+      if (!Friction()) interface_[i]->AssembleTangrhs(*tangrhs_);
     }
   }
 
@@ -3652,56 +3907,49 @@ void CONTACT::CoLagrangeStrategy::EvalStrContactRHS()
 
   strcontactrhs_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
 
-  if (SystemType() != INPAR::CONTACT::system_condensed)
+  // for self contact, slave and master sets may have changed,
+  // thus we have to export the products Dold^T * zold / D^T * z to fit
+  // thus we have to export the products Mold^T * zold / M^T * z to fit
+  if (IsSelfContact())
   {
-    // for self contact, slave and master sets may have changed,
-    // thus we have to export the products Dold^T * zold / D^T * z to fit
-    // thus we have to export the products Mold^T * zold / M^T * z to fit
-    if (IsSelfContact())
-    {
-      // add contact force terms
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      Teuchos::RCP<Epetra_Vector> tempvecd = Teuchos::rcp(new Epetra_Vector(dmatrix_->DomainMap()));
-      Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
-      if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_, *zexp);
-      dmatrix_->Multiply(true, *zexp, *tempvecd);
-      LINALG::Export(*tempvecd, *fsexp);
-      strcontactrhs_->Update(-1.0, *fsexp, 1.0);
+    // add contact force terms
+    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecd = Teuchos::rcp(new Epetra_Vector(dmatrix_->DomainMap()));
+    Teuchos::RCP<Epetra_Vector> zexp = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
+    if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_, *zexp);
+    dmatrix_->Multiply(true, *zexp, *tempvecd);
+    LINALG::Export(*tempvecd, *fsexp);
+    strcontactrhs_->Update(1., *fsexp, 1.0);
 
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-      mmatrix_->Multiply(true, *zexp, *tempvecm);
-      LINALG::Export(*tempvecm, *fmexp);
-      strcontactrhs_->Update(1.0, *fmexp, 1.0);
-    }
-    // if there is no self contact everything is ok
-    else
-    {
-      // add contact force terms
-      Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      dmatrix_->Multiply(true, *z_, *fs);
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fs, *fsexp);
-      strcontactrhs_->Update(-1.0, *fsexp, 1.0);
-
-      Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-      mmatrix_->Multiply(true, *z_, *fm);
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fm, *fmexp);
-      strcontactrhs_->Update(1.0, *fmexp, 1.0);
-
-      // Check linear and angular momentum conservation
-#ifdef CHECKCONSERVATIONLAWS
-      CheckConservationLaws(*fs, *fm);
-#endif
-    }
+    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+    mmatrix_->Multiply(true, *zexp, *tempvecm);
+    LINALG::Export(*tempvecm, *fmexp);
+    strcontactrhs_->Update(-1., *fmexp, 1.0);
   }
+  // if there is no self contact everything is ok
   else
   {
-    // do nothing
+    // add contact force terms
+    Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    dmatrix_->Multiply(true, *z_, *fs);
+    //    LINALG::MLMultiply(*lindmatrix_,false,*trafo_,false,false,false,true);
+    Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fs, *fsexp);
+    strcontactrhs_->Update(+1., *fsexp, 1.0);
+
+    Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+    mmatrix_->Multiply(true, *z_, *fm);
+    Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fm, *fmexp);
+    strcontactrhs_->Update(-1., *fmexp, 1.0);
+
+    // Check linear and angular momentum conservation
+#ifdef CHECKCONSERVATIONLAWS
+    CheckConservationLaws(*fs, *fm);
+#endif
   }
 
-  strcontactrhs_->Scale(-1.0);
 
   return;
 }
@@ -3781,150 +4029,26 @@ void CONTACT::CoLagrangeStrategy::EvalForceStiff(CONTACT::ParamsInterface& cpara
   // call the evaluate force routine if not done before
   if (!evalForceCalled_) EvalForce(cparams);
 
-  // --- Assemble stiffness matrix ---------------------------------------
-  AssembleContactStiff();
-
   // bye bye
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::AssembleContactStiff()
-{
-  // check if contact contributions are present,
-  // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
-
-
-  if (SystemType() == INPAR::CONTACT::system_condensed)
-  {
-    return;
-  }
-  else
-  {
-    /**********************************************************************/
-    /* export weighted gap vector to gactiveN-map                         */
-    /**********************************************************************/
-    Teuchos::RCP<Epetra_Vector> gact;
-    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
-    {
-      gact = LINALG::CreateVector(*gactivedofs_, true);
-      if (gact->GlobalLength())
-      {
-        LINALG::Export(*g_, *gact);
-      }
-    }
-    else
-    {
-      gact = LINALG::CreateVector(*gactivenodes_, true);
-      if (gact->GlobalLength())
-      {
-        LINALG::Export(*g_, *gact);
-        gact->ReplaceMap(*gactiven_);
-      }
-    }
-    /**********************************************************************/
-    /* calculate                                                          */
-    /**********************************************************************/
-    /* build global matrix tmatrix_ with tangent vectors of active nodes  */
-    /* and global matrix nmatrix_ with normal vectors of active nodes     */
-    /* and global matrix s with normal+D+M derivatives of active nodes    */
-    /* and global matrix tderivmatrix_ with tangent derivatives           */
-    /*     of active nodes                                                */
-    /* and global matrix nderivmatrix_ with normal derivatives            */
-    /*     of active nodes                                                */
-    /* and inactive right-hand side with old lagrange multipliers (incr)  */
-    /* and tangential right-hand side (incr)                              */
-    /**********************************************************************/
-    for (int i = 0; i < (int)interface_.size(); ++i)
-    {
-      interface_[i]->AssembleTN(tmatrix_, nmatrix_);
-      interface_[i]->AssembleS(*smatrix_);
-      interface_[i]->AssembleTNderiv(tderivmatrix_, nderivmatrix_);
-      interface_[i]->AssembleLinDM(*lindmatrix_, *linmmatrix_);
-    }
-    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
-    {
-      // FillComplete() global matrix T
-      tmatrix_->Complete(*gactivedofs_, *gactivedofs_);
-
-      // FillComplete() global matrix N
-      if (nmatrix_ != Teuchos::null) nmatrix_->Complete(*gactivedofs_, *gactivedofs_);
-      smatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
-      tderivmatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
-      if (nderivmatrix_ != Teuchos::null) nderivmatrix_->Complete(*gsmdofrowmap_, *gactivedofs_);
-    }
-    else
-    {
-      // FillComplete() global matrix T
-      tmatrix_->Complete(*gactivedofs_, *gactivet_);
-
-      // FillComplete() global matrix N
-      if (nmatrix_ != Teuchos::null) nmatrix_->Complete(*gactivedofs_, *gactiven_);
-
-      // FillComplete() global matrix S
-      smatrix_->Complete(*gsmdofrowmap_, *gactiven_);
-
-      // FillComplete() global matrix Tderiv
-      // (actually gsdofrowmap_ is in general sufficient as domain map,
-      // but in the edge node modification case, master entries occur!)
-      tderivmatrix_->Complete(*gsmdofrowmap_, *gactivet_);
-
-      // FillComplete() global matrix Nderiv
-      if (nderivmatrix_ != Teuchos::null) nderivmatrix_->Complete(*gsmdofrowmap_, *gactiven_);
-    }
-
-    // FillComplete() global matrices LinD, LinM
-    // (again for linD gsdofrowmap_ is sufficient as domain map,
-    // but in the edge node modification case, master entries occur!)
-    lindmatrix_->Complete(*gsmdofrowmap_, *gsdofrowmap_);
-    linmmatrix_->Complete(*gsmdofrowmap_, *gmdofrowmap_);
-
-    //----------------------------------------------------------------------
-    // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-    //----------------------------------------------------------------------
-    // Concretely, we apply the following transformations:
-    // LinD      ---->   T^(-T) * LinD
-    //----------------------------------------------------------------------
-    if (Dualquadslavetrafo())
-    {
-      // type of LM interpolation for quadratic elements
-      INPAR::MORTAR::LagMultQuad lagmultquad =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
-
-      if (lagmultquad == INPAR::MORTAR::lagmult_lin)
-      {
-        if (ParRedist()) trafo_ = MORTAR::MatrixRowTransform(trafo_, gsmdofrowmap_);
-        lindmatrix_ = LINALG::MLMultiply(*lindmatrix_, false, *trafo_, false, false, false, true);
-        linmmatrix_ = LINALG::MLMultiply(*linmmatrix_, false, *trafo_, false, false, false, true);
-        smatrix_ = LINALG::MLMultiply(*smatrix_, false, *trafo_, false, false, false, true);
-        tderivmatrix_ =
-            LINALG::MLMultiply(*tderivmatrix_, false, *trafo_, false, false, false, true);
-      }
-      else
-      {
-        // modify lindmatrix_
-        Teuchos::RCP<LINALG::SparseMatrix> temp1 =
-            LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
-        lindmatrix_ = temp1;
-      }
-    }
-
-    // do reagularization scaling
-    if (regularized_) EvaluateRegularizationScaling(gact);
-  }
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
-  // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+  // if there are no active LM contact contributions
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  {
+    if (nonSmoothContact_ && bt == DRT::UTILS::block_displ_displ)
+      return nonsmooth_Penalty_stiff_;
+    else
+      return Teuchos::null;
+  }
+  INPAR::MORTAR::LagMultQuad lagmultquad =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
@@ -3934,8 +4058,10 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
       mat_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
       // build matrix kdd
-      mat_ptr->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
-      mat_ptr->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
+      mat_ptr->Add(*lindmatrix_, false, 1.0, 1.0);
+      mat_ptr->Add(*linmmatrix_, false, 1.0, 1.0);
+      if (nonSmoothContact_ && !nonsmooth_Penalty_stiff_.is_null())
+        mat_ptr->Add(*nonsmooth_Penalty_stiff_, false, 1.0, 1.0);
       mat_ptr->Complete();
 
       // transform parallel row/column distribution of matrix kdd
@@ -3943,6 +4069,16 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
       if (ParRedist())
         mat_ptr = MORTAR::MatrixRowColTransform(
             mat_ptr, SlMaDoFRowMapPtr(false), SlMaDoFRowMapPtr(false));
+
+      Teuchos::RCP<LINALG::SparseMatrix> full_mat_ptr =
+          Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
+      full_mat_ptr->Add(*mat_ptr, false, 1., 1.);
+      full_mat_ptr->Complete();
+      if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
+        full_mat_ptr =
+            LINALG::MLMultiply(*invsystrafo_, true, *full_mat_ptr, false, false, false, true);
+
+      mat_ptr = full_mat_ptr;
 
       break;
     }
@@ -3952,8 +4088,8 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
       Teuchos::RCP<LINALG::SparseMatrix> kdz_ptr =
           Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_, 100, false, true));
 
-      kdz_ptr->Add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-      kdz_ptr->Add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+      kdz_ptr->Add(*dmatrix_, true, 1.0, 1.0);
+      kdz_ptr->Add(*mmatrix_, true, -1.0, 1.0);
       kdz_ptr->Complete(*gsdofrowmap_, *gdisprowmap_);
 
       // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
@@ -3972,20 +4108,22 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
       Teuchos::RCP<LINALG::SparseMatrix> kzd_ptr =
           Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true), 100, false, true));
 
-
       // build constraint matrix kzd
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (gactiven_->NumGlobalElements())
       {
-        if (gactivedofs_->NumGlobalElements())
+        kzd_ptr->Add(*smatrix_, false, 1.0, 1.0);
+
+        // frictionless contact
+        if (!Friction()) kzd_ptr->Add(*tderivmatrix_, false, 1.0, 1.0);
+
+        // frictional contact
+        else
         {
-          kzd_ptr->Add(*smatrix_, false, 1.0, 1.0);
-          kzd_ptr->Add(*tderivmatrix_, false, 1.0, 1.0);
+          //          if (gslipnodes_->NumGlobalElements())
+          kzd_ptr->Add(*linslipDIS_, false, 1.0, 1.0);
+          //          if (gslipnodes_->NumGlobalElements()!=gactivenodes_->NumGlobalElements())
+          kzd_ptr->Add(*linstickDIS_, false, 1.0, 1.0);
         }
-      }
-      else
-      {
-        if (gactiven_->NumGlobalElements()) kzd_ptr->Add(*smatrix_, false, 1.0, 1.0);
-        if (gactivet_->NumGlobalElements()) kzd_ptr->Add(*tderivmatrix_, false, 1.0, 1.0);
       }
       kzd_ptr->Complete(*gdisprowmap_, *gsdofrowmap_);
 
@@ -3996,7 +4134,6 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
       // (only necessary in the parallel redistribution case)
       if (ParRedist() or IsSelfContact())
         mat_ptr = MORTAR::MatrixRowColTransform(mat_ptr, LinSystemLMDoFRowMapPtr(), ProblemDofs());
-
       break;
     }
     case DRT::UTILS::block_lm_lm:
@@ -4026,7 +4163,16 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       // build constraint matrix kzz
       if (gidofs->NumGlobalElements()) kzz_ptr->Add(*onesdiag, false, 1.0, 1.0);
-      if (gactivet_->NumGlobalElements()) kzz_ptr->Add(*tmatrix_, false, 1.0, 1.0);
+
+      if (!Friction())
+      {
+        if (gactivet_->NumGlobalElements()) kzz_ptr->Add(*tmatrix_, false, 1.0, 1.0);
+      }
+      else
+      {
+        kzz_ptr->Add(*linslipLM_, false, 1., 1.);
+        kzz_ptr->Add(*linstickLM_, false, 1., 1.);
+      }
 
       // transform constraint matrix kzz to lmdofmap
       if (IsSelfContact())
@@ -4063,438 +4209,10 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetCondensedMatrixBlockPtr(
-    Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const
-{
-  // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
-
-  /**********************************************************************/
-  /* (2) Add contact stiffness terms to kteff                           */
-  /**********************************************************************/
-
-  // transform if necessary
-  if (ParRedist())
-  {
-    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
-  }
-
-  kteff->UnComplete();
-  kteff->Add(*lindmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Add(*linmmatrix_, false, 1.0 - alphaf_, 1.0);
-  kteff->Complete();
-
-  /**********************************************************************/
-  /* (3) Split kteff into 3x3 matrix blocks                             */
-  /**********************************************************************/
-
-  // abbreviations for slave  and master set
-  const int sset = gsdofrowmap_->NumGlobalElements();
-
-  // we want to split k into 3 groups s,m,n = 9 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
-
-  // temporarily we need the blocks ksmsm, ksmn, knsm
-  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
-
-  // split into slave/master part + structure part
-  Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix =
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-  if (ParRedist())
-  {
-    // split and transform to redistributed maps
-    LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_, gndofrowmap_,
-        ksmsm, ksmn, knsm, knn);
-    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
-    ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
-    knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
-  }
-  else
-  {
-    // only split, no need to transform
-    LINALG::SplitMatrix2x2(kteffmatrix, gsmdofrowmap_, gndofrowmap_, gsmdofrowmap_, gndofrowmap_,
-        ksmsm, ksmn, knsm, knn);
-  }
-
-  // further splits into slave part + master part
-  LINALG::SplitMatrix2x2(
-      ksmsm, gsdofrowmap_, gmdofrowmap_, gsdofrowmap_, gmdofrowmap_, kss, ksm, kms, kmm);
-  LINALG::SplitMatrix2x2(
-      ksmn, gsdofrowmap_, gmdofrowmap_, gndofrowmap_, tempmap, ksn, tempmtx1, kmn, tempmtx2);
-  LINALG::SplitMatrix2x2(
-      knsm, gndofrowmap_, tempmap, gsdofrowmap_, gmdofrowmap_, kns, knm, tempmtx1, tempmtx2);
-
-  /**********************************************************************/
-  /* (5) Split slave quantities into active / inactive                  */
-  /**********************************************************************/
-
-  // we want to split kssmod into 2 groups a,i = 4 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
-
-  // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
-
-  // we will get the i rowmap as a by-product
-  Teuchos::RCP<Epetra_Map> gidofs;
-
-  // do the splitting
-  LINALG::SplitMatrix2x2(kss, gactivedofs_, gidofs, gactivedofs_, gidofs, kaa, kai, kia, kii);
-  LINALG::SplitMatrix2x2(
-      ksn, gactivedofs_, gidofs, gndofrowmap_, tempmap, kan, tempmtx1, kin, tempmtx2);
-  LINALG::SplitMatrix2x2(
-      ksm, gactivedofs_, gidofs, gmdofrowmap_, tempmap, kam, tempmtx1, kim, tempmtx2);
-  LINALG::SplitMatrix2x2(
-      kms, gmdofrowmap_, tempmap, gactivedofs_, gidofs, kma, kmi, tempmtx1, tempmtx2);
-
-  // abbreviations for active and inactive set
-  const int aset = gactivedofs_->NumGlobalElements();
-  const int iset = ginactivedofs_->NumGlobalElements();
-
-  // we want to split fsmod into 2 groups a,i
-  Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-  Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*ginactivedofs_));
-
-  /**********************************************************************/
-  /* (6) Isolate necessary parts from invd and mhatmatrix               */
-  /**********************************************************************/
-
-  // active part of invd
-  Teuchos::RCP<LINALG::SparseMatrix> invda;
-  LINALG::SplitMatrix2x2(invd_, gactivedofs_, ginactivedofs_, gactivedofs_, ginactivedofs_, invda,
-      tempmtx1, tempmtx2, tempmtx3);
-
-  // coupling part of dmatrix (only nonzero for 3D quadratic case!)
-  Teuchos::RCP<LINALG::SparseMatrix> dai;
-  LINALG::SplitMatrix2x2(dmatrix_, gactivedofs_, ginactivedofs_, gactivedofs_, ginactivedofs_,
-      tempmtx1, dai, tempmtx2, tempmtx3);
-
-  // do the multiplication dhat = invda * dai
-  Teuchos::RCP<LINALG::SparseMatrix> dhat =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
-  if (aset && iset) dhat = LINALG::MLMultiply(*invda, false, *dai, false, false, false, true);
-  dhat->Complete(*ginactivedofs_, *gactivedofs_);
-
-  // active part of mmatrix
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixa;
-  LINALG::SplitMatrix2x2(mmatrix_, gactivedofs_, ginactivedofs_, gmdofrowmap_, tempmap, mmatrixa,
-      tempmtx1, tempmtx2, tempmtx3);
-
-  // do the multiplication mhataam = invda * mmatrixa
-  // (this is only different from mhata for 3D quadratic case!)
-  Teuchos::RCP<LINALG::SparseMatrix> mhataam =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
-  if (aset) mhataam = LINALG::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
-  mhataam->Complete(*gmdofrowmap_, *gactivedofs_);
-
-  // for the case without full linearization, we still need the
-  // "classical" active part of mhat, which is isolated here
-  Teuchos::RCP<LINALG::SparseMatrix> mhata;
-  LINALG::SplitMatrix2x2(mhatmatrix_, gactivedofs_, ginactivedofs_, gmdofrowmap_, tempmap, mhata,
-      tempmtx1, tempmtx2, tempmtx3);
-
-  // scaling of invd and dai
-  invda->Scale(1 / (1 - alphaf_));
-  dai->Scale(1 - alphaf_);
-
-  /**********************************************************************/
-  /* (7) Build the final K blocks                                       */
-  /**********************************************************************/
-
-  //----------------------------------------------------------- FIRST LINE
-  // knn: nothing to do
-
-  // knm: nothing to do
-
-  // kns: nothing to do
-
-  //---------------------------------------------------------- SECOND LINE
-  // kmn: add T(mhataam)*kan
-  Teuchos::RCP<LINALG::SparseMatrix> kmnmod =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
-  kmnmod->Add(*kmn, false, 1.0, 1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> kmnadd =
-      LINALG::MLMultiply(*mhataam, true, *kan, false, false, false, true);
-  kmnmod->Add(*kmnadd, false, 1.0, 1.0);
-  kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
-
-  // kmm: add T(mhataam)*kam
-  Teuchos::RCP<LINALG::SparseMatrix> kmmmod =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
-  kmmmod->Add(*kmm, false, 1.0, 1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> kmmadd =
-      LINALG::MLMultiply(*mhataam, true, *kam, false, false, false, true);
-  kmmmod->Add(*kmmadd, false, 1.0, 1.0);
-  kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
-
-  // kmi: add T(mhataam)*kai
-  Teuchos::RCP<LINALG::SparseMatrix> kmimod;
-  if (iset)
-  {
-    kmimod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
-    kmimod->Add(*kmi, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmiadd =
-        LINALG::MLMultiply(*mhataam, true, *kai, false, false, false, true);
-    kmimod->Add(*kmiadd, false, 1.0, 1.0);
-    kmimod->Complete(kmi->DomainMap(), kmi->RowMap());
-  }
-
-  // kma: add T(mhataam)*kaa
-  Teuchos::RCP<LINALG::SparseMatrix> kmamod;
-  if (aset)
-  {
-    kmamod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
-    kmamod->Add(*kma, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmaadd =
-        LINALG::MLMultiply(*mhataam, true, *kaa, false, false, false, true);
-    kmamod->Add(*kmaadd, false, 1.0, 1.0);
-    kmamod->Complete(kma->DomainMap(), kma->RowMap());
-  }
-
-
-  //----------------------------------------------------------- THIRD LINE
-  //------------------- FOR 3D QUADRATIC CASE ----------------------------
-  // kin: subtract T(dhat)*kan --
-  Teuchos::RCP<LINALG::SparseMatrix> kinmod =
-      Teuchos::rcp(new LINALG::SparseMatrix(*ginactivedofs_, 100));
-  kinmod->Add(*kin, false, 1.0, 1.0);
-  std::cout << "first" << std::endl;
-  if (aset && iset)
-  {
-    Teuchos::RCP<LINALG::SparseMatrix> kinadd =
-        LINALG::MLMultiply(*dhat, true, *kan, false, false, false, true);
-    kinmod->Add(*kinadd, false, -1.0, 1.0);
-  }
-  kinmod->Complete(kin->DomainMap(), kin->RowMap());
-
-
-  // kim: subtract T(dhat)*kam
-  Teuchos::RCP<LINALG::SparseMatrix> kimmod =
-      Teuchos::rcp(new LINALG::SparseMatrix(*ginactivedofs_, 100));
-  kimmod->Add(*kim, false, 1.0, 1.0);
-  if (aset && iset)
-  {
-    Teuchos::RCP<LINALG::SparseMatrix> kimadd =
-        LINALG::MLMultiply(*dhat, true, *kam, false, false, false, true);
-    kimmod->Add(*kimadd, false, -1.0, 1.0);
-  }
-  kimmod->Complete(kim->DomainMap(), kim->RowMap());
-
-
-  // kii: subtract T(dhat)*kai
-  Teuchos::RCP<LINALG::SparseMatrix> kiimod;
-  if (iset)
-  {
-    kiimod = Teuchos::rcp(new LINALG::SparseMatrix(*ginactivedofs_, 100));
-    kiimod->Add(*kii, false, 1.0, 1.0);
-    if (aset)
-    {
-      Teuchos::RCP<LINALG::SparseMatrix> kiiadd =
-          LINALG::MLMultiply(*dhat, true, *kai, false, false, false, true);
-      kiimod->Add(*kiiadd, false, -1.0, 1.0);
-    }
-    kiimod->Complete(kii->DomainMap(), kii->RowMap());
-  }
-
-
-  // kia: subtract T(dhat)*kaa
-  Teuchos::RCP<LINALG::SparseMatrix> kiamod;
-  if (iset && aset)
-  {
-    kiamod = Teuchos::rcp(new LINALG::SparseMatrix(*ginactivedofs_, 100));
-    kiamod->Add(*kia, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kiaadd =
-        LINALG::MLMultiply(*dhat, true, *kaa, false, false, false, true);
-    kiamod->Add(*kiaadd, false, -1.0, 1.0);
-    kiamod->Complete(kia->DomainMap(), kia->RowMap());
-  }
-
-
-  //---------------------------------------------------------- FOURTH LINE
-  // nothing to do - execpt its regularized contact see --> DoRegularizationScaling()
-
-  //----------------------------------------------------------- FIFTH LINE
-  // kan: multiply tmatrix with invda and kan
-  Teuchos::RCP<LINALG::SparseMatrix> kanmod;
-  if (aset)
-  {
-    kanmod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
-    kanmod = LINALG::MLMultiply(*kanmod, false, *kan, false, false, false, true);
-  }
-
-  // kam: multiply tmatrix with invda and kam
-  Teuchos::RCP<LINALG::SparseMatrix> kammod;
-  if (aset)
-  {
-    kammod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
-    kammod = LINALG::MLMultiply(*kammod, false, *kam, false, false, false, true);
-  }
-
-  // kai: multiply tmatrix with invda and kai
-  Teuchos::RCP<LINALG::SparseMatrix> kaimod;
-  if (aset && iset)
-  {
-    kaimod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
-    kaimod = LINALG::MLMultiply(*kaimod, false, *kai, false, false, false, true);
-  }
-
-  // kaa: multiply tmatrix with invda and kaa
-  Teuchos::RCP<LINALG::SparseMatrix> kaamod;
-  if (aset)
-  {
-    kaamod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
-    kaamod = LINALG::MLMultiply(*kaamod, false, *kaa, false, false, false, true);
-  }
-
-  /********************************************************************/
-  /* (9) Transform the final K blocks                                 */
-  /********************************************************************/
-  // The row maps of all individual matrix blocks are transformed to
-  // the parallel layout of the underlying problem discretization.
-  // Of course, this is only necessary in the parallel redistribution
-  // case, where the contact interfaces have been redistributed
-  // independently of the underlying problem discretization.
-
-  //  if (ParRedist())
-  //  {
-  //    //----------------------------------------------------------- FIRST LINE
-  //    // nothing to do (ndof-map independent of redistribution)
-  //
-  //    //---------------------------------------------------------- SECOND LINE
-  //    kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-  //    kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-  //    if (iset) kmimod = MORTAR::MatrixRowTransform(kmimod,pgmdofrowmap_);
-  //    if (aset) kmamod = MORTAR::MatrixRowTransform(kmamod,pgmdofrowmap_);
-  //
-  //    //----------------------------------------------------------- THIRD LINE
-  //    if (iset)
-  //    {
-  //      kinmod = MORTAR::MatrixRowTransform(kinmod,pgsdofrowmap_);
-  //      kimmod = MORTAR::MatrixRowTransform(kimmod,pgsdofrowmap_);
-  //      kiimod = MORTAR::MatrixRowTransform(kiimod,pgsdofrowmap_);
-  //      if (aset) kiamod = MORTAR::MatrixRowTransform(kiamod,pgsdofrowmap_);
-  //    }
-  //
-  //    //---------------------------------------------------------- FOURTH LINE
-  //    if (aset) smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-  //
-  //    //----------------------------------------------------------- FIFTH LINE
-  //    if (aset)
-  //    {
-  //      kanmod = MORTAR::MatrixRowTransform(kanmod,pgsdofrowmap_);
-  //      kammod = MORTAR::MatrixRowTransform(kammod,pgsdofrowmap_);
-  //      kaamod = MORTAR::MatrixRowTransform(kaamod,pgsdofrowmap_);
-  //      if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
-  //      tderivmatrix_ = MORTAR::MatrixRowTransform(tderivmatrix_,pgsdofrowmap_);
-  //    }
-  //  }
-
-  /**********************************************************************/
-  /* (10) Global setup of kteffnew (including contact)                  */
-  /**********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(
-      new LINALG::SparseMatrix(*ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
-
-  //----------------------------------------------------------- FIRST LINE
-  // add n submatrices to kteffnew
-  kteffnew->Add(*knn, false, 1.0, 1.0);
-  kteffnew->Add(*knm, false, 1.0, 1.0);
-  if (sset) kteffnew->Add(*kns, false, 1.0, 1.0);
-
-  //---------------------------------------------------------- SECOND LINE
-  // add m submatrices to kteffnew
-  kteffnew->Add(*kmnmod, false, 1.0, 1.0);
-  kteffnew->Add(*kmmmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kmimod, false, 1.0, 1.0);
-  if (aset) kteffnew->Add(*kmamod, false, 1.0, 1.0);
-
-  //----------------------------------------------------------- THIRD LINE
-  // add i submatrices to kteffnew
-  if (iset) kteffnew->Add(*kinmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kimmod, false, 1.0, 1.0);
-  if (iset) kteffnew->Add(*kiimod, false, 1.0, 1.0);
-  if (iset && aset) kteffnew->Add(*kiamod, false, 1.0, 1.0);
-
-  //---------------------------------------------------------- FOURTH LINE
-  // add a submatrices to kteffnew
-  if (aset) kteffnew->Add(*smatrix_, false, 1.0, 1.0);
-
-  //----------------------------------------------------------- FIFTH LINE
-  // add a submatrices to kteffnew
-  if (aset) kteffnew->Add(*kanmod, false, 1.0, 1.0);
-  if (aset) kteffnew->Add(*kammod, false, 1.0, 1.0);
-  if (aset && iset) kteffnew->Add(*kaimod, false, 1.0, 1.0);
-  if (aset) kteffnew->Add(*kaamod, false, 1.0, 1.0);
-  if (aset) kteffnew->Add(*tderivmatrix_, false, -1.0, 1.0);
-
-  // FillComplete kteffnew (square)
-  kteffnew->Complete();
-
-
-  return kteffnew;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  if (SystemType() == INPAR::CONTACT::system_condensed)
-  {
-    if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
-
-    // extract slave displacements from disi
-    Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(dir, *disis);
-
-    // extract master displacements from disi
-    Teuchos::RCP<Epetra_Vector> disim = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    if (gmdofrowmap_->NumGlobalElements()) LINALG::Export(dir, *disim);
-
-    // extract other displacements from disi
-    Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
-    if (gndofrowmap_->NumGlobalElements()) LINALG::Export(dir, *disin);
-
-    // condensation has been performed for active LM only,
-    // thus we construct a modified invd matrix here which
-    // only contains the active diagonal block
-    // (this automatically renders the incative LM to be zero)
-    Teuchos::RCP<LINALG::SparseMatrix> invda;
-    Teuchos::RCP<Epetra_Map> tempmap;
-    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
-    LINALG::SplitMatrix2x2(
-        invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
-    Teuchos::RCP<LINALG::SparseMatrix> invdmod =
-        Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
-    invdmod->Add(*invda, false, 1.0, 1.0);
-    invdmod->Complete();
-
-    // full update
-    z_->Update(1.0, *fs_, 0.0);
-    Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    kss_->Multiply(false, *disis, *mod);
-    z_->Update(-1.0, *mod, 1.0);
-    ksm_->Multiply(false, *disim, *mod);
-    z_->Update(-1.0, *mod, 1.0);
-    ksn_->Multiply(false, *disin, *mod);
-    z_->Update(-1.0, *mod, 1.0);
-    dold_->Multiply(true, *zold_, *mod);
-    z_->Update(-alphaf_, *mod, 1.0);
-    Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
-    invdmod->Multiply(true, *zcopy, *z_);
-    z_->Scale(1 / (1 - alphaf_));
-
-    //    // store updated LM into nodes
-    //    StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
-  }
-  else
+  if (SystemType() != INPAR::CONTACT::system_condensed)
   {
     if (LMDoFRowMap(true).NumGlobalElements() > 0)
     {
@@ -4520,21 +4238,46 @@ void CONTACT::CoLagrangeStrategy::RunPostComputeX(const CONTACT::ParamsInterface
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bt) const
 {
-  // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
+  // if there are no active LM contact contributions
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  {
+    if (nonSmoothContact_ && bt == DRT::UTILS::block_displ)
+    {
+      return nonsmooth_Penalty_force_;
+    }
+    else
+      return Teuchos::null;
+  }
 
-  Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
     case DRT::UTILS::block_displ:
     {
-      vec_ptr = strcontactrhs_;
+      if (nonSmoothContact_ && nonsmooth_Penalty_force_ != Teuchos::null)
+      {
+        vec_ptr = Teuchos::rcp(new Epetra_Vector(*nonsmooth_Penalty_force_));
+      }
+
+      if (vec_ptr == Teuchos::null)
+        vec_ptr = strcontactrhs_;
+      else if (strcontactrhs_ != Teuchos::null)
+        vec_ptr->Update(1., *strcontactrhs_, 1.);
+
+      Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+      if (Dualquadslavetrafo() && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+                                      Params(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin)
+      {
+        invsystrafo_->Multiply(true, *vec_ptr, *tmp);
+        vec_ptr = tmp;
+      }
+
       break;
     }
     case DRT::UTILS::block_constraint:
     {
       vec_ptr = constrrhs_;
-      if (IsSelfContact())
+      if (IsSelfContact() && !IsCondensedSystem())
       {
         static Teuchos::RCP<Epetra_Vector> tmp_ptr =
             Teuchos::rcp(new Epetra_Vector(LinSystemLMDoFRowMap(), false));
@@ -4557,425 +4300,27 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetCondensedRhsPtr(
-    Epetra_Vector& f, const double& timefac_np) const
-{
-  f.Scale(-1.0);
-
-  // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return Teuchos::null;
-
-  /**********************************************************************/
-  /* export weighted gap vector to gactiveN-map                         */
-  /**********************************************************************/
-  Teuchos::RCP<Epetra_Vector> gact;
-  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
-  {
-    gact = LINALG::CreateVector(*gactivedofs_, true);
-    if (gact->GlobalLength())
-    {
-      LINALG::Export(*g_, *gact);
-    }
-  }
-  else
-  {
-    gact = LINALG::CreateVector(*gactivenodes_, true);
-    if (gact->GlobalLength())
-    {
-      LINALG::Export(*g_, *gact);
-      gact->ReplaceMap(*gactiven_);
-    }
-  }
-
-  /**********************************************************************/
-  /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
-  /**********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
-
-  // for nonsmooth contact inverting D is more complex:
-  // Note: this invertation if only applicable when vertex, edge and surface nodes
-  // are involved. For a falling coin (only surface and edge nodes), a special but
-  // more easy implementation is needed.
-  if (nonSmoothContact_)
-  {
-    // 1. split d matrix in vertex edge and surf part
-    Teuchos::RCP<LINALG::SparseMatrix> dss, dsev, devs, devev;
-    Teuchos::RCP<Epetra_Map> gEVdofs;  // merged edge and vertex dofs
-
-    // get dss
-    LINALG::SplitMatrix2x2(
-        dmatrix_, gsdofSurf_, gEVdofs, gsdofSurf_, gEVdofs, dss, dsev, devs, devev);
-
-    // get dse and dsv
-    Teuchos::RCP<Epetra_Map> temp;
-    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2;
-    Teuchos::RCP<LINALG::SparseMatrix> dse, dsv;
-
-    LINALG::SplitMatrix2x2(
-        dsev, gsdofSurf_, temp, gsdofEdge_, gsdofVertex_, dse, dsv, tempmtx1, tempmtx2);
-
-    // get dee dev dve dvv
-    Teuchos::RCP<LINALG::SparseMatrix> dee, dev, dve, dvv;
-    LINALG::SplitMatrix2x2(
-        devev, gsdofEdge_, gsdofVertex_, gsdofEdge_, gsdofVertex_, dee, dev, dve, dvv);
-
-    // 2. invert diagonal matrices dss dee dvv
-    Teuchos::RCP<Epetra_Vector> diagV = LINALG::CreateVector(*gsdofVertex_, true);
-    Teuchos::RCP<Epetra_Vector> diagE = LINALG::CreateVector(*gsdofEdge_, true);
-    Teuchos::RCP<Epetra_Vector> diagS = LINALG::CreateVector(*gsdofSurf_, true);
-    Teuchos::RCP<LINALG::SparseMatrix> invdV = Teuchos::rcp(new LINALG::SparseMatrix(*dvv));
-    Teuchos::RCP<LINALG::SparseMatrix> invdE = Teuchos::rcp(new LINALG::SparseMatrix(*dee));
-    Teuchos::RCP<LINALG::SparseMatrix> invdS = Teuchos::rcp(new LINALG::SparseMatrix(*dss));
-
-    int err = 0;
-
-    // extract diagonal of invd into diag
-    invdV->ExtractDiagonalCopy(*diagV);
-    invdE->ExtractDiagonalCopy(*diagE);
-    invdS->ExtractDiagonalCopy(*diagS);
-
-    // set zero diagonal values to dummy 1.0
-    for (int i = 0; i < diagV->MyLength(); ++i)
-      if (abs((*diagV)[i]) < 1e-12) (*diagV)[i] = 1.0;
-    for (int i = 0; i < diagE->MyLength(); ++i)
-      if (abs((*diagE)[i]) < 1e-12) (*diagE)[i] = 1.0;
-    for (int i = 0; i < diagS->MyLength(); ++i)
-      if (abs((*diagS)[i]) < 1e-12) (*diagS)[i] = 1.0;
-
-    // scalar inversion of diagonal values
-    err = diagV->Reciprocal(*diagV);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = diagE->Reciprocal(*diagE);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = diagS->Reciprocal(*diagS);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    // re-insert inverted diagonal into invd
-    err = invdV->ReplaceDiagonalValues(*diagV);
-    // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = invdE->ReplaceDiagonalValues(*diagE);
-    // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-    err = invdS->ReplaceDiagonalValues(*diagS);
-    // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    // 3. multiply all sub matrices
-    invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
-
-    dse->Scale(-1.0);
-    dsv->Scale(-1.0);
-    dev->Scale(-1.0);
-
-    // inv_dse
-    Teuchos::RCP<LINALG::SparseMatrix> dum1;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dse;
-    dum1 = LINALG::MLMultiply(*dse, false, *invdE, false, false, false, true);
-    dinv_dse = LINALG::MLMultiply(*invdS, false, *dum1, false, false, false, true);
-
-    // inv_dev
-    Teuchos::RCP<LINALG::SparseMatrix> dum2;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dev;
-    dum2 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
-    dinv_dev = LINALG::MLMultiply(*invdE, false, *dum2, false, false, false, true);
-
-    // inv_dsv part1
-    Teuchos::RCP<LINALG::SparseMatrix> dum3;
-    Teuchos::RCP<LINALG::SparseMatrix> dum4;
-    Teuchos::RCP<LINALG::SparseMatrix> dum5;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv1;
-    dum3 = LINALG::MLMultiply(*dev, false, *invdV, false, false, false, true);
-    dum4 = LINALG::MLMultiply(*invdE, false, *dum3, false, false, false, true);
-    dum5 = LINALG::MLMultiply(*dse, false, *dum4, false, false, false, true);
-    dinv_dsv1 = LINALG::MLMultiply(*invdS, false, *dum5, false, false, false, true);
-
-    // inv_dsv part2
-    Teuchos::RCP<LINALG::SparseMatrix> dum6;
-    Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv2;
-    dum6 = LINALG::MLMultiply(*dsv, false, *invdV, false, false, false, true);
-    dinv_dsv2 = LINALG::MLMultiply(*invdS, false, *dum6, false, false, false, true);
-
-    // diagonal entries
-    invd->Add(*invdS, false, 1.0, 1.0);
-    invd->Add(*invdE, false, 1.0, 1.0);
-    invd->Add(*invdV, false, 1.0, 1.0);
-
-    invd->Add(*dinv_dev, false, 1.0, 1.0);
-    invd->Add(*dinv_dse, false, 1.0, 1.0);
-    invd->Add(*dinv_dsv1, false, 1.0, 1.0);
-    invd->Add(*dinv_dsv2, false, 1.0, 1.0);
-
-    invd->Complete();
-  }
-  // standard inverse diagonal matrix:
-  else
-  {
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
-    int err = 0;
-
-    // extract diagonal of invd into diag
-    invd->ExtractDiagonalCopy(*diag);
-
-    // set zero diagonal values to dummy 1.0
-    for (int i = 0; i < diag->MyLength(); ++i)
-      if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
-
-    // scalar inversion of diagonal values
-    err = diag->Reciprocal(*diag);
-    if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
-    LINALG::Export(*pgsdirichtoggle_, *lmDBC);
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_, true);
-    tmp->Multiply(1., *diag, *lmDBC, 0.);
-    diag->Update(-1., *tmp, 1.);
-
-    // re-insert inverted diagonal into invd
-    err = invd->ReplaceDiagonalValues(*diag);
-    // we cannot use this check, as we deliberately replaced zero entries
-    // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
-  }
-
-  /**********************************************************************/
-  /* (4) Split feff into 3 subvectors                                   */
-  /**********************************************************************/
-
-  // we want to split f into 3 groups s.m,n
-  Teuchos::RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  Teuchos::RCP<Epetra_Vector> fsm;
-
-  // do the vector splitting smn -> sm+n
-  if (ParRedist())
-  {
-    // split and transform to redistributed maps
-    LINALG::SplitVector(*ProblemDofs(), f, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
-    Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-    LINALG::Export(*fsm, *fsmtemp);
-    fsm = fsmtemp;
-  }
-  else
-  {
-    // only split, no need to transform
-    LINALG::SplitVector(*ProblemDofs(), f, gsmdofrowmap_, fsm, gndofrowmap_, fn);
-  }
-
-  // we want to split fsm into 2 groups s,m
-  fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
-
-  /**********************************************************************/
-  /* (5) Split slave quantities into active / inactive                  */
-  /**********************************************************************/
-
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
-
-  // we want to split kssmod into 2 groups a,i = 4 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
-
-  // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
-
-  // abbreviations for active and inactive set
-  const int aset = gactivedofs_->NumGlobalElements();
-  const int iset = ginactivedofs_->NumGlobalElements();
-
-  // we want to split fsmod into 2 groups a,i
-  Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-  Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*ginactivedofs_));
-
-  // do the vector splitting s -> a+i
-  LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, ginactivedofs_, fi);
-
-  /**********************************************************************/
-  /* (6) Isolate necessary parts from invd and mhatmatrix               */
-  /**********************************************************************/
-
-  // active part of invd
-  Teuchos::RCP<LINALG::SparseMatrix> invda;
-  LINALG::SplitMatrix2x2(invd_, gactivedofs_, ginactivedofs_, gactivedofs_, ginactivedofs_, invda,
-      tempmtx1, tempmtx2, tempmtx3);
-
-  // coupling part of dmatrix (only nonzero for 3D quadratic case!)
-  Teuchos::RCP<LINALG::SparseMatrix> dai;
-  LINALG::SplitMatrix2x2(dmatrix_, gactivedofs_, ginactivedofs_, gactivedofs_, ginactivedofs_,
-      tempmtx1, dai, tempmtx2, tempmtx3);
-
-  // do the multiplication dhat = invda * dai
-  Teuchos::RCP<LINALG::SparseMatrix> dhat =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
-  if (aset && iset) dhat = LINALG::MLMultiply(*invda, false, *dai, false, false, false, true);
-  dhat->Complete(*ginactivedofs_, *gactivedofs_);
-
-  // active part of mmatrix
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixa;
-  LINALG::SplitMatrix2x2(mmatrix_, gactivedofs_, ginactivedofs_, gmdofrowmap_, tempmap, mmatrixa,
-      tempmtx1, tempmtx2, tempmtx3);
-
-  // do the multiplication mhataam = invda * mmatrixa
-  // (this is only different from mhata for 3D quadratic case!)
-  Teuchos::RCP<LINALG::SparseMatrix> mhataam =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
-  if (aset) mhataam = LINALG::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
-  mhataam->Complete(*gmdofrowmap_, *gactivedofs_);
-
-  // for the case without full linearization, we still need the
-  // "classical" active part of mhat, which is isolated here
-  Teuchos::RCP<LINALG::SparseMatrix> mhata;
-  LINALG::SplitMatrix2x2(mhatmatrix_, gactivedofs_, ginactivedofs_, gmdofrowmap_, tempmap, mhata,
-      tempmtx1, tempmtx2, tempmtx3);
-
-  // scaling of invd and dai
-  invda->Scale(1 / (1 - alphaf_));
-  dai->Scale(1 - alphaf_);
-
-  /**********************************************************************/
-  /* (8) Build the final f blocks                                       */
-  /**********************************************************************/
-
-  //----------------------------------------------------------- FIRST LINE
-  // fn: nothing to do
-
-  //---------------------------------------------------------- SECOND LINE
-  // fm: add alphaf * old contact forces (t_n)
-  // for self contact, slave and master sets may have changed,
-  // thus we have to export the product Mold^T * zold to fit
-  Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  mold_->Multiply(true, *zold_, *tempvecm);
-  fm->Update(alphaf_, *tempvecm, 1.0);
-
-  // fs: prepare alphaf * old contact forces (t_n)
-  Teuchos::RCP<Epetra_Vector> fsadd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-
-  dold_->Multiply(true, *zold_, *fsadd);
-
-  // fa: subtract alphaf * old contact forces (t_n)
-  if (aset)
-  {
-    Teuchos::RCP<Epetra_Vector> faadd = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-    LINALG::Export(*fsadd, *faadd);
-    fa->Update(-alphaf_, *faadd, 1.0);
-  }
-
-  // fm: add T(mhat)*fa
-  Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  if (aset) mhataam->Multiply(true, *fa, *fmmod);
-  fmmod->Update(1.0, *fm, 1.0);
-
-  //----------------------------------------------------------- THIRD LINE
-  // fi: subtract alphaf * old contact forces (t_n)
-  if (iset)
-  {
-    Teuchos::RCP<Epetra_Vector> fiadd = Teuchos::rcp(new Epetra_Vector(*ginactivedofs_));
-    LINALG::Export(*fsadd, *fiadd);
-    fi->Update(-alphaf_, *fiadd, 1.0);
-  }
-
-  // fi: add T(dhat)*fa
-  Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*ginactivedofs_));
-  if (iset && aset) dhat->Multiply(true, *fa, *fimod);
-  fimod->Update(1.0, *fi, -1.0);
-
-  //---------------------------------------------------------- FOURTH LINE
-  // gactive: nothing to do  - execpt its regularized contact see --> DoRegularizationScaling()
-
-  //----------------------------------------------------------- FIFTH LINE
-  // fa: multiply tmatrix with invda and fa
-  Teuchos::RCP<Epetra_Vector> famod;
-  Teuchos::RCP<LINALG::SparseMatrix> tinvda;
-  if (aset)
-  {
-    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
-      famod = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-    else
-      famod = Teuchos::rcp(new Epetra_Vector(*gactivet_));
-
-    tinvda = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
-    tinvda->Multiply(false, *fa, *famod);
-  }
-
-
-  Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*ProblemDofs());
-
-  /**********************************************************************/
-  /* (11) Global setup of feffnew (including contact)                   */
-  /**********************************************************************/
-
-  //----------------------------------------------------------- FIRST LINE
-  // add n subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fn, *fnexp);
-  feffnew->Update(1.0, *fnexp, 1.0);
-
-  //---------------------------------------------------------- SECOND LINE
-  // add m subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fmmod, *fmmodexp);
-  feffnew->Update(1.0, *fmmodexp, 1.0);
-
-  //----------------------------------------------------------- THIRD LINE
-  // add i subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> fimodexp;
-  if (iset)
-  {
-    fimodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*fimod, *fimodexp);
-    feffnew->Update(1.0, *fimodexp, 1.0);
-  }
-
-  //---------------------------------------------------------- FOURTH LINE
-  // add weighted gap vector to feffnew, if existing
-  Teuchos::RCP<Epetra_Vector> gexp;
-  if (aset)
-  {
-    gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*gact, *gexp);
-    feffnew->Update(-1.0, *gexp, 1.0);
-  }
-
-  //----------------------------------------------------------- FIFTH LINE
-  // add a subvector to feffnew
-  Teuchos::RCP<Epetra_Vector> famodexp;
-  if (aset)
-  {
-    famodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*famod, *famodexp);
-    feffnew->Update(1.0, *famodexp, 1.0);
-  }
-
-  feffnew->Scale(-1.0);
-  f.Scale(-1.0);
-
-  return feffnew;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::ResetLagrangeMultipliers(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
-  if (LMDoFRowMap(true).NumGlobalElements() == 0) return;
+  if (SystemType() != INPAR::CONTACT::system_condensed)
+  {
+    if (LMDoFRowMap(true).NumGlobalElements() == 0) return;
 
-  Teuchos::RCP<Epetra_Vector> znew_ptr = Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true), true));
-  LINALG::Export(xnew, *znew_ptr);
-  // ---------------------------------------------------------------------
-  // Update the current lagrange multiplier
-  // ---------------------------------------------------------------------
-  znew_ptr->ReplaceMap(z_->Map());
+    Teuchos::RCP<Epetra_Vector> znew_ptr = Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true), true));
+    LINALG::Export(xnew, *znew_ptr);
+    // ---------------------------------------------------------------------
+    // Update the current lagrange multiplier
+    // ---------------------------------------------------------------------
+    znew_ptr->ReplaceMap(z_->Map());
 
-  z_->Scale(1.0, *znew_ptr);
+    z_->Scale(1.0, *znew_ptr);
 
-  // ---------------------------------------------------------------------
-  // store the new Lagrange multiplier in the nodes
-  // ---------------------------------------------------------------------
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
-
+    // ---------------------------------------------------------------------
+    // store the new Lagrange multiplier in the nodes
+    // ---------------------------------------------------------------------
+    StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  }
   return;
 }
 
@@ -5526,10 +4871,15 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // only if it's a full Newton step...
   // store the previous active set
   if (gactivenodes_ != Teuchos::null)
+  {
     gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
+    if (friction_) gOldslipnodes_ = Teuchos::rcp(new Epetra_Map(*gslipnodes_));
+  }
   else
+  {
     gOldActiveSlaveNodes_ = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
-
+    if (friction_) gOldslipnodes_ = Teuchos::rcp(new Epetra_Map(0, 0, Comm()));
+  }
 
   // also update special flag for semi-smooth Newton convergence
   activesetssconv_ = activesetconv_;
@@ -6016,4 +5366,1541 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
   gact->Multiply(1.0, *scalevec, *tmpgact, 0.0);
 
   return;
+}
+
+void CONTACT::CoLagrangeStrategy::CondenseFriction(
+    Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+{
+  Teuchos::RCP<Epetra_Vector> feff = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
+
+  feff->Update(-1. + alphaf_, *strcontactrhs_, 1.);
+  feff->Scale(-1.);
+
+  Teuchos::RCP<LINALG::SparseOperator> kteff_op =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(kteff);
+
+  // In case of nonsmooth contact the scenario of contacting edges (non parallel)
+  // requires a penalty regularization. Here, the penalty contriutions for this
+  // special case are applied:
+  if (nonSmoothContact_)
+  {
+    // AddLineToLinContributions(kteff,feff);
+    AddLineToLinContributionsFriction(kteff_op, feff);
+
+    // FD check of weighted gap g derivatives + jump for LTL case
+#ifdef CONTACTFDJUMPLTL
+    for (int i = 0; i < (int)interface_.size(); ++i)
+    {
+      interface_[i]->FDCheckJumpDerivLTL();
+    }
+#endif  // #ifdef CONTACTFDJUMPLTL
+  }
+
+  // complete stiffness matrix
+  // (this is a prerequisite for the Split2x2 methods to be called later)
+  kteff->Complete();
+
+  /**********************************************************************/
+  /* export weighted gap vector to gactiveN-map                         */
+  /**********************************************************************/
+  Teuchos::RCP<Epetra_Vector> gact;
+  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+  {
+    gact = LINALG::CreateVector(*gactivedofs_, true);
+    if (gact->GlobalLength()) LINALG::Export(*g_, *gact);
+  }
+  else
+  {
+    gact = LINALG::CreateVector(*gactivenodes_, true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_, *gact);
+      gact->ReplaceMap(*gactiven_);
+    }
+  }
+
+  // FillComplete global Matrix linstickLM_, linstickDIS_
+  Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_, *gslipt_);
+  Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_, *gslipdofs_);
+
+  // shape function
+  INPAR::MORTAR::ShapeFcn shapefcn =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+
+  // double-check if this is a dual LM system
+  if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
+    dserror("Condensation only for dual LM");
+
+  /********************************************************************/
+  /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
+  /********************************************************************/
+  Teuchos::RCP<LINALG::SparseMatrix> invd = invd_;
+
+  /********************************************************************/
+  /* (2) Add contact stiffness terms to kteff                         */
+  /********************************************************************/
+
+  /********************************************************************/
+  /* (3) Split kteff into 3x3 matrix blocks                           */
+  /********************************************************************/
+
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+  // some temporary Teuchos::RCPs
+  Teuchos::RCP<Epetra_Map> tempmap;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+
+  // split into slave/master part + structure part
+  Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+  if (ParRedist())
+  {
+    // split and transform to redistributed maps
+    LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_, gndofrowmap_,
+        ksmsm, ksmn, knsm, knn);
+    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+    ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
+    knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
+  }
+  else
+  {
+    // only split, no need to transform
+    LINALG::SplitMatrix2x2(kteffmatrix, gsmdofrowmap_, gndofrowmap_, gsmdofrowmap_, gndofrowmap_,
+        ksmsm, ksmn, knsm, knn);
+  }
+
+  // further splits into slave part + master part
+  LINALG::SplitMatrix2x2(
+      ksmsm, gsdofrowmap_, gmdofrowmap_, gsdofrowmap_, gmdofrowmap_, kss, ksm, kms, kmm);
+  LINALG::SplitMatrix2x2(
+      ksmn, gsdofrowmap_, gmdofrowmap_, gndofrowmap_, tempmap, ksn, tempmtx1, kmn, tempmtx2);
+  LINALG::SplitMatrix2x2(
+      knsm, gndofrowmap_, tempmap, gsdofrowmap_, gmdofrowmap_, kns, knm, tempmtx1, tempmtx2);
+
+  /********************************************************************/
+  /* (4) Split feff into 3 subvectors                                 */
+  /********************************************************************/
+
+  // we want to split f into 3 groups s.m,n
+  Teuchos::RCP<Epetra_Vector> fs, fm, fn;
+
+  // temporarily we need the group sm
+  Teuchos::RCP<Epetra_Vector> fsm;
+
+  // do the vector splitting smn -> sm+n
+  if (ParRedist())
+  {
+    // split and transform to redistributed maps
+    LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
+    LINALG::Export(*fsm, *fsmtemp);
+    fsm = fsmtemp;
+  }
+  else
+  {
+    // only split, no need to transform
+    LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+  }
+
+  // abbreviations for slave and master set
+  const int sset = gsdofrowmap_->NumGlobalElements();
+  const int mset = gmdofrowmap_->NumGlobalElements();
+
+  // we want to split fsm into 2 groups s,m
+  fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+
+  // do the vector splitting sm -> s+m
+  LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+
+  // store some stuff for static condensation of LM
+  fs_ = fs;
+  invd_ = invd;
+  ksn_ = ksn;
+  ksm_ = ksm;
+  kss_ = kss;
+
+  /********************************************************************/
+  /* (5) Split slave quantities into active / inactive, stick / slip  */
+  /********************************************************************/
+  // we want to split kssmod into 2 groups a,i = 4 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
+
+  // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+
+  // we will get the i rowmap as a by-product
+  Teuchos::RCP<Epetra_Map> gidofs;
+
+  // do the splitting
+  LINALG::SplitMatrix2x2(kss, gactivedofs_, gidofs, gactivedofs_, gidofs, kaa, kai, kia, kii);
+  LINALG::SplitMatrix2x2(
+      ksn, gactivedofs_, gidofs, gndofrowmap_, tempmap, kan, tempmtx1, kin, tempmtx2);
+  LINALG::SplitMatrix2x2(
+      ksm, gactivedofs_, gidofs, gmdofrowmap_, tempmap, kam, tempmtx1, kim, tempmtx2);
+  LINALG::SplitMatrix2x2(
+      kms, gmdofrowmap_, tempmap, gactivedofs_, gidofs, kma, kmi, tempmtx1, tempmtx2);
+
+  // we want to split kaa into 2 groups sl,st = 4 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kslsl, kslst, kstsl, kstst, kast, kasl;
+
+  // we want to split kan / kam / kai into 2 groups sl,st = 2 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> ksln, kstn, kslm, kstm, ksli, ksti;
+
+  // some temporary Teuchos::RCPs
+  Teuchos::RCP<Epetra_Map> temp1map;
+  Teuchos::RCP<LINALG::SparseMatrix> temp1mtx4, temp1mtx5;
+
+  // we will get the stick rowmap as a by-product
+  Teuchos::RCP<Epetra_Map> gstdofs;
+
+  LINALG::SplitMatrix2x2(
+      kaa, gactivedofs_, gidofs, gstdofs, gslipdofs_, kast, kasl, temp1mtx4, temp1mtx5);
+
+  // abbreviations for active and inactive set, stick and slip set
+  const int aset = gactivedofs_->NumGlobalElements();
+  const int iset = gidofs->NumGlobalElements();
+  const int stickset = gstdofs->NumGlobalElements();
+  const int slipset = gslipdofs_->NumGlobalElements();
+
+  // we want to split fs into 2 groups a,i
+  Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+  Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
+
+  // do the vector splitting s -> a+i
+  LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+
+  // we want to split fa into 2 groups sl,st
+  Teuchos::RCP<Epetra_Vector> fsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+  Teuchos::RCP<Epetra_Vector> fst = Teuchos::rcp(new Epetra_Vector(*gstdofs));
+
+  // do the vector splitting a -> sl+st
+  if (aset) LINALG::SplitVector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
+
+  /********************************************************************/
+  /* (6) Isolate necessary parts from invd and mhatmatrix             */
+  /********************************************************************/
+
+  // active, stick and slip part of invd
+  Teuchos::RCP<LINALG::SparseMatrix> invda, invdsl, invdst;
+  LINALG::SplitMatrix2x2(
+      invd_, gactivedofs_, gidofs, gactivedofs_, gidofs, invda, tempmtx1, tempmtx2, tempmtx3);
+  LINALG::SplitMatrix2x2(
+      invda, gactivedofs_, gidofs, gslipdofs_, gstdofs, invdsl, tempmtx1, tempmtx2, tempmtx3);
+  LINALG::SplitMatrix2x2(
+      invda, gactivedofs_, gidofs, gstdofs, gslipdofs_, invdst, tempmtx1, tempmtx2, tempmtx3);
+
+  // coupling part of dmatrix (only nonzero for 3D quadratic case!)
+  Teuchos::RCP<LINALG::SparseMatrix> dai;
+  LINALG::SplitMatrix2x2(
+      dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, tempmtx1, dai, tempmtx2, tempmtx3);
+
+  // do the multiplication dhat = invda * dai
+  Teuchos::RCP<LINALG::SparseMatrix> dhat =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
+  if (aset && iset) dhat = LINALG::MLMultiply(*invda, false, *dai, false, false, false, true);
+  dhat->Complete(*gidofs, *gactivedofs_);
+
+  // active part of mmatrix
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixa;
+  LINALG::SplitMatrix2x2(mmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mmatrixa, tempmtx1,
+      tempmtx2, tempmtx3);
+
+  // do the multiplication mhataam = invda * mmatrixa
+  // (this is only different from mhata for 3D quadratic case!)
+  Teuchos::RCP<LINALG::SparseMatrix> mhataam =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
+  if (aset) mhataam = LINALG::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
+  mhataam->Complete(*gmdofrowmap_, *gactivedofs_);
+
+  // for the case without full linearization, we still need the
+  // "classical" active part of mhat, which is isolated here
+  Teuchos::RCP<LINALG::SparseMatrix> mhata;
+  LINALG::SplitMatrix2x2(mhatmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mhata, tempmtx1,
+      tempmtx2, tempmtx3);
+
+  // scaling of invd and dai
+  invda->Scale(1 / (1 - alphaf_));
+  invdsl->Scale(1 / (1 - alphaf_));
+  invdst->Scale(1 / (1 - alphaf_));
+  dai->Scale(1 - alphaf_);
+
+  /********************************************************************/
+  /* (7) Build the final K blocks                                     */
+  /********************************************************************/
+
+  //--------------------------------------------------------- FIRST LINE
+  // knn: nothing to do
+
+  // knm: nothing to do
+
+  // kns: nothing to do
+
+  //-------------------------------------------------------- SECOND LINE
+  // kmn: add T(mhataam)*kan
+  Teuchos::RCP<LINALG::SparseMatrix> kmnmod =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+  kmnmod->Add(*kmn, false, 1.0, 1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kmnadd =
+      LINALG::MLMultiply(*mhataam, true, *kan, false, false, false, true);
+  kmnmod->Add(*kmnadd, false, 1.0, 1.0);
+  kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
+
+  // kmm: add T(mhataam)*kam
+  Teuchos::RCP<LINALG::SparseMatrix> kmmmod =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+  kmmmod->Add(*kmm, false, 1.0, 1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kmmadd =
+      LINALG::MLMultiply(*mhataam, true, *kam, false, false, false, true);
+  kmmmod->Add(*kmmadd, false, 1.0, 1.0);
+  kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
+
+  // kmi: add T(mhataam)*kai
+  Teuchos::RCP<LINALG::SparseMatrix> kmimod;
+  if (iset)
+  {
+    kmimod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+    kmimod->Add(*kmi, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmiadd =
+        LINALG::MLMultiply(*mhataam, true, *kai, false, false, false, true);
+    kmimod->Add(*kmiadd, false, 1.0, 1.0);
+    kmimod->Complete(kmi->DomainMap(), kmi->RowMap());
+  }
+
+  // kma: add T(mhataam)*kaa
+  Teuchos::RCP<LINALG::SparseMatrix> kmamod;
+  if (aset)
+  {
+    kmamod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+    kmamod->Add(*kma, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmaadd =
+        LINALG::MLMultiply(*mhataam, true, *kaa, false, false, false, true);
+    kmamod->Add(*kmaadd, false, 1.0, 1.0);
+    kmamod->Complete(kma->DomainMap(), kma->RowMap());
+  }
+
+  //--------------------------------------------------------- THIRD LINE
+  // kin: subtract T(dhat)*kan
+  Teuchos::RCP<LINALG::SparseMatrix> kinmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+  kinmod->Add(*kin, false, 1.0, 1.0);
+  if (aset && iset)
+  {
+    Teuchos::RCP<LINALG::SparseMatrix> kinadd =
+        LINALG::MLMultiply(*dhat, true, *kan, false, false, false, true);
+    kinmod->Add(*kinadd, false, -1.0, 1.0);
+  }
+  kinmod->Complete(kin->DomainMap(), kin->RowMap());
+
+  // kim: subtract T(dhat)*kam
+  Teuchos::RCP<LINALG::SparseMatrix> kimmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+  kimmod->Add(*kim, false, 1.0, 1.0);
+  if (aset && iset)
+  {
+    Teuchos::RCP<LINALG::SparseMatrix> kimadd =
+        LINALG::MLMultiply(*dhat, true, *kam, false, false, false, true);
+    kimmod->Add(*kimadd, false, -1.0, 1.0);
+  }
+  kimmod->Complete(kim->DomainMap(), kim->RowMap());
+
+  // kii: subtract T(dhat)*kai
+  Teuchos::RCP<LINALG::SparseMatrix> kiimod;
+  if (iset)
+  {
+    kiimod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+    kiimod->Add(*kii, false, 1.0, 1.0);
+    if (aset)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> kiiadd =
+          LINALG::MLMultiply(*dhat, true, *kai, false, false, false, true);
+      kiimod->Add(*kiiadd, false, -1.0, 1.0);
+    }
+    kiimod->Complete(kii->DomainMap(), kii->RowMap());
+  }
+
+  // kia: subtract T(dhat)*kaa
+  Teuchos::RCP<LINALG::SparseMatrix> kiamod;
+  if (iset && aset)
+  {
+    kiamod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+    kiamod->Add(*kia, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kiaadd =
+        LINALG::MLMultiply(*dhat, true, *kaa, false, false, false, true);
+    kiamod->Add(*kiaadd, false, -1.0, 1.0);
+    kiamod->Complete(kia->DomainMap(), kia->RowMap());
+  }
+
+  //-------------------------------------------------------- FOURTH LINE
+
+  //--------------------------------------------------------- FIFTH LINE
+  // blocks for complementary conditions (stick nodes)
+
+  // kstn: multiply with linstickLM
+  Teuchos::RCP<LINALG::SparseMatrix> kstnmod;
+  if (stickset)
+  {
+    kstnmod = LINALG::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstnmod = LINALG::MLMultiply(*kstnmod, false, *kan, false, false, false, true);
+  }
+
+  // kstm: multiply with linstickLM
+  Teuchos::RCP<LINALG::SparseMatrix> kstmmod;
+  if (stickset)
+  {
+    kstmmod = LINALG::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstmmod = LINALG::MLMultiply(*kstmmod, false, *kam, false, false, false, true);
+  }
+
+  // ksti: multiply with linstickLM
+  Teuchos::RCP<LINALG::SparseMatrix> kstimod;
+  if (stickset && iset)
+  {
+    kstimod = LINALG::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstimod = LINALG::MLMultiply(*kstimod, false, *kai, false, false, false, true);
+  }
+
+  // kstsl: multiply with linstickLM
+  Teuchos::RCP<LINALG::SparseMatrix> kstslmod;
+  if (stickset && slipset)
+  {
+    kstslmod = LINALG::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstslmod = LINALG::MLMultiply(*kstslmod, false, *kasl, false, false, false, true);
+  }
+
+  // kststmod: multiply with linstickLM
+  Teuchos::RCP<LINALG::SparseMatrix> kststmod;
+  if (stickset)
+  {
+    kststmod = LINALG::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kststmod = LINALG::MLMultiply(*kststmod, false, *kast, false, false, false, true);
+  }
+
+  //--------------------------------------------------------- SIXTH LINE
+  // blocks for complementary conditions (slip nodes)
+
+  // ksln: multiply with linslipLM
+  Teuchos::RCP<LINALG::SparseMatrix> kslnmod;
+  if (slipset)
+  {
+    kslnmod = LINALG::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslnmod = LINALG::MLMultiply(*kslnmod, false, *kan, false, false, false, true);
+  }
+
+  // kslm: multiply with linslipLM
+  Teuchos::RCP<LINALG::SparseMatrix> kslmmod;
+  if (slipset)
+  {
+    kslmmod = LINALG::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslmmod = LINALG::MLMultiply(*kslmmod, false, *kam, false, false, false, true);
+  }
+
+  // ksli: multiply with linslipLM
+  Teuchos::RCP<LINALG::SparseMatrix> kslimod;
+  if (slipset && iset)
+  {
+    kslimod = LINALG::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslimod = LINALG::MLMultiply(*kslimod, false, *kai, false, false, false, true);
+  }
+
+  // kslsl: multiply with linslipLM
+  Teuchos::RCP<LINALG::SparseMatrix> kslslmod;
+  if (slipset)
+  {
+    kslslmod = LINALG::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslslmod = LINALG::MLMultiply(*kslslmod, false, *kasl, false, false, false, true);
+  }
+
+  // slstmod: multiply with linslipLM
+  Teuchos::RCP<LINALG::SparseMatrix> kslstmod;
+  if (slipset && stickset)
+  {
+    kslstmod = LINALG::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslstmod = LINALG::MLMultiply(*kslstmod, false, *kast, false, false, false, true);
+  }
+
+  /********************************************************************/
+  /* (8) Build the final f blocks                                     */
+  /********************************************************************/
+
+  //--------------------------------------------------------- FIRST LINE
+  // fn: nothing to do
+
+  //---------------------------------------------------------- SECOND LINE
+
+  // fm: add T(mhat)*fa
+  Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+  if (aset) mhataam->Multiply(true, *fa, *fmmod);
+  fmmod->Update(1.0, *fm, 1.0);
+
+  //--------------------------------------------------------- THIRD LINE
+  // fi: subtract alphaf * old contact forces (t_n)
+
+  // fi: add T(dhat)*fa
+  Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*gidofs));
+  if (aset && iset) dhat->Multiply(true, *fa, *fimod);
+  fimod->Update(1.0, *fi, -1.0);
+
+  //-------------------------------------------------------- FOURTH LINE
+
+  //--------------------------------------------------------- FIFTH LINE
+  // split the lagrange multiplier vector in stick and slip part
+  Teuchos::RCP<Epetra_Vector> za = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+  Teuchos::RCP<Epetra_Vector> zi = Teuchos::rcp(new Epetra_Vector(*gidofs));
+  Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
+  Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+
+  LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+  LINALG::SplitVector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
+  Teuchos::RCP<Epetra_Vector> tempvec1;
+
+  // fst: mutliply with linstickLM
+  Teuchos::RCP<Epetra_Vector> fstmod;
+  if (stickset)
+  {
+    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      fstmod = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
+    else
+      fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
+    Teuchos::RCP<LINALG::SparseMatrix> temp1 =
+        LINALG::MLMultiply(*linstickLM_, false, *invdst, true, false, false, true);
+    temp1->Multiply(false, *fa, *fstmod);
+
+    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
+    else
+      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
+
+    linstickLM_->Multiply(false, *zst, *tempvec1);
+    fstmod->Update(-1.0, *tempvec1, 1.0);
+  }
+
+  //--------------------------------------------------------- SIXTH LINE
+  // fsl: mutliply with linslipLM
+  Teuchos::RCP<Epetra_Vector> fslmod;
+  Teuchos::RCP<Epetra_Vector> fslwmod;
+
+  if (slipset)
+  {
+    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      fslmod = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+    else
+      fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
+    Teuchos::RCP<LINALG::SparseMatrix> temp =
+        LINALG::MLMultiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    temp->Multiply(false, *fa, *fslmod);
+
+    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+    else
+      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
+
+    linslipLM_->Multiply(false, *zsl, *tempvec1);
+
+    fslmod->Update(-1.0, *tempvec1, 1.0);
+  }
+
+  /********************************************************************/
+  /* (9) Transform the final K blocks                                 */
+  /********************************************************************/
+  // The row maps of all individual matrix blocks are transformed to
+  // the parallel layout of the underlying problem discretization.
+  // Of course, this is only necessary in the parallel redistribution
+  // case, where the contact interfaces have been redistributed
+  // independently of the underlying problem discretization.
+
+  if (ParRedist())
+  {
+    //----------------------------------------------------------- FIRST LINE
+    // nothing to do (ndof-map independent of redistribution)
+
+    //---------------------------------------------------------- SECOND LINE
+    kmnmod = MORTAR::MatrixRowTransform(kmnmod, pgmdofrowmap_);
+    kmmmod = MORTAR::MatrixRowTransform(kmmmod, pgmdofrowmap_);
+    if (iset) kmimod = MORTAR::MatrixRowTransform(kmimod, pgmdofrowmap_);
+    if (aset) kmamod = MORTAR::MatrixRowTransform(kmamod, pgmdofrowmap_);
+
+    //----------------------------------------------------------- THIRD LINE
+    if (iset)
+    {
+      kinmod = MORTAR::MatrixRowTransform(kinmod, pgsdofrowmap_);
+      kimmod = MORTAR::MatrixRowTransform(kimmod, pgsdofrowmap_);
+      kiimod = MORTAR::MatrixRowTransform(kiimod, pgsdofrowmap_);
+      if (aset) kiamod = MORTAR::MatrixRowTransform(kiamod, pgsdofrowmap_);
+    }
+
+    //---------------------------------------------------------- FOURTH LINE
+    if (aset)
+    {
+      smatrix_ = MORTAR::MatrixRowTransform(smatrix_, pgsdofrowmap_);
+    }
+
+    //----------------------------------------------------------- FIFTH LINE
+    if (stickset)
+    {
+      kstnmod = MORTAR::MatrixRowTransform(kstnmod, pgsdofrowmap_);
+      kstmmod = MORTAR::MatrixRowTransform(kstmmod, pgsdofrowmap_);
+      if (iset) kstimod = MORTAR::MatrixRowTransform(kstimod, pgsdofrowmap_);
+      if (slipset) kstslmod = MORTAR::MatrixRowTransform(kstslmod, pgsdofrowmap_);
+      kststmod = MORTAR::MatrixRowTransform(kststmod, pgsdofrowmap_);
+      linstickDIS_ = MORTAR::MatrixRowTransform(linstickDIS_, pgsdofrowmap_);
+    }
+
+    //----------------------------------------------------------- SIXTH LINE
+    if (slipset)
+    {
+      kslnmod = MORTAR::MatrixRowTransform(kslnmod, pgsdofrowmap_);
+      kslmmod = MORTAR::MatrixRowTransform(kslmmod, pgsdofrowmap_);
+      if (iset) kslimod = MORTAR::MatrixRowTransform(kslimod, pgsdofrowmap_);
+      if (stickset) kslstmod = MORTAR::MatrixRowTransform(kslstmod, pgsdofrowmap_);
+      kslslmod = MORTAR::MatrixRowTransform(kslslmod, pgsdofrowmap_);
+      linslipDIS_ = MORTAR::MatrixRowTransform(linslipDIS_, pgsdofrowmap_);
+    }
+  }
+
+  /********************************************************************/
+  /* (10) Global setup of kteffnew (including contact)                */
+  /********************************************************************/
+
+  Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(
+      new LINALG::SparseMatrix(*ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
+  Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*ProblemDofs());
+
+  //--------------------------------------------------------- FIRST LINE
+  // add n submatrices to kteffnew
+  kteffnew->Add(*knn, false, 1.0, 1.0);
+  kteffnew->Add(*knm, false, 1.0, 1.0);
+  if (sset) kteffnew->Add(*kns, false, 1.0, 1.0);
+
+  //-------------------------------------------------------- SECOND LINE
+  // add m submatrices to kteffnew
+  kteffnew->Add(*kmnmod, false, 1.0, 1.0);
+  kteffnew->Add(*kmmmod, false, 1.0, 1.0);
+  if (iset) kteffnew->Add(*kmimod, false, 1.0, 1.0);
+  if (aset) kteffnew->Add(*kmamod, false, 1.0, 1.0);
+
+  //--------------------------------------------------------- THIRD LINE
+  // add i submatrices to kteffnew
+  if (iset) kteffnew->Add(*kinmod, false, 1.0, 1.0);
+  if (iset) kteffnew->Add(*kimmod, false, 1.0, 1.0);
+  if (iset) kteffnew->Add(*kiimod, false, 1.0, 1.0);
+  if (iset && aset) kteffnew->Add(*kiamod, false, 1.0, 1.0);
+
+  //-------------------------------------------------------- FOURTH LINE
+
+  // add a submatrices to kteffnew
+  if (aset) kteffnew->Add(*smatrix_, false, 1.0, 1.0);
+
+  //--------------------------------------------------------- FIFTH LINE
+  // add st submatrices to kteffnew
+  if (stickset) kteffnew->Add(*kstnmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->Add(*kstmmod, false, 1.0, 1.0);
+  if (stickset && iset) kteffnew->Add(*kstimod, false, 1.0, 1.0);
+  if (stickset && slipset) kteffnew->Add(*kstslmod, false, 1.0, 1.0);
+  if (stickset) kteffnew->Add(*kststmod, false, 1.0, 1.0);
+
+  // add terms of linearization of sick condition to kteffnew
+  if (stickset) kteffnew->Add(*linstickDIS_, false, -1.0, 1.0);
+
+  //--------------------------------------------------------- SIXTH LINE
+  // add sl submatrices to kteffnew
+  if (slipset) kteffnew->Add(*kslnmod, false, 1.0, 1.0);
+  if (slipset) kteffnew->Add(*kslmmod, false, 1.0, 1.0);
+  if (slipset && iset) kteffnew->Add(*kslimod, false, 1.0, 1.0);
+  if (slipset) kteffnew->Add(*kslslmod, false, 1.0, 1.0);
+  if (slipset && stickset) kteffnew->Add(*kslstmod, false, 1.0, 1.0);
+
+  // add terms of linearization of slip condition to kteffnew and feffnew
+  if (slipset) kteffnew->Add(*linslipDIS_, false, -1.0, +1.0);
+
+  // add diagonal entries to sparsity pattern for dbc
+  for (int i = 0; i < kteffnew->RowMap().NumMyElements(); ++i)
+  {
+    int gid = kteffnew->RowMap().GID(i);
+    kteffnew->Assemble(0., gid, gid);
+  }
+
+  // FillComplete kteffnew (square)
+  kteffnew->Complete();
+
+  /********************************************************************/
+  /* (11) Global setup of feffnew (including contact)                 */
+  /********************************************************************/
+
+  //--------------------------------------------------------- FIRST LINE
+  // add n subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  LINALG::Export(*fn, *fnexp);
+  feffnew->Update(1.0, *fnexp, 1.0);
+
+  //-------------------------------------------------------- SECOND LINE
+  // add m subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  LINALG::Export(*fmmod, *fmmodexp);
+  feffnew->Update(1.0, *fmmodexp, 1.0);
+
+  //--------------------------------------------------------- THIRD LINE
+  // add i subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fimodexp;
+  if (iset)
+  {
+    fimodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fimod, *fimodexp);
+    feffnew->Update(1.0, *fimodexp, 1.0);
+  }
+
+  //-------------------------------------------------------- FOURTH LINE
+  // add weighted gap vector to feffnew, if existing
+  Teuchos::RCP<Epetra_Vector> gexp;
+  Teuchos::RCP<Epetra_Vector> fwexp;
+  Teuchos::RCP<Epetra_Vector> fgmodexp;
+
+  if (aset)
+  {
+    gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*gact, *gexp);
+    feffnew->Update(-1.0, *gexp, 1.0);
+  }
+
+  //--------------------------------------------------------- FIFTH LINE
+  // add st subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fstmodexp;
+  if (stickset)
+  {
+    fstmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fstmod, *fstmodexp);
+    feffnew->Update(1.0, *fstmodexp, +1.0);
+  }
+
+  // add terms of linearization feffnew
+  if (stickset)
+  {
+    Teuchos::RCP<Epetra_Vector> linstickRHSexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*linstickRHS_, *linstickRHSexp);
+    feffnew->Update(-1.0, *linstickRHSexp, 1.0);
+  }
+
+  //--------------------------------------------------------- SIXTH LINE
+
+  // add a subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fslmodexp;
+  Teuchos::RCP<Epetra_Vector> fwslexp;
+  Teuchos::RCP<Epetra_Vector> fslwmodexp;
+
+
+  if (slipset)
+  {
+    fslmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fslmod, *fslmodexp);
+    feffnew->Update(1.0, *fslmodexp, 1.0);
+  }
+
+  if (slipset)
+  {
+    Teuchos::RCP<Epetra_Vector> linslipRHSexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*linslipRHS_, *linslipRHSexp);
+    feffnew->Update(-1.0, *linslipRHSexp, 1.0);
+  }
+
+  // finally do the replacement
+  *kteff = *kteffnew;
+  *feff = *feffnew;
+
+#ifdef CONTACTFDGAP
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckGapDeriv();
+  }
+#endif  // #ifdef CONTACTFDGAP
+
+#ifdef CONTACTFDALPHA
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckAlphaDeriv();
+  }
+#endif  // #ifdef CONTACTFDGAP
+
+#ifdef CONTACTFDSLIPINCR
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckSlipIncrDerivTXI();
+    if (Dim() == 3) interface_[i]->FDCheckSlipIncrDerivTETA();
+  }
+#endif  // #ifdef CONTACTFDGAP
+
+#ifdef CONTACTFDSTICK
+
+  if (gstickt->NumGlobalElements())
+  {
+    // FD check of stick condition
+    for (int i = 0; i < (int)interface_.size(); ++i)
+    {
+      //      Teuchos::RCP<LINALG::SparseMatrix> deriv1 = Teuchos::rcp(new
+      //      LINALG::SparseMatrix(*gactivet_,81)); Teuchos::RCP<LINALG::SparseMatrix> deriv2 =
+      //      Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+      //
+      //      deriv1->Add(*linstickLM_,false,1.0,1.0);
+      //      deriv1->Complete(*gsmdofrowmap_,*gactivet_);
+      //
+      //      deriv2->Add(*linstickDIS_,false,1.0,1.0);
+      //      deriv2->Complete(*gsmdofrowmap_,*gactivet_);
+      //
+      //      std::cout << "DERIV 1 *********** "<< *deriv1 << std::endl;
+      //      std::cout << "DERIV 2 *********** "<< *deriv2 << std::endl;
+
+      interface_[i]->FDCheckStickDeriv(*linstickLM_, *linstickDIS_);
+    }
+  }
+#endif  // #ifdef CONTACTFDSTICK
+
+#ifdef CONTACTFDSLIP
+
+  if (gslipnodes_->NumGlobalElements())
+  {
+    // FD check of slip condition
+    for (int i = 0; i < (int)interface_.size(); ++i)
+    {
+      //      Teuchos::RCP<LINALG::SparseMatrix> deriv1 = Teuchos::rcp(new
+      //      LINALG::SparseMatrix(*gactivet_,81)); Teuchos::RCP<LINALG::SparseMatrix> deriv2 =
+      //      Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+      //
+      //      deriv1->Add(*linslipLM_,false,1.0,1.0);
+      //      deriv1->Complete(*gsmdofrowmap_,*gslipt_);
+      //
+      //      deriv2->Add(*linslipDIS_,false,1.0,1.0);
+      //      deriv2->Complete(*gsmdofrowmap_,*gslipt_);
+      //
+      //      std::cout << *deriv1 << std::endl;
+      //      std::cout << *deriv2 << std::endl;
+
+      interface_[i]->FDCheckSlipDeriv(*linslipLM_, *linslipDIS_);
+    }
+  }
+#endif  // #ifdef CONTACTFDSLIP
+
+  feff->Scale(-1.);
+  return;
+}
+
+void CONTACT::CoLagrangeStrategy::CondenseFrictionless(
+    Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+{
+  Teuchos::RCP<Epetra_Vector> feff = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
+
+  feff->Update(-1. + alphaf_, *strcontactrhs_, 1.);
+  feff->Scale(-1.);
+  Teuchos::RCP<LINALG::SparseOperator> kteff_op =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(kteff);
+
+  // shape function type and type of LM interpolation for quadratic elements
+  INPAR::MORTAR::ShapeFcn shapefcn =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+  INPAR::MORTAR::LagMultQuad lagmultquad =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+
+  // In case of nonsmooth contact the scenario of contacting edges (non parallel)
+  // requires a penalty regularization. Here, the penalty contriutions for this
+  // special case are applied:
+  if (nonSmoothContact_)
+  {
+    // LTL contributions:
+    AddLineToLinContributions(kteff_op, feff);
+
+    // penalty support for master side quantities:
+    AddMasterContributions(kteff_op, feff);
+
+#ifdef CONTACTFDGAPLTL
+    // FD check of weighted gap g derivatives (non-penetr. condition)
+    for (int i = 0; i < (int)interface_.size(); ++i)
+    {
+      interface_[i]->FDCheckGapDerivLTL();
+    }
+#endif  // #ifdef CONTACTFDGAPLTL
+  }
+
+  // complete stiffness matrix
+  // (this is a prerequisite for the Split2x2 methods to be called later)
+  kteff->Complete();
+
+  /**********************************************************************/
+  /* export weighted gap vector to gactiveN-map                         */
+  /**********************************************************************/
+  Teuchos::RCP<Epetra_Vector> gact;
+  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+  {
+    gact = LINALG::CreateVector(*gactivedofs_, true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_, *gact);
+    }
+  }
+  else
+  {
+    gact = LINALG::CreateVector(*gactivenodes_, true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_, *gact);
+      gact->ReplaceMap(*gactiven_);
+    }
+  }
+
+  // do reagularization scaling
+  if (regularized_) EvaluateRegularizationScaling(gact);
+
+  // double-check if this is a dual LM system
+  if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
+          INPAR::MORTAR::lagmult_const)
+    dserror("Condensation only for dual LM");
+
+  /**********************************************************************/
+  /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
+  /**********************************************************************/
+  Teuchos::RCP<LINALG::SparseMatrix> invd = invd_;
+
+  /**********************************************************************/
+  /* (2) Add contact stiffness terms to kteff                           */
+  /**********************************************************************/
+  // declare sparse matrix
+  Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+
+  /**********************************************************************/
+  /* (3) Split kteff into 3x3 matrix blocks                             */
+  /**********************************************************************/
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
+  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+
+  // some temporary Teuchos::RCPs
+  Teuchos::RCP<Epetra_Map> tempmap;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+
+  // split into slave/master part + structure part
+  if (ParRedist())
+  {
+    // split and transform to redistributed maps
+    LINALG::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_, gndofrowmap_,
+        ksmsm, ksmn, knsm, knn);
+    ksmsm = MORTAR::MatrixRowColTransform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
+    ksmn = MORTAR::MatrixRowTransform(ksmn, gsmdofrowmap_);
+    knsm = MORTAR::MatrixColTransform(knsm, gsmdofrowmap_);
+  }
+  else
+  {
+    // only split, no need to transform
+    LINALG::SplitMatrix2x2(kteffmatrix, gsmdofrowmap_, gndofrowmap_, gsmdofrowmap_, gndofrowmap_,
+        ksmsm, ksmn, knsm, knn);
+  }
+
+  // further splits into slave part + master part
+  LINALG::SplitMatrix2x2(
+      ksmsm, gsdofrowmap_, gmdofrowmap_, gsdofrowmap_, gmdofrowmap_, kss, ksm, kms, kmm);
+  LINALG::SplitMatrix2x2(
+      ksmn, gsdofrowmap_, gmdofrowmap_, gndofrowmap_, tempmap, ksn, tempmtx1, kmn, tempmtx2);
+  LINALG::SplitMatrix2x2(
+      knsm, gndofrowmap_, tempmap, gsdofrowmap_, gmdofrowmap_, kns, knm, tempmtx1, tempmtx2);
+
+  /**********************************************************************/
+  /* (4) Split feff into 3 subvectors                                   */
+  /**********************************************************************/
+  // we want to split f into 3 groups s.m,n
+  Teuchos::RCP<Epetra_Vector> fs, fm, fn;
+
+  // temporarily we need the group sm
+  Teuchos::RCP<Epetra_Vector> fsm;
+
+  // do the vector splitting smn -> sm+n
+  if (ParRedist())
+  {
+    // split and transform to redistributed maps
+    LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
+    LINALG::Export(*fsm, *fsmtemp);
+    fsm = fsmtemp;
+  }
+  else
+  {
+    // only split, no need to transform
+    LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+  }
+
+  // abbreviations for slave  and master set
+  const int sset = gsdofrowmap_->NumGlobalElements();
+  const int mset = gmdofrowmap_->NumGlobalElements();
+
+  // we want to split fsm into 2 groups s,m
+  fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+
+  // do the vector splitting sm -> s+m
+  LINALG::SplitVector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+
+  // store some stuff for static condensation of LM
+  fs_ = fs;
+  invd_ = invd;
+  ksn_ = ksn;
+  ksm_ = ksm;
+  kss_ = kss;
+
+  /**********************************************************************/
+  /* (5) Split slave quantities into active / inactive                  */
+  /**********************************************************************/
+  // we want to split kssmod into 2 groups a,i = 4 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
+
+  // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
+  Teuchos::RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+
+  // we will get the i rowmap as a by-product
+  Teuchos::RCP<Epetra_Map> gidofs;
+
+  // do the splitting
+  LINALG::SplitMatrix2x2(kss, gactivedofs_, gidofs, gactivedofs_, gidofs, kaa, kai, kia, kii);
+  LINALG::SplitMatrix2x2(
+      ksn, gactivedofs_, gidofs, gndofrowmap_, tempmap, kan, tempmtx1, kin, tempmtx2);
+  LINALG::SplitMatrix2x2(
+      ksm, gactivedofs_, gidofs, gmdofrowmap_, tempmap, kam, tempmtx1, kim, tempmtx2);
+  LINALG::SplitMatrix2x2(
+      kms, gmdofrowmap_, tempmap, gactivedofs_, gidofs, kma, kmi, tempmtx1, tempmtx2);
+
+  // abbreviations for active and inactive set
+  const int aset = gactivedofs_->NumGlobalElements();
+  const int iset = gidofs->NumGlobalElements();
+
+  // we want to split fsmod into 2 groups a,i
+  Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+  Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*gidofs));
+
+  // do the vector splitting s -> a+i
+  LINALG::SplitVector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
+
+  /**********************************************************************/
+  /* (6) Isolate necessary parts from invd and mhatmatrix               */
+  /**********************************************************************/
+  // active part of invd
+  Teuchos::RCP<LINALG::SparseMatrix> invda;
+  LINALG::SplitMatrix2x2(
+      invd_, gactivedofs_, gidofs, gactivedofs_, gidofs, invda, tempmtx1, tempmtx2, tempmtx3);
+
+  // coupling part of dmatrix (only nonzero for 3D quadratic case!)
+  Teuchos::RCP<LINALG::SparseMatrix> dai;
+  LINALG::SplitMatrix2x2(
+      dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, tempmtx1, dai, tempmtx2, tempmtx3);
+
+  // do the multiplication dhat = invda * dai
+  Teuchos::RCP<LINALG::SparseMatrix> dhat =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
+  if (aset && iset) dhat = LINALG::MLMultiply(*invda, false, *dai, false, false, false, true);
+  dhat->Complete(*gidofs, *gactivedofs_);
+
+  // active part of mmatrix
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixa;
+  LINALG::SplitMatrix2x2(mmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mmatrixa, tempmtx1,
+      tempmtx2, tempmtx3);
+
+  // do the multiplication mhataam = invda * mmatrixa
+  // (this is only different from mhata for 3D quadratic case!)
+  Teuchos::RCP<LINALG::SparseMatrix> mhataam =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_, 10));
+  if (aset) mhataam = LINALG::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
+  mhataam->Complete(*gmdofrowmap_, *gactivedofs_);
+
+  // for the case without full linearization, we still need the
+  // "classical" active part of mhat, which is isolated here
+  Teuchos::RCP<LINALG::SparseMatrix> mhata;
+  LINALG::SplitMatrix2x2(mhatmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mhata, tempmtx1,
+      tempmtx2, tempmtx3);
+
+  // scaling of invd and dai
+  invda->Scale(1 / (1 - alphaf_));
+  dai->Scale(1 - alphaf_);
+
+  SaveCouplingMatrices(dhat, mhataam, invda);
+  /**********************************************************************/
+  /* (7) Build the final K blocks                                       */
+  /**********************************************************************/
+
+  //----------------------------------------------------------- FIRST LINE
+  // knn: nothing to do
+
+  // knm: nothing to do
+
+  // kns: nothing to do
+
+  //---------------------------------------------------------- SECOND LINE
+  // kmn: add T(mhataam)*kan
+  Teuchos::RCP<LINALG::SparseMatrix> kmnmod =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+  kmnmod->Add(*kmn, false, 1.0, 1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kmnadd =
+      LINALG::MLMultiply(*mhataam, true, *kan, false, false, false, true);
+  kmnmod->Add(*kmnadd, false, 1.0, 1.0);
+  kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
+
+  // kmm: add T(mhataam)*kam
+  Teuchos::RCP<LINALG::SparseMatrix> kmmmod =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+  kmmmod->Add(*kmm, false, 1.0, 1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kmmadd =
+      LINALG::MLMultiply(*mhataam, true, *kam, false, false, false, true);
+  kmmmod->Add(*kmmadd, false, 1.0, 1.0);
+  kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
+
+  // kmi: add T(mhataam)*kai
+  Teuchos::RCP<LINALG::SparseMatrix> kmimod;
+  if (iset)
+  {
+    kmimod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+    kmimod->Add(*kmi, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmiadd =
+        LINALG::MLMultiply(*mhataam, true, *kai, false, false, false, true);
+    kmimod->Add(*kmiadd, false, 1.0, 1.0);
+    kmimod->Complete(kmi->DomainMap(), kmi->RowMap());
+  }
+
+  // kma: add T(mhataam)*kaa
+  Teuchos::RCP<LINALG::SparseMatrix> kmamod;
+  if (aset)
+  {
+    kmamod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+    kmamod->Add(*kma, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmaadd =
+        LINALG::MLMultiply(*mhataam, true, *kaa, false, false, false, true);
+    kmamod->Add(*kmaadd, false, 1.0, 1.0);
+    kmamod->Complete(kma->DomainMap(), kma->RowMap());
+  }
+
+  //----------------------------------------------------------- THIRD LINE
+  //------------------- FOR 3D QUADRATIC CASE ----------------------------
+  // kin: subtract T(dhat)*kan --
+  Teuchos::RCP<LINALG::SparseMatrix> kinmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+  kinmod->Add(*kin, false, 1.0, 1.0);
+  if (aset && iset)
+  {
+    Teuchos::RCP<LINALG::SparseMatrix> kinadd =
+        LINALG::MLMultiply(*dhat, true, *kan, false, false, false, true);
+    kinmod->Add(*kinadd, false, -1.0, 1.0);
+  }
+  kinmod->Complete(kin->DomainMap(), kin->RowMap());
+
+  // kim: subtract T(dhat)*kam
+  Teuchos::RCP<LINALG::SparseMatrix> kimmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+  kimmod->Add(*kim, false, 1.0, 1.0);
+  if (aset && iset)
+  {
+    Teuchos::RCP<LINALG::SparseMatrix> kimadd =
+        LINALG::MLMultiply(*dhat, true, *kam, false, false, false, true);
+    kimmod->Add(*kimadd, false, -1.0, 1.0);
+  }
+  kimmod->Complete(kim->DomainMap(), kim->RowMap());
+
+  // kii: subtract T(dhat)*kai
+  Teuchos::RCP<LINALG::SparseMatrix> kiimod;
+  if (iset)
+  {
+    kiimod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+    kiimod->Add(*kii, false, 1.0, 1.0);
+    if (aset)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> kiiadd =
+          LINALG::MLMultiply(*dhat, true, *kai, false, false, false, true);
+      kiimod->Add(*kiiadd, false, -1.0, 1.0);
+    }
+    kiimod->Complete(kii->DomainMap(), kii->RowMap());
+  }
+
+  // kia: subtract T(dhat)*kaa
+  Teuchos::RCP<LINALG::SparseMatrix> kiamod;
+  if (iset && aset)
+  {
+    kiamod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs, 100));
+    kiamod->Add(*kia, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kiaadd =
+        LINALG::MLMultiply(*dhat, true, *kaa, false, false, false, true);
+    kiamod->Add(*kiaadd, false, -1.0, 1.0);
+    kiamod->Complete(kia->DomainMap(), kia->RowMap());
+  }
+
+  //---------------------------------------------------------- FOURTH LINE
+  // nothing to do - execpt its regularized contact see --> DoRegularizationScaling()
+
+  //----------------------------------------------------------- FIFTH LINE
+  // kan: multiply tmatrix with invda and kan
+  Teuchos::RCP<LINALG::SparseMatrix> kanmod;
+  if (aset)
+  {
+    kanmod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
+    kanmod = LINALG::MLMultiply(*kanmod, false, *kan, false, false, false, true);
+  }
+
+  // kam: multiply tmatrix with invda and kam
+  Teuchos::RCP<LINALG::SparseMatrix> kammod;
+  if (aset)
+  {
+    kammod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
+    kammod = LINALG::MLMultiply(*kammod, false, *kam, false, false, false, true);
+  }
+
+  // kai: multiply tmatrix with invda and kai
+  Teuchos::RCP<LINALG::SparseMatrix> kaimod;
+  if (aset && iset)
+  {
+    kaimod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
+    kaimod = LINALG::MLMultiply(*kaimod, false, *kai, false, false, false, true);
+  }
+
+  // kaa: multiply tmatrix with invda and kaa
+  Teuchos::RCP<LINALG::SparseMatrix> kaamod;
+  if (aset)
+  {
+    kaamod = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
+    kaamod = LINALG::MLMultiply(*kaamod, false, *kaa, false, false, false, true);
+  }
+
+  /**********************************************************************/
+  /* (8) Build the final f blocks                                       */
+  /**********************************************************************/
+
+  //----------------------------------------------------------- FIRST LINE
+  // fn: nothing to do
+
+  //---------------------------------------------------------- SECOND LINE
+
+  // fm: add T(mhat)*fa
+  Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+  if (aset) mhataam->Multiply(true, *fa, *fmmod);
+  fmmod->Update(1.0, *fm, 1.0);
+
+  //----------------------------------------------------------- THIRD LINE
+  // fi: add T(dhat)*fa
+  Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*gidofs));
+  if (iset && aset) dhat->Multiply(true, *fa, *fimod);
+  fimod->Update(1.0, *fi, -1.0);
+
+  //---------------------------------------------------------- FOURTH LINE
+  // gactive: nothing to do  - execpt its regularized contact see --> DoRegularizationScaling()
+
+  //----------------------------------------------------------- FIFTH LINE
+  // fa: multiply tmatrix with invda and fa
+  Teuchos::RCP<Epetra_Vector> famod;
+  Teuchos::RCP<LINALG::SparseMatrix> tinvda;
+  if (aset)
+  {
+    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      famod = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+    else
+      famod = Teuchos::rcp(new Epetra_Vector(*gactivet_));
+
+    tinvda = LINALG::MLMultiply(*tmatrix_, false, *invda, true, false, false, true);
+    tinvda->Multiply(false, *fa, *famod);
+  }
+
+  /********************************************************************/
+  /* (9) Transform the final K blocks                                 */
+  /********************************************************************/
+  // The row maps of all individual matrix blocks are transformed to
+  // the parallel layout of the underlying problem discretization.
+  // Of course, this is only necessary in the parallel redistribution
+  // case, where the contact interfaces have been redistributed
+  // independently of the underlying problem discretization.
+
+  if (ParRedist())
+  {
+    //----------------------------------------------------------- FIRST LINE
+    // nothing to do (ndof-map independent of redistribution)
+
+    //---------------------------------------------------------- SECOND LINE
+    kmnmod = MORTAR::MatrixRowTransform(kmnmod, pgmdofrowmap_);
+    kmmmod = MORTAR::MatrixRowTransform(kmmmod, pgmdofrowmap_);
+    if (iset) kmimod = MORTAR::MatrixRowTransform(kmimod, pgmdofrowmap_);
+    if (aset) kmamod = MORTAR::MatrixRowTransform(kmamod, pgmdofrowmap_);
+
+    //----------------------------------------------------------- THIRD LINE
+    if (iset)
+    {
+      kinmod = MORTAR::MatrixRowTransform(kinmod, pgsdofrowmap_);
+      kimmod = MORTAR::MatrixRowTransform(kimmod, pgsdofrowmap_);
+      kiimod = MORTAR::MatrixRowTransform(kiimod, pgsdofrowmap_);
+      if (aset) kiamod = MORTAR::MatrixRowTransform(kiamod, pgsdofrowmap_);
+    }
+
+    //---------------------------------------------------------- FOURTH LINE
+    if (aset) smatrix_ = MORTAR::MatrixRowTransform(smatrix_, pgsdofrowmap_);
+
+    //----------------------------------------------------------- FIFTH LINE
+    if (aset)
+    {
+      kanmod = MORTAR::MatrixRowTransform(kanmod, pgsdofrowmap_);
+      kammod = MORTAR::MatrixRowTransform(kammod, pgsdofrowmap_);
+      kaamod = MORTAR::MatrixRowTransform(kaamod, pgsdofrowmap_);
+      if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod, pgsdofrowmap_);
+      tderivmatrix_ = MORTAR::MatrixRowTransform(tderivmatrix_, pgsdofrowmap_);
+    }
+  }
+
+  /**********************************************************************/
+  /* (10) Global setup of kteffnew (including contact)                  */
+  /**********************************************************************/
+
+  Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(
+      new LINALG::SparseMatrix(*ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
+  Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*ProblemDofs());
+
+  // Add all additional contributions from regularized contact to kteffnew and feffnew!
+  if (regularized_)
+    DoRegularizationScaling(aset, iset, invda, kan, kam, kai, kaa, fa, kteffnew, feffnew);
+
+  //----------------------------------------------------------- FIRST LINE
+  // add n submatrices to kteffnew
+  kteffnew->Add(*knn, false, 1.0, 1.0);
+  kteffnew->Add(*knm, false, 1.0, 1.0);
+  if (sset) kteffnew->Add(*kns, false, 1.0, 1.0);
+
+  //---------------------------------------------------------- SECOND LINE
+  // add m submatrices to kteffnew
+  kteffnew->Add(*kmnmod, false, 1.0, 1.0);
+  kteffnew->Add(*kmmmod, false, 1.0, 1.0);
+  if (iset) kteffnew->Add(*kmimod, false, 1.0, 1.0);
+  if (aset) kteffnew->Add(*kmamod, false, 1.0, 1.0);
+
+  //----------------------------------------------------------- THIRD LINE
+  // add i submatrices to kteffnew
+  if (iset) kteffnew->Add(*kinmod, false, 1.0, 1.0);
+  if (iset) kteffnew->Add(*kimmod, false, 1.0, 1.0);
+  if (iset) kteffnew->Add(*kiimod, false, 1.0, 1.0);
+  if (iset && aset) kteffnew->Add(*kiamod, false, 1.0, 1.0);
+
+  //---------------------------------------------------------- FOURTH LINE
+  // add a submatrices to kteffnew
+  if (aset) kteffnew->Add(*smatrix_, false, 1.0, 1.0);
+
+  //----------------------------------------------------------- FIFTH LINE
+  // add a submatrices to kteffnew
+  if (aset) kteffnew->Add(*kanmod, false, 1.0, 1.0);
+  if (aset) kteffnew->Add(*kammod, false, 1.0, 1.0);
+  if (aset && iset) kteffnew->Add(*kaimod, false, 1.0, 1.0);
+  if (aset) kteffnew->Add(*kaamod, false, 1.0, 1.0);
+  if (aset) kteffnew->Add(*tderivmatrix_, false, -1.0, 1.0);
+
+  // FillComplete kteffnew (square)
+  kteffnew->Complete();
+
+  /**********************************************************************/
+  /* (11) Global setup of feffnew (including contact)                   */
+  /**********************************************************************/
+
+  //----------------------------------------------------------- FIRST LINE
+  // add n subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  LINALG::Export(*fn, *fnexp);
+  feffnew->Update(1.0, *fnexp, 1.0);
+
+  //---------------------------------------------------------- SECOND LINE
+  // add m subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  LINALG::Export(*fmmod, *fmmodexp);
+  feffnew->Update(1.0, *fmmodexp, 1.0);
+
+  //----------------------------------------------------------- THIRD LINE
+  // add i subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> fimodexp;
+  if (iset)
+  {
+    fimodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*fimod, *fimodexp);
+    feffnew->Update(1.0, *fimodexp, 1.0);
+  }
+
+  //---------------------------------------------------------- FOURTH LINE
+  // add weighted gap vector to feffnew, if existing
+  Teuchos::RCP<Epetra_Vector> gexp;
+  if (aset)
+  {
+    gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*gact, *gexp);
+    feffnew->Update(-1.0, *gexp, 1.0);
+  }
+
+  //----------------------------------------------------------- FIFTH LINE
+  // add a subvector to feffnew
+  Teuchos::RCP<Epetra_Vector> famodexp;
+  if (aset)
+  {
+    famodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+    LINALG::Export(*famod, *famodexp);
+    feffnew->Update(1.0, *famodexp, 1.0);
+  }
+
+  // finally do the replacement
+  *kteff = *kteffnew;
+  *feff = *feffnew;
+
+
+#ifdef CONTACTFDGAP
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckGapDeriv();
+  }
+#endif  // #ifdef CONTACTFDGAP
+
+#ifdef CONTACTFDALPHA
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckAlphaDeriv();
+  }
+#endif  // #ifdef CONTACTFDGAP
+#ifdef CONTACTFDTANGLM
+  // FD check of tangential LM derivatives (frictionless condition)
+  for (int i = 0; i < (int)interface_.size(); ++i)
+  {
+    std::cout << *tderivmatrix_ << std::endl;
+    interface_[i]->FDCheckTangLMDeriv();
+  }
+#endif  // #ifdef CONTACTFDTANGLM
+
+
+  feff->Scale(-1.);
+}
+
+void CONTACT::CoLagrangeStrategy::RunPreApplyJacobianInverse(
+    Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+{
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+
+  INPAR::MORTAR::LagMultQuad lagmultquad =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+  if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
+  {
+    if (not(systrafo_->DomainMap().SameAs(kteff->DomainMap()))) dserror("stop");
+
+    *kteff = *LINALG::Multiply(*systrafo_, true, *kteff, false, false, false, true);
+    Epetra_Vector rhs_str(*ProblemDofs());
+    Epetra_Vector rhs_str2(*ProblemDofs());
+    LINALG::Export(rhs, rhs_str);
+    if (systrafo_->Multiply(true, rhs_str, rhs_str2)) dserror("multiply failed");
+    for (int i = 0; i < rhs_str2.Map().NumMyElements(); ++i)
+      rhs[rhs.Map().LID(rhs_str2.Map().GID(i))] = rhs_str2[i];
+  }
+
+
+  if (systype_ != INPAR::CONTACT::system_condensed) return;
+
+  if (friction_)
+    CondenseFriction(kteff, rhs);
+  else
+    CondenseFrictionless(kteff, rhs);
+
+  return;
+}
+
+void CONTACT::CoLagrangeStrategy::RunPostApplyJacobianInverse(
+    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
+    const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+{
+  if (SystemType() != INPAR::CONTACT::system_condensed) return;
+
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
+
+  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcpFromRef<Epetra_Vector>(result);
+  disi->Scale(-1.);
+  {
+    // shape function type and type of LM interpolation for quadratic elements
+    INPAR::MORTAR::ShapeFcn shapefcn =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
+    INPAR::MORTAR::LagMultQuad lagmultquad =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+
+    // double-check if this is a dual LM system
+    if ((shapefcn != INPAR::MORTAR::shape_dual &&
+            shapefcn != INPAR::MORTAR::shape_petrovgalerkin) &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
+            INPAR::MORTAR::lagmult_const)
+      dserror("Condensation only for dual LM");
+
+    // extract slave displacements from disi
+    Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    if (gsdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disis);
+
+    // extract master displacements from disi
+    Teuchos::RCP<Epetra_Vector> disim = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+    if (gmdofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disim);
+
+    // extract other displacements from disi
+    Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
+    if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi, *disin);
+
+    // condensation has been performed for active LM only,
+    // thus we construct a modified invd matrix here which
+    // only contains the active diagonal block
+    // (this automatically renders the incative LM to be zero)
+    Teuchos::RCP<LINALG::SparseMatrix> invda;
+    Teuchos::RCP<Epetra_Map> tempmap;
+    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    LINALG::SplitMatrix2x2(
+        invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
+    Teuchos::RCP<LINALG::SparseMatrix> invdmod =
+        Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
+    invdmod->Add(*invda, false, 1.0, 1.0);
+    invdmod->Complete();
+
+    /**********************************************************************/
+    /* Update Lagrange multipliers z_n+1                                  */
+    /**********************************************************************/
+    // for self contact, slave and master sets may have changed,
+    // thus we have to export the products Dold * zold and Mold^T * zold to fit
+    if (IsSelfContact())
+    {
+      // full update
+      z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      z_->Update(1.0, *fs_, 0.0);
+      Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      kss_->Multiply(false, *disis, *mod);
+      z_->Update(-1.0, *mod, 1.0);
+      ksm_->Multiply(false, *disim, *mod);
+      z_->Update(-1.0, *mod, 1.0);
+      ksn_->Multiply(false, *disin, *mod);
+      z_->Update(-1.0, *mod, 1.0);
+      Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
+      invdmod->Multiply(true, *zcopy, *z_);
+      z_->Scale(1 / (1 - alphaf_));
+    }
+    else
+    {
+      // full update
+      z_->Update(1.0, *fs_, 0.0);
+      Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      kss_->Multiply(false, *disis, *mod);
+      z_->Update(-1.0, *mod, 1.0);
+      ksm_->Multiply(false, *disim, *mod);
+      z_->Update(-1.0, *mod, 1.0);
+      ksn_->Multiply(false, *disin, *mod);
+      z_->Update(-1.0, *mod, 1.0);
+      Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
+      invdmod->Multiply(true, *zcopy, *z_);
+      z_->Scale(1 / (1 - alphaf_));
+    }
+
+    // store updated LM into nodes
+    StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
+  }
+  disi->Scale(-1.);
 }

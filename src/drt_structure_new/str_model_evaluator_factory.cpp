@@ -26,6 +26,7 @@
 #include "str_model_evaluator_cardiovascular0d.H"
 #include "str_model_evaluator_springdashpot.H"
 #include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_meshtying.H"
 #include "str_model_evaluator_lagpenconstraint.H"
 #include "../drt_contact_xcontact/str_model_evaluator_xcontact.H"
 #include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
@@ -97,6 +98,8 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
         break;
       }
       case INPAR::STR::model_meshtying:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Meshtying());
+        break;
       default:
         dserror("Not yet implemented!");
         break;

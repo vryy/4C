@@ -39,13 +39,13 @@ namespace CONTACT
     //! Standard constructor
     CoPenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
 
     //! Shared data constructor
     CoPenaltyStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
-        Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -191,24 +191,63 @@ namespace CONTACT
     */
     void UpdateUzawaAugmentedLagrange();
 
+    /*! \brief Compute force terms
+     *
+     *  \param cparams (in): parameter interface between the contact objects and the structural time
+     * integration*/
+    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+
+    /*! \brief Compute force and stiffness terms
+     *
+     *  \param cparams (in): parameter interface between the contact objects and the structural time
+     * integration*/
+    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+
+    /*! \brief Assemble force and stiffness terms to global vector and matrix */
+    void Assemble();
+
+    /*! \brief Run at the beginning of the Evaluate() routine
+     *         set force evaluation flag
+     *
+     */
+    virtual void PreEvaluate(CONTACT::ParamsInterface& cparams);
+
+    /*! \brief Run in the end of the Evaluate() routine to reset
+     *         force evaluation flag
+     *
+     *
+     */
+    virtual void PostEvaluate(CONTACT::ParamsInterface& cparams);
+
+
+    /*! \brief Return the desired right-hand-side block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint,*/
+    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const;
+
+    /*! \brief Return the desired matrix block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...
+     *  \param cparams (in): contact parameter interface (read-only) */
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt,
+        const CONTACT::ParamsInterface* cparams = NULL) const;
+
     //@}
 
     //! @name Empty functions (Lagrange contact)
 
     // All these functions only have functionality in Lagrange contact simulations,
     // thus they are defined empty here in the case of Penalty contact.
-
-    //! Get the active node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
-    {
-      dserror("Currently unsupported for the penalty strategy!");
-      return Teuchos::null;
-    };
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    {
-      dserror("Currently unsupported for the penalty strategy!");
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const { return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return Teuchos::null; };
     bool ActiveSetSemiSmoothConverged() const { return true; }
     bool ActiveSetConverged() { return true; }
     int ActiveSetSteps() { return 0; }
@@ -232,6 +271,39 @@ namespace CONTACT
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
+    bool IsPenalty() const override { return true; };
+    void ResetLagrangeMultipliers(
+        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
+    {
+    }
+    virtual bool IsSaddlePointSystem() const { return false; }
+    virtual bool IsCondensedSystem() const { return false; }
+    virtual bool IsNitsche() const { return false; }
+
+    /*! \brief Recover the current state
+     *
+     *  The main task of this method is to recover the Lagrange multiplier solution.
+     *  The Lagrange multiplier solution will be stored inside the corresponding strategy
+     *  and is necessary for different internal evaluation methods. If the Lagrange multiplier
+     *  is condensed, this method is the right place to recover it from the displacement solution.
+     *  If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine
+     * instead.
+     *
+     *  \param cparams (in): parameter interface between the contact objects and the structural time
+     * integration \param xold    (in): old solution vector of the NOX solver \param dir     (in):
+     * current search direction (in general NOT the actual step, keep in mind that the step length
+     * can differ from 1.0) \param xnew    (in): new solution vector of the NOX solver
+     *
+     *  \date 05/2016
+     *  \author hiermeier */
+    virtual void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        const Epetra_Vector& dir, const Epetra_Vector& xnew)
+    {
+    }
+    virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const;
+    virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const;
+    virtual Teuchos::RCP<Epetra_Vector> LagrMultOld();
+    virtual Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const;
 
    protected:
     //! derived
@@ -253,6 +325,10 @@ namespace CONTACT
     double constrnormtan_;                              // L2-norm of tangential contact constraints
     double initialpenalty_;                             // initial penalty parameter
     double initialpenaltytan_;                          // initial tangential penalty parameter
+    bool evalForceCalled_;                              //< flag for evaluate force call
+
+    Teuchos::RCP<Epetra_Vector> fc_;         //< contact penalty force
+    Teuchos::RCP<LINALG::SparseMatrix> kc_;  //< contact penalty stiffness
 
   };  // class CoPenaltyStrategy
 }  // namespace CONTACT

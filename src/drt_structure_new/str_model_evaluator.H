@@ -302,6 +302,12 @@ namespace STR
     void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
         const Epetra_Vector& xold, const NOX::NLN::Group& grp) const;
 
+    /*! \brief Executed before the solution of the linear system
+     *
+     *  \author seitz \date 04/17 */
+    void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+        const Epetra_Vector& xold, const NOX::NLN::Group& grp) const;
+
     //! @}
 
     //! computes element based scaling contributions for PTC

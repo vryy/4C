@@ -63,6 +63,7 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
+INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange

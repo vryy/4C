@@ -179,7 +179,7 @@ namespace CONTACT
     \brief evaluate mortar coupling (MT)
 
     */
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector> dis);
 
     /*!
     \brief Recovery method
@@ -283,6 +283,7 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
