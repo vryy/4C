@@ -1078,7 +1078,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         {
           double r_ij = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
           rollfricmoment_i.CrossProduct(tangentrollingforce, normal);
-          rollfricmoment_i.Update(r_ij, rollfricmoment_i);
+          rollfricmoment_i.Scale(r_ij);
           rollfricmoment_j.Update(-1.0, rollfricmoment_i);
           contactmoment_i.Update(1.0, rollfricmoment_i, 1.0);
           contactmoment_j.Update(1.0, rollfricmoment_j, 1.0);
@@ -1510,7 +1510,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
     {
       rollfricmoment.CrossProduct(wallcontact.normal, tangentrollingforce);
-      rollfricmoment.Update(-r_iC.Norm2(), rollfricmoment);
+      rollfricmoment.Scale(-r_iC.Norm2());
       contactmoment.Update(1.0, rollfricmoment, 1.0);
     }
     else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
