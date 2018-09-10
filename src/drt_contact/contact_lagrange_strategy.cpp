@@ -5509,9 +5509,8 @@ void CONTACT::CoLagrangeStrategy::CondenseFriction(
     LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
-  // abbreviations for slave and master set
+  // abbreviations for slave set
   const int sset = gsdofrowmap_->NumGlobalElements();
-  const int mset = gmdofrowmap_->NumGlobalElements();
 
   // we want to split fsm into 2 groups s,m
   fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -6202,8 +6201,6 @@ void CONTACT::CoLagrangeStrategy::CondenseFrictionless(
   // shape function type and type of LM interpolation for quadratic elements
   INPAR::MORTAR::ShapeFcn shapefcn =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
-  INPAR::MORTAR::LagMultQuad lagmultquad =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
   // requires a penalty regularization. Here, the penalty contriutions for this
@@ -6337,9 +6334,8 @@ void CONTACT::CoLagrangeStrategy::CondenseFrictionless(
     LINALG::SplitVector(*ProblemDofs(), *feff, gsmdofrowmap_, fsm, gndofrowmap_, fn);
   }
 
-  // abbreviations for slave  and master set
+  // abbreviations for slave set
   const int sset = gsdofrowmap_->NumGlobalElements();
-  const int mset = gmdofrowmap_->NumGlobalElements();
 
   // we want to split fsm into 2 groups s,m
   fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -6826,8 +6822,6 @@ void CONTACT::CoLagrangeStrategy::RunPostApplyJacobianInverse(
     // shape function type and type of LM interpolation for quadratic elements
     INPAR::MORTAR::ShapeFcn shapefcn =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
-    INPAR::MORTAR::LagMultQuad lagmultquad =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
     // double-check if this is a dual LM system
     if ((shapefcn != INPAR::MORTAR::shape_dual &&
