@@ -206,13 +206,13 @@ namespace CONTACT
     double constrnorm_;      // L2-norm of normal contact constraints
     double initialpenalty_;  // initial penalty parameter
 
-    Teuchos::RCP<LINALG::SparseMatrix> mtm_;  // mortar matrix product: M(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> mtd_;  // mortar matrix product: M(^T)*D
-    Teuchos::RCP<LINALG::SparseMatrix> dtm_;  // mortar matrix product: D(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> dtd_;  // mortar matrix product: D(^T)*D
+    Teuchos::RCP<LINALG::SparseMatrix> mtm_;  ///< mortar matrix product: M(^T)*M
+    Teuchos::RCP<LINALG::SparseMatrix> mtd_;  ///< mortar matrix product: M(^T)*D
+    Teuchos::RCP<LINALG::SparseMatrix> dtm_;  ///< mortar matrix product: D(^T)*M
+    Teuchos::RCP<LINALG::SparseMatrix> dtd_;  ///< mortar matrix product: D(^T)*D
 
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_;  // global stiffness matrix
-    Teuchos::RCP<Epetra_Vector> force_;         // global RHS vector
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_;  ///< global stiffness matrix
+    Teuchos::RCP<Epetra_Vector> force_;         ///< global RHS vector
 
 
   };  // class MtPenaltyStrategy
