@@ -17,7 +17,7 @@ Every time something changes in the repository (commit, merge, etc.), GitLab che
 
 ### LNM and IMCS
 
-Since the configurations at LNM and IMCS vary, there are some environment variables defined in `.gitlab-ci.yml` that are passed to the gitlab-runner (for example at IMCS the `do-configure` script needs to be executed by `bash`, this is set in the `CTEST_CONFIGURE_PREFIX` variable).
+Since the configurations at LNM and IMCS vary, there are some environment variables defined in `.gitlab-ci.yml` that are passed to the gitlab-runner (for example at LNM the `do-configure` script is called with the option `--useDEAM`, this is achieved with the `CTEST_CONFIGURE_POSTFIX` varibable).
 
 ### Daily tests
 
