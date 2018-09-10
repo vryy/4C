@@ -662,12 +662,12 @@ namespace CONTACT
 
     bool dualquadslavetrafo_;                   // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix> trafo_;  // transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;  // transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;  ///< transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>
         invtrafo_;    // inverse trafo matrix T^(-1) for dual quad 3D case
     double inttime_;  // Integration time
 
-    Teuchos::RCP<Epetra_Vector> f_;                      // structural force
+    Teuchos::RCP<Epetra_Vector> f_;                      ///< structural force
     Teuchos::RCP<Epetra_Vector> fs_;                     // structural force (slave)
     Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_;       // matrix containing D and -M
     Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_t_;     // matrix containing D and -M. transposed
