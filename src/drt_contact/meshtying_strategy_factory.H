@@ -122,21 +122,6 @@ namespace MORTAR
       static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
 
      protected:
-      /*! \brief Extract the discretization belonging to the given contact
-       *   condition pair/group
-       *
-       *  \param full_discret (in) : full structural discretization
-       *  \param given_cgroup (in) : given contact condition group/pair
-       *  \param parent_dis_pair (out) : pair of enumerator and discretization interface
-       *                                 belonging to the given contact condition group/pair
-       *
-       *  \author hiermeier
-       *  \date 10/16 */
-      void ExtractParentDiscretization(const DRT::DiscretizationInterface& full_discret,
-          const std::vector<DRT::Condition*>& given_ccgroup,
-          std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface>>&
-              parent_dis_pair) const;
-
     };  // class FactoryMT
   }     // namespace STRATEGY
 }  // namespace MORTAR
