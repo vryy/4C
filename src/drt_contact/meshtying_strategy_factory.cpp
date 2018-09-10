@@ -13,15 +13,14 @@
 
 #include "meshtying_strategy_factory.H"
 
-#include "contact_element.H"
-#include "friction_node.H"
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_node.H"
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 #include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_wear.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -37,30 +36,10 @@
 #include "contact_utils.H"
 #include "../drt_mortar/mortar_utils.H"
 
-// supported strategies and interfaces
-// -- standard strategies and interfaces
-#include "contact_wear_interface.H"
-#include "contact_tsi_interface.H"
-#include "contact_nitsche_strategy_tsi.H"
-#include "contact_poro_lagrange_strategy.H"
-#include "contact_tsi_lagrange_strategy.H"
-#include "contact_lagrange_strategy.H"
-#include "contact_nitsche_strategy.H"
-#include "contact_penalty_strategy.H"
+#include "contact_abstract_strategy.H"
 #include "meshtying_abstract_strategy.H"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_penalty_strategy.H"
-// --augmented strategies and interfaces
-#include "../drt_contact_aug/contact_augmented_interface.H"
-#include "../drt_contact_aug/contact_augmented_strategy.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
-#include "../drt_contact_aug/contact_aug_lagrange_interface.H"
-#include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
-#include "../drt_contact_aug/contact_aug_combo_strategy.H"
-// --xcontact strategies and interfaces
-#include "../drt_contact_xcontact/xcontact_interface.H"
-#include "../drt_contact_xcontact/xcontact_strategy.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -619,14 +598,6 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
-
-
-  //  for (int i=0;i<interfaces[0]->Discret().NodeColMap()->NumMyElements();++i)
-  //  {
-  //    int gid = interfaces[0]->Discret().NodeColMap()->GID(i);
-  //    DRT::Node* node =interfaces[0]->Discret().gNode(gid);
-  //    std::cout << "my node: " << gid << " at " << LINALG::Matrix<3,1>(node->X()) << std::endl;
-  //  }
 }
 
 /*----------------------------------------------------------------------------*
