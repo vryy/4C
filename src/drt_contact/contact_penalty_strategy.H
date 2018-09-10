@@ -195,13 +195,13 @@ namespace CONTACT
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Compute force and stiffness terms
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Assemble force and stiffness terms to global vector and matrix */
     void Assemble();

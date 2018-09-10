@@ -224,7 +224,7 @@ namespace CONTACT
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run at the beginning of the Evaluate() routine
      *         set force evaluation flag
@@ -265,7 +265,7 @@ namespace CONTACT
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
 
     /*!
     \brief Update active set and check for convergence
