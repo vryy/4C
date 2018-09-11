@@ -30,3 +30,7 @@ Every time something changes in the `master` branch, a pipeline is created that 
 ### User triggered tests
 
 Since we allow merges to `master` only for tested commits, the user has to start a pipeline on the commit when submitting a merge request. This can be done under the GitLab web interface: Goto `CI/CD - Pipelines - Run Pipeline`, then select the branch you want to test (the latest commit on that branch will be tested) and push the button `Create pipeline`. This will first perform the code checks and if they pass a full release build and test on all configurations.
+
+### Output
+
+For each job certain testing output is displayed in GitLab (select job under `CI/CD - Pipelines`). For the minimal tests the full output can be viewed online. The full tests produce too much output for the web interface, only the last 200 lines of each failed test are displayed, as well as a summary of the `ctest` call. In each case, the full output of the `ctest` is written to a `.log` file and copied to a local path defined by the `LOG_FILE_PATH` variable.
