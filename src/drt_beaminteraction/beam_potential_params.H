@@ -79,6 +79,18 @@ namespace BEAMINTERACTION
       return cutoff_radius_;
     }
 
+    inline enum INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType RegularizationType() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return regularization_type_;
+    }
+
+    inline double RegularizationSeparation() const
+    {
+      ThrowErrorIfNotInitAndSetup();
+      return regularization_separation_;
+    }
+
     inline int NumberIntegrationSegments() const
     {
       ThrowErrorIfNotInitAndSetup();
@@ -132,6 +144,12 @@ namespace BEAMINTERACTION
 
     //! neglect all contributions at separation larger than this cutoff radius
     double cutoff_radius_;
+
+    //! type of regularization to use for force law at separations below specified separation
+    enum INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type_;
+
+    //! use specified regularization type for separations smaller than this value
+    double regularization_separation_;
 
     //! number of integration segments to be used per beam element
     int num_integration_segments_;

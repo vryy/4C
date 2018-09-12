@@ -107,6 +107,30 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
     dserror("Invalid cutoff radius! Must be positive value or -1 to deactivate.");
 
   /****************************************************************************/
+  regularization_type_ =
+      DRT::INPUT::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+          beam_potential_params_list, "REGULARIZATION_TYPE");
+
+  if (regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
+      strategy_ != INPAR::BEAMPOTENTIAL::strategy_doublelengthspec_smallsepapprox)
+  {
+    dserror(
+        "Regularization of force law only implemented for strategy "
+        "'DoubleLengthSpecific_SmallSepApprox' yet!");
+  }
+
+  /****************************************************************************/
+  regularization_separation_ = beam_potential_params_list.get<double>("REGULARIZATION_SEPARATION");
+
+  if (regularization_type_ != INPAR::BEAMPOTENTIAL::regularization_none and
+      regularization_separation_ <= 0.0)
+  {
+    dserror(
+        "Invalid regularization separation! Must be a positive value since force law "
+        "is not defined for separations <= 0!");
+  }
+
+  /****************************************************************************/
   num_integration_segments_ = beam_potential_params_list.get<int>("NUM_INTEGRATION_SEGMENTS");
 
   if (num_integration_segments_ <= 0)

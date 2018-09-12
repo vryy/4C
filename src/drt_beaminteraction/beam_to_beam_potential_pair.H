@@ -216,7 +216,7 @@ namespace BEAMINTERACTION
      *  \date 10/17 */
     void EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
         LINALG::TMatrix<double, 3, 1> const& dist, double const& norm_dist, double const& gap,
-        double const& gap_exp1, double q1q2_JacFac_GaussWeights,
+        double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
@@ -230,7 +230,8 @@ namespace BEAMINTERACTION
     void EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
         LINALG::TMatrix<Sacado::Fad::DFad<double>, 3, 1> const& dist,
         Sacado::Fad::DFad<double> const& norm_dist, Sacado::Fad::DFad<double> const& gap,
-        Sacado::Fad::DFad<double> const& gap_exp1, double q1q2_JacFac_GaussWeights,
+        Sacado::Fad::DFad<double> const& gap_regularized, Sacado::Fad::DFad<double> const& gap_exp1,
+        double q1q2_JacFac_GaussWeights,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,

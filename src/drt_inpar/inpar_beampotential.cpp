@@ -58,6 +58,17 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
       "than this cutoff radius",
       &beampotential);
 
+  setStringToIntegralParameter<int>("REGULARIZATION_TYPE", "none",
+      "Type of potential interaction: surface (default) or volume potential",
+      tuple<std::string>("constant_extrapolation", "None", "none"),
+      tuple<int>(regularization_constant, regularization_none, regularization_none),
+      &beampotential);
+
+  DoubleParameter("REGULARIZATION_SEPARATION", -1.0,
+      "Use regularization of force law at separations "
+      "smaller than this separation",
+      &beampotential);
+
   IntParameter("NUM_INTEGRATION_SEGMENTS", 1,
       "Number of integration segments used per beam element", &beampotential);
 

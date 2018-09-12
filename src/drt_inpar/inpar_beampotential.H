@@ -51,6 +51,14 @@ namespace INPAR
       strategy_vague
     };
 
+    /// available types to regularize the force law for separations smaller than
+    /// the specified regularization parameter
+    enum BeamPotentialRegularizationType
+    {
+      regularization_constant,  ///< constant extrapolation, i.e. f(r)=f(r_reg) for all r<r_reg
+      regularization_none       ///< no regularization
+    };
+
     /// data format for written numeric data via vtk
     enum OutputDataFormat
     {

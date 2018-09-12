@@ -575,6 +575,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // get cutoff radius
   const double cutoff_radius = Params()->CutoffRadius();
 
+  // get regularization type and separation
+  const INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
+      Params()->RegularizationType();
+
+  const double regularization_separation = Params()->RegularizationSeparation();
+
   // number of integration segments per element
   const unsigned int num_integration_segments = Params()->NumberIntegrationSegments();
 
@@ -601,6 +607,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   LINALG::TMatrix<T, 3, 1> dist(true);  // = r1-r2
   T norm_dist = 0.0;                    // = |r1-r2|
   T gap = 0.0;                          // = |r1-r2|-R1-R2
+  T gap_regularized = 0.0;  // modified gap if a regularization of the force law is applied
 
   // evaluate charge/particle densities from DLINE charge condition specified in input file
   double q1 = linechargeconds_[0]->GetDouble("val");
@@ -755,23 +762,67 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
           norm_dist = FADUTILS::VectorNorm(dist);
 
+          if (norm_dist == 0.0)
+          {
+            this->Print(std::cout);
+            std::cout << "\nGP pair: igp1_total=" << igp1_total << " & igp2_total=" << igp2_total
+                      << ": |r1-r2|=" << norm_dist;
+
+            dserror("centerline separation |r1-r2|=0! Fatal error.");
+          }
+
           // check cutoff criterion: if specified, contributions are neglected at larger separation
           if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
 
           gap = norm_dist - radius1_ - radius2_;
 
 
-          // auxiliary variables to store pre-calculated common terms
-          T gap_exp1 = 0.0;
 
-          if (gap >= 0.0)
-            gap_exp1 = std::pow(gap, -m_ + 2.5);
-          else
-            dserror("gap<=0!");
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_none and gap <= 0.0)
+          {
+            this->Print(std::cout);
+            std::cout << "\nGP pair: igp1_total=" << igp1_total << " & igp2_total=" << igp2_total
+                      << ": gap=" << gap;
+
+            dserror(
+                "gap<=0! Force law resulting from specified interaction potential law is "
+                "not defined for zero/negative gaps! Use/implement a regularization!");
+          }
+
+          gap_regularized = gap;
+
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant and
+              gap < regularization_separation)
+          {
+            gap_regularized = regularization_separation;
+          }
+
+          if (gap_regularized <= 0)
+            dserror(
+                "regularized gap <= 0! Fatal error since force law is not defined for "
+                "zero/negative gaps! Use positive regularization separation!");
+
+
+          // auxiliary variables to store pre-calculated common terms
+          T gap_exp1 = std::pow(gap_regularized, -m_ + 2.5);
 
           double q1q2_JacFac_GaussWeights = q1 * q2 * jacobifac1 * jacobifactor_segment1 *
                                             jacobifac2 * jacobifactor_segment2 *
                                             gausspoints.qwgt[igp1] * gausspoints.qwgt[igp2];
+
+          // store for energy output
+          interaction_potential_ += prefactor / (m_ - 3.5) * q1q2_JacFac_GaussWeights *
+                                    std::pow(FADUTILS::CastToDouble(gap_regularized), -m_ + 3.5);
+
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant and
+              gap < regularization_separation)
+          {
+            // potential law is linear in the regime of constant extrapolation of force law
+            // add the contribution from this part of the force law
+            interaction_potential_ += prefactor * q1q2_JacFac_GaussWeights *
+                                      FADUTILS::CastToDouble(gap_exp1) *
+                                      (regularization_separation - FADUTILS::CastToDouble(gap));
+          }
 
           // auxiliary term, same for both element forces
           for (unsigned int i = 0; i < 3; i++)
@@ -809,8 +860,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
               stiffmat22 != NULL)
           {
             EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(dist,
-                norm_dist, gap, gap_exp1, q1q2_JacFac_GaussWeights, N1_i[igp1], N2_i[igp2],
-                *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
+                norm_dist, gap, gap_regularized, gap_exp1, q1q2_JacFac_GaussWeights, N1_i[igp1],
+                N2_i[igp2], *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
           }
 
           // store for vtk visualization
@@ -824,10 +875,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                                  FADUTILS::CastToDouble(norm_dist) * jacobifac1 *
                                                  jacobifactor_segment1 * gausspoints.qwgt[igp1],
               FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
-
-          // store for energy output
-          interaction_potential_ += prefactor / (m_ - 3.5) * q1q2_JacFac_GaussWeights *
-                                    std::pow(FADUTILS::CastToDouble(gap), -m_ + 3.5);
 
         }  // end: loop over gauss points of element 2
       }    // end: loop over gauss points of element 1
@@ -855,7 +902,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(
         LINALG::TMatrix<double, 3, 1> const& dist, double const& norm_dist, double const& gap,
-        double const& gap_exp1, double q1q2_JacFac_GaussWeights,
+        double const& gap_regularized, double const& gap_exp1, double q1q2_JacFac_GaussWeights,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N1_i_GP1,
         LINALG::TMatrix<double, 1, numnodes * numnodalvalues> const& N2_i_GP2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
@@ -865,7 +912,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // calculate stiffpot1
   //********************************************************************
   // auxiliary variables (same for both elements)
-  double gap_exp2 = std::pow(gap, -m_ + 1.5);
+  double gap_exp2 = std::pow(gap_regularized, -m_ + 1.5);
+
+  if (Params()->RegularizationType() == INPAR::BEAMPOTENTIAL::regularization_constant and
+      gap < Params()->RegularizationSeparation())
+  {
+    /* in case of constant extrapolation of force law, the derivative of the force is zero
+     * and this contribution to the stiffness matrix vanishes */
+    gap_exp2 = 0.0;
+  }
 
   double aux_fac1 = gap_exp1 / norm_dist * q1q2_JacFac_GaussWeights;
   double aux_fac2 =
