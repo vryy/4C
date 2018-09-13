@@ -26,26 +26,30 @@ namespace CONTACT
 {
   namespace AUG
   {
+    /** enumerator list for the inner CONTACT::AUG::Integrator functions
+     *  which can be found in the respective policy */
     enum class TimeID : unsigned
     {
-      Deriv2nd_NonUnitSlaveElementNormal = 0,
-      Deriv2nd_UnitSlaveElementNormal = 1,
-      Deriv2nd_Jacobian = 2,
-      Deriv1st_NonUnitSlaveElementNormal = 3,
-      Deriv1st_MXiGP = 4,
-      INCOMPLETE_Add_Jac_Deriv2nd_GapN = 5,
-      INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac = 6,
+      Deriv2nd_NonUnitSlaveElementNormal,
+      Deriv2nd_UnitSlaveElementNormal,
+      Deriv2nd_Jacobian,
+      Deriv1st_NonUnitSlaveElementNormal,
+      Deriv1st_MXiGP,
+      INCOMPLETE_Add_Jac_Deriv2nd_GapN,
+      INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac,
       /*--- MAX_VALUE: Must stay at the end ------------*/
       MAX_TIME_ID
     };
 
+    /** enumerator list of the \"global\" CONTACT::AUG::Integrator functions
+     *  or other element specific time consuming functions. */
     enum class GlobalTimeID : unsigned
     {
-      IntegrateDerivSlaveElement = 0,
-      IntegrateDerivEle2D = 1,
-      IntegrateDerivSegment2D = 2,
-      IntegrateDerivEle3D = 3,
-      IntegrateDerivCell3DAuxPlane = 4,
+      IntegrateDerivSlaveElement,
+      IntegrateDerivEle2D,
+      IntegrateDerivSegment2D,
+      IntegrateDerivEle3D,
+      IntegrateDerivCell3DAuxPlane,
       /*--- MAX_VALUE: Must stay at the end ------------*/
       MAX_TIME_ID
     };
@@ -97,7 +101,10 @@ namespace CONTACT
     class TimeMonitor
     {
      public:
+      /// constructor
       TimeMonitor();
+
+      /// destructor
       ~TimeMonitor() = default;
 
       /// set communicator
@@ -134,8 +141,15 @@ namespace CONTACT
       inline double getLastTimeIncr() const { return last_incr_; };
 
      private:
+      /** The pairs hold: first -> last start wall time, second -> accumulated
+       *  time since the last reset call. The vector entries correspond to the
+       *  different involved enumerators */
       std::vector<std::pair<double, double>> timings_;
+
+      /// time increment between the very last start and stop call
       double last_incr_ = 0.0;
+
+      /// pointer to the Epetra communciator object (has the ownership)
       std::shared_ptr<const Epetra_Comm> comm_;
     };
 
