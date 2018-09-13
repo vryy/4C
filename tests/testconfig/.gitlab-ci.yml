@@ -10,7 +10,7 @@ variables:
     # 2: daily debug
     GITLAB_SCHEDULER_TYPE: "0"
 
-    # Prefix for do-configure (in ubuntu the do-configure needs to be called by bash).
+    # Prefix for do-configure.
     CTEST_CONFIGURE_PREFIX: ""
 
     # Postfix for do-configure.
@@ -263,7 +263,7 @@ lnm-buildtest_minimal:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
-        - lnm-test
+        - lnm-release-mastermod-minimal
 
 lnm-buildtest_full:
     << : *buildtest_full
@@ -276,7 +276,7 @@ lnm-buildtest_full:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
-        - lnm-test
+        - lnm-release-user-full
 
 lnm-buildtest_daily:
     << : *buildtest_daily
@@ -289,7 +289,7 @@ lnm-buildtest_daily:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
-        - lnm-nightly1
+        - lnm-release-nightly-full
 
 lnm-buildtest_daily_debug:
     << : *buildtest_daily_debug
@@ -302,7 +302,7 @@ lnm-buildtest_daily_debug:
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
-        - lnm-nightly2
+        - lnm-debug-nightly-full
 
 lnm-doxygen:
     << : *doxygen
@@ -316,4 +316,4 @@ lnm-doxygen:
         # Path on testing machine where doxygen will be copied to.
         DOXYGEN_PATH: "/home/gitlab-runner/."
     tags:
-        - lnm-nightly
+        - lnm-nightly-doxygen
