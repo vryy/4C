@@ -1,7 +1,7 @@
 # parameters
 set(CTEST_SOURCE_DIRECTORY "$ENV{CI_PROJECT_DIR}")
 set(CTEST_BINARY_DIRECTORY "$ENV{CI_PROJECT_DIR}/../baci-build")
-set(CTEST_TIMEOUT          "2000")       # ctest timeout 500s
+set(CTEST_TIMEOUT          "500")       # ctest timeout 500s
 set($ENV{LC_MESSAGES}      "en_EN" )    # set output to english such that ctest can analyze it
 
 set(CTEST_SITE "$ENV{HOSTNAME}")
@@ -15,7 +15,7 @@ set(WITH_COVERAGE TRUE)
 ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
 
 # prepare commands
-set(CTEST_CONFIGURE_COMMAND "$ENV{CTEST_CONFIGURE_PREFIX}${CTEST_SOURCE_DIRECTORY}/do-configure -f --debug --trilinos-debug --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} $ENV{CTEST_CONFIGURE_POSTFIX}")
+set(CTEST_CONFIGURE_COMMAND "$ENV{CTEST_CONFIGURE_PREFIX}${CTEST_SOURCE_DIRECTORY}/do-configure -f --debug-optimized --trilinos-debug --config=${CTEST_SOURCE_DIRECTORY}/buildconfig/$ENV{CTEST_BUILD_CONFIG_GITLAB} $ENV{CTEST_CONFIGURE_POSTFIX}")
 set(CTEST_BUILD_COMMAND     "$ENV{CTEST_MAKE}")
 set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS "5000")
 set(CTEST_COMMAND "ctest -D Nightly")
