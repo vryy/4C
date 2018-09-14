@@ -19,9 +19,6 @@ variables:
     # Temporary exclude postprocessing tests at IMCS.
     CTEST_EXCLUDE_STRING: ""
 
-    # Path to store log files in.
-    LOG_FILE_PATH: ""
-
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
 #-------------------------------------------------------------------------------
@@ -42,7 +39,14 @@ variables:
         # Output 200 lines for any failing test
         #- grep -i -B 200 '\*\*\*Failed' ../buildtest_full.log
         #- sed -n '/tests passed,/,//p' ../buildtest_minimal.log
-        - if [ -n "$LOG_FILE_PATH" ]; then mv ../buildtest_minimal.log $LOG_FILE_PATH/"$CI_JOB_ID"_$(date +"%Y-%m-%d_%H-%M").log; fi
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_minimal.log buildtest_minimal.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_minimal.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         - master
     except:
@@ -68,7 +72,14 @@ variables:
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_full.log
-        - if [ -n "$LOG_FILE_PATH" ]; then mv ../buildtest_full.log $LOG_FILE_PATH/"$CI_JOB_ID"_$(date +"%Y-%m-%d_%H-%M").log; fi
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_full.log buildtest_full.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_full.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         refs:
             - web
@@ -90,7 +101,14 @@ variables:
         # Output 200 lines for any failing test 
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
-        - if [ -n "$LOG_FILE_PATH" ]; then mv ../buildtest_daily.log $LOG_FILE_PATH/"$CI_JOB_ID"_$(date +"%Y-%m-%d_%H-%M").log; fi
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_daily.log buildtest_daily.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_daily.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
@@ -111,7 +129,14 @@ variables:
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
-        - if [ -n "$LOG_FILE_PATH" ]; then mv ../buildtest_daily_debug.log $LOG_FILE_PATH/"$CI_JOB_ID"_$(date +"%Y-%m-%d_%H-%M").log; fi
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_daily_debug.log buildtest_daily_debug.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_daily_debug.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
@@ -184,7 +209,6 @@ imcs-buildtest_minimal:
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "../../../../log"
     tags:
         - imcs-minimal
 
@@ -199,7 +223,6 @@ imcs-buildtest_full:
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "../../../../log"
     tags:
         - imcs-full
 
@@ -214,7 +237,6 @@ imcs-buildtest_daily:
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "../../../../log"
     tags:
         - imcs-nightly-full
 
@@ -229,7 +251,6 @@ imcs-buildtest_daily_debug:
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "../../../../log"
     tags:
         - imcs-nightly-debug
 
@@ -261,7 +282,6 @@ lnm-buildtest_minimal:
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
         - lnm-release-mastermod-minimal
 
@@ -274,7 +294,6 @@ lnm-buildtest_full:
         CTEST_DROP_SITE_CDASH_GITLAB: "0"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
         - lnm-release-user-full
 
@@ -287,7 +306,6 @@ lnm-buildtest_daily:
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
         - lnm-release-nightly-full
 
@@ -300,7 +318,6 @@ lnm-buildtest_daily_debug:
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        LOG_FILE_PATH: "/home/gitlab-runner/builds"
     tags:
         - lnm-debug-nightly-full
 
