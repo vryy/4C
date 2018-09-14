@@ -2,7 +2,7 @@
 \file so_hex20_service.cpp
 \brief
 \level 1
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #include "so_hex20.H"

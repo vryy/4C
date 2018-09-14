@@ -3,7 +3,7 @@
 \file so3_ssn_plast_fwd.hpp
 \brief template combinations
 \level 2
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 */
 
 // template classes

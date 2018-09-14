@@ -5,10 +5,7 @@
 \brief A service method allowing the application of initial conditions
        for nurbs discretisations.
 
-\maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+\maintainer Martin Kronbichler
 
 \level 2
 */

@@ -5,7 +5,7 @@
 \brief Basis of all TSI algorithms that perform a coupling between the
        structural field equation and temperature field equations
 
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 \level 2
 */

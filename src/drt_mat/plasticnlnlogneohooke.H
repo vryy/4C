@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file plastichyperelast.H
+\file plasticnlnlogneohooke.H
 \brief Contains the functions to establish local material law /
        stress-strain law for isotropic material following large strain
        von-Mises plasticity with linear isotropic hardening
@@ -17,12 +17,10 @@
        MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
          YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93 VISC 1.0 RATE_DEPENDENCY 0.1
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\level 2
+
+\maintainer Matthias Mayr
+
 */
 /*----------------------------------------------------------------------*
  | definitions                                                          |

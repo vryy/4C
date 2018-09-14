@@ -4,7 +4,7 @@
 
   \brief postprocessing of thermal heatfluxes
 
-  \maintainer Alexander Seitz
+  \maintainer Christoph Meier
 
   \level 1
 */

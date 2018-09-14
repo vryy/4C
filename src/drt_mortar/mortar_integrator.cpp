@@ -6,7 +6,7 @@ of two MortarElements in 1D and 2D
 
 \level 1
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 *-----------------------------------------------------------------------*/
 

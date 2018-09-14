@@ -2,7 +2,7 @@
 \file so_hex8_eas.cpp
 \brief Everything concerning EAS technology for so_hex8
 \level 1
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

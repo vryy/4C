@@ -4,7 +4,7 @@
 
 \brief Generic class for all mortar solution strategies
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 \level 2
 

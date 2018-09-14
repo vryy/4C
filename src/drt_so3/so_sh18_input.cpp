@@ -1,13 +1,8 @@
 /*!----------------------------------------------------------------------
-\file so_hex8_input.cpp
-\brief
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\file so_sh18_input.cpp
+\brief Input for solid shell 18
+\level 3
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

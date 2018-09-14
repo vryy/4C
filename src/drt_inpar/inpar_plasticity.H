@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_plasticity.H
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
+\level 2
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_PLASTICITY_H

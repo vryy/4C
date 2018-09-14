@@ -2,7 +2,7 @@
 \file so_hex20.H
 \brief
 \level 1
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #ifndef SOH20_H

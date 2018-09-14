@@ -14,10 +14,7 @@ position since dofs associated with neighbouring control points influence
 the function value as well)
 
 
-\maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+\maintainer Martin Kronbichler
 
 \level 2
 */

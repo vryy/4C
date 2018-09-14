@@ -1,13 +1,9 @@
 /*!----------------------------------------------------------------------
 \file so_pyramid5_input.cpp
-\brief
+\brief pyramid shaped solid element
+\level 2
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15271
-</pre>
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

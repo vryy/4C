@@ -1,12 +1,8 @@
 /*!----------------------------------------------------------------------
 \file so3_thermo_eletypes.cpp
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\brief 3d TSI solid element
+\level 1
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file plastic_VarConstUpdate.H
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\level 3
+\brief finite deformation plasticity algorithm based on
+       variational constitutive update
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

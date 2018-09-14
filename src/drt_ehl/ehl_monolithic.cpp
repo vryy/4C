@@ -6,7 +6,7 @@
        the structure field equation and lubrication field equations
 
 \level 3
-\maintainer Alexander Seitz
+\maintainer Mostafa Faraji
 */
 /*--------------------------------------------------------------------------*/
 

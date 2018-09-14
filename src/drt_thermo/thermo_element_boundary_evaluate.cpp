@@ -8,10 +8,7 @@ Evaluate boundary conditions for thermo problems
 \level 1
 
 <pre>
-\maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+\maintainer Christoph Meier
 </pre>
 */
 

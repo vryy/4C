@@ -1,17 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_tsi.H
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 \brief TSI input parameters
 \level 1
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
 */
 
 /*----------------------------------------------------------------------*

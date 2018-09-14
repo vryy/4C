@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_PROJECTOR_H

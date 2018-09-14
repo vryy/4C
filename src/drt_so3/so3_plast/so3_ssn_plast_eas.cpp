@@ -7,7 +7,7 @@
        which do not coincide with the intrepid Gauss points
        used in the so3_ssn_plast.
 \level 2
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*
