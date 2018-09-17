@@ -4,7 +4,7 @@
 
 \brief Evaluation and assembly of all meshtying terms
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 \level 3
 

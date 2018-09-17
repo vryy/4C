@@ -4,7 +4,7 @@
 
 \brief Factory to create the desired meshtying strategy.
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 \level 3
 

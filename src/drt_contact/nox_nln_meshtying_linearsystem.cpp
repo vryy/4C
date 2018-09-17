@@ -7,7 +7,7 @@
 
 \level 3
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
