@@ -2271,6 +2271,7 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_integrator_policy_debug.cpp
   src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
   src/drt_contact_aug/contact_aug_interface_assembly.cpp
+  src/drt_contact_aug/contact_aug_timemonitor.cpp
   src/drt_contact_xcontact/xcontact_strategy.cpp
   src/drt_contact_xcontact/xcontact_interface.cpp
   src/drt_contact_xcontact/xcontact_integrator.cpp
