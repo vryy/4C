@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Burkhard Bornemann
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
