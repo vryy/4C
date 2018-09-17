@@ -26,10 +26,7 @@
          YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
 \level 2
 <pre>
-\maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+\maintainer Matthias Mayr
 </pre>
 */
 /*----------------------------------------------------------------------*

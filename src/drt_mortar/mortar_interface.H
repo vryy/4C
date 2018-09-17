@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/

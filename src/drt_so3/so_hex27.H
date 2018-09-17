@@ -2,7 +2,7 @@
 \file so_hex27.H
 \brief tri-quadratic displacement based solid element
 \level 1
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #ifndef SOH27_H

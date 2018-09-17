@@ -2,10 +2,7 @@
 \file contact_tsi_interface.H
 
 <pre>
- \maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+ \maintainer Matthias Mayr
 </pre>
 
  \level 3

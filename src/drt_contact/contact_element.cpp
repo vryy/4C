@@ -2,7 +2,7 @@
 \file contact_element.cpp
 \brief a contact element
 \level 2
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 *-----------------------------------------------------------------------*/
 

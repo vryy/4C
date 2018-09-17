@@ -3,7 +3,7 @@
 
 \level 2
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 \brief A class to perform Gaussian integration on a mortar element
 

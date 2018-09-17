@@ -6,7 +6,7 @@
 
 \level 3
 
-\maintainer Alexander Seitz
+\maintainer Christoph Ager
 
 */
 /*---------------------------------------------------------------------*/

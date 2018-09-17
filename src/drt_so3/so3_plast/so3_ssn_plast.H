@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so3_ssn_plast.H
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 \level 2
 */
 

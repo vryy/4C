@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so3_ssn_plast_sosh8.H
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 \level 2
 \brief elasto-plastic solid shell
 */

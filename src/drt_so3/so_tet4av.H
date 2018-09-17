@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_tet4av.H
-\maintainer Alexander Seitz
-
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
-
+\maintainer Christoph Meier
+\level 3
 *----------------------------------------------------------------------*/
 #ifndef SO_TET4AV_H
 #define SO_TET4AV_H

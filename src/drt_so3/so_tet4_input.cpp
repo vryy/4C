@@ -4,7 +4,7 @@
 \level 1
 
 <pre>
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 </pre>
 
 *----------------------------------------------------------------------*/

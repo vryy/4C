@@ -3,7 +3,7 @@
 \file so_sh8p8_input.cpp
 \brief
 \level 2
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 */
 
 /*----------------------------------------------------------------------*/

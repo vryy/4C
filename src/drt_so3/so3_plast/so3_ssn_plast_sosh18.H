@@ -3,7 +3,7 @@
 \file so3_ssn_plast_sosh18.H
 \brief 18 node solid shell with plasticity
 \level 3
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 

@@ -2,7 +2,7 @@
 \file so_hex20_input.cpp
 \brief
 \level 1
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 
