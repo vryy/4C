@@ -131,7 +131,7 @@ namespace STR
   class GenInvAnalysis
   {
    private:
-    /// my structure discretisation to work at
+    /// my structure discretization to work at
     Teuchos::RCP<DRT::Discretization> discret_;
 
     /// linear algebraic solver
@@ -140,15 +140,17 @@ namespace STR
     /// context for output and restart
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
-    ///  number of measurment points the
+    ///  number of measurement points the
     double tstep_;  // timestep
 
     int problem_type_;  // Neumann or Dirichlet Problem
     int np_;            // number of fitted parameters (default 3, 4 with kappa)
     int nmp_;           // total number of measured dofs
 
-    //  forward problem type given in dat-file FORWARD_PROBLEMTYP
+    /// forward problem type given in dat-file FORWARD_PROBLEMTYP
     PROBLEM_TYP forward_prb_type_;
+    /// number of dimensions of forward problem
+    int ndim_;
 
     /// variables of multiple inverse analysis
     bool spec_inv_ana_mult_;                // define if multiple inverse analysis is used
@@ -181,7 +183,7 @@ namespace STR
     int nodescentdirection_;  // stores if inverse analysis does not longer
     // converge (due to no descent direction) to stop the inverse analysis
 
-    // Update Stratgy for mu
+    // Update Strategy for mu
     enum INV_REG_UPDATE_STRATEGY
     {
       grad_based,
@@ -235,6 +237,7 @@ namespace STR
     std::set<int> matset_patches_;
     Teuchos::RCP<LINALG::SparseMatrix> smoother_;
     int smoothingsteps_;
+
     enum DEFINE_PATCHES
     {
       material,
@@ -244,6 +247,13 @@ namespace STR
 
     // check whether we have to reset history parameters with this bool
     bool materialhashistory_;
+
+    enum MEASUREMENT_TYPE
+    {
+      dof_based,
+      point_based
+    };
+    MEASUREMENT_TYPE meas_type_;
 
    public:
     /// standard constructor
@@ -255,11 +265,23 @@ namespace STR
     /// Read in routine for the material parameters
     void ReadInParameters();
 
+    /// Read in routine for the dof based monitor file (default format)
+    // constructor sequence moved into own method
+    void ReadMonitorDofBased(int myrank);
+
+
+    /// Read in routine for the point based monitor file
+    void ReadMonitorPointBased(int myrank);
+
     /// Set material parameters
     void SetParameters(Epetra_SerialDenseVector p_cur);
 
     /// get current state of calculated curve
     Epetra_SerialDenseVector GetCalculatedCurve(const Epetra_Vector& disp);
+
+    /// get Distance of target points to respective interface at matching time
+    Epetra_SerialDenseVector GetDistancePointsToInterfaceContour(
+        const Epetra_Vector& disp, int writestep);
 
     /// coarse fitting of parameters
     void PrecondParameters();
@@ -278,7 +300,7 @@ namespace STR
     Epetra_SerialDenseVector CalcCvector(
         bool outputtofile, Teuchos::RCP<COMM_UTILS::NestedParGroup> group);
 
-    /// acual inverse analysis loop
+    /// actual inverse analysis loop
     void Integrate();
 
     /// additional calculations for integrate of multiple inverse analysis

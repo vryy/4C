@@ -117,7 +117,7 @@
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
-
+#include "../drt_cut/cut_kernel.H"
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
@@ -134,150 +134,40 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   //  tolerance for the curve fitting
   tol_ = iap.get<double>("INV_ANA_TOL");
 
+  ndim_ = DRT::Problem::Instance()->NDim();
+
   forward_prb_type_ = DRT::INPUT::IntegralValue<PROBLEM_TYP>(iap, "FORWARD_PROBLEMTYP");
   materialhashistory_ = false;
-  /* this is how a monitor file should look like:
 
-steps 25 nnodes 5
-11 2 0 1
-19 2 0 1
-27 2 0 1
-35 2 0 1
-42 2 0 1
-# any number of comment lines, but only at this position
-# x and y disps at 5 nodes
-# time node 11 x y 19 x y 27 x y 35 x y 42 x y
-#
-2.000000e-02   -9.914936e-02    7.907108e-02   -2.421293e-01    3.475674e-01   -2.018457e-01
-6.164171e-01   2.622612e-02    5.351817e-01  2.623198e-03    6.524309e-02 4.000000e-02 -2.060081e-01
-1.561979e-01   -4.495438e-01    6.425663e-01   -3.561049e-01    1.099916e+00   7.625965e-02
-9.675498e-01  4.770331e-02    1.287581e-01 6.000000e-02   -3.063373e-01    2.286715e-01
--6.147396e-01    8.904266e-01   -4.628068e-01    1.481550e+00   1.405767e-01    1.313955e+00
-1.144058e-01    1.871826e-01 8.000000e-02   -3.995311e-01    2.965706e-01   -7.500371e-01
-1.103765e+00   -5.399646e-01    1.795528e+00   2.080302e-01    1.600827e+00  1.902863e-01
-2.404236e-01 1.000000e-01   -4.871174e-01    3.603335e-01   -8.656673e-01    1.291507e+00
--6.003143e-01    2.063556e+00   2.732486e-01    1.846735e+00  2.684362e-01    2.890503e-01
-1.200000e-01   -5.705636e-01    4.204134e-01   -9.684391e-01    1.459720e+00   -6.514304e-01
-2.298985e+00   3.338117e-01    2.063424e+00  3.449541e-01    3.336880e-01 1.400000e-01 -6.508979e-01
-4.772118e-01   -1.062618e+00    1.612613e+00   -6.975891e-01    2.510286e+00   3.888783e-01
-2.258437e+00  4.178564e-01    3.749320e-01 1.600000e-01   -7.287384e-01    5.310691e-01
--1.150807e+00    1.753191e+00   -7.411234e-01    2.703069e+00   4.384501e-01    2.436805e+00
-4.863525e-01    4.133178e-01 1.800000e-01   -8.044079e-01    5.822715e-01   -1.234572e+00
-1.883657e+00   -7.832539e-01    2.881204e+00   4.829452e-01    2.602019e+00  5.503314e-01
-4.493058e-01 2.000000e-01   -8.780469e-01    6.310615e-01   -1.314853e+00    2.005671e+00
--8.245805e-01    3.047458e+00   5.229514e-01    2.756584e+00  6.100265e-01    4.832787e-01
-2.200000e-01   -9.496984e-01    6.776474e-01   -1.392223e+00    2.120513e+00   -8.653673e-01
-3.203878e+00   5.590896e-01    2.902354e+00  6.658185e-01    5.155483e-01 2.400000e-01 -1.019365e+00
-7.222113e-01   -1.467040e+00    2.229192e+00   -9.057055e-01    3.352017e+00   5.919446e-01
-3.040735e+00  7.181279e-01    5.463664e-01 2.600000e-01   -1.087042e+00    7.649147e-01
--1.539546e+00    2.332515e+00   -9.456044e-01    3.493080e+00   6.220354e-01    3.172817e+00
-7.673616e-01    5.759360e-01 2.800000e-01   -1.152735e+00    8.059027e-01   -1.609916e+00
-2.431140e+00   -9.850398e-01    3.628021e+00   6.498057e-01    3.299461e+00  8.138890e-01
-6.044213e-01 3.000000e-01   -1.216466e+00    8.453065e-01   -1.678289e+00    2.525611e+00
--1.023980e+00    3.757606e+00   6.756268e-01    3.421355e+00  8.580353e-01    6.319557e-01
-3.200000e-01   -1.278278e+00    8.832457e-01   -1.744784e+00    2.616378e+00   -1.062399e+00
-3.882462e+00   6.998053e-01    3.539062e+00  9.000811e-01    6.586487e-01 3.400000e-01 -1.338225e+00
-9.198289e-01   -1.809512e+00    2.703823e+00   -1.100276e+00    4.003104e+00   7.225922e-01
-3.653044e+00  9.402670e-01    6.845912e-01 3.600000e-01   -1.396378e+00    9.551554e-01
--1.872574e+00    2.788270e+00   -1.137603e+00    4.119965e+00   7.441921e-01    3.763688e+00
-9.787981e-01    7.098591e-01 3.800000e-01   -1.452811e+00    9.893160e-01   -1.934068e+00
-2.869995e+00   -1.174379e+00    4.233408e+00   7.647719e-01    3.871317e+00  1.015850e+00
-7.345163e-01 4.000000e-01   -1.507606e+00    1.022393e+00   -1.994085e+00    2.949237e+00
--1.210611e+00    4.343745e+00   7.844680e-01    3.976208e+00  1.051572e+00    7.586177e-01
-4.200000e-01   -1.560847e+00    1.054463e+00   -2.052713e+00    3.026205e+00   -1.246311e+00
-4.451242e+00   8.033921e-01    4.078601e+00  1.086093e+00    7.822100e-01 4.400000e-01 -1.612617e+00
-1.085593e+00   -2.110034e+00    3.101081e+00   -1.281495e+00    4.556132e+00   8.216362e-01
-4.178700e+00  1.119525e+00    8.053342e-01 4.600000e-01   -1.662996e+00    1.115847e+00
--2.166128e+00    3.174023e+00   -1.316181e+00    4.658615e+00   8.392767e-01    4.276685e+00
-1.151964e+00    8.280258e-01 4.800000e-01   -1.712064e+00    1.145282e+00   -2.221065e+00
-3.245174e+00   -1.350390e+00    4.758870e+00   8.563772e-01    4.372714e+00  1.183494e+00
-8.503160e-01 5.000000e-01   -1.759895e+00    1.173949e+00   -2.274916e+00    3.314659e+00
--1.384141e+00    4.857055e+00   8.729911e-01    4.466927e+00  1.214188e+00    8.722325e-01
-
-
-   */
-
-  // open monitor file and read it
-  ndofs_ = 0;
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::MeasurementType>(iap, "MEASUREMENT_TYPE"))
   {
-    char* foundit = NULL;
-    std::string monitorfilename = iap.get<std::string>("MONITORFILE");
-    if (monitorfilename == "none.monitor") dserror("No monitor file provided");
-    // insert path to monitor file if necessary
-    if (monitorfilename[0] != '/')
+    case INPAR::STR::meas_dofs:
     {
-      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
-      std::string::size_type pos = filename.rfind('/');
-      if (pos != std::string::npos)
-      {
-        std::string path = filename.substr(0, pos + 1);
-        monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
-      }
+      meas_type_ = dof_based;
     }
-
-    FILE* file = fopen(monitorfilename.c_str(), "rb");
-    if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
-
-    char buffer[150000];
+    break;
+    case INPAR::STR::meas_points:
     DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-    // read steps
-    foundit = strstr(buffer, "steps");
-    foundit += strlen("steps");
-    nsteps_ = strtol(foundit, &foundit, 10);
-    timesteps_.resize(nsteps_);
-    // read nnodes
-    foundit = strstr(buffer, "nnodes");
-    foundit += strlen("nnodes");
-    nnodes_ = strtol(foundit, &foundit, 10);
-    // read nodes
-    nodes_.resize(nnodes_);
-    dofs_.resize(nnodes_);
-    for (int i = 0; i < nnodes_; ++i)
-    {
       DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-      foundit = buffer;
-      nodes_[i] = strtol(foundit, &foundit, 10);
-      int ndofs = strtol(foundit, &foundit, 10);
-      ndofs_ += ndofs;
-      dofs_[i].resize(ndofs, -1);
-      if (!myrank) printf("Monitored node %d ndofs %d dofs ", nodes_[i], (int)dofs_[i].size());
-      for (int j = 0; j < ndofs; ++j)
-      {
-        dofs_[i][j] = strtol(foundit, &foundit, 10);
-        if (!myrank) printf("%d ", dofs_[i][j]);
-      }
-      if (!myrank) printf("\n");
-    }
-
-    // total number of measured dofs
-    nmp_ = ndofs_ * nsteps_;
-
-
-    // read in measured curve
-
     {
-      mcurve_ = Epetra_SerialDenseVector(nmp_);
+      meas_type_ = point_based;
+    }
+    break;
+    default:
+      dserror("Unknown Type of Monitor File MEASUREMENT_TYPE. Provide proper Type and file.");
+      break;
+  }
 
-      if (!myrank) printf("nsteps %d ndofs %d\n", nsteps_, ndofs_);
-
-      // read comment lines
-      foundit = buffer;
+  if (meas_type_ == dof_based)
+    // open monitor file and read it
+    ReadMonitorDofBased(myrank);
+  else if (meas_type_ == point_based)
+    // open point based monitor file and read it
+    ReadMonitorPointBased(myrank);
       DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
       while (strstr(buffer, "#"))
         DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-      // read in the values for each node in dirs directions
-      int count = 0;
-      for (int i = 0; i < nsteps_; ++i)
-      {
-        // read the time step
-        timesteps_[i] = strtod(foundit, &foundit);
-        for (int j = 0; j < ndofs_; ++j) mcurve_[count++] = strtod(foundit, &foundit);
         DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
-        foundit = buffer;
-      }
-      if (count != nmp_) dserror("Number of measured disps wrong on input");
-    }
-  }
 
   // error: difference of the measured to the calculated curve
   error_ = 1.0E6;
@@ -427,7 +317,7 @@ void STR::GenInvAnalysis::Integrate()
       std::cout << "#################################################################" << std::endl;
       printf("Measured parameters nmp_ %d # parameters to fit np_ %d\n", nmp_, np_);
     }
-
+    std::cout << "p_: " << p_ << std::endl;
     // perturbation of material parameter (should be relative to the value that is perturbed)
     std::vector<double> perturb(np_, 0.0);
     double alpha = iap.get<double>("INV_ALPHA");
@@ -944,9 +834,11 @@ void STR::GenInvAnalysis::CalcNewParameters(
   // copy column with unperturbed values to extra vector
   for (int i = 0; i < nmp; i++) ccurve[i] = cmatrix(i, np_);
 
+  std::cout << ccurve << std::endl;
+  std::cout << "cmatrix: " << cmatrix << std::endl;
   // remove the extra column np_+1 with unperturbed values
   cmatrix.Reshape(nmp, np_);
-
+  std::cout << cmatrix << std::endl;
   // reuse the cmatrix array as J to save storage
   Epetra_SerialDenseMatrix& J = cmatrix;
 
@@ -1036,14 +928,14 @@ void STR::GenInvAnalysis::CalcNewParameters(
     // tensile test data (displacements)
     for (int i = 0; i < nmp; i++)
     {
-      rcurve[i] = mcurve[i] - ccurve[i];
-      rcurve[i] /= fac_norm;  // normalize residuum
+      rcurve[i] = -mcurve[i] + ccurve[i];  //!!!!!!!!
+      rcurve[i] /= fac_norm;               // normalize residuum
     }
     // add data (pressure) of pressure-volume-change experiment
     rcurve.Reshape(nmp + nmp_volexp_, 1);
     for (int i = 0; i < nmp_volexp_; i++)
     {
-      rcurve[i + nmp] = volexp_deltap[i] - volexp_p_comp(i, np_);
+      rcurve[i + nmp] = -volexp_deltap[i] + volexp_p_comp(i, np_);  //!!!!!!!!!
       rcurve[i + nmp] /= volexp_fac_norm;
     }
     // end of coupled inverse analysis
@@ -1062,10 +954,20 @@ void STR::GenInvAnalysis::CalcNewParameters(
         // multiple inverse analysis: already normalized
       }
 
-    // calculating R
-    // compute residual displacement (measured vs. computed)
-    for (int i = 0; i < nmp; i++) rcurve[i] = mcurve[i] - ccurve[i];
-    // multiple inverse analysis: both parts already normalized
+    if (meas_type_ == dof_based)
+    {
+      // calculating R
+      // compute residual displacement (measured vs. computed)
+      for (int i = 0; i < nmp; i++) rcurve[i] = -mcurve[i] + ccurve[i];  //!!!!!!!!!
+      // multiple inverse analysis: both parts already normalized
+    }
+    else if (meas_type_ == point_based)
+    {
+      // as the computed distanced already are a residuum we use these
+      for (int i = 0; i < nmp; i++) rcurve[i] = ccurve[i];
+    }
+    else
+      dserror("This should not happen. You have to chose either point or dof based measurement.");
   }
 
   // calculating J.T*J
@@ -1076,7 +978,7 @@ void STR::GenInvAnalysis::CalcNewParameters(
   for (int i = 0; i < np_; i++) sto(i, i) += mu_ * sto(i, i);
 
   // delta_p = (J.T*J+mu*diag(J.T*J))^{-1} * J.T*R
-  tmp.Multiply('T', 'N', 1.0, J, rcurve, 0.0);
+  tmp.Multiply('T', 'N', -1.0, J, rcurve, 0.0);  //!!!!!!!!!!!!!!!!
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix(sto);
   solver.SetVectors(delta_p, tmp);
@@ -1300,6 +1202,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
   //    {
   //      std::cout << *iter << std::endl;
   //    }
+
   // use the same control file for every run since usually the last one is of interest
   structdis->Writer()->OverwriteResultFile();
 
@@ -1541,12 +1444,34 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
 
         // get the displacements of the monitored timesteps
         {
+          if (writestep >= nsteps_)
+            dserror("you should not proceed in time after last monitored step");
+          // because it is useless and could lead to a segfault here
+
           if (abs(time - timesteps_[writestep]) < 1.0e-5)
           {
-            Epetra_SerialDenseVector cvector_arg =
-                GetCalculatedCurve(*(fsi->StructureField()->Dispnp()));
-            if (!myrank)
-              for (int j = 0; j < ndofs_; ++j) cvector[writestep * ndofs_ + j] = cvector_arg[j];
+            switch (meas_type_)
+            {
+              case dof_based:
+              {
+                Epetra_SerialDenseVector cvector_arg =
+                    GetCalculatedCurve(*(fsi->StructureField()->Dispnp()));
+                if (!myrank)
+                  for (int j = 0; j < ndofs_; ++j) cvector[writestep * ndofs_ + j] = cvector_arg[j];
+                break;
+              }
+              case point_based:
+              {
+                Epetra_SerialDenseVector dvector = GetDistancePointsToInterfaceContour(
+                    *(fsi->StructureField()->Dispnp()), writestep);
+                if (!myrank)
+                  for (int j = 0; j < nnodes_; ++j) cvector[writestep * nnodes_ + j] = dvector[j];
+                break;
+              }
+              default:
+                dserror("This should never happen. Did you forget to implement a new case?");
+                break;
+            }
             writestep += 1;
           }
 
@@ -1570,14 +1495,14 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvectorFSI(bool outputtofile, 
 
   Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 
-  if (!(writestep * ndofs_ == nmp_))
+  if ((meas_type_ == dof_based and !(writestep * ndofs_ == nmp_)) or
+      (meas_type_ == point_based and !(writestep * nnodes_ == nmp_)))
   {
     std::cout << "# of timesteps extracted from the simulation: " << writestep << std::endl;
     dserror(
         "# of monitored timesteps does not match # of timesteps extracted from the simulation ");
   }
   problem->SetProblemType(prb_invana);
-
   return cvector;
 }
 /*----------------------------------------------------------------------*/
@@ -1739,6 +1664,175 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(const Epetra_Ve
   discret_->Comm().SumAll(&lcvector_arg[0], &gcvector_arg[0], ndofs_);
 
   return gcvector_arg;
+}
+
+/*----------------------------------------------------------------------*/
+/* measure distance between points and deformed interface    HaWi 08/18 */
+/*----------------------------------------------------------------------*/
+
+Epetra_SerialDenseVector STR::GenInvAnalysis::GetDistancePointsToInterfaceContour(
+    const Epetra_Vector& disp, int writestep)
+{
+  //  Epetra_SerialDenseVector lcvector_arg(nnodes_);
+  Epetra_SerialDenseVector dvector(nnodes_);
+
+  std::vector<DRT::Condition*> fsicond;
+  discret_->GetCondition("FSICoupling", fsicond);
+
+  if (fsicond.size() != 1)
+    dserror("You are not supposed to be here, FSI condition is not unique for structure");
+
+  std::map<int, Teuchos::RCP<DRT::Element>>& interfacegeom = fsicond[0]->Geometry();
+
+  std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
+  DRT::Element::LocationArray la(discret_->NumDofSets());
+  if (discret_->NumDofSets() != 1) dserror("method was developed for one dofset (structure) only!");
+  //  const int numifacenodes = interfacegeom[0]->NumNode();
+  //  std::cout<<"vorfor"<<std::endl;
+  int idofs = 0;
+
+  //  std::cout<<"mcurve:"<<mcurve_<<std::endl;
+
+  for (int i = 0; i < nnodes_; i++)
+  {
+    LINALG::Matrix<3, 2> line;
+    line.PutScalar(0);
+    for (unsigned int j = 0; j < dofs_[i].size(); j++)
+    {
+      line(dofs_[i][j], 0) = mcurve_[writestep * ndofs_ + idofs * 2 + j];
+      line(dofs_[i][j], 1) = mcurve_[writestep * ndofs_ + idofs * 2 + dofs_[i].size() + j];
+    }
+    idofs += dofs_[i].size();
+
+    //    std::cout<<"line element: "<<line<<std::endl;
+
+    std::vector<std::vector<double>> xsifound(0);
+
+    double distance = 0.;
+    for (curr = interfacegeom.begin(); curr != interfacegeom.end(); ++curr)
+    {
+      curr->second->LocationVector(*discret_, la, false);
+
+      DRT::Node** ifacenodes = curr->second->Nodes();
+      switch (curr->second->Shape())
+      {
+        case DRT::Element::tri3:
+        {
+          LINALG::Matrix<3, 1> xsi;
+          GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3> ci(xsi);
+          break;
+        }
+        case DRT::Element::line2:
+        {
+          LINALG::Matrix<2, 2> linee;
+          for (unsigned int k = 0; k < 2; k++)
+          {
+            for (unsigned int l = 0; l < 2; l++)
+            {
+              linee(k, l) = line(k, l);
+            }
+          }
+          LINALG::Matrix<2, 1> xsi;
+          GEO::CUT::KERNEL::ComputeIntersection<2, DRT::Element::line2, DRT::Element::line2> ci(
+              xsi);
+
+          LINALG::Matrix<2, 2> surf;
+          surf.PutScalar(0);
+
+          std::vector<double> eledisp(4);
+          //      std::cout<<"la.size: "<<la.Size()<<std::endl; //Check your la for the following
+          //      line
+          //        std::cout<<disp<<std::endl;
+          //        for (int o =0; o<la[0].lm_.size();o++)
+          //        std::cout<<la[0].lm_[o]<<std::endl;
+          DRT::UTILS::ExtractMyValues(disp, eledisp, la[0].lm_);
+          // have a glimpse into eledisp
+          //        for(unsigned l=0; l<eledisp.size();l++)
+          //          std::cout<<i<<": eledisp"<<l<<": "<<std::setprecision
+          //          (15)<<eledisp[l]<<std::endl;
+          for (int i = 0; i < 2; i++)
+          {
+            const double* x = ifacenodes[i]->X();
+            surf(0, i) = x[0];
+            surf(1, i) = x[1];
+
+            surf(0, i) += eledisp[i * 2 + 0];
+            surf(1, i) += eledisp[i * 2 + 1];
+          }
+
+          if (ci(surf, linee))
+          {
+            //          std::cout<<"intersection converged"<<std::endl;
+            if (ci.SurfaceWithinLimits())
+            {
+              std::cout << "XSI: " << xsi << std::endl;
+              std::vector<double> myxsi(2);
+              for (int m = 0; m < 2; m++)
+              {
+                myxsi[m] = xsi(m);
+              }
+              xsifound.push_back(myxsi);
+            }
+          }
+          else
+          {
+            break;
+          }
+          break;
+        }
+        default:
+          dserror("surface Element for contour condition not yet implemented for FSI");
+      }
+    }
+    // decide which element is the desired one and compute distance
+    double minxsi = 0;
+    int lastxsi = xsifound[0].size() - 1;
+    for (unsigned int j = 0; j < xsifound.size(); j++)
+    {
+      if (j == 0)
+        minxsi = xsifound[j][lastxsi];
+      else if (xsifound[j][lastxsi] < minxsi)
+        minxsi = xsifound[j][lastxsi];
+      else
+      {
+        // xsifound is not the smallest xsi, do nothing
+      }
+
+      //      for( unsigned int k=0; k<xsifound[j].size();k++)
+      //      {
+      //        std::cout<<"["<<j<<"]"<<"["<<k<<"]"<<" xsifound: "<<xsifound[j][k]<<std::endl;
+      //      }
+    }
+
+    //    std::cout<<"minxsi: "<<minxsi<<std::endl;
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      distance += pow((minxsi + 1) / 2 * (line(j, 1) - line(j, 0)), 2);
+      std::cout << "distance: " << distance << std::endl;
+    }
+
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      std::cout << "line(" << j << ",1): " << line(j, 1) << std::endl;
+    }
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      std::cout << "line(" << j << ",0): " << line(j, 0) << std::endl;
+    }
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      std::cout << "vec(" << j << "): " << line(j, 0) + (minxsi + 1) / 2 * (line(j, 1) - line(j, 0))
+                << std::endl;
+    }
+
+    std::cout << "minxsi: " << minxsi << std::endl;
+    distance = sqrt(distance);
+    distance *= SIGN(minxsi + 1);
+    std::cout << "distance: " << distance << std::endl;
+    dvector[i] = distance;
+  }
+  //  std::cout<<dvector<<std::endl;
+  return dvector;
 }
 
 /*----------------------------------------------------------------------*/
@@ -4211,5 +4305,259 @@ void STR::GenInvAnalysis::ConstrainAlpha()
     error_grad_ = error_grad_o_;
     mu_ = mu_o_ * 2.0;
     return;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read Monitor file (moved into own method)                HaWi 07/18  */
+/*----------------------------------------------------------------------*/
+
+void STR::GenInvAnalysis::ReadMonitorDofBased(int myrank)
+{
+  /* this is how a dof based monitor file should look like:
+
+steps 25 nnodes 5
+11 2 0 1
+19 2 0 1
+27 2 0 1
+35 2 0 1
+42 2 0 1
+# any number of comment lines, but only at this position
+# x and y disps at 5 nodes
+# time node 11 x y 19 x y 27 x y 35 x y 42 x y
+#
+2.000000e-02   -9.914936e-02    7.907108e-02   -2.421293e-01    3.475674e-01   -2.018457e-01
+6.164171e-01   2.622612e-02    5.351817e-01  2.623198e-03    6.524309e-02 4.000000e-02 -2.060081e-01
+1.561979e-01   -4.495438e-01    6.425663e-01   -3.561049e-01    1.099916e+00   7.625965e-02
+9.675498e-01  4.770331e-02    1.287581e-01 6.000000e-02   -3.063373e-01    2.286715e-01
+-6.147396e-01    8.904266e-01   -4.628068e-01    1.481550e+00   1.405767e-01    1.313955e+00
+1.144058e-01    1.871826e-01 8.000000e-02   -3.995311e-01    2.965706e-01   -7.500371e-01
+1.103765e+00   -5.399646e-01    1.795528e+00   2.080302e-01    1.600827e+00  1.902863e-01
+2.404236e-01 1.000000e-01   -4.871174e-01    3.603335e-01   -8.656673e-01    1.291507e+00
+-6.003143e-01    2.063556e+00   2.732486e-01    1.846735e+00  2.684362e-01    2.890503e-01
+1.200000e-01   -5.705636e-01    4.204134e-01   -9.684391e-01    1.459720e+00   -6.514304e-01
+2.298985e+00   3.338117e-01    2.063424e+00  3.449541e-01    3.336880e-01 1.400000e-01 -6.508979e-01
+4.772118e-01   -1.062618e+00    1.612613e+00   -6.975891e-01    2.510286e+00   3.888783e-01
+2.258437e+00  4.178564e-01    3.749320e-01 1.600000e-01   -7.287384e-01    5.310691e-01
+-1.150807e+00    1.753191e+00   -7.411234e-01    2.703069e+00   4.384501e-01    2.436805e+00
+4.863525e-01    4.133178e-01 1.800000e-01   -8.044079e-01    5.822715e-01   -1.234572e+00
+1.883657e+00   -7.832539e-01    2.881204e+00   4.829452e-01    2.602019e+00  5.503314e-01
+4.493058e-01 2.000000e-01   -8.780469e-01    6.310615e-01   -1.314853e+00    2.005671e+00
+-8.245805e-01    3.047458e+00   5.229514e-01    2.756584e+00  6.100265e-01    4.832787e-01
+2.200000e-01   -9.496984e-01    6.776474e-01   -1.392223e+00    2.120513e+00   -8.653673e-01
+3.203878e+00   5.590896e-01    2.902354e+00  6.658185e-01    5.155483e-01 2.400000e-01 -1.019365e+00
+7.222113e-01   -1.467040e+00    2.229192e+00   -9.057055e-01    3.352017e+00   5.919446e-01
+3.040735e+00  7.181279e-01    5.463664e-01 2.600000e-01   -1.087042e+00    7.649147e-01
+-1.539546e+00    2.332515e+00   -9.456044e-01    3.493080e+00   6.220354e-01    3.172817e+00
+7.673616e-01    5.759360e-01 2.800000e-01   -1.152735e+00    8.059027e-01   -1.609916e+00
+2.431140e+00   -9.850398e-01    3.628021e+00   6.498057e-01    3.299461e+00  8.138890e-01
+6.044213e-01 3.000000e-01   -1.216466e+00    8.453065e-01   -1.678289e+00    2.525611e+00
+-1.023980e+00    3.757606e+00   6.756268e-01    3.421355e+00  8.580353e-01    6.319557e-01
+3.200000e-01   -1.278278e+00    8.832457e-01   -1.744784e+00    2.616378e+00   -1.062399e+00
+3.882462e+00   6.998053e-01    3.539062e+00  9.000811e-01    6.586487e-01 3.400000e-01 -1.338225e+00
+9.198289e-01   -1.809512e+00    2.703823e+00   -1.100276e+00    4.003104e+00   7.225922e-01
+3.653044e+00  9.402670e-01    6.845912e-01 3.600000e-01   -1.396378e+00    9.551554e-01
+-1.872574e+00    2.788270e+00   -1.137603e+00    4.119965e+00   7.441921e-01    3.763688e+00
+9.787981e-01    7.098591e-01 3.800000e-01   -1.452811e+00    9.893160e-01   -1.934068e+00
+2.869995e+00   -1.174379e+00    4.233408e+00   7.647719e-01    3.871317e+00  1.015850e+00
+7.345163e-01 4.000000e-01   -1.507606e+00    1.022393e+00   -1.994085e+00    2.949237e+00
+-1.210611e+00    4.343745e+00   7.844680e-01    3.976208e+00  1.051572e+00    7.586177e-01
+4.200000e-01   -1.560847e+00    1.054463e+00   -2.052713e+00    3.026205e+00   -1.246311e+00
+4.451242e+00   8.033921e-01    4.078601e+00  1.086093e+00    7.822100e-01 4.400000e-01 -1.612617e+00
+1.085593e+00   -2.110034e+00    3.101081e+00   -1.281495e+00    4.556132e+00   8.216362e-01
+4.178700e+00  1.119525e+00    8.053342e-01 4.600000e-01   -1.662996e+00    1.115847e+00
+-2.166128e+00    3.174023e+00   -1.316181e+00    4.658615e+00   8.392767e-01    4.276685e+00
+1.151964e+00    8.280258e-01 4.800000e-01   -1.712064e+00    1.145282e+00   -2.221065e+00
+3.245174e+00   -1.350390e+00    4.758870e+00   8.563772e-01    4.372714e+00  1.183494e+00
+8.503160e-01 5.000000e-01   -1.759895e+00    1.173949e+00   -2.274916e+00    3.314659e+00
+-1.384141e+00    4.857055e+00   8.729911e-01    4.466927e+00  1.214188e+00    8.722325e-01
+
+   */
+
+  ndofs_ = 0;
+
+  // input parameters inverse analysis
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  {
+    char* foundit = NULL;
+    std::string monitorfilename = iap.get<std::string>("MONITORFILE");
+    if (monitorfilename == "none.monitor") dserror("No monitor file provided");
+    // insert path to monitor file if necessary
+    if (monitorfilename[0] != '/')
+    {
+      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos != std::string::npos)
+      {
+        std::string path = filename.substr(0, pos + 1);
+        monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
+      }
+    }
+
+    FILE* file = fopen(monitorfilename.c_str(), "rb");
+    if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
+
+    char buffer[150000];
+    fgets(buffer, 150000, file);
+    // read steps
+    foundit = strstr(buffer, "steps");
+    foundit += strlen("steps");
+    nsteps_ = strtol(foundit, &foundit, 10);
+    timesteps_.resize(nsteps_);
+    // read nnodes
+    foundit = strstr(buffer, "nnodes");
+    foundit += strlen("nnodes");
+    nnodes_ = strtol(foundit, &foundit, 10);
+    // read nodes
+    nodes_.resize(nnodes_);
+    dofs_.resize(nnodes_);
+    for (int i = 0; i < nnodes_; ++i)
+    {
+      fgets(buffer, 150000, file);
+      foundit = buffer;
+      nodes_[i] = strtol(foundit, &foundit, 10);
+      int ndofs = strtol(foundit, &foundit, 10);
+      ndofs_ += ndofs;
+      dofs_[i].resize(ndofs, -1);
+      if (!myrank) printf("Monitored node %d ndofs %d dofs ", nodes_[i], (int)dofs_[i].size());
+      for (int j = 0; j < ndofs; ++j)
+      {
+        dofs_[i][j] = strtol(foundit, &foundit, 10);
+        if (!myrank) printf("%d ", dofs_[i][j]);
+      }
+      if (!myrank) printf("\n");
+    }
+
+    // total number of measured dofs
+    nmp_ = ndofs_ * nsteps_;
+
+    // read in measured curve
+
+    {
+      mcurve_ = Epetra_SerialDenseVector(nmp_);
+
+      if (!myrank) printf("nsteps %d ndofs %d\n", nsteps_, ndofs_);
+
+      // read comment lines
+      foundit = buffer;
+      fgets(buffer, 150000, file);
+      while (strstr(buffer, "#")) fgets(buffer, 150000, file);
+
+      // read in the values for each node in dirs directions
+      int count = 0;
+      for (int i = 0; i < nsteps_; ++i)
+      {
+        // read the time step
+        timesteps_[i] = strtod(foundit, &foundit);
+        for (int j = 0; j < ndofs_; ++j) mcurve_[count++] = strtod(foundit, &foundit);
+        fgets(buffer, 150000, file);
+        foundit = buffer;
+      }
+      if (count != nmp_) dserror("Number of measured disps wrong on input");
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read Monitor file based on measured points               HaWi 07/18  */
+/*----------------------------------------------------------------------*/
+
+void STR::GenInvAnalysis::ReadMonitorPointBased(int myrank)
+{
+  /* this is how a point based monitor file should look like:
+
+steps 2 npoints 5
+2 0 1
+2 0 1
+2 0 1
+2 0 1
+2 0 1
+# any number of comment lines, but only at this position
+# x and y coords at 5 points, x and y coords at corresponding point in measurement direction
+(towards interface) # time point x y x' y', x y x' y', x y x' y', x y x' y', x y x' y' # for example
+with measurement downwards in vertical (y)-direction 2.000000e-02 4.000000e-02
+*/
+  ndofs_ = 0;
+
+  // input parameters inverse analysis
+  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+  {
+    char* foundit = NULL;
+    std::string monitorfilename = iap.get<std::string>("MONITORFILE");
+    if (monitorfilename == "none.monitor") dserror("No monitor file provided");
+    // insert path to monitor file if necessary
+    if (monitorfilename[0] != '/')
+    {
+      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos != std::string::npos)
+      {
+        std::string path = filename.substr(0, pos + 1);
+        monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
+      }
+    }
+
+    FILE* file = fopen(monitorfilename.c_str(), "rb");
+    if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
+
+    char buffer[150000];
+    fgets(buffer, 150000, file);
+    // read steps
+    foundit = strstr(buffer, "steps");
+    foundit += strlen("steps");
+    nsteps_ = strtol(foundit, &foundit, 10);
+    timesteps_.resize(nsteps_);
+    // read npoints, nnodes_ could be replicated to npoints_ f.e. but is reused here
+    foundit = strstr(buffer, "npoints");
+    foundit += strlen("npoints");
+    nnodes_ = strtol(foundit, &foundit, 10);
+
+    // no nodes involved for point based measurement
+    nodes_.resize(0);
+
+    dofs_.resize(nnodes_);
+    for (int i = 0; i < nnodes_; ++i)
+    {
+      fgets(buffer, 150000, file);
+      foundit = buffer;
+      int ndofs = strtol(foundit, &foundit, 10);
+      ndofs_ += ndofs;
+      dofs_[i].resize(ndofs, -1);
+      if (!myrank) printf("Monitored point %d ndofs %d dofs", i, (int)dofs_[i].size());
+      for (int j = 0; j < ndofs; ++j)
+      {
+        dofs_[i][j] = strtol(foundit, &foundit, 10);
+        if (!myrank) printf(" %d", dofs_[i][j]);
+      }
+      if (!myrank) printf("\n");
+    }
+
+    // total number of measured coordinates
+    nmp_ = nnodes_ * nsteps_;
+
+    // read in measured points
+
+    {
+      mcurve_ = Epetra_SerialDenseVector(2 * ndofs_ * nsteps_);
+
+      if (!myrank) printf("nsteps %d ndofs %d\n", nsteps_, ndofs_);
+
+      // read comment lines
+      foundit = buffer;
+      fgets(buffer, 150000, file);
+      while (strstr(buffer, "#")) fgets(buffer, 150000, file);
+
+      // read in the values for each node in dirs directions
+      int count = 0;
+      for (int i = 0; i < nsteps_; ++i)
+      {
+        // read the time step
+        timesteps_[i] = strtod(foundit, &foundit);
+        for (int j = 0; j < (2 * ndofs_); ++j) mcurve_[count++] = strtod(foundit, &foundit);
+        fgets(buffer, 150000, file);
+        foundit = buffer;
+      }
+      if (count != 2 * ndofs_ * nsteps_) dserror("Number of measured coords wrong on input");
+    }
   }
 }

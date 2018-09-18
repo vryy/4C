@@ -58,6 +58,13 @@ namespace INPAR
       reg_update_res,   //  Update based on objective function
     };
 
+    /// Update strategy for regularization parameter mu
+    enum MeasurementType
+    {
+      meas_dofs,    // dof-based measurement of displacements
+      meas_points,  // point(+direction)-based measurement of contour(surface)
+    };
+
   }  // namespace STR
 
   namespace INVANA
