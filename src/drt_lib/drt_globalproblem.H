@@ -483,9 +483,9 @@ namespace DRT
     {
       return getParameterList()->sublist("CAVITATION DYNAMIC");
     }
-    const Teuchos::ParameterList& ParticleParams() const
+    const Teuchos::ParameterList& ParticleParamsOld() const
     {
-      return getParameterList()->sublist("PARTICLE DYNAMIC");
+      return getParameterList()->sublist("PARTICLE DYNAMIC OLD");
     }
     const Teuchos::ParameterList& PASIDynamicParams() const
     {

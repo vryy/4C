@@ -54,7 +54,7 @@ INCLUDE_PARTICLE                no //yes //no
 --------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.1
 //BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
-------------------------------------------------------------PARTICLE DYNAMIC
+------------------------------------------------------------PARTICLE DYNAMIC OLD
 DYNAMICTYP                      RK2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1

@@ -31,8 +31,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "particle_interData.H"
 #include "particle_particle.H"
-#include "../drt_inpar/inpar_particle.H"
 #include <boost/unordered_map.hpp>
+#include "../drt_inpar/inpar_particle_old.H"
 
 // forward declarations
 namespace DRT
@@ -188,7 +188,7 @@ namespace PARTICLE
 
     /// re-initialize density in case of free-surface flow - mesh free sense
     virtual void MF_ReInitDensity(const Teuchos::RCP<Epetra_Vector> density,
-        const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType);
+        const INPAR::PARTICLEOLD::FreeSurfaceType freeSurfaceType);
 
     /// initialize free surface particles
     virtual void InitFreeSurfaceParticles(const Teuchos::RCP<Epetra_Vector> fspType);
@@ -314,10 +314,10 @@ namespace PARTICLE
     const bool interactionVariant2_;
 
     /// wall interaction type
-    const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
+    const INPAR::PARTICLEOLD::WallInteractionType wallInteractionType_;
 
     /// free surface type
-    const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType_;
+    const INPAR::PARTICLEOLD::FreeSurfaceType freeSurfaceType_;
 
     /// temporary storage of wallSPH data
     WallSPHData wallSPHData_;
@@ -335,7 +335,7 @@ namespace PARTICLE
     std::map<int, ParticleSPH*> freesurfaceparticles_;
 
     /// number of space dimensions required for weight function definition
-    const INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+    const INPAR::PARTICLEOLD::WeightFunctionDim WF_DIM_;
 
     /// background pressure employed for modified particle convection velocity
     const double background_pressure_;
@@ -356,7 +356,7 @@ namespace PARTICLE
     const double xsph_stiffac_;
 
     /// type of surface tension model
-    const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType_;
+    const INPAR::PARTICLEOLD::SurfaceTensionType surfaceTensionType_;
 
     /// surface tension value/factor between fluid and void phase/second fluid
     double surftensfacff_;

@@ -160,7 +160,7 @@ namespace PARTICLE
 
     const Teuchos::RCP<Teuchos::ParameterList> params_;  ///< the parameter list
 
-    INPAR::PARTICLE::Escaped escaped_;  ///< escaped criterion
+    INPAR::PARTICLEOLD::Escaped escaped_;  ///< escaped criterion
 
     int reseeding_;  ///< reseeding frequency
 

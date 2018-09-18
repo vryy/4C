@@ -29,7 +29,7 @@
  | constructor                                             sfuchs 06/17 |
  *----------------------------------------------------------------------*/
 ParticleSPHRenderingResultTest::ParticleSPHRenderingResultTest(PARTICLE::Rendering& rendering)
-    : DRT::ResultTest("PARTICLE_RENDERING")
+    : DRT::ResultTest("PARTICLEOLD_RENDERING")
 {
   discret_ = rendering.GetRenderingDiscret();
 

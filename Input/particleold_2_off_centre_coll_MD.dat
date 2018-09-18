@@ -1,0 +1,157 @@
+//
+// Maintainer: Sebastian Fuchs
+// fuchs@lnm.mw.tum.de
+// https://www.lnm.mw.tum.de/staff/sebastian-fuchs/
+// 089/289-15262
+//
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+frictionless off-center collision of two particles using the Molecular Dynamics
+type for hard sphere contact
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        8
+NODES                           27
+DIM                             3
+MATERIALS                       1
+NUMDF                           6
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      ParticleOld
+RESTART                         0
+//RESTART                       73
+SHAPEFCT                        Meshfree
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              -1
+--------------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   1.0
+BOUNDINGBOX                     -10.000001 -10.000001 -10.000001 10.000001 10.000001 10.000001
+----------------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      OneStepTheta
+RESULTSEVRY                     1
+RESTARTEVRY                     1000000
+TIMESTEP                        0.002
+NUMSTEP                         100
+MAXTIME                         0.2
+DAMPING                         No
+M_DAMP                          0.5
+K_DAMP                          0.5
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              Or
+TOLDISP                         1.0E-08
+TOLRES                          1.0E-08
+LINEAR_SOLVER                   1
+------------------------------------------------------------PARTICLE DYNAMIC OLD
+DYNAMICTYP                      ExplicitEuler
+RESULTSEVRY                     1
+RESTARTEVRY                     73
+TIMESTEP                        0.002
+NUMSTEP                         100
+MAXTIME                         0.2
+GRAVITY_ACCELERATION 0.0 0.0 0.0
+PARTICLE_INTERACTION            NormalContact_MD
+NORMAL_CONTACT_LAW              LinearSpring
+MIN_RADIUS                      0.01
+MAX_RADIUS                      0.01
+REL_PENETRATION                 0.01
+MAX_VELOCITY                    1.0
+TENSION_CUTOFF                  Yes
+FRICT_COEFF                     0.2
+FRICT_COEFF_WALL                0.2
+NORMAL_STIFF                    -1.0
+TANG_STIFF                      -1.0
+COEFF_RESTITUTION               1.0
+NORMAL_DAMP                     -1.0
+TANG_DAMP                       0.0
+COEFF_RESTITUTION_WALL          0.8
+NORMAL_DAMP_WALL                -1.0
+TANG_DAMP_WALL                  -1.0
+MOVING_WALLS                    No
+RANDOM_AMPLITUDE                0.00 //0.01
+--------------------------------------------------------------------SOLVER 1
+NAME                            Dummy_Structure_Solver
+SOLVER                          UMFPACK
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          1
+NDVOL                           0
+NDPARTICLE                      2
+-------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
+DPARTICLE                       0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF                           1
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+--------------------------------------DESIGN PARTICLE INIT RADIUS CONDITIONS
+DPARTICLE                       0
+------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
+DPARTICLE                       2
+E 1 - Velocity 1
+E 2 - Velocity 2
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+//                              walls
+E 1 - 1
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
+NODE 1 DPARTICLE 1
+NODE 2 DPARTICLE 2
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+-----------------------------------------------------------------NODE COORDS
+PARTICLE 1 COORD -0.00000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+PARTICLE 2 COORD 0.31000000000000e+00 -0.014142135620000e+00 0.000000000000000e+00
+NODE 1 COORD -1.0000000000000001e+00 -1.0000000000000001e+00 1.0000000000000001e+00
+NODE 2 COORD -1.0000000000000001e+00 -1.0000000000000001e+00 -1.0000000000000001e+00
+NODE 3 COORD -1.0000000000000001e+00 1.0000000000000001e+00 -1.0000000000000001e+00
+NODE 4 COORD -1.0000000000000001e+00 1.0000000000000001e+00 1.0000000000000001e+00
+NODE 5 COORD 1.0000000000000001e+00 -1.0000000000000001e+00 1.0000000000000001e+00
+NODE 6 COORD 1.0000000000000001e+00 -1.0000000000000001e+00 -1.0000000000000001e+00
+NODE 7 COORD 1.0000000000000001e+00 1.000000000000001e+00 -1.0000000000000001e+00
+NODE 8 COORD 1.0000000000000001e+00 1.0000000000000001e+00 1.0000000000000001e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
+MAT 2 MAT_Particle DENSITY 7.85E3 INITRADIUS 0.01
+----------------------------------------------------------------------FUNCT1
+// initial velocity (x component)
+COMPONENT 0 FUNCTION 1.0
+// initial velocity (y component)
+COMPONENT 1 FUNCTION 0.0
+// initial velocity (z component)
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
+// initial velocity (x component)
+COMPONENT 0 FUNCTION -1.0
+// initial velocity (y component)
+COMPONENT 1 FUNCTION 0.0
+// initial velocity (z component)
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLEOLD DIS particle NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1.0e-8
+PARTICLEOLD DIS particle NODE 1 QUANTITY vely VALUE 1.0 TOLERANCE 1.0e-8
+PARTICLEOLD DIS particle NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1.0e-8
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispx VALUE 1.47928932158795795e-01 TOLERANCE 1.0e-8
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispy VALUE 5.20710678137308036e-02 TOLERANCE 1.0e-8
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-8
+-------------------------------------------------------------------------END

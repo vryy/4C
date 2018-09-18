@@ -40,7 +40,7 @@
 #include "inpar_cardiovascular0d.H"
 #include "inpar_ssi.H"
 #include "inpar_ehl.H"
-#include "inpar_particle.H"
+#include "inpar_particle_old.H"
 #include "inpar_cavitation.H"
 #include "inpar_beampotential.H"
 #include "inpar_beaminteraction.H"
@@ -1170,7 +1170,7 @@ DRT::INPUT::ValidConditions()
 
   INPAR::SSI::SetValidConditions(condlist);
 
-  INPAR::PARTICLE::SetValidConditions(condlist);
+  INPAR::PARTICLEOLD::SetValidConditions(condlist);
 
   INPAR::PATSPEC::SetValidConditions(condlist);
 

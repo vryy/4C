@@ -45,7 +45,7 @@ RESEEDING                       25
 FAST_CHECK                      yes
 --------------------------------------------------------------------BINNING STRATEGY
 BIN_PER_DIR                     100 100 1
-------------------------------------------------------------PARTICLE DYNAMIC
+------------------------------------------------------------PARTICLE DYNAMIC OLD
 DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC

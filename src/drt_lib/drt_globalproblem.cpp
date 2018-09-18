@@ -352,7 +352,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
-  reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--PASI DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
@@ -2105,7 +2105,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       break;
     }
-    case prb_particle:
+    case prb_particle_old:
     case prb_pasi:
     {
       if (distype == "Meshfree")
@@ -2130,7 +2130,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
       // add rendering in case is required
-      if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(), "RENDERING"))
+      if (DRT::INPUT::IntegralValue<int>(
+              DRT::Problem::Instance()->ParticleParamsOld(), "RENDERING"))
       {
         renderingdis = Teuchos::rcp(new DRT::Discretization("rendering", reader.Comm()));
         renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));

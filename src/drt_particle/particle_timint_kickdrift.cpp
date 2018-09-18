@@ -44,14 +44,14 @@ PARTICLE::TimIntKickDrift::TimIntKickDrift(const Teuchos::ParameterList& ioparam
 void PARTICLE::TimIntKickDrift::Init()
 {
   // preliminary safety checks
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH)
     dserror(
         "kick-drift-kick time integrator currently just combined with smoothed particle "
         "hydrodynamics interaction mechanism");
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "NO_VELDIFF_TERM") == true and
+          DRT::Problem::Instance()->ParticleParamsOld(), "NO_VELDIFF_TERM") == true and
       DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == false)
+          DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == false)
     dserror(
         "The parameter NO_VELDIFF_TERM only makes sense in combination with TRANSPORT_VELOCITY!");
 
@@ -85,7 +85,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
   // Apply modified convection velocity if required
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+          DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
   {
     //\tilde{v}_{n+1/2}=v_{n+1/2}+dt/2*\tilde{a}_{n-1/2}, with \tilde{a}_{n-1/2}=*(*accmod_)(0),
     //\tilde{v}_{n+1/2}=velmodn_
@@ -108,7 +108,7 @@ int PARTICLE::TimIntKickDrift::IntegrateStep()
   ApplyDirichletBC(timen_ - dthalf, Teuchos::null, veln_, Teuchos::null, false);
 
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+          DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
     ApplyDirichletBC(timen_ - dthalf, Teuchos::null, velmodn_, Teuchos::null, false);
 
   // Transfer particles into their correct bins
@@ -197,7 +197,7 @@ void PARTICLE::TimIntKickDrift::GetExtremeValues()
     std::cout << "allprocalltime_min_pressure: " << allprocalltime_min_pressure << std::endl;
     std::cout << "allprocalltime_max_pressure: " << allprocalltime_max_pressure << std::endl;
     std::cout << "background pressure: "
-              << DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")
+              << DRT::Problem::Instance()->ParticleParamsOld().get<double>("BACKGROUND_PRESSURE")
               << std::endl;
   }
 #endif

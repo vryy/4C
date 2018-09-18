@@ -1,0 +1,94 @@
+//
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Test case for particle DEM involving linear-spring adhesion force:
+- one spherical particle and one static, quadratic wall with a small initial gap in between
+- initial particle velocity obliquely towards the wall
+- adhesion force between the particle and the wall, arising from linear-spring model
+- particle collides with the wall once and then bounces back, finally breaking the adhesion bond
+  when the maximum adhesion force is exceeded
+- no gravitational acceleration
+- perfectly elastic particle-wall penalty contact with coefficient of restitution e = 1.0
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      ParticleOld
+SHAPEFCT                        Meshfree
+--------------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.5
+BOUNDINGBOX                     -0.5 -0.5 -0.5 0.5 0.5 0.5
+------------------------------------------------------------PARTICLE DYNAMIC OLD
+RESULTSEVRY                     10
+RESTARTEVRY                     500
+RESEVRYERGY                     2500
+TIMESTEP                        0.001
+NUMSTEP                         2500
+PARTICLE_INTERACTION            NormalContact_DEM
+NORMAL_CONTACT_LAW              LinearSpring
+NORMAL_ADHESION_LAW             LinearSpring
+ADHESION_NORMAL_STIFF           1.e2
+ADHESION_MAX_FORCE              16.0
+ADHESION_EQ_GAP                 -0.01
+MIN_RADIUS                      0.12
+MAX_RADIUS                      0.12
+REL_PENETRATION                 0.05
+REL_PENETRATION_WALL            0.05
+MAX_VELOCITY                    1.0
+YOUNG_WALL                      210.0e9
+NUE_WALL                        0.3
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------------------FUNCT1
+// initial particle velocity
+COMPONENT 0 FUNCTION 0.3
+COMPONENT 1 FUNCTION -0.15
+COMPONENT 2 FUNCTION 0.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDSURF                          1
+NDPARTICLE                      1
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+E 1 - 1
+------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
+DPARTICLE                       1
+E 1 - Velocity 1
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
+NODE 1 DPARTICLE 1
+-----------------------------------------------------------------NODE COORDS
+PARTICLE 1 COORD -0.4 0.0 0.0
+NODE 1 COORD -0.5 -0.3 0.5
+NODE 2 COORD -0.5 -0.3 -0.5
+NODE 3 COORD -0.5 -0.25 -0.5
+NODE 4 COORD -0.5 -0.25 0.5
+NODE 5 COORD 0.5 -0.3 0.5
+NODE 6 COORD 0.5 -0.3 -0.5
+NODE 7 COORD 0.5 -0.25 -0.5
+NODE 8 COORD 0.5 -0.25 0.5
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Particle DENSITY 7.85e3 INITRADIUS 0.12 NUE 0.3 YOUNG 210.0e9
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispx VALUE 0.35 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispy VALUE 1.34456145866569343e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.e-20
+PARTICLEOLD DIS particle NODE 1 QUANTITY velx VALUE 0.3 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY vely VALUE 1.08297029385842736e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1.e-20
+PARTICLEOLD SPECIAL QUANTITY kineticenergy VALUE 2.89010464125200439e+00 TOLERANCE 1.e-09
+PARTICLEOLD SPECIAL QUANTITY internalenergy VALUE 0.0 TOLERANCE 1.e-20
+PARTICLEOLD SPECIAL QUANTITY externalenergy VALUE 0.0 TOLERANCE 1.e-20
+-------------------------------------------------------------------------END

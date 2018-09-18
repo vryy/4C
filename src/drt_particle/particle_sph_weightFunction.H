@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_particle.H"
+#include "../drt_inpar/inpar_particle_old.H"
 
 #include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
@@ -68,7 +68,7 @@ namespace PARTICLE
     virtual double DDW0(const double &radius) = 0;
 
     // weight function type
-    virtual INPAR::PARTICLE::WeightFunction Name() = 0;
+    virtual INPAR::PARTICLEOLD::WeightFunction Name() = 0;
 
     // check if the gradient is correct
     virtual void DBG_GradW();
@@ -88,7 +88,7 @@ namespace PARTICLE
     //@{
 
     //! constructor
-    WeightFunction_CubicBspline(INPAR::PARTICLE::WeightFunctionDim dim) : WF_DIM_(dim) {}
+    WeightFunction_CubicBspline(INPAR::PARTICLEOLD::WeightFunctionDim dim) : WF_DIM_(dim) {}
 
     // get smoothing length h from radius r
     virtual inline double SmoothingLength(const double &radius) { return radius / 2.0; }
@@ -118,7 +118,10 @@ namespace PARTICLE
     }
 
     // weight function type
-    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::CubicBspline; }
+    virtual inline INPAR::PARTICLEOLD::WeightFunction Name()
+    {
+      return INPAR::PARTICLEOLD::CubicBspline;
+    }
 
     //@}
 
@@ -134,7 +137,7 @@ namespace PARTICLE
 
    protected:
     // store problem dimension required by weight functions
-    INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+    INPAR::PARTICLEOLD::WeightFunctionDim WF_DIM_;
   };
 
   class WeightFunction_QuinticBspline : public WeightFunction_Base
@@ -144,7 +147,7 @@ namespace PARTICLE
     //@{
 
     //! constructor
-    WeightFunction_QuinticBspline(INPAR::PARTICLE::WeightFunctionDim dim) : WF_DIM_(dim) {}
+    WeightFunction_QuinticBspline(INPAR::PARTICLEOLD::WeightFunctionDim dim) : WF_DIM_(dim) {}
 
     // get smoothing length h from radius r
     virtual inline double SmoothingLength(const double &radius) { return radius / 3.0; }
@@ -179,9 +182,9 @@ namespace PARTICLE
     }
 
     // weight function type
-    virtual inline INPAR::PARTICLE::WeightFunction Name()
+    virtual inline INPAR::PARTICLEOLD::WeightFunction Name()
     {
-      return INPAR::PARTICLE::QuinticBspline;
+      return INPAR::PARTICLEOLD::QuinticBspline;
     }
 
     //@}
@@ -191,7 +194,7 @@ namespace PARTICLE
 
    protected:
     // store problem dimension required by weight functions
-    INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+    INPAR::PARTICLEOLD::WeightFunctionDim WF_DIM_;
   };
 
   class WeightFunction_SqrtHyperbola : public WeightFunction_Base
@@ -201,7 +204,7 @@ namespace PARTICLE
     //@{
 
     //! constructor
-    WeightFunction_SqrtHyperbola(INPAR::PARTICLE::WeightFunctionDim dim) : WF_DIM_(dim) {}
+    WeightFunction_SqrtHyperbola(INPAR::PARTICLEOLD::WeightFunctionDim dim) : WF_DIM_(dim) {}
 
     // get smoothing length h from radius r
     virtual inline double SmoothingLength(const double &radius) { return radius; }
@@ -228,7 +231,10 @@ namespace PARTICLE
     virtual inline double DDW0(const double &radius) { return RszDim(radius); }
 
     // weight function type
-    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::SqrtHyperbola; }
+    virtual inline INPAR::PARTICLEOLD::WeightFunction Name()
+    {
+      return INPAR::PARTICLEOLD::SqrtHyperbola;
+    }
 
     //@}
 
@@ -237,7 +243,7 @@ namespace PARTICLE
 
    protected:
     // store problem dimension required by weight functions
-    INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+    INPAR::PARTICLEOLD::WeightFunctionDim WF_DIM_;
   };
 
 
@@ -272,9 +278,9 @@ namespace PARTICLE
     virtual inline double DDW0(const double &radius) { return RszDim(radius); }
 
     // weight function type
-    virtual inline INPAR::PARTICLE::WeightFunction Name()
+    virtual inline INPAR::PARTICLEOLD::WeightFunction Name()
     {
-      return INPAR::PARTICLE::HyperbolaNoRsz;
+      return INPAR::PARTICLEOLD::HyperbolaNoRsz;
     }
 
     //@}

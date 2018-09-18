@@ -95,7 +95,7 @@ namespace DRT
         const DRT::INPUT::DatFileReader& reader, const std::string& sectionname)
     {
       // add particle specific element reader
-      Teuchos::RCP<ElementReader> er = Teuchos::rcp(new DRT::INPUT::ParticleReader(dis, reader));
+      Teuchos::RCP<ElementReader> er = Teuchos::rcp(new DRT::INPUT::OldParticleReader(dis, reader));
       ereader_.push_back(er);
       // add particle specific domain reader
       std::string fullsectionname("--" + sectionname + " DOMAIN");

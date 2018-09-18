@@ -109,7 +109,7 @@ namespace PARTICLE
     //! @name General method parameters
     //@{
 
-    INPAR::PARTICLE::DynamicType rk_scheme_;
+    INPAR::PARTICLEOLD::DynamicType rk_scheme_;
 
     //@}
 
