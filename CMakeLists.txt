@@ -783,7 +783,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_browniandyn.cpp
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
-  src/drt_inpar/inpar_particle.cpp
+  src/drt_inpar/inpar_particle_old.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp

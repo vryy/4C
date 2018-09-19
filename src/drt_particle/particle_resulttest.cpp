@@ -23,7 +23,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
-    : DRT::ResultTest("PARTICLE"),
+    : DRT::ResultTest("PARTICLEOLD"),
       kineticenergy_(tintegrator.KineticEnergy()),
       internalenergy_(tintegrator.InternalEnergy()),
       externalenergy_(tintegrator.ExternalEnergy()),

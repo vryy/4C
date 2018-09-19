@@ -203,7 +203,7 @@ namespace PARTICLE
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() const { return particles_; }
 
     /// get particle interaction type
-    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const
+    INPAR::PARTICLEOLD::ParticleInteractions ParticleInteractionType() const
     {
       return particleInteractionType_;
     }
@@ -321,16 +321,16 @@ namespace PARTICLE
     const bool moving_walls_;
 
     /// type of repartitioning strategy
-    const INPAR::PARTICLE::RepartitionStrategy rep_strategy_;
+    const INPAR::PARTICLEOLD::RepartitionStrategy rep_strategy_;
 
     /// displacement state of particles since last redistribution
     Teuchos::RCP<Epetra_Vector> dis_at_last_redistr_;
 
     /// type of particle interaction
-    const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
+    const INPAR::PARTICLEOLD::ParticleInteractions particleInteractionType_;
 
     /// extended ghosting strategy
-    const INPAR::PARTICLE::ExtendedGhosting extendedGhosting_;
+    const INPAR::PARTICLEOLD::ExtendedGhosting extendedGhosting_;
 
     /// vector of pointers to particle material parameters
     std::vector<const MAT::PAR::ParticleMat*> particleMat_;

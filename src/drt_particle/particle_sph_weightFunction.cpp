@@ -398,13 +398,13 @@ double PARTICLE::WeightFunction_CubicBspline::RszDim(const double &radius)
   double rszdim = 0.0;
   switch (WF_DIM_)
   {
-    case INPAR::PARTICLE::WF_3D:
+    case INPAR::PARTICLEOLD::WF_3D:
       rszdim = 12.0 * M_1_PI / std::pow(radius, 3);
       break;
-    case INPAR::PARTICLE::WF_2D:
+    case INPAR::PARTICLEOLD::WF_2D:
       rszdim = 60.0 * M_1_PI / (7.0 * std::pow(radius, 2));
       break;
-    case INPAR::PARTICLE::WF_1D:
+    case INPAR::PARTICLEOLD::WF_1D:
       rszdim = 2.0 / radius;
       break;
     default:
@@ -624,13 +624,13 @@ double PARTICLE::WeightFunction_QuinticBspline::RszDim(const double &h)
   double rszdim = 0.0;
   switch (WF_DIM_)
   {
-    case INPAR::PARTICLE::WF_3D:
+    case INPAR::PARTICLEOLD::WF_3D:
       rszdim = 3.0 * M_1_PI / (359 * std::pow(h, 3));
       break;
-    case INPAR::PARTICLE::WF_2D:
+    case INPAR::PARTICLEOLD::WF_2D:
       rszdim = 7.0 * M_1_PI / (478 * std::pow(h, 2));
       break;
-    case INPAR::PARTICLE::WF_1D:
+    case INPAR::PARTICLEOLD::WF_1D:
       rszdim = 1.0 / (120 * h);
       break;
     default:
@@ -729,17 +729,17 @@ double PARTICLE::WeightFunction_SqrtHyperbola::RszDim(const double &radius)
   double rszDim = 0.0;
   switch (WF_DIM_)
   {
-    case INPAR::PARTICLE::WF_3D:
+    case INPAR::PARTICLEOLD::WF_3D:
     {
       rszDim = 15.0 * M_1_PI / (4.0 * std::pow(radius, 3));
       break;
     }
-    case INPAR::PARTICLE::WF_2D:
+    case INPAR::PARTICLEOLD::WF_2D:
     {
       rszDim = 3.0 * M_1_PI / (std::pow(radius, 2));
       break;
     }
-    case INPAR::PARTICLE::WF_1D:
+    case INPAR::PARTICLEOLD::WF_1D:
     {
       rszDim = 0.5 / radius;
       break;

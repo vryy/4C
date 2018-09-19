@@ -128,7 +128,7 @@ PARTICLE::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       dofmapexporter_(Teuchos::null),
       nodemapexporter_(Teuchos::null),
 
-      radiusdistribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RadiusDistribution>(
+      radiusdistribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RadiusDistribution>(
           particledynparams, "RADIUS_DISTRIBUTION")),
       variableradius_((bool)DRT::INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->CavitationParams(), "COMPUTE_RADIUS_RP_BASED")),
@@ -182,7 +182,7 @@ void PARTICLE::TimInt::Init()
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
-    case INPAR::PARTICLE::SPH:
+    case INPAR::PARTICLEOLD::SPH:
     {
       density_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
       densityDot_ =
@@ -237,7 +237,7 @@ void PARTICLE::TimInt::Init()
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
 
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+          DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
   {
     velmod_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
     velmodn_ = Teuchos::rcp(new Epetra_Vector(*(*velmod_)(0)));
@@ -247,7 +247,7 @@ void PARTICLE::TimInt::Init()
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
-    case INPAR::PARTICLE::SPH:
+    case INPAR::PARTICLEOLD::SPH:
     {
       radiusn_ = Teuchos::rcp(new Epetra_Vector(*(*radius_)(0)));
       densityn_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
@@ -260,7 +260,7 @@ void PARTICLE::TimInt::Init()
   }
 
   // decide whether there is particle contact
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::None)
   {
     // allocate vectors
     angVel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
@@ -296,7 +296,7 @@ void PARTICLE::TimInt::SetInitialFields()
   // extract particle density (for now, all particles have identical density)
   std::vector<const MAT::PAR::ParticleMat*> particlemat = particle_algorithm_->ParticleMat();
 
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH)
   {
     // safety check
     if (particlemat.size() > 1)
@@ -304,7 +304,7 @@ void PARTICLE::TimInt::SetInitialFields()
 
     const double initDensity = particlemat.size() == 1 ? particlemat[0]->initDensity_ : 0.0;
     double consistent_problem_volume =
-        DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
+        DRT::Problem::Instance()->ParticleParamsOld().get<double>("CONSISTENT_PROBLEM_VOLUME");
     if (consistent_problem_volume < 0.0)
       strategy_->ComputeMass();
     else
@@ -356,13 +356,13 @@ void PARTICLE::TimInt::SetInitialFields()
 
     switch (radiusdistribution_)
     {
-      case INPAR::PARTICLE::radiusdistribution_none:
+      case INPAR::PARTICLEOLD::radiusdistribution_none:
       {
         // do nothing
         break;
       }
-      case INPAR::PARTICLE::radiusdistribution_lognormal:
-      case INPAR::PARTICLE::radiusdistribution_normal:
+      case INPAR::PARTICLEOLD::radiusdistribution_lognormal:
+      case INPAR::PARTICLEOLD::radiusdistribution_normal:
       {
         if (consistent_problem_volume > 0.0)
           dserror(
@@ -371,9 +371,9 @@ void PARTICLE::TimInt::SetInitialFields()
 
         // get minimum and maximum radius for particles
         const double min_radius =
-            DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
+            DRT::Problem::Instance()->ParticleParamsOld().get<double>("MIN_RADIUS");
         const double max_radius =
-            DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
+            DRT::Problem::Instance()->ParticleParamsOld().get<double>("MAX_RADIUS");
 
         // loop over all particles
         for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
@@ -384,14 +384,15 @@ void PARTICLE::TimInt::SetInitialFields()
           // initialize random number generator with current particle radius or its natural
           // logarithm as mean and input parameter value as standard deviation
           DRT::Problem::Instance()->Random()->SetMeanVariance(
-              radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal
+              radiusdistribution_ == INPAR::PARTICLEOLD::radiusdistribution_lognormal
                   ? log((*(*radius_)(0))[lid])
                   : (*(*radius_)(0))[lid],
-              DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+              DRT::Problem::Instance()->ParticleParamsOld().get<double>(
+                  "RADIUS_DISTRIBUTION_SIGMA"));
 
           // generate normally or log-normally distributed random value for particle radius
           double random_radius =
-              radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal
+              radiusdistribution_ == INPAR::PARTICLEOLD::radiusdistribution_lognormal
                   ? exp(DRT::Problem::Instance()->Random()->Normal())
                   : DRT::Problem::Instance()->Random()->Normal();
 
@@ -428,7 +429,7 @@ void PARTICLE::TimInt::SetInitialFields()
     dserror("Both particle materials need to be defined with equal initRadius_!");
 
   const double amplitude =
-      DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+      DRT::Problem::Instance()->ParticleParamsOld().get<double>("RANDOM_AMPLITUDE");
   const double initRadius = particlemat.size() > 0 ? particlemat[0]->initRadius_ : 0.0;
 
   for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
@@ -472,15 +473,15 @@ void PARTICLE::TimInt::SetInitialFields()
 
   // In case of SPH, the material might be different from particle to particle. Thus, initial mass,
   // density etc. has to be set individually
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::SPH)
   {
     Teuchos::RCP<PARTICLE::ParticleSPHInteractionHandler> interHandler =
         Teuchos::rcp(new PARTICLE::ParticleSPHInteractionHandler(
-            discret_, particle_algorithm_, DRT::Problem::Instance()->ParticleParams(), true));
+            discret_, particle_algorithm_, DRT::Problem::Instance()->ParticleParamsOld(), true));
     interHandler->InitColParticles();
 
     double consistent_problem_volume =
-        DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
+        DRT::Problem::Instance()->ParticleParamsOld().get<double>("CONSISTENT_PROBLEM_VOLUME");
     if (consistent_problem_volume > 0.0)
     {
       // boundary particles are excluded for determination of particle mass since they are also not
@@ -493,12 +494,12 @@ void PARTICLE::TimInt::SetInitialFields()
           particle_volume, (*density_)(0), mass_, (*dis_)(0), (*radius_)(0));
 
       // in case of two-phase flow, the initial density is determined via density summation!
-      const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType =
-          DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(
-              DRT::Problem::Instance()->ParticleParams(), "FREE_SURFACE_TYPE");
-      if (freeSurfaceType == INPAR::PARTICLE::TwoPhase and
+      const INPAR::PARTICLEOLD::FreeSurfaceType freeSurfaceType =
+          DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::FreeSurfaceType>(
+              DRT::Problem::Instance()->ParticleParamsOld(), "FREE_SURFACE_TYPE");
+      if (freeSurfaceType == INPAR::PARTICLEOLD::TwoPhase and
           DRT::INPUT::IntegralValue<int>(
-              DRT::Problem::Instance()->ParticleParams(), "DENSITY_SUMMATION") == true)
+              DRT::Problem::Instance()->ParticleParamsOld(), "DENSITY_SUMMATION") == true)
       {
         density0_ = Teuchos::rcp(new Epetra_Vector(*(*density_)(0)));
         density0_->Update(1.0, *((*density_)(0)), 0.0);
@@ -515,11 +516,11 @@ void PARTICLE::TimInt::SetInitialFields()
 /* Determine boundary particles */
 void PARTICLE::TimInt::DetermineBdryParticles()
 {
-  const INPAR::PARTICLE::WallInteractionType wallInteractionType =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(
-          DRT::Problem::Instance()->ParticleParams(), "WALL_INTERACTION_TYPE");
-  if (wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or
-      wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
+  const INPAR::PARTICLEOLD::WallInteractionType wallInteractionType =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WallInteractionType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "WALL_INTERACTION_TYPE");
+  if (wallInteractionType == INPAR::PARTICLEOLD::BoundarParticle_FreeSlip or
+      wallInteractionType == INPAR::PARTICLEOLD::BoundarParticle_NoSlip)
   {
     // local number of boundary particles on this processor
     int local_num_boundaryparticles = 0;
@@ -587,17 +588,17 @@ void PARTICLE::TimInt::PrepareTimeStep()
 /* equilibrate system at initial state and identify consistent accelerations */
 void PARTICLE::TimInt::DetermineMassDampConsistAccel()
 {
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH)
     ComputeAcc(Teuchos::null, Teuchos::null, (*acc_)(0), Teuchos::null);
   else
   {
-    INPAR::PARTICLE::DynamicType timinttype =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(
-            DRT::Problem::Instance()->ParticleParams(), "DYNAMICTYP");
-    if (timinttype == INPAR::PARTICLE::dyna_kickdrift)
+    INPAR::PARTICLEOLD::DynamicType timinttype =
+        DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(
+            DRT::Problem::Instance()->ParticleParamsOld(), "DYNAMICTYP");
+    if (timinttype == INPAR::PARTICLEOLD::dyna_kickdrift)
     {
       if (DRT::INPUT::IntegralValue<int>(
-              DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+              DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
       {
         // Initially, the convection velocity velmodn_ is set equal to the initial velocity veln_
         velmodn_->Update(1.0, *veln_, 0.0);
@@ -632,7 +633,7 @@ void PARTICLE::TimInt::ComputeAcc(Teuchos::RCP<Epetra_Vector> f_contact,
     fifc_->Update(1.0, *f_contact, 1.0);
 
     // zero out non-planar entries in case of 2D
-    if (particle_algorithm_->BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+    if (particle_algorithm_->BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz)
     {
       for (int i = 0; i < numrownodes; ++i)
       {
@@ -647,7 +648,7 @@ void PARTICLE::TimInt::ComputeAcc(Teuchos::RCP<Epetra_Vector> f_contact,
   }
 
   // zero out non-planar entries in case of 2D
-  if (particle_algorithm_->BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+  if (particle_algorithm_->BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz)
   {
     for (int i = 0; i < numrownodes; ++i) (*fifc_)[i * 3 + 2] = 0.0;
   }
@@ -676,11 +677,11 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
   // Set also state vector velConv
   if (velConv != Teuchos::null) interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
 
-  const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(
-          DRT::Problem::Instance()->ParticleParams(), "FREE_SURFACE_TYPE");
+  const INPAR::PARTICLEOLD::FreeSurfaceType freeSurfaceType =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::FreeSurfaceType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "FREE_SURFACE_TYPE");
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "DENSITY_SUMMATION") == false)
+          DRT::Problem::Instance()->ParticleParamsOld(), "DENSITY_SUMMATION") == false)
   {
     // Density update via continuity equation: This is only required as initialization for density
     // summation below in case of free-surface flows Attention: Here, r_{n+1} and v_{n+1/2} are
@@ -701,11 +702,11 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
     interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     // Asign accelerations, modified pressures and modified velocities for boundary particles and
     // calculate their mechanical energy contribution
-    const INPAR::PARTICLE::WallInteractionType wallInteractionType =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(
-            DRT::Problem::Instance()->ParticleParams(), "WALL_INTERACTION_TYPE");
-    if (wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip or
-        wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    const INPAR::PARTICLEOLD::WallInteractionType wallInteractionType =
+        DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WallInteractionType>(
+            DRT::Problem::Instance()->ParticleParamsOld(), "WALL_INTERACTION_TYPE");
+    if (wallInteractionType == INPAR::PARTICLEOLD::BoundarParticle_NoSlip or
+        wallInteractionType == INPAR::PARTICLEOLD::BoundarParticle_FreeSlip)
     {
       interHandler_->InitBoundaryData(acc, particle_algorithm_->GetGravityAcc(time));
     }
@@ -717,7 +718,7 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
     interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   }
 
-  if (freeSurfaceType != INPAR::PARTICLE::FreeSurface_None)
+  if (freeSurfaceType != INPAR::PARTICLEOLD::FreeSurface_None)
   {
     // In case of density summation, the new density and new pressure have been determined as very
     // first step since they are required for all the following calculations
@@ -733,10 +734,10 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
     interHandler_->SetStateVector(density_sum, PARTICLE::DensitySum);
     interHandler_->SetStateVector(CFG, PARTICLE::CFG);
 
-    const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(
-            DRT::Problem::Instance()->ParticleParams(), "SURFACE_TENSION_TYPE");
-    if (surfaceTensionType == INPAR::PARTICLE::ST_CONTI_ADAMI)
+    const INPAR::PARTICLEOLD::SurfaceTensionType surfaceTensionType =
+        DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::SurfaceTensionType>(
+            DRT::Problem::Instance()->ParticleParamsOld(), "SURFACE_TENSION_TYPE");
+    if (surfaceTensionType == INPAR::PARTICLEOLD::ST_CONTI_ADAMI)
     {
       Teuchos::RCP<Epetra_Vector> CFG_FF = Teuchos::rcp(new Epetra_Vector(*veln_));
       CFG_FF->PutScalar(0.0);
@@ -751,8 +752,8 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
       interHandler_->SetStateVector(CFG_F1S, PARTICLE::CFG_F1S);
       interHandler_->SetStateVector(distWall, PARTICLE::DistWall);
 
-      if (freeSurfaceType == INPAR::PARTICLE::TwoPhase and
-          surfaceTensionType == INPAR::PARTICLE::ST_CONTI_ADAMI)
+      if (freeSurfaceType == INPAR::PARTICLEOLD::TwoPhase and
+          surfaceTensionType == INPAR::PARTICLEOLD::ST_CONTI_ADAMI)
       {
 #if (defined(PARTICLE_ST_BOUNDARYSCALEFAC) or defined(PARTICLE_ST_CFGEXTRAPLATION))
         interHandler_->ExtrapolateTriplePointCFG(CFG_FF);
@@ -776,8 +777,8 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
     interHandler_->InitFreeSurfaceParticles(fspType_);
 
     // Re-initialize density if required in case of free-surface flow
-    if (freeSurfaceType != INPAR::PARTICLE::DensityIntegration and
-        freeSurfaceType != INPAR::PARTICLE::TwoPhase)
+    if (freeSurfaceType != INPAR::PARTICLEOLD::DensityIntegration and
+        freeSurfaceType != INPAR::PARTICLEOLD::TwoPhase)
       interHandler_->MF_ReInitDensity(densityn_, freeSurfaceType);
 
     if (colorField_ != Teuchos::null) colorField_->Update(1.0, *colorField, 0.0);
@@ -791,11 +792,11 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
 
   // assign accelerations, modified pressures and modified velocities for boundary particles and
   // calculate their mechanical energy contribution
-  const INPAR::PARTICLE::WallInteractionType wallInteractionType =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(
-          DRT::Problem::Instance()->ParticleParams(), "WALL_INTERACTION_TYPE");
-  if (wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip or
-      wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip)
+  const INPAR::PARTICLEOLD::WallInteractionType wallInteractionType =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WallInteractionType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "WALL_INTERACTION_TYPE");
+  if (wallInteractionType == INPAR::PARTICLEOLD::BoundarParticle_NoSlip or
+      wallInteractionType == INPAR::PARTICLEOLD::BoundarParticle_FreeSlip)
     interHandler_->InitBoundaryData(acc, particle_algorithm_->GetGravityAcc(time));
 
   // clear acceleration states
@@ -808,31 +809,31 @@ void PARTICLE::TimInt::DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
   // acceleration contributions due to internal forces (pressure, viscosity, etc.)
   interHandler_->Inter_pvp_acc(acc, accmod, acc_A, time);
 
-  const INPAR::PARTICLE::SurfaceTensionType surfaceTensionType =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(
-          DRT::Problem::Instance()->ParticleParams(), "SURFACE_TENSION_TYPE");
-  if (surfaceTensionType == INPAR::PARTICLE::ST_CONTI_ADAMI)
+  const INPAR::PARTICLEOLD::SurfaceTensionType surfaceTensionType =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::SurfaceTensionType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "SURFACE_TENSION_TYPE");
+  if (surfaceTensionType == INPAR::PARTICLEOLD::ST_CONTI_ADAMI)
   {
     Teuchos::RCP<Epetra_Vector> kappa = Teuchos::rcp(new Epetra_Vector(*densityn_));
     kappa->PutScalar(0.0);
     Teuchos::RCP<Epetra_Vector> accST_FF = Teuchos::rcp(new Epetra_Vector(*acc));
     accST_FF->PutScalar(0.0);
 
-    if (freeSurfaceType == INPAR::PARTICLE::TwoPhase)
+    if (freeSurfaceType == INPAR::PARTICLEOLD::TwoPhase)
     {
-      if (surfaceTensionType == INPAR::PARTICLE::ST_CONTI_ADAMI)
+      if (surfaceTensionType == INPAR::PARTICLEOLD::ST_CONTI_ADAMI)
       {
         interHandler_->Inter_fspvp_Adami_1(accST_FF, kappa, time);
 
         bool contact_angle_var2 = DRT::INPUT::IntegralValue<int>(
-            DRT::Problem::Instance()->ParticleParams(), "CONTACT_ANGLE_VAR2");
+            DRT::Problem::Instance()->ParticleParamsOld(), "CONTACT_ANGLE_VAR2");
         if (contact_angle_var2 == true)
           interHandler_->Inter_fspvp_Adami_ContactAngleVar2(accST_FF, time);
       }
     }
     else
     {
-      if (surfaceTensionType == INPAR::PARTICLE::ST_CONTI_ADAMI)
+      if (surfaceTensionType == INPAR::PARTICLEOLD::ST_CONTI_ADAMI)
         interHandler_->Inter_fspvp_Adami_2(accST_FF, kappa, time);
     }
 
@@ -994,7 +995,7 @@ void PARTICLE::TimInt::ReadRestartState()
 #endif
 
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+          DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
   {
     reader.ReadVector(velmodn_, "modified_velocity");
     velmod_->UpdateSteps(*velmodn_);
@@ -1005,7 +1006,7 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(mass_, "mass");
 
 
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH &&
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH &&
       DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids) <
           0)
   {
@@ -1129,7 +1130,7 @@ void PARTICLE::TimInt::OutputRestart(bool& datawritten)
   WriteVector("acceleration", acc_);
 
   if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+          DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
   {
     WriteVector("modified_velocity", velmod_);
     WriteVector("modified_acceleration", accmod_);
@@ -1277,7 +1278,7 @@ void PARTICLE::TimInt::DetermineEnergy()
 
     // energy for all cases besides SPH
     if (collhandler_ != Teuchos::null and
-        particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+        particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH)
     {
       // total kinetic energy
       kinergy_ = strategy_->ComputeKineticEnergy();
@@ -1295,7 +1296,7 @@ void PARTICLE::TimInt::DetermineEnergy()
       extergy_ = 0.0;
     }  // energy for SPH case
     else if (collhandler_ == Teuchos::null and
-             particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
+             particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::SPH)
     {
       // set energies to zero (intergy_ has already been calculated earlier)
       double specific_energy = 0.0;
@@ -1358,14 +1359,14 @@ void PARTICLE::TimInt::OutputEnergy()
   {
     // energy for all cases besides SPH
     if (collhandler_ != Teuchos::null and
-        particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+        particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH)
     {
       *energyfile_ << " " << std::setw(9) << step_ << std::scientific << std::setprecision(16)
                    << " " << (*time_)[0] << " " << totergy << " " << kinergy_ << " " << intergy_
                    << " " << extergy_ << " " << collhandler_->GetMaxPenetration() << std::endl;
     }  // energy for SPH case
     else if (collhandler_ == Teuchos::null and
-             particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
+             particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::SPH)
     {
       *energyfile_ << step_ << std::scientific << std::setprecision(16) << " " << (*time_)[0] << " "
                    << totergy << " " << kinergy_ << " " << intergy_ << " " << extergy_ << " "
@@ -1386,7 +1387,7 @@ void PARTICLE::TimInt::OutputEnergy()
 void PARTICLE::TimInt::PerformSPHRendering(bool clearstate, bool writeoutput)
 {
   if (interHandler_ != Teuchos::null and
-      particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
+      particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::SPH)
   {
     Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
     if (rendering != Teuchos::null)
@@ -1404,7 +1405,7 @@ void PARTICLE::TimInt::PerformSPHRendering(bool clearstate, bool writeoutput)
       if (myrank_ == 0) std::cout << "Update (averaged) rendering vectors!" << std::endl;
 
       if (DRT::INPUT::IntegralValue<int>(
-              DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+              DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
         rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0),
             (*velmod_)(0), (*density_)(0), (*radius_)(0), pressure_, mass_);
       else
@@ -1457,7 +1458,7 @@ void PARTICLE::TimInt::AttachEnergyFile()
   if (energyfile_.is_null())
   {
     // energy for all cases besides SPH
-    if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::SPH)
+    if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::SPH)
     {
       std::string energyname =
           DRT::Problem::Instance()->OutputControlFile()->FileName() + "_particle.energy";
@@ -1677,7 +1678,7 @@ void PARTICLE::TimInt::UpdateStepState()
     UpdateStateVector(densityDot_, densityDotn_);
 
     if (DRT::INPUT::IntegralValue<int>(
-            DRT::Problem::Instance()->ParticleParams(), "TRANSPORT_VELOCITY") == true)
+            DRT::Problem::Instance()->ParticleParamsOld(), "TRANSPORT_VELOCITY") == true)
     {
       UpdateStateVector(velmod_, velmodn_);
       UpdateStateVector(accmod_, accmodn_);
@@ -1747,7 +1748,7 @@ void PARTICLE::TimInt::UpdateExtActions(bool init)
   LINALG::Matrix<3, 1> gravity_acc = particle_algorithm_->GetGravityAcc(-1.0);
 
   // forces/accelerations
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::SPH)
   {
     // In SPH simulations, gravity and all other interaction forces are considered at once in the
     // methdo IntegrateStep()

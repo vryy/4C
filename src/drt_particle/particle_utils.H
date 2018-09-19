@@ -55,7 +55,7 @@ namespace PARTICLE
     }
 
     //! Volume -> effective particle distance
-    static double Volume2EffDist(double volume, const INPAR::PARTICLE::WeightFunctionDim WF_DIM)
+    static double Volume2EffDist(double volume, const INPAR::PARTICLEOLD::WeightFunctionDim WF_DIM)
     {
       // This method is used to determin the effective particle distance based on the volume:
       // dist=(volumme)^(1/WF_DIM) The following cumbersome case destinction is made in order to
@@ -63,19 +63,19 @@ namespace PARTICLE
       double effectiveDistance = 0.0;
       switch (WF_DIM)
       {
-        case INPAR::PARTICLE::WF_3D:
+        case INPAR::PARTICLEOLD::WF_3D:
         {
           // cubic root
           effectiveDistance = cbrt(volume);
           break;
         }
-        case INPAR::PARTICLE::WF_2D:
+        case INPAR::PARTICLEOLD::WF_2D:
         {
           // square root
           effectiveDistance = sqrt(volume);
           break;
         }
-        case INPAR::PARTICLE::WF_1D:
+        case INPAR::PARTICLEOLD::WF_1D:
         {
           // 1D volume = length
           effectiveDistance = volume;

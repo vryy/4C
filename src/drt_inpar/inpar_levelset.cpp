@@ -200,8 +200,8 @@ void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "INCLUDE_PARTICLE", "No", "Activate a hybrid particle-level-set method", &ls_particle);
 
   setStringToIntegralParameter<int>("ESCAPED", "half", "criterion for escaped particles",
-      tuple<std::string>("half", "full"), tuple<int>(INPAR::PARTICLE::half, INPAR::PARTICLE::full),
-      &ls_particle);
+      tuple<std::string>("half", "full"),
+      tuple<int>(INPAR::PARTICLEOLD::half, INPAR::PARTICLEOLD::full), &ls_particle);
 
   IntParameter("NUMPARTICLE", 64,
       "number of particles in bins around interface (usually 3D: 64, 2D: 32)", &ls_particle);

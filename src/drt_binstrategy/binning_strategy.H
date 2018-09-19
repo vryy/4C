@@ -19,7 +19,7 @@
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_particle.H"
+#include "../drt_inpar/inpar_particle_old.H"
 #include "../drt_binstrategy/binning_strategy_utils.H"
 
 
@@ -109,7 +109,10 @@ namespace BINSTRATEGY
     virtual inline std::set<int> const& BoundaryColBinsIds() const { return boundarycolbins_; }
 
     /// get dimension of particle problem
-    virtual inline INPAR::PARTICLE::ParticleDim const& ParticleDim() const { return particle_dim_; }
+    virtual inline INPAR::PARTICLEOLD::ParticleDim const& ParticleDim() const
+    {
+      return particle_dim_;
+    }
 
     /// get cutoff radius
     virtual inline double const& CutoffRadius() const { return cutoff_radius_; }
@@ -444,7 +447,7 @@ namespace BINSTRATEGY
 
     double pbcdeltas_[3];  ///< deltas for pbcs in x, y, z direction
 
-    const INPAR::PARTICLE::ParticleDim particle_dim_;  ///< dimension of problem
+    const INPAR::PARTICLEOLD::ParticleDim particle_dim_;  ///< dimension of problem
 
     //! @name miscellaneous stuff
     //@{

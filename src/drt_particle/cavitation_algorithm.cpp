@@ -137,16 +137,16 @@ CAVITATION::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Paramet
 
   switch (BinStrategy()->ParticleDim())
   {
-    case INPAR::PARTICLE::particle_3D:
+    case INPAR::PARTICLEOLD::particle_3D:
       // standard case
       break;
-    case INPAR::PARTICLE::particle_2Dz:
+    case INPAR::PARTICLEOLD::particle_2Dz:
       if (MyRank() == 0)
         IO::cout << "\nPseudo 2D cavitation problem chosen (z-direction ignored)" << IO::endl
                  << IO::endl;
       break;
-    case INPAR::PARTICLE::particle_2Dx:
-    case INPAR::PARTICLE::particle_2Dy:
+    case INPAR::PARTICLEOLD::particle_2Dx:
+    case INPAR::PARTICLEOLD::particle_2Dy:
     default:
       dserror("only 2D in x-y direction available");
       break;
@@ -266,7 +266,7 @@ CAVITATION::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Paramet
 
   if (moving_walls_) dserror("moving walls do not (yet) work for cavitation problems");
 
-  if (rep_strategy_ != INPAR::PARTICLE::repstr_everydt)
+  if (rep_strategy_ != INPAR::PARTICLEOLD::repstr_everydt)
     dserror("REPARTITIONSTRATEGY must be set to Everydt");
 
   return;
@@ -920,7 +920,7 @@ void CAVITATION::Algorithm::InitCavitation()
   particles_->Init();
 
   // in case random noise is added to the particle position, particle transfer is necessary
-  double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+  double amplitude = DRT::Problem::Instance()->ParticleParamsOld().get<double>("RANDOM_AMPLITUDE");
   if (amplitude)
   {
     SetParticleNodePos();
@@ -1808,7 +1808,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   //--------------------------------------------------------------------
 
   // enforce 2D bubble forces for pseudo-2D problem
-  if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+  if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz)
   {
     const int numnodes = bubbleforces->MyLength() / dim_;
     for (int i = 0; i < numnodes; ++i) (*bubbleforces)[i * dim_ + 2] = 0.0;
@@ -1849,7 +1849,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   if (err < 0) dserror("global assemble into fluidforces failed");
 
   // enforce 2D fluid forces for pseudo-2D problem
-  if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+  if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz)
   {
     const int numnodes = fluidforces->MyLength() / (dim_ + 1);
     for (int i = 0; i < numnodes; ++i) (*(*fluidforces)(0))[i * (dim_ + 1) + 2] = 0.0;
@@ -2770,13 +2770,13 @@ void CAVITATION::Algorithm::ParticleInflow()
 
   // possible random amplitude to initial bubble position
   const double amplitude =
-      DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+      DRT::Problem::Instance()->ParticleParamsOld().get<double>("RANDOM_AMPLITUDE");
 
   // initialize bubble id with largest bubble id in use + 1 (on each proc)
   const int maxbubbleid = BinStrategy()->BinDiscret()->NodeRowMap()->MaxAllGID() + 1;
 
   int numrelevantdim = dim_;
-  if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz) numrelevantdim = 2;
+  if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz) numrelevantdim = 2;
 
   // start filling particles
   int inflowcounter = 0;
@@ -2910,10 +2910,10 @@ void CAVITATION::Algorithm::ParticleInflow()
   }
 
   const bool radiusdistribution = DRT::INPUT::IntegralValue<int>(
-      DRT::Problem::Instance()->ParticleParams(), "RADIUS_DISTRIBUTION");
+      DRT::Problem::Instance()->ParticleParamsOld(), "RADIUS_DISTRIBUTION");
   // get minimum and maximum radius for particles in case random radius option is chosen
-  const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
-  const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
+  const double min_radius = DRT::Problem::Instance()->ParticleParamsOld().get<double>("MIN_RADIUS");
+  const double max_radius = DRT::Problem::Instance()->ParticleParamsOld().get<double>("MAX_RADIUS");
 
   for (biniter = bubble_source_.begin(); biniter != bubble_source_.end(); ++biniter)
   {
@@ -2974,7 +2974,7 @@ void CAVITATION::Algorithm::ParticleInflow()
         // initialize random number generator with current inflow radius as mean and input parameter
         // value as standard deviation
         DRT::Problem::Instance()->Random()->SetMeanVariance(inflow_radius,
-            DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+            DRT::Problem::Instance()->ParticleParamsOld().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
 
         // generate normally distributed random value for particle radius
         double random_radius = DRT::Problem::Instance()->Random()->Normal();
@@ -3385,7 +3385,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
   // initial overlap can be problematic when particle contact is considered
   bool detectoverlap = false;
 
-  if (particleInteractionType_ != INPAR::PARTICLE::None) detectoverlap = true;
+  if (particleInteractionType_ != INPAR::PARTICLEOLD::None) detectoverlap = true;
 
   // unique bubbleinflow id over all inflow conditions
   int bubbleinflowid = 0;

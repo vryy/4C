@@ -114,7 +114,7 @@ namespace INPAR
 
   }  // namespace SCATRA
 
-  namespace PARTICLE
+  namespace PARTICLEOLD
   {
     /// escape criterion
     enum Escaped
@@ -123,7 +123,7 @@ namespace INPAR
       full
     };
 
-  }  // namespace PARTICLE
+  }  // namespace PARTICLEOLD
 
 
   namespace LEVELSET

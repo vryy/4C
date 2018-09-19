@@ -1,0 +1,116 @@
+//
+// Maintainer: Sebastian Fuchs
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Test case for particle DEM involving linear-spring adhesion forces and radius change over time:
+- four spherical particles of equal size arranged as a closely packed tetrahedron
+  in contact with a static, quadratic wall
+- particles all have zero initial velocity
+- particle-particle and particle-wall adhesion forces arising from linear-spring model
+- particle radius changes trigonometrically over time, following a negative cosine wave
+- radius is first doubled and then shrinks back to an intermediate value
+- particles remain in contact with each other and with the wall during radius growth
+- particles lose contact with each other and with the wall during radius shrinkage
+  due to adhesion forces being too small to hold the inert packing closely together
+- no gravitational acceleration
+- perfectly elastic particle-particle and particle-wall penalty contact
+  with coefficient of restitution e = 1.0
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      ParticleOld
+SHAPEFCT                        Meshfree
+--------------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.5
+BOUNDINGBOX                     -0.5 -0.5 -0.5 0.5 0.5 0.5
+------------------------------------------------------------PARTICLE DYNAMIC OLD
+RESULTSEVRY                     10
+RESTARTEVRY                     500
+RESEVRYERGY                     10
+PARTICLESTATSEVRY               10
+CONTACTFORCESEVRY               1000
+TIMESTEP                        0.001
+NUMSTEP                         1000
+PARTICLE_INTERACTION            NormalContact_DEM
+REPARTITIONSTRATEGY             Everydt
+NORMAL_CONTACT_LAW              LinearSpring
+NORMAL_ADHESION_LAW             LinearSpring
+ADHESION_NORMAL_STIFF           3.e3
+ADHESION_MAX_DISP               0.18
+MIN_RADIUS                      0.12
+MAX_RADIUS                      0.12
+RADIUS_CHANGE_FUNCT             1
+REL_PENETRATION                 0.01
+REL_PENETRATION_WALL            0.01
+MAX_VELOCITY                    0.1
+YOUNG_WALL                      210.0e9
+NUE_WALL                        0.3
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------------------FUNCT1
+FUNCTION 1.5-0.5*cos(1.6*t*pi) t1 0.0 t2 1.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDSURF                          1
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+E 1 - 1
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 8 DSURFACE 1
+-----------------------------------------------------------------NODE COORDS
+PARTICLE 1 COORD -0.12 -0.069282032302755 -0.3
+PARTICLE 2 COORD 0.12 -0.069282032302755 -0.3
+RPARTICLE 3 COORD 0.0 0.138564064605510 -0.3 RADIUS 0.12
+RPARTICLE 4 COORD 0.0 0.0 -0.104040820577346 RADIUS 0.12
+NODE 1 COORD -0.5 -0.5 -0.42
+NODE 2 COORD -0.5 -0.5 -0.46
+NODE 3 COORD -0.5 0.5 -0.46
+NODE 4 COORD -0.5 0.5 -0.42
+NODE 5 COORD 0.5 -0.5 -0.42
+NODE 6 COORD 0.5 -0.5 -0.46
+NODE 7 COORD 0.5 0.5 -0.46
+NODE 8 COORD 0.5 0.5 -0.42
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Particle DENSITY 7.85e3 INITRADIUS 0.12 NUE 0.3 YOUNG 210.0e9
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispx VALUE -1.61276949688719584e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispy VALUE -9.31132903168334219e-02 TOLERANCE 1.e-11
+PARTICLEOLD DIS particle NODE 1 QUANTITY dispz VALUE -1.88220406522713518e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY velx VALUE 4.03128543183349952e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY vely VALUE 2.32746372924715977e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY velz VALUE -6.23112485314795128e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 1 QUANTITY radius VALUE 1.61458980337502972e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 2 QUANTITY dispx VALUE 1.61276949688717225e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 2 QUANTITY dispy VALUE -9.31132903168295362e-02 TOLERANCE 1.e-11
+PARTICLEOLD DIS particle NODE 2 QUANTITY dispz VALUE -1.88220406522713657e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 2 QUANTITY velx VALUE -4.03128543183330468e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 2 QUANTITY vely VALUE 2.32746372924683365e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 2 QUANTITY velz VALUE -6.23112485314804010e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 2 QUANTITY radius VALUE 1.61458980337502972e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 3 QUANTITY dispx VALUE 0.0 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 3 QUANTITY dispy VALUE 1.86226580633669953e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 3 QUANTITY dispz VALUE -1.88220406522715850e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 3 QUANTITY velx VALUE 0.0 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 3 QUANTITY vely VALUE -4.65492745849337919e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 3 QUANTITY velz VALUE -6.23112485314899711e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 3 QUANTITY radius VALUE 1.61458980337502972e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 4 QUANTITY dispx VALUE 0.0 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 4 QUANTITY dispz VALUE 1.10864436180013057e-01 TOLERANCE 1.e-10
+PARTICLEOLD DIS particle NODE 4 QUANTITY velx VALUE 0.0 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 4 QUANTITY vely VALUE 0.0 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 4 QUANTITY velz VALUE -1.35022791408025733e+00 TOLERANCE 1.e-09
+PARTICLEOLD DIS particle NODE 4 QUANTITY radius VALUE 1.61458980337502972e-01 TOLERANCE 1.e-10
+PARTICLEOLD SPECIAL QUANTITY kineticenergy VALUE 1.03355009177191093e+02 TOLERANCE 1.e-07
+PARTICLEOLD SPECIAL QUANTITY internalenergy VALUE 2.61834427509743541e+01 TOLERANCE 1.e-08
+PARTICLEOLD SPECIAL QUANTITY externalenergy VALUE 0.0 TOLERANCE 1.e-20
+PARTICLEOLD SPECIAL QUANTITY maxpenetration VALUE 3.64061297649098670e-04 TOLERANCE 1.e-13
+-------------------------------------------------------------------------END

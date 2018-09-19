@@ -176,7 +176,7 @@ namespace DRT
     \date 11/12
     */
     /*----------------------------------------------------------------------*/
-    class ParticleReader : public ElementReader
+    class OldParticleReader : public ElementReader
     {
      public:
       /// construct particle reader for a given field
@@ -186,10 +186,10 @@ namespace DRT
         \param dis (i) the new discretization
         \param comm (i) our communicator
        */
-      ParticleReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader);
+      OldParticleReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader);
 
       //! Destructor
-      virtual ~ParticleReader() { ; }
+      virtual ~OldParticleReader() { ; }
 
      protected:
       /// partition particles

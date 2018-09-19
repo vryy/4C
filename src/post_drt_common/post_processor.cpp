@@ -255,7 +255,7 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
-    case prb_particle:
+    case prb_particle_old:
     case prb_pasi:
     {
       int numdiscr = problem.num_discr();

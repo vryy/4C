@@ -23,7 +23,7 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/inpar_particle.H"
+#include "../drt_inpar/inpar_particle_old.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |
@@ -107,13 +107,13 @@ namespace PARTICLE
     Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
 
     //! type of rendering
-    INPAR::PARTICLE::RenderingType renderingType_;
+    INPAR::PARTICLEOLD::RenderingType renderingType_;
 
     //! output rendering on discretization and/or in matlab format
-    INPAR::PARTICLE::RenderingOutput renderingOutput_;
+    INPAR::PARTICLEOLD::RenderingOutput renderingOutput_;
 
     //! consider boundary particles in rendering routine
-    INPAR::PARTICLE::RenderingBdryPart renderingBdryParticle_;
+    INPAR::PARTICLEOLD::RenderingBdryPart renderingBdryParticle_;
 
     //! average rendering vectors over time steps
     int avrgRendering_;

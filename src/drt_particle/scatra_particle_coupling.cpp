@@ -59,13 +59,13 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
       scatra_(scatra),
       scatradis_(scatra->Discretization()),
       params_(params),
-      escaped_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::Escaped>(
+      escaped_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::Escaped>(
           params->sublist("PARTICLE"), "ESCAPED")),
       reseeding_(params->sublist("PARTICLE").get<int>("RESEEDING")),
       fast_(DRT::INPUT::IntegralValue<bool>(params->sublist("PARTICLE"), "FAST_CHECK")),
       delete_more_(params->sublist("PARTICLE").get<double>("DELETE_CRITICAL_PARTICLES"))
 {
-  if (rep_strategy_ != INPAR::PARTICLE::repstr_everydt)
+  if (rep_strategy_ != INPAR::PARTICLEOLD::repstr_everydt)
     dserror("REPARTITIONSTRATEGY must be set to Everydt");
 
   Init(false);
@@ -186,7 +186,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   // settings: only valid for cubic bins
   switch (BinStrategy()->ParticleDim())
   {
-    case INPAR::PARTICLE::particle_3D:
+    case INPAR::PARTICLEOLD::particle_3D:
     {
       // get maximal bin edge length
       binlength_max_ = std::max(BinStrategy()->BinSize()[0], BinStrategy()->BinSize()[1]);
@@ -196,7 +196,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
       binlength_min_ = std::min(binlength_min_, BinStrategy()->BinSize()[2]);
       break;
     }
-    case INPAR::PARTICLE::particle_2Dx:
+    case INPAR::PARTICLEOLD::particle_2Dx:
     {
       // get maximal bin edge length
       binlength_max_ = std::max(BinStrategy()->BinSize()[1], BinStrategy()->BinSize()[2]);
@@ -204,7 +204,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
       binlength_min_ = std::min(BinStrategy()->BinSize()[1], BinStrategy()->BinSize()[2]);
       break;
     }
-    case INPAR::PARTICLE::particle_2Dy:
+    case INPAR::PARTICLEOLD::particle_2Dy:
     {
       // get maximal bin edge length
       binlength_max_ = std::max(BinStrategy()->BinSize()[0], BinStrategy()->BinSize()[2]);
@@ -212,7 +212,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
       binlength_min_ = std::min(BinStrategy()->BinSize()[0], BinStrategy()->BinSize()[2]);
       break;
     }
-    case INPAR::PARTICLE::particle_2Dz:
+    case INPAR::PARTICLEOLD::particle_2Dz:
     {
       // get maximal bin edge length
       binlength_max_ = std::max(BinStrategy()->BinSize()[0], BinStrategy()->BinSize()[1]);
@@ -545,17 +545,17 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
       // set particle to mid plane in case of quasi-2D simulations
       switch (BinStrategy()->ParticleDim())
       {
-        case INPAR::PARTICLE::particle_2Dx:
+        case INPAR::PARTICLEOLD::particle_2Dx:
         {
           position[0] = 0.0;
           break;
         }
-        case INPAR::PARTICLE::particle_2Dy:
+        case INPAR::PARTICLEOLD::particle_2Dy:
         {
           position[1] = 0.0;
           break;
         }
-        case INPAR::PARTICLE::particle_2Dz:
+        case INPAR::PARTICLEOLD::particle_2Dz:
         {
           position[2] = 0.0;
           break;
@@ -1058,14 +1058,14 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
 
     // get sign
     const double signP = (*sign)[inode];
-    if (escaped_ == INPAR::PARTICLE::half)
+    if (escaped_ == INPAR::PARTICLEOLD::half)
     {
       if (signP * phi_particle < 0.0)
         // add escaped particle
         escaped_particles_list[scatraele->Id()].insert(
             (BinStrategy()->BinDiscret()->lRowNode(inode))->Id());
     }
-    else if (escaped_ == INPAR::PARTICLE::full)
+    else if (escaped_ == INPAR::PARTICLEOLD::full)
     {
       // get radius
       const double radiusP = (*radius)[inode];
@@ -1200,17 +1200,17 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
           // adapt distance vector in case of quasi-2D simulations
           switch (particle_dim_)
           {
-            case INPAR::PARTICLE::particle_2Dx:
+            case INPAR::PARTICLEOLD::particle_2Dx:
             {
               tmp(0,0) = 0.0;
               break;
             }
-            case INPAR::PARTICLE::particle_2Dy:
+            case INPAR::PARTICLEOLD::particle_2Dy:
             {
               tmp(1,0) = 0.0;
               break;
             }
-            case INPAR::PARTICLE::particle_2Dz:
+            case INPAR::PARTICLEOLD::particle_2Dz:
             {
               tmp(2,0) = 0.0;
               break;
@@ -1313,17 +1313,17 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
           // adapt distance vector in case of quasi-2D simulations
           switch (BinStrategy()->ParticleDim())
           {
-            case INPAR::PARTICLE::particle_2Dx:
+            case INPAR::PARTICLEOLD::particle_2Dx:
             {
               tmp(0, 0) = 0.0;
               break;
             }
-            case INPAR::PARTICLE::particle_2Dy:
+            case INPAR::PARTICLEOLD::particle_2Dy:
             {
               tmp(1, 0) = 0.0;
               break;
             }
-            case INPAR::PARTICLE::particle_2Dz:
+            case INPAR::PARTICLEOLD::particle_2Dz:
             {
               tmp(2, 0) = 0.0;
               break;
@@ -1749,7 +1749,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
 
       // compute largest distance in bin
       double h_ref = 0.0;
-      if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_3D)
+      if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_3D)
       {
         // characteristic bin length
         const double h = std::pow(
@@ -1761,11 +1761,11 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
       {
         // characteristic bin length
         double h = -1.0;
-        if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dx)
+        if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dx)
           h = std::sqrt(BinStrategy()->BinSize()[1] * BinStrategy()->BinSize()[2]);
-        if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dy)
+        if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dy)
           h = std::sqrt(BinStrategy()->BinSize()[0] * BinStrategy()->BinSize()[2]);
-        if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+        if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz)
           h = std::sqrt(BinStrategy()->BinSize()[0] * BinStrategy()->BinSize()[1]);
         h_ref = std::sqrt(2.0) * h;
       }
@@ -2237,17 +2237,17 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
       // set particle to mid plane in case of quasi-2D simulations
       switch (BinStrategy()->ParticleDim())
       {
-        case INPAR::PARTICLE::particle_2Dx:
+        case INPAR::PARTICLEOLD::particle_2Dx:
         {
           position[0] = 0.0;
           break;
         }
-        case INPAR::PARTICLE::particle_2Dy:
+        case INPAR::PARTICLEOLD::particle_2Dy:
         {
           position[1] = 0.0;
           break;
         }
-        case INPAR::PARTICLE::particle_2Dz:
+        case INPAR::PARTICLEOLD::particle_2Dz:
         {
           position[2] = 0.0;
           break;

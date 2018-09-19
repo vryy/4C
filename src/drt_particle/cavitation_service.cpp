@@ -5478,7 +5478,7 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(DRT::Node* currparti
   targetfluidele->Evaluate(params, *fluiddis_, lm_f, elemat1, elemat2, elevec1, elevec2, elevec3);
 
   // enforce 2D bubble movement for pseudo-2D problem
-  if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_2Dz) elevec1(2) = 0.0;
+  if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_2Dz) elevec1(2) = 0.0;
 
   return true;
 }
@@ -5868,7 +5868,7 @@ void CAVITATION::Algorithm::ComputePatchRecoveredFluidFraction(
   params.set<int>("action", FLD::calc_velgrad_ele_center);
 
   Teuchos::RCP<Epetra_MultiVector> nodevec;
-  if (BinStrategy()->ParticleDim() == INPAR::PARTICLE::particle_3D)
+  if (BinStrategy()->ParticleDim() == INPAR::PARTICLEOLD::particle_3D)
     nodevec = DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
         fluiddis_, Teuchos::rcp((*fluidfraction)(0), false), "dummy", 1, params);
   else

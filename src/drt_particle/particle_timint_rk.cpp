@@ -29,8 +29,8 @@ PARTICLE::TimIntRK::TimIntRK(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& particledynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<IO::DiscretizationWriter> output)
     : PARTICLE::TimIntExpl(ioparams, particledynparams, xparams, actdis, output),
-      rk_scheme_(
-          DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(particledynparams, "DYNAMICTYP")),
+      rk_scheme_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(
+          particledynparams, "DYNAMICTYP")),
       sign_(Teuchos::null)
 {
   return;
@@ -59,10 +59,10 @@ void PARTICLE::TimIntRK::Init()
 int PARTICLE::TimIntRK::IntegrateStep()
 {
   // get time integration scheme
-  if (rk_scheme_ == INPAR::PARTICLE::dyna_rk2)
+  if (rk_scheme_ == INPAR::PARTICLEOLD::dyna_rk2)
     // use Runge-Kutta scheme 2nd order
     Integrate_RK_Second();
-  else if (rk_scheme_ == INPAR::PARTICLE::dyna_rk4)
+  else if (rk_scheme_ == INPAR::PARTICLEOLD::dyna_rk4)
     // use Runge-Kutta scheme 4th order
     Integrate_RK_Fourth();
   else

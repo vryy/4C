@@ -38,11 +38,11 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
       weightFunctionHandler_(Teuchos::null),
       equationOfStateHandler_(0),
       interactionVariant2_(DRT::INPUT::IntegralValue<int>(particledynparams, "CALC_ACC_VAR2")),
-      wallInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(
+      wallInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WallInteractionType>(
           particledynparams, "WALL_INTERACTION_TYPE")),
-      freeSurfaceType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::FreeSurfaceType>(
+      freeSurfaceType_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::FreeSurfaceType>(
           particledynparams, "FREE_SURFACE_TYPE")),
-      WF_DIM_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(
+      WF_DIM_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WeightFunctionDim>(
           particledynparams, "WEIGHT_FUNCTION_DIM")),
       background_pressure_(particledynparams.get<double>("BACKGROUND_PRESSURE")),
       transport_velocity_(DRT::INPUT::IntegralValue<int>(particledynparams, "TRANSPORT_VELOCITY")),
@@ -50,7 +50,7 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
       damping_factor_(particledynparams.get<double>("VISCOUS_DAMPING")),
       xsph_dampfac_(particledynparams.get<double>("XSPH_DAMPFAC")),
       xsph_stiffac_(particledynparams.get<double>("XSPH_STIFFAC")),
-      surfaceTensionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionType>(
+      surfaceTensionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::SurfaceTensionType>(
           particledynparams, "SURFACE_TENSION_TYPE")),
       surftensfacff_(particledynparams.get<double>("SURFTENSFAC_FF")),
       surftensfacfs_(particledynparams.get<double>("SURFTENSFAC_FS")),
@@ -64,42 +64,42 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
 {
   // checks
 
-  if (wallInteractionType_ == INPAR::PARTICLE::BoundarParticle_NoSlip or
-      wallInteractionType_ == INPAR::PARTICLE::BoundarParticle_FreeSlip)
+  if (wallInteractionType_ == INPAR::PARTICLEOLD::BoundarParticle_NoSlip or
+      wallInteractionType_ == INPAR::PARTICLEOLD::BoundarParticle_FreeSlip)
   {
-    INPAR::PARTICLE::ExtendedGhosting extendedGhosting =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(
+    INPAR::PARTICLEOLD::ExtendedGhosting extendedGhosting =
+        DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::ExtendedGhosting>(
             particledynparams, "EXTENDED_GHOSTING");
-    if (extendedGhosting != INPAR::PARTICLE::BdryParticleGhosting and
-        extendedGhosting != INPAR::PARTICLE::AddLayerGhosting)
+    if (extendedGhosting != INPAR::PARTICLEOLD::BdryParticleGhosting and
+        extendedGhosting != INPAR::PARTICLEOLD::AddLayerGhosting)
       dserror("Extended ghosting is required if boundary particles are applied!");
   }
 
-  if (freeSurfaceType_ != INPAR::PARTICLE::FreeSurface_None and
-      freeSurfaceType_ != INPAR::PARTICLE::TwoPhase and
+  if (freeSurfaceType_ != INPAR::PARTICLEOLD::FreeSurface_None and
+      freeSurfaceType_ != INPAR::PARTICLEOLD::TwoPhase and
       particle_algorithm_->BinStrategy()->HavePBC())
     dserror("Periodic free surface flows not possible so far!");
 
   // set the correct WeightFunction
-  switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(
+  switch (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WeightFunction>(
       particledynparams, "WEIGHT_FUNCTION"))
   {
-    case INPAR::PARTICLE::CubicBspline:
+    case INPAR::PARTICLEOLD::CubicBspline:
     {
       weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline(WF_DIM_));
       break;
     }
-    case INPAR::PARTICLE::QuinticBspline:
+    case INPAR::PARTICLEOLD::QuinticBspline:
     {
       weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(WF_DIM_));
       break;
     }
-    case INPAR::PARTICLE::SqrtHyperbola:
+    case INPAR::PARTICLEOLD::SqrtHyperbola:
     {
       weightFunctionHandler_ = Teuchos::rcp(new WeightFunction_SqrtHyperbola(WF_DIM_));
       break;
     }
-    case INPAR::PARTICLE::HyperbolaNoRsz:
+    case INPAR::PARTICLEOLD::HyperbolaNoRsz:
     {
       weightFunctionHandler_ = Teuchos::rcp(new WeightFunction_HyperbolaNoRsz);
       break;
@@ -125,17 +125,17 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
   // set the equation of state for each particle material
   for (unsigned int i = 0; i < extParticleMat_.size(); ++i)
   {
-    switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::EquationOfState>(
+    switch (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::EquationOfState>(
         particledynparams, "EQUATION_OF_STATE"))
     {
-      case INPAR::PARTICLE::GenTait:
+      case INPAR::PARTICLEOLD::GenTait:
       {
         equationOfStateHandler_.push_back(
             Teuchos::rcp(new PARTICLE::EquationOfState_GenTait(extParticleMat_[i]->SpeedOfSoundL(),
                 extParticleMat_[i]->refdensfac_, extParticleMat_[i]->exponent_)));
         break;
       }
-      case INPAR::PARTICLE::IdealGas:
+      case INPAR::PARTICLEOLD::IdealGas:
       {
         equationOfStateHandler_.push_back(Teuchos::rcp(
             new PARTICLE::EquationOfState_IdealGas(extParticleMat_[i]->SpeedOfSoundL())));
@@ -145,10 +145,10 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
   }
 
   // initialize rendering handler
-  const INPAR::PARTICLE::RenderingType renderingType =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particledynparams, "RENDERING");
-  if ((renderingType == INPAR::PARTICLE::StandardRendering or
-          renderingType == INPAR::PARTICLE::NormalizedRendering) and
+  const INPAR::PARTICLEOLD::RenderingType renderingType =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RenderingType>(particledynparams, "RENDERING");
+  if ((renderingType == INPAR::PARTICLEOLD::StandardRendering or
+          renderingType == INPAR::PARTICLEOLD::NormalizedRendering) and
       norender == false)
   {
     Teuchos::RCP<Rendering> rendering = Teuchos::rcp(new PARTICLE::Rendering(
@@ -164,7 +164,7 @@ PARTICLE::ParticleSPHInteractionHandler::ParticleSPHInteractionHandler(
     dserror("If PARTICLE_REINITSHIFT != 2, the flag PARTICLE_BOUNDARYDENSITY is required!");
 #endif
 
-  if (freeSurfaceType_ == INPAR::PARTICLE::TwoPhase)
+  if (freeSurfaceType_ == INPAR::PARTICLEOLD::TwoPhase)
   {
     if (extParticleMat_.size() != 2)
       dserror("Two-phase flow needs two particle material definitions!");
@@ -228,7 +228,7 @@ void PARTICLE::ParticleSPHInteractionHandler::InitColParticles()
 
   const int numcolelements = discret_->NodeColMap()->NumMyElements();
   int min_voidparticle_id =
-      DRT::Problem::Instance()->ParticleParams().get<int>("MIN_VOIDPARTICLE_ID");
+      DRT::Problem::Instance()->ParticleParamsOld().get<int>("MIN_VOIDPARTICLE_ID");
 
   colParticles_.resize(numcolelements);
   boundaryparticles_.clear();
@@ -241,8 +241,8 @@ void PARTICLE::ParticleSPHInteractionHandler::InitColParticles()
     discret_->Dof(particle, lm);
 
     bool boundaryparticle = false;
-    if (wallInteractionType_ == INPAR::PARTICLE::BoundarParticle_NoSlip or
-        wallInteractionType_ == INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    if (wallInteractionType_ == INPAR::PARTICLEOLD::BoundarParticle_NoSlip or
+        wallInteractionType_ == INPAR::PARTICLEOLD::BoundarParticle_FreeSlip)
     {
       PARTICLE::ParticleNode* particleNode = dynamic_cast<PARTICLE::ParticleNode*>(particle);
       if (particleNode == NULL) dserror("Dynamic cast to ParticleNode failed");
@@ -291,9 +291,9 @@ void PARTICLE::ParticleSPHInteractionHandler::InitDensityAndMass(const double pa
 
   // in case of two-phase flow, the initial density is determined via density summation!
   bool initSummation = false;
-  if (freeSurfaceType_ == INPAR::PARTICLE::TwoPhase and
+  if (freeSurfaceType_ == INPAR::PARTICLEOLD::TwoPhase and
       DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->ParticleParams(), "DENSITY_SUMMATION") == true)
+          DRT::Problem::Instance()->ParticleParamsOld(), "DENSITY_SUMMATION") == true)
     initSummation = true;
 
   const int num_row_nodes = discret_->NodeRowMap()->NumMyElements();
@@ -995,7 +995,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_pvp_densityDot(
       LINALG::Matrix<3, 1> gradW =
           weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
       double densityDotn_ij = 0.0;
-      if (freeSurfaceType_ != INPAR::PARTICLE::TwoPhase)
+      if (freeSurfaceType_ != INPAR::PARTICLEOLD::TwoPhase)
         densityDotn_ij = gradW.Dot(vRel_ij) * particle_j.mass_;
       else
       {
@@ -1116,7 +1116,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_pvp_acc(const Teuchos::RCP<E
         Inter_artificialViscosity(&sumj_accn_ij, particle_i, particle_j, interData_ij);
 
       // ********** surface tension **********
-      if (surftensfacff_ > 0.0 and surfaceTensionType_ == INPAR::PARTICLE::ST_VDW_INDIRECT)
+      if (surftensfacff_ > 0.0 and surfaceTensionType_ == INPAR::PARTICLEOLD::ST_VDW_INDIRECT)
         Inter_surfaceTension(&sumj_accn_ij, particle_i, particle_j, interData_ij, time);
 
     }  // loop over j
@@ -1169,17 +1169,17 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_pvp_GradDiv_x(const Particle
   double dim_fac = 0.0;
   switch (WF_DIM_)
   {
-    case INPAR::PARTICLE::WF_3D:
+    case INPAR::PARTICLEOLD::WF_3D:
     {
       dim_fac = 5.0;
       break;
     }
-    case INPAR::PARTICLE::WF_2D:
+    case INPAR::PARTICLEOLD::WF_2D:
     {
       dim_fac = 4.0;
       break;
     }
-    case INPAR::PARTICLE::WF_1D:
+    case INPAR::PARTICLEOLD::WF_1D:
     {
       dim_fac = 3.0;
       break;
@@ -1345,7 +1345,7 @@ void PARTICLE::ParticleSPHInteractionHandler::SetTriplePointNormal(
     CFG_F2S->PutScalar(0.0);
 
   bool contact_angle_var2 = DRT::INPUT::IntegralValue<int>(
-      DRT::Problem::Instance()->ParticleParams(), "CONTACT_ANGLE_VAR2");
+      DRT::Problem::Instance()->ParticleParamsOld(), "CONTACT_ANGLE_VAR2");
 
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1449,7 +1449,7 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_SmoothedCFG(
 
   if (distWall == Teuchos::null) dserror("distWall!");
 
-  if (freeSurfaceType_ != INPAR::PARTICLE::TwoPhase)
+  if (freeSurfaceType_ != INPAR::PARTICLEOLD::TwoPhase)
   {
     // loop over the particles (no superpositions)
     for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1500,8 +1500,8 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_SmoothedCFG(
 
     }  // loop over i
   }
-  else if (freeSurfaceType_ == INPAR::PARTICLE::TwoPhase and
-           surfaceTensionType_ == INPAR::PARTICLE::ST_CONTI_ADAMI)
+  else if (freeSurfaceType_ == INPAR::PARTICLEOLD::TwoPhase and
+           surfaceTensionType_ == INPAR::PARTICLEOLD::ST_CONTI_ADAMI)
   {
     // loop over the particles (no superpositions)
     for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1747,7 +1747,7 @@ void PARTICLE::ParticleSPHInteractionHandler::ExtrapolateTriplePointCFG(
  *------------------------------------------------------------------------------------*/
 void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
     const Teuchos::RCP<Epetra_Vector> density,
-    const INPAR::PARTICLE::FreeSurfaceType freeSurfaceType)
+    const INPAR::PARTICLEOLD::FreeSurfaceType freeSurfaceType)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity");
 
@@ -1757,7 +1757,7 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
   // erase the vectors
   density->PutScalar(0.0);
 
-  if (freeSurfaceType == INPAR::PARTICLE::InteriorReinitialization)
+  if (freeSurfaceType == INPAR::PARTICLEOLD::InteriorReinitialization)
   {
     // loop over particles and re-initialize interior particles (FS_NONE) via density summation.
     // The density of free-surface particles has already been set via density integration and
@@ -1788,7 +1788,7 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
     }  // loop over i
   }
 
-  if (freeSurfaceType == INPAR::PARTICLE::NormalizedReinitialization)
+  if (freeSurfaceType == INPAR::PARTICLEOLD::NormalizedReinitialization)
   {
     // loop over particles and re-initialize interior particles (FS_NONE) via density summation
     // and free-surface particles (FS_DIRECT and FS_INDIRECT) via normalized density summation
@@ -1826,7 +1826,7 @@ void PARTICLE::ParticleSPHInteractionHandler::MF_ReInitDensity(
     }  // loop over i
   }
 
-  if (freeSurfaceType == INPAR::PARTICLE::RandlesReinitialization)
+  if (freeSurfaceType == INPAR::PARTICLEOLD::RandlesReinitialization)
   {
     // loop over particles and re-initialize interior particles (FS_NONE) via density summation
     // and free-surface particles (FS_DIRECT and FS_INDIRECT) similar to the procedure in Randles
@@ -2093,7 +2093,7 @@ double PARTICLE::ParticleSPHInteractionHandler::Inter_generalCoeff_ij(
   {
     // In case of two-phase flow, the initial density is used for calculating the volume of a
     // boundary particle required for generalCoeff_ij
-    if (freeSurfaceType_ != INPAR::PARTICLE::TwoPhase)
+    if (freeSurfaceType_ != INPAR::PARTICLEOLD::TwoPhase)
     {
       // According to Adami et al. 2012 Eq (28), the density of boundary particle is determined
       // based on the extrapolated pressure in Eq (27) and the equation of state based on material
@@ -2208,8 +2208,8 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_backgroundPressure(
     mass_j = particle_i.mass_;
   }
 
-  if (freeSurfaceType_ == INPAR::PARTICLE::FreeSurface_None or
-      freeSurfaceType_ == INPAR::PARTICLE::TwoPhase)
+  if (freeSurfaceType_ == INPAR::PARTICLEOLD::FreeSurface_None or
+      freeSurfaceType_ == INPAR::PARTICLEOLD::TwoPhase)
   {
     double fac = 0.0;
     if (not interactionVariant2_)
@@ -2409,7 +2409,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_laminarViscosity(LINALG::Mat
 
   // viscous interaction with boundary particles is only required in case of a no-slip boundary
   // condition
-  if (boundaryParticle_j and wallInteractionType_ != INPAR::PARTICLE::BoundarParticle_NoSlip)
+  if (boundaryParticle_j and wallInteractionType_ != INPAR::PARTICLEOLD::BoundarParticle_NoSlip)
     return;
 
   LINALG::Matrix<3, 1> vRel_ij(true);
@@ -2498,7 +2498,7 @@ void PARTICLE::ParticleSPHInteractionHandler::Inter_artificialViscosity(
 
   // viscous interaction with boundary particles is only required in case of a no-slip boundary
   // condition
-  if (boundaryParticle_j and wallInteractionType_ != INPAR::PARTICLE::BoundarParticle_NoSlip)
+  if (boundaryParticle_j and wallInteractionType_ != INPAR::PARTICLEOLD::BoundarParticle_NoSlip)
     return;
 
   LINALG::Matrix<3, 1> vRel_ij(true);
@@ -2593,7 +2593,7 @@ double PARTICLE::ParticleSPHInteractionHandler::SurfTensionTimeFac(const double&
 {
   double fac = 1.0;
   double ramp_time =
-      DRT::Problem::Instance()->ParticleParams().get<double>("SURFTENSION_RAMP_TIME");
+      DRT::Problem::Instance()->ParticleParamsOld().get<double>("SURFTENSION_RAMP_TIME");
   if (ramp_time > 0 and time >= 0)
   {
     if (time < ramp_time) fac = 0.5 * (1 - cos(time * M_PI / ramp_time));
@@ -2895,17 +2895,17 @@ void PARTICLE::ParticleSPHInteractionHandler::ViscousCoefficients(const double v
   // typically differ for different dimensions!
   switch (WF_DIM_)
   {
-    case INPAR::PARTICLE::WF_3D:
+    case INPAR::PARTICLEOLD::WF_3D:
     {
       convectionCoeff = 5.0 * (bulkViscosity + viscosity / 3.0);
       break;
     }
-    case INPAR::PARTICLE::WF_2D:
+    case INPAR::PARTICLEOLD::WF_2D:
     {
       convectionCoeff = 4.0 * (bulkViscosity + viscosity / 3.0);
       break;
     }
-    case INPAR::PARTICLE::WF_1D:
+    case INPAR::PARTICLEOLD::WF_1D:
     {
       convectionCoeff = 3.0 * (bulkViscosity + viscosity / 3.0);
       break;

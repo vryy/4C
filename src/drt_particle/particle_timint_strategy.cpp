@@ -312,11 +312,12 @@ PARTICLE::TimIntStrategyEllipsoids::TimIntStrategyEllipsoids(
       TimIntStrategyBase(timint)
 {
   // safety checks
-  if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(
-          DRT::Problem::Instance()->ParticleParams(), "DYNAMICTYP") !=
-          INPAR::PARTICLE::dyna_centrdiff and
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(
-          DRT::Problem::Instance()->ParticleParams(), "DYNAMICTYP") != INPAR::PARTICLE::dyna_rk2)
+  if (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "DYNAMICTYP") !=
+          INPAR::PARTICLEOLD::dyna_centrdiff and
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(
+          DRT::Problem::Instance()->ParticleParamsOld(), "DYNAMICTYP") !=
+          INPAR::PARTICLEOLD::dyna_rk2)
     dserror("Only central differencing and RK2 available for ellipsoids!");
 
   // set flag in time integrator

@@ -18,8 +18,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_adapter/adapter_particle.H"
+#include "../drt_inpar/inpar_particle_old.H"
 #include "../drt_timestepping/timintmstep.H"
-#include "../drt_inpar/inpar_particle.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 // forward declarations
@@ -661,7 +661,7 @@ namespace PARTICLE
     //@{
 
     //! flag for random distribution of particle radii
-    const INPAR::PARTICLE::RadiusDistribution radiusdistribution_;
+    const INPAR::PARTICLEOLD::RadiusDistribution radiusdistribution_;
 
     //! bool to control whether radius is constant or variable in time
     const bool variableradius_;

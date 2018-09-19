@@ -45,7 +45,7 @@ void pasi_dyn()
 
   // get parameter lists
   const Teuchos::ParameterList& pasi_params = problem->PASIDynamicParams();
-  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
+  const Teuchos::ParameterList& particle_params = problem->ParticleParamsOld();
   const Teuchos::ParameterList& struct_params = problem->StructuralDynamicParams();
 
   // set time parameters from pasi parameter list for subproblems

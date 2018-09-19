@@ -52,14 +52,14 @@ PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorit
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get parameter list
-  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
+  const Teuchos::ParameterList& particle_params = problem->ParticleParamsOld();
 
   // get type of rendering
   renderingType_ =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particle_params, "RENDERING");
-  renderingOutput_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingOutput>(
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RenderingType>(particle_params, "RENDERING");
+  renderingOutput_ = DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RenderingOutput>(
       particle_params, "RENDERING_OUTPUT");
-  renderingBdryParticle_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingBdryPart>(
+  renderingBdryParticle_ = DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RenderingBdryPart>(
       particle_params, "RENDERING_BDRYPARTICLE");
   avrgRendering_ = particle_params.get<int>("AVRG_REND_STEPS");
 
@@ -119,16 +119,16 @@ PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorit
   pressure_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
 
   // write mesh file once
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
-      renderingOutput_ == INPAR::PARTICLE::Discret)
+  if (renderingOutput_ == INPAR::PARTICLEOLD::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLEOLD::Discret)
   {
     Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
     output->WriteMesh(particle_algorithm_->Step(), particle_algorithm_->Time());
   }
 
   // write rendering node positions and map relating dof gids to node gids once in matlab format
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
-      renderingOutput_ == INPAR::PARTICLE::Matlab)
+  if (renderingOutput_ == INPAR::PARTICLEOLD::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLEOLD::Matlab)
   {
     Teuchos::RCP<Epetra_Vector> rdgNodePos =
         Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
@@ -229,7 +229,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(Teuchos::RCP<DRT::Discretizatio
       DRT::Node* particle_i = currentBinParticles[i];
 
       // skip boundary particles in rendering routine
-      if (renderingBdryParticle_ == INPAR::PARTICLE::NoBdryParticle)
+      if (renderingBdryParticle_ == INPAR::PARTICLEOLD::NoBdryParticle)
       {
         PARTICLE::ParticleNode* particleNode_i = dynamic_cast<PARTICLE::ParticleNode*>(particle_i);
         if (particleNode_i == NULL) dserror("Dynamic cast to ParticleNode failed");
@@ -320,7 +320,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(Teuchos::RCP<DRT::Discretizatio
         density->SumIntoGlobalValues(1, &gidRdgNode_k, &density_ik);
         pressure->SumIntoGlobalValues(1, &gidRdgNode_k, &pressure_ik);
 
-        if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
+        if (renderingType_ == INPAR::PARTICLEOLD::NormalizedRendering)
         {
           sumkWikDof->SumIntoGlobalValues(3, &lmRdgNode_k[0], &massOverDensityWeight_ik);
           sumkWikNode->SumIntoGlobalValues(1, &gidRdgNode_k, &massOverDensityWeight_ik);
@@ -340,7 +340,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(Teuchos::RCP<DRT::Discretizatio
   err += density->GlobalAssemble(Add, true);
   err += pressure->GlobalAssemble(Add, true);
 
-  if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
+  if (renderingType_ == INPAR::PARTICLEOLD::NormalizedRendering)
   {
     err += sumkWikDof->GlobalAssemble(Add, true);
     err += sumkWikNode->GlobalAssemble(Add, true);
@@ -349,7 +349,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(Teuchos::RCP<DRT::Discretizatio
   if (err != 0) dserror("global assemble of rendering vectors failed!");
 
   // normalize rendering vectors
-  if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
+  if (renderingType_ == INPAR::PARTICLEOLD::NormalizedRendering)
   {
     sumkWikDof->Reciprocal(*sumkWikDof);
     sumkWikNode->Reciprocal(*sumkWikNode);
@@ -412,8 +412,8 @@ void PARTICLE::Rendering::OutputState()
   const double time = particle_algorithm_->Time();
 
   // output discretization writer
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
-      renderingOutput_ == INPAR::PARTICLE::Discret)
+  if (renderingOutput_ == INPAR::PARTICLEOLD::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLEOLD::Discret)
   {
     Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
 
@@ -430,8 +430,8 @@ void PARTICLE::Rendering::OutputState()
   }
 
   // output in matlab format
-  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or
-      renderingOutput_ == INPAR::PARTICLE::Matlab)
+  if (renderingOutput_ == INPAR::PARTICLEOLD::DiscretAndMatlab or
+      renderingOutput_ == INPAR::PARTICLEOLD::Matlab)
   {
     const std::string outname(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
