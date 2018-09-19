@@ -173,6 +173,7 @@
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_mat/growth.H"
+#include "../drt_particle_engine/particle_object.H"
 
 std::string DRT::ParObjectList()
 {
@@ -362,7 +363,8 @@ std::string DRT::ParObjectList()
     << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2PinJointedType::Instance().Name() << " "
-    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " ";
+    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
+    << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
 
   std::cout << s.str() << std::endl;
   return s.str();

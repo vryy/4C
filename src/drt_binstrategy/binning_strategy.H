@@ -80,9 +80,17 @@ namespace BINSTRATEGY
         std::vector<Teuchos::RCP<Epetra_Vector>> disnp =
             std::vector<Teuchos::RCP<Epetra_Vector>>());
 
+    /// initialize binning strategy
+    virtual void Init(const Epetra_Comm& lcomm  ///< local epetra communicator
+    );
+
     /// setup binning strategy
     virtual void Setup(Teuchos::RCP<DRT::Discretization>& bindis,
         Teuchos::RCP<GEO::MESHFREE::BoundingBox> const pbb);
+
+    /// distribute bins via recursive coordinate bisection
+    virtual void DistributeBinsRecursCoordBisection(Teuchos::RCP<Epetra_Map>& binrowmap,
+        Teuchos::RCP<Epetra_MultiVector>& bincenters, Teuchos::RCP<Epetra_MultiVector>& binweights);
 
     /// fill bins into bin discretization
     virtual void FillBinsIntoBinDiscretization(Teuchos::RCP<Epetra_Map> const& rowbins);
@@ -122,6 +130,9 @@ namespace BINSTRATEGY
 
     /// get bin size
     virtual inline double const* BinSize() const { return &bin_size_[0]; }
+
+    /// get bin per dir
+    virtual inline int const* BinPerDir() const { return &bin_per_dir_[0]; }
 
     /// return flag whether pbcs are applied to the problem
     virtual bool HavePBC(const int dim = -1) const

@@ -30,6 +30,7 @@
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
+#include "drt_particlereader.H"
 #include "drt_utils_parallel.H"
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
@@ -352,6 +353,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--PASI DYNAMIC/PARTITIONED", *list);
@@ -966,6 +969,23 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
       nurbsdis->SetKnotVector(disknots);
     }
   }  // loop fields
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadParticles(DRT::INPUT::DatFileReader& reader)
+{
+  // no need to read in particles in case of restart
+  if (Restart()) return;
+
+  // the basic particle reader
+  DRT::INPUT::ParticleReader particlereader(reader, "--PARTICLES");
+
+  // do the actual reading of particles
+  particlereader.Read(particles_);
 
   return;
 }
@@ -2103,6 +2123,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
 
+      break;
+    }
+    case prb_particle:
+    {
+      // nothing to do
       break;
     }
     case prb_particle_old:

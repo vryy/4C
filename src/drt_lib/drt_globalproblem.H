@@ -48,6 +48,10 @@ namespace MAT
   }
 }  // namespace MAT
 
+namespace PARTICLEENGINE
+{
+  class ParticleObject;
+}
 
 namespace DRT
 {
@@ -194,6 +198,9 @@ namespace DRT
 
     /// input of knots for isogeometric analysis
     void ReadKnots(DRT::INPUT::DatFileReader& reader);
+
+    /// input of particles
+    void ReadParticles(DRT::INPUT::DatFileReader& reader);
 
     /// set restart step which was read from the command line
     void SetRestartStep(int r);
@@ -483,6 +490,10 @@ namespace DRT
     {
       return getParameterList()->sublist("CAVITATION DYNAMIC");
     }
+    const Teuchos::ParameterList& ParticleParams() const
+    {
+      return getParameterList()->sublist("PARTICLE DYNAMIC");
+    }
     const Teuchos::ParameterList& ParticleParamsOld() const
     {
       return getParameterList()->sublist("PARTICLE DYNAMIC OLD");
@@ -572,6 +583,13 @@ namespace DRT
 
     //@}
 
+    /// @name Particles
+
+    /// return reference to read in particles
+    std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>>& Particles() { return particles_; }
+
+    //@}
+
     std::map<std::pair<std::string, std::string>, std::map<int, int>> CloningMaterialMap()
     {
       return clonefieldmatmap_;
@@ -645,6 +663,9 @@ namespace DRT
 
     /// material bundle
     Teuchos::RCP<MAT::PAR::Bundle> materials_;
+
+    /// all particles that are read in
+    std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;
 
     /// basket of spatial function
     DRT::UTILS::FunctionManager functionmanager_;

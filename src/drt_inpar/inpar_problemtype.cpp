@@ -55,6 +55,7 @@ std::map<std::string, PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Low_Mach_Number_Flow"] = prb_loma;
     string2prbtype["Lubrication"] = prb_lubrication;
     string2prbtype["NP_Supporting_Procs"] = prb_np_support;
+    string2prbtype["Particle"] = prb_particle;
     string2prbtype["ParticleOld"] = prb_particle_old;
     string2prbtype["Particle_Structure_Interaction"] = prb_pasi;
     string2prbtype["Polymer_Network"] = prb_polymernetwork;
