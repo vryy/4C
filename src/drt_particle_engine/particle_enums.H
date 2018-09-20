@@ -33,13 +33,23 @@ namespace PARTICLEENGINE
     Radius,
     Mass,
     Density,
+    DensitySum,
+    DensityDot,
     Pressure,
     Position,
     Velocity,
     Acceleration,
     ReferencePosition,
     ModifiedVelocity,
-    ModifiedAcceleration
+    ModifiedAcceleration,
+    BoundaryPressure,
+    BoundaryVelocity,
+    Colorfield,
+    ColorfieldGradient,
+    InterfaceNormal,
+    UnitWallNormal,
+    WallDistance,
+    Curvature
   };
 
   //! get dimension of particle state
@@ -53,7 +63,8 @@ namespace PARTICLEENGINE
   enum ParticleType
   {
     Phase1,
-    Phase2
+    Phase2,
+    BoundaryPhase
   };
 
   //! get name of particle types

@@ -58,6 +58,7 @@ namespace INPAR
     enum InteractionType
     {
       interaction_none,  //! no particle interaction
+      interaction_sph    //! smoothed particle hydrodynamics
     };
 
     //! data format for written numeric data via vtp
@@ -65,6 +66,85 @@ namespace INPAR
     {
       binary,
       ascii
+    };
+
+    /*---------------------------------------------------------------------------*
+     | smoothed particle hydrodynamics (SPH) specific control parameters         |
+     *---------------------------------------------------------------------------*/
+
+    //! type of smoothed particle hydrodynamics kernel
+    enum KernelType
+    {
+      CubicSpline,
+      QuinticSpline
+    };
+
+    //! kernel space dimension number
+    enum KernelSpaceDimension
+    {
+      Kernel1D,
+      Kernel2D,
+      Kernel3D
+    };
+
+    //! type of smoothed particle hydrodynamics equation of state
+    enum EquationOfStateType
+    {
+      GenTait,
+      IdealGas
+    };
+
+    //! type of smoothed particle hydrodynamics momentum formulation
+    enum MomentumFormulationType
+    {
+      AdamiMomentumFormulation,
+      MonaghanMomentumFormulation
+    };
+
+    //! type of density evaluation scheme
+    enum DensityEvaluationScheme
+    {
+      DensitySummation,
+      DensityIntegration,
+      DensityPredictCorrect
+    };
+
+    //! type of density correction scheme
+    enum DensityCorrectionScheme
+    {
+      NoCorrection,
+      InteriorCorrection,
+      NormalizedCorrection,
+      RandlesCorrection
+    };
+
+    //! type of boundary particle formulation
+    enum BoundaryParticleFormulationType
+    {
+      NoBoundaryFormulation,
+      AdamiBoundaryFormulation
+    };
+
+    //! type of boundary particle interaction
+    enum BoundaryParticleInteraction
+    {
+      NoSlipBoundaryParticle,
+      FreeSlipBoundaryParticle
+    };
+
+    //! type of transport velocity formulation
+    enum TransportVelocityFormulation
+    {
+      NoTransportVelocity,
+      StandardTransportVelocity,
+      GeneralizedTransportVelocity
+    };
+
+    //! type of surface tension formulation
+    enum SurfaceTensionFormulation
+    {
+      NoSurfaceTension,
+      ContinuumSurfaceForce
     };
 
 

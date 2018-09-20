@@ -1,0 +1,115 @@
+//
+// Maintainer: Sebastian Fuchs
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RANDSEED                        1
+RESTART                         0
+--------------------------------------------------------------------------IO
+STDOUTEVRY                      500
+VERBOSITY                       standard
+------------------------------------------------------------BINNING STRATEGY
+CUTOFF_RADIUS                   0.008
+PERIODICONOFF                   0 0 0
+BOUNDINGBOX                     -0.12 -0.001 -0.001 0.12 0.001 0.001
+WRITEBINS                       none
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      VelocityVerlet
+INTERACTION                     SPH
+RESULTSEVRY                     100
+RESTARTEVRY                     500
+OUTPUT_DATA_FORMAT              Binary
+WRITE_GHOSTED_PARTICLES         no
+TIMESTEP                        0.001
+NUMSTEP                         2500
+MAXTIME                         2.5
+GRAVITY_ACCELERATION            0.0 0.0 0.0
+GRAVITY_RAMP_FUNCT              -1
+TRANSFER_EVERY                  no
+PHASE_TO_MATERIAL_ID            phase1 1
+----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
+INITIAL_VELOCITY_FIELD          phase1 1
+--------------------------------------------------------PARTICLE DYNAMIC/SPH
+KERNEL                          CubicSpline
+KERNEL_SPACE_DIM                Kernel1D
+EQUATIONOFSTATE                 GenTait
+MOMENTUMFORMULATION             AdamiMomentumFormulation
+DENSITYEVALUATION               DensitySummation
+DENSITYCORRECTION               NoCorrection
+BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
+BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
+CONSISTENTPROBLEMVOLUME         0.2
+VISCOUS_DAMPING                 0.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 0.0005*(1+cos(x*pi/0.014))*(heaviside(x+0.014)-heaviside(x-0.014))
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ParticleSPH INITRADIUS 0.008 INITDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 BACKGROUNDPRESSURE 0.0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0.0 ARTIFICIAL_VISCOSITY 0.0
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE TYPE phase1 POS -3.66039126517702512e-02 0.0 0.0 POSTOLERANCE 1.0e-12 QUANTITY pressure VALUE -9.33305387006511334e-05 TOLERANCE 1.0e-12
+PARTICLE TYPE phase1 POS -3.66039126517702512e-02 0.0 0.0 POSTOLERANCE 1.0e-12 QUANTITY density VALUE 9.90666946129934889e-01 TOLERANCE 1.0e-12
+PARTICLE TYPE phase1 POS -2.34527309231659827e-02 0.0 0.0 POSTOLERANCE 1.0e-12 QUANTITY velx VALUE 5.02368962768982071e-03 TOLERANCE 1.0e-12
+-------------------------------------------------------------------PARTICLES
+TYPE phase1 POS -0.100 0.0 0.0
+TYPE phase1 POS -0.096 0.0 0.0
+TYPE phase1 POS -0.092 0.0 0.0
+TYPE phase1 POS -0.088 0.0 0.0
+TYPE phase1 POS -0.084 0.0 0.0
+TYPE phase1 POS -0.080 0.0 0.0
+TYPE phase1 POS -0.076 0.0 0.0
+TYPE phase1 POS -0.072 0.0 0.0
+TYPE phase1 POS -0.068 0.0 0.0
+TYPE phase1 POS -0.064 0.0 0.0
+TYPE phase1 POS -0.060 0.0 0.0
+TYPE phase1 POS -0.056 0.0 0.0
+TYPE phase1 POS -0.052 0.0 0.0
+TYPE phase1 POS -0.048 0.0 0.0
+TYPE phase1 POS -0.044 0.0 0.0
+TYPE phase1 POS -0.040 0.0 0.0
+TYPE phase1 POS -0.036 0.0 0.0
+TYPE phase1 POS -0.032 0.0 0.0
+TYPE phase1 POS -0.028 0.0 0.0
+TYPE phase1 POS -0.024 0.0 0.0
+TYPE phase1 POS -0.020 0.0 0.0
+TYPE phase1 POS -0.016 0.0 0.0
+TYPE phase1 POS -0.012 0.0 0.0
+TYPE phase1 POS -0.008 0.0 0.0
+TYPE phase1 POS -0.004 0.0 0.0
+TYPE phase1 POS -0.000 0.0 0.0
+TYPE phase1 POS 0.004 0.0 0.0
+TYPE phase1 POS 0.008 0.0 0.0
+TYPE phase1 POS 0.012 0.0 0.0
+TYPE phase1 POS 0.016 0.0 0.0
+TYPE phase1 POS 0.020 0.0 0.0
+TYPE phase1 POS 0.024 0.0 0.0
+TYPE phase1 POS 0.028 0.0 0.0
+TYPE phase1 POS 0.032 0.0 0.0
+TYPE phase1 POS 0.036 0.0 0.0
+TYPE phase1 POS 0.040 0.0 0.0
+TYPE phase1 POS 0.044 0.0 0.0
+TYPE phase1 POS 0.048 0.0 0.0
+TYPE phase1 POS 0.052 0.0 0.0
+TYPE phase1 POS 0.056 0.0 0.0
+TYPE phase1 POS 0.060 0.0 0.0
+TYPE phase1 POS 0.064 0.0 0.0
+TYPE phase1 POS 0.068 0.0 0.0
+TYPE phase1 POS 0.072 0.0 0.0
+TYPE phase1 POS 0.076 0.0 0.0
+TYPE phase1 POS 0.080 0.0 0.0
+TYPE phase1 POS 0.084 0.0 0.0
+TYPE phase1 POS 0.088 0.0 0.0
+TYPE phase1 POS 0.092 0.0 0.0
+TYPE phase1 POS 0.096 0.0 0.0
+TYPE phase1 POS 0.100 0.0 0.0
+TYPE boundaryphase POS -0.112 0.0 0.0
+TYPE boundaryphase POS -0.108 0.0 0.0
+TYPE boundaryphase POS -0.104 0.0 0.0
+TYPE boundaryphase POS 0.104 0.0 0.0
+TYPE boundaryphase POS 0.108 0.0 0.0
+TYPE boundaryphase POS 0.112 0.0 0.0
+-------------------------------------------------------------------------END

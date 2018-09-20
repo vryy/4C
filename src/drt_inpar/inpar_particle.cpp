@@ -45,7 +45,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // type of particle interaction
   setStringToIntegralParameter<int>("INTERACTION", "None", "type of particle interaction",
-      tuple<std::string>("None"), tuple<int>(INPAR::PARTICLE::interaction_none), &particledyn);
+      tuple<std::string>("None", "SPH"),
+      tuple<int>(INPAR::PARTICLE::interaction_none, INPAR::PARTICLE::interaction_sph),
+      &particledyn);
 
   // output type
   IntParameter(
@@ -96,4 +98,109 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // dirichlet boundary condition of particle phase given by function
   StringParameter("DIRICHLET_BOUNDARY_CONDITION", "",
       "dirichlet boundary condition of particle phase given by function", &particledynconditions);
+
+  /*-------------------------------------------------------------------------*
+   | smoothed particle hydrodynamics (SPH) specific control parameters       |
+   *-------------------------------------------------------------------------*/
+  Teuchos::ParameterList& particledynsph = particledyn.sublist(
+      "SPH", false, "control parameters for smoothed particle hydrodynamics (SPH) simulations\n");
+
+  // type of smoothed particle hydrodynamics kernel
+  setStringToIntegralParameter<int>("KERNEL", "CubicSpline",
+      "type of smoothed particle hydrodynamics kernel",
+      tuple<std::string>("CubicSpline", "QuinticSpline"),
+      tuple<int>(INPAR::PARTICLE::CubicSpline, INPAR::PARTICLE::QuinticSpline), &particledynsph);
+
+  // kernel space dimension number
+  setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D", "kernel space dimension number",
+      tuple<std::string>("Kernel1D", "Kernel2D", "Kernel3D"),
+      tuple<int>(INPAR::PARTICLE::Kernel1D, INPAR::PARTICLE::Kernel2D, INPAR::PARTICLE::Kernel3D),
+      &particledynsph);
+
+  // type of smoothed particle hydrodynamics equation of state
+  setStringToIntegralParameter<int>("EQUATIONOFSTATE", "GenTait",
+      "type of smoothed particle hydrodynamics equation of state",
+      tuple<std::string>("GenTait", "IdealGas"),
+      tuple<int>(INPAR::PARTICLE::GenTait, INPAR::PARTICLE::IdealGas), &particledynsph);
+
+  // type of smoothed particle hydrodynamics momentum formulation
+  setStringToIntegralParameter<int>("MOMENTUMFORMULATION", "AdamiMomentumFormulation",
+      "type of smoothed particle hydrodynamics momentum formulation",
+      tuple<std::string>("AdamiMomentumFormulation", "MonaghanMomentumFormulation"),
+      tuple<int>(
+          INPAR::PARTICLE::AdamiMomentumFormulation, INPAR::PARTICLE::MonaghanMomentumFormulation),
+      &particledynsph);
+
+  // type of density evaluation scheme
+  setStringToIntegralParameter<int>("DENSITYEVALUATION", "DensitySummation",
+      "type of density evaluation scheme",
+      tuple<std::string>("DensitySummation", "DensityIntegration", "DensityPredictCorrect"),
+      tuple<int>(INPAR::PARTICLE::DensitySummation, INPAR::PARTICLE::DensityIntegration,
+          INPAR::PARTICLE::DensityPredictCorrect),
+      &particledynsph);
+
+  // type of density correction scheme
+  setStringToIntegralParameter<int>("DENSITYCORRECTION", "NoCorrection",
+      "type of density correction scheme",
+      tuple<std::string>(
+          "NoCorrection", "InteriorCorrection", "NormalizedCorrection", "RandlesCorrection"),
+      tuple<int>(INPAR::PARTICLE::NoCorrection, INPAR::PARTICLE::InteriorCorrection,
+          INPAR::PARTICLE::NormalizedCorrection, INPAR::PARTICLE::RandlesCorrection),
+      &particledynsph);
+
+
+  //! type of boundary particle formulation
+  setStringToIntegralParameter<int>("BOUNDARYPARTICLEFORMULATION", "NoBoundaryFormulation",
+      "type of boundary particle formulation",
+      tuple<std::string>("NoBoundaryFormulation", "AdamiBoundaryFormulation"),
+      tuple<int>(INPAR::PARTICLE::NoBoundaryFormulation, INPAR::PARTICLE::AdamiBoundaryFormulation),
+      &particledynsph);
+
+  // type of boundary particle interaction
+  setStringToIntegralParameter<int>("BOUNDARYPARTICLEINTERACTION", "NoSlipBoundaryParticle",
+      "type of boundary particle interaction",
+      tuple<std::string>("NoSlipBoundaryParticle", "FreeSlipBoundaryParticle"),
+      tuple<int>(
+          INPAR::PARTICLE::NoSlipBoundaryParticle, INPAR::PARTICLE::FreeSlipBoundaryParticle),
+      &particledynsph);
+
+  DoubleParameter("CONSISTENTPROBLEMVOLUME", 0.0,
+      "prescribe problem volume filled by (non-boundary) particles to consistently initialize "
+      "particle masses",
+      &particledynsph);
+
+  // type of transport velocity formulation
+  setStringToIntegralParameter<int>("TRANSPORTVELOCITYFORMULATION", "NoTransportVelocity",
+      "type of transport velocity formulation",
+      tuple<std::string>(
+          "NoTransportVelocity", "StandardTransportVelocity", "GeneralizedTransportVelocity"),
+      tuple<int>(INPAR::PARTICLE::NoTransportVelocity, INPAR::PARTICLE::StandardTransportVelocity,
+          INPAR::PARTICLE::GeneralizedTransportVelocity),
+      &particledynsph);
+
+  BoolParameter("NO_RELVEL_TERM", "no",
+      "do not apply convection of momentum with relative velocity in case of transport velocity "
+      "formulation",
+      &particledynsph);
+
+  DoubleParameter("VISCOUS_DAMPING", -1.0,
+      "apply artificial viscous damping force to particles in order to determine static "
+      "equilibrium solutions",
+      &particledynsph);
+
+  // type of surface tension formulation
+  setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
+      "type of surface tension formulation",
+      tuple<std::string>("NoSurfaceTension", "ContinuumSurfaceForce"),
+      tuple<int>(INPAR::PARTICLE::NoSurfaceTension, INPAR::PARTICLE::ContinuumSurfaceForce),
+      &particledynsph);
+
+  IntParameter("SURFACETENSION_RAMP_FUNCT", -1, "number of function governing surface tension ramp",
+      &particledynsph);
+
+  DoubleParameter("SURFACETENSIONCOEFFICIENT", -1.0,
+      "surface tension coefficient in continuum surface force formulation", &particledynsph);
+  DoubleParameter("STATICCONTACTANGLE", 0.0,
+      "static contact angle in degree in continuum surface force formulation with wetting effects",
+      &particledynsph);
 }

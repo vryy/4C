@@ -37,6 +37,11 @@ namespace PARTICLEALGORITHM
   class ResultTest;
 }  // namespace PARTICLEALGORITHM
 
+namespace PARTICLEINTERACTION
+{
+  class ParticleInteractionBase;
+}
+
 namespace PARTICLEENGINE
 {
   class ParticleEngine;
@@ -92,6 +97,9 @@ namespace PARTICLEALGORITHM
 
     //! init particle time integration
     void InitParticleTimeIntegration();
+
+    //! init particle interaction handler
+    void InitParticleInteraction();
 
     //! init particle gravity handler
     void InitParticleGravity();
@@ -149,6 +157,9 @@ namespace PARTICLEALGORITHM
 
     //! particle time integration
     std::unique_ptr<PARTICLEALGORITHM::TimInt> particletimint_;
+
+    //! particle interaction
+    std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionBase> particleinteraction_;
 
     //! particle gravity handler
     std::unique_ptr<PARTICLEALGORITHM::GravityHandler> particlegravity_;

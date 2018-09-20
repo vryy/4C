@@ -87,6 +87,9 @@ void PARTICLEALGORITHM::TimInt::Setup(
     // get enum of particle types
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
+    // boundary particles are not integrated in time
+    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+
     // current particle type is not subjected to dirichlet boundary conditions
     if (typessubjectedtodirichletbc.find(particleType) == typessubjectedtodirichletbc.end())
       typestointegrate_.insert(particleType);
