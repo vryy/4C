@@ -33,4 +33,9 @@ Since we allow merges to `master` only for tested commits, the user has to start
 
 ### Output
 
-For each job certain testing output is displayed in GitLab (select job under `CI/CD - Pipelines`). For the minimal tests the full output can be viewed online. The full tests produce too much output for the web interface, only the last 200 lines of each failed test are displayed, as well as a summary of the `ctest` call. In each case, the full output of the `ctest` is written to a `.log` file and copied to a local path defined by the `LOG_FILE_PATH` variable.
+For each job certain testing output is displayed in GitLab (select job under `CI/CD - Pipelines`).
+For the minimal tests the full output can be viewed in the GitLab terminal.
+The full tests produce too much output for the web interface, only the last 200 lines of each failed test are displayed, as well as a summary of the `ctest` call.
+If the pipeline fails, the full `log` file is compressed and uploaded as a GitLab `artifact`.
+The `artifacts` can be found under `CI/CD - Pipelines` (on the right hand side of the failed pipeline).
+After 4 weeks the `artifacts` are deleted. 
