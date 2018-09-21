@@ -783,6 +783,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_browniandyn.cpp
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
+  src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_particle_old.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
@@ -1855,6 +1856,28 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_sph_rendering_resulttest.cpp
   src/drt_particle/particle_utils.cpp
 )
+set(OBJS_DRT_PARTICLE_ALGORITHM
+  src/drt_particle_algorithm/particle_sim.cpp
+  src/drt_particle_algorithm/particle_algorithm.cpp
+  src/drt_particle_algorithm/particle_timint.cpp
+  src/drt_particle_algorithm/particle_input_generator.cpp
+  src/drt_particle_algorithm/particle_gravity.cpp
+  src/drt_particle_algorithm/particle_dirichlet_bc.cpp
+  src/drt_particle_algorithm/particle_initial_field.cpp
+  src/drt_particle_algorithm/particle_result_test.cpp
+  src/drt_particle_algorithm/particle_algorithm_utils.cpp
+)
+set(OBJS_DRT_PARTICLE_ENGINE
+  src/drt_particle_engine/particle_container.cpp
+  src/drt_particle_engine/particle_container_bundle.cpp
+  src/drt_particle_engine/particle_engine.cpp
+  src/drt_particle_engine/particle_communication_utils.cpp
+  src/drt_particle_engine/particle_runtime_vtp_writer.cpp
+)
+set(OBJS_DRT_PARTICLE_ENGINE_LIB
+  src/drt_particle_engine/particle_enums.cpp
+  src/drt_particle_engine/particle_object.cpp
+)
 set(OBJS_DRT_ACOU
   src/drt_acou/acou_dyn.cpp
   src/drt_acou/acou_impl_euler.cpp
@@ -2072,6 +2095,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_lib/drt_linedefinition.cpp
   src/drt_lib/drt_materialdefinition.cpp
   src/drt_lib/drt_nodereader.cpp
+  src/drt_lib/drt_particlereader.cpp
 )
 set(OBJS_FORTRAN
   src/fortran/hex_fserv.f
@@ -2704,6 +2728,8 @@ add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle ${OBJS_DRT_PARTICLE})
+add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
+add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
 add_library(alg_acou ${OBJS_DRT_ACOU})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
@@ -2730,6 +2756,8 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid_adjoint
   alg_opti
   alg_particle
+  alg_particle_algorithm
+  alg_particle_engine
   alg_acou
   alg_elemag
   alg_tutorial
@@ -2766,6 +2794,7 @@ add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 add_library(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
 add_library(drt_lib_binstrategy ${OBJS_DRT_BINSTRATEGY_DISCRET_LIB})
+add_library(drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB})
 add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
@@ -2796,6 +2825,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_io
   drt_lib_nurbs
   drt_lib_binstrategy
+  drt_lib_particleengine
   drt_lib_statinv_ana
   drt_lib_immersed
   drt_lib_fiber

@@ -60,6 +60,7 @@ typedef enum _PROBLEM_TYP
   prb_lubrication,   // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
   prb_np_support,    // supporting procs for nested parallelism
   prb_opt,           // structural optimization  problem
+  prb_particle,      // particle simulation
   prb_particle_old,  // particle simulation (old implementation)
   prb_pasi,          // particle structure interaction
   prb_polymernetwork,         // polymer network

@@ -53,6 +53,9 @@ void ntainp_ccadiscret(
   // input of time curves, functions and result tests
   problem->ReadTimeFunctionResult(reader);
 
+  // input of particles
+  problem->ReadParticles(reader);
+
   switch (npType)
   {
     case no_nested_parallelism:

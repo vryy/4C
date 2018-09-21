@@ -31,6 +31,7 @@
 #include "../drt_lubrication/lubrication_dyn.H"
 #include "../drt_opti/topopt_dyn.H"
 #include "../drt_particle/particle_dyn.H"
+#include "../drt_particle_algorithm/particle_sim.H"
 #include "../drt_pasi/pasi_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_poromultiphase/poromultiphase_dyn.H"
@@ -191,6 +192,10 @@ void ntacal()
       break;
     case prb_redairways_tissue:
       redairway_tissue_dyn();
+      break;
+
+    case prb_particle:
+      particle_drt();
       break;
 
     case prb_particle_old:

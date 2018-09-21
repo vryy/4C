@@ -169,6 +169,69 @@ void BINSTRATEGY::BinningStrategy::Init(
 }
 
 /*----------------------------------------------------------------------------*
+ | Init                                                          sfuchs 03/18 |
+ *----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::Init(const Epetra_Comm& lcomm)
+{
+  // myrank
+  myrank_ = lcomm.MyPID();
+
+  // create binning discretization
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(lcomm.Clone());
+  bindis_ = Teuchos::rcp(new DRT::Discretization("binning", comm));
+
+  // create discretization writer
+  bindis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(bindis_)));
+
+  // binning strategy parameter list
+  const Teuchos::ParameterList& binstrategyparams =
+      DRT::Problem::Instance()->BinningStrategyParams();
+
+  // get cutoff radius
+  cutoff_radius_ = binstrategyparams.get<double>("CUTOFF_RADIUS");
+
+  // get number of bins per direction
+  std::istringstream binstream(
+      Teuchos::getNumericStringParameter(binstrategyparams, "BIN_PER_DIR"));
+  for (int idim = 0; idim < 3; idim++)
+  {
+    int val = -1;
+    if (binstream >> val) bin_per_dir_[idim] = val;
+  }
+
+  // check input: either the cutoff_radius_ or the number of bins per direction have to be set
+  if (cutoff_radius_ < 0.0 and bin_per_dir_[0] < 0.0 and bin_per_dir_[1] < 0.0 and
+      bin_per_dir_[2] < 0.0)
+    dserror(
+        "Cutoff radius and number of bins per direction have not been set in the input file. "
+        "Please prescribe the cutoff radius or define the number of bins for each spatial "
+        "direction.");
+  if (cutoff_radius_ > 0.0 and bin_per_dir_[0] > 0.0 and bin_per_dir_[1] > 0.0 and
+      bin_per_dir_[2] > 0.0)
+    dserror(
+        "Cutoff radius and number of bins per direction have been set in the input file. Please "
+        "prescribe only one of the two options");
+
+  XAABB_.PutScalar(1.0e12);
+  // get bounding box specified in the input file
+  std::istringstream xaabbstream(
+      Teuchos::getNumericStringParameter(binstrategyparams, "BOUNDINGBOX"));
+  for (int col = 0; col < 2; col++)
+  {
+    for (int row = 0; row < 3; row++)
+    {
+      double value = 1.0e12;
+      if (xaabbstream >> value)
+        XAABB_(row, col) = value;
+      else
+        dserror("specify six values for bounding box in three dimensional problem. Fix input file");
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
  | Setup                                                      eichinger 11/13 |
  *----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::Setup(
@@ -282,6 +345,47 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(const Epetra_Comm& comm)
     pbconoff_[idim] = false;
     pbcdeltas_[idim] = 0.0;
   }
+}
+
+/*----------------------------------------------------------------------*
+ | distribute bins via recursive coordinate bisection      sfuchs 04/18 |
+ *----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
+    Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters,
+    Teuchos::RCP<Epetra_MultiVector>& binweights)
+{
+  // create a parameter list for Zoltan
+  Teuchos::ParameterList params;
+  params.set("Partitioning Method", "RCB");
+
+  // set low-level Zoltan parameters (see Zoltan Users' Guide: http://www.cs.sandia.gov/zoltan)
+  Teuchos::ParameterList& sublist = params.sublist("Zoltan");
+
+  // debug level (see http://www.cs.sandia.gov/zoltan/ug_html/ug_param.html)
+  sublist.set("DEBUG_LEVEL", "0");
+
+  // recursive coordinate bisection (see http://www.cs.sandia.gov/zoltan/ug_html/ug_alg_rcb.html)
+  sublist.set("RCB_OUTPUT_LEVEL", "0");
+  sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
+
+  // create a partitioner, by default this will perform the partitioning as well
+  Teuchos::RCP<const Epetra_MultiVector> bincenters_const = bincenters;
+  Teuchos::RCP<const Epetra_MultiVector> binweights_const = binweights;
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> part =
+      Teuchos::rcp(new Isorropia::Epetra::Partitioner(bincenters_const, binweights_const, params));
+
+  // create a redistributor based on the partitioning
+  Isorropia::Epetra::Redistributor rd(part);
+
+  // redistribute bin center coordinates and bin weights
+  bincenters = rd.redistribute(*bincenters_const);
+  binweights = rd.redistribute(*binweights_const);
+
+  // create bin row map
+  binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
+      bincenters->Map().MyGlobalElements(), 0, BinDiscret()->Comm()));
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

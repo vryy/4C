@@ -994,6 +994,7 @@ namespace DRT
       exclude.push_back("--CELL DOMAIN");
       exclude.push_back("--CELLSCATRA ELEMENTS");
       exclude.push_back("--CELLSCATRA DOMAIN");
+      exclude.push_back("--PARTICLES");
 
       Teuchos::RCP<Epetra_Comm> comm = comm_;
 

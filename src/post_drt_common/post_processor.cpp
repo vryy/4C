@@ -255,6 +255,25 @@ void runEnsightVtuFilter(PostProblem& problem)
       }
       break;
     }
+    case prb_particle:
+    {
+      int numdiscr = problem.num_discr();
+      for (int i = 0; i < numdiscr; ++i)
+      {
+        std::string disname = problem.get_discretization(i)->name();
+        if (disname == "bins")
+        {
+          PostField* visualizebins = problem.get_discretization(i);
+          StructureFilter binwriter(visualizebins, problem.outname());
+          binwriter.WriteFiles();
+        }
+        else
+        {
+          dserror("Particle problem has illegal discretization name!");
+        }
+      }
+      break;
+    }
     case prb_particle_old:
     case prb_pasi:
     {
