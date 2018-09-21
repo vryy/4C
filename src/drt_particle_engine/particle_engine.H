@@ -239,9 +239,6 @@ namespace PARTICLEENGINE
     //! determine minimum relevant bin size
     void DetermineMinRelevantBinSize();
 
-    //! determine bin centers needed for repartitioning
-    void DetermineBinCenters();
-
     //! determine bin weights needed for repartitioning
     void DetermineBinWeights();
 

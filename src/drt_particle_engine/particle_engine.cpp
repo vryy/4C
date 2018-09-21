@@ -663,8 +663,8 @@ void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
   bincenters_ = Teuchos::rcp(new Epetra_MultiVector(*binrowmap_, 3));
   binweights_ = Teuchos::rcp(new Epetra_MultiVector(*binrowmap_, 1));
 
-  // determine bin centers needed for repartitioning
-  DetermineBinCenters();
+  // get all bin centers needed for repartitioning
+  binstrategy_->GetAllBinCenters(binrowmap_, bincenters_);
 
   // determine bin weights needed for repartitioning
   DetermineBinWeights();
@@ -1677,29 +1677,11 @@ void PARTICLEENGINE::ParticleEngine::DetermineMinRelevantBinSize()
   const double* binsize = binstrategy_->BinSize();
 
   // initialize minimum bin size to maximum bin size
-  minbinsize_ = std::max(binsize[0], std::max(binsize[1], binsize[2]));
+  minbinsize_ = binstrategy_->GetMaxBinSize();
 
   // check for minimum bin size in spatial directions with more than one bin layer
   for (int i = 0; i < 3; ++i)
     if (binperdir[i] > 1) minbinsize_ = std::min(minbinsize_, binsize[i]);
-}
-
-/*---------------------------------------------------------------------------*
- | determine bin centers needed for repartitioning            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::DetermineBinCenters()
-{
-  // loop over row bins and get center coordinates
-  for (int i = 0; i < binrowmap_->NumMyElements(); ++i)
-  {
-    // get global id of bin
-    const int gidofbin = binrowmap_->GID(i);
-
-    // get coordinates of bin center
-    LINALG::Matrix<3, 1> center = binstrategy_->GetBinCentroid(gidofbin);
-
-    for (int dim = 0; dim < 3; ++dim) bincenters_->ReplaceMyValue(i, dim, center(dim));
-  }
 }
 
 /*---------------------------------------------------------------------------*

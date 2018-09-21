@@ -88,9 +88,14 @@ namespace BINSTRATEGY
     virtual void Setup(Teuchos::RCP<DRT::Discretization>& bindis,
         Teuchos::RCP<GEO::MESHFREE::BoundingBox> const pbb);
 
+    /// get all bin centers needed for repartitioning
+    virtual void GetAllBinCenters(
+        Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters) const;
+
     /// distribute bins via recursive coordinate bisection
     virtual void DistributeBinsRecursCoordBisection(Teuchos::RCP<Epetra_Map>& binrowmap,
-        Teuchos::RCP<Epetra_MultiVector>& bincenters, Teuchos::RCP<Epetra_MultiVector>& binweights);
+        Teuchos::RCP<Epetra_MultiVector>& bincenters,
+        Teuchos::RCP<Epetra_MultiVector>& binweights) const;
 
     /// fill bins into bin discretization
     virtual void FillBinsIntoBinDiscretization(Teuchos::RCP<Epetra_Map> const& rowbins);
@@ -357,6 +362,12 @@ namespace BINSTRATEGY
     virtual LINALG::Matrix<3, 1> GetBinCentroid(
         const int binId  ///< bin id of which centroid is calculated
         ) const;
+
+    /// get minimum bin size
+    virtual double GetMinBinSize() const;
+
+    /// get maximum bin size
+    virtual double GetMaxBinSize() const;
 
     virtual void RevertExtendedGhosting(std::vector<Teuchos::RCP<DRT::Discretization>> dis,
         std::vector<Teuchos::RCP<Epetra_Map>>& stdelecolmap,
