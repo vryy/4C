@@ -305,7 +305,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
       {
         A_i[i][j] = dens_i * vel_i[i] * (mod_vel_i[j] - vel_i[j]);
 
-        if (vel_j and mod_vel_j) A_j[i][j] = dens_j * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
+        A_j[i][j] = dens_j * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
       }
 
     double A_ij_e_ij[3];
@@ -314,9 +314,8 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
       A_ij_e_ij[i] = (1.0 / std::pow(dens_i, 2)) *
                      (A_i[i][0] * e_ij[0] + A_i[i][1] * e_ij[1] + A_i[i][2] * e_ij[2]);
 
-      if (vel_j and mod_vel_j)
-        A_ij_e_ij[i] += (1.0 / std::pow(dens_j, 2)) *
-                        (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
+      A_ij_e_ij[i] += (1.0 / std::pow(dens_j, 2)) *
+                      (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
     }
 
     double acc_i_ref[3];
@@ -580,7 +579,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
       {
         A_i[i][j] = dens_i * vel_i[i] * (mod_vel_i[j] - vel_i[j]);
 
-        if (vel_j and mod_vel_j) A_j[i][j] = dens_j * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
+        A_j[i][j] = dens_j * vel_j[i] * (mod_vel_j[j] - vel_j[j]);
       }
 
     double A_ij_e_ij[3];
@@ -588,8 +587,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     {
       A_ij_e_ij[i] = 0.5 * (A_i[i][0] * e_ij[0] + A_i[i][1] * e_ij[1] + A_i[i][2] * e_ij[2]);
 
-      if (vel_j and mod_vel_j)
-        A_ij_e_ij[i] += 0.5 * (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
+      A_ij_e_ij[i] += 0.5 * (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
     }
 
     double acc_i_ref[3];
