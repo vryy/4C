@@ -32,7 +32,13 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::Radius:
     case PARTICLEENGINE::Mass:
     case PARTICLEENGINE::Density:
+    case PARTICLEENGINE::DensitySum:
+    case PARTICLEENGINE::DensityDot:
     case PARTICLEENGINE::Pressure:
+    case PARTICLEENGINE::BoundaryPressure:
+    case PARTICLEENGINE::Colorfield:
+    case PARTICLEENGINE::WallDistance:
+    case PARTICLEENGINE::Curvature:
       dim = 1;
       break;
 
@@ -43,6 +49,10 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::ReferencePosition:
     case PARTICLEENGINE::ModifiedVelocity:
     case PARTICLEENGINE::ModifiedAcceleration:
+    case PARTICLEENGINE::BoundaryVelocity:
+    case PARTICLEENGINE::ColorfieldGradient:
+    case PARTICLEENGINE::InterfaceNormal:
+    case PARTICLEENGINE::UnitWallNormal:
       dim = 3;
       break;
 
@@ -71,6 +81,12 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::Density:
       name = "density";
       break;
+    case PARTICLEENGINE::DensitySum:
+      name = "densitysum";
+      break;
+    case PARTICLEENGINE::DensityDot:
+      name = "densitydot";
+      break;
     case PARTICLEENGINE::Pressure:
       name = "pressure";
       break;
@@ -91,6 +107,30 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::ModifiedAcceleration:
       name = "modified acceleration";
+      break;
+    case PARTICLEENGINE::BoundaryPressure:
+      name = "boundary pressure";
+      break;
+    case PARTICLEENGINE::BoundaryVelocity:
+      name = "boundary velocity";
+      break;
+    case PARTICLEENGINE::Colorfield:
+      name = "colorfield";
+      break;
+    case PARTICLEENGINE::ColorfieldGradient:
+      name = "colorfiel gradient";
+      break;
+    case PARTICLEENGINE::InterfaceNormal:
+      name = "interface normal";
+      break;
+    case PARTICLEENGINE::UnitWallNormal:
+      name = "unit wall normal";
+      break;
+    case PARTICLEENGINE::WallDistance:
+      name = "wall distance";
+      break;
+    case PARTICLEENGINE::Curvature:
+      name = "curvature";
       break;
     default:
       dserror("particle state enum unknown!");
@@ -114,6 +154,9 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleTy
     case PARTICLEENGINE::Phase2:
       name = "phase2";
       break;
+    case PARTICLEENGINE::BoundaryPhase:
+      name = "boundaryphase";
+      break;
     default:
       dserror("particle type enum unknown!");
   }
@@ -135,6 +178,8 @@ enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::st
     type = PARTICLEENGINE::Phase1;
   else if (typeName == "phase2")
     type = PARTICLEENGINE::Phase2;
+  else if (typeName == "boundaryphase")
+    type = PARTICLEENGINE::BoundaryPhase;
   else
     dserror("particle type '%s' unknown!", typeName.c_str());
 

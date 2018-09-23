@@ -126,6 +126,8 @@
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
 #include "multiplicative_split_defgrad_elasthyper.H"
+#include "particle_material_base.H"
+#include "particle_material_sph.H"
 #include "superelastic_sma.H"
 
 
@@ -1088,6 +1090,22 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::ExtParticleMat(curmat));
       MAT::PAR::ExtParticleMat* params =
           static_cast<MAT::PAR::ExtParticleMat*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_base:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialBase(curmat));
+      MAT::PAR::ParticleMaterialBase* params =
+          static_cast<MAT::PAR::ParticleMaterialBase*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_sph:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPH(curmat));
+      MAT::PAR::ParticleMaterialSPH* params =
+          static_cast<MAT::PAR::ParticleMaterialSPH*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:

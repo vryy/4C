@@ -664,6 +664,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/extparticle_mat.cpp
+  src/drt_mat/particle_material_base.cpp
+  src/drt_mat/particle_material_sph.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
@@ -1867,6 +1869,23 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_result_test.cpp
   src/drt_particle_algorithm/particle_algorithm_utils.cpp
 )
+set(OBJS_DRT_PARTICLE_INTERACTION
+  src/drt_particle_interaction/particle_interaction_base.cpp
+  src/drt_particle_interaction/particle_interaction_sph.cpp
+  src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
+  src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
+  src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_sph_density.cpp
+  src/drt_particle_interaction/particle_interaction_sph_density_correction.cpp
+  src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
+  src/drt_particle_interaction/particle_interaction_sph_momentum.cpp
+  src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
+  src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
+  src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_material_handler.cpp
+)
 set(OBJS_DRT_PARTICLE_ENGINE
   src/drt_particle_engine/particle_container.cpp
   src/drt_particle_engine/particle_container_bundle.cpp
@@ -2729,6 +2748,7 @@ add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
+add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
 add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
 add_library(alg_acou ${OBJS_DRT_ACOU})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
@@ -2757,6 +2777,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_opti
   alg_particle
   alg_particle_algorithm
+  alg_particle_interaction
   alg_particle_engine
   alg_acou
   alg_elemag

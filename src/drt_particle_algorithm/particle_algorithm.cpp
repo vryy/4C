@@ -25,6 +25,9 @@
 #include "particle_initial_field.H"
 #include "particle_result_test.H"
 
+#include "../drt_particle_interaction/particle_interaction_base.H"
+#include "../drt_particle_interaction/particle_interaction_sph.H"
+
 #include "../drt_particle_engine/particle_engine.H"
 #include "../drt_particle_engine/particle_communication_utils.H"
 #include "../drt_particle_engine/particle_object.H"
@@ -80,6 +83,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Init(
   // init particle time integration
   InitParticleTimeIntegration();
 
+  // init particle interaction handler
+  InitParticleInteraction();
+
   // init particle gravity handler
   InitParticleGravity();
 
@@ -112,6 +118,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Setup()
 
   // setup particle time integration
   particletimint_->Setup(particleengine_, havemodifiedstates);
+
+  // setup particle interaction handler
+  if (particleinteraction_) particleinteraction_->Setup(particleengine_);
 
   // setup gravity handler
   if (particlegravity_) particlegravity_->Setup();
@@ -146,6 +155,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
 
   // read restart of particle time integration
   particletimint_->ReadRestart(reader);
+
+  // read restart of particle interaction handler
+  if (particleinteraction_) particleinteraction_->ReadRestart(reader);
 
   // read restart of gravity handler
   if (particlegravity_) particlegravity_->ReadRestart(reader);
@@ -216,6 +228,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Integrate()
   // set gravity acceleration
   if (particlegravity_) SetGravityAcceleration();
 
+  // evaluate particle interactions
+  if (particleinteraction_) particleinteraction_->EvaluateInteractions();
+
   // time integration scheme specific post-interaction routine
   particletimint_->PostInteractionRoutine();
 }
@@ -243,6 +258,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Output() const
 
     // write restart of particle time integration
     particletimint_->WriteRestart(Step(), Time());
+
+    // write restart of particle interaction handler
+    if (particleinteraction_) particleinteraction_->WriteRestart(Step(), Time());
 
     // write restart of gravity handler
     if (particlegravity_) particlegravity_->WriteRestart(Step(), Time());
@@ -313,6 +331,40 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
 
   // init particle time integration
   particletimint_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init particle interaction handler                          sfuchs 05/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleInteraction()
+{
+  // get particle interaction type
+  INPAR::PARTICLE::InteractionType interactiontype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::InteractionType>(params_, "INTERACTION");
+
+  // create particle interaction handler
+  switch (interactiontype)
+  {
+    case INPAR::PARTICLE::interaction_none:
+    {
+      particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::interaction_sph:
+    {
+      particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionSPH>(
+          new PARTICLEINTERACTION::ParticleInteractionSPH(Comm(), params_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown particle interaction type!");
+      break;
+    }
+  }
+
+  // init particle interaction handler
+  if (particleinteraction_) particleinteraction_->Init();
 }
 
 /*---------------------------------------------------------------------------*
@@ -444,6 +496,10 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
 
   // insert integration dependent states of all particle types
   particletimint_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
+
+  // insert interaction dependent states of all particle types
+  if (particleinteraction_)
+    particleinteraction_->InsertParticleStatesOfParticleTypes(particlestatestotypes_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -466,6 +522,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // ghost particles on other processors
   particleengine_->GhostParticles();
 
+  // build overlapping particle to particle neighbor map
+  if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
   // store particle positions after transfer of particles
   StorePositionsAfterParticleTransfer();
 }
@@ -475,6 +534,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 {
+  // set initial states
+  if (particleinteraction_) particleinteraction_->SetInitialStates();
+
   // set initial conditions
   SetInitialConditions();
 
@@ -483,6 +545,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
 
   // set gravity acceleration
   if (particlegravity_) SetGravityAcceleration();
+
+  // evaluate particle interactions
+  if (particleinteraction_) particleinteraction_->EvaluateInteractions();
 }
 
 /*---------------------------------------------------------------------------*
@@ -500,6 +565,9 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
   {
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
+
+    // no modified velocity and acceleration for boundary particles
+    if (type == PARTICLEENGINE::BoundaryPhase) continue;
 
     // get reference to set of particle states of current type
     std::set<PARTICLEENGINE::StateEnum>& stateEnumSet = typeIt.second;
@@ -564,6 +632,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     // ghost particles on other processors
     particleengine_->GhostParticles();
 
+    // build overlapping particle to particle neighbor map
+    if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
     // store particle positions after transfer of particles
     StorePositionsAfterParticleTransfer();
 
@@ -589,8 +660,33 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
  *---------------------------------------------------------------------------*/
 bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
 {
+  // get maximum particle interaction distance
+  double allprocinteractiondistance = 0.0;
+  if (particleinteraction_)
+  {
+    double interactiondistance = particleinteraction_->MaxInteractionDistance();
+    Comm().MaxAll(&interactiondistance, &allprocinteractiondistance, 1);
+  }
+
   // get minimum relevant bin size
   const double minbinsize = particleengine_->MinBinSize();
+
+  // bin size safety check
+  if (allprocinteractiondistance > minbinsize)
+    dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
+        allprocinteractiondistance, minbinsize);
+
+  // loop over all spatial directions
+  for (int dim = 0; dim < 3; ++dim)
+  {
+    // check for periodic boundary condition in current spatial direction
+    if (particleengine_->HavePBC(dim))
+    {
+      // check periodic length in current spatial direction
+      if ((2.0 * allprocinteractiondistance) > particleengine_->PBCDelta(dim))
+        dserror("particles are not allowed to interact directly and across the periodic boundary!");
+    }
+  }
 
   // maximum position increment since last particle transfer
   double maxpositionincrement = 0.0;
@@ -653,7 +749,8 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
 
   // check if a particle transfer is needed: it is assumed that (in a worst case scenario)
   // two particles approach each other with maximum position increment in one spatial dimension
-  bool transferneeded = ((2.0 * allprocmaxpositionincrement) > minbinsize);
+  bool transferneeded =
+      ((allprocinteractiondistance + 2.0 * allprocmaxpositionincrement) > minbinsize);
 
   // safety check
   if (transferneeded and maxpositionincrement > minbinsize)
@@ -769,6 +866,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentTime()
 {
   // set current time in particle time integration
   particletimint_->SetCurrentTime(Time());
+
+  // set current time in particle interaction
+  if (particleinteraction_) particleinteraction_->SetCurrentTime(Time());
 }
 
 /*---------------------------------------------------------------------------*
@@ -776,7 +876,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentTime()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentStepSize()
 {
-  // nothing to do
+  // set current step size in particle interaction
+  if (particleinteraction_) particleinteraction_->SetCurrentStepSize(Dt());
 }
 
 /*---------------------------------------------------------------------------*
@@ -799,8 +900,14 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
     // get type of particles
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
+    // gravity is not set for boundary particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+
     // set gravity acceleration for all particles of current type
     particlecontainerbundle->SetStateSpecificContainer(
         scaled_gravity, PARTICLEENGINE::Acceleration, particleType);
   }
+
+  // set scaled gravity in particle interaction handler
+  if (particleinteraction_) particleinteraction_->SetGravity(scaled_gravity);
 }

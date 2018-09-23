@@ -348,11 +348,30 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(const Epetra_Comm& comm)
 }
 
 /*----------------------------------------------------------------------*
+ | get all bin centers needed for repartitioning           sfuchs 04/18 |
+ *----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::GetAllBinCenters(
+    Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters) const
+{
+  // loop over row bins and get center coordinates
+  for (int i = 0; i < binrowmap->NumMyElements(); ++i)
+  {
+    // get global id of bin
+    const int gidofbin = binrowmap->GID(i);
+
+    // get coordinates of bin center
+    LINALG::Matrix<3, 1> center = GetBinCentroid(gidofbin);
+
+    for (int dim = 0; dim < 3; ++dim) bincenters->ReplaceMyValue(i, dim, center(dim));
+  }
+}
+
+/*----------------------------------------------------------------------*
  | distribute bins via recursive coordinate bisection      sfuchs 04/18 |
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
     Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters,
-    Teuchos::RCP<Epetra_MultiVector>& binweights)
+    Teuchos::RCP<Epetra_MultiVector>& binweights) const
 {
   // create a parameter list for Zoltan
   Teuchos::ParameterList params;
@@ -2434,6 +2453,22 @@ LINALG::Matrix<3, 1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const int binI
     centroid(dim) = XAABB_(dim, 0) + bin_size_[dim] * (ijk[dim] + 0.5);
 
   return centroid;
+}
+
+/*----------------------------------------------------------------------*
+ | get minimum bin size                                  sfuchs 09/2018 |
+ *----------------------------------------------------------------------*/
+double BINSTRATEGY::BinningStrategy::GetMinBinSize() const
+{
+  return std::min(bin_size_[0], std::min(bin_size_[1], bin_size_[2]));
+}
+
+/*----------------------------------------------------------------------*
+ | get maximum bin size                                  sfuchs 09/2018 |
+ *----------------------------------------------------------------------*/
+double BINSTRATEGY::BinningStrategy::GetMaxBinSize() const
+{
+  return std::max(bin_size_[0], std::max(bin_size_[1], bin_size_[2]));
 }
 
 /*-----------------------------------------------------------------------------*
