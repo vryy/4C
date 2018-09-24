@@ -17,6 +17,7 @@
 
 #include <signal.h>
 #include <boost/random.hpp>
+#include <stdio.h>
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseMatrix.h>
@@ -440,6 +441,26 @@ namespace DRT
       volatile static int signal_;
     };
 
+    /**
+     *            \brief Default error handling of fgets().
+     *
+     *            \note In debug mode, this function prints out a warning if the
+     *            End-of-File was reached without reading any character.
+     *            \param output (in): output provided by the call of fgets()
+     *            \param stream (in): the FILE pointer passed to fgets()
+     *            \param filename (in): name of the file being processed by fgets()
+     *            \throws dserror() occurs if the error indicator was set while reading
+     *            \author Hagmeyer
+     */
+    void checkfgets(char* output, FILE* stream, std::string filenename);
+    /**
+     *            \brief Default error handling of scanf().
+     *
+     *            \param output (in): output provided by the call of scanf()
+     *            \throws dserror() occurs if the function returns without reading any
+     * input \author Hagmeyer
+     */
+    void checkscanf(int output);
   }  // namespace UTILS
 }  // namespace DRT
 

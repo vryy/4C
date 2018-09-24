@@ -22,6 +22,7 @@
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -77,7 +78,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
   if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
 
   char buffer[150000];
-  fgets(buffer, 150000, file);
+  DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
   char* foundit = NULL;
 
   // read steps
@@ -103,7 +104,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   for (unsigned int i = 0; i < nmics_; ++i)
   {
-    fgets(buffer, 150000, file);
+    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     foundit = buffer;
     for (unsigned int j = 0; j < ndim_;
          ++j)  // if it is a two dimensional problem, the third coordinate is discarded
@@ -117,8 +118,9 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   // read comment lines
   foundit = buffer;
-  fgets(buffer, 150000, file);
-  while (strstr(buffer, "#")) fgets(buffer, 150000, file);
+  DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+  while (strstr(buffer, "#"))
+    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
 
   // read in the values for each node
   unsigned int count = 0;
@@ -128,7 +130,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
     // read the time step
     timesteps[i] = strtod(foundit, &foundit);
     for (unsigned int j = 0; j < nmics_; ++j) mcurve[count++] = strtod(foundit, &foundit);
-    fgets(buffer, 150000, file);
+    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     foundit = buffer;
   }
   if (count != nmics_ * nsteps) dserror("Number of measured pressure values wrong on input");
@@ -213,7 +215,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
     // read file
     char buffer[150000];
-    fgets(buffer, 150000, file);
+    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, impulseresponsefilename);
     char* foundit = NULL;
     char* test = NULL;
     foundit = buffer;
