@@ -1227,6 +1227,9 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_input.cpp
   src/drt_membrane/membrane_line.cpp
   src/drt_membrane/membrane_line_evaluate.cpp
+  src/drt_membrane/membrane_scatra_eletypes.cpp
+  src/drt_membrane/membrane_scatra.cpp
+  src/drt_membrane/membrane_scatra_evaluate.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
