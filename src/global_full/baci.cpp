@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
       char go = ' ';
-      DRT::UTILS::checkscanf(scanf("%c", &go));
+      DRT::UTILS::Checkscanf(scanf("%c", &go));
     }
   }
 

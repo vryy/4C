@@ -78,7 +78,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
   if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
 
   char buffer[150000];
-  DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
   char* foundit = NULL;
 
   // read steps
@@ -104,7 +104,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   for (unsigned int i = 0; i < nmics_; ++i)
   {
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     foundit = buffer;
     for (unsigned int j = 0; j < ndim_;
          ++j)  // if it is a two dimensional problem, the third coordinate is discarded
@@ -118,9 +118,9 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   // read comment lines
   foundit = buffer;
-  DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
   while (strstr(buffer, "#"))
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
 
   // read in the values for each node
   unsigned int count = 0;
@@ -130,7 +130,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
     // read the time step
     timesteps[i] = strtod(foundit, &foundit);
     for (unsigned int j = 0; j < nmics_; ++j) mcurve[count++] = strtod(foundit, &foundit);
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     foundit = buffer;
   }
   if (count != nmics_ * nsteps) dserror("Number of measured pressure values wrong on input");
@@ -215,7 +215,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
     // read file
     char buffer[150000];
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, impulseresponsefilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, impulseresponsefilename);
     char* foundit = NULL;
     char* test = NULL;
     foundit = buffer;

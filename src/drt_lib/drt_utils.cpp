@@ -1328,7 +1328,7 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
 }
 /*-----------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void DRT::UTILS::checkfgets(char* output, FILE* stream, std::string filename)
+void DRT::UTILS::Checkfgets(char* output, FILE* stream, std::string filename)
 {
   if (output == NULL)
   {
@@ -1349,7 +1349,7 @@ void DRT::UTILS::checkfgets(char* output, FILE* stream, std::string filename)
 }
 /*-----------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-void DRT::UTILS::checkscanf(int output)
+void DRT::UTILS::Checkscanf(int output)
 {
   if (output == EOF)
   {

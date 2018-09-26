@@ -80,7 +80,7 @@ void INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
   if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
 
   char buffer[150000];
-  DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
 
   // read number of steps
   foundit = strstr(buffer, "steps");
@@ -98,7 +98,7 @@ void INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
   dofs.resize(nnodes);
   for (int i = 0; i < nnodes; ++i)
   {
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     foundit = buffer;
     nodes[i] = strtol(foundit, &foundit, 10);
     int ndofs_act = strtol(foundit, &foundit, 10);
@@ -130,9 +130,9 @@ void INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
 
   // read comment lines
   foundit = buffer;
-  DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
   while (strstr(buffer, "#"))
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
   // read in the values for each monitored time step
   for (int i = 0; i < nsteps; i++)
   {
@@ -166,7 +166,7 @@ void INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
       }
     }
 
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     foundit = buffer;
   }
 }

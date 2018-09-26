@@ -219,7 +219,7 @@ steps 25 nnodes 5
     if (file == NULL) dserror("Could not open monitor file %s", monitorfilename.c_str());
 
     char buffer[150000];
-    DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
     // read steps
     foundit = strstr(buffer, "steps");
     foundit += strlen("steps");
@@ -234,7 +234,7 @@ steps 25 nnodes 5
     dofs_.resize(nnodes_);
     for (int i = 0; i < nnodes_; ++i)
     {
-      DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
       foundit = buffer;
       nodes_[i] = strtol(foundit, &foundit, 10);
       int ndofs = strtol(foundit, &foundit, 10);
@@ -262,9 +262,9 @@ steps 25 nnodes 5
 
       // read comment lines
       foundit = buffer;
-      DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
       while (strstr(buffer, "#"))
-        DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
       // read in the values for each node in dirs directions
       int count = 0;
       for (int i = 0; i < nsteps_; ++i)
@@ -272,7 +272,7 @@ steps 25 nnodes 5
         // read the time step
         timesteps_[i] = strtod(foundit, &foundit);
         for (int j = 0; j < ndofs_; ++j) mcurve_[count++] = strtod(foundit, &foundit);
-        DRT::UTILS::checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
+        DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, monitorfilename);
         foundit = buffer;
       }
       if (count != nmp_) dserror("Number of measured disps wrong on input");
