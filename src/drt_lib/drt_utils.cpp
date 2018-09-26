@@ -29,6 +29,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_gauss.H"
+#include "./drt_dserror.H"
 
 
 
@@ -1324,4 +1325,34 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
   }
 
   return centercoords;
+}
+/*-----------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------*/
+void DRT::UTILS::Checkfgets(char* output, FILE* stream, std::string filename)
+{
+  if (output == NULL)
+  {
+    if (ferror(stream))
+    {
+      dserror("Error while reading %s.\n", filename.c_str());
+    }
+#ifdef DEBUG
+    else if (feof(stream))
+    {
+      printf(
+          "Error while reading %s. End-of-File encountered before reading the first character. You "
+          "might want to check that.\n",
+          filename.c_str());
+    }
+#endif
+  }
+}
+/*-----------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------*/
+void DRT::UTILS::Checkscanf(int output)
+{
+  if (output == EOF)
+  {
+    dserror("Error while reading input.\n");
+  }
 }

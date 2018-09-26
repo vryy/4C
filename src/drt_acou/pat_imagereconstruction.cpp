@@ -32,6 +32,7 @@
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_dofset_independent.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_mat/acoustic.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -4084,7 +4085,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::ReadMaterials(std::string m
 
   // prepare read in quantities
   char buffer[150000];
-  fgets(buffer, 150000, file);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, materialfilename);
   char* foundit = NULL;
 
   // read number of materials
@@ -4098,14 +4099,14 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::ReadMaterials(std::string m
 
   // read the materials
   foundit = buffer;
-  fgets(buffer, 150000, file);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, materialfilename);
   for (unsigned int i = 0; i < nummats_; ++i)
   {
     for (int j = 0; j < 4; ++j)
     {
       materialtable_[i][j] = strtod(foundit, &foundit);
     }
-    fgets(buffer, 150000, file);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, materialfilename);
     foundit = buffer;
   }
 
@@ -4143,7 +4144,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdentSmart::ReadMaterials(
 
   // prepare read in quantities
   char buffer[150000];
-  fgets(buffer, 150000, file);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, materialfilename);
   char* foundit = NULL;
 
   // read number of materials
@@ -4159,14 +4160,14 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdentSmart::ReadMaterials(
 
   // read the materials
   foundit = buffer;
-  fgets(buffer, 150000, file);
+  DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, materialfilename);
   for (unsigned int i = 0; i < nummats_; ++i)
   {
     for (int j = 0; j < 8; ++j)
     {
       materialtable_[i][j] = strtod(foundit, &foundit);
     }
-    fgets(buffer, 150000, file);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, materialfilename);
     foundit = buffer;
   }
 
@@ -4406,7 +4407,7 @@ void ACOU::PatImageReconstructionReduction::Optimize()
     if (file == NULL) dserror("Could not open monitor file %s", name.c_str());
 
     char buffer[150000];
-    fgets(buffer, 150000, file);
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, name);
     char* foundit = NULL;
 
     // read steps
@@ -4427,7 +4428,7 @@ void ACOU::PatImageReconstructionReduction::Optimize()
     for (unsigned int i = 0; i < nmics; ++i)
     {
       meascoords[i].resize(3);
-      fgets(buffer, 150000, file);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, name);
       foundit = buffer;
       for (int j = 0; j < 3; ++j) meascoords[i][j] = strtod(foundit, &foundit);
     }
@@ -4438,9 +4439,8 @@ void ACOU::PatImageReconstructionReduction::Optimize()
 
     // read comment lines
     foundit = buffer;
-    fgets(buffer, 150000, file);
-    while (strstr(buffer, "#")) fgets(buffer, 150000, file);
-
+    DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, name);
+    while (strstr(buffer, "#")) DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, name);
     // read in the values for each node
     unsigned int count = 0;
     for (unsigned int i = 0; i < nsteps; ++i)
@@ -4448,7 +4448,7 @@ void ACOU::PatImageReconstructionReduction::Optimize()
       // read the time step
       timesteps[i] = strtod(foundit, &foundit);
       for (unsigned int j = 0; j < nmics; ++j) mcurve[count++] = strtod(foundit, &foundit);
-      fgets(buffer, 150000, file);
+      DRT::UTILS::Checkfgets(fgets(buffer, 150000, file), file, name);
       foundit = buffer;
     }
     if (count != nmics * nsteps) dserror("Number of measured pressure values wrong on input");
