@@ -4,11 +4,9 @@
 
 \brief Hybrid Additive/Multiplicative Schwarz Block Preconditioner for FSI
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

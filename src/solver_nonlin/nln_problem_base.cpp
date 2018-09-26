@@ -2,11 +2,9 @@
 /*!
 \file nln_problem_base.cpp
 
-<pre>
+\brief Base class for interface of nonlinear solver to BACI
+
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 
 \level 3
 */

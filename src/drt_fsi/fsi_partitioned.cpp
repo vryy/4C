@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file fsi_partitioned.cpp
+\file fsi_partitioned.cpp
+
 \brief Partitioned FSI base
 
 \level 1
 
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-
 */
 /*----------------------------------------------------------------------*/
 

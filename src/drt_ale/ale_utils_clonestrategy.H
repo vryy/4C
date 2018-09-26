@@ -2,13 +2,11 @@
 /*!
 \file ale_utils_clonestrategy.H
 
-\brief mesh clone strategy for ale problems
+\brief Strategy to clone ALE discretization form other discretization
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

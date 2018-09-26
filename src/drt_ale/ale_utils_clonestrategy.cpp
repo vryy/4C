@@ -2,11 +2,11 @@
 /*!
 \file ale_utils_clonestrategy.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Strategy to clone ALE discretization form other discretization
+
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

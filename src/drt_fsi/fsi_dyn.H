@@ -5,11 +5,9 @@
 
 \brief Entry routines for FSI problems and some other problem types as well
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 2
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

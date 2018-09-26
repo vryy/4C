@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------------*/
-/*
+/*!
 \file ale2_nurbs.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 15362
-</pre>
+\brief Nurbs verison of 2D ALE element
+
+\level 3
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

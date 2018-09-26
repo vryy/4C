@@ -6,11 +6,7 @@
 
  \level 1
 
- <pre>
-\maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
- </pre>
+ \maintainer Matthias Mayr
  */
 /*----------------------------------------------------------------------------*/
 

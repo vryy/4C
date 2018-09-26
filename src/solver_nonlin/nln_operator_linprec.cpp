@@ -2,11 +2,11 @@
 /*!
  \file nln_operator_linprec.cpp
 
- <pre>
- Maintainer: Matthias Mayr
-             mayr@mhpc.mw.tum.de
-             089 - 289-10362
- </pre>
+\brief Wrapper around a linear preconditioner from Baci
+
+\level 3
+
+\maintainer Matthias Mayr
  */
 
 /*----------------------------------------------------------------------------*/
