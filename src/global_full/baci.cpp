@@ -109,32 +109,33 @@ int main(int argc, char *argv[])
   {
     printf(
         "\n"
-        "****************************************\n"
-        "*                                      *\n"
-        "*               B A C I                *\n"
-        "*                                      *\n"
-        "*                                      *\n"
-        "*            revision %5d            *\n"
+        "**********************************************\n"
+        "*                                            *\n"
+        "*                  B A C I                   *\n"
+        "*                                            *\n"
+        "*                                            *\n"
+        "*             version (git SHA1):            *\n"
+        "*  %s  *\n"
+        "*                                            *\n"
 #ifdef PARALLEL
-        "*           parallel version           *\n"
+        "*              parallel version              *\n"
 #else
-        "*          sequential version          *\n"
+        "*             sequential version             *\n"
 #endif
 #ifdef DEBUG
-        "*            debug version             *\n"
+        "*               debug version                *\n"
 #else
-        "*             fast version             *\n"
+        "*                fast version                *\n"
 #endif
-        "*                                      *\n"
-        "*  Lehrstuhl fuer Numerische Mechanik  *\n"
-        "*                 LNM                  *\n"
-        "*   Technische Universitaet Muenchen   *\n"
-        "*                                      *\n"
-        "*    (c) 2010 All Rights Reserved.     *\n"
-        "*                                      *\n"
-        "****************************************\n\n",
-        CHANGEDREVISION + 0);
-    printf("Baci SHA1: %s\n", Baci_SHA1);
+        "*                                            *\n"
+        "*     Lehrstuhl fuer Numerische Mechanik     *\n"
+        "*                    LNM                     *\n"
+        "*      Technische Universitaet Muenchen      *\n"
+        "*                                            *\n"
+        "*       (c) 2010 All Rights Reserved.        *\n"
+        "*                                            *\n"
+        "**********************************************\n\n",
+        Baci_SHA1);
     printf("Trilinos SHA1: %s\n", Trilinos_SHA1);
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }

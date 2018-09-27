@@ -298,8 +298,7 @@ void IO::OutputControl::WriteHeader(
 
     controlfile_ << "# baci output control file\n"
                  << "# created by " << user_entry->pw_name << " on " << hostname << " at "
-                 << ctime(&time_value) << "# using code revision " << (CHANGEDREVISION + 0)
-                 << " \n\n"
+                 << ctime(&time_value) << "# using code version (git SHA1) " << Baci_SHA1 << " \n\n"
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \"" << spatial_approx << "\"\n"

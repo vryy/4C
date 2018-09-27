@@ -39,33 +39,6 @@ MACRO(REMOVE_DUPLICATES _list)
   ENDIF()
 ENDMACRO()
 
-# test for svn executable
-FIND_PROGRAM(Subversion_SVN_EXECUTABLE svn
-  DOC "subversion command line client")
-MARK_AS_ADVANCED(Subversion_SVN_EXECUTABLE)
-
-IF(Subversion_SVN_EXECUTABLE)
-
-  # test if project source directory is a subversion directory
-  # this test seems to be missing in the subversion package
-  EXECUTE_PROCESS(COMMAND ${Subversion_SVN_EXECUTABLE} info ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE DUMMY_WC_INFO
-    ERROR_VARIABLE Subversion_svn_info_error
-    RESULT_VARIABLE Subversion_svn_info_result
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  IF(${Subversion_svn_info_result} EQUAL 0)
-
-    # get the package that does the real work
-    FIND_PACKAGE(Subversion QUIET)
-    IF(Subversion_FOUND)
-      Subversion_WC_INFO(${CMAKE_HOME_DIRECTORY} baci)
-      add_definitions("-DCHANGEDREVISION=${baci_WC_REVISION}")
-      #add_definitions("-DCHANGEDDATE=${baci_WC_LAST_CHANGED_DATE}")
-    ENDIF(Subversion_FOUND)
-  ENDIF(${Subversion_svn_info_result} EQUAL 0)
-ENDIF(Subversion_SVN_EXECUTABLE)
-
 #
 ### Build in default values
 
@@ -258,12 +231,11 @@ IF(Git_EXECUTABLE)
   EXEC_PROGRAM(${Git_EXECUTABLE} ${PROJECT_SOURCE_DIR} ARGS "rev-parse HEAD" OUTPUT_VARIABLE Baci_GIT_VERSION )
   string (REGEX REPLACE "fatal.*$" "" Baci_GIT_VERSION "${Baci_GIT_VERSION}")
   IF ("${Baci_GIT_VERSION}" STREQUAL "")
-    ADD_DEFINITIONS( -DBaci_SHA1="Think about using git")
+    ADD_DEFINITIONS( -DBaci_SHA1="Unable to determine git SHA1 of BACI.")
   ELSE()
     ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
   ENDIF()
 
-#  ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
 ENDIF(Git_EXECUTABLE)
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})
