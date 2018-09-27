@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------------*/
-/*
+/*!
 \file ale3_nurbs.H
 
-A nurbs implementation of the ale3 element
+\brief A nurbs implementation of the ale3 element
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 10362
-</pre>
+\level 2
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

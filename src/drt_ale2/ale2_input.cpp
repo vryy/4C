@@ -2,11 +2,11 @@
 /*!
 \file ale2_input.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 15362
-</pre>
+\brief Input of 2D ALE elements
+
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

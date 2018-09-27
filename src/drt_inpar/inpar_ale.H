@@ -2,11 +2,11 @@
 /*!
 \file inpar_ale.H
 
-<pre>
- Maintainer: Matthias Mayr
-             mayr@mhpc.mw.tum.de
-             089 - 289-10362
-</pre>
+\brief Input parameters for ALE mesh motion
+
+\level 2
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/

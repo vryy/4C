@@ -2,11 +2,9 @@
 /*!
 \file nln_utils_debugwriter.cpp
 
-<pre>
+\brief Write output for debugging purposes
+
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 
 \level 3
 */

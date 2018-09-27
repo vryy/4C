@@ -4,11 +4,7 @@
 
 \brief Field problem base class for different types of BACI problems
 
-<pre>
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 
 \level 3
 */

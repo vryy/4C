@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file nln_operator_linprec.H
+\file nln_operator_linprec.H
 
- \brief Wrapper around a linear preconditioner from BACI
+\brief Wrapper around a linear preconditioner from BACI
 
- <pre>
- Maintainer: Matthias Mayr
-             mayr@mhpc.mw.tum.de
-             089 - 289-10362
- </pre>
+\level 3
+
+\maintainer Matthias Mayr
  */
 
 /*----------------------------------------------------------------------------*/

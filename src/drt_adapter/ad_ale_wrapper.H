@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_wrapper.H
+\file ad_ale_wrapper.H
 
- \brief Wrapper for the ALE time integration
+\brief Wrapper for the ALE time integration
 
 \level 2
 
- <pre>
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
- </pre>
  */
 /*----------------------------------------------------------------------------*/
 

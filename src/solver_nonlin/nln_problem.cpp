@@ -2,11 +2,9 @@
 /*!
 \file nln_problem.cpp
 
-<pre>
+\brief Field problem base class for different types of BACI problems
+
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 
 \level 3
 */

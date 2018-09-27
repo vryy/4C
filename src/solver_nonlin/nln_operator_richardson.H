@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file nln_operator_richardson.H
+\file nln_operator_richardson.H
 
- \brief Nonlinear preconditioned Richardson iterations with damping
+\brief Nonlinear preconditioned Richardson iterations with damping
 
- <pre>
- Maintainer: Matthias Mayr
-             mayr@mhpc.mw.tum.de
-             089 - 289-10362
- </pre>
+\level 3
+
+\maintainer Matthias Mayr
  */
 
 /*----------------------------------------------------------------------------*/

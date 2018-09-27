@@ -2,11 +2,12 @@
 /*!
  \file ad_ale_fsi.cpp
 
- <pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
- </pre>
+ \brief FSI Wrapper for the ALE time integration
+
+ \level 1
+
+ \maintainer Matthias Mayr
+
  */
 /*----------------------------------------------------------------------------*/
 

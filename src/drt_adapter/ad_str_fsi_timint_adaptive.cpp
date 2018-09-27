@@ -7,8 +7,6 @@
 \level 2
 
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
 
 */
 

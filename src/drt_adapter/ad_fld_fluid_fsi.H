@@ -6,11 +6,9 @@
 
 Can only be used in conjunction with FLD::FluidImplicitTimeInt
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 2
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 #ifndef ADAPTER_FLUID_FSI_H
