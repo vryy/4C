@@ -465,6 +465,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Structural output
   setStringToIntegralParameter<int>(
+      "STRUCT_ELE", "Yes", "Output of element properties", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<int>(
       "STRUCT_DISP", "Yes", "Output of displacements", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
       "STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", yesnotuple, yesnovalue, &io);

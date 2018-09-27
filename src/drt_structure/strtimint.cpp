@@ -119,6 +119,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
       writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
       writestate_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP")),
+      writeele_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_ELE")),
       writevelacc_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC")),
       writeresultsevery_(timeparams.get<int>("RESULTSEVRY")),
       writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS")),
@@ -2423,7 +2424,7 @@ void STR::TimInt::OutputState(bool& datawritten)
   }
 
   // owner of elements is just written once because it does not change during simulation (so far)
-  output_->WriteElementData(firstoutputofrun_);
+  if (writeele_) output_->WriteElementData(firstoutputofrun_);
   output_->WriteNodeData(firstoutputofrun_);
   firstoutputofrun_ = false;
 

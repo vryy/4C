@@ -1080,6 +1080,7 @@ namespace STR
     int writerestartevery_;    //!< write restart every given step;
                                //!< if 0, restart is not written
     int writereducedrestart_;  // Write reduced Restart Data i.e no mesh for mlmc purposes
+    bool writeele_;            //!< write elements on/off
     bool writestate_;          //!< write state on/off
     bool writevelacc_;         //!< write velocity and acceleration on/off
     int writeresultsevery_;    //!< write state/stress/strain every given step

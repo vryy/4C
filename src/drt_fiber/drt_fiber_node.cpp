@@ -26,7 +26,7 @@ DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
   double dummycosy[6] = {1., 0., 0., 0., 1., 0.};
   double dummyangle[2] = {1., 1.};
   DRT::FIBER::FiberNode* object =
-      new DRT::FIBER::FiberNode(-1, dummycoord, dummyfiber, dummycosy, dummyangle, -1);
+      new DRT::FIBER::FiberNode(-1, dummycoord, dummyfiber, dummyfiber, dummycosy, dummyangle, -1);
   object->Unpack(data);
   return object;
 }
@@ -34,14 +34,25 @@ DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
 /*
   Standard ctor
  */
-DRT::FIBER::FiberNode::FiberNode(int id, const double* coords, const double* fiber,
-    const double* cosy, const double* angle, const int owner)
-    : DRT::Node(id, coords, owner), fiber_(3), cir_(3), tan_(3), helix_(0), transverse_(0)
+DRT::FIBER::FiberNode::FiberNode(int id, const double* coords, const double* fiber1,
+    const double* fiber2, const double* cosy, const double* angle, const int owner)
+    : DRT::Node(id, coords, owner),
+      fiber1_(3),
+      fiber2_(3),
+      cir_(3),
+      tan_(3),
+      helix_(0),
+      transverse_(0)
 {
-  // store fiber information
-  double norm = sqrt(fiber[0] * fiber[0] + fiber[1] * fiber[1] + fiber[2] * fiber[2]);
+  // store fiber 1 information
+  double norm = sqrt(fiber1[0] * fiber1[0] + fiber1[1] * fiber1[1] + fiber1[2] * fiber1[2]);
   if (norm < 1e-13) norm = 1.0;
-  for (unsigned i = 0; i < 3; ++i) fiber_[i] = fiber[i] / norm;
+  for (unsigned i = 0; i < 3; ++i) fiber1_[i] = fiber1[i] / norm;
+
+  // store fiber 2 information
+  norm = sqrt(fiber2[0] * fiber2[0] + fiber2[1] * fiber2[1] + fiber2[2] * fiber2[2]);
+  if (norm < 1e-13) norm = 1.0;
+  for (unsigned i = 0; i < 3; ++i) fiber2_[i] = fiber2[i] / norm;
 
   // store circumferential direction
   norm = sqrt(cosy[0] * cosy[0] + cosy[1] * cosy[1] + cosy[2] * cosy[2]);
@@ -68,7 +79,8 @@ DRT::FIBER::FiberNode::FiberNode(int id, const double* coords, const double* fib
 */
 DRT::FIBER::FiberNode::FiberNode(const DRT::FIBER::FiberNode& old)
     : DRT::Node(old),
-      fiber_(old.fiber_),
+      fiber1_(old.fiber1_),
+      fiber2_(old.fiber2_),
       cir_(old.cir_),
       tan_(old.tan_),
       helix_(old.helix_),
@@ -109,8 +121,10 @@ void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
   DRT::Node::AddtoPack(data, type);
   // add base class of fiber node
   DRT::Node::Pack(data);
-  // add fiber
-  DRT::Node::AddtoPack(data, fiber_);
+  // add fiber 1
+  DRT::Node::AddtoPack(data, fiber1_);
+  // add fiber 2
+  DRT::Node::AddtoPack(data, fiber2_);
   // add circumferential direction
   DRT::Node::AddtoPack(data, cir_);
   // add tangential direction
@@ -140,7 +154,9 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Node::Unpack(basedata);
   // extract fiber
-  DRT::Node::ExtractfromPack(position, data, fiber_);
+  DRT::Node::ExtractfromPack(position, data, fiber1_);
+  // extract fiber
+  DRT::Node::ExtractfromPack(position, data, fiber2_);
   // extract circumferential direction
   DRT::Node::ExtractfromPack(position, data, cir_);
   // extract tangential direction
@@ -160,8 +176,11 @@ void DRT::FIBER::FiberNode::Print(std::ostream& os) const
 {
   os << "Fiber Node :";
   DRT::Node::Print(os);
-  os << "\n+ additional fiber information" << std::setw(12) << Fiber()[0] << " " << std::setw(12)
-     << Fiber()[1] << " " << std::setw(12) << Fiber()[2] << " ";
+  os << "\n+ additional fiber 1 information" << std::setw(12) << Fiber1()[0] << " " << std::setw(12)
+     << Fiber1()[1] << " " << std::setw(12) << Fiber1()[2] << " ";
+  os << "\n+ additional fiber 2 information" << std::setw(12) << Fiber2()[0] << " " << std::setw(12)
+     << Fiber2()[1] << " " << std::setw(12) << Fiber2()[2] << " ";
+  os << "\n";
 
   return;
 }
