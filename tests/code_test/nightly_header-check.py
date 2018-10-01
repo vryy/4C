@@ -107,7 +107,7 @@ def check_cpp_files_for_header(look_cmd, allerrors):
   if len(cpp_files_wo_file) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following source files have an incorrect or are missing a \\file tag:")
+    allerrors.append("The following files have an incorrect or are missing a \\file tag:")
     allerrors += cpp_files_wo_file
 # \brief tag
   cpp_files_wo_brief = []
@@ -122,20 +122,28 @@ def check_cpp_files_for_header(look_cmd, allerrors):
   if len(cpp_files_wo_maint) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following source files are missing a \\maintainer tag:")
+    allerrors.append("The following files are missing a \\maintainer tag:")
     allerrors += cpp_files_wo_maint
+# check for correct start of header
+  cpp_files_wrong_start = [ff for ff,hdr in headers.items() if len(hdr.get_start())>0]
+  if len(cpp_files_wrong_start) > 0:
+    if len(allerrors) > 0:
+      allerrors.append("")
+    allerrors.append("The following files do not start with /*! as an appropriate header marker:")
+    allerrors += cpp_files_wrong_start
 # \level tag
   cpp_files_wo_lvl = [ff for ff,hdr in headers.items() if not (0 <= hdr.get_level() <= 3)]
   if len(cpp_files_wo_lvl) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following source files are missing a \\level tag:")
+    allerrors.append("The following files are missing a \\level tag:")
     allerrors += cpp_files_wo_lvl
 #print example header
-  if len(cpp_files_wo_file) > 0 or len(cpp_files_wo_brief) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0:
+  if len(cpp_files_wo_file) > 0 or len(cpp_files_wo_brief) > 0 or len(cpp_files_wrong_start) > 0 or len(cpp_files_wo_maint) > 0 or len(cpp_files_wo_lvl) > 0:
     allerrors += bh.Header.get_example()
 
-  return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)
+  return len(cpp_files_wo_file)+len(cpp_files_wo_brief)+len(cpp_files_wo_maint)+len(cpp_files_wo_lvl)+len(cpp_files_wrong_start)
+
 
 #CHECK INPUT FILE HEADERS
 def check_input_files_for_header(look_cmd, allerrors):
@@ -145,7 +153,7 @@ def check_input_files_for_header(look_cmd, allerrors):
   if len(datfiles_without_header) > 0:
     if len(allerrors) > 0:
       allerrors.append("")
-    allerrors.append("The following input files are missing a maintainer:")
+    allerrors.append("The following files are missing a maintainer:")
     allerrors += datfiles_without_header
 #print example header
   if len(datfiles_without_header) > 0:

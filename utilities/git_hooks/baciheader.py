@@ -3,6 +3,7 @@
 class Header(object):
   def __init__(self, filetext):
     self.header     = False
+    self.start      = ""
     self.file       = ""
     self.brief      = ""
     self.maintainer = ""
@@ -11,6 +12,13 @@ class Header(object):
     blk = Header._extract_first_doxy_block(filetext)
     if len(blk) > 0:
       self.header = True
+      # check for correct header start
+      for line in blk:
+        if (("/*" in line or "/!*" in line) and ("*/" not in line) and ("/*!" not in line)):
+          start = line
+          if len(start)>=1:
+            self.start=start
+          break
       # check for file tag
       for line in blk:
         if "\\file " in line:
@@ -48,6 +56,9 @@ class Header(object):
   def get_file(self):
     return self.file
 
+  def get_start(self):
+    return self.start
+
   def get_brief(self):
     return self.brief
 
@@ -77,7 +88,7 @@ class Header(object):
     blk = []
     marker = False
     for line in cont.splitlines():
-      if (not marker) and ("/*!" in line or "/**" in line) and ("*/" not in line):
+      if (not marker) and ("/*!" in line or "/**" in line or "/*" in line or "/!*" in line) and ("*/" not in line):
         marker = True
       if marker:
         blk.append(line)
