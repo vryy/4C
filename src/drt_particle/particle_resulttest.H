@@ -85,10 +85,6 @@ class PartResultTest : public DRT::ResultTest
   Teuchos::RCP<const Epetra_Vector> angacc_;
   //! global radius
   Teuchos::RCP<const Epetra_Vector> radius_;
-  //! global density
-  Teuchos::RCP<const Epetra_Vector> density_;
-  //! global pressure
-  Teuchos::RCP<const Epetra_Vector> pressure_;
   //! kinetic energy
   const double kineticenergy_;
   //! internal energy

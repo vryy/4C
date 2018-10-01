@@ -306,12 +306,6 @@ void runEnsightVtuFilter(PostProblem& problem)
           StructureFilter binwriter(visualizebins, problem.outname());
           binwriter.WriteFiles();
         }
-        else if (disname == "rendering")
-        {
-          PostField* visualizebins = problem.get_discretization(i);
-          ParticleSPHRenderingFilter binwriter(visualizebins, problem.outname());
-          binwriter.WriteFiles();
-        }
         else
         {
           dserror("Particle problem has illegal discretization name!");

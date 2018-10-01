@@ -29,10 +29,9 @@ void INPAR::PARTICLEOLD::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "control parameters for particle problems (old implementation)\n");
 
   setStringToIntegralParameter<int>("DYNAMICTYP", "CentrDiff", "type of time integration control",
-      tuple<std::string>("ExplicitEuler", "CentrDiff", "KickDrift", "RK2", "RK4"),
+      tuple<std::string>("ExplicitEuler", "CentrDiff", "RK2", "RK4"),
       tuple<int>(INPAR::PARTICLEOLD::dyna_expleuler, INPAR::PARTICLEOLD::dyna_centrdiff,
-          INPAR::PARTICLEOLD::dyna_kickdrift, INPAR::PARTICLEOLD::dyna_rk2,
-          INPAR::PARTICLEOLD::dyna_rk4),
+          INPAR::PARTICLEOLD::dyna_rk2, INPAR::PARTICLEOLD::dyna_rk4),
       &particledyn);
 
   setStringToIntegralParameter<int>("REPARTITIONSTRATEGY", "Adaptive",
@@ -43,7 +42,6 @@ void INPAR::PARTICLEOLD::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   IntParameter("RESULTSEVRY", 1, "save displacements and contact forces every RESULTSEVRY steps",
       &particledyn);
   IntParameter("RESEVRYERGY", 0, "write system energies every requested step", &particledyn);
-  IntParameter("RESEVRYREND", 0, "write SPH rendering every requested step", &particledyn);
   IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &particledyn);
   IntParameter("CONTACTFORCESEVRY", 0,
       "output particle-particle and particle-wall contact forces to *.csv file every "
@@ -60,10 +58,9 @@ void INPAR::PARTICLEOLD::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   setStringToIntegralParameter<int>("PARTICLE_INTERACTION", "None",
       "Interaction types for particle problems",
       tuple<std::string>(
-          "None", "NormalContact_DEM", "NormalContact_MD", "NormalAndTangentialContact_DEM", "SPH"),
+          "None", "NormalContact_DEM", "NormalContact_MD", "NormalAndTangentialContact_DEM"),
       tuple<int>(INPAR::PARTICLEOLD::None, INPAR::PARTICLEOLD::Normal_DEM,
-          INPAR::PARTICLEOLD::Normal_MD, INPAR::PARTICLEOLD::NormalAndTang_DEM,
-          INPAR::PARTICLEOLD::SPH),
+          INPAR::PARTICLEOLD::Normal_MD, INPAR::PARTICLEOLD::NormalAndTang_DEM),
       &particledyn);
 
   setStringToIntegralParameter<int>("NORMAL_CONTACT_LAW", "LinearSpringDamp",
@@ -91,52 +88,10 @@ void INPAR::PARTICLEOLD::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
           INPAR::PARTICLEOLD::rolling_constant),
       &particledyn);
 
-  setStringToIntegralParameter<int>("WEIGHT_FUNCTION", "CubicBspline",
-      "weight function for SPH interaction dynamics",
-      tuple<std::string>("CubicBspline", "QuinticBspline", "SqrtHyperbola", "HyperbolaNoRsz"),
-      tuple<int>(INPAR::PARTICLEOLD::CubicBspline, INPAR::PARTICLEOLD::QuinticBspline,
-          INPAR::PARTICLEOLD::SqrtHyperbola, INPAR::PARTICLEOLD::HyperbolaNoRsz),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("WEIGHT_FUNCTION_DIM", "WF_3D",
-      "number of weight function space dimensions for SPH interaction dynamics",
-      tuple<std::string>("WF_3D", "WF_2D", "WF_1D"),
-      tuple<int>(INPAR::PARTICLEOLD::WF_3D, INPAR::PARTICLEOLD::WF_2D, INPAR::PARTICLEOLD::WF_1D),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("EQUATION_OF_STATE", "GenTait",
-      "equation of state for SPH interaction dynamics", tuple<std::string>("GenTait", "IdealGas"),
-      tuple<int>(INPAR::PARTICLEOLD::GenTait, INPAR::PARTICLEOLD::IdealGas), &particledyn);
-
   setStringToIntegralParameter<int>("EXTENDED_GHOSTING", "StandardGhosting", "Extend the ghosting",
-      tuple<std::string>(
-          "StandardGhosting", "BdryParticleGhosting", "WallElementGhosting", "AddLayerGhosting"),
-      tuple<int>(INPAR::PARTICLEOLD::StandardGhosting, INPAR::PARTICLEOLD::BdryParticleGhosting,
-          INPAR::PARTICLEOLD::WallElementGhosting, INPAR::PARTICLEOLD::AddLayerGhosting),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("WALL_INTERACTION_TYPE", "BoundarParticle_NoSlip",
-      "wall interaction type for SPH interactions",
-      tuple<std::string>("BoundarParticle_NoSlip", "BoundarParticle_FreeSlip", "NoWallInteraction"),
-      tuple<int>(INPAR::PARTICLEOLD::BoundarParticle_NoSlip,
-          INPAR::PARTICLEOLD::BoundarParticle_FreeSlip, INPAR::PARTICLEOLD::NoWallInteraction),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("FREE_SURFACE_TYPE", "None",
-      "type of free-surface treatment for SPH interactions",
-      tuple<std::string>("None", "DensityIntegration", "InteriorReinitialization",
-          "NormalizedReinitialization", "RandlesReinitialization", "TwoPhase"),
-      tuple<int>(INPAR::PARTICLEOLD::FreeSurface_None, INPAR::PARTICLEOLD::DensityIntegration,
-          INPAR::PARTICLEOLD::InteriorReinitialization,
-          INPAR::PARTICLEOLD::NormalizedReinitialization,
-          INPAR::PARTICLEOLD::RandlesReinitialization, INPAR::PARTICLEOLD::TwoPhase),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("SURFACE_TENSION_TYPE", "ST_NONE",
-      "type of surface tension forces for SPH interactions",
-      tuple<std::string>("ST_NONE", "ST_VDW_INDIRECT", "ST_CONTI_ADAMI"),
-      tuple<int>(INPAR::PARTICLEOLD::ST_NONE, INPAR::PARTICLEOLD::ST_VDW_INDIRECT,
-          INPAR::PARTICLEOLD::ST_CONTI_ADAMI),
+      tuple<std::string>("StandardGhosting", "WallElementGhosting", "AddLayerGhosting"),
+      tuple<int>(INPAR::PARTICLEOLD::StandardGhosting, INPAR::PARTICLEOLD::WallElementGhosting,
+          INPAR::PARTICLEOLD::AddLayerGhosting),
       &particledyn);
 
   DoubleParameter("MIN_RADIUS", -1.0, "smallest particle radius", &particledyn);
@@ -196,89 +151,14 @@ void INPAR::PARTICLEOLD::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   DoubleParameter("RADIUS_DISTRIBUTION_SIGMA", -1.0,
       "standard deviation of particle radii distribution", &particledyn);
   IntParameter("RADIUS_CHANGE_FUNCT", -1, "number of curve governing radius change", &particledyn);
-  BoolParameter("DENSITY_SUMMATION", "no",
-      "determine density via summation formula instead of time integration", &particledyn);
-  DoubleParameter("CONSISTENT_PROBLEM_VOLUME", -1.0,
-      "prescribe problem volume and determine particle masses consistently based on this volume "
-      "and the initial density",
-      &particledyn);
-  DoubleParameter("VISCOUS_DAMPING", -1.0,
-      "apply artificial viscous damping force to particles in order to determine static "
-      "equilibrium solutions",
-      &particledyn);
-  BoolParameter("NO_VELDIFF_TERM", "no",
-      "Do not apply velocity difference tensor in case of transport velocity formulation",
-      &particledyn);
-  BoolParameter("CALC_ACC_VAR2", "no",
-      "I apply alternative variant for discretization of pressure gradient and viscous forces "
-      "according to Adami et al. 2013",
-      &particledyn);
   setNumericStringParameter("GRAVITY_ACCELERATION", "0.0 0.0 0.0",
       "Acceleration due to gravity in particle simulations.", &particledyn);
-  DoubleParameter("GRAVITY_RAMP_TIME", -1.0,
-      "increase gravity force smoothly within a time interval GRAVITY_RAMP_TIME in the beginning "
-      "of the simulation",
-      &particledyn);
-  DoubleParameter("SURFTENSION_RAMP_TIME", -1.0,
-      "increase surface tension force smoothly within a time interval SURFTENSION_RAMP_TIME in the "
-      "beginning of the simulation",
-      &particledyn);
-  DoubleParameter("BACKGROUND_PRESSURE", -1.0,
-      "constant background pressure employed for modified particle convection "
-      "velocity/acceleration in KickDrift time integrator (SPH only)",
-      &particledyn);
-  DoubleParameter("XSPH_DAMPFAC", -1.0, "damping factor of XSPH scheme", &particledyn);
-  DoubleParameter("XSPH_STIFFAC", -1.0, "damping factor of XSPH scheme", &particledyn);
-  BoolParameter("TRANSPORT_VELOCITY", "no",
-      "apply particle convection velocity that differs from momentum velocity", &particledyn);
-  DoubleParameter("SURFTENSFAC_FF", 0.0,
-      "surface tension value/factor between fluid and void phase/second fluid", &particledyn);
-  DoubleParameter("SURFTENSFAC_FS", 0.0,
-      "surface tension value/factor between fluid and solid phase", &particledyn);
-  DoubleParameter("SURFTENSPOT_A_FF", 2.0,
-      "surface tension scale factor of repulsive part of pairwise interaction force fluid-fluid",
-      &particledyn);
-  DoubleParameter("SURFTENSPOT_A_FS", 2.0,
-      "surface tension scale factor of repulsive part of pairwise interaction force fluid-solid",
-      &particledyn);
-  DoubleParameter("SURFTENSPOT_RATIO", 0.5,
-      "range ratio of repulsive and attractive part of pairwise interaction force", &particledyn);
-  IntParameter("MIN_VOIDPARTICLE_ID", -1,
-      "all particles with an ID >= MIN_VOIDPARTICLE_ID are considered as void particles with "
-      "colorfield = 0",
-      &particledyn);
-  BoolParameter("CONTACT_ANGLE_VAR2", "no",
-      "Apply alternative model to enforce the static contact angle", &particledyn);
 
   setStringToIntegralParameter<int>("DIMENSION", "3D",
       "number of space dimensions for handling of quasi-2D problems with 3D particles",
       tuple<std::string>("3D", "2Dx", "2Dy", "2Dz"),
       tuple<int>(INPAR::PARTICLEOLD::particle_3D, INPAR::PARTICLEOLD::particle_2Dx,
           INPAR::PARTICLEOLD::particle_2Dy, INPAR::PARTICLEOLD::particle_2Dz),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("RENDERING", "None",
-      "rendering type for smoothed particle hydrodynamics",
-      tuple<std::string>("None", "Standard", "Normalized"),
-      tuple<int>(INPAR::PARTICLEOLD::NoRendering, INPAR::PARTICLEOLD::StandardRendering,
-          INPAR::PARTICLEOLD::NormalizedRendering),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("RENDERING_OUTPUT", "DiscretAndMatlab",
-      "rendering output for smoothed particle hydrodynamics",
-      tuple<std::string>("DiscretAndMatlab", "Discret", "Matlab"),
-      tuple<int>(INPAR::PARTICLEOLD::DiscretAndMatlab, INPAR::PARTICLEOLD::Discret,
-          INPAR::PARTICLEOLD::Matlab),
-      &particledyn);
-
-  setStringToIntegralParameter<int>("RENDERING_BDRYPARTICLE", "WithBdryParticle",
-      "consider boundary particles in rendering for smoothed particle hydrodynamics",
-      tuple<std::string>("WithBdryParticle", "NoBdryParticle"),
-      tuple<int>(INPAR::PARTICLEOLD::WithBdryParticle, INPAR::PARTICLEOLD::NoBdryParticle),
-      &particledyn);
-
-  IntParameter("AVRG_REND_STEPS", 1,
-      "Average rendering vectors over AVRG_REND_STEPS time steps within one output inverval",
       &particledyn);
 
   DoubleParameter("ADHESION_EQ_GAP", 0.0,

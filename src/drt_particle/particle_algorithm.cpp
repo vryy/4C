@@ -18,7 +18,6 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "particle_timint_strategy.H"
-#include "particle_utils.H"
 #include "particle_node.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -27,7 +26,6 @@
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_mat/particle_mat.H"
-#include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
@@ -43,7 +41,6 @@
 #include <Isorropia_EpetraCostDescriber.hpp>
 
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
-#include "particle_sph_rendering.H"
 
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 09/12 |
@@ -67,59 +64,10 @@ PARTICLE::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Parameter
       extendedGhosting_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::ExtendedGhosting>(
           DRT::Problem::Instance()->ParticleParamsOld(), "EXTENDED_GHOSTING")),
       particleMat_(0),
-      bin_wallcontent_(BINSTRATEGY::UTILS::BELE3),
-      rendering_(Teuchos::null)
+      bin_wallcontent_(BINSTRATEGY::UTILS::BELE3)
 {
   // get particle params list
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParamsOld();
-
-  // Check number of space dimensions chosen for SPH weight functions
-  if (particleInteractionType_ == INPAR::PARTICLEOLD::SPH)
-  {
-    if (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::ParticleDim>(particleparams, "DIMENSION") !=
-        INPAR::PARTICLEOLD::particle_3D)
-      dserror(
-          "The general Particle SPH Interactions framework (binning strategy etc.) does so far "
-          "only cover 3D problems (DIMENSION  3D).\n"
-          "However, if you want to treat quasi-2D or -1D problems, set the input parameter "
-          "WEIGHT_FUNCTION_DIM to WF_2D or WF_1D, respectively.\n"
-          "In Particle SPH Interactions, the definition of the weight functions have to be adapted "
-          "according to the number of space dimensions considered!");
-
-    if (MyRank() == 0)
-    {
-      switch (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::WeightFunctionDim>(
-          particleparams, "WEIGHT_FUNCTION_DIM"))
-      {
-        case INPAR::PARTICLEOLD::WF_3D:
-          IO::cout << "Welcome to Particle SPH Interactions in 3D!" << IO::endl;
-          break;
-        case INPAR::PARTICLEOLD::WF_2D:
-          IO::cout << "Welcome to Particle SPH Interactions in 2D!" << IO::endl;
-          break;
-        case INPAR::PARTICLEOLD::WF_1D:
-          IO::cout << "Welcome to Particle SPH Interactions in 1D!" << IO::endl;
-          break;
-        default:  // nothing to do here
-          break;
-      }
-    }
-
-    INPAR::PARTICLEOLD::DynamicType timinttype =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(particleparams, "DYNAMICTYP");
-    if (timinttype != INPAR::PARTICLEOLD::dyna_kickdrift and
-        DRT::INPUT::IntegralValue<int>(particleparams, "TRANSPORT_VELOCITY") == true)
-      dserror(
-          "Modified particle convection velocities based on a TRANSPORT_VELOCITY field only "
-          "possible for KickDrift time integration scheme!");
-  }
-  else
-  {
-    if (particleparams.get<double>("GRAVITY_RAMP_TIME") >= 0.0)
-      dserror(
-          "Ramp time for smooth increase of gravity force only possible for SPH applications so "
-          "far!");
-  }
 
   if (moving_walls_ == true and DRT::Problem::Instance()->ProblemType() != prb_pasi)
     dserror(
@@ -369,45 +317,19 @@ void PARTICLE::Algorithm::AssignWallElesAndGidsToBins()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::InitMaterials()
 {
-  int id = -1;
-  switch (particleInteractionType_)
-  {
-    case INPAR::PARTICLEOLD::SPH:
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_extparticlemat);
-      if (id != 1) dserror("In SPH simulations, the first material ID has always to be 1!");
-      break;
-    }
-    default:
-    {
-      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-      if (id < 0)
-        id = DRT::Problem::Instance()->Materials()->FirstIdByType(
-            INPAR::MAT::m_particlemat_ellipsoids);
-      else if (DRT::Problem::Instance()->Materials()->FirstIdByType(
-                   INPAR::MAT::m_particlemat_ellipsoids) >= 0)
-        dserror("Cannot have materials for spherical and ellipsoidal particles at the same time!");
-      break;
-    }
-  }
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+
+  if (id < 0)
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat_ellipsoids);
+  else if (DRT::Problem::Instance()->Materials()->FirstIdByType(
+               INPAR::MAT::m_particlemat_ellipsoids) >= 0)
+    dserror("Cannot have materials for spherical and ellipsoidal particles at the same time!");
+
   // check
   if (id == -1) dserror("Could not find particle material or material type");
 
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   particleMat_.push_back(static_cast<const MAT::PAR::ParticleMat* const>(mat));
-
-  if (particleInteractionType_ == INPAR::PARTICLEOLD::SPH)
-  {
-    const INPAR::PARTICLEOLD::FreeSurfaceType freeSurfaceType =
-        DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::FreeSurfaceType>(
-            DRT::Problem::Instance()->ParticleParamsOld(), "FREE_SURFACE_TYPE");
-    if (freeSurfaceType == INPAR::PARTICLEOLD::TwoPhase)
-    {
-      int id2 = 2;
-      const MAT::PAR::Parameter* mat2 = DRT::Problem::Instance()->Materials()->ParameterById(id2);
-      particleMat_.push_back(static_cast<const MAT::PAR::ParticleMat* const>(mat2));
-    }
-  }
 
   return;
 }
@@ -946,9 +868,6 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::ExtendedBinColMap()
   // insert an additional (second) ghost layer
   if (extendedGhosting_ == INPAR::PARTICLEOLD::AddLayerGhosting) AddLayerGhosting(colbins);
 
-  // insert bins in the proximity of ghosted boundary particles
-  if (extendedGhosting_ == INPAR::PARTICLEOLD::BdryParticleGhosting) BdryParticleGhosting(colbins);
-
   // insert bins in proximity of ghosted wall elements
   if (extendedGhosting_ == INPAR::PARTICLEOLD::WallElementGhosting) WallElementGhosting(colbins);
 
@@ -974,126 +893,6 @@ void PARTICLE::Algorithm::AddLayerGhosting(std::set<int>& colbins)
     BinStrategy()->GetNeighborAndOwnBinIds(*biniter, binvec);
     colbins.insert(binvec.begin(), binvec.end());
   }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | ghosting of bins in proximity of boundary particles     sfuchs 06/17 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::BdryParticleGhosting(std::set<int>& colbins)
-{
-  // map relating extended column bins to receiving processor ids
-  std::map<int, std::set<int>> towhomwhat;
-
-  // set to store receiving processors ids
-  std::set<int> receivingprocids;
-
-  // get boundary row bins
-  std::list<DRT::Element*> const bdryrowbins = BinStrategy()->BoundaryRowBins();
-  if (bdryrowbins.size() == 0)
-    dserror("Boundary row bins unknown, call function DetermineBoundaryRowBins() first!");
-
-  // loop over boundary row bins
-  std::list<DRT::Element*>::const_iterator iter;
-  for (iter = bdryrowbins.begin(); iter != bdryrowbins.end(); ++iter)
-  {
-    // current boundary row bin
-    DRT::Element* bdryrowbin = *iter;
-
-    bool containsbdryparticle = false;
-
-    // loop over all particles in current boundary row bin
-    DRT::Node** bdryrowbinparticles = bdryrowbin->Nodes();
-    for (int i = 0; i < bdryrowbin->NumNode(); ++i)
-    {
-      // get current particle
-      PARTICLE::ParticleNode* particleNode_i =
-          dynamic_cast<PARTICLE::ParticleNode*>(bdryrowbinparticles[i]);
-      if (particleNode_i == NULL) dserror("Dynamic cast to ParticleNode failed");
-
-      // current particle is a boundary particle
-      if (particleNode_i->Is_bdry_particle())
-      {
-        containsbdryparticle = true;
-        break;
-      }
-    }
-
-    // current boundary row bin contains no boundary particles
-    if (not containsbdryparticle) continue;
-
-    // clear set containing receiving processors ids
-    receivingprocids.clear();
-
-    // get neighboring bins of current boundary row bin
-    std::vector<int> neighborbins;
-    neighborbins.reserve(26);
-    BinStrategy()->GetNeighborBinIds(bdryrowbin->Id(), neighborbins);
-
-    // loop over neighboring bins
-    std::vector<int>::const_iterator biniter;
-    for (biniter = neighborbins.begin(); biniter != neighborbins.end(); ++biniter)
-    {
-      // get current bin and owner
-      DRT::Element* neighboringbin = BinStrategy()->BinDiscret()->gElement(*biniter);
-      int neighboringbinowner = neighboringbin->Owner();
-
-      // neighboring bin on same processor or does not contain any particles
-      if ((neighboringbinowner == MyRank()) or (neighboringbin->NumNode() == 0)) continue;
-
-      // store owner of receiving neighboring bin
-      receivingprocids.insert(neighboringbinowner);
-    }
-
-    // insert current neighboring bins in map
-    std::set<int>::iterator iter;
-    for (iter = receivingprocids.begin(); iter != receivingprocids.end(); ++iter)
-      towhomwhat[*iter].insert(neighborbins.begin(), neighborbins.end());
-  }
-
-  // ---- send ---- ( we do not need to pack anything)
-  DRT::Exporter exporter(BinStrategy()->BinDiscret()->Comm());
-  const int length = towhomwhat.size();
-  std::vector<MPI_Request> request(length);
-  int tag = 0;
-  const int numproc = BinStrategy()->BinDiscret()->Comm().NumProc();
-  std::vector<int> targetprocs(numproc, 0);
-
-  std::map<int, std::set<int>>::const_iterator p;
-  for (p = towhomwhat.begin(); p != towhomwhat.end(); ++p)
-  {
-    targetprocs[p->first] = 1;
-    std::vector<int> bins((p->second).begin(), (p->second).end());
-    exporter.ISend(MyRank(), p->first, &((bins)[0]), (int)(bins).size(), 1234, request[tag]);
-    ++tag;
-  }
-  if (tag != length) dserror("Number of messages is mixed up");
-
-  // ---- prepare receiving procs -----
-  std::vector<int> summedtargets(numproc, 0);
-  BinStrategy()->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
-
-  // ---- receive ----- (we do not need to unpack anything)
-  for (int rec = 0; rec < summedtargets[MyRank()]; ++rec)
-  {
-    std::vector<int> rdata;
-    int length = 0;
-    int tag = -1;
-    int from = -1;
-    exporter.ReceiveAny(from, tag, rdata, length);
-    if (tag != 1234)
-      dserror("Received on proc %i data with wrong tag from proc %i", MyRank(), from);
-
-    // insert received bins
-    colbins.insert(rdata.begin(), rdata.end());
-  }
-
-  // wait for all communication to finish
-  for (int i = 0; i < length; ++i) exporter.Wait(request[i]);
-
-  // should be no time operation (if we have done everything correctly)
-  BinStrategy()->BinDiscret()->Comm().Barrier();
 
   return;
 }
@@ -1524,9 +1323,6 @@ void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(particles_->CreateFieldTest());
 
-  if (GetRendering() != Teuchos::null)
-    DRT::Problem::Instance()->AddFieldTest(GetRendering()->CreateFieldTest());
-
   DRT::Problem::Instance()->TestAll(comm);
   return;
 }
@@ -1660,34 +1456,12 @@ double PARTICLE::Algorithm::ParticleInteractionDistance()
   // for distances > 2*radius)
 
   double maxrad = 0.0;
+  particles_->Radiusn()->MaxValue(&maxrad);
 
-  if (particleInteractionType_ == INPAR::PARTICLEOLD::SPH)
-  {
-    particles_->Radiusnp()->MaxValue(&maxrad);
-    return maxrad;
-  }
-  else
-  {
-    particles_->Radiusn()->MaxValue(&maxrad);
-    return 2.0 * maxrad;
-  }
+  return 2.0 * maxrad;
 }
 
 /*------------------------------------------------------------------------*
  | return gravity acceleration                               meier 05/17  |
  *------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> PARTICLE::Algorithm::GetGravityAcc(const double time)
-{
-  double fac = 1.0;
-  double gravity_ramp_time =
-      DRT::Problem::Instance()->ParticleParamsOld().get<double>("GRAVITY_RAMP_TIME");
-  if (gravity_ramp_time > 0 and time >= 0)
-  {
-    if (time < gravity_ramp_time) fac = 0.5 * (1 - cos(time * PI / gravity_ramp_time));
-  }
-
-  LINALG::Matrix<3, 1> scaled_gravity_acc(gravity_acc_);
-  scaled_gravity_acc.Scale(fac);
-
-  return scaled_gravity_acc;
-}
+LINALG::Matrix<3, 1> PARTICLE::Algorithm::GetGravityAcc(const double time) { return gravity_acc_; }

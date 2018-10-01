@@ -42,9 +42,6 @@ PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
     radius_ = tintegrator.Radiusnp();
   else if (tintegrator.Radiusn() != Teuchos::null)
     radius_ = tintegrator.Radiusn();
-
-  if (tintegrator.Densitynp() != Teuchos::null) density_ = tintegrator.Densitynp();
-  if (tintegrator.Pressure() != Teuchos::null) pressure_ = tintegrator.Pressure();
 }
 
 /*----------------------------------------------------------------------*/
@@ -214,24 +211,6 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
           if (lid < 0)
             dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
           result = (*radius_)[lid];
-        }
-      }
-
-      // test density
-      if (density_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& densitynpmap = density_->Map();
-        int idx = -1;
-        if (position == "density") idx = 0;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          // node based vector
-          int lid = densitynpmap.LID(actnode->Id());
-          if (lid < 0)
-            dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
-          result = (*density_)[lid];
         }
       }
 

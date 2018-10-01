@@ -32,7 +32,7 @@ DRT::ParObject* PARTICLE::ParticleNodeType::Create(const std::vector<char>& data
  |  ctor (public)                                            ghamm 06/13|
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleNode::ParticleNode(int id, const double* coords, const int owner)
-    : DRT::Node(id, coords, owner), is_bdry_particle_(false)
+    : DRT::Node(id, coords, owner)
 {
   return;
 }
@@ -45,8 +45,7 @@ PARTICLE::ParticleNode::ParticleNode(const PARTICLE::ParticleNode& old)
       history_particle_(old.history_particle_),
       history_particle_adhesion_(old.history_particle_adhesion_),
       history_wall_(old.history_wall_),
-      history_wall_adhesion_(old.history_wall_adhesion_),
-      is_bdry_particle_(old.is_bdry_particle_)
+      history_wall_adhesion_(old.history_wall_adhesion_)
 {
   // not yet used and thus not necessarily consistent
   dserror("ERROR: ParticleNode copy-ctor not yet implemented");
@@ -109,9 +108,6 @@ void PARTICLE::ParticleNode::Print(std::ostream& os) const
   {
     os << i->first << "  ";
   }
-
-
-  if (is_bdry_particle_) os << "is a boundary particle!";
 
   return;
 }
@@ -180,9 +176,6 @@ void PARTICLE::ParticleNode::Pack(DRT::PackBuffer& data) const
     AddtoPack(data, i->second.surface_energy);
     AddtoPack(data, i->second.normal_adhesion_force);
   }
-
-  // add flag boundary particle
-  AddtoPack(data, is_bdry_particle_);
 
   return;
 }
@@ -277,9 +270,6 @@ void PARTICLE::ParticleNode::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, adhes.normal_adhesion_force);
     history_wall_adhesion_[adhesid] = adhes;
   }
-
-  // extract flag boundary particle
-  is_bdry_particle_ = (bool)ExtractInt(position, data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

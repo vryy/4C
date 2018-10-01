@@ -89,8 +89,8 @@ void PASI::PASI_PartTwoWayCoup::Init(const Epetra_Comm& comm  //! communicator
       particles_->ParticleInteractionType() != INPAR::PARTICLEOLD::NormalAndTang_DEM)
   {
     dserror(
-        "Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None', "
-        "'Normal_MD' and 'SPH'!");
+        "Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None' "
+        "and 'Normal_MD'!");
   }
 
   // safety check: two way coupled pasi currently just implemented for CentrDiff time integration
@@ -263,17 +263,6 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
         1.0, *(particles_->AdapterParticle()->AngVeln()), 0.0);
     particles_->AdapterParticle()->WriteAccessAngAccnp()->Update(
         1.0, *(particles_->AdapterParticle()->AngAccn()), 0.0);
-  }
-
-  // reset radius, density and specific enthalpy (and its derivative)
-  if (particles_->ParticleInteractionType() == INPAR::PARTICLEOLD::SPH)
-  {
-    particles_->AdapterParticle()->WriteAccessRadiusnp()->Update(
-        1.0, *(particles_->AdapterParticle()->Radiusn()), 0.0);
-    particles_->AdapterParticle()->WriteAccessDensitynp()->Update(
-        1.0, *(particles_->AdapterParticle()->Densityn()), 0.0);
-    particles_->AdapterParticle()->WriteAccessDensityDotnp()->Update(
-        1.0, *(particles_->AdapterParticle()->DensityDotn()), 0.0);
   }
 
   // clear vector of particle forces on structural discretization

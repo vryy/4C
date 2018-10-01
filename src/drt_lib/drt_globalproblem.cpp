@@ -1057,8 +1057,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> acoudis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> elemagdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> renderingdis =
-      Teuchos::null;  // simple and general rendering discretization for particle SPH simulations
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
 
   // decide which kind of spatial representation is required
@@ -2155,16 +2153,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
       nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
-      // add rendering in case is required
-      if (DRT::INPUT::IntegralValue<int>(
-              DRT::Problem::Instance()->ParticleParamsOld(), "RENDERING"))
-      {
-        renderingdis = Teuchos::rcp(new DRT::Discretization("rendering", reader.Comm()));
-        renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
-        AddDis("rendering", renderingdis);
-        nodereader.AddAdvancedReader(
-            renderingdis, reader, "MESHFREE RENDERING", INPAR::geometry_box, 0);
-      }
       break;
     }
     case prb_cavitation:

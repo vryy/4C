@@ -116,7 +116,6 @@
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
 #include "particle_mat_ellipsoids.H"
-#include "extparticle_mat.H"
 #include "acoustic.H"
 #include "acoustic_sol.H"
 #include "activefiber.H"
@@ -1083,13 +1082,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ParticleMatEllipsoids(curmat));
       MAT::PAR::ParticleMatEllipsoids* params =
           static_cast<MAT::PAR::ParticleMatEllipsoids*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_extparticlemat:
-    {
-      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::ExtParticleMat(curmat));
-      MAT::PAR::ExtParticleMat* params =
-          static_cast<MAT::PAR::ExtParticleMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_particle_base:

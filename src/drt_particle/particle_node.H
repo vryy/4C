@@ -172,20 +172,6 @@ namespace PARTICLE
     */
     virtual std::map<int, Adhesion>& Get_history_wall_adhesion() { return history_wall_adhesion_; }
 
-    /*!
-    \brief Return flag for boundary particles
-    */
-    virtual bool Is_bdry_particle() { return is_bdry_particle_; }
-
-    /*!
-    \brief Set flag for boundary particles
-    */
-    virtual void Set_bdry_particle(bool is_bdry_particle)
-    {
-      is_bdry_particle_ = is_bdry_particle;
-      return;
-    }
-
     //@}
 
    protected:
@@ -193,8 +179,6 @@ namespace PARTICLE
     std::map<int, Adhesion> history_particle_adhesion_;
     std::map<int, Collision> history_wall_;
     std::map<int, Adhesion> history_wall_adhesion_;
-
-    bool is_bdry_particle_;
 
   };  // class ParticleNode
 }  // namespace PARTICLE

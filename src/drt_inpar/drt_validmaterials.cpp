@@ -3326,30 +3326,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // extended particle material
-  {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_ExtParticle", "particle material", INPAR::MAT::m_extparticlemat));
-
-    AddNamedReal(m, "DENSITY", "initial / reference mass density");
-    AddNamedReal(m, "REFDENSFAC", "scale factor for equation of state");
-    AddNamedReal(m, "EXPONENT", "exponent in equation of state");
-    AddNamedReal(m, "INITRADIUS", "initial radius of particle");
-    AddNamedReal(m, "NUE", "poisson ratio", 0.0, true);
-    AddNamedReal(m, "YOUNG", "youngs modulus", 0.0, true);
-    AddNamedReal(m, "YIELD", "yield strength", 0.0, true);
-    AddNamedReal(m, "BULK_MODULUS", "bulk modulus, (1/compressibility) for the liquid phase");
-    AddNamedReal(m, "DYNAMIC_VISCOSITY", "dynamic (shear) viscosity for the liquid phase");
-    AddNamedReal(m, "BULK_VISCOSITY",
-        "bulk viscosity for the liquid phase, important only in case of rapid "
-        "compressions/expansions like shock waves");
-    AddNamedReal(
-        m, "ARTIFICIAL_VISCOSITY", "artificial viscosity according to Adami et al. 2012, Eq. (11)");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // particle material base
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
