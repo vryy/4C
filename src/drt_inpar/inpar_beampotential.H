@@ -55,6 +55,7 @@ namespace INPAR
     /// the specified regularization parameter
     enum BeamPotentialRegularizationType
     {
+      regularization_linear,    ///< linear extrapolation
       regularization_constant,  ///< constant extrapolation, i.e. f(r)=f(r_reg) for all r<r_reg
       regularization_none       ///< no regularization
     };

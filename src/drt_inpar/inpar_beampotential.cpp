@@ -59,9 +59,10 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
       &beampotential);
 
   setStringToIntegralParameter<int>("REGULARIZATION_TYPE", "none",
-      "Type of potential interaction: surface (default) or volume potential",
-      tuple<std::string>("constant_extrapolation", "None", "none"),
-      tuple<int>(regularization_constant, regularization_none, regularization_none),
+      "Type of regularization applied to the force law",
+      tuple<std::string>("linear_extrapolation", "constant_extrapolation", "None", "none"),
+      tuple<int>(
+          regularization_linear, regularization_constant, regularization_none, regularization_none),
       &beampotential);
 
   DoubleParameter("REGULARIZATION_SEPARATION", -1.0,

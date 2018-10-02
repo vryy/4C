@@ -30,6 +30,8 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       potential_type_(INPAR::BEAMPOTENTIAL::beampot_vague),
       strategy_(INPAR::BEAMPOTENTIAL::strategy_vague),
       cutoff_radius_(0.0),
+      regularization_type_(INPAR::BEAMPOTENTIAL::regularization_none),
+      regularization_separation_(0.0),
       num_integration_segments_(-1),
       num_GPs_(-1),
       useFAD_(false),

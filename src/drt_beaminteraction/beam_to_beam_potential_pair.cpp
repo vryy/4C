@@ -791,7 +791,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
           gap_regularized = gap;
 
-          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant and
+          if ((regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant or
+                  regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear) and
               gap < regularization_separation)
           {
             gap_regularized = regularization_separation;
@@ -804,6 +805,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
           // auxiliary variables to store pre-calculated common terms
+          // Todo: a more intuitive, reasonable auxiliary quantity would be the scalar force
+          //    which is equivalent to gap_exp1 apart from the constant factor "prefactor"
           T gap_exp1 = std::pow(gap_regularized, -m_ + 2.5);
 
           double q1q2_JacFac_GaussWeights = q1 * q2 * jacobifac1 * jacobifactor_segment1 *
@@ -814,13 +817,33 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           interaction_potential_ += prefactor / (m_ - 3.5) * q1q2_JacFac_GaussWeights *
                                     std::pow(FADUTILS::CastToDouble(gap_regularized), -m_ + 3.5);
 
-          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant and
+          if ((regularization_type == INPAR::BEAMPOTENTIAL::regularization_constant or
+                  regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear) and
               gap < regularization_separation)
           {
             // potential law is linear in the regime of constant extrapolation of force law
-            // add the contribution from this part of the force law
+            // and quadratic in case of linear extrapolation
+            // add the linear contribution from this part of the force law
             interaction_potential_ += prefactor * q1q2_JacFac_GaussWeights *
                                       FADUTILS::CastToDouble(gap_exp1) *
+                                      (regularization_separation - FADUTILS::CastToDouble(gap));
+          }
+
+
+          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+              gap < regularization_separation)
+          {
+            // Todo: a more intuitive, reasonable auxiliary quantity would be the derivative of the
+            //    scalar force which is equivalent to gap_exp2 apart from the constant factors
+            //    "prefactor" and -(m_ - 2.5) ?!
+            T gap_exp2 = std::pow(gap_regularized, -m_ + 1.5);
+
+            gap_exp1 += (m_ - 2.5) * gap_exp2 * (regularization_separation - gap);
+
+            // add the quadratic contribution from this part of the force law
+            interaction_potential_ += prefactor * q1q2_JacFac_GaussWeights * 0.5 * (m_ - 2.5) *
+                                      FADUTILS::CastToDouble(gap_exp2) *
+                                      (regularization_separation - FADUTILS::CastToDouble(gap)) *
                                       (regularization_separation - FADUTILS::CastToDouble(gap));
           }
 
@@ -828,6 +851,27 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           for (unsigned int i = 0; i < 3; i++)
             fpot_tmp(i) = q1q2_JacFac_GaussWeights * dist(i) / norm_dist * gap_exp1;
 
+
+          //          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+          //              gap < regularization_separation)
+          //          {
+          //            T gap_linextpol_exp2 = std::pow(gap_regularized, -m_ + 1.5);
+          //
+          //            for (unsigned int i = 0; i < 3; i++)
+          //              fpot_tmp(i) += q1q2_JacFac_GaussWeights * dist(i) / norm_dist * (m_
+          //              - 2.5) *
+          //                             gap_linextpol_exp2 * (regularization_separation - gap);
+
+
+          // add the quadratic contribution from this part of the force law
+          //            interaction_potential_ += prefactor * q1q2_JacFac_GaussWeights * 0.5 * (m_
+          //            - 2.5) *
+          //                                      FADUTILS::CastToDouble(gap_linextpol_exp2) *
+          //                                      (regularization_separation -
+          //                                      FADUTILS::CastToDouble(gap)) *
+          //                                      (regularization_separation -
+          //                                      FADUTILS::CastToDouble(gap));
+          //          }
 
           //********************************************************************
           // calculate fpot1: force on element 1
@@ -876,6 +920,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                                  jacobifactor_segment1 * gausspoints.qwgt[igp1],
               FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
 
+          //          if (regularization_type == INPAR::BEAMPOTENTIAL::regularization_linear and
+          //              gap < regularization_separation)
+          //          {
+          //            // add the linear contribution from the regularization
+          //            forces_pot_GP1_[igp1_total].Update(0.0, FADUTILS::CastToDouble<T, 3,
+          //            1>(dist), 1.0); forces_pot_GP2_[igp1_total].Update(0.0,
+          //            FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
+          //          }
         }  // end: loop over gauss points of element 2
       }    // end: loop over gauss points of element 1
 
@@ -922,10 +974,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     gap_exp2 = 0.0;
   }
 
+  //  if (Params()->RegularizationType() == INPAR::BEAMPOTENTIAL::regularization_linear and
+  //      gap < Params()->RegularizationSeparation())
+  //  {
+  //    gap_exp1 += (m_ - 2.5) * gap_exp2 * (Params()->RegularizationSeparation() - gap);
+  //  }
+
   double aux_fac1 = gap_exp1 / norm_dist * q1q2_JacFac_GaussWeights;
-  double aux_fac2 =
-      (gap_exp1 * std::pow(norm_dist, -3) + (m_ - 2.5) * gap_exp2 * std::pow(norm_dist, -2)) *
-      q1q2_JacFac_GaussWeights;
+  double aux_fac2 = (gap_exp1 / norm_dist / norm_dist / norm_dist +
+                        (m_ - 2.5) * gap_exp2 / norm_dist / norm_dist) *
+                    q1q2_JacFac_GaussWeights;
 
   LINALG::TMatrix<double, 3, 3> dist_dist_T(true);
 
