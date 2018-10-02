@@ -30,9 +30,6 @@
 // steps
 // #define PARTICLE_MINMAXOUTPUT_EVRY 25
 
-// Constant required for binning strategy
-#define PARTICLE_BINNINGCONST 5
-
 // Only throw warning (no dserror), if yield strength criterion is violated!
 // #define PARTICLE_NOTIMESTEPDSERROR
 
