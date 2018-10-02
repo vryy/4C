@@ -158,6 +158,11 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(DRT::INPUT::LineDefinition
       dserror("Reading of element local cosy for anisotropic materials failed");
     }
   }
+  // fibers defined on nodes
+  else if (params_->init_ == 3)
+  {
+    // nothing to do here. gp fibers are passed from element at evluate
+  }
   else
     dserror("INIT mode not implemented");
 }
@@ -168,6 +173,17 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int eleGID)
 {
+  if (params_->init_ == 3)
+  {
+    if (params.isParameter("gpfiber1"))
+    {
+      a_ = params.get<LINALG::Matrix<3, 1>>("gpfiber1");
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+    }
+    else
+      dserror("No fiber at gauss point available.");
+  }
+
   double dt = params.get("delta time", -1.0);
   if (dt < 0.0) dserror("Parameter 'delta time' could not be read!");
 
