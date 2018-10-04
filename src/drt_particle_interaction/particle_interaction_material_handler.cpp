@@ -119,3 +119,44 @@ void PARTICLEINTERACTION::SPHMaterialHandler::MapParticleTypeToMatParameter(
 
   phasetypetoparticlematpar_.insert(std::make_pair(particleType, particlematparameter));
 }
+
+/*---------------------------------------------------------------------------*
+ | constructor                                                sfuchs 07/2018 |
+ *---------------------------------------------------------------------------*/
+PARTICLEINTERACTION::DEMMaterialHandler::DEMMaterialHandler(const Teuchos::ParameterList& params)
+    : PARTICLEINTERACTION::BaseMaterialHandler(params)
+{
+  // empty constructor
+}
+
+/*---------------------------------------------------------------------------*
+ | return pointer to particle material parameter              sfuchs 07/2018 |
+ *---------------------------------------------------------------------------*/
+const MAT::PAR::ParticleMaterialDEM*
+PARTICLEINTERACTION::DEMMaterialHandler::GetPtrToParticleMatParameter(
+    PARTICLEENGINE::TypeEnum particleType) const
+{
+  auto typeIt = phasetypetoparticlematpar_.find(particleType);
+  if (typeIt == phasetypetoparticlematpar_.end())
+    dserror("particle material parameters of phase '%s' not found!",
+        PARTICLEENGINE::EnumToTypeName(particleType).c_str());
+  return typeIt->second;
+}
+
+/*---------------------------------------------------------------------------*
+ | map particle types to particle material parameters         sfuchs 07/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::DEMMaterialHandler::MapParticleTypeToMatParameter(
+    PARTICLEENGINE::TypeEnum particleType, int matID)
+{
+  // get material parameters and cast to particle material parameter
+  const MAT::PAR::Parameter* matparameter =
+      DRT::Problem::Instance()->Materials()->ParameterById(matID);
+  const MAT::PAR::ParticleMaterialDEM* particlematparameter =
+      dynamic_cast<const MAT::PAR::ParticleMaterialDEM*>(matparameter);
+
+  // safety check
+  if (particlematparameter == NULL) dserror("cast to specific particle material failed!");
+
+  phasetypetoparticlematpar_.insert(std::make_pair(particleType, particlematparameter));
+}

@@ -45,8 +45,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // type of particle interaction
   setStringToIntegralParameter<int>("INTERACTION", "None", "type of particle interaction",
-      tuple<std::string>("None", "SPH"),
-      tuple<int>(INPAR::PARTICLE::interaction_none, INPAR::PARTICLE::interaction_sph),
+      tuple<std::string>("None", "SPH", "DEM"),
+      tuple<int>(INPAR::PARTICLE::interaction_none, INPAR::PARTICLE::interaction_sph,
+          INPAR::PARTICLE::interaction_dem),
       &particledyn);
 
   // output type
@@ -203,4 +204,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("STATICCONTACTANGLE", 0.0,
       "static contact angle in degree in continuum surface force formulation with wetting effects",
       &particledynsph);
+
+  /*-------------------------------------------------------------------------*
+   | discrete element method (DEM) specific control parameters               |
+   *-------------------------------------------------------------------------*/
+  Teuchos::ParameterList& particledyndem = particledyn.sublist(
+      "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
+
+  //! no DEM specific control parameters added yet
+  IntParameter("DUMMY", -1, "dummy parameter to prevent build warning", &particledynsph);
 }

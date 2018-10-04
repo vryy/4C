@@ -665,6 +665,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/particle_material_base.cpp
   src/drt_mat/particle_material_sph.cpp
+  src/drt_mat/particle_material_dem.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
@@ -1863,6 +1864,7 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
 )
 set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_base.cpp
+  src/drt_particle_interaction/particle_interaction_dem.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp

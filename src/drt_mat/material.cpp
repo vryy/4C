@@ -127,6 +127,7 @@
 #include "multiplicative_split_defgrad_elasthyper.H"
 #include "particle_material_base.H"
 #include "particle_material_sph.H"
+#include "particle_material_dem.H"
 #include "superelastic_sma.H"
 
 
@@ -1098,6 +1099,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::ParticleMaterialSPH(curmat));
       MAT::PAR::ParticleMaterialSPH* params =
           static_cast<MAT::PAR::ParticleMaterialSPH*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_dem:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialDEM(curmat));
+      MAT::PAR::ParticleMaterialDEM* params =
+          static_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:

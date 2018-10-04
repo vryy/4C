@@ -58,7 +58,8 @@ namespace INPAR
     enum InteractionType
     {
       interaction_none,  //! no particle interaction
-      interaction_sph    //! smoothed particle hydrodynamics
+      interaction_sph,   //! smoothed particle hydrodynamics
+      interaction_dem    //! discrete element method
     };
 
     //! data format for written numeric data via vtp
@@ -146,6 +147,12 @@ namespace INPAR
       NoSurfaceTension,
       ContinuumSurfaceForce
     };
+
+    /*---------------------------------------------------------------------------*
+     | discrete element method (DEM) specific control parameters                 |
+     *---------------------------------------------------------------------------*/
+
+    //! no DEM specific control parameters added yet
 
 
     //! set the particle parameters

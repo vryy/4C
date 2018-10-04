@@ -3356,6 +3356,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // particle material dem
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_ParticleDEM", "particle material for DEM", INPAR::MAT::m_particle_dem));
+
+    AddNamedReal(m, "INITRADIUS", "initial radius of particle");
+    AddNamedReal(m, "INITDENSITY", "initial density of particle");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // acoustic material
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(
