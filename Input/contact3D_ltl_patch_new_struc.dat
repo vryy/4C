@@ -32,16 +32,16 @@ STRUCT_STRESS        Cauchy
 FLUID_SOL            No
 FLUID_STRESS         No
 ------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY         Old//Standard
+INT_STRATEGY         Standard
 LINEAR_SOLVER        1
-DYNAMICTYP           GenAlpha//Statics//GenAlpha//GEMM
+DYNAMICTYP           GenAlpha
 RESULTSEVRY          1
 RESTARTEVRY          1
-NLNSOL               fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL               fullnewton
 TIMESTEP             0.002
 NUMSTEP              50
 MAXTIME              0.24
-DAMPING              Yes//Yes
+DAMPING              Yes
 M_DAMP               0.0005
 K_DAMP               0.0005
 TOLRES               1.0E-8
@@ -61,8 +61,8 @@ ALPHA_F              0.5
 LINEAR_SOLVER        2
 SYSTEM               sp
 SEMI_SMOOTH_NEWTON   Yes
-SEMI_SMOOTH_CN       2250000.0 //1.0
-SEMI_SMOOTH_CT       100.0//1.0
+SEMI_SMOOTH_CN       2250000.0
+SEMI_SMOOTH_CT       100.0
 STRATEGY             Lagrange
 FRICTION             none
 NONSMOOTH_GEOMETRIES yes

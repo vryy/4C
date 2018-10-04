@@ -43,12 +43,12 @@ RUN_NUMBER                      -1
 STEP_NP_NUMBER                  -1
 WRITE_OWNER_EACH_NEWTON_ITER    No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Standard// Standard
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.01
 NUMSTEP                         100
 MAXTIME                         2.6

@@ -45,7 +45,7 @@ FILESTEPS                       1000
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         1
 MAXTIME                         1.0
@@ -81,24 +81,15 @@ NDLINE                          30
 NDSURF                          8
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          3
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 22 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 E 23 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           2
 E 9 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 E 10 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
 DPOINT                          8
 E 8 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -50 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 E 9 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -58.333333333 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
@@ -109,7 +100,6 @@ E 16 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.6666666666 0.0 0.0 0.0 0.0 FUNCT 1 
 E 17 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -5.714285714 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 E 18 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -100 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
 E 30 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -100 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
@@ -122,14 +112,6 @@ E 18 - 1 Slave Active
 E 24 - 1 Slave Active
 E 25 - 1 Slave Active
 E 28 - 1 Master
-//E 14 - 1 Master
-//E 15 - 1 Master
-//E 16 - 1 Master
-//E 17 - 1 Master
-//E 18 - 1 Master
-//E 24 - 1 Master
-//E 25 - 1 Master
-//E 28 - 1 Slave Active
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 10 DNODE 2

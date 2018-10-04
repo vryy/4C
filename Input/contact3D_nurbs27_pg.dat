@@ -29,7 +29,7 @@ ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DIVERCONT                       continue
-DYNAMICTYP                      Statics//OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      Statics
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
@@ -37,7 +37,7 @@ MAXITER                         20
 MAXTIME                         8.0
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And

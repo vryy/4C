@@ -44,14 +44,11 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESEVRYERGY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         30
 MAXTIME                         3.0
-DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
-PREDICT                         ConstDis                      // ConstDisVelAcc ConstDis
+PREDICT                         ConstDis
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
