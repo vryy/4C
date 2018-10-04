@@ -158,7 +158,6 @@ namespace INPAR
       m_opti_dens,               ///< density field for topology optimization
       m_particlemat,             ///< particle material
       m_particlemat_ellipsoids,  ///< particle material for ellipsoidal particles
-      m_extparticlemat,          ///< extended particle material
       m_particle_base,           ///< particle material base
       m_particle_sph,            ///< particle material for SPH
       m_permeable_fluid,         ///< permeable fluid

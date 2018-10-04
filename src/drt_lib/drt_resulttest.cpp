@@ -454,15 +454,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
 
-  DRT::INPUT::LineDefinition particleold_rendering;
-  particleold_rendering.AddTag("PARTICLEOLD_RENDERING")
-      .AddNamedString("DIS")
-      .AddNamedInt("NODE")
-      .AddNamedString("QUANTITY")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME");
-
   DRT::INPUT::LineDefinition particle;
   particle.AddTag("PARTICLE")
       .AddNamedString("TYPE")
@@ -526,7 +517,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(invana_special);
   lines->Add(particleold);
   lines->Add(particleold_special);
-  lines->Add(particleold_rendering);
   lines->Add(particle);
   lines->Add(acou);
   lines->Add(invacou);

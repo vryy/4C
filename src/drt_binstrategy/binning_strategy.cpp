@@ -596,7 +596,7 @@ void BINSTRATEGY::BinningStrategy::AddijkToAxisAlignedijkRangeOfBeamElement(
     int const ijk[3], int ijk_range[6]) const
 {
   // this should be large enough
-  int const cutcheckfac = PARTICLE_BINNINGCONST;
+  int const cutcheckfac = 5;
 
   for (int dim = 0; dim < 3; ++dim)
   {

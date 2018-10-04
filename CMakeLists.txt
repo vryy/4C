@@ -663,7 +663,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particle_mat_ellipsoids.cpp
-  src/drt_mat/extparticle_mat.cpp
   src/drt_mat/particle_material_base.cpp
   src/drt_mat/particle_material_sph.cpp
   src/drt_mat/acoustic.cpp
@@ -1842,7 +1841,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint.cpp
   src/drt_particle/particle_timint_expl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
-  src/drt_particle/particle_timint_kickdrift.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
   src/drt_particle/particle_timint_strategy.cpp
@@ -1851,12 +1849,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
-  src/drt_particle/particle_sph_interaction.cpp
-  src/drt_particle/particle_sph_weightFunction.cpp
-  src/drt_particle/particle_sph_eos.cpp
-  src/drt_particle/particle_sph_rendering.cpp
-  src/drt_particle/particle_sph_rendering_resulttest.cpp
-  src/drt_particle/particle_utils.cpp
 )
 set(OBJS_DRT_PARTICLE_ALGORITHM
   src/drt_particle_algorithm/particle_sim.cpp

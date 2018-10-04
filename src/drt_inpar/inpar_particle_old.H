@@ -38,7 +38,6 @@ namespace INPAR
     {
       dyna_expleuler,  ///< forward Euler (explicit)
       dyna_centrdiff,  ///< central differences (explicit)
-      dyna_kickdrift,  ///< kick-dirft scheme (explicit)
       dyna_rk2,        ///< Runge-Kutta 2 (explicit)
       dyna_rk4         ///< Runge-Kutta 4 (explicit)
     };
@@ -56,8 +55,7 @@ namespace INPAR
       None,
       Normal_DEM,
       Normal_MD,
-      NormalAndTang_DEM,
-      SPH
+      NormalAndTang_DEM
     };
 
     /// Normal contact law
@@ -122,92 +120,11 @@ namespace INPAR
       adhesionsurfaceenergydistribution_normal
     };
 
-    /// Weight function for SPH interactions
-    enum WeightFunction
-    {
-      CubicBspline,
-      QuinticBspline,
-      SqrtHyperbola,
-      HyperbolaNoRsz
-    };
-
-    /// Number of weight function space dimensions for SPH interactions
-    enum WeightFunctionDim
-    {
-      WF_1D,
-      WF_2D,
-      WF_3D
-    };
-
-    /// Equation of state for SPH interactions
-    enum EquationOfState
-    {
-      GenTait,
-      IdealGas
-    };
-
     enum ExtendedGhosting
     {
       StandardGhosting,
-      BdryParticleGhosting,
       WallElementGhosting,
       AddLayerGhosting
-    };
-
-    /// wall interaction type for SPH interactions
-    enum WallInteractionType
-    {
-      BoundarParticle_NoSlip,
-      BoundarParticle_FreeSlip,
-      NoWallInteraction
-    };
-
-    /// type of free-surface treatment for SPH interactions
-    enum FreeSurfaceType
-    {
-      FreeSurface_None,            ///< no free surfaces
-      DensityIntegration,          ///< density determined via time integration exclusively
-      InteriorReinitialization,    ///< density via time integration and re-initialization in the
-                                   ///< interior via density summation (in every time step)
-      NormalizedReinitialization,  ///< like 'InteriorReinitialization' but with additional
-                                   ///< re-initialization of free-surface particles via normalized
-                                   ///< density summation (Shepard Filter)
-      RandlesReinitialization,  ///< like 'NormalizedReinitialization' but with re-initialization of
-                                ///< free-surface particles inspired by Randles 1996 instead of
-                                ///< Shepard Filter
-      TwoPhase                  ///< void phase explicitly modeled / discretized
-    };
-
-    /// type of surface tension forces for SPH interactions
-    enum SurfaceTensionType
-    {
-      ST_NONE,          ///< no surface tension
-      ST_VDW_INDIRECT,  ///< surface tension via van der Waals forces according to Tartakovsky et
-                        ///< al. 2016, definition of surface tension and contact angle via s_ff,
-                        ///< s_sf
-      ST_CONTI_ADAMI    ///< surface tension via continuum approach (pressure jump ~ interface
-                        ///< curvature) according to Adami et al. 2010
-    };
-
-    /// rendering for smoothed particle hydrodynamics
-    enum RenderingType
-    {
-      NoRendering,
-      StandardRendering,
-      NormalizedRendering
-    };
-
-    enum RenderingOutput
-    {
-      DiscretAndMatlab,
-      Discret,
-      Matlab
-    };
-
-    enum RenderingBdryPart
-    {
-      WithBdryParticle,
-      NoBdryParticle
     };
 
     /// set the particle parameters

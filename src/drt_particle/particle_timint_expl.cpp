@@ -16,7 +16,6 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "particle_sph_interaction.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
@@ -52,12 +51,6 @@ void PARTICLE::TimIntExpl::Init()
       else
         collhandler_ = Teuchos::rcp(new PARTICLE::ParticleCollisionHandlerDEMEllipsoids(
             discret_, particle_algorithm_, particleparams));
-      break;
-    }
-    case INPAR::PARTICLEOLD::SPH:
-    {
-      interHandler_ = Teuchos::rcp(new PARTICLE::ParticleSPHInteractionHandler(
-          discret_, particle_algorithm_, particleparams));
       break;
     }
     case INPAR::PARTICLEOLD::Normal_MD:

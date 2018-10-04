@@ -18,7 +18,6 @@
  *----------------------------------------------------------------------*/
 #include "adapter_particle.H"
 #include "../drt_particle/particle_timint_centrdiff.H"
-#include "../drt_particle/particle_timint_kickdrift.H"
 #include "../drt_particle/particle_timint_expleuler.H"
 #include "../drt_particle/particle_timint_rk.H"
 #include "../drt_lib/drt_discret.H"
@@ -96,12 +95,6 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
     {
       tmppart =
           Teuchos::rcp(new PARTICLE::TimIntCentrDiff(ioflags, *partdyn, *xparams, actdis, output));
-      break;
-    }
-    case INPAR::PARTICLEOLD::dyna_kickdrift:
-    {
-      tmppart =
-          Teuchos::rcp(new PARTICLE::TimIntKickDrift(ioflags, *partdyn, *xparams, actdis, output));
       break;
     }
     case INPAR::PARTICLEOLD::dyna_rk2:
