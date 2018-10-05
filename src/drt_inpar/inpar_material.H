@@ -160,6 +160,7 @@ namespace INPAR
       m_particlemat_ellipsoids,  ///< particle material for ellipsoidal particles
       m_particle_base,           ///< particle material base
       m_particle_sph,            ///< particle material for SPH
+      m_particle_dem,            ///< particle material for DEM
       m_permeable_fluid,         ///< permeable fluid
       m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                            ///< using a semi-smooth Newton strategy (only in combination with such

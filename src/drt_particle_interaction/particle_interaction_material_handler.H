@@ -28,6 +28,7 @@
 
 #include "../drt_mat/particle_material_base.H"
 #include "../drt_mat/particle_material_sph.H"
+#include "../drt_mat/particle_material_dem.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
@@ -101,6 +102,36 @@ namespace PARTICLEINTERACTION
 
     //! map relating particle types to particle material parameters
     std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialSPH*>
+        phasetypetoparticlematpar_;
+  };
+
+  class DEMMaterialHandler : public BaseMaterialHandler
+  {
+   public:
+    //! constructor
+    explicit DEMMaterialHandler(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~DEMMaterialHandler(){};
+
+    //! get reference to particle material parameter map
+    const std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialDEM*>&
+    GetRefToParticleMatParMap() const
+    {
+      return phasetypetoparticlematpar_;
+    };
+
+    //! return pointer to particle material parameter
+    const MAT::PAR::ParticleMaterialDEM* GetPtrToParticleMatParameter(
+        PARTICLEENGINE::TypeEnum particleType) const;
+
+   protected:
+    //! map particle types to particle material parameters
+    virtual void MapParticleTypeToMatParameter(
+        PARTICLEENGINE::TypeEnum particleType, int matID) override;
+
+    //! map relating particle types to particle material parameters
+    std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialDEM*>
         phasetypetoparticlematpar_;
   };
 

@@ -27,6 +27,7 @@
 
 #include "../drt_particle_interaction/particle_interaction_base.H"
 #include "../drt_particle_interaction/particle_interaction_sph.H"
+#include "../drt_particle_interaction/particle_interaction_dem.H"
 
 #include "../drt_particle_engine/particle_engine.H"
 #include "../drt_particle_engine/particle_communication_utils.H"
@@ -354,6 +355,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleInteraction()
     {
       particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionSPH>(
           new PARTICLEINTERACTION::ParticleInteractionSPH(Comm(), params_));
+      break;
+    }
+    case INPAR::PARTICLE::interaction_dem:
+    {
+      particleinteraction_ = std::unique_ptr<PARTICLEINTERACTION::ParticleInteractionDEM>(
+          new PARTICLEINTERACTION::ParticleInteractionDEM(Comm(), params_));
       break;
     }
     default:
