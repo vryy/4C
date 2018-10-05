@@ -212,5 +212,5 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
   //! no DEM specific control parameters added yet
-  IntParameter("DUMMY", -1, "dummy parameter to prevent build warning", &particledynsph);
+  IntParameter("DUMMY", -1, "dummy parameter to prevent build warning", &particledyndem);
 }
