@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Nov 20, 2015
-
 \level 3
 
 */
@@ -18,19 +16,22 @@
 
 #include <Teuchos_RCP.hpp>
 
-// forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
+// forward declarations
 namespace ADAPTER
 {
   class StructureBaseAlgorithmNew;
 }  // namespace ADAPTER
+
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
 namespace STR
 {
   class Integrator;
   class Dbc;
+
   namespace TIMINT
   {
     class BaseDataSDyn;
@@ -65,12 +66,16 @@ namespace STR
 
   };  // class Factory
 
-  /*! Non-member function, which relates to the STR::Factory
-   *  Please call this method from outside! */
+  /*! \brief Non-member function, which relates to the STR::Factory
+   *
+   * \note Call this method from outside!
+   */
   Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn);
 
-  /*! Non-member function, which relates to the STR::Factory class
-   *  Please call this method from outside! */
+  /*! \brief Non-member function, which relates to the STR::Factory class
+   *
+   * \note Call this method from outside!
+   */
   Teuchos::RCP<STR::Dbc> BuildDbc(const STR::TIMINT::BaseDataSDyn& datasdyn);
 }  // namespace STR
 

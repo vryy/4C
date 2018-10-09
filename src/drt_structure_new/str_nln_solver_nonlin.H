@@ -4,8 +4,6 @@
 
 \maintainer Matthias Mayr
 
-\date Aug 13, 2015
-
 \level 3
 
 */
@@ -42,11 +40,17 @@ namespace STR
   {
     namespace SOLVER
     {
+      /*! Interface to Baci's NLNSOL as nonlinear solver in structural dynamics
+       *
+       *  \warning NLNSOL is purely experimental.
+       */
       class Nonlin : public Generic
       {
        public:
+        //! Constructor
         Nonlin();
 
+        //! Destructor
         virtual ~Nonlin(){};
 
         //! derived from the base class
@@ -59,8 +63,10 @@ namespace STR
         virtual INPAR::STR::ConvergenceStatus Solve();
 
        private:
+        //! Create parameter list for printing
         Teuchos::RCP<Teuchos::ParameterList> NoxCreatePrintParameters(const bool verbose) const;
 
+        //! Create the NOX linear system
         Teuchos::RCP<NOX::Epetra::LinearSystem> NoxCreateLinearSystem(
             Teuchos::ParameterList& nlParams, NOX::Epetra::Vector& noxsoln);
 
@@ -79,6 +85,7 @@ namespace STR
 
         //! nonlin parameter list
         Teuchos::RCP<Teuchos::ParameterList> params_;
+
       };  // class Nonlin
     }     // namespace SOLVER
   }       // namespace NLN

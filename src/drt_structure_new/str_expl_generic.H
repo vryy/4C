@@ -2,9 +2,9 @@
 /*!
 \file str_expl_generic.H
 
-\maintainer Michael Hiermeier
+\brief Generic class for all explicit time integrators
 
-\date Aug 17, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -20,6 +20,10 @@ namespace STR
 {
   namespace EXPLICIT
   {
+    /*! \brief A generic fully explicit time integrator for solid dynamics
+     *
+     * This serves as a base class for all fully explicit time integration schemes.
+     */
     class Generic : public STR::Integrator
     {
      public:

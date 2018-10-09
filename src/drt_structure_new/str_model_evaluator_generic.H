@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Aug 11, 2015
-
 \level 3
 
 */
@@ -20,9 +18,10 @@
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_structure.H"
 
-// forward declaration
+// forward declarations
 class Epetra_Vector;
 class Epetra_Map;
+
 namespace NOX
 {
   namespace Solver
@@ -35,37 +34,45 @@ namespace NOX
     enum class CorrectionType : int;
   }  // namespace NLN
 }  // namespace NOX
+
 namespace LINALG
 {
   class SparseOperator;
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
 }  // namespace IO
+
 namespace DRT
 {
   class DiscretizationInterface;
 }  // namespace DRT
+
 namespace STR
 {
   class Integrator;
+
   namespace TIMINT
   {
     class BaseDataGlobalState;
     class BaseDataIO;
     class Base;
   }  // namespace TIMINT
+
   namespace MODELEVALUATOR
   {
     class Data;
-    /*! \brief This is the abstract base class of all model evaluators
+
+    /*! \brief Abstract base class of all model evaluators
      *
      *  This class summarizes the functionality which all model evaluators share
      *  and/or have to implement. Look in the derived classes for examples. A minimal
@@ -82,7 +89,17 @@ namespace STR
       //! destructor
       virtual ~Generic(){};
 
-      //! initialize the class variables
+      /*! \brief Initialize the class variables
+       *
+       * \todo Complete documentation of input parameters
+       *
+       * @param eval_data_ptr
+       * @param gstate_ptr
+       * @param gio_ptr
+       * @param int_ptr
+       * @param timint_ptr
+       * @param[in] dof_offset
+       */
       virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
           const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
@@ -99,13 +116,17 @@ namespace STR
       //! Returns true, if Setup() has been called
       inline const bool& IsSetup() const { return issetup_; };
 
-      //! Checks, if Init() and Setup() have been called
+      //! Check if Init() and Setup() have been called
       virtual void CheckInitSetup() const;
 
+      //! Check if Init() has been called
       virtual void CheckInit() const;
 
      public:
-      //! Returns the type of the current model evaluator
+      /*! \brief Returns the type of the current model evaluator
+       *
+       * @return Enum encoding the type of model evaluator
+       */
       virtual INPAR::STR::ModelType Type() const = 0;
 
       /*! \brief reset model specific variables (without jacobian)
@@ -152,43 +173,53 @@ namespace STR
        *  \author hiermeier \date 12/17 */
       virtual bool EvaluateCheapSOCRhs() { return true; };
 
-      /*! \brief Called in the very beginning of each call to one of the
-       *  STR::ModelEvaluator::Evaluate routines, such as EvaluateForce,
-       *  EvaluateStiff, EvaluateForceStiff.
+      /*! \brief Perform actions just before the Evaluate() call
        *
-       *  \author hiermeier \date 03/17 */
+       * Called in the very beginning of each call to one of the
+       * STR::ModelEvaluator::Evaluate routines, such as EvaluateForce,
+       * EvaluateStiff, EvaluateForceStiff.
+       *
+       * \author hiermeier \date 03/17
+       */
       virtual void PreEvaluate() { return; };
 
-      /*! \brief Called at the end of each call to one of the
-       *  STR::ModelEvaluator::Evaluate routines, i.e. EvaluateForce,
-       *  EvaluateStiff, EvaluateForceStiff.
+      /*! \brief Perform actions right after the Evaluate() call
        *
-       *  \author hiermeier \date 03/17 */
+       * Called at the end of each call to one of the
+       * STR::ModelEvaluator::Evaluate routines, i.e. EvaluateForce,
+       * EvaluateStiff, EvaluateForceStiff.
+       *
+       * \author hiermeier \date 03/17
+       */
       virtual void PostEvaluate() = 0;
 
-      /*! Remove any condensed contributions from the structural rhs
+      /*! \brief Remove any condensed contributions from the structural rhs
        *
-       *  \author hiermeier \date 03/18 */
+       * @param[in/out] rhs right-hand side vector
+       *
+       * \author hiermeier \date 03/18 */
       virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) { return; }
 
       /*! \brief Assemble the force right-hand-side
        *
-       *  After the evaluation of all models at the new state \f$t_{n+1}\f$ is finished we
-       *  start to put everything together. At this point we build the right-hand-side at
-       *  the desired mid-point. The reason why we do it here and not at time integrator level
-       *  is that you have now the possibility to use a different time integration (not the
+       * After the evaluation of all models at the new state \f$t_{n+1}\f$ is finished we
+       * start to put everything together. At this point we build the right-hand-side at
+       * the desired mid-point. The reason why we do it here and not at time integrator level
+       * is that you have now the possibility to use a different time integration (not the
        * underlying structural one). This makes it more flexible. However, the contributions of the
        * old time step should be stored in the UpdateStepState() routine. There you can scale the
-       *  old contributions with the time integration factor you like and save them once, thus you
+       * old contributions with the time integration factor you like and save them once, thus you
        * just have to add them to complete the mid-point right-hand-side.
        *
-       *  \param f         (out) : Time factor scaled right hand side w/o viscous and/or mass
-       * effects \param timefac_np (in) : Time factor of the underlying structural time integrator
-       * for the new state at \f$t_{n+1}\f$. (To scale the old state of the previous time step see
-       * UpdateStepState.)
+       * \param[out] f Time factor scaled right hand side w/o viscous and/or mass
+       *               effects
+       * \param[in] timefac_np Time factor of the underlying structural time integrator
+       *                       for the new state at \f$t_{n+1}\f$. (To scale the old state of the
+       *                       previous time step see UpdateStepState.)
        *
        *  \date 07/2016
-       *  \author hiermeier */
+       *  \author hiermeier
+       */
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const = 0;
 
       //! Assemble the jacobian
@@ -361,14 +392,17 @@ namespace STR
       //! @}
 
      protected:
-      /*! \brief Check the evaluation procedures for possible errors.
+      /*! \brief Check the evaluation procedures for possible errors
        *
-       *  In the standard case we check for exceptions like overflow, invalid results
+       *  In the standard case, we check for exceptions like overflow, invalid results
        *  or divide by zero operations. Furthermore, we look for an (optional) parameter
        *  named ele_eval_error_flag_. This is universal and should be usable by all model
        *  evaluators.
        *
-       *  \author hiermeier*/
+       *  \return Boolean flag indicating success (true) or error (false)
+       *
+       *  \author hiermeier
+       */
       virtual bool EvalErrorCheck() const;
 
       //! @name internal accessors

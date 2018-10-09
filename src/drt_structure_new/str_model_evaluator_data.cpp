@@ -556,7 +556,8 @@ void STR::MODELEVALUATOR::Data::ClearValuesForAllEnergyTypes()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(double value, enum STR::EnergyType type)
+void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(
+    const double value, const enum STR::EnergyType type)
 {
   energy_data_[type] += value;
 }

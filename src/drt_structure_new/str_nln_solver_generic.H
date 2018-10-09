@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Aug 13, 2015
-
 \level 3
 
 */
@@ -43,6 +41,9 @@ namespace STR
   {
     namespace SOLVER
     {
+      /*! \brief Base class of all nonlinear solvers for structural dynamcis
+       *
+       */
       class Generic
       {
        public:
@@ -59,9 +60,16 @@ namespace STR
             const Teuchos::RCP<STR::Integrator>& integrator,
             const Teuchos::RCP<const STR::TIMINT::Base>& timint);
 
+        //! Setup the nonlinear solver configuration
         virtual void Setup() = 0;
 
-        //! Reset internal storage before the nonlinear solution starts
+        /*! \brief Reset internal storage before the nonlinear solution starts
+         *
+         *  We actually (re-)build the nonlinear solver object here.
+         *
+         *  \warning It is not fully clear how rebuilding the nonlinear solver affects a possible
+         *           re-use of the preconditioner for the linear system.
+         */
         virtual void Reset() = 0;
 
         //! Solve the non-linear problem
@@ -209,7 +217,8 @@ namespace STR
 
         //! nox group
         Teuchos::RCP<NOX::Abstract::Group> group_ptr_;
-      };  // class Generic
+
+      };  // namespace SOLVER
     }     // namespace SOLVER
   }       // namespace NLN
 }  // namespace STR

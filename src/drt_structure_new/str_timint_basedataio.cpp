@@ -2,12 +2,9 @@
 /*!
 \file str_timint_basedataio.cpp
 
-\brief Input/output data container for the structural (time)
-       integration
+\brief Input/output data container for the structural (time) integration
 
 \maintainer Michael Hiermeier
-
-\date Jan 11, 2016
 
 \level 3
 
@@ -21,6 +18,7 @@
 
 #include "../drt_io/every_iteration_writer.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_linesearch_generic.H"
@@ -148,6 +146,15 @@ void STR::TIMINT::BaseDataIO::Setup()
   issetup_ = true;
 
   // Good bye
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataIO::CheckInitSetup() const
+{
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+
   return;
 }
 

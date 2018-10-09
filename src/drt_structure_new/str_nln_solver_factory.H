@@ -2,9 +2,9 @@
 /*!
 \file str_nln_solver_factory.H
 
-\maintainer Michael Hiermeier
+\brief Factory for nonlinear solvers in structural dynamics
 
-\date Aug 13, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -16,7 +16,6 @@
 
 #include "../drt_inpar/inpar_structure.H"
 
-// forward declaration
 namespace STR
 {
   namespace NLN
