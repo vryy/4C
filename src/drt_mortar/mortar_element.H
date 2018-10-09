@@ -982,6 +982,10 @@ namespace MORTAR
     /*!
     \brief Estimate mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.
            For Nitsche contact formulations
+
+    \note It has been decided that Nitsche's method for contact problems will only be done in three
+    dimensions. Hence, we check for the number of spatial dimensions and throw an error if the
+    problem at hand is not 3D.
       */
     void EstimateNitscheTraceMaxEigenvalueCombined();
 

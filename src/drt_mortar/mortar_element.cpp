@@ -1646,7 +1646,10 @@ void MORTAR::MortarElement::NodeLinearization(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
 {
-  if (Dim() != 3) dserror("not implemented for this spatial dimension");
+  if (Dim() != 3)
+    dserror(
+        "Contact using Nitsche's method is only supported for 3D problems."
+        "We do not intend to support 2D problems.");
 
   Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
   DRT::ELEMENTS::StructuralSurface* surf =
