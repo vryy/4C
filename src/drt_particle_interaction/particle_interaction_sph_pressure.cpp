@@ -49,7 +49,7 @@ void PARTICLEINTERACTION::SPHPressure::Init()
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHPressure::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
 {
   // set interface to particle engine
@@ -114,7 +114,7 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
     double* press = container->GetPtrToParticleState(PARTICLEENGINE::Pressure, 0);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material =
+    const MAT::PAR::ParticleMaterialBase* material =
         particlematerial_->GetPtrToParticleMatParameter(type);
 
     // get equation of state for current particle type

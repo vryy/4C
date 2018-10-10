@@ -47,7 +47,7 @@ namespace PARTICLEENGINE
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
-  class SPHMaterialHandler;
+  class MaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
 }  // namespace PARTICLEINTERACTION
@@ -73,7 +73,7 @@ namespace PARTICLEINTERACTION
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
@@ -108,7 +108,7 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial_;
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;

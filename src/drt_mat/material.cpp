@@ -125,8 +125,8 @@
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
 #include "multiplicative_split_defgrad_elasthyper.H"
-#include "particle_material_base.H"
-#include "particle_material_sph.H"
+#include "particle_material_sph_fluid.H"
+#include "particle_material_sph_boundary.H"
 #include "particle_material_dem.H"
 #include "superelastic_sma.H"
 
@@ -1085,28 +1085,31 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::ParticleMatEllipsoids*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_base:
+    case INPAR::MAT::m_particle_sph_fluid:
     {
+      // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == NULL)
-        curmat->SetParameter(new MAT::PAR::ParticleMaterialBase(curmat));
-      MAT::PAR::ParticleMaterialBase* params =
-          static_cast<MAT::PAR::ParticleMaterialBase*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPHFluid(curmat));
+      MAT::PAR::ParticleMaterialSPHFluid* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialSPHFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_sph:
+    case INPAR::MAT::m_particle_sph_boundary:
     {
+      // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == NULL)
-        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPH(curmat));
-      MAT::PAR::ParticleMaterialSPH* params =
-          static_cast<MAT::PAR::ParticleMaterialSPH*>(curmat->Parameter());
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPHBoundary(curmat));
+      MAT::PAR::ParticleMaterialSPHBoundary* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_particle_dem:
     {
+      // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == NULL)
         curmat->SetParameter(new MAT::PAR::ParticleMaterialDEM(curmat));
       MAT::PAR::ParticleMaterialDEM* params =
-          static_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
+          dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:

@@ -19,8 +19,9 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph.H"
 
-#include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_material_handler.H"
+
+#include "particle_interaction_sph_kernel.H"
 #include "particle_interaction_sph_equationofstate.H"
 #include "particle_interaction_sph_equationofstate_bundle.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
@@ -65,9 +66,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   // init kernel handler
   InitKernelHandler();
 
-  // init particle material handler
-  InitParticleMaterialHandler();
-
   // init equation of state bundle
   InitEquationOfStateBundle();
 
@@ -101,9 +99,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup kernel handler
   kernel_->Setup();
-
-  // setup particle material handler
-  particlematerial_->Setup();
 
   // setup equation of state bundle
   equationofstatebundle_->Setup();
@@ -143,9 +138,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
   // write restart of kernel handler
   kernel_->WriteRestart(step, time);
 
-  // write restart of particle material handler
-  particlematerial_->WriteRestart(step, time);
-
   // write restart of equation of state bundle
   equationofstatebundle_->WriteRestart(step, time);
 
@@ -179,9 +171,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
 
   // read restart of kernel handler
   kernel_->ReadRestart(reader);
-
-  // read restart of particle material handler
-  particlematerial_->ReadRestart(reader);
 
   // read restart of equation of state bundle
   equationofstatebundle_->ReadRestart(reader);
@@ -273,11 +262,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     if (particlestored <= 0) continue;
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material = NULL;
-    if (type == PARTICLEENGINE::BoundaryPhase)
-      material = particlematerial_->GetPtrToParticleMatParameter(PARTICLEENGINE::Phase1);
-    else
-      material = particlematerial_->GetPtrToParticleMatParameter(type);
+    const MAT::PAR::ParticleMaterialBase* material =
+        particlematerial_->GetPtrToParticleMatParameter(type);
 
     // initial density of current phase
     std::vector<double> initdensity(1);
@@ -394,18 +380,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
 
   // init kernel handler
   kernel_->Init();
-}
-
-/*---------------------------------------------------------------------------*
- | init particle material handler                             sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::ParticleInteractionSPH::InitParticleMaterialHandler()
-{
-  // create particle material handler
-  particlematerial_ = std::make_shared<PARTICLEINTERACTION::SPHMaterialHandler>(params_);
-
-  // init particle material handler
-  particlematerial_->Init();
 }
 
 /*---------------------------------------------------------------------------*

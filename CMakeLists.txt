@@ -664,7 +664,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/particle_material_base.cpp
-  src/drt_mat/particle_material_sph.cpp
+  src/drt_mat/particle_material_sph_fluid.cpp
+  src/drt_mat/particle_material_sph_boundary.cpp
   src/drt_mat/particle_material_dem.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp

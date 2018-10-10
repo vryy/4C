@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_material_dem.H
+\file particle_material_sph_fluid.H
 
-\brief particle material for DEM
+\brief particle material for SPH fluid
 
 \level 3
 
@@ -15,31 +15,60 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 07/2018 |
+ | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_DEM_H
-#define PARTICLE_MATERIAL_DEM_H
+#ifndef PARTICLE_MATERIAL_SPH_H
+#define PARTICLE_MATERIAL_SPH_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_material_base.H"
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 07/2018 |
+ | class definitions                                          sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 namespace MAT
 {
   namespace PAR
   {
-    class ParticleMaterialDEM : public ParticleMaterialBase
+    class ParticleMaterialSPHFluid : public ParticleMaterialBase
     {
      public:
       //! constructor
-      ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialSPHFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! virtual desctructor
-      virtual ~ParticleMaterialDEM(){};
+      virtual ~ParticleMaterialSPHFluid(){};
+
+      //! speed of sound
+      virtual double SpeedOfSound() const { return std::pow(bulkModulus_ / initDensity_, 0.5); };
+
+      //! @name material parameters
+      //@{
+
+      //! reference density factor in equation of state
+      const double refDensFac_;
+
+      //! exponent in equation of state
+      const double exponent_;
+
+      //! background pressure
+      const double backgroundPressure_;
+
+      //! bulk modulus
+      const double bulkModulus_;
+
+      //! dynamic shear viscosity
+      const double dynamicViscosity_;
+
+      //! bulk viscosity
+      const double bulkViscosity_;
+
+      //! artificial viscosity
+      const double artificialViscosity_;
+
+      //@}
 
       //! create material instance of matching type with parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -47,27 +76,27 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ParticleMaterialDEMType : public DRT::ParObjectType
+  class ParticleMaterialSPHFluidType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ParticleMaterialDEMType"; };
+    std::string Name() const { return "ParticleMaterialSPHType"; };
 
-    static ParticleMaterialDEMType& Instance() { return instance_; };
+    static ParticleMaterialSPHFluidType& Instance() { return instance_; };
 
     virtual DRT::ParObject* Create(const std::vector<char>& data);
 
    private:
-    static ParticleMaterialDEMType instance_;
+    static ParticleMaterialSPHFluidType instance_;
   };
 
-  class ParticleMaterialDEM : public Material
+  class ParticleMaterialSPHFluid : public Material
   {
    public:
     //! constructor (empty material object)
-    ParticleMaterialDEM();
+    ParticleMaterialSPHFluid();
 
     //! constructor (with given material parameters)
-    explicit ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* params);
+    explicit ParticleMaterialSPHFluid(MAT::PAR::ParticleMaterialSPHFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -81,7 +110,7 @@ namespace MAT
     */
     virtual int UniqueParObjectId() const
     {
-      return ParticleMaterialDEMType::Instance().UniqueParObjectId();
+      return ParticleMaterialSPHFluidType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -113,12 +142,15 @@ namespace MAT
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_particle_dem; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_particle_sph_fluid;
+    }
 
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {
-      return Teuchos::rcp(new ParticleMaterialDEM(*this));
+      return Teuchos::rcp(new ParticleMaterialSPHFluid(*this));
     }
 
     //! return quick accessible material parameter data
@@ -126,7 +158,7 @@ namespace MAT
 
    private:
     //! my material parameters
-    MAT::PAR::ParticleMaterialDEM* params_;
+    MAT::PAR::ParticleMaterialSPHFluid* params_;
   };
 
 }  // namespace MAT

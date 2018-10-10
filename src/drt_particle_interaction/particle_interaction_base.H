@@ -41,6 +41,11 @@ namespace IO
   class DiscretizationReader;
 }
 
+namespace PARTICLEINTERACTION
+{
+  class MaterialHandler;
+}
+
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
@@ -96,6 +101,10 @@ namespace PARTICLEINTERACTION
     //! set gravity
     virtual void SetGravity(std::vector<double>& gravity) final;
 
+   private:
+    //! init particle material handler
+    virtual void InitParticleMaterialHandler();
+
    protected:
     //! maximum particle radius (on this processor)
     virtual double MaxParticleRadius() const;
@@ -114,6 +123,9 @@ namespace PARTICLEINTERACTION
 
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! particle material handler
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
 
     //! current time
     double time_;

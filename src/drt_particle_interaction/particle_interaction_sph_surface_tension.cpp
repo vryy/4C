@@ -59,7 +59,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Init()
 void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
@@ -324,7 +324,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material_i =
+    const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // clear unit wall normal state
@@ -486,7 +486,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material_i =
+    const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // particles of current type with neighbors
@@ -549,6 +549,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         // no evaluation for neighboring boundary particles
         if (type_j == PARTICLEENGINE::BoundaryPhase) continue;
 
+        // get material for current particle type
+        const MAT::PAR::ParticleMaterialBase* material_j = NULL;
+        if (type_i == type_j)
+          material_j = material_i;
+        else
+          material_j = particlematerial_->GetPtrToParticleMatParameter(type_j);
+
         // change sign of colorfield gradient for different particle types
         double signfac = (type_i == type_j) ? 1.0 : -1.0;
 
@@ -561,10 +568,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
           // get container of neighboring particles of current particle type and state
           PARTICLEENGINE::ParticleContainerShrdPtr container_j =
               particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
-          // get material for current particle type
-          const MAT::PAR::ParticleMaterialSPH* material_j =
-              particlematerial_->GetPtrToParticleMatParameter(type_j);
 
           // iterate over neighboring particles of current type and status
           for (auto& neighborParticleIt : neighborStatusIt.second)
@@ -753,7 +756,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material_i =
+    const MAT::PAR::ParticleMaterialBase* material_i =
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // particles of current type with neighbors

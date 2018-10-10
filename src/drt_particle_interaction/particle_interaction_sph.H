@@ -33,7 +33,6 @@
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
-  class SPHMaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
   class SPHDensityBase;
@@ -94,9 +93,6 @@ namespace PARTICLEINTERACTION
     //! init kernel handler
     virtual void InitKernelHandler();
 
-    //! init particle material handler
-    virtual void InitParticleMaterialHandler();
-
     //! init equation of state bundle
     virtual void InitEquationOfStateBundle();
 
@@ -129,9 +125,6 @@ namespace PARTICLEINTERACTION
 
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
-
-    //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial_;
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;

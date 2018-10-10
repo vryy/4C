@@ -28,14 +28,6 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
-{
-  class DEMMaterialHandler;
-}  // namespace PARTICLEINTERACTION
-
-/*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
@@ -77,14 +69,8 @@ namespace PARTICLEINTERACTION
     virtual double MaxInteractionDistance() const override;
 
    private:
-    //! init particle material handler
-    virtual void InitParticleMaterialHandler();
-
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;
-
-    //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::DEMMaterialHandler> particlematerial_;
   };
 
 }  // namespace PARTICLEINTERACTION

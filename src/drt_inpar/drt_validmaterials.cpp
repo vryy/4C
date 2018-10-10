@@ -3326,21 +3326,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // particle material base
+  // particle material sph fluid
   {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_ParticleBase", "particle material base", INPAR::MAT::m_particle_base));
-
-    AddNamedReal(m, "INITRADIUS", "initial radius of particle");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // particle material sph
-  {
-    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_ParticleSPH", "particle material for SPH", INPAR::MAT::m_particle_sph));
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHFluid",
+        "particle material for SPH fluid", INPAR::MAT::m_particle_sph_fluid));
 
     AddNamedReal(m, "INITRADIUS", "initial radius of particle");
     AddNamedReal(m, "INITDENSITY", "initial density of particle");
@@ -3351,6 +3340,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DYNAMIC_VISCOSITY", "dynamic shear viscosity");
     AddNamedReal(m, "BULK_VISCOSITY", "bulk viscosity");
     AddNamedReal(m, "ARTIFICIAL_VISCOSITY", "artificial viscosity");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // particle material sph boundary
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHBoundary",
+            "particle material for SPH boundary", INPAR::MAT::m_particle_sph_boundary));
+
+    AddNamedReal(m, "INITRADIUS", "initial radius of particle");
+    AddNamedReal(m, "INITDENSITY", "initial density of particle");
 
     AppendMaterialDefinition(matlist, m);
   }

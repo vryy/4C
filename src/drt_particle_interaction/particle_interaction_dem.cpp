@@ -51,9 +51,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
 {
   // call base class init
   ParticleInteractionBase::Init();
-
-  // init particle material handler
-  InitParticleMaterialHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -64,9 +61,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
 {
   // call base class setup
   ParticleInteractionBase::Setup(particleengineinterface);
-
-  // setup particle material handler
-  particlematerial_->Setup();
 }
 
 /*---------------------------------------------------------------------------*
@@ -77,9 +71,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
 {
   // call base class function
   ParticleInteractionBase::WriteRestart(step, time);
-
-  // write restart of particle material handler
-  particlematerial_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -90,9 +81,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
 {
   // call base class function
   ParticleInteractionBase::ReadRestart(reader);
-
-  // read restart of particle material handler
-  particlematerial_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -128,16 +116,4 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const
 {
   return (2.0 * MaxParticleRadius());
-}
-
-/*---------------------------------------------------------------------------*
- | init particle material handler                             sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::ParticleInteractionDEM::InitParticleMaterialHandler()
-{
-  // create particle material handler
-  particlematerial_ = std::make_shared<PARTICLEINTERACTION::DEMMaterialHandler>(params_);
-
-  // init particle material handler
-  particlematerial_->Init();
 }

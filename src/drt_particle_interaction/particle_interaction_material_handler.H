@@ -27,7 +27,8 @@
 #include "../drt_particle_engine/particle_typedefs.H"
 
 #include "../drt_mat/particle_material_base.H"
-#include "../drt_mat/particle_material_sph.H"
+#include "../drt_mat/particle_material_sph_fluid.H"
+#include "../drt_mat/particle_material_sph_boundary.H"
 #include "../drt_mat/particle_material_dem.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
@@ -45,14 +46,14 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class BaseMaterialHandler
+  class MaterialHandler
   {
    public:
     //! constructor
-    explicit BaseMaterialHandler(const Teuchos::ParameterList& params);
+    explicit MaterialHandler(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~BaseMaterialHandler(){};
+    virtual ~MaterialHandler(){};
 
     //! init particle material handler
     virtual void Init();
@@ -66,75 +67,28 @@ namespace PARTICLEINTERACTION
     //! read restart of particle material handler
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
+    //! get reference to particle material parameter map
+    const std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialBase*>&
+    GetRefToParticleMatParMap() const
+    {
+      return phasetypetoparticlematpar_;
+    };
+
+    //! return pointer to particle material parameter
+    const MAT::PAR::ParticleMaterialBase* GetPtrToParticleMatParameter(
+        PARTICLEENGINE::TypeEnum particleType) const;
+
    protected:
     //! map particle types to particle material parameters
-    virtual void MapParticleTypeToMatParameter(
-        PARTICLEENGINE::TypeEnum particleType, int matID) = 0;
+    virtual void MapParticleTypeToMatParameter(PARTICLEENGINE::TypeEnum particleType, int matID);
 
     //! particle simulation parameter list
     const Teuchos::ParameterList& params_;
-  };
-
-  class SPHMaterialHandler : public BaseMaterialHandler
-  {
-   public:
-    //! constructor
-    explicit SPHMaterialHandler(const Teuchos::ParameterList& params);
-
-    //! virtual destructor
-    virtual ~SPHMaterialHandler(){};
-
-    //! get reference to particle material parameter map
-    const std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialSPH*>&
-    GetRefToParticleMatParMap() const
-    {
-      return phasetypetoparticlematpar_;
-    };
-
-    //! return pointer to particle material parameter
-    const MAT::PAR::ParticleMaterialSPH* GetPtrToParticleMatParameter(
-        PARTICLEENGINE::TypeEnum particleType) const;
-
-   protected:
-    //! map particle types to particle material parameters
-    virtual void MapParticleTypeToMatParameter(
-        PARTICLEENGINE::TypeEnum particleType, int matID) override;
 
     //! map relating particle types to particle material parameters
-    std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialSPH*>
+    std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialBase*>
         phasetypetoparticlematpar_;
   };
-
-  class DEMMaterialHandler : public BaseMaterialHandler
-  {
-   public:
-    //! constructor
-    explicit DEMMaterialHandler(const Teuchos::ParameterList& params);
-
-    //! virtual destructor
-    virtual ~DEMMaterialHandler(){};
-
-    //! get reference to particle material parameter map
-    const std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialDEM*>&
-    GetRefToParticleMatParMap() const
-    {
-      return phasetypetoparticlematpar_;
-    };
-
-    //! return pointer to particle material parameter
-    const MAT::PAR::ParticleMaterialDEM* GetPtrToParticleMatParameter(
-        PARTICLEENGINE::TypeEnum particleType) const;
-
-   protected:
-    //! map particle types to particle material parameters
-    virtual void MapParticleTypeToMatParameter(
-        PARTICLEENGINE::TypeEnum particleType, int matID) override;
-
-    //! map relating particle types to particle material parameters
-    std::map<PARTICLEENGINE::TypeEnum, const MAT::PAR::ParticleMaterialDEM*>
-        phasetypetoparticlematpar_;
-  };
-
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
