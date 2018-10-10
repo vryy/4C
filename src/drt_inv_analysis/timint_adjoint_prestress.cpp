@@ -1,12 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file timint_adjoint_prestress.cpp
+
 \brief Time integration for a hyperleastic quasi static adjoint problem including prestressing
 
+
 <pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            089 - 289-10361
+\level 3
+\maintainer Sebastian Brandstaeter
+            brandstaeter@lnm.mw.tum.de
+            089 - 289-15276
 </pre>
 
 !*/

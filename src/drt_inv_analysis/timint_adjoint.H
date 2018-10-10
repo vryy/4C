@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file timint_adjoint.H
- \brief Adjoint time integration for a quasi static hyperelasticity
+\file timint_adjoint.H
+\brief Adjoint time integration for a quasi static hyperelasticity
 
- <pre>
- Maintainer: Sebastian Kehl
- kehl@mhpc.mw.tum.de
- 089 - 289-10361
- </pre>
- */
+<pre>
+\level 3
+\maintainer Sebastian Brandstaeter
+            brandstaeter@lnm.mw.tum.de
+            089 - 289-15276
+</pre>
+*/
 
 /*----------------------------------------------------------------------*/
 /* definitions */
