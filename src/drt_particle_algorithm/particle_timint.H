@@ -38,7 +38,8 @@ namespace IO
 namespace PARTICLEALGORITHM
 {
   class DirichletBoundaryConditionHandler;
-}
+  class TemperatureBoundaryConditionHandler;
+}  // namespace PARTICLEALGORITHM
 
 namespace PARTICLEENGINE
 {
@@ -94,6 +95,9 @@ namespace PARTICLEALGORITHM
     //! init dirichlet boundary condition handler
     void InitDirichletBoundaryCondition();
 
+    //! init temperature boundary condition handler
+    void InitTemperatureBoundaryCondition();
+
     //! particle simulation parameter list
     const Teuchos::ParameterList& params_;
 
@@ -103,6 +107,10 @@ namespace PARTICLEALGORITHM
     //! dirichlet boundary condition handler
     std::unique_ptr<PARTICLEALGORITHM::DirichletBoundaryConditionHandler>
         dirichletboundarycondition_;
+
+    //! temperature boundary condition handler
+    std::unique_ptr<PARTICLEALGORITHM::TemperatureBoundaryConditionHandler>
+        temperatureboundarycondition_;
 
     //! set of particle types to integrate in time
     std::set<PARTICLEENGINE::TypeEnum> typestointegrate_;
