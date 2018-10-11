@@ -2115,6 +2115,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // active strain membrane material for gastric electromechanics
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ActiveStrain",
+            "active strain membrane material", INPAR::MAT::m_membrane_activestrain));
+
+    AddNamedInt(m, "MATIDPASSIVE", "MATID for the passive material", false);
+    AddNamedInt(m, "SCALIDVOLTAGE", "ID of the scalar that represents the (SMC) voltage", false);
+    AddNamedReal(m, "DENS", "material mass density", false);
+    AddNamedReal(m, "BETA1", "Ca2+ dynamics", false);
+    AddNamedReal(m, "BETA2", "opening dynamics of the VDCC", false);
+    AddNamedReal(m, "VOLTHRESH", "voltage threshold for activation", false);
+    AddNamedReal(m, "ALPHA1", "intensity of contraction in fiber direction 1", false);
+    AddNamedReal(m, "ALPHA2", "intensity of contraction in fiber direction 2", false);
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // growth and remodeling (homogenized constrained mixture model)
   {
     Teuchos::RCP<MaterialDefinition> m =

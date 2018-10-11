@@ -77,6 +77,7 @@
 #include "fourieriso.H"
 #include "soret.H"
 #include "membrane_elasthyper.H"
+#include "membrane_active_strain.H"
 #include "growthremodel_elasthyper.H"
 #include "inelastic_defgrad_factors.H"
 #include "scalardepinterp.H"
@@ -956,6 +957,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
         curmat->SetParameter(new MAT::PAR::Membrane_ElastHyper(curmat));
       MAT::PAR::Membrane_ElastHyper* params =
           static_cast<MAT::PAR::Membrane_ElastHyper*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_membrane_activestrain:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::Membrane_ActiveStrain(curmat));
+      MAT::PAR::Membrane_ActiveStrain* params =
+          static_cast<MAT::PAR::Membrane_ActiveStrain*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_growthremodel_elasthyper:
