@@ -214,6 +214,15 @@ void PARTICLEALGORITHM::ResultTest::TestSpecial(
         // get component of result
         dim = 0;
       }
+      // temperature
+      else if (quantity == "temperature")
+      {
+        // get enum of particle state
+        particleState = PARTICLEENGINE::Temperature;
+
+        // get component of result
+        dim = 0;
+      }
       else
         dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
 

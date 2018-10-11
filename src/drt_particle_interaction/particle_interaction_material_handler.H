@@ -27,6 +27,7 @@
 #include "../drt_particle_engine/particle_typedefs.H"
 
 #include "../drt_mat/particle_material_base.H"
+#include "../drt_mat/particle_material_thermo.H"
 #include "../drt_mat/particle_material_sph_fluid.H"
 #include "../drt_mat/particle_material_sph_boundary.H"
 #include "../drt_mat/particle_material_dem.H"

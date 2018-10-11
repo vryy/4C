@@ -35,6 +35,8 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::DensitySum:
     case PARTICLEENGINE::DensityDot:
     case PARTICLEENGINE::Pressure:
+    case PARTICLEENGINE::Temperature:
+    case PARTICLEENGINE::TemperatureDot:
     case PARTICLEENGINE::BoundaryPressure:
     case PARTICLEENGINE::Colorfield:
     case PARTICLEENGINE::WallDistance:
@@ -89,6 +91,12 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::Pressure:
       name = "pressure";
+      break;
+    case PARTICLEENGINE::Temperature:
+      name = "temperature";
+      break;
+    case PARTICLEENGINE::TemperatureDot:
+      name = "temperaturedot";
       break;
     case PARTICLEENGINE::Position:
       name = "position";

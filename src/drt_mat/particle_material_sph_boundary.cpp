@@ -32,7 +32,7 @@ MAT::ParticleMaterialSPHBoundaryType MAT::ParticleMaterialSPHBoundaryType::insta
  *---------------------------------------------------------------------------*/
 MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata), ParticleMaterialBase(matdata)
+    : Parameter(matdata), ParticleMaterialBase(matdata), ParticleMaterialThermo(matdata)
 {
   // empty constructor
 }

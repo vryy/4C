@@ -36,6 +36,8 @@ namespace PARTICLEENGINE
     DensitySum,
     DensityDot,
     Pressure,
+    Temperature,
+    TemperatureDot,
     Position,
     Velocity,
     Acceleration,

@@ -24,6 +24,7 @@
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_material_base.H"
+#include "particle_material_thermo.H"
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
@@ -32,7 +33,7 @@ namespace MAT
 {
   namespace PAR
   {
-    class ParticleMaterialSPHBoundary : public ParticleMaterialBase
+    class ParticleMaterialSPHBoundary : public ParticleMaterialBase, public ParticleMaterialThermo
     {
      public:
       //! constructor

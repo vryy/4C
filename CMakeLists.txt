@@ -664,6 +664,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particle_mat_ellipsoids.cpp
   src/drt_mat/particle_material_base.cpp
+  src/drt_mat/particle_material_thermo.cpp
   src/drt_mat/particle_material_sph_fluid.cpp
   src/drt_mat/particle_material_sph_boundary.cpp
   src/drt_mat/particle_material_dem.cpp
@@ -1874,6 +1875,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_density.cpp
   src/drt_particle_interaction/particle_interaction_sph_density_correction.cpp
   src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
+  src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
   src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp

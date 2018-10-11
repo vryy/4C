@@ -34,6 +34,7 @@ MAT::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       ParticleMaterialBase(matdata),
+      ParticleMaterialThermo(matdata),
       refDensFac_(matdata->GetDouble("REFDENSFAC")),
       exponent_(matdata->GetDouble("EXPONENT")),
       backgroundPressure_(matdata->GetDouble("BACKGROUNDPRESSURE")),

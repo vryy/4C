@@ -189,6 +189,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "equilibrium solutions",
       &particledynsph);
 
+
+  //! type of temperature evaluation scheme
+  setStringToIntegralParameter<int>("TEMPERATUREEVALUATION", "NoTemperatureEvaluation",
+      "type of temperature evaluation scheme",
+      tuple<std::string>("NoTemperatureEvaluation", "TemperatureIntegration"),
+      tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
+      &particledynsph);
+
   // type of surface tension formulation
   setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
       "type of surface tension formulation",

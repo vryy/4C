@@ -27,6 +27,7 @@
 #include "particle_interaction_sph_neighbor_pairs.H"
 #include "particle_interaction_sph_density.H"
 #include "particle_interaction_sph_pressure.H"
+#include "particle_interaction_sph_temperature.H"
 #include "particle_interaction_sph_momentum.H"
 #include "particle_interaction_sph_surface_tension.H"
 #include "particle_interaction_sph_boundary_particle.H"
@@ -78,6 +79,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   // init pressure handler
   InitPressureHandler();
 
+  // init temperature handler
+  InitTemperatureHandler();
+
   // init momentum handler
   InitMomentumHandler();
 
@@ -112,6 +116,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup pressure handler
   pressure_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
+
+  // setup temperature handler
+  if (temperature_) temperature_->Setup(particleengineinterface, particlematerial_, neighborpairs_);
 
   // setup momentum handler
   momentum_->Setup(
@@ -150,6 +157,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
   // write restart of pressure handler
   pressure_->WriteRestart(step, time);
 
+  // write restart of temperature handler
+  if (temperature_) temperature_->WriteRestart(step, time);
+
   // write restart of momentum handler
   momentum_->WriteRestart(step, time);
 
@@ -183,6 +193,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
 
   // read restart of pressure handler
   pressure_->ReadRestart(reader);
+
+  // read restart of temperature handler
+  if (temperature_) temperature_->ReadRestart(reader);
 
   // read restart of momentum handler
   momentum_->ReadRestart(reader);
@@ -220,18 +233,20 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticle
       // insert states of regular phase particles
       particlestates.insert({PARTICLEENGINE::Mass, PARTICLEENGINE::Radius, PARTICLEENGINE::Density,
           PARTICLEENGINE::Pressure});
-
-      // states for density evaluation scheme
-      density_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
-
-      // insert momentum evaluation dependent states
-      momentum_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
-
-      // additional states for surface tension formulation
-      if (surfacetension_)
-        surfacetension_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
     }
   }
+
+  // states for density evaluation scheme
+  density_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+
+  // states for temperature evaluation scheme
+  if (temperature_) temperature_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+
+  // insert momentum evaluation dependent states
+  momentum_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+
+  // additional states for surface tension formulation
+  if (surfacetension_) surfacetension_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*
@@ -285,6 +300,23 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     // set initial mass and radius for all particles of current type
     particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, type);
     particlecontainerbundle_->SetStateSpecificContainer(initradius, PARTICLEENGINE::Radius, type);
+
+    // initial states for temperature evaluation
+    if (temperature_)
+    {
+      // get material for current particle type
+      const MAT::PAR::ParticleMaterialThermo* material =
+          dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
+              particlematerial_->GetPtrToParticleMatParameter(type));
+
+      // initial temperature of current phase
+      std::vector<double> inittemperature(1);
+      inittemperature[0] = material->initTemperature_;
+
+      // set initial temperature for all particles of current type
+      particlecontainerbundle_->SetStateSpecificContainer(
+          inittemperature, PARTICLEENGINE::Temperature, type);
+    }
   }
 
   // refresh initial states of ghosted particles
@@ -306,6 +338,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // compute pressure using equation of state and density
   pressure_->ComputePressure();
+
+  // compute temperature field
+  if (temperature_) temperature_->ComputeTemperature();
 
   // init boundary particles
   if (boundaryparticle_) boundaryparticle_->InitBoundaryParticles(gravity_);
@@ -347,6 +382,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetCurrentStepSize(const doubl
 
   // set current step size
   density_->SetCurrentStepSize(currentstepsize);
+
+  // set current step size
+  if (temperature_) temperature_->SetCurrentStepSize(currentstepsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -467,6 +505,41 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPressureHandler()
 
   // init pressure handler
   pressure_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init temperature handler                                    meier 09/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitTemperatureHandler()
+{
+  // get type of smoothed particle hydrodynamics temperature evaluation scheme
+  INPAR::PARTICLE::TemperatureEvaluationScheme temperatureevaluationscheme =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+          params_sph_, "TEMPERATUREEVALUATION");
+
+  // create temperature handler
+  switch (temperatureevaluationscheme)
+  {
+    case INPAR::PARTICLE::NoTemperatureEvaluation:
+    {
+      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperatureBase>(nullptr);
+      break;
+    }
+    case INPAR::PARTICLE::TemperatureIntegration:
+    {
+      temperature_ = std::unique_ptr<PARTICLEINTERACTION::SPHTemperatureIntegration>(
+          new PARTICLEINTERACTION::SPHTemperatureIntegration(params_sph_));
+      break;
+    }
+    default:
+    {
+      dserror("unknown surface tension formulation type!");
+      break;
+    }
+  }
+
+  // init temperature handler
+  if (temperature_) temperature_->Init();
 }
 
 /*---------------------------------------------------------------------------*
@@ -601,6 +674,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::RefreshInitialStates() const
     else
       particlestatestotypes[type] = {
           PARTICLEENGINE::Density, PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
+
+    // set temperature state to refresh to map
+    if (temperature_) particlestatestotypes[type].insert(PARTICLEENGINE::Temperature);
   }
 
   // refresh specific states of particles of specific types

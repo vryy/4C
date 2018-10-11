@@ -141,6 +141,13 @@ namespace INPAR
       GeneralizedTransportVelocity
     };
 
+    //! type of temperature evaluation scheme
+    enum TemperatureEvaluationScheme
+    {
+      NoTemperatureEvaluation,
+      TemperatureIntegration
+    };
+
     //! type of surface tension formulation
     enum SurfaceTensionFormulation
     {
