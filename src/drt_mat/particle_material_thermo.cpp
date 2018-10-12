@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_material_base.cpp
+\file particle_material_thermo.cpp
 
-\brief particle material base
+\brief particle material thermo
 
 \level 3
 
@@ -17,17 +17,17 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_material_base.H"
+#include "particle_material_thermo.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialBase::ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ParticleMaterialThermo::ParticleMaterialThermo(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      initRadius_(matdata->GetDouble("INITRADIUS")),
-      initDensity_(matdata->GetDouble("INITDENSITY"))
+      initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
+      thermalConductivity_(matdata->GetDouble("THERMALCONDUCTIVITY"))
 {
   // empty constructor
 }

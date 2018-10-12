@@ -40,7 +40,7 @@ namespace IO
 namespace PARTICLEINTERACTION
 {
   class SPHEquationOfStateBase;
-  class SPHMaterialHandler;
+  class MaterialHandler;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -58,7 +58,7 @@ namespace PARTICLEINTERACTION
     virtual ~SPHEquationOfStateBundle(){};
 
     //! init equation of state bundle
-    virtual void Init(std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial);
+    virtual void Init(std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);
 
     //! setup equation of state bundle
     virtual void Setup();

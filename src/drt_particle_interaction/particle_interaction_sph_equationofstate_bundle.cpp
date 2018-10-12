@@ -23,8 +23,6 @@ interactions
 #include "particle_interaction_sph_equationofstate.H"
 #include "particle_interaction_material_handler.H"
 
-#include "../drt_mat/particle_material_sph.H"
-
 #include "../drt_inpar/inpar_particle.H"
 
 #include "../drt_lib/drt_dserror.H"
@@ -43,7 +41,7 @@ PARTICLEINTERACTION::SPHEquationOfStateBundle::SPHEquationOfStateBundle(
  | init equation of state bundle                              sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial)
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial)
 {
   // get type of smoothed particle hydrodynamics equation of state
   INPAR::PARTICLE::EquationOfStateType equationofstatetype =
@@ -56,21 +54,21 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
     // get type of particles
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // no material definition for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase)
-      dserror("no need to define a particle material for boundary particles!");
+    // no equation of state for boundary particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
 
-    // get pointer to particle material parameters
-    const MAT::PAR::ParticleMaterialSPH* sphparticlematerialparameter = typeIt.second;
+    // get material for current particle type
+    const MAT::PAR::ParticleMaterialSPHFluid* material =
+        dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(typeIt.second);
 
     // create equation of state handler
     switch (equationofstatetype)
     {
       case INPAR::PARTICLE::GenTait:
       {
-        const double speedofsound = sphparticlematerialparameter->SpeedOfSound();
-        const double refdensfac = sphparticlematerialparameter->refDensFac_;
-        const double exponent = sphparticlematerialparameter->exponent_;
+        const double speedofsound = material->SpeedOfSound();
+        const double refdensfac = material->refDensFac_;
+        const double exponent = material->exponent_;
 
         phasetypetoequationofstate_[particleType] =
             std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateGenTait>(
@@ -79,7 +77,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
       }
       case INPAR::PARTICLE::IdealGas:
       {
-        const double speedofsound = sphparticlematerialparameter->SpeedOfSound();
+        const double speedofsound = material->SpeedOfSound();
 
         phasetypetoequationofstate_[particleType] =
             std::make_shared<PARTICLEINTERACTION::SPHEquationOfStateIdealGas>(speedofsound);

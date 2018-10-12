@@ -58,7 +58,7 @@ void PARTICLEINTERACTION::SPHDensityBase::Init()
 void PARTICLEINTERACTION::SPHDensityBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
@@ -150,8 +150,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+    const MAT::PAR::ParticleMaterialBase* material_i = NULL;
 
     // particles of current type with neighbors
     const auto& currparticles = typeIt.second;
@@ -186,6 +185,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
       {
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+
+        // get material for interacting particle type
+        if (type_j == PARTICLEENGINE::BoundaryPhase)
+          material_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
 
         // iterate over particle status of neighboring particles
         for (auto& neighborStatusIt : neighborTypeIt.second)
@@ -260,8 +263,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material_i =
-        particlematerial_->GetPtrToParticleMatParameter(type_i);
+    const MAT::PAR::ParticleMaterialBase* material_i = NULL;
 
     // particles of current type with neighbors
     const auto& currparticles = typeIt.second;
@@ -293,6 +295,10 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
       {
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
+
+        // get material for interacting particle type
+        if (type_j == PARTICLEENGINE::BoundaryPhase)
+          material_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
 
         // iterate over particle status of neighboring particles
         for (auto& neighborStatusIt : neighborTypeIt.second)
@@ -515,7 +521,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::Init()
 void PARTICLEINTERACTION::SPHDensityPredictCorrect::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
@@ -692,7 +698,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
     colorfield = container->GetPtrToParticleState(PARTICLEENGINE::Colorfield, 0);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialSPH* material =
+    const MAT::PAR::ParticleMaterialBase* material =
         particlematerial_->GetPtrToParticleMatParameter(type);
 
     // get equation of state for current particle type

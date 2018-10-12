@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_material_base.H
+\file particle_material_thermo.H
 
-\brief particle material base
+\brief particle material thermo
 
 \level 3
 
@@ -17,8 +17,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_BASE_H
-#define PARTICLE_MATERIAL_BASE_H
+#ifndef PARTICLE_MATERIAL_THERMO_H
+#define PARTICLE_MATERIAL_THERMO_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
@@ -34,23 +34,23 @@ namespace MAT
 {
   namespace PAR
   {
-    class ParticleMaterialBase : virtual public Parameter
+    class ParticleMaterialThermo : virtual public Parameter
     {
      public:
       //! constructor
-      ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialThermo(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! virtual desctructor
-      virtual ~ParticleMaterialBase(){};
+      virtual ~ParticleMaterialThermo(){};
 
       //! @name material parameters
       //@{
 
-      //! initial radius
-      const double initRadius_;
+      //! initial temperature
+      const double initTemperature_;
 
-      //! initial density
-      const double initDensity_;
+      //! thermal conductivity
+      const double thermalConductivity_;
 
       //@}
 

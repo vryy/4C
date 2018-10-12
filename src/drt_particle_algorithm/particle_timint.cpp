@@ -20,6 +20,7 @@
 #include "particle_timint.H"
 
 #include "particle_dirichlet_bc.H"
+#include "particle_temperature_bc.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_enums.H"
@@ -55,6 +56,9 @@ void PARTICLEALGORITHM::TimInt::Init()
 {
   // init dirichlet boundary condition handler
   InitDirichletBoundaryCondition();
+
+  // init temperature boundary condition handler
+  InitTemperatureBoundaryCondition();
 }
 
 /*---------------------------------------------------------------------------*
@@ -71,15 +75,31 @@ void PARTICLEALGORITHM::TimInt::Setup(
   modifiedstates_ = modifiedstates;
 
   // setup dirichlet boundary condition handler
-  dirichletboundarycondition_->Setup(particleengineinterface_);
+  if (dirichletboundarycondition_) dirichletboundarycondition_->Setup(particleengineinterface_);
+
+  // setup temperature boundary condition handler
+  if (temperatureboundarycondition_) temperatureboundarycondition_->Setup(particleengineinterface_);
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
       particleengineinterface_->GetParticleContainerBundle();
 
-  // get reference to set of particle types subjected to dirichlet boundary conditions
-  const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
-      dirichletboundarycondition_->GetParticleTypesSubjectedToDirichletBCSet();
+  // set of particle types being excluded from time integration
+  std::set<PARTICLEENGINE::TypeEnum> typesexludedfromtimeintegration;
+
+  // boundary particles are not integrated in time
+  typesexludedfromtimeintegration.insert(PARTICLEENGINE::BoundaryPhase);
+
+  if (dirichletboundarycondition_)
+  {
+    // get reference to set of particle types subjected to dirichlet boundary conditions
+    const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
+        dirichletboundarycondition_->GetParticleTypesSubjectedToDirichletBCSet();
+
+    // particles subjected to dirichlet boundary conditions are not integrated in time
+    for (PARTICLEENGINE::TypeEnum currtype : typessubjectedtodirichletbc)
+      typesexludedfromtimeintegration.insert(currtype);
+  }
 
   // determine set of particle types to integrate in time
   for (auto typeIt : particlecontainerbundle->GetRefToAllContainersMap())
@@ -87,11 +107,8 @@ void PARTICLEALGORITHM::TimInt::Setup(
     // get enum of particle types
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // boundary particles are not integrated in time
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
-
-    // current particle type is not subjected to dirichlet boundary conditions
-    if (typessubjectedtodirichletbc.find(particleType) == typessubjectedtodirichletbc.end())
+    // insert current particle type into set of particles to integrate in time
+    if (typesexludedfromtimeintegration.find(particleType) == typesexludedfromtimeintegration.end())
       typestointegrate_.insert(particleType);
   }
 }
@@ -102,7 +119,10 @@ void PARTICLEALGORITHM::TimInt::Setup(
 void PARTICLEALGORITHM::TimInt::WriteRestart(const int step, const double time) const
 {
   // write restart of dirichlet boundary condition handler
-  dirichletboundarycondition_->WriteRestart(step, time);
+  if (dirichletboundarycondition_) dirichletboundarycondition_->WriteRestart(step, time);
+
+  // write restart of temperature boundary condition handler
+  if (temperatureboundarycondition_) temperatureboundarycondition_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -111,7 +131,10 @@ void PARTICLEALGORITHM::TimInt::WriteRestart(const int step, const double time) 
 void PARTICLEALGORITHM::TimInt::ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // read restart of dirichlet boundary condition handler
-  dirichletboundarycondition_->ReadRestart(reader);
+  if (dirichletboundarycondition_) dirichletboundarycondition_->ReadRestart(reader);
+
+  // read restart of temperature boundary condition handler
+  if (temperatureboundarycondition_) temperatureboundarycondition_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -122,7 +145,12 @@ void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
     const
 {
   // insert dbc dependent states of all particle types
-  dirichletboundarycondition_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+  if (dirichletboundarycondition_)
+    dirichletboundarycondition_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
+
+  // insert tempbc dependent states of all particle types
+  if (temperatureboundarycondition_)
+    temperatureboundarycondition_->InsertParticleStatesOfParticleTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*
@@ -131,10 +159,18 @@ void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
 void PARTICLEALGORITHM::TimInt::SetInitialStates()
 {
   // set particle reference position
-  dirichletboundarycondition_->SetParticleReferencePosition();
+  if (dirichletboundarycondition_) dirichletboundarycondition_->SetParticleReferencePosition();
+
+  // set particle reference position
+  if (temperatureboundarycondition_) temperatureboundarycondition_->SetParticleReferencePosition();
 
   // evaluate dirichlet boundary condition
-  dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(0.0, true, true, true);
+  if (dirichletboundarycondition_)
+    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(0.0, true, true, true);
+
+  // evaluate temperature boundary condition
+  if (temperatureboundarycondition_)
+    temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(0.0);
 }
 
 /*---------------------------------------------------------------------------*
@@ -154,6 +190,34 @@ void PARTICLEALGORITHM::TimInt::InitDirichletBoundaryCondition()
 
   // init dirichlet boundary condition handler
   dirichletboundarycondition_->Init();
+
+  // get reference to set of particle types subjected to dirichlet boundary conditions
+  const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtodirichletbc =
+      dirichletboundarycondition_->GetParticleTypesSubjectedToDirichletBCSet();
+
+  // no particle types are subjected to dirichlet boundary conditions
+  if (typessubjectedtodirichletbc.size() == 0) dirichletboundarycondition_.release();
+}
+
+/*---------------------------------------------------------------------------*
+ | init temperature boundary condition handler                 meier 09/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
+{
+  // create temperature boundary condition handler
+  temperatureboundarycondition_ =
+      std::unique_ptr<PARTICLEALGORITHM::TemperatureBoundaryConditionHandler>(
+          new PARTICLEALGORITHM::TemperatureBoundaryConditionHandler(params_));
+
+  // init temperature boundary condition handler
+  temperatureboundarycondition_->Init();
+
+  // get reference to set of particle types subjected to temperature boundary conditions
+  const std::set<PARTICLEENGINE::TypeEnum>& typessubjectedtotempbc =
+      temperatureboundarycondition_->GetParticleTypesSubjectedToTemperatureBCSet();
+
+  // no particle types are subjected to temperature boundary conditions
+  if (typessubjectedtotempbc.size() == 0) temperatureboundarycondition_.release();
 }
 
 /*---------------------------------------------------------------------------*
@@ -220,7 +284,12 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::PreInteractionRoutine()
   }
 
   // evaluate dirichlet boundary condition
-  dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, true, true, true);
+  if (dirichletboundarycondition_)
+    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, true, true, true);
+
+  // evaluate temperature boundary condition
+  if (temperatureboundarycondition_)
+    temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(time_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -314,9 +383,16 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PreInteractionRoutine()
   }
 
   // evaluate dirichlet boundary condition
-  dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, true, false, true);
-  dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(
-      time_ - dthalf_, false, true, false);
+  if (dirichletboundarycondition_)
+  {
+    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, true, false, true);
+    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(
+        time_ - dthalf_, false, true, false);
+  }
+
+  // evaluate temperature boundary condition
+  if (temperatureboundarycondition_)
+    temperatureboundarycondition_->EvaluateTemperatureBoundaryCondition(time_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -342,5 +418,6 @@ void PARTICLEALGORITHM::TimIntVelocityVerlet::PostInteractionRoutine()
   }
 
   // evaluate dirichlet boundary condition
-  dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, false, true, false);
+  if (dirichletboundarycondition_)
+    dirichletboundarycondition_->EvaluateDirichletBoundaryCondition(time_, false, true, false);
 }

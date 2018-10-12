@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_momentum.H
+\file particle_interaction_sph_temperature.H
 
-\brief momentum handler for smoothed particle hydrodynamics (SPH) interactions
+\brief temperature handler for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
 
@@ -15,13 +15,13 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 08/2018 |
+ | definitions                                                 meier 09/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_MOMENTUM_H
-#define PARTICLE_INTERACTION_SPH_MOMENTUM_H
+#ifndef PARTICLE_INTERACTION_SPH_TEMPERATURE_H
+#define PARTICLE_INTERACTION_SPH_TEMPERATURE_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                     meier 09/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_typedefs.H"
 
@@ -31,7 +31,7 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 08/2018 |
+ | forward declarations                                        meier 09/2018 |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -46,59 +46,53 @@ namespace PARTICLEENGINE
 
 namespace PARTICLEINTERACTION
 {
-  class SPHKernelBase;
   class MaterialHandler;
-  class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
-  class SPHMomentumFormulationBase;
-  class SPHArtificialViscosity;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 08/2018 |
+ | class definitions                                           meier 09/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHMomentum
+  class SPHTemperatureBase
   {
    public:
     //! constructor
-    explicit SPHMomentum(const Teuchos::ParameterList& params);
+    explicit SPHTemperatureBase(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHMomentum();
+    virtual ~SPHTemperatureBase(){};
 
-    //! init momentum handler
+    //! init temperature handler
     virtual void Init();
 
-    //! setup momentum handler
+    //! setup temperature handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! write restart of momentum handler
+    //! write restart of temperature handler
     virtual void WriteRestart(const int step, const double time) const;
 
-    //! read restart of momentum handler
+    //! read restart of temperature handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! insert momentum evaluation dependent states
+    //! set current step size
+    virtual void SetCurrentStepSize(const double currentstepsize) final;
+
+    //! insert temperature evaluation dependent states
     virtual void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const;
+            particlestatestotypes) const = 0;
 
-    //! add momentum contribution to acceleration field
-    virtual void AddAccelerationContribution() const;
+    //! compute temperature field using energy equation
+    virtual void ComputeTemperature() const = 0;
 
    protected:
-    //! init momentum formulation handler
-    virtual void InitMomentumFormulationHandler();
-
-    //! init artificial viscosity handler
-    virtual void InitArtificialViscosityHandler();
+    //! refresh temperature of ghosted particles
+    virtual void RefreshTemperature() const final;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
@@ -109,38 +103,36 @@ namespace PARTICLEINTERACTION
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
-    //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
-
     //! particle material handler
     std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
-
-    //! equation of state bundle
-    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
-    //! momentum formulation handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationBase> momentumformulation_;
+    //! time step size
+    double dt_;
+  };
 
-    //! artificial viscosity handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
+  class SPHTemperatureIntegration : public SPHTemperatureBase
+  {
+   public:
+    //! constructor
+    explicit SPHTemperatureIntegration(const Teuchos::ParameterList& params);
 
-    //! type of boundary particle interaction
-    INPAR::PARTICLE::BoundaryParticleInteraction boundaryparticleinteraction_;
+    //! virtual destructor
+    virtual ~SPHTemperatureIntegration(){};
 
-    //! type of transport velocity formulation
-    INPAR::PARTICLE::TransportVelocityFormulation transportvelocityformulation_;
+    //! insert temperature evaluation dependent states
+    virtual void InsertParticleStatesOfParticleTypes(
+        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
+            particlestatestotypes) const override;
 
-    //! apply transport velocity formulation
-    bool applytransportvelocity_;
+    //! compute temperature field using energy equation
+    virtual void ComputeTemperature() const override;
 
-    //! no convection of momentum with relative velocity in transport velocity formulation
-    bool norelativevelocitycontribution_;
-
-    //! artificial viscous damping factor
-    const double dampingfactor_;
+   private:
+    //! evaluate energy equation
+    virtual void EnergyEquation() const;
   };
 
 }  // namespace PARTICLEINTERACTION

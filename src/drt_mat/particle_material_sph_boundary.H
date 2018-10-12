@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_material_sph.H
+\file particle_material_sph_boundary.H
 
-\brief particle material for SPH
+\brief particle material for SPH boundary
 
 \level 3
 
@@ -17,13 +17,14 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_MATERIAL_SPH_H
-#define PARTICLE_MATERIAL_SPH_H
+#ifndef PARTICLE_MATERIAL_SPH_BOUNDARY_H
+#define PARTICLE_MATERIAL_SPH_BOUNDARY_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_material_base.H"
+#include "particle_material_thermo.H"
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
@@ -32,46 +33,14 @@ namespace MAT
 {
   namespace PAR
   {
-    class ParticleMaterialSPH : public ParticleMaterialBase
+    class ParticleMaterialSPHBoundary : public ParticleMaterialBase, public ParticleMaterialThermo
     {
      public:
       //! constructor
-      ParticleMaterialSPH(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialSPHBoundary(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! virtual desctructor
-      virtual ~ParticleMaterialSPH(){};
-
-      //! speed of sound
-      virtual double SpeedOfSound() const { return std::pow(bulkModulus_ / initDensity_, 0.5); };
-
-      //! @name material parameters
-      //@{
-
-      //! initial density of particle
-      const double initDensity_;
-
-      //! reference density factor in equation of state
-      const double refDensFac_;
-
-      //! exponent in equation of state
-      const double exponent_;
-
-      //! background pressure
-      const double backgroundPressure_;
-
-      //! bulk modulus
-      const double bulkModulus_;
-
-      //! dynamic shear viscosity
-      const double dynamicViscosity_;
-
-      //! bulk viscosity
-      const double bulkViscosity_;
-
-      //! artificial viscosity
-      const double artificialViscosity_;
-
-      //@}
+      virtual ~ParticleMaterialSPHBoundary(){};
 
       //! create material instance of matching type with parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -79,27 +48,27 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ParticleMaterialSPHType : public DRT::ParObjectType
+  class ParticleMaterialSPHBoundaryType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ParticleMaterialSPHType"; };
+    std::string Name() const { return "ParticleMaterialSPHBoundaryType"; };
 
-    static ParticleMaterialSPHType& Instance() { return instance_; };
+    static ParticleMaterialSPHBoundaryType& Instance() { return instance_; };
 
     virtual DRT::ParObject* Create(const std::vector<char>& data);
 
    private:
-    static ParticleMaterialSPHType instance_;
+    static ParticleMaterialSPHBoundaryType instance_;
   };
 
-  class ParticleMaterialSPH : public ParticleMaterialBase
+  class ParticleMaterialSPHBoundary : public Material
   {
    public:
     //! constructor (empty material object)
-    ParticleMaterialSPH();
+    ParticleMaterialSPHBoundary();
 
     //! constructor (with given material parameters)
-    explicit ParticleMaterialSPH(MAT::PAR::ParticleMaterialSPH* params);
+    explicit ParticleMaterialSPHBoundary(MAT::PAR::ParticleMaterialSPHBoundary* params);
 
     //! @name Packing and Unpacking
 
@@ -113,7 +82,7 @@ namespace MAT
     */
     virtual int UniqueParObjectId() const
     {
-      return ParticleMaterialSPHType::Instance().UniqueParObjectId();
+      return ParticleMaterialSPHBoundaryType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -145,12 +114,15 @@ namespace MAT
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_particle_sph; }
+    virtual INPAR::MAT::MaterialType MaterialType() const
+    {
+      return INPAR::MAT::m_particle_sph_boundary;
+    }
 
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {
-      return Teuchos::rcp(new ParticleMaterialSPH(*this));
+      return Teuchos::rcp(new ParticleMaterialSPHBoundary(*this));
     }
 
     //! return quick accessible material parameter data
@@ -158,7 +130,7 @@ namespace MAT
 
    private:
     //! my material parameters
-    MAT::PAR::ParticleMaterialSPH* params_;
+    MAT::PAR::ParticleMaterialSPHBoundary* params_;
   };
 
 }  // namespace MAT

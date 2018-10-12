@@ -33,11 +33,11 @@
 namespace PARTICLEINTERACTION
 {
   class SPHKernelBase;
-  class SPHMaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
   class SPHDensityBase;
   class SPHPressure;
+  class SPHTemperatureBase;
   class SPHMomentum;
   class SPHSurfaceTensionBase;
   class SPHBoundaryParticleBase;
@@ -94,9 +94,6 @@ namespace PARTICLEINTERACTION
     //! init kernel handler
     virtual void InitKernelHandler();
 
-    //! init particle material handler
-    virtual void InitParticleMaterialHandler();
-
     //! init equation of state bundle
     virtual void InitEquationOfStateBundle();
 
@@ -108,6 +105,9 @@ namespace PARTICLEINTERACTION
 
     //! init pressure handler
     virtual void InitPressureHandler();
+
+    //! init temperature handler
+    virtual void InitTemperatureHandler();
 
     //! init momentum handler
     virtual void InitMomentumHandler();
@@ -130,9 +130,6 @@ namespace PARTICLEINTERACTION
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
 
-    //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHMaterialHandler> particlematerial_;
-
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
 
@@ -144,6 +141,9 @@ namespace PARTICLEINTERACTION
 
     //! pressure handler
     std::unique_ptr<PARTICLEINTERACTION::SPHPressure> pressure_;
+
+    //! temperature handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHTemperatureBase> temperature_;
 
     //! momentum handler
     std::unique_ptr<PARTICLEINTERACTION::SPHMomentum> momentum_;

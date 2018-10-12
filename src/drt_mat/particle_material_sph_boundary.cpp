@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_material_dem.cpp
+\file particle_material_sph_boundary.cpp
 
-\brief particle material for DEM
+\brief particle material for SPH boundary
 
 \level 3
 
@@ -15,65 +15,67 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 07/2018 |
+ | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_material_dem.H"
+#include "particle_material_sph_boundary.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
 /*---------------------------------------------------------------------------*
- | define static class member                                 sfuchs 07/2018 |
+ | define static class member                                 sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEMType MAT::ParticleMaterialDEMType::instance_;
+MAT::ParticleMaterialSPHBoundaryType MAT::ParticleMaterialSPHBoundaryType::instance_;
 
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 07/2018 |
+ | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata), ParticleMaterialBase(matdata)
+MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata), ParticleMaterialBase(matdata), ParticleMaterialThermo(matdata)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | create material instance of matching type with parameters  sfuchs 07/2018 |
+ | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialDEM::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::ParticleMaterialDEM(this));
+  return Teuchos::rcp(new MAT::ParticleMaterialSPHBoundary(this));
 }
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-DRT::ParObject* MAT::ParticleMaterialDEMType::Create(const std::vector<char>& data)
+DRT::ParObject* MAT::ParticleMaterialSPHBoundaryType::Create(const std::vector<char>& data)
 {
-  MAT::ParticleMaterialDEM* particlematsph = new MAT::ParticleMaterialDEM();
-  particlematsph->Unpack(data);
-  return particlematsph;
+  MAT::ParticleMaterialSPHBoundary* particlematsphboundary = new MAT::ParticleMaterialSPHBoundary();
+  particlematsphboundary->Unpack(data);
+  return particlematsphboundary;
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (empty material object)                        sfuchs 07/2018 |
+ | constructor (empty material object)                        sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM() : params_(NULL)
+MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary() : params_(NULL)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | constructor (with given material parameters)               sfuchs 07/2018 |
+ | constructor (with given material parameters)               sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM(MAT::PAR::ParticleMaterialDEM* params)
+MAT::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
+    MAT::PAR::ParticleMaterialSPHBoundary* params)
     : params_(params)
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | pack                                                       sfuchs 07/2018 |
+ | pack                                                       sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialDEM::Pack(DRT::PackBuffer& data) const
+void MAT::ParticleMaterialSPHBoundary::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -89,9 +91,9 @@ void MAT::ParticleMaterialDEM::Pack(DRT::PackBuffer& data) const
 }
 
 /*---------------------------------------------------------------------------*
- | unpack                                                     sfuchs 07/2018 |
+ | unpack                                                     sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
+void MAT::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -112,7 +114,7 @@ void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(mat);
+        params_ = dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

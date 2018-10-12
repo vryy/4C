@@ -19,6 +19,8 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_base.H"
 
+#include "particle_interaction_material_handler.H"
+
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
@@ -37,7 +39,8 @@ PARTICLEINTERACTION::ParticleInteractionBase::ParticleInteractionBase(
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionBase::Init()
 {
-  // nothing to do
+  // init particle material handler
+  InitParticleMaterialHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -52,6 +55,9 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
 
+  // setup particle material handler
+  particlematerial_->Setup();
+
   // init vector
   gravity_.resize(3, 0.0);
 }
@@ -62,7 +68,8 @@ void PARTICLEINTERACTION::ParticleInteractionBase::Setup(
 void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
     const int step, const double time) const
 {
-  // nothing to do
+  // write restart of particle material handler
+  particlematerial_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -71,7 +78,8 @@ void PARTICLEINTERACTION::ParticleInteractionBase::WriteRestart(
 void PARTICLEINTERACTION::ParticleInteractionBase::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
-  // nothing to do
+  // read restart of particle material handler
+  particlematerial_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -96,6 +104,18 @@ void PARTICLEINTERACTION::ParticleInteractionBase::SetCurrentStepSize(const doub
 void PARTICLEINTERACTION::ParticleInteractionBase::SetGravity(std::vector<double>& gravity)
 {
   gravity_ = gravity;
+}
+
+/*---------------------------------------------------------------------------*
+ | init particle material handler                             sfuchs 07/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionBase::InitParticleMaterialHandler()
+{
+  // create particle material handler
+  particlematerial_ = std::make_shared<PARTICLEINTERACTION::MaterialHandler>(params_);
+
+  // init particle material handler
+  particlematerial_->Init();
 }
 
 /*---------------------------------------------------------------------------*

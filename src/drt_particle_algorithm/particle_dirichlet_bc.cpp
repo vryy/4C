@@ -182,8 +182,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
 
     // safety check
     if (statedim != function.NumberComponents())
-      dserror("dimensions of function defining initial field and of state '%s' not matching!",
-          PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+      dserror("dimension of function defining dirichlet boundary condition not correct!");
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

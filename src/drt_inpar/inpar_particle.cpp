@@ -100,6 +100,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   StringParameter("DIRICHLET_BOUNDARY_CONDITION", "",
       "dirichlet boundary condition of particle phase given by function", &particledynconditions);
 
+  // temperature boundary condition of particle phase given by function
+  StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "",
+      "temperature boundary condition of particle phase given by function", &particledynconditions);
+
   /*-------------------------------------------------------------------------*
    | smoothed particle hydrodynamics (SPH) specific control parameters       |
    *-------------------------------------------------------------------------*/
@@ -187,6 +191,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("VISCOUS_DAMPING", -1.0,
       "apply artificial viscous damping force to particles in order to determine static "
       "equilibrium solutions",
+      &particledynsph);
+
+
+  //! type of temperature evaluation scheme
+  setStringToIntegralParameter<int>("TEMPERATUREEVALUATION", "NoTemperatureEvaluation",
+      "type of temperature evaluation scheme",
+      tuple<std::string>("NoTemperatureEvaluation", "TemperatureIntegration"),
+      tuple<int>(INPAR::PARTICLE::NoTemperatureEvaluation, INPAR::PARTICLE::TemperatureIntegration),
       &particledynsph);
 
   // type of surface tension formulation
