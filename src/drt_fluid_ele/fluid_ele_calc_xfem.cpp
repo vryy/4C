@@ -3826,15 +3826,15 @@ namespace DRT
                 dserror("how to deal with Neumann boundary condition and new OSTImplementation");
               }
             }
-            else
+
             {
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::NIT_evaluateCoupling");
 
               // Get Configuration Map
-              std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>> configmap =
-                  coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_,
+              std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>& configmap =
+                  coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_, my::densaf_,
                       NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_, coupcond.second, ele,
-                      side, my::funct_.A(), my::derxy_.A(), rst_slave);
+                      side, my::funct_.A(), my::derxy_.A(), rst_slave, normal_, my::velint_);
 
               //-----------------------------------------------------------------------------
               // evaluate the coupling terms for coupling with current side
@@ -3943,8 +3943,9 @@ namespace DRT
                 // Get Configuration Map
                 std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>> configmap_n =
                     coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_,
-                        NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_, coupcond.second, ele,
-                        side, my::funct_.A(), my::derxy_.A(), rst_slave);
+                        my::densaf_, NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_,
+                        coupcond.second, ele, side, my::funct_.A(), my::derxy_.A(), rst_slave,
+                        normal_, my::velint_);
 
                 const double timefacfacn =
                     surf_fac * (my::fldparatimint_->Dt() - my::fldparatimint_->TimeFac());
