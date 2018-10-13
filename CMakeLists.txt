@@ -26,6 +26,15 @@ include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+# get current Baci revision from git
+include(GetGitRevision)
+get_git_revision_information()
+
+# configure revision file to pass git revision information to the source code
+configure_file(
+  "${PROJECT_SOURCE_DIR}/src/headers/revision.H.in"
+  "${PROJECT_BINARY_DIR}/src/headers/revision.H")
+
 # include all external (cmake) macros that we use
 INCLUDE(CheckCXXSourceRuns)
 INCLUDE(CheckCXXSourceCompiles)
@@ -227,15 +236,6 @@ IF(Git_EXECUTABLE)
   #MESSAGE(${Trilinos_GIT_VERSION})
   string (REGEX REPLACE "fatal.*$" "" Trilinos_GIT_VERSION "${Trilinos_GIT_VERSION}")
   ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
-
-  EXEC_PROGRAM(${Git_EXECUTABLE} ${PROJECT_SOURCE_DIR} ARGS "rev-parse HEAD" OUTPUT_VARIABLE Baci_GIT_VERSION )
-  string (REGEX REPLACE "fatal.*$" "" Baci_GIT_VERSION "${Baci_GIT_VERSION}")
-  IF ("${Baci_GIT_VERSION}" STREQUAL "")
-    ADD_DEFINITIONS( -DBaci_SHA1="Unable to determine git SHA1 of BACI.")
-  ELSE()
-    ADD_DEFINITIONS( -DBaci_SHA1="${Baci_GIT_VERSION}")
-  ENDIF()
-
 ENDIF(Git_EXECUTABLE)
 
 set(BOOST_LIBRARYDIR,${BOOST_LIBRARYDIR})

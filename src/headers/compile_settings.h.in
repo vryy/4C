@@ -2,10 +2,6 @@
 #define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
 
-#ifndef Baci_SHA1
-#define Baci_SHA1 "unknown"
-#endif
-
 #ifndef CHANGEDDATE
 #define CHANGEDDATE "unknown"
 #endif

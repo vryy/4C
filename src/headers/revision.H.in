@@ -1,0 +1,16 @@
+/*!----------------------------------------------------------------------
+\file revision.H.in
+\brief baci git revision information
+\level 3
+\maintainer Martin Kronbichler
+*----------------------------------------------------------------------*/
+#ifndef REVISION_H
+#define REVISION_H
+
+#include <string>
+
+const std::string BaciGitHash = "@BaciGitHash@";
+const std::string BaciGitHashShort = "@BaciGitHashShort@";
+const std::string BaciGitBranch = "@BaciGitBranch@";
+
+#endif

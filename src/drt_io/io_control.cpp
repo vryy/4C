@@ -29,6 +29,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include <revision.H>
+
 extern "C"
 {
 #include "compile_settings.h"  // for printing current revision number
@@ -298,7 +300,8 @@ void IO::OutputControl::WriteHeader(
 
     controlfile_ << "# baci output control file\n"
                  << "# created by " << user_entry->pw_name << " on " << hostname << " at "
-                 << ctime(&time_value) << "# using code version (git SHA1) " << Baci_SHA1 << " \n\n"
+                 << ctime(&time_value) << "# using code version (git SHA1) " << BaciGitHash
+                 << " \n\n"
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \"" << spatial_approx << "\"\n"

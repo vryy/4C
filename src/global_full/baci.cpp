@@ -28,6 +28,8 @@
 #include "../drt_lib/drt_parobjectregister.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
+#include <revision.H>
+
 #ifdef TRAP_FE
 #include <fenv.h>
 #endif /* TRAP_FE */
@@ -135,7 +137,7 @@ int main(int argc, char *argv[])
         "*       (c) 2010 All Rights Reserved.        *\n"
         "*                                            *\n"
         "**********************************************\n\n",
-        Baci_SHA1);
+        BaciGitHash.c_str());
     printf("Trilinos SHA1: %s\n", Trilinos_SHA1);
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
