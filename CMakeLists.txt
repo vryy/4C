@@ -539,6 +539,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/membrane_elasthyper.cpp
+  src/drt_mat/membrane_active_strain.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth.cpp
   src/drt_mat/growth_law.cpp
@@ -1229,6 +1230,9 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_input.cpp
   src/drt_membrane/membrane_line.cpp
   src/drt_membrane/membrane_line_evaluate.cpp
+  src/drt_membrane/membrane_scatra_eletypes.cpp
+  src/drt_membrane/membrane_scatra.cpp
+  src/drt_membrane/membrane_scatra_evaluate.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
