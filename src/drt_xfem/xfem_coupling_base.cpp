@@ -240,6 +240,10 @@ void XFEM::CouplingBase::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool, double>(false, 0.0);
   configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(false, 0.0);
   configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool, double>(false, 0.0);
+  // linearization of penalty terms: at the moment exclusively used for inflow stab
+  configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(false, 0.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(false, 0.0);
+  configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(false, 0.0);
   // normal terms:
   configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(false, 0.0);
   configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(false, 0.0);

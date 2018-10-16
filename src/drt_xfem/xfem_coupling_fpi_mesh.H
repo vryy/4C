@@ -148,8 +148,9 @@ namespace XFEM
 
     //! Updates configurationmap for specific Gausspoint
     virtual void UpdateConfigurationMap_GP(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                                      //< fluid sided weighting
+        double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
+        double& density_m,                                   //< master sided density
         double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
         double& full_stab,              //< full NIT Penalty scaling
         const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
@@ -158,7 +159,9 @@ namespace XFEM
         DRT::Element* bele,             //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        LINALG::Matrix<3, 1>& vel_m       //< master velocity at gp
     );
 
     virtual void InitStateVectors();
