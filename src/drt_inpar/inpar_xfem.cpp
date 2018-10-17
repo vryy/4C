@@ -496,6 +496,12 @@ void INPAR::XFEM::SetValidConditions(
     xfem_levelset_neumann->AddComponent(neumanncomponents[i]);
   }
 
+  // define if we use inflow stabilization on the xfem neumann surf condition
+  xfem_levelset_neumann->AddComponent(
+      Teuchos::rcp(new SeparatorConditionComponent("INFLOW_STAB", true)));
+  xfem_levelset_neumann->AddComponent(
+      Teuchos::rcp(new IntVectorConditionComponent("InflowStab", 1, true, true, true)));
+
   condlist.push_back(xfem_levelset_neumann);
 
   //*----------------*/
@@ -823,6 +829,12 @@ void INPAR::XFEM::SetValidConditions(
   {
     xfem_surf_neumann->AddComponent(neumanncomponents[i]);
   }
+
+  // define if we use inflow stabilization on the xfem neumann surf condition
+  xfem_surf_neumann->AddComponent(
+      Teuchos::rcp(new SeparatorConditionComponent("INFLOW_STAB", true)));
+  xfem_surf_neumann->AddComponent(
+      Teuchos::rcp(new IntVectorConditionComponent("InflowStab", 1, true, true, true)));
 
   condlist.push_back(xfem_surf_neumann);
 

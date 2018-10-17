@@ -539,6 +539,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/membrane_elasthyper.cpp
+  src/drt_mat/membrane_active_strain.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth.cpp
   src/drt_mat/growth_law.cpp
@@ -663,7 +664,11 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
   src/drt_mat/particle_mat_ellipsoids.cpp
-  src/drt_mat/extparticle_mat.cpp
+  src/drt_mat/particle_material_base.cpp
+  src/drt_mat/particle_material_thermo.cpp
+  src/drt_mat/particle_material_sph_fluid.cpp
+  src/drt_mat/particle_material_sph_boundary.cpp
+  src/drt_mat/particle_material_dem.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
@@ -784,6 +789,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
   src/drt_inpar/inpar_particle.cpp
+  src/drt_inpar/inpar_particle_old.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
@@ -1224,6 +1230,9 @@ set(OBJS_DRT_MEMBRANE_LIB
   src/drt_membrane/membrane_input.cpp
   src/drt_membrane/membrane_line.cpp
   src/drt_membrane/membrane_line_evaluate.cpp
+  src/drt_membrane/membrane_scatra_eletypes.cpp
+  src/drt_membrane/membrane_scatra.cpp
+  src/drt_membrane/membrane_scatra_evaluate.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp
@@ -1840,7 +1849,6 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint.cpp
   src/drt_particle/particle_timint_expl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
-  src/drt_particle/particle_timint_kickdrift.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
   src/drt_particle/particle_timint_strategy.cpp
@@ -1849,12 +1857,48 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
-  src/drt_particle/particle_sph_interaction.cpp
-  src/drt_particle/particle_sph_weightFunction.cpp
-  src/drt_particle/particle_sph_eos.cpp
-  src/drt_particle/particle_sph_rendering.cpp
-  src/drt_particle/particle_sph_rendering_resulttest.cpp
-  src/drt_particle/particle_utils.cpp
+)
+set(OBJS_DRT_PARTICLE_ALGORITHM
+  src/drt_particle_algorithm/particle_sim.cpp
+  src/drt_particle_algorithm/particle_algorithm.cpp
+  src/drt_particle_algorithm/particle_timint.cpp
+  src/drt_particle_algorithm/particle_input_generator.cpp
+  src/drt_particle_algorithm/particle_gravity.cpp
+  src/drt_particle_algorithm/particle_dirichlet_bc.cpp
+  src/drt_particle_algorithm/particle_temperature_bc.cpp
+  src/drt_particle_algorithm/particle_initial_field.cpp
+  src/drt_particle_algorithm/particle_result_test.cpp
+  src/drt_particle_algorithm/particle_algorithm_utils.cpp
+)
+set(OBJS_DRT_PARTICLE_INTERACTION
+  src/drt_particle_interaction/particle_interaction_base.cpp
+  src/drt_particle_interaction/particle_interaction_dem.cpp
+  src/drt_particle_interaction/particle_interaction_sph.cpp
+  src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
+  src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
+  src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
+  src/drt_particle_interaction/particle_interaction_sph_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_sph_density.cpp
+  src/drt_particle_interaction/particle_interaction_sph_density_correction.cpp
+  src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
+  src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
+  src/drt_particle_interaction/particle_interaction_sph_momentum.cpp
+  src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
+  src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
+  src/drt_particle_interaction/particle_interaction_sph_boundary_particle.cpp
+  src/drt_particle_interaction/particle_interaction_material_handler.cpp
+)
+set(OBJS_DRT_PARTICLE_ENGINE
+  src/drt_particle_engine/particle_container.cpp
+  src/drt_particle_engine/particle_container_bundle.cpp
+  src/drt_particle_engine/particle_engine.cpp
+  src/drt_particle_engine/particle_communication_utils.cpp
+  src/drt_particle_engine/particle_runtime_vtp_writer.cpp
+)
+set(OBJS_DRT_PARTICLE_ENGINE_LIB
+  src/drt_particle_engine/particle_enums.cpp
+  src/drt_particle_engine/particle_object.cpp
 )
 set(OBJS_DRT_ACOU
   src/drt_acou/acou_dyn.cpp
@@ -2074,6 +2118,7 @@ set(OBJS_DRT_IO_LIB
   src/drt_lib/drt_linedefinition.cpp
   src/drt_lib/drt_materialdefinition.cpp
   src/drt_lib/drt_nodereader.cpp
+  src/drt_lib/drt_particlereader.cpp
 )
 set(OBJS_FORTRAN
   src/fortran/hex_fserv.f
@@ -2275,6 +2320,7 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_integrator_policy_debug.cpp
   src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
   src/drt_contact_aug/contact_aug_interface_assembly.cpp
+  src/drt_contact_aug/contact_aug_timemonitor.cpp
   src/drt_contact_xcontact/xcontact_strategy.cpp
   src/drt_contact_xcontact/xcontact_interface.cpp
   src/drt_contact_xcontact/xcontact_integrator.cpp
@@ -2707,6 +2753,9 @@ add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle ${OBJS_DRT_PARTICLE})
+add_library(alg_particle_algorithm ${OBJS_DRT_PARTICLE_ALGORITHM})
+add_library(alg_particle_interaction ${OBJS_DRT_PARTICLE_INTERACTION})
+add_library(alg_particle_engine ${OBJS_DRT_PARTICLE_ENGINE})
 add_library(alg_acou ${OBJS_DRT_ACOU})
 add_library(alg_elemag ${OBJS_DRT_ELEMAG})
 add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
@@ -2733,6 +2782,9 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid_adjoint
   alg_opti
   alg_particle
+  alg_particle_algorithm
+  alg_particle_interaction
+  alg_particle_engine
   alg_acou
   alg_elemag
   alg_tutorial
@@ -2769,6 +2821,7 @@ add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 add_library(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
 add_library(drt_lib_binstrategy ${OBJS_DRT_BINSTRATEGY_DISCRET_LIB})
+add_library(drt_lib_particleengine ${OBJS_DRT_PARTICLE_ENGINE_LIB})
 add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
@@ -2799,6 +2852,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_io
   drt_lib_nurbs
   drt_lib_binstrategy
+  drt_lib_particleengine
   drt_lib_statinv_ana
   drt_lib_immersed
   drt_lib_fiber

@@ -4,7 +4,7 @@
 
 \brief Input parameters for structure
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 \level 1
 */

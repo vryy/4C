@@ -3,7 +3,7 @@
 \brief mortar coupling terms of ehl
 
 \level 3
-\maintainer Alexander Seitz
+\maintainer Mostafa Faraji
 
 *----------------------------------------------------------------------*/
 

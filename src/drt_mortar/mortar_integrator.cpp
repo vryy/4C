@@ -6,7 +6,7 @@ of two MortarElements in 1D and 2D
 
 \level 1
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 *-----------------------------------------------------------------------*/
 
@@ -368,34 +368,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Done()
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
 {
-  //**********************************************************************
-  // Create integration points according to eletype!
-  //
-  // For segment-based integration, we have pre-defined default
-  // values for the Gauss rules according to the segment type.
-  //
-  // default for integrals on 1D lines:
-  // --> 5 GP (degree of precision: 9)
-  //
-  // default for integrals on 2D triangles:
-  // --> 7 GP (degree of precision: 5)
-  //
-  // default for integrals on 2D quadrilaterals:
-  // --> 9 GP (degree of precision: 5)
-  //
-  // For element-based integration, we choose the Gauss rules according
-  // to the user's wish (i.e. according to the parameter NUMGP_PER_DIM).
-  //
-  // possibilites for integrals on 1D lines:
-  // --> 1,2,3,4,5,6,7,8,9,10,16,20,32 GPs
-  //
-  // possibilities for integrals on 2D triangles:
-  // --> 1,3,6,7,12,37,64 GPs
-  //
-  // possibilities for integrals on 2D quadrilaterals
-  // --> 1,4,9,16,25,36,49,64,81,100,256,400,1024 GPs
-  //**********************************************************************
-
   // get numgp (for element-based integration)
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
 

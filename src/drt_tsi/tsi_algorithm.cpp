@@ -6,10 +6,7 @@
         momentum equation and the heat conduction equation
 \level 2
 <pre>
-  \maintainer  Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
+  \maintainer  Christoph Meier
 </pre>
 */
 

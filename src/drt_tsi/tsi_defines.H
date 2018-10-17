@@ -3,12 +3,9 @@
 
 \brief A set of preprocessor defines for tsi methods
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\level 1
+
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 #ifndef TSI_DEFINES_H

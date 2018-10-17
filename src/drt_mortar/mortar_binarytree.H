@@ -3,12 +3,9 @@
 
 \brief A class for performing mortar search in 2D/3D based on binarytrees
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Alexander Popp
+
+\level 1
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_BINARYTREE_H
@@ -364,6 +361,8 @@ namespace MORTAR
     \param selements (in):   All slave elements (column map)
     \param melements (in):   All master elements (fully overlapping map)
     \param dim (in):         The problem dimension
+    \param eps (in):
+    \param useauxpos (in):
 
     */
     BinaryTree(DRT::Discretization& discret, Teuchos::RCP<Epetra_Map> selements,
@@ -561,7 +560,7 @@ namespace MORTAR
     */
     void SearchCombined()
     {  // if proc has no slave elements --> return;
-      if (sroot_->Type() == 4) return;
+      if (sroot_->Type() == NOSLAVE_ELEMENTS) return;
       sroot_->CalculateSlabsDop();
       sroot_->EnlargeGeometry(enlarge_);
       mroot_->CalculateSlabsDop();

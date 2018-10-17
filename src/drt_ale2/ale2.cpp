@@ -2,11 +2,11 @@
 /*!
 \file ale2.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 15362
-</pre>
+\brief ALE element for 2D case
+
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 

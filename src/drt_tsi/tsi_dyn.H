@@ -1,14 +1,8 @@
 /*!----------------------------------------------------------------------
 \file tsi_dyn.H
 \brief Control routine for thermo-structure-interaction problems.
-
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\level 1
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

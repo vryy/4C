@@ -77,6 +77,7 @@
 #include "fourieriso.H"
 #include "soret.H"
 #include "membrane_elasthyper.H"
+#include "membrane_active_strain.H"
 #include "growthremodel_elasthyper.H"
 #include "inelastic_defgrad_factors.H"
 #include "scalardepinterp.H"
@@ -116,7 +117,6 @@
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
 #include "particle_mat_ellipsoids.H"
-#include "extparticle_mat.H"
 #include "acoustic.H"
 #include "acoustic_sol.H"
 #include "activefiber.H"
@@ -126,6 +126,9 @@
 #include "fluidporo_relpermeability_law.H"
 #include "fluidporo_viscosity_law.H"
 #include "multiplicative_split_defgrad_elasthyper.H"
+#include "particle_material_sph_fluid.H"
+#include "particle_material_sph_boundary.H"
+#include "particle_material_dem.H"
 #include "superelastic_sma.H"
 
 
@@ -956,6 +959,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::Membrane_ElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+    case INPAR::MAT::m_membrane_activestrain:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::Membrane_ActiveStrain(curmat));
+      MAT::PAR::Membrane_ActiveStrain* params =
+          static_cast<MAT::PAR::Membrane_ActiveStrain*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
     case INPAR::MAT::m_growthremodel_elasthyper:
     {
       if (curmat->Parameter() == NULL)
@@ -1083,11 +1094,31 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::ParticleMatEllipsoids*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_extparticlemat:
+    case INPAR::MAT::m_particle_sph_fluid:
     {
-      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::ExtParticleMat(curmat));
-      MAT::PAR::ExtParticleMat* params =
-          static_cast<MAT::PAR::ExtParticleMat*>(curmat->Parameter());
+      // note: dynamic_cast needed due diamond inheritance structure
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPHFluid(curmat));
+      MAT::PAR::ParticleMaterialSPHFluid* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialSPHFluid*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_sph_boundary:
+    {
+      // note: dynamic_cast needed due diamond inheritance structure
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialSPHBoundary(curmat));
+      MAT::PAR::ParticleMaterialSPHBoundary* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_particle_dem:
+    {
+      // note: dynamic_cast needed due diamond inheritance structure
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::ParticleMaterialDEM(curmat));
+      MAT::PAR::ParticleMaterialDEM* params =
+          dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_acousticmat:

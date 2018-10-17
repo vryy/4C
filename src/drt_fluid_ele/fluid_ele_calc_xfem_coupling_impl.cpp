@@ -1004,6 +1004,19 @@ namespace DRT
           NIT_Stab_Penalty(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
               configmap.at(INPAR::XFEM::X_Pen_Row), configmap.at(INPAR::XFEM::F_Pen_Col),
               configmap.at(INPAR::XFEM::X_Pen_Col));
+
+          if (configmap.at(INPAR::XFEM::F_Pen_Row_linF1).first)
+          {
+            if (!configmap.at(INPAR::XFEM::F_Pen_Row_linF1).first ||
+                !configmap.at(INPAR::XFEM::F_Pen_Row_linF2).first ||
+                !configmap.at(INPAR::XFEM::F_Pen_Row_linF3).first)
+              dserror("Linearization for Penalty Term not set for all Components!");
+
+            NIT_Stab_Penalty_lin(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
+                configmap.at(INPAR::XFEM::F_Pen_Row_linF1),
+                configmap.at(INPAR::XFEM::F_Pen_Row_linF2),
+                configmap.at(INPAR::XFEM::F_Pen_Row_linF3));
+          }
         }
 
         // add averaged term (TODO: For XFF? How does this work for non-master coupled? @Benedikt?)
@@ -3473,6 +3486,53 @@ namespace DRT
 
         return;
       }
+
+      /*----------------------------------------------------------------------*
+       *----------------------------------------------------------------------*/
+      template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_lin(
+          const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+          const double& timefacfac,                ///< time integration factor
+          const std::pair<bool, double>& m_row,    ///< scaling for master row
+          const std::pair<bool, double>&
+              m_row_linm1,  ///< linearization of scaling for master row w.r.t. master comp. one
+          const std::pair<bool, double>&
+              m_row_linm2,  ///< linearization of scaling for master row w.r.t. master comp. two
+          const std::pair<bool, double>&
+              m_row_linm3,  ///< linearization of scaling for master row w.r.t. master comp. three
+          bool only_rhs)
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_Stab_Penalty_linearization");
+
+        if (only_rhs) return;
+
+        const double stabfac_timefacfac_m = timefacfac;
+        velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_m, velint_diff_, 0.0);
+
+        for (unsigned ir = 0; ir < nen_; ++ir)
+        {
+          const double tmp_val = funct_m(ir);
+
+          for (unsigned ivel = 0; ivel < nsd_; ++ivel)
+          {
+            for (unsigned ic = 0; ic < nen_; ++ic)
+            {
+              C_umum_(mIndex(ir, ivel), mIndex(ic, 0)) += tmp_val *
+                                                          velint_diff_timefacfac_stabfac_(ivel) *
+                                                          funct_m(ic) * m_row_linm1.second;
+              C_umum_(mIndex(ir, ivel), mIndex(ic, 1)) += tmp_val *
+                                                          velint_diff_timefacfac_stabfac_(ivel) *
+                                                          funct_m(ic) * m_row_linm2.second;
+              C_umum_(mIndex(ir, ivel), mIndex(ic, 2)) += tmp_val *
+                                                          velint_diff_timefacfac_stabfac_(ivel) *
+                                                          funct_m(ic) * m_row_linm3.second;
+            }
+          }
+        }
+        return;
+      }
+
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/

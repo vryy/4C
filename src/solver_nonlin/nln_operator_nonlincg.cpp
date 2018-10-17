@@ -2,11 +2,11 @@
 /*!
 \file nln_operator_nonlincg.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Nonlinear Conjugate Gradient
+
+\level 3
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

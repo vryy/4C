@@ -18,7 +18,6 @@
  *----------------------------------------------------------------------*/
 #include "adapter_particle.H"
 #include "../drt_particle/particle_timint_centrdiff.H"
-#include "../drt_particle/particle_timint_kickdrift.H"
 #include "../drt_particle/particle_timint_expleuler.H"
 #include "../drt_particle/particle_timint_rk.H"
 #include "../drt_lib/drt_discret.H"
@@ -61,7 +60,7 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
   const Teuchos::RCP<Teuchos::ParameterList> partdyn =
-      Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ParticleParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ParticleParamsOld()));
 
   // show default parameters of particle parameter list
   if ((actdis->Comm()).MyPID() == 0) DRT::INPUT::PrintDefaultParameters(IO::cout, *partdyn);
@@ -79,33 +78,27 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   partdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
   // switch to different time integrators
-  INPAR::PARTICLE::DynamicType timinttype =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(*partdyn, "DYNAMICTYP");
+  INPAR::PARTICLEOLD::DynamicType timinttype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(*partdyn, "DYNAMICTYP");
 
   // create marching time integrator
   Teuchos::RCP<Particle> tmppart;
   switch (timinttype)
   {
-    case INPAR::PARTICLE::dyna_expleuler:
+    case INPAR::PARTICLEOLD::dyna_expleuler:
     {
       tmppart =
           Teuchos::rcp(new PARTICLE::TimIntExplEuler(ioflags, *partdyn, *xparams, actdis, output));
       break;
     }
-    case INPAR::PARTICLE::dyna_centrdiff:
+    case INPAR::PARTICLEOLD::dyna_centrdiff:
     {
       tmppart =
           Teuchos::rcp(new PARTICLE::TimIntCentrDiff(ioflags, *partdyn, *xparams, actdis, output));
       break;
     }
-    case INPAR::PARTICLE::dyna_kickdrift:
-    {
-      tmppart =
-          Teuchos::rcp(new PARTICLE::TimIntKickDrift(ioflags, *partdyn, *xparams, actdis, output));
-      break;
-    }
-    case INPAR::PARTICLE::dyna_rk2:
-    case INPAR::PARTICLE::dyna_rk4:
+    case INPAR::PARTICLEOLD::dyna_rk2:
+    case INPAR::PARTICLEOLD::dyna_rk4:
     {
       tmppart = Teuchos::rcp(new PARTICLE::TimIntRK(ioflags, *partdyn, *xparams, actdis, output));
       break;

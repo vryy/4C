@@ -74,7 +74,7 @@ void PASI::PASI_PartTwoWayCoup::Init(const Epetra_Comm& comm  //! communicator
   const Teuchos::ParameterList& pasi_params = problem->PASIDynamicParams();
   const Teuchos::ParameterList& pasi_params_part =
       problem->PASIDynamicParams().sublist("PARTITIONED");
-  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
+  const Teuchos::ParameterList& particle_params = problem->ParticleParamsOld();
 
   // get the parameters for the ConvergenceCheck
   itmax_ = pasi_params.get<int>("ITEMAX");
@@ -85,18 +85,18 @@ void PASI::PASI_PartTwoWayCoup::Init(const Epetra_Comm& comm  //! communicator
   writerestartevery_ = pasi_params.get<int>("RESTARTEVRY");
 
   // safety check: two way coupled pasi not implemented for all Particle Interaction Types
-  if (particles_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM and
-      particles_->ParticleInteractionType() != INPAR::PARTICLE::NormalAndTang_DEM)
+  if (particles_->ParticleInteractionType() != INPAR::PARTICLEOLD::Normal_DEM and
+      particles_->ParticleInteractionType() != INPAR::PARTICLEOLD::NormalAndTang_DEM)
   {
     dserror(
-        "Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None', "
-        "'Normal_MD' and 'SPH'!");
+        "Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None' "
+        "and 'Normal_MD'!");
   }
 
   // safety check: two way coupled pasi currently just implemented for CentrDiff time integration
   // scheme in particle field
-  if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(particle_params, "DYNAMICTYP") !=
-      INPAR::PARTICLE::dyna_centrdiff)
+  if (DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::DynamicType>(particle_params, "DYNAMICTYP") !=
+      INPAR::PARTICLEOLD::dyna_centrdiff)
   {
     dserror("Two way coupled partitioned PASI just implemented for DYNAMICTYP: 'CentrDiff'");
   }
@@ -257,23 +257,12 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
       1.0, *(particles_->AdapterParticle()->Accn()), 0.0);
 
   // reset angular velocities and accelerations
-  if (particles_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  if (particles_->ParticleInteractionType() != INPAR::PARTICLEOLD::None)
   {
     particles_->AdapterParticle()->WriteAccessAngVelnp()->Update(
         1.0, *(particles_->AdapterParticle()->AngVeln()), 0.0);
     particles_->AdapterParticle()->WriteAccessAngAccnp()->Update(
         1.0, *(particles_->AdapterParticle()->AngAccn()), 0.0);
-  }
-
-  // reset radius, density and specific enthalpy (and its derivative)
-  if (particles_->ParticleInteractionType() == INPAR::PARTICLE::SPH)
-  {
-    particles_->AdapterParticle()->WriteAccessRadiusnp()->Update(
-        1.0, *(particles_->AdapterParticle()->Radiusn()), 0.0);
-    particles_->AdapterParticle()->WriteAccessDensitynp()->Update(
-        1.0, *(particles_->AdapterParticle()->Densityn()), 0.0);
-    particles_->AdapterParticle()->WriteAccessDensityDotnp()->Update(
-        1.0, *(particles_->AdapterParticle()->DensityDotn()), 0.0);
   }
 
   // clear vector of particle forces on structural discretization

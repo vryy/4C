@@ -3,7 +3,7 @@
 \file so_sh8p8.H
 \level 2
 \brief
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 */
 
 /*----------------------------------------------------------------------*/

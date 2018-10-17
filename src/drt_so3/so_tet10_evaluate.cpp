@@ -25,6 +25,7 @@
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "so_utils.H"
+#include "../drt_fiber/drt_fiber_node.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -1058,6 +1059,16 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       xdisp(i, 2) = disp[i * NODDOF_SOTET10 + 2];
     }
   }
+
+  // interpolate fibers to gp if fiber nodes are defined
+  std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber1(
+      NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
+  std::vector<LINALG::Matrix<NUMDIM_SOTET10, 1>> gpfiber2(
+      NUMNOD_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, 1>(true));
+  DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[0]);
+  if (fnode)
+    DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(nodes, shapefcts_4gp, gpfiber1, gpfiber2);
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -1226,6 +1237,12 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
       LINALG::Matrix<1, NUMDIM_SOTET10> point(true);
       point.MultiplyTN(funct, xrefe);
       params.set("gprefecoord", point);
+    }
+
+    if (fnode)
+    {
+      params.set("gpfiber1", gpfiber1[gp]);
+      params.set("gpfiber2", gpfiber2[gp]);
     }
 
     params.set<int>("gp", gp);

@@ -14,9 +14,7 @@ files. Based on these different filter applications can be written.
 
 Note: The new filter design uses the discretization, node and element
 classes. So postprocessing calculations are easily possible. Element
-specific output operations can be done by the elements themselfes.
-
-The new filters can be used in parallel.
+specific output operations can be done by the elements themselves.
 
 */
 /*----------------------------------------------------------------------*/
@@ -70,13 +68,14 @@ namespace DRT
 class PostProblem
 {
  public:
-  // @{ \name Constructors and destructors
+  //@{ \name Constructors and destructors
 
-  //! setup filter and read command line
-  //
-  // \param CLP (in)  : preconfigured command line processor
-  // \param argc (in) : number of command line arguments
-  // \param argv (in) : command line arguments
+  /*! \brief Setup filter and read command line
+   *
+   *  \param CLP (in)  : preconfigured command line processor
+   *  \param argc (in) : number of command line arguments
+   *  \param argv (in) : command line arguments
+   */
   PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv);
 
   //! destructor
@@ -84,7 +83,7 @@ class PostProblem
 
   //@}
 
-  // @{ \name Access methods
+  //@{ \name Access methods
 
   //! returns the filter to be used for post-processing
   std::string filter() const { return filter_; }
@@ -92,7 +91,10 @@ class PostProblem
   //! returns the basename of the control file
   std::string basename() const { return basename_; }
 
-  //! sets the basename of the control file to name
+  /*! \brief Sets the basename of the control file to name
+   *
+   *  \param name [in] Name to be used for the control file
+   */
   void set_basename(std::string name) { basename_ = name; }
 
   //! returns the basename of the output files
@@ -110,14 +112,20 @@ class PostProblem
   //! returns the number of dimensions the problem has
   int num_dim() const { return ndim_; }
 
-  //! returns a pointer to the num-th discretization
+  /*! \brief Returns a pointer to the num-th discretization
+   *
+   *  \param num [in] Index of discretization to be returned
+   */
   PostField* get_discretization(const int num);
 
   int field_pos(const PostField* field) const;
 
   int num_output_procs() const;
 
-  //! get the maximum node id over the total simulation for a given fieldname
+  /*! \brief Get the maximum node id over the total simulation for a given fieldname
+   *
+   *  \param fieldname [in] Name of field that is queried
+   */
   int get_max_nodeid(const std::string& fieldname);
 
   //! returns the first step in the range, that the user specified
@@ -163,31 +171,38 @@ class PostProblem
 
   //! returns struct_rot_
   std::string struct_rot() { return struct_rot_; }
-  //@}
 
   //! returns outputtype_
   std::string outputtype() { return outputtype_; }
   //@}
 
   //! read in new mesh for given step and field
-  void re_read_mesh(int fieldpos, std::string fieldname, int step);
+  void re_read_mesh(int fieldpos,  ///< [in] ??
+      std::string fieldname,       ///< [in] Name of field
+      int step                     ///< [in] Time step index
+  );
 
  private:
-  //! initializes all the data a filter needs.
-  //
-  // This function is called by the Constructor.
-  void setup_filter(std::string control_file_name, std::string output_name);
+  /*! brief Initializes all the data a filter needs.
+   *
+   *  This function is called by the Constructor.
+   */
+  void setup_filter(std::string control_file_name,  ///< [in] Name of control file
+      std::string output_name                       ///< [in] Name of output file
+  );
 
-  //! reads the mesh files
-  //
-  // calls 'getfield()' for each 'field'-entry in the mesh file
-  // (currently it reads only the fields with step ==  0).
-  // This function is called by the Constructor.
+  /*! \brief Reads the mesh files
+   *
+   *  Calls 'getfield()' for each 'field'-entry in the mesh file
+   *  (currently it reads only the fields with step ==  0).
+   *  This function is called by the Constructor.
+   */
   void read_meshes();
 
-  //! creates and returns a PostField instance from a field MAP.
-  //
-  // Keeps track of global field variable
+  /*! \brief Creates and returns a PostField instance from a field MAP.
+   *
+   *  Keeps track of global field variable
+   */
   PostField getfield(MAP* field_info);
 
   //! type of filter we want to apply
@@ -208,17 +223,21 @@ class PostProblem
   //! output file base name (possibly including directory)
   std::string outname_;
 
-  //! memory version of control file
-  /*! If a restarted run is post processed this is a merged control
-    file constructed from all control files available. */
+  /*! \brief Memory version of control file
+   *
+   *  If a restarted run is post processed this is a merged control
+   *  file constructed from all control files available.
+   */
   MAP control_table_;
 
   //! the meshes of our problem (fields are discretizations here!)
   std::vector<PostField> fields_;
 
-  /* start, stop and step numbers. a python like slice. */
-  /* We don't have to read each result. This is set by command line
-   * arguments. */
+  /*! \brief Start, stop and step numbers
+   *
+   *  We don't have to read each result. This is set by command line
+   *  arguments.
+   */
   int start_;
   int end_;
   int step_;
@@ -250,8 +269,10 @@ class PostProblem
   //! output to be written in binary of ascii format optionally set by commend line argument
   std::string outputtype_;
 
-  //! MAP pointers into the control file map.
-  // We don't own these pointers, so no reference counting.
+  /*! \brief MAP pointers into the control file map.
+   *
+   *  We don't own these pointers, so no reference counting.
+   */
   std::vector<MAP*> result_group_;
 
   std::string input_dir_;
@@ -268,6 +289,10 @@ class PostProblem
   Problems with changing meshes can be done, but will need some more
   work.
 
+  \note The filter design uses the discretization, node and element
+  classes. So postprocessing calculations are easily possible. Element
+  specific output operations can be done by the elements themselves.
+
   \author m.kue
   \date 02/07
 */
@@ -276,9 +301,15 @@ class PostField
  public:
   // @{ \name Constructors and destructors
 
-  PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem, std::string field_name,
-      const int numnd, const int numele);
+  //! Constructor
+  PostField(Teuchos::RCP<DRT::Discretization> dis,  ///< [in] Discretization
+      PostProblem* problem,                         ///< [in] Instance of PostProblem
+      std::string field_name,                       ///< [in] Name of the field
+      const int numnd,                              ///< [in] Number of nodes
+      const int numele                              ///< [in] Number of elements
+  );
 
+  //! Destructor
   ~PostField();
 
   //@}
@@ -298,7 +329,7 @@ class PostField
   //! returns the number of global Dof-Ids
   int global_id_num() const;
 
-  //! returns the PostProbem instance
+  //! returns the PostProblem instance
   PostProblem* problem() { return problem_; }
 
   //! returns the name of the field
@@ -321,11 +352,22 @@ class PostField
   //@}
 
  private:
+  //! Discretization of underlying field
   Teuchos::RCP<DRT::Discretization> dis_;
+
+  //! PostProblem of underlying field
   PostProblem* problem_;
+
+  //! Number of processors used for output
   int num_output_procs_;
+
+  //! Name of field to be processed
   std::string field_name_;
+
+  //! Number of nodes
   int numnd_;
+
+  //! Number of Elements
   int numele_;
 };
 
@@ -341,65 +383,84 @@ class PostField
 class PostResult
 {
  public:
-  // @{ \name Constructors and destructors
+  //@{ \name Constructors and destructors
   PostResult(PostField* field);
   ~PostResult();
 
   //@}
 
-  // @{ \name Reader methods
+  //@{ \name Reader methods
 
-  //! get result times for a given fieldname
-  //
-  // \returns vector with timesteps when the solution was written
+  /*! \brief Get result times for a given fieldname
+   *
+   *  \param fieldname [in] Name of field to be queried
+   *
+   *  \returns vector with timesteps when the solution was written
+   */
   std::vector<double> get_result_times(const std::string& fieldname);
 
-  //! get result times for a given fieldname and specific result
-  //
-  // \returns vector with timesteps when the specific solution was written
+  /*! \brief Get result times for a given fieldname and specific result
+   *
+   *  \param fieldname [in] Name of field to be queried
+   *  \param groupname [in] ??
+   *
+   *  \returns vector with timesteps when the specific solution was written
+   */
   std::vector<double> get_result_times(const std::string& fieldname, const std::string& groupname);
 
-  //! get result times and steps for a given fieldname
-  //
-  // fills vector with times and steps when the solution was written
+  /*! \brief Get result times and steps for a given fieldname
+   *
+   *  Fills vector with times and steps when the solution was written
+   *
+   *  \param fieldname [in] Name of field to be queried
+   *  \param times [out] Time instances where results are available
+   *  \param steps [out] Time step indices where results are available
+   */
   void get_result_timesandsteps(
       const std::string& fieldname, std::vector<double>& times, std::vector<int>& steps);
 
-  //! goes to the next result block in the slice
-  //
-  // Automatically opens new result files.
-  //
-  // \returns 1 if a new result block has been found, otherwise returns 0
+  /*! \brief Goes to the next result block in the slice
+   *
+   *  Automatically opens new result files.
+   *
+   *  \returns 1 if a new result block has been found, otherwise returns 0
+   */
   int next_result();
 
-  //! goes to the next result block in the slice containing the specific result vector >name<
-  //
-  // Automatically opens new result files.
-  //
-  // \returns 1 if a new result block has been found, otherwise returns 0
+  /*! \brief Goes to the next result block in the slice containing the specific result vector >name<
+   *
+   *  Automatically opens new result files.
+   *
+   *  \param name [in] Name of result to be queried
+   *
+   *  \returns 1 if a new result block has been found, otherwise returns 0
+   */
   int next_result(const std::string& name);
 
-  //! reads the data of the result vector 'name' from the current result block
-  //
-  // \param name (in): result vector name inside the control file
-  //
-  // \returns vector with results read
+  /*! \brief Reads the data of the result vector 'name' from the current result block
+   *
+   *  \param name [in] result vector name inside the control file
+   *
+   *  \returns vector with results read
+   */
   Teuchos::RCP<Epetra_Vector> read_result(const std::string name);
 
-  //! reads the data of the result vector 'name' from the current result block
-  //
-  // \param name (in): result vector name inside the control file
-  // \param elemap (out): element map
-  //
-  // \returns vector with results read
+  /*! \brief Reads the data of the result vector 'name' from the current result block
+   *
+   * \param name [in] result vector name inside the control file
+   * \param elemap [out] element map
+   *
+   * \returns vector with results read
+   */
   Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> read_result_serialdensematrix(
       const std::string name);
 
-  //! reads the data of the result vector 'name' from the current result block
-  //
-  // \param name (in): result vector name inside the control file
-  //
-  // \returns vector with results read
+  /*! \brief Reads the data of the result vector 'name' from the current result block
+   *
+   *  \param name [in] result vector name inside the control file
+   *
+   *  \returns vector with results read
+   */
   Teuchos::RCP<Epetra_MultiVector> read_multi_result(const std::string name);
 
   //@}
@@ -419,16 +480,18 @@ class PostResult
   int step() const;
 
   //@}
+
  private:
   //! closes all the currently open result files
   void close_result_files();
 
-  //! opens result files.
-  //
-  // The name is taken from the "result_file" entry in the block
-  // 'field_info'
-  //
-  // \param field_info (in) : result block map for control file
+  /*! \brief Opens result files
+   *
+   *  The name is taken from the "result_file" entry in the block
+   * 'field_info'
+   *
+   * \param field_info [in] result block map for control file
+   */
   void open_result_files(MAP* field_info);
 
   //! Tell whether a given result group belongs to this result.
@@ -439,7 +502,5 @@ class PostResult
   MAP* group_;
   IO::HDFReader file_;
 };
-
-
 
 #endif

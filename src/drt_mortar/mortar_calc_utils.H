@@ -6,7 +6,7 @@
 \level 1
 
 <pre>
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 </pre>
 
 *----------------------------------------------------------------------*/

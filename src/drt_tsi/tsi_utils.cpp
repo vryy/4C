@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 */
 

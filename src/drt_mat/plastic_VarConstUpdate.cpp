@@ -11,10 +11,7 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 \level 3
 
 <pre>
-\maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+\maintainer Matthias Mayr
 </pre>
  */
 

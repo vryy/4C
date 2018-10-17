@@ -64,7 +64,6 @@ set_editor() {
 prompt_help() {
   echo -e "${RED}$(cat <<-EOF
 e - edit commit message
-#y - proceed with commit
 n - abort commit
 ? - print help
 EOF

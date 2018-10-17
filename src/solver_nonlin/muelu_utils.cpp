@@ -2,11 +2,11 @@
 /*!
 \file muelu_utils.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Utilities for interaction with MueLu
+
+\level 2
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

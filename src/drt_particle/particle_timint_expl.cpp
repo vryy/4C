@@ -16,7 +16,6 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "particle_sph_interaction.H"
 
 #include "../drt_mat/matpar_bundle.H"
 
@@ -39,11 +38,11 @@ void PARTICLE::TimIntExpl::Init()
   TimInt::Init();
 
   // initialize collision handler for particles
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParamsOld();
   switch (particle_algorithm_->ParticleInteractionType())
   {
-    case INPAR::PARTICLE::Normal_DEM:
-    case INPAR::PARTICLE::NormalAndTang_DEM:
+    case INPAR::PARTICLEOLD::Normal_DEM:
+    case INPAR::PARTICLEOLD::NormalAndTang_DEM:
     {
       if (DRT::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_particlemat_ellipsoids) < 0)
@@ -54,13 +53,7 @@ void PARTICLE::TimIntExpl::Init()
             discret_, particle_algorithm_, particleparams));
       break;
     }
-    case INPAR::PARTICLE::SPH:
-    {
-      interHandler_ = Teuchos::rcp(new PARTICLE::ParticleSPHInteractionHandler(
-          discret_, particle_algorithm_, particleparams));
-      break;
-    }
-    case INPAR::PARTICLE::Normal_MD:
+    case INPAR::PARTICLEOLD::Normal_MD:
     {
       collhandler_ = Teuchos::rcp(
           new PARTICLE::ParticleCollisionHandlerMD(discret_, particle_algorithm_, particleparams));

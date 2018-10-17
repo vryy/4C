@@ -7,8 +7,6 @@
 \brief Input parameters for ALE mesh motion
 
 \level 2
-
-</pre>
 */
 
 /*----------------------------------------------------------------------*/

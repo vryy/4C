@@ -219,22 +219,6 @@ class ParticleFilter : public PostFilterBase
 
 
 /*!
- \brief Writer for particle meshfree rendering problems
-
- \author katta
- \date 12/16
- */
-class ParticleSPHRenderingFilter : public PostFilterBase
-{
- public:
-  ParticleSPHRenderingFilter(PostField* field, std::string name) : PostFilterBase(field, name) {}
-
- protected:
-  virtual void WriteAllResults(PostField* field);
-};
-
-
-/*!
  \brief Writer for acoustical problems
 
  \author schoeder

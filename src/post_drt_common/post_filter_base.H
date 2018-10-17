@@ -1,15 +1,12 @@
-/*
- \file post_drt_writer_base.H
+/*!
+ \file post_filter_base.H
 
  \brief contains base class for a generic output filter (ensight and vtk are derived from this
  class)
 
- <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/
- 089 - 289-15235
- </pre>
+ \maintainer Martin Kronbichler
+
+ \level 1
  */
 
 #ifndef POST_DRT_FILTER_BASE_H_
@@ -28,12 +25,12 @@ class PostWriterBase;
 //! defines different result types (node-based, element-based, Gauss-Points?)
 enum ResultType
 {
-  no_restype,    // unknown result type
-  dofbased,      // result values based on dofrowmap
-  nodebased,     // result values based on noderowmap
-  elementbased,  // result values based on elementrowmap
-  elementdof,    // result values based on elementdofrowmap (unused)
-  max_restype    // end marker. must be the last entry
+  no_restype,    ///< unknown result type
+  dofbased,      ///< result values based on dofrowmap
+  nodebased,     ///< result values based on noderowmap
+  elementbased,  ///< result values based on elementrowmap
+  elementdof,    ///< result values based on elementdofrowmap (unused)
+  max_restype    ///< end marker. must be the last entry
 };
 
 

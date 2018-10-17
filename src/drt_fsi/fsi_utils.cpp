@@ -2,11 +2,11 @@
 /*!
 \file fsi_utils.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Utilities for FSI problems
+
+\level 1
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

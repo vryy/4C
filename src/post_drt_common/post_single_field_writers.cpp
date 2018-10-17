@@ -186,7 +186,9 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // Write element and node owners
   WriteElementResults(field);
-  //  WriteNod eResults(field); // Uncomment to visualize owner proc on a nodal basis
+  //  WriteNodeResults(field); // Uncomment to visualize owner proc on a nodal basis
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -639,18 +641,6 @@ void ParticleFilter::WriteAllResults(PostField* field)
   // crosslinker stuff
   writer_->WriteResult("numbond", "numbond", nodebased, 1);
   writer_->WriteResult("owner", "owner", nodebased, 1);
-}
-
-/*----------------------------------------------------------------------*/
-void ParticleSPHRenderingFilter::WriteAllResults(PostField* field)
-{
-  writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
-  writer_->WriteResult(
-      "modified_velocity", "modified_velocity", dofbased, field->problem()->num_dim(), 0);
-
-  writer_->WriteResult("density", "density", nodebased, 1);
-  writer_->WriteResult("pressure", "pressure", nodebased, 1);
 }
 
 /*----------------------------------------------------------------------*/

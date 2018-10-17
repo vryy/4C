@@ -2115,6 +2115,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // active strain membrane material for gastric electromechanics
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_Membrane_ActiveStrain",
+            "active strain membrane material", INPAR::MAT::m_membrane_activestrain));
+
+    AddNamedInt(m, "MATIDPASSIVE", "MATID for the passive material", false);
+    AddNamedInt(m, "SCALIDVOLTAGE", "ID of the scalar that represents the (SMC) voltage", false);
+    AddNamedReal(m, "DENS", "material mass density", false);
+    AddNamedReal(m, "BETA1", "Ca2+ dynamics", false);
+    AddNamedReal(m, "BETA2", "opening dynamics of the VDCC", false);
+    AddNamedReal(m, "VOLTHRESH", "voltage threshold for activation", false);
+    AddNamedReal(m, "ALPHA1", "intensity of contraction in fiber direction 1", false);
+    AddNamedReal(m, "ALPHA2", "intensity of contraction in fiber direction 2", false);
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // growth and remodeling (homogenized constrained mixture model)
   {
     Teuchos::RCP<MaterialDefinition> m =
@@ -3326,25 +3344,49 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  // extended particle material
+  // particle material sph fluid
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHFluid",
+        "particle material for SPH fluid", INPAR::MAT::m_particle_sph_fluid));
+
+    AddNamedReal(m, "INITRADIUS", "initial radius");
+    AddNamedReal(m, "INITDENSITY", "initial density");
+    AddNamedReal(m, "REFDENSFAC", "reference density factor in equation of state");
+    AddNamedReal(m, "EXPONENT", "exponent in equation of state");
+    AddNamedReal(m, "BACKGROUNDPRESSURE", "background pressure for transport velocity formulation");
+    AddNamedReal(m, "BULK_MODULUS", "bulk modulus");
+    AddNamedReal(m, "DYNAMIC_VISCOSITY", "dynamic shear viscosity");
+    AddNamedReal(m, "BULK_VISCOSITY", "bulk viscosity");
+    AddNamedReal(m, "ARTIFICIAL_VISCOSITY", "artificial viscosity");
+    AddNamedReal(m, "INITTEMPERATURE", "initial temperature");
+    AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // particle material sph boundary
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_ParticleSPHBoundary",
+            "particle material for SPH boundary", INPAR::MAT::m_particle_sph_boundary));
+
+    AddNamedReal(m, "INITRADIUS", "initial radius");
+    AddNamedReal(m, "INITDENSITY", "initial density");
+    AddNamedReal(m, "INITTEMPERATURE", "initial temperature");
+    AddNamedReal(m, "THERMALCONDUCTIVITY", "thermal conductivity");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // particle material dem
   {
     Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
-        "MAT_ExtParticle", "particle material", INPAR::MAT::m_extparticlemat));
+        "MAT_ParticleDEM", "particle material for DEM", INPAR::MAT::m_particle_dem));
 
-    AddNamedReal(m, "DENSITY", "initial / reference mass density");
-    AddNamedReal(m, "REFDENSFAC", "scale factor for equation of state");
-    AddNamedReal(m, "EXPONENT", "exponent in equation of state");
     AddNamedReal(m, "INITRADIUS", "initial radius of particle");
-    AddNamedReal(m, "NUE", "poisson ratio", 0.0, true);
-    AddNamedReal(m, "YOUNG", "youngs modulus", 0.0, true);
-    AddNamedReal(m, "YIELD", "yield strength", 0.0, true);
-    AddNamedReal(m, "BULK_MODULUS", "bulk modulus, (1/compressibility) for the liquid phase");
-    AddNamedReal(m, "DYNAMIC_VISCOSITY", "dynamic (shear) viscosity for the liquid phase");
-    AddNamedReal(m, "BULK_VISCOSITY",
-        "bulk viscosity for the liquid phase, important only in case of rapid "
-        "compressions/expansions like shock waves");
-    AddNamedReal(
-        m, "ARTIFICIAL_VISCOSITY", "artificial viscosity according to Adami et al. 2012, Eq. (11)");
+    AddNamedReal(m, "INITDENSITY", "initial density of particle");
 
     AppendMaterialDefinition(matlist, m);
   }

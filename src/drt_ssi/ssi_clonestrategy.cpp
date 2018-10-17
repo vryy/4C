@@ -25,6 +25,8 @@
 #include "../drt_so3/so3_scatra.H"
 #include "../drt_w1/wall1_scatra.H"
 #include "../drt_s8/shell8_scatra.H"
+#include "../drt_membrane/membrane_scatra.H"
+#include "../drt_membrane/membrane_scatra_eletypes.H"
 
 
 
@@ -131,6 +133,18 @@ INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(
   // shell scatra elements
   else if (eletypename == "Shell8ScatraType")
     impltype = (dynamic_cast<DRT::ELEMENTS::Shell8_Scatra*>(ele))->ImplType();
+  // membrane3 scatra element
+  else if (eletypename == "MembraneScatra_tri3Type")
+    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>*>(ele))->ImplType();
+  // membrane6 scatra element
+  else if (eletypename == "MembraneScatra_tri6Type")
+    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>*>(ele))->ImplType();
+  // membrane4 scatra element
+  else if (eletypename == "MembraneScatra_quad4Type")
+    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>*>(ele))->ImplType();
+  // membrane9 scatra element
+  else if (eletypename == "MembraneScatra_quad9Type")
+    impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>*>(ele))->ImplType();
 
   return impltype;
 }

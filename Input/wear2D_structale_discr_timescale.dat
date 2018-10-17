@@ -67,7 +67,7 @@ ALE_TYPE                        springs_spatial
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
-PARALLEL_REDIST                 dynamic
+PARALLEL_REDIST                 static // Use static for now, as dynamic behaves randomly //dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar

@@ -30,7 +30,7 @@ WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   1.0
-----------------------------------------------------------PARTICLE DYNAMIC
+----------------------------------------------------------PARTICLE DYNAMIC OLD
 DYNAMICTYP                      CentrDiff
 REPARTITIONSTRATEGY             Everydt
 ----------------------------------------------------------CAVITATION DYNAMIC

@@ -438,8 +438,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
-  DRT::INPUT::LineDefinition particle;
-  particle.AddTag("PARTICLE")
+  DRT::INPUT::LineDefinition particleold;
+  particleold.AddTag("PARTICLEOLD")
       .AddNamedString("DIS")
       .AddNamedInt("NODE")
       .AddNamedString("QUANTITY")
@@ -447,21 +447,21 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
-  DRT::INPUT::LineDefinition particle_special;
-  particle_special.AddTag("PARTICLE")
+  DRT::INPUT::LineDefinition particleold_special;
+  particleold_special.AddTag("PARTICLEOLD")
       .AddTag("SPECIAL")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
 
-  DRT::INPUT::LineDefinition particle_rendering;
-  particle_rendering.AddTag("PARTICLE_RENDERING")
-      .AddNamedString("DIS")
-      .AddNamedInt("NODE")
+  DRT::INPUT::LineDefinition particle;
+  particle.AddTag("PARTICLE")
+      .AddNamedString("TYPE")
+      .AddNamedDoubleVector("POS", 3)
+      .AddNamedDouble("POSTOLERANCE")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME");
+      .AddNamedDouble("TOLERANCE");
 
   DRT::INPUT::LineDefinition acou;
   acou.AddTag("ACOUSTIC")
@@ -515,9 +515,9 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(fsi_special);
   lines->Add(invana);
   lines->Add(invana_special);
+  lines->Add(particleold);
+  lines->Add(particleold_special);
   lines->Add(particle);
-  lines->Add(particle_special);
-  lines->Add(particle_rendering);
   lines->Add(acou);
   lines->Add(invacou);
   lines->Add(cardiovascular0d);

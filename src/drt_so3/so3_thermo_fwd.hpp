@@ -1,12 +1,11 @@
-/*
- * so3_thermo_fwd.hpp
- *
- *  forward declarations of discretisation types
- *
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
+/*!
+\file so3_thermo_fwd.hpp
+
+\level 1
+
+\brief forward declarations of discretisation types
+
+\maintainer Christoph Meier
  *
  */
 

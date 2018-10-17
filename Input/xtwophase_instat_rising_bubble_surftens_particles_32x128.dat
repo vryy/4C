@@ -166,7 +166,7 @@ RESTARTDATA                     No  //Yes?
 --------------------------------------------------------------------BINNING STRATEGY
 //CUTOFF_RADIUS                   0.05
 BIN_PER_DIR                     32 128 1
-------------------------------------------------------------PARTICLE DYNAMIC
+------------------------------------------------------------PARTICLE DYNAMIC OLD
 DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 REPARTITIONSTRATEGY             Everydt
@@ -218,9 +218,9 @@ XFLUID DIS fluid NODE 3203 QUANTITY pressure VALUE 2.34824667382994164e+02 TOLER
 SCATRA DIS scatra NODE 3203 QUANTITY phi VALUE 3.53778454506084139e-01 TOLERANCE 1e-8
 
 //MPI 4
-PARTICLE DIS particle NODE 5952 QUANTITY dispx VALUE -2.26051267258673277e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 5952 QUANTITY dispy VALUE -1.03164963195553971e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 5952 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
+PARTICLEOLD DIS particle NODE 5952 QUANTITY dispx VALUE -2.26051267258673277e-01 TOLERANCE 1.0e-12
+PARTICLEOLD DIS particle NODE 5952 QUANTITY dispy VALUE -1.03164963195553971e+00 TOLERANCE 1.0e-12
+PARTICLEOLD DIS particle NODE 5952 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8

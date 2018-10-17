@@ -71,7 +71,7 @@ FAST_CHECK                  yes
 RESTARTDATA                 yes
 --------------------------------------------------------------------BINNING STRATEGY
 BIN_PER_DIR                     100 200 1
-------------------------------------------------------------PARTICLE DYNAMIC
+------------------------------------------------------------PARTICLE DYNAMIC OLD
 DYNAMICTYP                      RK2
 -----------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1

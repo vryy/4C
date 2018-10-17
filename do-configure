@@ -9,6 +9,7 @@ EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
 TRILINOS_BUILD_TYPE="release"
 COVERAGE=0
+DEBUG_OPTIMIZED=0
 USE_ACML=0
 USE_DEAL=0
 USE_FORCEBUILD=0
@@ -26,11 +27,17 @@ SHARED_LIBS=OFF
 # version, though). This can then give per-line cost information
 # using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild -- "$@"`
+# Info about debug builds: 
+# We support two types of debug build: The actual (non-optimized) debug build is
+# enabled via the option '--debug'. An optimized debug build used for nightly
+# testing is achieved by setting '--debug-optimized'
+# Note: Use only one of them! No checks in place if both are specified.
+
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--additionaltests=testfile] [--forceBuild]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--additionaltests=testfile] [--forceBuild]"
 
 eval set -- $OPTIONS
 
@@ -50,6 +57,10 @@ while true; do
       ;;
     -d|--debug)
       BUILD_TYPE="DEBUG"
+      ;;
+    --debug-optimized)
+      BUILD_TYPE="DEBUG"
+      DEBUG_OPTIMIZED=1
       ;;
     --profiling)
       BUILD_TYPE="RELWITHDEBINFO"
@@ -153,6 +164,11 @@ if [ $COVERAGE == 1 ]; then
   LINKERFLAGSRELEASE="$LINKERFLAGSRELEASE -g -fprofile-arcs -ftest-coverage"
 fi
 
+# Append debug optimization flag for all configurations
+if [[ $DEBUG_OPTIMIZED == 1 ]]; then
+  CXXFLAGSDEBUG="$CXXFLAGSDEBUG -Og"
+fi
+
 if [[ "$CXX" ]]; then
   echo "Overriding C++ compiler with $CXX"
   CXXCOMPILER=$CXX
@@ -179,6 +195,7 @@ $CMAKE_COMMAND \
   -D CMAKE_Fortran_COMPILER:FILEPATH="$FCOMPILER" \
   -D CMAKE_CXX_FLAGS:STRING="$CXXFLAGS" \
   -D CMAKE_CXX_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
+  -D CMAKE_CXX_FLAGS_DEBUG:STRING="$CXXFLAGSDEBUG" \
   -D CMAKE_C_FLAGS:STRING="$CFLAGS" \
   -D CMAKE_C_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
   -D CMAKE_EXE_LINKER_FLAGS:STRING="$LINKERFLAGS" \

@@ -2,11 +2,11 @@
 /*!
 \file nln_operator_fas.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief AMG-FAS as nonlinear preconditioner
+
+\level 3
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

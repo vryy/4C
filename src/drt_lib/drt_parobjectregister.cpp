@@ -25,6 +25,7 @@
 #include "../drt_s8/shell8.H"
 #include "../drt_s8/shell8_scatra.H"
 #include "../drt_membrane/membrane_eletypes.H"
+#include "../drt_membrane/membrane_scatra_eletypes.H"
 #include "../drt_lubrication_ele/lubrication_ele.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
@@ -126,6 +127,7 @@
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/membrane_elasthyper.H"
+#include "../drt_mat/membrane_active_strain.H"
 #include "../drt_mat/growthremodel_elasthyper.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/constraintmixture_history.H"
@@ -173,6 +175,7 @@
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_mat/growth.H"
+#include "../drt_particle_engine/particle_object.H"
 
 std::string DRT::ParObjectList()
 {
@@ -199,6 +202,10 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::Membrane_tri6Type::Instance().Name() << " "
     << DRT::ELEMENTS::Membrane_quad4Type::Instance().Name() << " "
     << DRT::ELEMENTS::Membrane_quad9Type::Instance().Name() << " "
+    << DRT::ELEMENTS::MembraneScatra_tri3Type::Instance().Name() << " "
+    << DRT::ELEMENTS::MembraneScatra_tri6Type::Instance().Name() << " "
+    << DRT::ELEMENTS::MembraneScatra_quad4Type::Instance().Name() << " "
+    << DRT::ELEMENTS::MembraneScatra_quad9Type::Instance().Name() << " "
     << DRT::ELEMENTS::Wall1Type::Instance().Name() << " "
     << DRT::ELEMENTS::WallTri3PoroType::Instance().Name() << " "
     << DRT::ELEMENTS::WallTri3PoroP1Type::Instance().Name() << " "
@@ -319,6 +326,7 @@ std::string DRT::ParObjectList()
     << MAT::FluidPoroMultiPhaseReactionsType::Instance().Name() << " "
     << MAT::FourierIsoType::Instance().Name() << " " << MAT::GrowthVolumetricType::Instance().Name()
     << " " << MAT::Membrane_ElastHyperType::Instance().Name() << " "
+    << MAT::Membrane_ActiveStrainType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
     << MAT::HerschelBulkleyType::Instance().Name() << " " << MAT::IonType::Instance().Name() << " "
     << MAT::LinearDensityViscosityType::Instance().Name() << " "
@@ -362,7 +370,8 @@ std::string DRT::ParObjectList()
     << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2RigidJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLin2PinJointedType::Instance().Name() << " "
-    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " ";
+    << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "
+    << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
 
   std::cout << s.str() << std::endl;
   return s.str();

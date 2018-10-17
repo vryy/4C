@@ -62,6 +62,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_ssi.H"
 #include "inpar_fs3i.H"
 #include "inpar_particle.H"
+#include "inpar_particle_old.H"
 #include "inpar_cavitation.H"
 #include "inpar_pasi.H"
 #include "inpar_levelset.H"
@@ -464,6 +465,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Structural output
   setStringToIntegralParameter<int>(
+      "STRUCT_ELE", "Yes", "Output of element properties", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<int>(
       "STRUCT_DISP", "Yes", "Output of displacements", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
       "STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", yesnotuple, yesnovalue, &io);
@@ -652,6 +655,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::FPSI::SetValidParameters(list);
 
   INPAR::PARTICLE::SetValidParameters(list);
+
+  INPAR::PARTICLEOLD::SetValidParameters(list);
   INPAR::CAVITATION::SetValidParameters(list);
 
   INPAR::ACOU::SetValidParameters(list);

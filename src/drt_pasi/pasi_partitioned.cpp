@@ -69,7 +69,7 @@ void PASI::PartitionedAlgo::Init(const Epetra_Comm& comm  //! communicator
   // get parameter lists
   // note that time parameters for subproblems are set in PASI::UTILS::ChangeTimeParameter
   const Teuchos::ParameterList& struct_params = problem->StructuralDynamicParams();
-  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
+  const Teuchos::ParameterList& particle_params = problem->ParticleParamsOld();
 
   // safety check: moving_walls_ flag in particle algorithm is always set to 'Yes' for pasi
   // simulations

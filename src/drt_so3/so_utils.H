@@ -24,8 +24,16 @@ namespace DRT
       void CalcR(const DRT::Element* ele, const std::vector<double>& disp,
           LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
               DRT::UTILS::DisTypeToDim<distype>::dim>& R);
-    }
-  }  // namespace ELEMENTS
+
+      template <DRT::Element::DiscretizationType distype>
+      void NodalFiber(DRT::Node** nodes,
+          const std::vector<
+              LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>&
+              shapefcts,
+          std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& fibergp,
+          std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& sheetgp);
+    }  // namespace UTILS
+  }    // namespace ELEMENTS
 }  // namespace DRT
 
 #endif

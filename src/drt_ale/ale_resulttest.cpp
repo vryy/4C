@@ -2,11 +2,11 @@
 /*!
 \file ale_resulttest.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Result tests for pure ALE problems
+
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

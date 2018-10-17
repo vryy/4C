@@ -16,7 +16,7 @@
 #ifndef PARTICLE_DYN_H
 #define PARTICLE_DYN_H
 
-void particle_drt();
+void particle_old_drt();
 
 
 #endif

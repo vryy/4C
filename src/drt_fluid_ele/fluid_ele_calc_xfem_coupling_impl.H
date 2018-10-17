@@ -641,6 +641,19 @@ namespace DRT
             bool only_rhs = false                                      ///< evaluat only rhs
         );
 
+        //!  evaluate linearization of Nitsche's penalty term
+        void NIT_Stab_Penalty_lin(const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+            const double& timefacfac,              ///< time integration factor
+            const std::pair<bool, double>& m_row,  ///< scaling for master row
+            const std::pair<bool, double>&
+                m_row_linm1,  ///< linearization of scaling for master row w.r.t. master comp. one
+            const std::pair<bool, double>&
+                m_row_linm2,  ///< linearization of scaling for master row w.r.t. master comp. two
+            const std::pair<bool, double>&
+                m_row_linm3,  ///< linearization of scaling for master row w.r.t. master comp. three
+            bool only_rhs = false  ///< evaluat only rhs
+        );
+
         //!  evaluate Nitsche's penalty term
         void NIT_Stab_Penalty_Projected(const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
             const LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix

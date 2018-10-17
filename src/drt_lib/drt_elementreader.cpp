@@ -453,7 +453,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    ParticleReader::ParticleReader(
+    OldParticleReader::OldParticleReader(
         Teuchos::RCP<Discretization> dis, const DRT::INPUT::DatFileReader& reader)
         : ElementReader(dis, reader, "--DUMMY ELEMENTS")
     {
@@ -462,7 +462,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void ParticleReader::Partition()
+    void OldParticleReader::Partition()
     {
       const int myrank = comm_->MyPID();
       const int numproc = comm_->NumProc();

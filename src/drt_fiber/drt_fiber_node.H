@@ -68,8 +68,8 @@ namespace DRT
       \param angle  (in): helix and transverse angle, length 2
       \param owner  (in): Owner of this node.
       */
-      FiberNode(int id, const double* coords, const double* fiber, const double* cosy,
-          const double* angle, const int owner);
+      FiberNode(int id, const double* coords, const double* fiber1, const double* fiber2,
+          const double* cosy, const double* angle, const int owner);
 
       /*!
       \brief Copy Constructor
@@ -134,7 +134,12 @@ namespace DRT
       /*!
       \brief Return fiber direction
       */
-      virtual inline const double* Fiber() const { return &fiber_[0]; }
+      virtual inline const double* Fiber1() const { return &fiber1_[0]; }
+
+      /*!
+      \brief Return fiber direction
+      */
+      virtual inline const double* Fiber2() const { return &fiber2_[0]; }
 
       /*!
       \brief Return fiber direction
@@ -166,8 +171,11 @@ namespace DRT
       //@}
 
      protected:
-      //! fiber direction
-      std::vector<double> fiber_;
+      //! fiber direction 1
+      std::vector<double> fiber1_;
+
+      //! fiber direction 2
+      std::vector<double> fiber2_;
 
       //! circumferential direction
       std::vector<double> cir_;

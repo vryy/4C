@@ -131,6 +131,7 @@ namespace INPAR
       m_sc_dep_interp,  ///< integration point based and scalar dependent interpolation between to
                         ///< materials
       m_membrane_elasthyper,       ///< collection of hyperelastic materials for membranes
+      m_membrane_activestrain,     ///< active strain membrane material for gastric electromechanics
       m_growthremodel_elasthyper,  ///< growth and remodeling
       m_herschelbulkley,           ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_ion,                       ///< properties of an ion species in an electrolyte solution
@@ -158,7 +159,9 @@ namespace INPAR
       m_opti_dens,               ///< density field for topology optimization
       m_particlemat,             ///< particle material
       m_particlemat_ellipsoids,  ///< particle material for ellipsoidal particles
-      m_extparticlemat,          ///< extended particle material
+      m_particle_sph_fluid,      ///< particle material for SPH fluid
+      m_particle_sph_boundary,   ///< particle material for SPH boundary
+      m_particle_dem,            ///< particle material for DEM
       m_permeable_fluid,         ///< permeable fluid
       m_plelasthyper,      ///< general hyperelastic material for finite strain von-Mises plasticity
                            ///< using a semi-smooth Newton strategy (only in combination with such

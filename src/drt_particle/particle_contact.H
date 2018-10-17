@@ -19,11 +19,11 @@
 /* headers */
 #include "../drt_geometry/searchtree_nearestobject.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
 #include "../drt_lib/drt_element.H"
 #include <Epetra_FEVector.h>
 #include <boost/unordered_map.hpp>
+#include "../drt_inpar/inpar_particle_old.H"
 
 
 // forward declarations
@@ -138,13 +138,13 @@ namespace PARTICLE
     //@{
 
     /// normal contact model
-    const INPAR::PARTICLE::NormalContact normal_contact_;
+    const INPAR::PARTICLEOLD::NormalContact normal_contact_;
 
     /// rolling contact model
-    const INPAR::PARTICLE::RollingContact rolling_contact_;
+    const INPAR::PARTICLEOLD::RollingContact rolling_contact_;
 
     /// adhesion law governing normal contact of particles
-    const INPAR::PARTICLE::NormalAdhesion normal_adhesion_;
+    const INPAR::PARTICLEOLD::NormalAdhesion normal_adhesion_;
 
     /// particle Poisson ratio
     double nue_;
@@ -267,7 +267,8 @@ namespace PARTICLE
     const int adhesion_maxwalleleID_;
     const int adhesion_minwalleleID_;
     /// surface energy distribution
-    const INPAR::PARTICLE::AdhesionSurfaceEnergyDistribution adhesion_surface_energy_distribution_;
+    const INPAR::PARTICLEOLD::AdhesionSurfaceEnergyDistribution
+        adhesion_surface_energy_distribution_;
     /// standard deviation of adhesion surface energy
     const double adhesion_surface_energy_distribution_sigma_;
     /// surface energy distribution limited by multiple of standard deviation
@@ -586,7 +587,7 @@ namespace PARTICLE
    public:
     /// Constructor
     explicit Event(
-        INPAR::PARTICLE::coltype coltype, double time, DRT::Node* part_1, DRT::Node* part_2)
+        INPAR::PARTICLEOLD::coltype coltype, double time, DRT::Node* part_1, DRT::Node* part_2)
         : coltype(coltype), time(time), particle_1(part_1), particle_2(part_2)
     {
       ;
@@ -595,7 +596,7 @@ namespace PARTICLE
     /// Destructor
     virtual ~Event() { ; }
 
-    INPAR::PARTICLE::coltype coltype;
+    INPAR::PARTICLEOLD::coltype coltype;
     double time;
     DRT::Node* particle_1;
     DRT::Node* particle_2;
@@ -612,7 +613,7 @@ namespace PARTICLE
   {
    public:
     /// Constructor
-    explicit WallEvent(INPAR::PARTICLE::coltype coltype, double time, DRT::Node* part_1,
+    explicit WallEvent(INPAR::PARTICLEOLD::coltype coltype, double time, DRT::Node* part_1,
         DRT::Element* wall, LINALG::Matrix<3, 1> wallcollpoint_pos,
         LINALG::Matrix<3, 1> wallcollpoint_vel)
         : Event(coltype, time, part_1, NULL),

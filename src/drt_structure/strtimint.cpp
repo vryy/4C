@@ -118,6 +118,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
       writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
       writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
+      writeele_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_ELE")),
       writestate_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP")),
       writevelacc_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC")),
       writeresultsevery_(timeparams.get<int>("RESULTSEVRY")),
@@ -2137,7 +2138,7 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void STR::TimInt::OutputStep(bool forced_writerestart)
+void STR::TimInt::OutputStep(const bool forced_writerestart)
 {
   // print iterations instead of steps
   if (outputeveryiter_)
@@ -2423,7 +2424,7 @@ void STR::TimInt::OutputState(bool& datawritten)
   }
 
   // owner of elements is just written once because it does not change during simulation (so far)
-  output_->WriteElementData(firstoutputofrun_);
+  if (writeele_) output_->WriteElementData(firstoutputofrun_);
   output_->WriteNodeData(firstoutputofrun_);
   firstoutputofrun_ = false;
 
@@ -2818,7 +2819,7 @@ void STR::TimInt::OutputContact()
     INPAR::CONTACT::EmOutputType emtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(
         cmtbridge_->GetStrategy().Params(), "EMOUTPUT");
 
-    // get out of here if no enrgy momentum output wanted
+    // get out of here if no energy/momentum output wanted
     if (emtype == INPAR::CONTACT::output_none) return;
 
     // get some parameters from parameter list

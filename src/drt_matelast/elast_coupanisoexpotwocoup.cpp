@@ -120,6 +120,11 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
       dserror("Reading of element local cosy for anisotropic materials failed");
     }
   }
+  // fibers defined on nodes
+  else if (params_->init_ == 3)
+  {
+    // nothing to do here. gp fibers are passed from element at evluate
+  }
   else
     dserror("INIT mode not implemented");
 
@@ -132,6 +137,21 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int eleGID)
 {
+  if (params_->init_ == 3)
+  {
+    if (params.isParameter("gpfiber1") && params.isParameter("gpfiber2"))
+    {
+      a1_ = params.get<LINALG::Matrix<3, 1>>("gpfiber1");
+      a2_ = params.get<LINALG::Matrix<3, 1>>("gpfiber2");
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a1_, A1_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a2_, A2_);
+      A1A2_.MultiplyNT(a1_, a2_);
+      a1a2_ = a1_(0) * a2_(0) + a1_(1) * a2_(1) + a1_(2) * a2_(2);
+    }
+    else
+      dserror("No fiber at gauss point available.");
+  }
+
   double I4 = 0.0;
   I4 = A1_(0) * rcg(0) + A1_(1) * rcg(1) + A1_(2) * rcg(2) + A1_(3) * rcg(3) + A1_(4) * rcg(4) +
        A1_(5) * rcg(5);

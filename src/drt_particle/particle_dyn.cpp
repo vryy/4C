@@ -27,7 +27,7 @@
 /*----------------------------------------------------------------------*/
 // entry point for particle simulations
 /*----------------------------------------------------------------------*/
-void particle_drt()
+void particle_old_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -38,9 +38,9 @@ void particle_drt()
 
   switch (probtype)
   {
-    case prb_particle:
+    case prb_particle_old:
     {
-      const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
+      const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParamsOld();
       /// algorithm is created
       Teuchos::RCP<PARTICLE::Algorithm> particlesimulation =
           Teuchos::rcp(new PARTICLE::Algorithm(comm, params));

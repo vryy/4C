@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file mortar_manager_base.H
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 \level 2
 

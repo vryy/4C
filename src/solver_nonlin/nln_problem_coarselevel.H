@@ -4,11 +4,7 @@
 
 \brief Coarse level interface of nonlinear solver to BACI
 
-<pre>
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 
 \level 3
 */

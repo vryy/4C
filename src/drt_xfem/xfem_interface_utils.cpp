@@ -604,7 +604,7 @@ double XFEM::UTILS::EvalElementVolume(
   const double *gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
   const double gpweight = intpoints_stab.IP().qwgt[0];  // actual integration point (weight)
 
-  static LINALG::Matrix<nsd, 1> xsi(gpcoord, true);
+  LINALG::Matrix<nsd, 1> xsi(gpcoord, true);
   static LINALG::Matrix<nen, 1> funct;
   static LINALG::Matrix<nsd, nen> deriv;
   static LINALG::Matrix<nsd, nsd> xjm;

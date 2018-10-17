@@ -4,13 +4,9 @@
 
  \brief ALE field adapter
 
-\level 2
+ \level 2
 
- <pre>
-\maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
- </pre>
+ \maintainer Matthias Mayr
  */
 /*----------------------------------------------------------------------------*/
 

@@ -10,7 +10,7 @@ variables:
     # 2: daily debug
     GITLAB_SCHEDULER_TYPE: "0"
 
-    # Prefix for do-configure (in ubuntu the do-configure needs to be called by bash).
+    # Prefix for do-configure.
     CTEST_CONFIGURE_PREFIX: ""
 
     # Postfix for do-configure.
@@ -32,6 +32,8 @@ variables:
         GIT_STRATEGY: fetch
     script:
         - "echo minimal test: triggered by change in master"
+        # Delete old build files.
+        - rm -rf ../baci-build/
         - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
@@ -39,6 +41,14 @@ variables:
         # Output 200 lines for any failing test
         #- grep -i -B 200 '\*\*\*Failed' ../buildtest_full.log
         #- sed -n '/tests passed,/,//p' ../buildtest_minimal.log
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_minimal.log buildtest_minimal.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_minimal.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         - master
     except:
@@ -56,6 +66,8 @@ variables:
     script:
         - "echo full test: triggered by user with TEST_TAG=$TEST_TAG"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
+        # Delete old build files.
+        - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R $TEST_TAG > ../buildtest_full.log'
     after_script:
@@ -64,6 +76,14 @@ variables:
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_full.log
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_full.log buildtest_full.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_full.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         refs:
             - web
@@ -77,6 +97,8 @@ variables:
     script:
         - "echo full test: nightly test"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
+        # Delete old build files.
+        - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" > ../buildtest_daily.log'
     after_script:
@@ -85,6 +107,14 @@ variables:
         # Output 200 lines for any failing test 
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_daily.log buildtest_daily.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_daily.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
@@ -97,6 +127,8 @@ variables:
     script:
         - "echo full test: nightly test debug"
         - "echo exclude string: CTEST_EXCLUDE_STRING=$CTEST_EXCLUDE_STRING"
+        # Delete old build files.
+        - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
         - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" > ../buildtest_daily_debug.log'
     after_script:
@@ -105,6 +137,14 @@ variables:
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
+        # Move the log file to the source folder, so it can be found by artifacts.
+        - mv ../buildtest_daily_debug.log buildtest_daily_debug.log
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - buildtest_daily_debug.log
+        when: on_failure
+        expire_in: 4 weeks
     only:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "2"
@@ -148,6 +188,10 @@ checkcode:
     stage: checkcode
     script:
         - "echo code check"
+        - cd ../baci
+        - bash tests/code_test/check_format_and_header
+        # it would be nice to get the content of wrong_headers.txt and
+        # wrong_clang_format.txt uploaded to GitLab and/or CDash
     only:
         - master
         - web
@@ -246,7 +290,7 @@ lnm-buildtest_minimal:
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - lnm-test
+        - lnm-release-mastermod-minimal
 
 lnm-buildtest_full:
     << : *buildtest_full
@@ -258,7 +302,7 @@ lnm-buildtest_full:
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - lnm-test
+        - lnm-release-user-full
 
 lnm-buildtest_daily:
     << : *buildtest_daily
@@ -270,19 +314,19 @@ lnm-buildtest_daily:
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - lnm-nightly1
+        - lnm-release-nightly-full
 
 lnm-buildtest_daily_debug:
     << : *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015 DEBUG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015_nightlytest.config"
+        CTEST_BUILD_CONFIG_GITLAB: "centos74_Q12015.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
         CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
         CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
-        - lnm-nightly2
+        - lnm-debug-nightly-full
 
 lnm-doxygen:
     << : *doxygen
@@ -296,4 +340,4 @@ lnm-doxygen:
         # Path on testing machine where doxygen will be copied to.
         DOXYGEN_PATH: "/home/gitlab-runner/."
     tags:
-        - lnm-nightly
+        - lnm-nightly-doxygen

@@ -4,11 +4,9 @@
 
 \brief Entry routine for pure ALE problems
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

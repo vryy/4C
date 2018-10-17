@@ -30,6 +30,7 @@
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
+#include "drt_particlereader.H"
 #include "drt_utils_parallel.H"
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
@@ -353,6 +354,10 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC/SPH", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC/DEM", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC OLD", *list);
   reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--PASI DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
@@ -973,6 +978,23 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::Problem::ReadParticles(DRT::INPUT::DatFileReader& reader)
+{
+  // no need to read in particles in case of restart
+  if (Restart()) return;
+
+  // the basic particle reader
+  DRT::INPUT::ParticleReader particlereader(reader, "--PARTICLES");
+
+  // do the actual reading of particles
+  particlereader.Read(particles_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::OpenControlFile(
     const Epetra_Comm& comm, std::string inputfile, std::string prefix, std::string restartkenner)
 {
@@ -1036,8 +1058,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> acoudis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> elemagdis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> renderingdis =
-      Teuchos::null;  // simple and general rendering discretization for particle SPH simulations
   Teuchos::RCP<DRT::Discretization> pboxdis = Teuchos::null;
 
   // decide which kind of spatial representation is required
@@ -2106,6 +2126,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_particle:
+    {
+      // nothing to do
+      break;
+    }
+    case prb_particle_old:
     case prb_pasi:
     {
       if (distype == "Meshfree")
@@ -2129,15 +2154,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
       nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
-      // add rendering in case is required
-      if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(), "RENDERING"))
-      {
-        renderingdis = Teuchos::rcp(new DRT::Discretization("rendering", reader.Comm()));
-        renderingdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(renderingdis)));
-        AddDis("rendering", renderingdis);
-        nodereader.AddAdvancedReader(
-            renderingdis, reader, "MESHFREE RENDERING", INPAR::geometry_box, 0);
-      }
       break;
     }
     case prb_cavitation:

@@ -2,7 +2,7 @@
 /*!
 \file tsi_monolithic.H
 
-\maintainer Alexander Seitz
+\maintainer Christoph Meier
 
 \level 1
 

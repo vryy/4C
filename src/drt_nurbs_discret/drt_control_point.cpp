@@ -8,10 +8,7 @@
    note that X() is not the coordinate of some grid point
    anymore, it's just the control point position
 
-\maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
+\maintainer Martin Kronbichler
 
 \level 2
 

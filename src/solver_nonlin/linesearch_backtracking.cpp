@@ -2,11 +2,11 @@
 /*!
 \file linesearch_backtracking.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Linesearch algorithm based on backtracking
+
+\level 3
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

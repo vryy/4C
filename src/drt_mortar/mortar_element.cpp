@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 */
 /*----------------------------------------------------------------------*/
@@ -209,7 +209,7 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   {
     // add normalfac
     AddtoPack(data, normalfac_);
-    // add normalfac
+    // add zero_sized_
     AddtoPack(data, zero_sized_);
     // knots
     int nr = mortarknots_.size();
@@ -263,7 +263,7 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   {
     // normalfac_
     normalfac_ = ExtractDouble(position, data);
-    // normalfac_
+    // zero_sized_
     zero_sized_ = ExtractInt(position, data);
     // knots
     int nr;
@@ -296,7 +296,11 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   traceHCond_ = ExtractDouble(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    dserror(
+        "Mismatch in size of available data (size %d) vs. position pointer "
+        "of read data (size %d)",
+        (int)data.size(), position);
+
   return;
 }
 
@@ -1642,7 +1646,10 @@ void MORTAR::MortarElement::NodeLinearization(
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
 {
-  if (Dim() != 3) dserror("not implemented for this spatial dimension");
+  if (Dim() != 3)
+    dserror(
+        "Contact using Nitsche's method is only supported for 3D problems."
+        "We do not intend to support 2D problems.");
 
   Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
   DRT::ELEMENTS::StructuralSurface* surf =

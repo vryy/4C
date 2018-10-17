@@ -33,7 +33,7 @@ VERBOSITY                       Standard
 --------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.01
 BOUNDINGBOX                     3.98 3.98 11.98 4.02 4.02 12.02
-----------------------------------------------------------PARTICLE DYNAMIC
+----------------------------------------------------------PARTICLE DYNAMIC OLD
 DYNAMICTYP                      CentrDiff
 REPARTITIONSTRATEGY             Everydt
 PARTICLE_INTERACTION            NormalContact_DEM
@@ -227,7 +227,7 @@ UPPER_BOUND 10.0 10.0 16.0
 INTERVALS   1 1 20
 ELEMENTS    FLUID HEX8 MAT 1 NA Euler GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 1.20151131799468711e+01 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 2 QUANTITY radius VALUE 2.96125762794623376e-03 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 3 QUANTITY dispz VALUE 1.20038626449325765e+01 TOLERANCE 1.000e-12
+PARTICLEOLD DIS particle NODE 2 QUANTITY dispz VALUE 1.20151131799468711e+01 TOLERANCE 1.000e-12
+PARTICLEOLD DIS particle NODE 2 QUANTITY radius VALUE 2.96125762794623376e-03 TOLERANCE 1.000e-12
+PARTICLEOLD DIS particle NODE 3 QUANTITY dispz VALUE 1.20038626449325765e+01 TOLERANCE 1.000e-12
 ---------------------------------------------------------------END

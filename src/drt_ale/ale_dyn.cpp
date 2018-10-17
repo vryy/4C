@@ -2,11 +2,11 @@
 /*!
 \file ale_dyn.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Entry routine for pure ALE problems
+
+\level 1
+
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------------*/
 

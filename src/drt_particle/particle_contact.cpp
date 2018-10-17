@@ -24,7 +24,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/particle_mat_ellipsoids.H"
-#include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_binstrategy/drt_meshfree_multibin.H"
@@ -62,11 +61,11 @@ typedef Sacado::Fad::DFad<double> FAD;
 PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
     const Teuchos::ParameterList& particledynparams)
-    : normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(
+    : normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::NormalContact>(
           particledynparams, "NORMAL_CONTACT_LAW")),
-      rolling_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RollingContact>(
+      rolling_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::RollingContact>(
           particledynparams, "ROLLING_CONTACT_LAW")),
-      normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalAdhesion>(
+      normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::NormalAdhesion>(
           particledynparams, "NORMAL_ADHESION_LAW")),
       nue_(0.),
       young_(0.),
@@ -126,7 +125,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       adhesion_maxwalleleID_(particledynparams.get<int>("ADHESION_MAXWALLELEID")),
       adhesion_minwalleleID_(particledynparams.get<int>("ADHESION_MINWALLELEID")),
       adhesion_surface_energy_distribution_(
-          DRT::INPUT::IntegralValue<INPAR::PARTICLE::AdhesionSurfaceEnergyDistribution>(
+          DRT::INPUT::IntegralValue<INPAR::PARTICLEOLD::AdhesionSurfaceEnergyDistribution>(
               particledynparams, "ADHESION_SURFACE_ENERGY_DISTRIBUTION")),
       adhesion_surface_energy_distribution_sigma_(
           particledynparams.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA")),
@@ -169,7 +168,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     wallcontact_counter_(i) = i;
   }
 
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::None)
   {
     // safety checks for particle-particle contact
     if (r_min_ < 0.0 or r_max_ < 0.0 or v_max_ < 0.0 or young_ < 0.0)
@@ -189,12 +188,12 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     if (particleMat->initRadius_ > r_max_)
       dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
     if (e_ < 0.0 and
-        (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or
-            particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD))
+        (normal_contact_ == INPAR::PARTICLEOLD::LinSpringDamp or
+            particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 
     // no further information necessary for MD like contact
-    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD) return;
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::Normal_MD) return;
 
     // compute minimum particle mass
     double mass_min(0.);
@@ -224,8 +223,8 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
             "(along with the maximum velocity), or the normal stiffness, but neither both nor none "
             "of them!");
       if (e_wall_ < 0.0 and
-          (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or
-              particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_MD))
+          (normal_contact_ == INPAR::PARTICLEOLD::LinSpringDamp or
+              particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::Normal_MD))
         dserror("Invalid input parameter COEFF_RESTITUTION_WALL for this kind of contact law!");
 
       // wall material properties: young's modulus, poisson's ratio and shear modulus
@@ -247,8 +246,8 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     //------------stiffness----------------------------
     switch (normal_contact_)
     {
-      case INPAR::PARTICLE::LinSpring:
-      case INPAR::PARTICLE::LinSpringDamp:
+      case INPAR::PARTICLEOLD::LinSpring:
+      case INPAR::PARTICLEOLD::LinSpringDamp:
       {
         // calculate normal stiffness from relative penetration and other input parameters if
         // necessary
@@ -271,12 +270,12 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
         break;
       }
 
-      case INPAR::PARTICLE::Hertz:
-      case INPAR::PARTICLE::LeeHerrmann:
-      case INPAR::PARTICLE::KuwabaraKono:
-      case INPAR::PARTICLE::Tsuji:
+      case INPAR::PARTICLEOLD::Hertz:
+      case INPAR::PARTICLEOLD::LeeHerrmann:
+      case INPAR::PARTICLEOLD::KuwabaraKono:
+      case INPAR::PARTICLEOLD::Tsuji:
       {
-        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
           dserror("tangential contact only with linear normal model implemented");
 
         if (c_ > 0.)
@@ -323,7 +322,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     d_tang_ = -1.0;
     d_roll_ = -1.0;
 
-    if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+    if (normal_contact_ == INPAR::PARTICLEOLD::LinSpringDamp)
     {
       double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP");
       if (user_normal_damping >= 0.0)
@@ -337,9 +336,9 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       }
     }
 
-    if (normal_contact_ == INPAR::PARTICLE::LeeHerrmann ||
-        normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
-        normal_contact_ == INPAR::PARTICLE::Tsuji)
+    if (normal_contact_ == INPAR::PARTICLEOLD::LeeHerrmann ||
+        normal_contact_ == INPAR::PARTICLEOLD::KuwabaraKono ||
+        normal_contact_ == INPAR::PARTICLEOLD::Tsuji)
     {
       double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP");
       if (user_normal_damping >= 0.0)
@@ -359,7 +358,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       }
       else
       {
-        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
           dserror("For this kind of contact law the input parameter TANG_DAMP is invalid");
       }
     }
@@ -370,7 +369,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       d_tang_wall_ = -1.0;
       d_roll_wall_ = 1.04797e-07;
 
-      if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+      if (normal_contact_ == INPAR::PARTICLEOLD::LinSpringDamp)
       {
         double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP_WALL");
         if (user_normal_damping >= 0.0)
@@ -384,9 +383,9 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
         }
       }
 
-      if (normal_contact_ == INPAR::PARTICLE::LeeHerrmann ||
-          normal_contact_ == INPAR::PARTICLE::KuwabaraKono ||
-          normal_contact_ == INPAR::PARTICLE::Tsuji)
+      if (normal_contact_ == INPAR::PARTICLEOLD::LeeHerrmann ||
+          normal_contact_ == INPAR::PARTICLEOLD::KuwabaraKono ||
+          normal_contact_ == INPAR::PARTICLEOLD::Tsuji)
       {
         double user_normal_damping = particledynparams.get<double>("NORMAL_DAMP_WALL");
         if (user_normal_damping >= 0.0)
@@ -406,7 +405,8 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
         }
         else
         {
-          if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+          if (particle_algorithm_->ParticleInteractionType() ==
+              INPAR::PARTICLEOLD::NormalAndTang_DEM)
             dserror("For this kind of contact law the input parameter TANG_DAMP_WALL is invalid");
         }
       }
@@ -417,11 +417,11 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     const double safety = 0.75;
 
     // initialize factor
-    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM)
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::Normal_DEM)
     {
       factor = 0.34;
     }
-    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
     {
       factor = 0.22;
     }
@@ -438,7 +438,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     }
 
     // check frictional coefficient
-    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
     {
       if (mu_ <= 0.0 or (particle_algorithm_->WallDiscret() != Teuchos::null and mu_wall_ <= 0.0))
         dserror("Friction coefficient invalid");
@@ -448,7 +448,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   // safety checks for particle adhesion
   switch (normal_adhesion_)
   {
-    case INPAR::PARTICLE::adhesion_none:
+    case INPAR::PARTICLEOLD::adhesion_none:
     {
       if (std::abs(adhesion_eq_gap_) > GEO::TOL14 or adhesion_normal_stiff_ >= 0. or
           adhesion_normal_damp_ >= 0. or adhesion_normal_eps_ >= 0. or adhesion_max_force_ >= 0. or
@@ -460,14 +460,14 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       break;
     }
 
-    case INPAR::PARTICLE::adhesion_linspring:
+    case INPAR::PARTICLEOLD::adhesion_linspring:
     {
       if (adhesion_normal_stiff_ <= 0. or adhesion_normal_damp_ >= 0. or adhesion_normal_eps_ >= 0.)
         dserror(
             "Invalid particle adhesion parameters specified in input file for linear-spring "
             "model!");
 
-      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
         dserror(
             "ParticleInteractionType NormalAndTang_DEM not possible in combination with "
             "AdhesionType adhesion_linspring!");
@@ -475,14 +475,14 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       break;
     }
 
-    case INPAR::PARTICLE::adhesion_linspringdamp:
+    case INPAR::PARTICLEOLD::adhesion_linspringdamp:
     {
       if (adhesion_normal_stiff_ <= 0. or adhesion_normal_damp_ <= 0. or adhesion_normal_eps_ >= 0.)
         dserror(
             "Invalid particle adhesion parameters specified in input file for linear-spring-damp "
             "model!");
 
-      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
         dserror(
             "ParticleInteractionType NormalAndTang_DEM not possible in combination with "
             "AdhesionType adhesion_linspringdamp!");
@@ -490,7 +490,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       break;
     }
 
-    case INPAR::PARTICLE::adhesion_vdWDMT:
+    case INPAR::PARTICLEOLD::adhesion_vdWDMT:
     {
       if (adhesion_normal_stiff_ >= 0. or adhesion_normal_damp_ >= 0. or
           adhesion_normal_eps_ <= 0. or adhesion_surface_energy_ <= 0.)
@@ -501,7 +501,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       break;
     }
 
-    case INPAR::PARTICLE::adhesion_regDMT:
+    case INPAR::PARTICLEOLD::adhesion_regDMT:
     {
       if (adhesion_normal_stiff_ >= 0. or adhesion_normal_damp_ >= 0. or
           adhesion_surface_energy_ <= 0.)
@@ -927,7 +927,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         // part of v_rel in normal direction: v_rel * n
         const double v_rel_normal(v_rel.Dot(normal));
 
-        if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+        if (normal_adhesion_ != INPAR::PARTICLEOLD::adhesion_none)
         {
           // if history variables do not exist -> create them
           if (history_particle_i_adhesion.find(data_j.id) == history_particle_i_adhesion.end())
@@ -988,7 +988,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
 
         // calculation of tangential contact force
         if (g <= 0. and
-            particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+            particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
         {
           // velocity v_rel_tangential
           static LINALG::Matrix<3, 1> v_rel_tangential;
@@ -1027,7 +1027,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
           CalculateTangentialContactForce(normalcontactforce, normal, tangentcontactforce,
               history_particle_i_j, v_rel_tangential, m_eff, dt, data_i.owner, data_j.owner);
 
-          if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+          if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_constant)
           {
             // rolling velocity in contact point between particles i and j
             static LINALG::Matrix<3, 1> v_roll;
@@ -1040,7 +1040,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
             CalculateRollingContactForce(normalcontactforce, normal, tangentrollingforce,
                 history_particle_i_j, v_roll, m_eff, dt, data_i.owner, data_j.owner);
           }
-          else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+          else if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_viscous)
           {
             CalculateVirtualRollingForce(normalcontactforce, normal, tangentrollingforce,
                 data_i.angvel, data_j.angvel, data_i.rad, data_j.rad, data_i.owner, data_j.owner);
@@ -1074,16 +1074,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         rollfricmoment_i.Clear();
         rollfricmoment_j.Clear();
 
-        if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+        if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_constant)
         {
           double r_ij = (r_iC.Norm2() * r_jC.Norm2()) / (r_iC.Norm2() + r_jC.Norm2());
           rollfricmoment_i.CrossProduct(tangentrollingforce, normal);
-          rollfricmoment_i.Update(r_ij, rollfricmoment_i);
+          rollfricmoment_i.Scale(r_ij);
           rollfricmoment_j.Update(-1.0, rollfricmoment_i);
           contactmoment_i.Update(1.0, rollfricmoment_i, 1.0);
           contactmoment_j.Update(1.0, rollfricmoment_j, 1.0);
         }
-        else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+        else if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_viscous)
         {
           rollfricmoment_i.CrossProduct(normal, tangentrollingforce);
           rollfricmoment_j.Update(-1.0, rollfricmoment_i);
@@ -1099,13 +1099,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       }
       if (g > 0 and
           particle_algorithm_->ParticleInteractionType() ==
-              INPAR::PARTICLE::NormalAndTang_DEM)  // g > 0.0 and no adhesion --> no contact
+              INPAR::PARTICLEOLD::NormalAndTang_DEM)  // g > 0.0 and no adhesion --> no contact
       {
         // erase entries in histories if still existing
         history_particle_i.erase(data_j.id);
         history_particle_j.erase(data_i.id);
       }
-      if (ConsiderNormalAdhesion(g) != 1 and normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+      if (ConsiderNormalAdhesion(g) != 1 and normal_adhesion_ != INPAR::PARTICLEOLD::adhesion_none)
       {
         history_particle_i_adhesion.erase(data_j.id);
         history_particle_j_adhesion.erase(data_i.id);
@@ -1322,7 +1322,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
       static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall();
   std::map<int, PARTICLE::Adhesion>& history_wall_adhesion =
       static_cast<PARTICLE::ParticleNode*>(particle_i)->Get_history_wall_adhesion();
-  if (history_wall.size() > 3 and normal_adhesion_ == INPAR::PARTICLE::adhesion_none)
+  if (history_wall.size() > 3 and normal_adhesion_ == INPAR::PARTICLEOLD::adhesion_none)
     std::cout << "ATTENTION: Contact of particle " << data_i.id << " with " << history_wall.size()
               << " wall elements." << std::endl;
 
@@ -1406,7 +1406,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     // The summand -1 is required, since IDs start with 1 in the input file and with 0 in the Code
     if (adhesion_minwalleleID_ > 0 and gid_wall < adhesion_minwalleleID_ - 1) owner_wall = -2;
 
-    if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+    if (normal_adhesion_ != INPAR::PARTICLEOLD::adhesion_none)
     {
       if (history_wall_adhesion.find(gid_wall) == history_wall_adhesion.end())
       {
@@ -1435,7 +1435,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
       OutputNormalContactForceToFile(totalnormalforce, wallcontact.point);
 
     if (g <= 0. and
-        particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
     {
       // velocity v_rel_tangential
       static LINALG::Matrix<3, 1> v_rel_tangential;
@@ -1471,7 +1471,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
       static LINALG::Matrix<3, 1> wall_angvel(true);
       wall_angvel.Clear();
 
-      if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+      if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_constant)
       {
         // rolling velocity in contact point between particles i and j
         static LINALG::Matrix<3, 1> v_roll;
@@ -1484,7 +1484,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
         CalculateRollingContactForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
             history_wall[gid_wall], v_roll, m_eff, dt, owner_i, -1);
       }
-      else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+      else if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_viscous)
       {
         CalculateVirtualRollingForce(normalcontactforce, wallcontact.normal, tangentrollingforce,
             data_i.angvel, wall_angvel, data_i.rad, 0.0, data_i.owner, owner_wall, true);
@@ -1507,13 +1507,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     static LINALG::Matrix<3, 1> rollfricmoment;
     rollfricmoment.Clear();
 
-    if (rolling_contact_ == INPAR::PARTICLE::rolling_constant)
+    if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_constant)
     {
       rollfricmoment.CrossProduct(wallcontact.normal, tangentrollingforce);
-      rollfricmoment.Update(-r_iC.Norm2(), rollfricmoment);
+      rollfricmoment.Scale(-r_iC.Norm2());
       contactmoment.Update(1.0, rollfricmoment, 1.0);
     }
-    else if (rolling_contact_ == INPAR::PARTICLE::rolling_viscous)
+    else if (rolling_contact_ == INPAR::PARTICLEOLD::rolling_viscous)
     {
       rollfricmoment.CrossProduct(wallcontact.normal, tangentrollingforce);
       contactmoment.Update(1.0, rollfricmoment, 1.0);
@@ -1549,7 +1549,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     }
   }  // end for contact points on surfaces
 
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLEOLD::NormalAndTang_DEM)
   {
     // delete those entries in history_wall_ which are no longer in contact with particle_i in
     // current time step
@@ -1601,7 +1601,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
     // TODO: different m_eff for particle-wall and particel-particle needed when uni-size assumption
     if (owner_j < 0)  // contact particle-wall
     {
-      if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+      if (normal_contact_ == INPAR::PARTICLEOLD::LinSpringDamp)
       {
         if (e_wall_ != 0.0)
         {
@@ -1621,7 +1621,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
     }
     else  // contact particle-particle
     {
-      if (normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+      if (normal_contact_ == INPAR::PARTICLEOLD::LinSpringDamp)
       {
         if (e_ != 0.0)
         {
@@ -1643,7 +1643,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
     const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
     switch (normal_contact_)
     {
-      case INPAR::PARTICLE::LinSpring:
+      case INPAR::PARTICLEOLD::LinSpring:
       {
         totalnormalforce = k * g;
 
@@ -1654,7 +1654,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
         }
       }
       break;
-      case INPAR::PARTICLE::Hertz:
+      case INPAR::PARTICLEOLD::Hertz:
       {
         totalnormalforce = -k * pow(-g, 1.5);
 
@@ -1665,7 +1665,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
         }
       }
       break;
-      case INPAR::PARTICLE::LinSpringDamp:
+      case INPAR::PARTICLEOLD::LinSpringDamp:
       {
         // linear regularization of damping force to reach full amplitude for g = damp_reg_fac_ *
         // r_min
@@ -1699,7 +1699,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
         }
       }
       break;
-      case INPAR::PARTICLE::LeeHerrmann:
+      case INPAR::PARTICLEOLD::LeeHerrmann:
       {
         // m_eff = m_i * m_j / ( m_i + m_j)
 
@@ -1718,7 +1718,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
         }
       }
       break;
-      case INPAR::PARTICLE::KuwabaraKono:
+      case INPAR::PARTICLEOLD::KuwabaraKono:
       {
         totalnormalforce = -k * pow(-g, 1.5) - d * v_rel_normal * pow(-g, 0.5);
 
@@ -1735,7 +1735,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
         }
       }
       break;
-      case INPAR::PARTICLE::Tsuji:
+      case INPAR::PARTICLEOLD::Tsuji:
       {
         totalnormalforce = -k * pow(-g, 1.5) - d * v_rel_normal * pow(-g, 0.25);
 
@@ -1759,7 +1759,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
     normalcontactforce = totalnormalforce;
   }
   // evaluate normal contact force arising from particle adhesion
-  if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none and owner_j > -2)
+  if (normal_adhesion_ != INPAR::PARTICLEOLD::adhesion_none and owner_j > -2)
   {
     // initialize variable for normal adhesion energy
     double normaladhesionforce(0.), normaladhesionenergy(0.);
@@ -1767,12 +1767,12 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
     // calculate normal adhesion force and update internal system energy if applicable
     switch (normal_adhesion_)
     {
-      case INPAR::PARTICLE::adhesion_linspring:
-      case INPAR::PARTICLE::adhesion_linspringdamp:
+      case INPAR::PARTICLEOLD::adhesion_linspring:
+      case INPAR::PARTICLEOLD::adhesion_linspringdamp:
       {
         normaladhesionforce = adhesion_normal_stiff_ * (g - adhesion_eq_gap_);
 
-        if (normal_adhesion_ == INPAR::PARTICLE::adhesion_linspringdamp)
+        if (normal_adhesion_ == INPAR::PARTICLEOLD::adhesion_linspringdamp)
           normaladhesionforce -=
               2. * adhesion_normal_damp_ * sqrt(adhesion_normal_stiff_ * m_eff) * v_rel_normal;
 
@@ -1784,7 +1784,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
       }
 
       // van der Waals potential with DMT contact model as a regularization
-      case INPAR::PARTICLE::adhesion_vdWDMT:
+      case INPAR::PARTICLEOLD::adhesion_vdWDMT:
       {
         double r_rep = (radius_i * radius_j) / (radius_i + radius_j);
         double adhesion_surface_energy = currentAdhe.surface_energy;
@@ -1912,7 +1912,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
       }
 
       // linearly regularized DMT contact model
-      case INPAR::PARTICLE::adhesion_regDMT:
+      case INPAR::PARTICLEOLD::adhesion_regDMT:
       {
         double r_rep = (radius_i * radius_j) / (radius_i + radius_j);
         double adhesion_surface_energy = currentAdhe.surface_energy;
@@ -2036,8 +2036,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(const do
     // For the cases adhesion_linspring and adhesion_linspringdamp a maximal tension / pulling force
     // exists. If this threshold value is exceeded, the adhesive connection breaks and the force
     // drops to zero.
-    if (normal_adhesion_ == INPAR::PARTICLE::adhesion_linspring or
-        normal_adhesion_ == INPAR::PARTICLE::adhesion_linspringdamp)
+    if (normal_adhesion_ == INPAR::PARTICLEOLD::adhesion_linspring or
+        normal_adhesion_ == INPAR::PARTICLEOLD::adhesion_linspringdamp)
     {
       if (adhesion_max_force_ > 0 and std::abs(normaladhesionforce) > adhesion_max_force_)
         assemble = false;
@@ -2590,7 +2590,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribu
 
     switch (adhesion_surface_energy_distribution_)
     {
-      case INPAR::PARTICLE::adhesionsurfaceenergydistribution_none:
+      case INPAR::PARTICLEOLD::adhesionsurfaceenergydistribution_none:
       {
         currentAdhe.surface_energy = adhesion_surface_energy_;
         if (iswallele == true)
@@ -2599,8 +2599,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribu
         }
         break;
       }
-      case INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal:
-      case INPAR::PARTICLE::adhesionsurfaceenergydistribution_normal:
+      case INPAR::PARTICLEOLD::adhesionsurfaceenergydistribution_lognormal:
+      case INPAR::PARTICLEOLD::adhesionsurfaceenergydistribution_normal:
       {
         double adhesionsurfaceenergy = adhesion_surface_energy_;
         if (iswallele == true)
@@ -2622,16 +2622,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::ComputeAdhesionSurfaceEnergyDistribu
           // logarithm as mean and input parameter value as standard deviation
           DRT::Problem::Instance()->Random()->SetMeanVariance(
               adhesion_surface_energy_distribution_ ==
-                      INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal
+                      INPAR::PARTICLEOLD::adhesionsurfaceenergydistribution_lognormal
                   ? log(adhesionsurfaceenergy)
                   : adhesionsurfaceenergy,
-              DRT::Problem::Instance()->ParticleParams().get<double>(
+              DRT::Problem::Instance()->ParticleParamsOld().get<double>(
                   "ADHESION_SURFACE_ENERGY_DISTRIBUTION_SIGMA"));
 
           // generate normally or log-normally distributed random value for particle radius
           double random_surface_energy =
               adhesion_surface_energy_distribution_ ==
-                      INPAR::PARTICLE::adhesionsurfaceenergydistribution_lognormal
+                      INPAR::PARTICLEOLD::adhesionsurfaceenergydistribution_lognormal
                   ? exp(DRT::Problem::Instance()->Random()->Normal())
                   : DRT::Problem::Instance()->Random()->Normal();
 
@@ -2781,7 +2781,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateVirtualRollingForce(
  *---------------------------------------------------------------------------*/
 bool PARTICLE::ParticleCollisionHandlerDEM::ConsiderNormalAdhesion(const double normalgap) const
 {
-  return normal_adhesion_ != INPAR::PARTICLE::adhesion_none and
+  return normal_adhesion_ != INPAR::PARTICLEOLD::adhesion_none and
          (adhesion_max_disp_ < 0. or normalgap <= adhesion_eq_gap_ + adhesion_max_disp_);
 }
 
@@ -2886,7 +2886,7 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
       ParticleCollisionHandlerDEM(discret, particlealgorithm, particledynparams)
 {
   // safety check
-  if (normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+  if (normal_adhesion_ != INPAR::PARTICLEOLD::adhesion_none)
     dserror("Adhesion not yet implemented for ellipsoidal particles!");
 
   // store minimum and maximum radii
@@ -2909,8 +2909,8 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
   // safety checks
   switch (normal_contact_)
   {
-    case INPAR::PARTICLE::LinSpring:
-    case INPAR::PARTICLE::LinSpringDamp:
+    case INPAR::PARTICLEOLD::LinSpring:
+    case INPAR::PARTICLEOLD::LinSpringDamp:
     {
       // stiffness value not explicitly prescribed
       if (particledynparams.get<double>("NORMAL_STIFF") <= 0. or
@@ -2967,10 +2967,10 @@ PARTICLE::ParticleCollisionHandlerDEMEllipsoids::ParticleCollisionHandlerDEMElli
       break;
     }
 
-    case INPAR::PARTICLE::Hertz:
-    case INPAR::PARTICLE::LeeHerrmann:
-    case INPAR::PARTICLE::KuwabaraKono:
-    case INPAR::PARTICLE::Tsuji:
+    case INPAR::PARTICLEOLD::Hertz:
+    case INPAR::PARTICLEOLD::LeeHerrmann:
+    case INPAR::PARTICLEOLD::KuwabaraKono:
+    case INPAR::PARTICLEOLD::Tsuji:
     {
       dserror("Chosen normal contact model not available for ellipsoidal particles!");
       break;
@@ -4167,11 +4167,11 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
 #ifdef OUTPUT
     std::cout << " Dealing with the collision event at time " << next_event->time
               << " between the two collision partners " << next_event->particle_1->Id() << " & ";
-    if (next_event->coltype == INPAR::PARTICLE::particle_particle)
+    if (next_event->coltype == INPAR::PARTICLEOLD::particle_particle)
     {
       std::cout << "GID of second particle " << next_event->particle_2->Id() << std::endl;
     }
-    else if (next_event->coltype == INPAR::PARTICLE::particle_wall)
+    else if (next_event->coltype == INPAR::PARTICLEOLD::particle_wall)
     {
       std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(next_event)->wall->Id()
                 << std::endl;
@@ -4200,20 +4200,20 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
 #ifdef OUTPUT
         Teuchos::RCP<Event> output1 = *iter;
         std::cout << "GID of first particle " << output1->particle_1->Id() << std::endl;
-        if (output1->coltype == INPAR::PARTICLE::particle_particle)
+        if (output1->coltype == INPAR::PARTICLEOLD::particle_particle)
         {
           std::cout << "GID of second particle " << output1->particle_2->Id() << std::endl;
         }
-        else if (output1->coltype == INPAR::PARTICLE::particle_wall)
+        else if (output1->coltype == INPAR::PARTICLEOLD::particle_wall)
         {
           std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output1)->wall->Id()
                     << std::endl;
         }
 #endif
         Teuchos::RCP<Event> invalid_col = *iter;
-        if (next_event->coltype == INPAR::PARTICLE::particle_particle)
+        if (next_event->coltype == INPAR::PARTICLEOLD::particle_particle)
         {
-          if ((invalid_col->coltype == INPAR::PARTICLE::particle_particle) and
+          if ((invalid_col->coltype == INPAR::PARTICLEOLD::particle_particle) and
               (invalid_col->particle_1->Id() == next_event->particle_1->Id() or
                   invalid_col->particle_1->Id() == next_event->particle_2->Id() or
                   invalid_col->particle_2->Id() == next_event->particle_1->Id() or
@@ -4231,7 +4231,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
             ++iter;
             eventqueue.erase(tmp);
           }
-          else if ((invalid_col->coltype == INPAR::PARTICLE::particle_wall) and
+          else if ((invalid_col->coltype == INPAR::PARTICLEOLD::particle_wall) and
                    (invalid_col->particle_1->Id() == next_event->particle_1->Id() or
                        invalid_col->particle_1->Id() == next_event->particle_2->Id()))
           {
@@ -4252,9 +4252,9 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
             ++iter;
           }
         }
-        else if (next_event->coltype == INPAR::PARTICLE::particle_wall)
+        else if (next_event->coltype == INPAR::PARTICLEOLD::particle_wall)
         {
-          if ((invalid_col->coltype == INPAR::PARTICLE::particle_particle) and
+          if ((invalid_col->coltype == INPAR::PARTICLEOLD::particle_particle) and
               (invalid_col->particle_1->Id() == next_event->particle_1->Id() or
                   invalid_col->particle_2->Id() == next_event->particle_1->Id()))
 
@@ -4270,7 +4270,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
             ++iter;
             eventqueue.erase(tmp);
           }
-          else if ((invalid_col->coltype == INPAR::PARTICLE::particle_wall) and
+          else if ((invalid_col->coltype == INPAR::PARTICLEOLD::particle_wall) and
                    (invalid_col->particle_1->Id() == next_event->particle_1->Id()))
           {
 #ifdef OUTPUT
@@ -4305,11 +4305,11 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(double dt,
         Teuchos::RCP<Event> output2 = *iter2;
         std::cout << " happening at time:  " << output2->time << std::endl;
         std::cout << "GID of first particle " << output2->particle_1->Id() << std::endl;
-        if (output2->coltype == INPAR::PARTICLE::particle_particle)
+        if (output2->coltype == INPAR::PARTICLEOLD::particle_particle)
         {
           std::cout << "GID of second particle " << output2->particle_2->Id() << std::endl;
         }
-        else if (output2->coltype == INPAR::PARTICLE::particle_wall)
+        else if (output2->coltype == INPAR::PARTICLEOLD::particle_wall)
         {
           std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id()
                     << std::endl;
@@ -4468,7 +4468,7 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
   // check for Particle Particle Collision or Particle Wall Collision
   switch (next_event->coltype)
   {
-    case INPAR::PARTICLE::particle_particle:
+    case INPAR::PARTICLEOLD::particle_particle:
     {
 #ifdef OUTPUT
       std::cout << "Handle collision of particle " << next_event->particle_1->Id()
@@ -4549,7 +4549,7 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
       }
     }
     break;
-    case INPAR::PARTICLE::particle_wall:
+    case INPAR::PARTICLEOLD::particle_wall:
     {
 #ifdef OUTPUT
       std::cout << "Handle collision of particle " << next_event->particle_1->Id()
@@ -4715,26 +4715,26 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
       if ((vel_col_1 + vel_col_2) > GEO::TOL14)
       {
         newevent = Teuchos::rcp(
-            new Event(INPAR::PARTICLE::particle_particle, ddt_1 + 0.0, particle_1, particle_2));
+            new Event(INPAR::PARTICLEOLD::particle_particle, ddt_1 + 0.0, particle_1, particle_2));
       }
     }
     // tc1 is negative
     else if (tc1 < -GEO::TOL14 and tc2 > GEO::TOL14 and tc2 < 1.1 * remaining_dt)
     {
       newevent = Teuchos::rcp(
-          new Event(INPAR::PARTICLE::particle_particle, ddt_1 + tc2, particle_1, particle_2));
+          new Event(INPAR::PARTICLEOLD::particle_particle, ddt_1 + tc2, particle_1, particle_2));
     }
     // tc2 is negative
     else if (tc1 > GEO::TOL14 and tc2 < -GEO::TOL14 and tc1 < 1.1 * remaining_dt)
     {
       newevent = Teuchos::rcp(
-          new Event(INPAR::PARTICLE::particle_particle, ddt_1 + tc1, particle_1, particle_2));
+          new Event(INPAR::PARTICLEOLD::particle_particle, ddt_1 + tc1, particle_1, particle_2));
     }
     // both positive, smaller one is chosen (tc1 is almost identical to tc2)
     else if (tc1 > GEO::TOL14 and tc2 > GEO::TOL14 and std::min(tc1, tc2) < 1.1 * remaining_dt)
     {
-      newevent = Teuchos::rcp(new Event(
-          INPAR::PARTICLE::particle_particle, ddt_1 + std::min(tc1, tc2), particle_1, particle_2));
+      newevent = Teuchos::rcp(new Event(INPAR::PARTICLEOLD::particle_particle,
+          ddt_1 + std::min(tc1, tc2), particle_1, particle_2));
     }
   }
 
@@ -4826,7 +4826,7 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   Teuchos::RCP<WallEvent> wallevent = Teuchos::null;
   if (validcollision == true)
   {
-    wallevent = Teuchos::rcp(new WallEvent(INPAR::PARTICLE::particle_wall,
+    wallevent = Teuchos::rcp(new WallEvent(INPAR::PARTICLEOLD::particle_wall,
         particle_time + timetocollision, particle, wall, wallcoll_pos, wallcoll_vel));
 
 #ifdef DEBUG
@@ -4976,11 +4976,11 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
     Teuchos::RCP<Event> output2 = *iter2;
     std::cout << " happening at time:  " << output2->time << std::endl;
     std::cout << "GID of first particle " << output2->particle_1->Id() << std::endl;
-    if (output2->coltype == INPAR::PARTICLE::particle_particle)
+    if (output2->coltype == INPAR::PARTICLEOLD::particle_particle)
     {
       std::cout << "GID of second particle " << output2->particle_2->Id() << std::endl;
     }
-    else if (output2->coltype == INPAR::PARTICLE::particle_wall)
+    else if (output2->coltype == INPAR::PARTICLEOLD::particle_wall)
     {
       std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id()
                 << std::endl;
@@ -5022,7 +5022,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(Teuchos::RCP<E
 
     if (newevent != Teuchos::null)
     {
-      if (lastevent->coltype == INPAR::PARTICLE::particle_particle)
+      if (lastevent->coltype == INPAR::PARTICLEOLD::particle_particle)
       {
         // do not add event of particles that has already been processed in lastevent
         if (newevent->particle_2->Id() != lastevent->particle_2->Id())
@@ -5050,7 +5050,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(Teuchos::RCP<E
   //
   // searching for new collisions for the second particle of the last collision (if existing)
   //
-  if (lastevent->coltype == INPAR::PARTICLE::particle_particle)
+  if (lastevent->coltype == INPAR::PARTICLEOLD::particle_particle)
   {
     // reuse neighborhood in case both particles reside in the same bin
     const int binId_part1 = lastevent->particle_1->Elements()[0]->Id();
@@ -5099,11 +5099,11 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(Teuchos::RCP<E
     Teuchos::RCP<Event> output2 = *iter2;
     std::cout << " happening at time:  " << output2->time << std::endl;
     std::cout << "GID of first particle " << output2->particle_1->Id() << std::endl;
-    if (output2->coltype == INPAR::PARTICLE::particle_particle)
+    if (output2->coltype == INPAR::PARTICLEOLD::particle_particle)
     {
       std::cout << "GID of second particle " << output2->particle_2->Id() << std::endl;
     }
-    else if (output2->coltype == INPAR::PARTICLE::particle_wall)
+    else if (output2->coltype == INPAR::PARTICLEOLD::particle_wall)
     {
       std::cout << "GID of wall " << Teuchos::rcp_dynamic_cast<WallEvent>(output2)->wall->Id()
                 << std::endl;
@@ -6380,8 +6380,8 @@ void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(const DRT::Node* par
  *----------------------------------------------------------------------*/
 bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RCP<Event> event2)
 {
-  if (event1->coltype == INPAR::PARTICLE::particle_particle and
-      event2->coltype == INPAR::PARTICLE::particle_particle)
+  if (event1->coltype == INPAR::PARTICLEOLD::particle_particle and
+      event2->coltype == INPAR::PARTICLEOLD::particle_particle)
   {
     // compare two events with particle-particle-collision
     // check if these two events are happening simultaneously
@@ -6423,8 +6423,8 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       return event1->time < event2->time;
     }
   }
-  else if (event1->coltype == INPAR::PARTICLE::particle_particle and
-           event2->coltype == INPAR::PARTICLE::particle_wall)
+  else if (event1->coltype == INPAR::PARTICLEOLD::particle_particle and
+           event2->coltype == INPAR::PARTICLEOLD::particle_wall)
   {
     // compare event particle-particle-collision with event particle-wall-collision
     // check if these two events are happening simultaneously
@@ -6453,8 +6453,8 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       return event1->time < event2->time;
     }
   }
-  else if (event1->coltype == INPAR::PARTICLE::particle_wall and
-           event2->coltype == INPAR::PARTICLE::particle_particle)
+  else if (event1->coltype == INPAR::PARTICLEOLD::particle_wall and
+           event2->coltype == INPAR::PARTICLEOLD::particle_particle)
   {
     // compare event particle-wall-collision with event particle-particle-collision
     // check if these two events are happening simultaneously
@@ -6483,8 +6483,8 @@ bool PARTICLE::Event::Helper::operator()(Teuchos::RCP<Event> event1, Teuchos::RC
       return event1->time < event2->time;
     }
   }
-  else if (event1->coltype == INPAR::PARTICLE::particle_wall and
-           event2->coltype == INPAR::PARTICLE::particle_wall)
+  else if (event1->coltype == INPAR::PARTICLEOLD::particle_wall and
+           event2->coltype == INPAR::PARTICLEOLD::particle_wall)
   {
     // compare event particle-wall-collision with event particle-wall-collision
     // check if these two events are happening simultaneously

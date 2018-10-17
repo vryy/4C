@@ -39,9 +39,9 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& ioparam
 void PARTICLE::TimIntCentrDiff::Init()
 {
   // safety checks
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM and
-      particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::NormalAndTang_DEM and
-      particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::Normal_DEM and
+      particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::NormalAndTang_DEM and
+      particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::None)
     dserror(
         "central difference time integrator currently just combined with cavitation or discrete "
         "element collision mechanism");

@@ -152,13 +152,6 @@ namespace ADAPTER
     //! Read-only radii \f$R_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusn() = 0;
 
-    //! Read-only densities \f$\rho_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Densityn() = 0;
-
-    //! Read-only time derivative of densities \f$\dot{\rho}_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> DensityDotn() = 0;
-
-
 
     //! Read-only displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
@@ -178,12 +171,6 @@ namespace ADAPTER
     //! Read-only radii \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusnp() = 0;
 
-    //! Read-only densities \f$\rho_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Densitynp() = 0;
-
-    //! Read-only time derivative of densities \f$\dot{\rho}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> DensityDotnp() = 0;
-
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
 
@@ -196,17 +183,11 @@ namespace ADAPTER
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
-    //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Pressure() = 0;
-
     //! Read-only force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_FEVector> Fstructure() = 0;
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
-
-    //! does interaction handler exist?
-    virtual bool HaveInterHandler() = 0;
 
     //! check state vector
     virtual void CheckStateVector(
@@ -240,12 +221,6 @@ namespace ADAPTER
     //! Extract radii \f$R_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusnp() = 0;
 
-    //! Extract densities \f$\rho_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() = 0;
-
-    //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() = 0;
-
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
 
@@ -257,9 +232,6 @@ namespace ADAPTER
 
     //! Extract inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() = 0;
-
-    //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() = 0;
 
     //! Extract force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
     virtual Teuchos::RCP<Epetra_FEVector> WriteAccessFstructure() = 0;
@@ -295,8 +267,6 @@ namespace ADAPTER
     virtual void UpdateExtActions(bool init = false) = 0;
 
     virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector) = 0;
-
-    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector, const double time) = 0;
 
     //@}
 

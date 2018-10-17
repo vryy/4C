@@ -65,7 +65,7 @@ SEARCH_PARAM                    4.0
 SEARCH_USE_AUX_POS              Yes
 REDUNDANT_STORAGE               Master
 PARALLEL_STRATEGY               redundant_ghosting
-PARALLEL_REDIST                 Dynamic
+PARALLEL_REDIST                 Static // Use static for now, as dynamic behaves randomly //Dynamic
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
 INTTYPE                         Elements

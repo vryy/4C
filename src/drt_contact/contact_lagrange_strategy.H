@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -190,7 +190,7 @@ namespace CONTACT
     \param kdd (in): the displacement dof stiffness (upper left block)
     \param fd (in): the displacement dof r.h.s. (upper block)
     \param sold (in): the displacement dof solution increment
-    \param dirichtoggle (in): toggle vector for dirichlet conditions
+    \param dbcmaps (in): map extractor to apply Dirichlet boundary conditions
     \param numiter (in): current nonlinear iteration step
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
     \param mergedsol (out): Epetra_Vector for merged solution vector

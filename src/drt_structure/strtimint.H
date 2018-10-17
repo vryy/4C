@@ -406,7 +406,8 @@ namespace STR
     //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
-    void OutputStep(bool forced_writerestart = false);
+    void OutputStep(const bool forced_writerestart = false  ///< [in] Force writing of restart data
+    );
 
     //! Write output for every Newton or line search iteration
     //! The step numbers are formated in the following manner:
@@ -1079,6 +1080,7 @@ namespace STR
     int writerestartevery_;    //!< write restart every given step;
                                //!< if 0, restart is not written
     int writereducedrestart_;  // Write reduced Restart Data i.e no mesh for mlmc purposes
+    bool writeele_;            //!< write elements on/off
     bool writestate_;          //!< write state on/off
     bool writevelacc_;         //!< write velocity and acceleration on/off
     int writeresultsevery_;    //!< write state/stress/strain every given step

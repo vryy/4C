@@ -1,8 +1,8 @@
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
 \file inpar_particle.H
 
-\brief Input parameters for particle problems
+\brief input parameters for particle problems
 
 \level 3
 
@@ -11,13 +11,23 @@
              http://www.lnm.mw.tum.de
              089 - 289 -15262
 
-*-----------------------------------------------------------------------*/
-#ifndef INPAR_PARTICLE_H_
-#define INPAR_PARTICLE_H_
+*/
+/*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 03/2018 |
+ *---------------------------------------------------------------------------*/
+#ifndef INPAR_PARTICLE_H
+#define INPAR_PARTICLE_H
+
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 03/2018 |
+ *---------------------------------------------------------------------------*/
 #include "inpar_parameterlist_utils.H"
 
-// forward declaration
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 03/2018 |
+ *---------------------------------------------------------------------------*/
 namespace DRT
 {
   namespace INPUT
@@ -26,198 +36,138 @@ namespace DRT
   }
 }  // namespace DRT
 
-/*----------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------------*
+ | input parameters for particle problems                     sfuchs 03/2018 |
+ *---------------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for particle problems
   namespace PARTICLE
   {
-    /// Type of time integrator
+    /*---------------------------------------------------------------------------*
+     | general control parameters for particle simulations                       |
+     *---------------------------------------------------------------------------*/
+
+    //! type of particle time integration
     enum DynamicType
     {
-      dyna_expleuler,  ///< forward Euler (explicit)
-      dyna_centrdiff,  ///< central differences (explicit)
-      dyna_kickdrift,  ///< kick-dirft scheme (explicit)
-      dyna_rk2,        ///< Runge-Kutta 2 (explicit)
-      dyna_rk4         ///< Runge-Kutta 4 (explicit)
+      dyna_semiimpliciteuler,  //! semi implicit euler scheme (explicit)
+      dyna_velocityverlet      //! velocity verlet scheme (explicit)
     };
 
-    /// Type of repartitioning strategy
-    enum RepartitionStrategy
+    //! type of particle interaction
+    enum InteractionType
     {
-      repstr_adaptive,  ///< only do repartitioning in case physically necessary
-      repstr_everydt    ///< do repartitioning every time step
+      interaction_none,  //! no particle interaction
+      interaction_sph,   //! smoothed particle hydrodynamics
+      interaction_dem    //! discrete element method
     };
 
-    /// Contact type for particles
-    enum ParticleInteractions
+    //! data format for written numeric data via vtp
+    enum OutputDataFormat
     {
-      None,
-      Normal_DEM,
-      Normal_MD,
-      NormalAndTang_DEM,
-      SPH
+      binary,
+      ascii
     };
 
-    /// Normal contact law
-    enum NormalContact
+    /*---------------------------------------------------------------------------*
+     | smoothed particle hydrodynamics (SPH) specific control parameters         |
+     *---------------------------------------------------------------------------*/
+
+    //! type of smoothed particle hydrodynamics kernel
+    enum KernelType
     {
-      LinSpring,
-      Hertz,
-      LinSpringDamp,
-      LeeHerrmann,
-      KuwabaraKono,
-      Tsuji
+      CubicSpline,
+      QuinticSpline
     };
 
-    /// adhesion law governing normal contact of particles
-    enum NormalAdhesion
+    //! kernel space dimension number
+    enum KernelSpaceDimension
     {
-      adhesion_none,
-      adhesion_linspring,
-      adhesion_linspringdamp,
-      adhesion_vdWDMT,
-      adhesion_regDMT
+      Kernel1D,
+      Kernel2D,
+      Kernel3D
     };
 
-    /// Rolling contact law
-    enum RollingContact
-    {
-      rolling_none,
-      rolling_viscous,
-      rolling_constant
-    };
-
-    //! type of collision
-    enum coltype
-    {
-      particle_particle,
-      particle_wall,
-      undefined
-    };
-
-    /// problem dimension in case of quasi 2D
-    enum ParticleDim
-    {
-      particle_3D,
-      particle_2Dx,
-      particle_2Dy,
-      particle_2Dz
-    };
-
-    /// random distribution of particle radii
-    enum RadiusDistribution
-    {
-      radiusdistribution_none,
-      radiusdistribution_lognormal,
-      radiusdistribution_normal
-    };
-
-    /// random distribution of surface energy
-    enum AdhesionSurfaceEnergyDistribution
-    {
-      adhesionsurfaceenergydistribution_none,
-      adhesionsurfaceenergydistribution_lognormal,
-      adhesionsurfaceenergydistribution_normal
-    };
-
-    /// Weight function for SPH interactions
-    enum WeightFunction
-    {
-      CubicBspline,
-      QuinticBspline,
-      SqrtHyperbola,
-      HyperbolaNoRsz
-    };
-
-    /// Number of weight function space dimensions for SPH interactions
-    enum WeightFunctionDim
-    {
-      WF_1D,
-      WF_2D,
-      WF_3D
-    };
-
-    /// Equation of state for SPH interactions
-    enum EquationOfState
+    //! type of smoothed particle hydrodynamics equation of state
+    enum EquationOfStateType
     {
       GenTait,
       IdealGas
     };
 
-    enum ExtendedGhosting
+    //! type of smoothed particle hydrodynamics momentum formulation
+    enum MomentumFormulationType
     {
-      StandardGhosting,
-      BdryParticleGhosting,
-      WallElementGhosting,
-      AddLayerGhosting
+      AdamiMomentumFormulation,
+      MonaghanMomentumFormulation
     };
 
-    /// wall interaction type for SPH interactions
-    enum WallInteractionType
+    //! type of density evaluation scheme
+    enum DensityEvaluationScheme
     {
-      BoundarParticle_NoSlip,
-      BoundarParticle_FreeSlip,
-      NoWallInteraction
+      DensitySummation,
+      DensityIntegration,
+      DensityPredictCorrect
     };
 
-    /// type of free-surface treatment for SPH interactions
-    enum FreeSurfaceType
+    //! type of density correction scheme
+    enum DensityCorrectionScheme
     {
-      FreeSurface_None,            ///< no free surfaces
-      DensityIntegration,          ///< density determined via time integration exclusively
-      InteriorReinitialization,    ///< density via time integration and re-initialization in the
-                                   ///< interior via density summation (in every time step)
-      NormalizedReinitialization,  ///< like 'InteriorReinitialization' but with additional
-                                   ///< re-initialization of free-surface particles via normalized
-                                   ///< density summation (Shepard Filter)
-      RandlesReinitialization,  ///< like 'NormalizedReinitialization' but with re-initialization of
-                                ///< free-surface particles inspired by Randles 1996 instead of
-                                ///< Shepard Filter
-      TwoPhase                  ///< void phase explicitly modeled / discretized
+      NoCorrection,
+      InteriorCorrection,
+      NormalizedCorrection,
+      RandlesCorrection
     };
 
-    /// type of surface tension forces for SPH interactions
-    enum SurfaceTensionType
+    //! type of boundary particle formulation
+    enum BoundaryParticleFormulationType
     {
-      ST_NONE,          ///< no surface tension
-      ST_VDW_INDIRECT,  ///< surface tension via van der Waals forces according to Tartakovsky et
-                        ///< al. 2016, definition of surface tension and contact angle via s_ff,
-                        ///< s_sf
-      ST_CONTI_ADAMI    ///< surface tension via continuum approach (pressure jump ~ interface
-                        ///< curvature) according to Adami et al. 2010
+      NoBoundaryFormulation,
+      AdamiBoundaryFormulation
     };
 
-    /// rendering for smoothed particle hydrodynamics
-    enum RenderingType
+    //! type of boundary particle interaction
+    enum BoundaryParticleInteraction
     {
-      NoRendering,
-      StandardRendering,
-      NormalizedRendering
+      NoSlipBoundaryParticle,
+      FreeSlipBoundaryParticle
     };
 
-    enum RenderingOutput
+    //! type of transport velocity formulation
+    enum TransportVelocityFormulation
     {
-      DiscretAndMatlab,
-      Discret,
-      Matlab
+      NoTransportVelocity,
+      StandardTransportVelocity,
+      GeneralizedTransportVelocity
     };
 
-    enum RenderingBdryPart
+    //! type of temperature evaluation scheme
+    enum TemperatureEvaluationScheme
     {
-      WithBdryParticle,
-      NoBdryParticle
+      NoTemperatureEvaluation,
+      TemperatureIntegration
     };
 
-    /// set the particle parameters
+    //! type of surface tension formulation
+    enum SurfaceTensionFormulation
+    {
+      NoSurfaceTension,
+      ContinuumSurfaceForce
+    };
+
+    /*---------------------------------------------------------------------------*
+     | discrete element method (DEM) specific control parameters                 |
+     *---------------------------------------------------------------------------*/
+
+    //! no DEM specific control parameters added yet
+
+
+    //! set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-    /// set the particle conditions
-    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
-
   }  // namespace PARTICLE
+
 }  // namespace INPAR
 
-/*----------------------------------------------------------------------*/
-#endif /* INPAR_PARTICLE_H_ */
+/*---------------------------------------------------------------------------*/
+#endif

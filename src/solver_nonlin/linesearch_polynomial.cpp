@@ -2,11 +2,11 @@
 /*!
 \file linesearch_polynomial.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Line search based on polynomials
+
+\level 3
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

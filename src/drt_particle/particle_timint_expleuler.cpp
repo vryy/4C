@@ -34,7 +34,7 @@ PARTICLE::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparam
 void PARTICLE::TimIntExplEuler::Init()
 {
   // safety check
-  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_MD)
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLEOLD::Normal_MD)
     dserror(
         "explicit euler time integrator currently just combined with molecular dynamics collision "
         "mechanism");

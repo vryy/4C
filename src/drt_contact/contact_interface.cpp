@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Alexander Seitz
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -968,7 +968,9 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // make sure we are supposed to be here
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(), "PARALLEL_REDIST") ==
       INPAR::MORTAR::parredist_none)
-    dserror("ERROR: You are not supposed to be here...");
+    dserror(
+        "ERROR: You are not supposed to be here since you did not enable PARALLEL_REDIST in the "
+        "input file. ");
 
   // some local variables
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
@@ -1042,7 +1044,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   // check for consistency
   if (scroweles->NumGlobalElements() == 0 && sncroweles->NumGlobalElements() == 0)
-    dserror("ERROR: Redistribute: Both slave sets (close/non-close) are empty");
+    dserror("ERROR: CONTACT Redistribute: Both slave sets (close/non-close) are empty");
 
   //**********************************************************************
   // (2) SPECIAL CASES and output to screen
@@ -1194,7 +1196,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
   if (scrownodes == Teuchos::null || sncrownodes == Teuchos::null)
   {
-    dserror("ERROR: Redistribute: You should not be here");
+    dserror("ERROR: CONTACT Redistribute: Both slave sets (close/non-close) are empty");
   }
   //-------------------------------------CASE 2: BOTH SLAVE SETS NON-EMPTY
   else

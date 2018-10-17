@@ -404,9 +404,10 @@ namespace IO
     int resultfile_changed_;
     int meshfile_changed_;
 
+    //! Control file object
     Teuchos::RCP<OutputControl> output_;
 
-    // do we want binary output
+    //! do we want binary output
     bool binio_;
 
     std::string spatial_approx_;

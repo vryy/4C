@@ -2,11 +2,11 @@
 /*!
 \file nln_operator_dinverse.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Use inverse of diagonal of Jacobian as preconditioner
+
+\level 3
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/

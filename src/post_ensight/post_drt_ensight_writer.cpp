@@ -1046,7 +1046,9 @@ std::string EnsightWriter::GetEnsightString(const DRT::Element::DiscretizationTy
       entry = distype2ensightstring_.find(distype);
       break;
   }
-  if (entry == distype2ensightstring_.end()) dserror("no entry in distype2ensightstring_ found");
+  if (entry == distype2ensightstring_.end())
+    dserror("No entry in distype2ensightstring_ found for DRT::Element::DiscretizationType = '%d'.",
+        distype);
   return entry->second;
 }
 

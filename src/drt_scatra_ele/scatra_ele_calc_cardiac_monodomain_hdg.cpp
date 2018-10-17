@@ -141,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
       if (!fnode) dserror("No fiber direction defined on nodes or elements");
       for (unsigned int j = 0; j < this->nsd_; ++j)
       {
-        fibernodes[inode](j) = fnode->Fiber()[j];
+        fibernodes[inode](j) = fnode->Fiber1()[j];
         cirnodes[inode](j) = fnode->Cir()[j];
         tannodes[inode](j) = fnode->Tan()[j];
       }
@@ -301,7 +301,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
       if (!fnode) dserror("No fiber direction defined on nodes or elements");
       for (unsigned int j = 0; j < this->nsd_; ++j)
       {
-        fibernodes[inode](j) = fnode->Fiber()[j];
+        fibernodes[inode](j) = fnode->Fiber1()[j];
         cirnodes[inode](j) = fnode->Cir()[j];
         tannodes[inode](j) = fnode->Tan()[j];
       }

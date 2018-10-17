@@ -18,8 +18,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_adapter/adapter_particle.H"
+#include "../drt_inpar/inpar_particle_old.H"
 #include "../drt_timestepping/timintmstep.H"
-#include "../drt_inpar/inpar_particle.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 // forward declarations
@@ -42,7 +42,6 @@ namespace PARTICLE
 {
   class Algorithm;
   class ParticleCollisionHandlerBase;
-  class ParticleSPHInteractionHandler;
 }  // namespace PARTICLE
 
 namespace MAT
@@ -50,8 +49,7 @@ namespace MAT
   namespace PAR
   {
     class ParticleMat;
-    class ExtParticleMat;
-  }  // namespace PAR
+  }
 }  // namespace MAT
 
 /*----------------------------------------------------------------------*/
@@ -111,11 +109,6 @@ namespace PARTICLE
     virtual void ComputeAcc(Teuchos::RCP<Epetra_Vector> f_contact,
         Teuchos::RCP<Epetra_Vector> m_contact, Teuchos::RCP<Epetra_Vector> acc,
         Teuchos::RCP<Epetra_Vector> ang_acc);
-
-    //! determine acceleration in SPH case
-    virtual void DetermineSPHDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
-        Teuchos::RCP<Epetra_Vector> accmod, Teuchos::RCP<Epetra_Vector> velConv,
-        Teuchos::RCP<Epetra_Vector> acc_A, const double time, const double dt);
 
     //! Prepare time step
     virtual void PrepareTimeStep();
@@ -189,9 +182,6 @@ namespace PARTICLE
     //! Energy output
     virtual void OutputEnergy();
 
-    //! SPH rendering output
-    virtual void PerformSPHRendering(bool clearstate, bool writeoutput);
-
     //! output particle statistics
     void OutputParticleStatistics();
 
@@ -251,12 +241,6 @@ namespace PARTICLE
     //! Read-only accelerations \f$A_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
 
-    //! Read-only modified velocities \f$Vm_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velmodn() { return (*velmod_)(0); }
-
-    //! Read-only modified accelerations \f$Am_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accmodn() { return (*accmod_)(0); }
-
     //! Read-only angular-velocities \f$angV_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*angVel_)(0); }
 
@@ -265,12 +249,6 @@ namespace PARTICLE
 
     //! Read-only radii \f$R_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusn() { return (*radius_)(0); }
-
-    //! Read-only densities \f$\rho_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Densityn() { return (*density_)(0); }
-
-    //! Read-only time derivative of densities \f$\dot{\rho}_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> DensityDotn() { return (*densityDot_)(0); }
 
     //! Read-only displacements \f$D_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() { return disn_; }
@@ -281,12 +259,6 @@ namespace PARTICLE
     //! Read-only accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
 
-    //! Read-only modified velocities \f$Vm_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velmodnp() { return velmodn_; }
-
-    //! Read-only modified accelerations \f$Am_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Accmodnp() { return accmodn_; }
-
     //! Read-only angular-velocities \f$angV_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVelnp() { return angVeln_; }
 
@@ -295,12 +267,6 @@ namespace PARTICLE
 
     //! Read-only radii \f$\rho_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radiusnp() { return radiusn_; }
-
-    //! Read-only densities \f$\rho_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Densitynp() { return densityn_; }
-
-    //! Read-only time derivative of densities \f$\dot{\rho}_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> DensityDotnp() { return densityDotn_; }
 
     //! Read-only radii \f$R_0\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() { return radius0_; }
@@ -314,17 +280,11 @@ namespace PARTICLE
     //! Read-only inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
-    //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Pressure() { return pressure_; }
-
     //! Read-only force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_FEVector> Fstructure() { return f_structure_; }
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() { return (collhandler_ != Teuchos::null); }
-
-    //! does interaction handler exist?
-    virtual bool HaveInterHandler() { return (interHandler_ != Teuchos::null); }
 
     //! check state vectors (debugging)
     virtual void CheckStateVector(
@@ -365,12 +325,6 @@ namespace PARTICLE
     //! Extract accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() { return accn_; }
 
-    //! Extract modified velocities \f$Vm_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelmodnp() { return velmodn_; }
-
-    //! Extract modified accelerations \f$Am_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccmodnp() { return accmodn_; }
-
     //! Extract angular-velocities \f$angV_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessAngVelnp() { return angVeln_; }
 
@@ -383,12 +337,6 @@ namespace PARTICLE
     //! Extract radii \f$R_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusnp() { return radiusn_; }
 
-    //! Extract densities \f$\rho_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensitynp() { return densityn_; }
-
-    //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() { return densityDotn_; }
-
     //! extract radii \f$R_{0}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
 
@@ -400,9 +348,6 @@ namespace PARTICLE
 
     //! Extract masses \f$I_{n}\f$ or \f$I_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
-
-    //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() { return pressure_; }
 
     //! Extract force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
     virtual Teuchos::RCP<Epetra_FEVector> WriteAccessFstructure() { return f_structure_; }
@@ -446,8 +391,6 @@ namespace PARTICLE
 
     virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector);
 
-    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector, const double time);
-
     //@}
 
    protected:
@@ -459,9 +402,6 @@ namespace PARTICLE
 
     //! Set initial fields
     virtual void SetInitialFields();
-
-    //! Determine boundary particles
-    virtual void DetermineBdryParticles();
 
     /* Update exporter objects if layout has changed*/
     virtual void UpdateExportersIfNecessary(
@@ -529,8 +469,6 @@ namespace PARTICLE
     const bool writevelacc_;                         //!< write velocity and acceleration on/off
     const int writeresultsevery_;                    //!< write state/stress/strain every given step
     const int writeenergyevery_;                     //!< write system energy every given step
-    const int writerenderingevery_;                  //!< write SPH rendering every given step
-    const int avrgrenderingsteps_;                   //!< write SPH rendering every given step
     const int writeparticlestatsevery_;              //!< write particle statistics every given step
     Teuchos::RCP<std::ofstream> energyfile_;         //!< output file for energy
     Teuchos::RCP<std::ofstream> particlestatsfile_;  //!< output file for particle statistics
@@ -563,21 +501,12 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> vel_;
     //! Accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> acc_;
-    //! Modified velocities \f${Vm}_{n}, Vm_{n-1}, ...\f$ resembling particle convection velocities
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> velmod_;
-    //! Modified accelerations \f${Am}_{n}, Am_{n-1}, ...\f$ allowing to distinguish physical
-    //! velocities and particle convection velocities
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> accmod_;
     //! Angular-velocities \f${angV}_{n}, angV_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> angVel_;
     //! Angular-accelerations \f${angA}_{n}, angA_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> angAcc_;
     //! Radii \f$R_{n}, R_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> radius_;
-    //! Densities \f$\rho_{n}, \rho_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> density_;
-    //! Time derivative of densities \f$\dot{\rho}_{n}, \dot{\rho}_{n-1}, ...\f$
-    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> densityDot_;
 
     //! Displacements \f${D}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
@@ -585,23 +514,12 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> veln_;
     //! Accelerations \f${A}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> accn_;
-    //! Modified velocities \f${Vm}_{n+1}\f$ resembling particle convection velocities
-    Teuchos::RCP<Epetra_Vector> velmodn_;
-    //! Modified accelerations \f${Am}_{n+1}\f$ allowing to distinguish physical velocities and
-    //! particle convection velocities
-    Teuchos::RCP<Epetra_Vector> accmodn_;
     //! Angular-velocities \f${angV}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> angVeln_;
     //! Angular-acceleration \f${angA}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> angAccn_;
     //! Radii \f$R_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> radiusn_;
-    //! Densities \f${\rho}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> densityn_;
-    //! Initial density (only required if not prescribed via material law)
-    Teuchos::RCP<Epetra_Vector> density0_;
-    //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> densityDotn_;
 
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;
@@ -616,34 +534,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> mass_;
     //! Inertiae \f$I_{n}\f$ or \f$I_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> inertia_;
-    //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> pressure_;
     //! Particle force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
     Teuchos::RCP<Epetra_FEVector> f_structure_;
-
-    //! color field
-    Teuchos::RCP<Epetra_Vector> colorField_;
-    //! gradient of color field (according to Morris et al.)
-    Teuchos::RCP<Epetra_Vector> CFG_;
-    //! smoothed gradient of color field for interaction fluid1-fluid2
-    Teuchos::RCP<Epetra_Vector> CFG_FF_;
-    //! smoothed gradient of color field for interaction fluid1-solid
-    Teuchos::RCP<Epetra_Vector> CFG_F1S_;
-    //! smoothed gradient of color field for interaction fluid2-solid
-    Teuchos::RCP<Epetra_Vector> CFG_F2S_;
-    //! acceleration contribution of surface tension for interaction fluid1-fluid2
-    Teuchos::RCP<Epetra_Vector> accST_FF_;
-    //! free-surface particle type
-    Teuchos::RCP<Epetra_Vector> fspType_;
-    //! curvature of free surface
-    Teuchos::RCP<Epetra_Vector> curvature_;
-    //! discrete particle phase color
-    Teuchos::RCP<Epetra_Vector> phaseColor_;
-    //! discrete particle phase color
-    Teuchos::RCP<Epetra_Vector> distWall_;
-
-    /// global number of boundary particles over all processors
-    int global_num_boundaryparticles_;
 
     //@}
 
@@ -661,7 +553,7 @@ namespace PARTICLE
     //@{
 
     //! flag for random distribution of particle radii
-    const INPAR::PARTICLE::RadiusDistribution radiusdistribution_;
+    const INPAR::PARTICLEOLD::RadiusDistribution radiusdistribution_;
 
     //! bool to control whether radius is constant or variable in time
     const bool variableradius_;
@@ -679,9 +571,6 @@ namespace PARTICLE
 
     //! collision handler for particles
     Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
-
-    //! interaction handler for particles
-    Teuchos::RCP<PARTICLE::ParticleSPHInteractionHandler> interHandler_;
 
     //@}
   };

@@ -5,11 +5,9 @@
 \brief Nonlinear level containing the representation and operations for a single
 nonlinear multigrid level
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\level 3
+
+\maintainer Matthias Mayr
 */
 
 /*----------------------------------------------------------------------------*/
