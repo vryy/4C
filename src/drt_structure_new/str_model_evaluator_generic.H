@@ -173,25 +173,36 @@ namespace STR
 
       /*! \brief Assemble the force right-hand-side
        *
-       *  After the evaluation of all models at the new state \f$t_{n+1}\f$ is finished we
-       *  start to put everything together. At this point we build the right-hand-side at
-       *  the desired mid-point. The reason why we do it here and not at time integrator level
-       *  is that you have now the possibility to use a different time integration (not the
+       * After the evaluation of all models at the new state \f$t_{n+1}\f$ is finished, we
+       * start to put everything together. At this point we build the right-hand-side at
+       * the desired mid-point. The reason why we do it here and not at time integrator level
+       * is that you have now the possibility to use a different time integration (not the
        * underlying structural one). This makes it more flexible. However, the contributions of the
        * old time step should be stored in the UpdateStepState() routine. There you can scale the
-       *  old contributions with the time integration factor you like and save them once, thus you
+       * old contributions with the time integration factor you like and save them once, thus you
        * just have to add them to complete the mid-point right-hand-side.
        *
-       *  \param f         (out) : Time factor scaled right hand side w/o viscous and/or mass
-       * effects \param timefac_np (in) : Time factor of the underlying structural time integrator
-       * for the new state at \f$t_{n+1}\f$. (To scale the old state of the previous time step see
-       * UpdateStepState.)
+       * \param[out] f Right-hand side w/o viscous and/or mass effects scaled by time factor
+       * \param[in] timefac_np Time factor of the underlying structural time integrator for
+       *                       the new state at \f$t_{n+1}\f$.
        *
-       *  \date 07/2016
-       *  \author hiermeier */
+       * To scale the old state of the previous time step, see UpdateStepState.
+       *
+       * \return Boolean to indicate sucess (true) or error (false)
+       *
+       * \date 07/2016
+       * \author hiermeier
+       */
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const = 0;
 
-      //! Assemble the jacobian
+      /*! \brief Assemble the jacobian
+       *
+       * \param[out] jac Jacobian matrix scaled by time integration factor
+       * \param[in] timefac_np Time factor of the underlying structural time integrator for the new
+       *                        state at \f$t_{n+1}\f$.
+       *
+       * \return Boolean to indicate sucess (true) or error (false)
+       */
       virtual bool AssembleJacobian(
           LINALG::SparseOperator& jac, const double& timefac_np) const = 0;
 

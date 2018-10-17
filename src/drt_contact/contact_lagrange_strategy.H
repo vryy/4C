@@ -21,23 +21,12 @@ namespace CONTACT
   /*! \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
    This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   For a more general documentation of the involved functions refer to CoAbstractStrategy.
 
    \author popp (popp@lnm.mw.tum.de) */
   class CoLagrangeStrategy : public CoAbstractStrategy
   {
    public:
-    //    //! Standard constructor
-    //  CoLagrangeStrategy(
-    //      const Epetra_Map* DofRowMap,
-    //      const Epetra_Map* NodeRowMap,
-    //      Teuchos::ParameterList params,
-    //      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-    //      int dim,
-    //      Teuchos::RCP<const Epetra_Comm> comm,
-    //      double alphaf,
-    //      int maxdof);
-
     //! Shared data constructor
     CoLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
@@ -108,17 +97,22 @@ namespace CONTACT
 
     /*! \brief Recover the current state
      *
-     *  The main task of this method is to recover the Lagrange multiplier solution.
-     *  The Lagrange multiplier solution will be stored inside the corresponding strategy
-     *  and is necessary for different internal evaluation methods. If the Lagrange multiplier
-     *  is condensed, this method is the right place to recover it from the displacement solution.
-     *  If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine
+     * The main task of this method is to recover the Lagrange multiplier solution.
+     * The Lagrange multiplier solution will be stored inside the corresponding strategy
+     * and is necessary for different internal evaluation methods. If the Lagrange multiplier
+     * is condensed, this method is the right place to recover it from the displacement solution.
+     * If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine
      * instead.
      *
-     *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration \param xold    (in): old solution vector of the NOX solver \param dir     (in):
-     * current search direction (in general NOT the actual step, keep in mind that the step length
-     * can differ from 1.0) \param xnew    (in): new solution vector of the NOX solver*/
+     * \param cparams (in): parameter interface between the contact objects and the structural time
+     *                       integration
+     * \param xold (in): old solution vector of the NOX solver
+     * \param dir (in): current search direction
+     * \param xnew (in): new solution vector of the NOX solver
+     *
+     * \note The search direction \c dir in general differs from the actual step since the step
+     * length can be differ from 1.0.
+     * */
     virtual void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
         const Epetra_Vector& dir, const Epetra_Vector& xnew);
 
@@ -133,17 +127,44 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const;
 
-    //! Apply modifications (e.g. condensation) directly before linear solve
+    /*! \brief Apply modifications (e.g. condensation) directly before linear solve
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param kteff Jacobian matrix
+     * @param rhs ?? Right-hand side of linear system or residual?
+     */
     virtual void RunPreApplyJacobianInverse(
         Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
-    //! perform condensation of frictionless contact
+    /*! \brief Perform condensation of frictionless contact
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param kteff Jacobian matrix
+     * @param rhs ?? Right-hand side of linear system or residual?
+     */
     virtual void CondenseFrictionless(Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
-    //! perform condensation of frictionlal contact
+    /*! \brief Perform condensation of frictional contact
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param kteff Jacobian matrix
+     * @param rhs ?? Right-hand side of linear system or residual?
+     */
     virtual void CondenseFriction(Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
-    //! Recover condensed Lagrange multiplier after linear solve
+    /*! Recover condensed Lagrange multiplier after linear solve
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param cparams Parameter interface between contact and structural time integration
+     * @param rhs ?? Right-hand side of linear system or residual?
+     * @param result ??
+     * @param xold ??
+     * @param grp ??
+     */
     virtual void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
         const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
         const NOX::NLN::Group& grp);
@@ -193,8 +214,8 @@ namespace CONTACT
     \param dbcmaps (in): map extractor to apply Dirichlet boundary conditions
     \param numiter (in): current nonlinear iteration step
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
-    \param mergedsol (out): Epetra_Vector for merged solution vector
-    \param mergedrhs (out): Epetra_Vector for merged right hand side vector
+    \param blocksol (out): Epetra_Vector for merged solution vector
+    \param blockrhs (out): Epetra_Vector for merged right hand side vector
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
@@ -205,17 +226,17 @@ namespace CONTACT
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): the displacement dof solution increment (associated with displacement dofs)
-    \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
-    vector of the full merged linear system)
+    \param sold (in): Displacement dof solution increment (associated with displacement dofs)
+    \param blocksol (in): Merged solution vector (containing the new solution vector of the full
+                          merged linear system)
     */
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
 
     /*!
-    \brief The entries of the constraint right-hand side are
-    calculated. This function is outsourced cause
-    the vector is needed for the line search algorithm.
+    \brief The entries of the constraint right-hand side are calculated.
+
+    This function is outsourced cause the vector is needed for the line search algorithm.
 
     */
     void EvalConstrRHS();
@@ -234,8 +255,6 @@ namespace CONTACT
 
     /*! \brief Run in the end of the Evaluate() routine to reset
      *         force evaluation flag
-     *
-     *
      */
     virtual void PostEvaluate(CONTACT::ParamsInterface& cparams);
 
