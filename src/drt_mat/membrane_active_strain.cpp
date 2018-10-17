@@ -326,9 +326,9 @@ void MAT::Membrane_ActiveStrain::Evaluate(
   // PASSIVE cauchy green in local coordinates
   //******************
   LINALG::Matrix<3, 3> cauchygreen_passive_local(true);
-
-  cauchygreen_passive_local.MultiplyTN(defgrd_active_inv_loc, cauchygreen);
-  cauchygreen_passive_local.MultiplyNN(cauchygreen_passive_local, defgrd_active_inv_loc);
+  LINALG::Matrix<3, 3> temp(true);
+  temp.MultiplyTN(1.0, defgrd_active_inv_loc, cauchygreen, 0.0);
+  cauchygreen_passive_local.MultiplyNN(1.0, temp, defgrd_active_inv_loc, 0.0);
 
   // compute passive green lagrange strain
   LINALG::Matrix<3, 3> cmatpassive_loc(true);
@@ -341,11 +341,11 @@ void MAT::Membrane_ActiveStrain::Evaluate(
   // FULL PART
   //******************
   LINALG::Matrix<2, 2> S_tot(true);
-  LINALG::Matrix<2, 2> tmptens(true);
-  tmptens(0, 0) = S_passive_loc_voigt(0);
-  tmptens(1, 1) = S_passive_loc_voigt(1);
-  tmptens(1, 0) = S_passive_loc_voigt(2);
-  tmptens(0, 1) = S_passive_loc_voigt(2);
+  LINALG::Matrix<2, 2> S_passive_loc(true);
+  S_passive_loc(0, 0) = S_passive_loc_voigt(0);
+  S_passive_loc(1, 1) = S_passive_loc_voigt(1);
+  S_passive_loc(1, 0) = S_passive_loc_voigt(2);
+  S_passive_loc(0, 1) = S_passive_loc_voigt(2);
 
   LINALG::Matrix<2, 2> defgrd_active_inv_loc_red(true);
   defgrd_active_inv_loc_red(0, 0) = defgrd_active_inv_loc(0, 0);
@@ -353,8 +353,9 @@ void MAT::Membrane_ActiveStrain::Evaluate(
   defgrd_active_inv_loc_red(0, 1) = defgrd_active_inv_loc(0, 1);
   defgrd_active_inv_loc_red(1, 1) = defgrd_active_inv_loc(1, 1);
 
-  tmptens.MultiplyNT(tmptens, defgrd_active_inv_loc_red);
-  S_tot.MultiplyNN(defgrd_active_inv_loc_red, tmptens);
+  LINALG::Matrix<2, 2> temp2(true);
+  temp2.MultiplyNT(1.0, S_passive_loc, defgrd_active_inv_loc_red, 0.0);
+  S_tot.MultiplyNN(1.0, defgrd_active_inv_loc_red, temp2, 0.0);
 
   (*stress)(0) = S_tot(0, 0);
   (*stress)(1) = S_tot(1, 1);
