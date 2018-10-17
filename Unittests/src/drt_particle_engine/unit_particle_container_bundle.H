@@ -66,6 +66,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->Setup(particlestatestotypes);
 
     // init some particles
+    int index(0);
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     ParticleContainerShrdPtr container = nullptr;
 
@@ -80,6 +82,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
       // first particle
       particle.clear();
+      globalid = 1;
       pos[0] = 1.20;
       pos[1] = 0.70;
       pos[2] = 2.10;
@@ -88,10 +91,11 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
 
       // second particle
       particle.clear();
+      globalid = 2;
       pos[0] = -1.05;
       pos[1] = 12.6;
       pos[2] = -8.54;
@@ -100,10 +104,11 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
 
       // third particle
       particle.clear();
+      globalid = 3;
       pos[0] = -5.02;
       pos[1] = 2.26;
       pos[2] = -7.4;
@@ -112,7 +117,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
     }
 
     // ghosted particles for phase 1
@@ -122,6 +127,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
       // first particle
       particle.clear();
+      globalid = 4;
       pos[0] = 2.20;
       pos[1] = -0.52;
       pos[2] = 1.10;
@@ -130,10 +136,11 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
 
       // second particle
       particle.clear();
+      globalid = 5;
       pos[0] = -16.08;
       pos[1] = 1.46;
       pos[2] = -3.54;
@@ -142,7 +149,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
     }
 
     // owned particles for phase 2
@@ -152,6 +159,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
       // first particle
       particle.clear();
+      globalid = 6;
       pos[0] = 0.24;
       pos[1] = -1.71;
       pos[2] = -2.15;
@@ -160,10 +168,11 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
 
       // second particle
       particle.clear();
+      globalid = 7;
       pos[0] = -1.15;
       pos[1] = 2.6;
       pos[2] = 7.24;
@@ -172,10 +181,11 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
 
       // third particle
       particle.clear();
+      globalid = 8;
       pos[0] = 5.12;
       pos[1] = 4.26;
       pos[2] = -3.4;
@@ -184,7 +194,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
-      container->AddParticle(particle);
+      container->AddParticle(index, globalid, particle);
     }
   }
 
@@ -204,6 +214,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -243,7 +254,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -258,6 +270,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -297,7 +310,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -315,6 +329,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -350,7 +365,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -368,6 +384,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -403,7 +420,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -413,6 +431,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->ScaleStateAllContainers(2.0, PARTICLEENGINE::Mass);
 
     ParticleContainerShrdPtr container = nullptr;
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -457,7 +476,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
 
@@ -499,7 +519,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -510,6 +531,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
         2.0, PARTICLEENGINE::Mass, 1.0, PARTICLEENGINE::Radius);
 
     ParticleContainerShrdPtr container = nullptr;
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -554,7 +576,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
 
@@ -596,7 +619,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -609,6 +633,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->SetStateAllContainers(mass, PARTICLEENGINE::Mass);
 
     ParticleContainerShrdPtr container = nullptr;
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -649,7 +674,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
 
@@ -688,7 +714,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -701,6 +728,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     particlecontainerbundle_->ClearStateAllContainers(PARTICLEENGINE::Mass);
 
     ParticleContainerShrdPtr container = nullptr;
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -741,7 +769,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
 
@@ -780,7 +809,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Radius, rad));
 
-      particle = container->GetParticle(index);
+      container->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }

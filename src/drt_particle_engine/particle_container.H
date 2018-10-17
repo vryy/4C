@@ -60,22 +60,19 @@ namespace PARTICLEENGINE
     void ClearContainer();
 
     //! add particle to particle container and get index
-    int AddParticle(const ParticleStates& particle);
+    void AddParticle(int& index, int globalid, const ParticleStates& particle);
 
     //! replace particle in particle container at given index
-    void ReplaceParticle(int index, const ParticleStates& particle) const;
+    void ReplaceParticle(int index, int globalid, const ParticleStates& particle);
 
     //! get particle at index from particle container
-    ParticleStates GetParticle(int index) const;
+    void GetParticle(int index, int& globalid, ParticleStates& particle) const;
 
     //! remove particle from particle container
     void RemoveParticle(int index);
 
-    //! remove and get particle from particle container
-    ParticleStates RemoveGetParticle(int index);
-
     //! swap particles at index a and b in particle container
-    void SwapParticle(int index_a, int index_b) const;
+    void SwapParticle(int index_a, int index_b);
 
     //! return pointer to state of a particle at index
     double* GetPtrToParticleState(StateEnum stateEnum, int index) const;
@@ -111,8 +108,10 @@ namespace PARTICLEENGINE
     //! number of particles stored in container
     int particlestored_;
 
-    //! maps type of particle state to corresponding data type (shared pointer to array of particle
-    //! states)
+    //! global ids of stored particles
+    std::vector<int> globalids_;
+
+    //! maps type of particle state to corresponding data type
     std::map<StateEnum, std::shared_ptr<std::vector<double>>> states_;
   };
 

@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleContainer::ParticleContainer() : containersize_(0), particlestored_(0)
+PARTICLEENGINE::ParticleContainer::ParticleContainer()
+    : containersize_(0), particlestored_(0), globalids_(0, -1)
 {
   // empty constructor
 }
@@ -47,6 +48,9 @@ void PARTICLEENGINE::ParticleContainer::Setup(
 {
   // set size of particle container (at least one)
   containersize_ = (numContainerSize > 0) ? numContainerSize : 1;
+
+  // allocate memory for global ids
+  globalids_.resize(containersize_, -1);
 
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
@@ -69,6 +73,9 @@ void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
   // size of container is doubled
   containersize_ *= 2;
 
+  // resize vector of global ids
+  globalids_.resize(containersize_);
+
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
 
@@ -78,6 +85,7 @@ void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
     stateDim = EnumToStateDim(it.first);
     state = it.second;
 
+    // resize vector of current state
     state->resize(containersize_ * stateDim);
   }
 }
@@ -99,6 +107,9 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
         "decreasing size of container not possible: particles stored %d > new container size %d!",
         particlestored_, containersize_);
 
+  // resize vector of global ids
+  globalids_.resize(containersize_);
+
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
 
@@ -108,6 +119,7 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
     stateDim = EnumToStateDim(it.first);
     state = it.second;
 
+    // resize vector of current state
     state->resize(containersize_ * stateDim);
   }
 }
@@ -120,10 +132,14 @@ void PARTICLEENGINE::ParticleContainer::ClearContainer() { particlestored_ = 0; 
 /*---------------------------------------------------------------------------*
  | add particle to particle container and get index           sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-int PARTICLEENGINE::ParticleContainer::AddParticle(const ParticleStates& particle)
+void PARTICLEENGINE::ParticleContainer::AddParticle(
+    int& index, int globalid, const ParticleStates& particle)
 {
   // increase size of container
   if (particlestored_ == containersize_) IncreaseContainerSize();
+
+  // store global id
+  globalids_[particlestored_] = globalid;
 
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
@@ -157,18 +173,24 @@ int PARTICLEENGINE::ParticleContainer::AddParticle(const ParticleStates& particl
     }
   }
 
-  // return index of added particle and increase counter of stored particles
-  return particlestored_++;
+  // set index of added particle
+  index = particlestored_;
+
+  // increase counter of stored particles
+  particlestored_++;
 }
 
 /*---------------------------------------------------------------------------*
  | replace particle in particle container at given index      sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
-    int index, const ParticleStates& particle) const
+    int index, int globalid, const ParticleStates& particle)
 {
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not replace particle as index out of bounds!");
+
+  // replace global id in container
+  if (globalid >= 0) globalids_[index] = globalid;
 
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
@@ -205,14 +227,20 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
 /*---------------------------------------------------------------------------*
  | get particle at index from particle container              sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleStates PARTICLEENGINE::ParticleContainer::GetParticle(int index) const
+void PARTICLEENGINE::ParticleContainer::GetParticle(
+    int index, int& globalid, ParticleStates& particle) const
 {
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not return particle as index out of bounds!");
 
+  // get global id from container
+  globalid = globalids_[index];
+
+  // clear particle
+  particle.clear();
+
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
-  ParticleStates particle;
 
   // iterate over states stored in container
   for (auto& it : states_)
@@ -225,10 +253,9 @@ PARTICLEENGINE::ParticleStates PARTICLEENGINE::ParticleContainer::GetParticle(in
     // store current state in vector
     for (int dim = 0; dim < stateDim; ++dim) particleState[dim] = (*state)[index * stateDim + dim];
 
+    // get state from container
     particle.insert(std::make_pair(it.first, particleState));
   }
-
-  return particle;
 }
 
 /*---------------------------------------------------------------------------*
@@ -239,80 +266,27 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not remove particle as index out of bounds!");
 
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-
-  // iterate over states stored in container
-  for (auto& it : states_)
-  {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
-    for (int dim = 0; dim < stateDim; ++dim)
-    {
-      // avoid fragmentation of memory by swapping the particle to be removed with last particle in
-      // container
-      std::swap((*state)[index * stateDim + dim], (*state)[(particlestored_ - 1) * stateDim + dim]);
-    }
-  }
+  // to avoid fragmentation of memory: swap particle to be removed with last particle in container
+  SwapParticle(index, (particlestored_ - 1));
 
   // decrease counter of stored particles
   --particlestored_;
 
   // decrease size of container
   if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
-}
-
-/*---------------------------------------------------------------------------*
- | remove and get particle from particle container            sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleStates PARTICLEENGINE::ParticleContainer::RemoveGetParticle(int index)
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not remove particle as index out of bounds!");
-
-  int stateDim = 0;
-  std::shared_ptr<std::vector<double>> state;
-  ParticleStates particle;
-
-  // iterate over states stored in container
-  for (auto& it : states_)
-  {
-    stateDim = EnumToStateDim(it.first);
-    state = it.second;
-
-    std::vector<double> particleState(stateDim);
-
-    for (int dim = 0; dim < stateDim; ++dim)
-    {
-      // store current state in vector
-      particleState[dim] = (*state)[index * stateDim + dim];
-
-      // avoid fragmentation of memory by swapping the particle to be removed with last particle in
-      // container
-      std::swap((*state)[index * stateDim + dim], (*state)[(particlestored_ - 1) * stateDim + dim]);
-    }
-
-    particle.insert(std::make_pair(it.first, particleState));
-  }
-
-  // decrease counter of stored particles
-  --particlestored_;
-
-  // decrease size of container
-  if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
-
-  return particle;
 }
 
 /*---------------------------------------------------------------------------*
  | swap particles at index a and b in particle container      sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b) const
+void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b)
 {
   if (index_a < 0 or index_a > (particlestored_ - 1) or index_b < 0 or
       index_b > (particlestored_ - 1))
     dserror("can not swap particles as index out of bounds!");
+
+  // swap global ids of particles
+  std::swap(globalids_[index_a], globalids_[index_b]);
 
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
@@ -323,6 +297,7 @@ void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b) c
     stateDim = EnumToStateDim(it.first);
     state = it.second;
 
+    // swap current state of particles
     for (int dim = 0; dim < stateDim; ++dim)
       std::swap((*state)[index_a * stateDim + dim], (*state)[index_b * stateDim + dim]);
   }
