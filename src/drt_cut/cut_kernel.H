@@ -1405,7 +1405,7 @@ namespace GEO
 
           /** \brief nodal 2-nd derivatives at \c xsi
            *
-           *  1-D case: \f$ \x_{,\xi \xi}
+           *  1-D case: \f$ x_{,\xi \xi}
            *                \;\in \mathbb{R}^{1 \times N}\f$,
            *
            *  2-D case: \f$ \left( x_{,\xi \xi}, \;x_{,\eta \eta}, \;
