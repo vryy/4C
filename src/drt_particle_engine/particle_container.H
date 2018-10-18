@@ -77,6 +77,9 @@ namespace PARTICLEENGINE
     //! return pointer to state of a particle at index
     double* GetPtrToParticleState(StateEnum stateEnum, int index) const;
 
+    //! return pointer to global id of a particle at index
+    int* GetPtrToParticleGlobalID(int index);
+
     //! get state of a particle at index
     std::vector<double> GetParticleState(StateEnum stateEnum, int index) const;
 

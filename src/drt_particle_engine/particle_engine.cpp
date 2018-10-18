@@ -514,6 +514,67 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 }
 
 /*---------------------------------------------------------------------------*
+ | build global id to local index map                         sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap");
+
+  // clear map
+  globalidtolocalindex_.clear();
+
+  // iterate over particle types
+  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  {
+    // get type of particles
+    TypeEnum particleType = typeIt.first;
+
+    // iterate over particle statuses
+    for (auto& statusIt : typeIt.second)
+    {
+      // get status of neighboring particles of current type
+      StatusEnum particleStatus = statusIt.first;
+
+      // get container of current type and current status
+      ParticleContainerShrdPtr container = statusIt.second;
+
+      // get number of particles stored in container
+      int particlestored = container->ParticlesStored();
+
+      // no particles of current type and current status
+      if (particlestored <= 0) continue;
+
+      // get pointer to global id of particles
+      int* globalids = container->GetPtrToParticleGlobalID(0);
+
+      // loop over particles in container
+      for (int index = 0; index < particlestored; ++index)
+      {
+        // get global id of particle
+        int globalid = globalids[index];
+
+        // add entry to map
+        globalidtolocalindex_[globalid] =
+            std::make_shared<LocalIndexTuple>(particleType, particleStatus, index);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | get local index in specific particle container             sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+const PARTICLEENGINE::LocalIndexTupleShrdPtr
+PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) const
+{
+  // get local index of particle in specific container
+  auto globalidIt = globalidtolocalindex_.find(globalid);
+  if (globalidIt == globalidtolocalindex_.end()) return nullptr;
+
+  return globalidIt->second;
+}
+
+/*---------------------------------------------------------------------------*
  | return bin size                                            sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 const double* PARTICLEENGINE::ParticleEngine::BinSize() const { return binstrategy_->BinSize(); }
@@ -596,7 +657,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
     if (statusIt == (typeIt.second).end())
       dserror("particle status '%s' not found!",
           PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    ParticleContainerShrdPtr container = statusIt->second;
 
     // add number of particles stored in container
     numberofparticles += container->ParticlesStored();
@@ -618,7 +679,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticlesOfSpecificType(
   auto statusIt = (typeIt->second).find(PARTICLEENGINE::Owned);
   if (statusIt == (typeIt->second).end()) return 0;
 
-  PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+  ParticleContainerShrdPtr container = statusIt->second;
 
   return container->ParticlesStored();
 }
@@ -1655,17 +1716,26 @@ void PARTICLEENGINE::ParticleEngine::RebuildIndexOfOwnedParticlesInBinContentMap
     // check for container of owned particles of current type
     if (ownedIt == (typeIt.second).end()) continue;
 
-    // get particle container
+    // get container of owned particles of current type
     ParticleContainerShrdPtr container = ownedIt->second;
 
-    // loop over particles in container
-    for (int index = 0; index < container->ParticlesStored(); ++index)
-    {
-      // get position of particle
-      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, index);
+    // get number of particles stored in container
+    int particlestored = container->ParticlesStored();
 
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get pointer to position of particle
+    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+
+    // get dimension of particle position
+    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+
+    // loop over particles in container
+    for (int index = 0; index < particlestored; ++index)
+    {
       // get global id of bin
-      const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
+      const int gidofbin = binstrategy_->ConvertPosToGid(&(pos[statedim * index]));
 
       // safety checks
       {
@@ -1724,10 +1794,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
       for (auto& statusIt : typeIt.second)
       {
         // only insert owned particles as weights
-        if (statusIt.first == PARTICLEENGINE::Owned)
-        {
-          particlecounter += (statusIt.second).size();
-        }
+        if (statusIt.first == PARTICLEENGINE::Owned) particlecounter += (statusIt.second).size();
       }
     }
 

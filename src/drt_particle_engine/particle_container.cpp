@@ -323,6 +323,17 @@ double* PARTICLEENGINE::ParticleContainer::GetPtrToParticleState(
 }
 
 /*---------------------------------------------------------------------------*
+ | return pointer to global id of a particle at index         sfuchs 10/2018 |
+ *---------------------------------------------------------------------------*/
+int* PARTICLEENGINE::ParticleContainer::GetPtrToParticleGlobalID(int index)
+{
+  if (index < 0 or index > (particlestored_ - 1))
+    dserror("can not return pointer to global id of particle as index out of bounds!");
+
+  return &(globalids_[index]);
+}
+
+/*---------------------------------------------------------------------------*
  | get state of a particle at index                           sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 std::vector<double> PARTICLEENGINE::ParticleContainer::GetParticleState(
