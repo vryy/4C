@@ -24,7 +24,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 
-/// forward declarations
+// forward declarations
 namespace ADAPTER
 {
   class FSIStructureWrapper;

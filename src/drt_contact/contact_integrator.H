@@ -27,10 +27,7 @@ namespace MORTAR
 {
   class ParamsInterface;
 }
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
- */
 namespace CONTACT
 {
   // forward declaration

@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/**
+/*!
 \file contact_utils.H
 
 \brief Contains a summary of contact utility functions
@@ -18,6 +17,7 @@
 
 #include <Teuchos_RCP.hpp>
 
+// forward declarations
 namespace DRT
 {
   class Condition;
@@ -26,10 +26,12 @@ namespace DRT
   class Element;
   class Condition;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SerialDenseMatrix;
 }  // namespace LINALG
+
 namespace CONTACT
 {
   namespace UTILS

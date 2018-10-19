@@ -26,8 +26,6 @@ namespace DRT
   class ResultTest;
 }  // namespace DRT
 
-
-// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   /// basic artery network adapter

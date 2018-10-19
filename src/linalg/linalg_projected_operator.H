@@ -6,8 +6,8 @@
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef LINALG_PROJECTED_OPERATOR_H_
 #define LINALG_PROJECTED_OPERATOR_H_
@@ -15,9 +15,7 @@
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Operator.h"
 
-/* --------------------------------------------------------------------
-//! @name forward declarations
--------------------------------------------------------------------- */
+// forward declarations
 class Epetra_MultiVector;
 
 namespace LINALG

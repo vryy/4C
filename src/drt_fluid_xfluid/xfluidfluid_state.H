@@ -21,6 +21,7 @@ fluid meshes
 
 #include "xfluid_state.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseOperator;
@@ -31,10 +32,6 @@ namespace XFEM
   class ConditionManager;
 }
 
-/**
- * Container class for the merged state vectors and maps of the intersected background
- * fluid and the embedded (ALE-)fluid.
- */
 namespace FLD
 {
   namespace UTILS
@@ -42,6 +39,10 @@ namespace FLD
     class XFluidFluidMapExtractor;
   }
 
+  /**
+   * Container class for the merged state vectors and maps of the intersected background
+   * fluid and the embedded (ALE-)fluid.
+   */
   class XFluidFluidState : public XFluidState
   {
    public:

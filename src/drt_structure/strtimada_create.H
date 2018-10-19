@@ -2,13 +2,8 @@
 /*!
 \file strtimada_create.H
 \brief Creation of auxiliary time integration scheme for time step size adaptivity
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+\maintainer Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
@@ -26,7 +21,6 @@ Maintainer: Alexander Popp
 
 
 /*----------------------------------------------------------------------*/
-/* Structural Dynamics */
 namespace STR
 {
   // forward declarations

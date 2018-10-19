@@ -30,7 +30,6 @@ used during debugging, not in optimized runs.
 
 namespace DRT
 {
-  /// namespace for debugging utilities
   namespace DEBUGGING
   {
     /// check for any NaN within this array

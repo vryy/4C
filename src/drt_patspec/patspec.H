@@ -19,6 +19,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
+// forward declarations
 class Epetra_Vector;
 
 namespace DRT

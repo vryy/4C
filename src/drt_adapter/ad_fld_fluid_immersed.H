@@ -4,12 +4,9 @@
 
 \brief Fluid field adapter for immersed-fluids
 
-<pre>
-Maintainer:  Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15240
-</pre>
+\level 3
+
+\maintainer  Andreas Rauch
 */
 /*----------------------------------------------------------------------*/
 
@@ -22,8 +19,7 @@ Maintainer:  Andreas Rauch
 
 namespace ADAPTER
 {
-  /// forward declarations
-
+  // forward declarations
   class Coupling;
 
   /// fluid with moving interfaces

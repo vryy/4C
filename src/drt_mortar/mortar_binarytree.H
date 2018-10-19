@@ -3,12 +3,9 @@
 
 \brief A class for performing mortar search in 2D/3D based on binarytrees
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+
+\maintainer Alexander Popp
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_BINARYTREE_H
@@ -26,10 +23,6 @@ namespace DRT
   class Discretization;
 }
 
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-
-*/
 namespace MORTAR
 {
   // forward declarations

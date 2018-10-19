@@ -33,9 +33,6 @@ namespace LINALG
   class BlockSparseMatrixBase;
 }  // namespace LINALG
 
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-*/
 namespace MORTAR
 {
   /*!

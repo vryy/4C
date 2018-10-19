@@ -23,7 +23,6 @@ namespace MORTAR
   class ParamsInterface;
 }
 
-//! CONTACT: namespace of the BACI contact and meshtying algorithms
 namespace CONTACT
 {
   class CoElement;

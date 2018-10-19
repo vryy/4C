@@ -4,23 +4,9 @@
 \brief Computation of mean values of nodal/cp quantities. The
 means are computed as time averages.
 
-An additional method to do an averaging in a homogeneous, axis
-aligned, direction is provided. A requirement for this averaging
-procedure is that all nodes are repeated in identical planes
-along the axis along we do the averaging (like it is the case
-for a flow around a square cylinder, a backward facing step,
-a diffuser or a plane channel).
---- all space averaged information is distributed back to all
-nodes (for easy visualisation in paraview). Note that this
-involves heavy communication --- including two round robin
-loops --- and produces additional output.
-
 \level 2
 
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
 
 */
 #ifndef TURBULENCE_STATISTICS_MEAN_GENERAL_H
@@ -29,6 +15,7 @@ loops --- and produces additional output.
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
 
+// forward declarations
 namespace LINALG
 {
   class MapExtractor;
@@ -50,6 +37,21 @@ namespace IO
 
 namespace FLD
 {
+  /*! \brief Computation of mean values of nodal/cp quantities.
+   *
+   * The means are computed as time averages.
+   *
+   * An additional method to do an averaging in a homogeneous, axis
+   * aligned, direction is provided. A requirement for this averaging
+   * procedure is that all nodes are repeated in identical planes
+   * along the axis along we do the averaging (like it is the case
+   * for a flow around a square cylinder, a backward facing step,
+   * a diffuser or a plane channel).
+   * --- all space averaged information is distributed back to all
+   * nodes (for easy visualisation in paraview). Note that this
+   * involves heavy communication --- including two round robin
+   * loops --- and produces additional output.
+   */
   class TurbulenceStatisticsGeneralMean
   {
    public:

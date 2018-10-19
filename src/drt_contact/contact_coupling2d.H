@@ -18,10 +18,6 @@
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_mortar/mortar_coupling2d.H"
 
-/*!
-\brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
-*/
 namespace CONTACT
 {
   /*!

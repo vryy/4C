@@ -29,8 +29,7 @@ Can only be used in conjunction with XFluid!
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
-/// forward declarations
-
+// forward declarations
 namespace DRT
 {
   class Condition;

@@ -22,6 +22,7 @@ algorithms
 
 #include "../linalg/linalg_utils.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class LubricationBaseAlgorithm;

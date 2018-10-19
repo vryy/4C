@@ -20,6 +20,7 @@ managers
 #ifndef COUPLING_MANAGER_H
 #define COUPLING_MANAGER_H
 
+// forward declarations
 namespace LINALG
 {
   class BlockSparseMatrixBase;

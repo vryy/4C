@@ -20,7 +20,7 @@
 #ifndef FLUID_ELE_CALC_XFEM_COUPLING_H
 #define FLUID_ELE_CALC_XFEM_COUPLING_H
 
-/**
+/*
  * When we enforce coupling conditions or dirichlet conditions on embedded interfaces in the XFEM
  * weakly, we obtain contributions from coupling terms, that have to appear in the element matrix &
  * rhs of the XFEM-element (further denoted as 'master') and the element we want to couple with

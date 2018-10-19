@@ -7,10 +7,7 @@
 
 \level 1
 
-<pre>
 \maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-</pre>
 */
 /*----------------------------------------------------------------------*/
 
@@ -25,7 +22,7 @@
 #include "ad_field.H"
 #include "../drt_lib/drt_elements_paramsinterface.H"
 
-// forward declarations:
+// forward declarations
 namespace DRT
 {
   class Discretization;

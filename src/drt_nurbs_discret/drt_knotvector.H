@@ -23,12 +23,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-
-
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
   namespace NURBS

@@ -2,13 +2,8 @@
 /*!
 \file strtimint_create.H
 \brief Creation of structural time integrators in accordance with user's wishes
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+\maintainer Alexander Popp
 */
 
 #ifndef STRTIMINT_CREATE_H
@@ -39,7 +34,6 @@ namespace IO
 }
 
 /*----------------------------------------------------------------------*/
-/* Structural Dynamics */
 namespace STR
 {
   // forward declarations

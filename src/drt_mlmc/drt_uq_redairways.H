@@ -1,15 +1,13 @@
 /*!----------------------------------------------------------------------
-\file   * drt_uq_redairways.H
+\file drt_uq_redairways.H
+
 \brief Class for performing UQ analysis with redairways
 
+\level 2
 
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
- *!----------------------------------------------------------------------*/
+\maintainer Jonas Biehler
+*/
+/*----------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 #ifndef DRT_UQ_REDAIRWAYS_H_
 #define DRT_UQ_REDAIRWAYS_H_
@@ -23,6 +21,7 @@ Maintainer: Jonas Biehler
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_structure.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class Structure;

@@ -40,11 +40,6 @@ namespace ADAPTER
   class CouplingMortar;
 }
 
-
-/// FSI: Fluid Structure Interaction
-/*!
-  This is the place where we bring fluid and structure together.
- */
 namespace FSI
 {
   namespace UTILS

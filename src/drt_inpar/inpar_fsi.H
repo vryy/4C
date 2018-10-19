@@ -68,7 +68,6 @@ typedef enum _FSI_COUPLING
 
 namespace INPAR
 {
-  /// Input parameters for FSI
   namespace FSI
   {
     /// Type of partitioned coupling for FSI problems

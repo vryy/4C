@@ -1,4 +1,12 @@
+/*!
+ \file fs_monolithic.H
 
+ \brief Free-surface flow as monolithic problem
+
+ \maintainer Matthias Mayr
+
+ \level 3
+ */
 
 #ifndef FS_MONOLITHIC_H
 #define FS_MONOLITHIC_H
@@ -23,6 +31,7 @@
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;

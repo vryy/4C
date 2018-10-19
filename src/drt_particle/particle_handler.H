@@ -15,6 +15,7 @@
 
 #include "../drt_binstrategy/binning_strategy.H"
 
+// forward declarations
 namespace DRT
 {
   class Exporter;
@@ -22,16 +23,17 @@ namespace DRT
   class Discretization;
   class Node;
 }  // namespace DRT
+
 namespace IO
 {
   class DiscretizationWriter;
 }
+
 namespace LINALG
 {
   class MapExtractor;
 }
 
-/// for particle simulation without using any algorithm related stuff
 namespace PARTICLE
 {
   class ParticleHandler

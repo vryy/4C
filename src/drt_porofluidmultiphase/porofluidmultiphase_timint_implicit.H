@@ -63,9 +63,6 @@ namespace ADAPTER
 }
 
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for porous multiphase flow problems
-/*==========================================================================*/
 namespace POROFLUIDMULTIPHASE
 {
   // forward declaration

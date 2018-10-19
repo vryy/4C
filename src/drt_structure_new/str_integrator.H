@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Dec 7, 2015
-
 \level 3
 
 */
@@ -27,25 +25,30 @@ namespace LINALG
 {
   class SparseOperator;
 }
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
 }  // namespace IO
+
 namespace STR
 {
   class ModelEvaluator;
   class Dbc;
   class MonitorDbc;
+
   namespace MODELEVALUATOR
   {
     class Data;
     class Generic;
   }  // namespace MODELEVALUATOR
+
   namespace TIMINT
   {
     class Base;
@@ -53,6 +56,7 @@ namespace STR
     class BaseDataGlobalState;
     class BaseDataIO;
   }  // namespace TIMINT
+
   class Integrator
   {
    public:

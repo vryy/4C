@@ -27,7 +27,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for ALE
   namespace ALE
   {
     /// possible types of moving boundary simulation

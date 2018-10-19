@@ -84,9 +84,6 @@ namespace FLD
   class Vreman;
 }  // namespace FLD
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for scalar transport problems
-/*==========================================================================*/
 namespace SCATRA
 {
   class HomIsoTurbScalarForcing;

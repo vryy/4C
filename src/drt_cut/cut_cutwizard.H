@@ -25,7 +25,7 @@ surface meshes
 #include "Epetra_SerialDenseMatrix.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 
-
+// forward declarations
 namespace DRT
 {
   class Discretization;

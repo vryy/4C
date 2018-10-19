@@ -15,6 +15,7 @@ Created on: Jul 4, 2011
 
 #include "solver_preconditionertype.H"
 
+// forward declarations
 class Epetra_Operator;
 class Epetra_MultiVector;
 

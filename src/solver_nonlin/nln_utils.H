@@ -42,7 +42,6 @@ namespace Teuchos
 /* definition of methods */
 namespace NLNSOL
 {
-  //! NLNSOL::UTILS: Utilities for nonlinear solver NLNSOL
   namespace UTILS
   {
     /*! \brief Store and manage access to configuration of NLNSOL parameter list

@@ -22,7 +22,6 @@
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for poroelasticity
   namespace POROELAST
   {
     /// Type of coupling strategy for poroelasticity problems

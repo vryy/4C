@@ -19,13 +19,6 @@
 
 #include "constraint.H"
 
-
-
-/*!
-\brief UTILS: namespace containing general utils for BACI, as constraints, potentials, surface
-stress, ...
-*/
-
 namespace UTILS
 {
   /*!

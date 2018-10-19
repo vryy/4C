@@ -45,10 +45,7 @@ namespace MORTAR
   class IntCell;
   class Vertex;
 }  // namespace MORTAR
-/*!
- \brief MORTAR: namespace of the BACI mortar coupling algorithms
 
- */
 namespace VOLMORTAR
 {
   class Cell;

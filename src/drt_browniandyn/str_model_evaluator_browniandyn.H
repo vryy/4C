@@ -28,10 +28,12 @@ namespace DRT
 {
   class Discretization;
 }
+
 namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace STR
 {
   namespace MODELEVALUATOR

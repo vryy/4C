@@ -15,10 +15,6 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../headers/pairedvector.H"
 
-/*!
- \brief MORTAR: namespace of the BACI mortar coupling algorithms
-
- */
 namespace MORTAR
 {
   /*!

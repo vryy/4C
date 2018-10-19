@@ -19,7 +19,7 @@
 #include "../drt_nurbs_discret/drt_knotvector.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
 
-//! forward declarations
+// forward declarations
 namespace LINALG
 {
   class Solver;
@@ -27,16 +27,8 @@ namespace LINALG
   class SparseMatrix;
 }  // namespace LINALG
 
-/*!
-\brief DRT: namespace of the BACI discretization module
-
-*/
 namespace DRT
 {
-  /*!
-  \brief NURBS: namespace of all isogeometric analysis tools
-
-  */
   namespace NURBS
   {
     /*!

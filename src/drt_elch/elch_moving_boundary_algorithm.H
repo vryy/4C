@@ -21,11 +21,6 @@
 
 #include "../drt_adapter/adapter_scatra_fluid_ale_coupling_algo.H"
 
-
-/*!
-\brief ELCH: namespace of the electrochemistry module in BACI
-
-*/
 namespace ELCH
 {
   /// ELCH algorithm with support for deforming meshes

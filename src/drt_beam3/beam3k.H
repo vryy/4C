@@ -91,8 +91,8 @@ dserror(
 // DEFAULT: 10e-12
 
 #define BEAM3K_COLLOCATION_POINTS \
-  3  //! defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner
-     //! nodes are introduced
+  3  // defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner
+     // nodes are introduced
 // DEFAULT: BEAM3K_COLLOCATION_POINTS 3   //to interpolate the torsional degree of freedom alpha_.
 // Furthermore, it specifies the number of collocation points defining the number of material triads
 // used to interpolate the triad field.
@@ -116,8 +116,6 @@ namespace LARGEROTATIONS
   class TriadInterpolationLocalRotationVectors;
 }
 
-
-//! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
   namespace ELEMENTS

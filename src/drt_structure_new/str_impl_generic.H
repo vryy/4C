@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Aug 17, 2015
-
 \level 3
 
 */
@@ -27,6 +25,7 @@ namespace LINALG
   class SparseOperator;
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace STR
 {
   namespace IMPLICIT

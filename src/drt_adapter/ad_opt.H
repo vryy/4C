@@ -3,12 +3,9 @@
 
 \brief topology optimization adapter
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\level 3
+
+\maintainer Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -19,7 +16,7 @@ Maintainer: Martin Winklmaier
 #include <Teuchos_RCP.hpp>
 
 
-/// forward declarations
+// forward declarations
 namespace Teuchos
 {
   class ParameterList;
@@ -30,7 +27,6 @@ namespace TOPOPT
   class Optimizer;
 }
 
-// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   /*!

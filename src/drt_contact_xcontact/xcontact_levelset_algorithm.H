@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/**
+/*!
 \file xcontact_levelset_algorithm.H
 
 \brief level-set algorithm for the extended contact formulation
@@ -23,6 +22,7 @@ namespace LINALG
 {
   class MultiMapExtractor;
 }  // namespace LINALG
+
 namespace XCONTACT
 {
   namespace LEVELSET

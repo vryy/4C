@@ -10,7 +10,8 @@
             089 - 289-15235
 Created on: Jan 11, 2012
 </pre>
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SOLVER_MUELUCONTACTPENALTYPRECONDITIONER_H_
 #define SOLVER_MUELUCONTACTPENALTYPRECONDITIONER_H_

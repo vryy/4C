@@ -13,7 +13,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for potential-based beam interaction
   namespace PLASTICITY
   {
     /// set the plasticity parameters

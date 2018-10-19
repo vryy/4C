@@ -33,7 +33,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace TSI
 {
-  //! TSI::UTILS: Random stuff that might be helpful when dealing with TSI problems
   namespace UTILS
   {
     //! \brief implementation of special clone strategy for automatic generation

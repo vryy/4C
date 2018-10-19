@@ -38,7 +38,6 @@ namespace DRT
     class Knotvector;
   }
 
-  /// Helper classes to read and validate input files
   namespace INPUT
   {
     /*----------------------------------------------------------------------*/

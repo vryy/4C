@@ -5,25 +5,7 @@
 
 \level 2
 
-<pre>
 \maintainer Marc Hirschvogel
-            hirschvogel@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10363
-</pre>
-
-A four-element windkessel model only (no valves!) (DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY
-CONDITIONS): orig. equation is C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * Q - (C Z_c  + L/R_p) *
-dQ/dt - L C * d2Q/dt2 = 0 where Q := -dV/dt
-
--> we reformulate the ODE to three first-order ODEs with variables p, q, s:
-
-      [C * dp/dt + (p - p_ref)/R_p + (1 + Z_c/R_p) * q + (C Z_c  + L/R_p) * s + L C * ds/dt]   [ 0 ]
-Res = [dV/dt - q                                                                           ] = [ 0 ]
-      [dq/dt - s                                                                           ]   [ 0 ]
-
-The classical 3- or 2-element windkessel models are reproduced by setting L, or L and Z_c to zero,
-respectively
 
 *----------------------------------------------------------------------*/
 
@@ -48,15 +30,32 @@ namespace DRT
   class Condition;
   class Discretization;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SparseMatrix;
   class SparseOperator;
 }  // namespace LINALG
 
-
 namespace UTILS
 {
+  /*! \brief Four-element Windkessel model without valves
+   *
+   * Boundary condition: DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY CONDITIONS
+   *
+   * Original equation is:
+   * C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * Q - (C Z_c  + * L/R_p) * dQ/dt - L C * d2Q/dt2 =
+   * 0 where Q := -dV/dt
+   *
+   * -> we reformulate the ODE to three first-order ODEs with variables p, q, s:
+   *
+   *       [C * dp/dt + (p - p_ref)/R_p + (1 + Z_c/R_p) * q + (C Z_c  + L/R_p) * s + L C * ds/dt] [
+   * 0 ] Res = [dV/dt - q ] = [ 0 ] [dq/dt - s ]   [ 0 ]
+   *
+   * The classical 3- or 2-element windkessel models are reproduced by setting L, or L and Z_c to
+   * zero, respectively
+   *
+   */
   class Cardiovascular0D4ElementWindkessel : public Cardiovascular0D
 
   {

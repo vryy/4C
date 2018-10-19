@@ -46,10 +46,6 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    /*!
-    \brief NURBS: namespace of all isogeometric analysis tools
-
-    */
     namespace NURBS
     {
       class So_nurbs27Type : public DRT::ElementType

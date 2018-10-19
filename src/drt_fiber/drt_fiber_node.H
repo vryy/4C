@@ -19,10 +19,6 @@
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
   namespace FIBER

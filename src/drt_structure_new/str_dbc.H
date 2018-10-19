@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Nov 30, 2015
-
 \level 3
 
 */
@@ -21,27 +19,32 @@
 
 // forward declaration ...
 class Epetra_Vector;
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
 class Epetra_Map;
+
 namespace DRT
 {
   class DiscretizationInterface;
   class Discretization;
   class Condition;
+
   namespace UTILS
   {
     class LocsysManager;
   }  // namespace UTILS
 }  // namespace DRT
+
 namespace LINALG
 {
   class SparseOperator;
   class SparseMatrix;
   class MapExtractor;
 }  // namespace LINALG
+
 namespace STR
 {
   namespace TIMINT

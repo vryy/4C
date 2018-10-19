@@ -74,7 +74,6 @@ namespace ADAPTER
   class CouplingMortar;
 }
 
-/// fluid algorithms
 namespace FLD
 {
   // forward declarations

@@ -21,10 +21,6 @@
 
 #include "../drt_scatra/scatra_algorithm.H"
 
-/*!
-\brief ELCH: namespace of the electrochemistry module in BACI
-
-*/
 namespace ELCH
 {
   /// ELCH algorithm base

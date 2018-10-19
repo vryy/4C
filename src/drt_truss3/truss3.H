@@ -35,10 +35,6 @@ namespace STR
   }  // namespace ELEMENTS
 }  // namespace STR
 
-/*!
- \brief DRT: namespace of the ccarat discretization module
-
- */
 namespace DRT
 {
   namespace ELEMENTS

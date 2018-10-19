@@ -23,6 +23,7 @@
 #include "Epetra_MultiVector.h"
 #include "matpar_manager.H"  //for ConnectivityData
 
+// forward declarations
 namespace LINALG
 {
   class MultiMapExtractor;

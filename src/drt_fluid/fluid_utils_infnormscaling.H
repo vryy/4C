@@ -29,9 +29,6 @@ namespace LINALG
 
 namespace FLD
 {
-  /*!
-   * \brief namespace for fluid related stuff
-   */
   namespace UTILS
   {
     class FluidInfNormScaling

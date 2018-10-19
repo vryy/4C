@@ -33,7 +33,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// General input parameters for structural problems
   namespace STR
   {
     /// @name Time integration

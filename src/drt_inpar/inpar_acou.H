@@ -28,7 +28,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  // Input parameters for acoustical simulations
   namespace ACOU
   {
     // Type of time integrator

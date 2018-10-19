@@ -27,7 +27,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-
+// forward declarations
 namespace DRT
 {
   class Discretization;

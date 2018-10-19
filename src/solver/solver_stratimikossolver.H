@@ -9,7 +9,8 @@
             http://www.lnm.mw.tum.de
 
 Created on: Jul 13, 2011
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef SOLVER_STRATIMIKOSSOLVER_H_
 #define SOLVER_STRATIMIKOSSOLVER_H_

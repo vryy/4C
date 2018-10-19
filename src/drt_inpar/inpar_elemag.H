@@ -31,7 +31,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  // Input parameters for electromagnetic simulations
   namespace ELEMAG
   {
     // Type of time integrator
