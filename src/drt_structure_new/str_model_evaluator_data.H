@@ -1068,8 +1068,10 @@ namespace STR
         var_type_ = var_type;
       }
 
-      /*! Get the step number from which the current simulation has been
-       *  restarted. Equal to 0 if no restart has been performed. */
+      /*! \brief Get time step number from which the current simulation has been restarted
+       *
+       * Equal to 0 if no restart has been performed.
+       */
       virtual int GetRestartStep() const
       {
         CheckInit();
