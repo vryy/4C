@@ -456,9 +456,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 
   DRT::INPUT::LineDefinition particle;
   particle.AddTag("PARTICLE")
-      .AddNamedString("TYPE")
-      .AddNamedDoubleVector("POS", 3)
-      .AddNamedDouble("POSTOLERANCE")
+      .AddNamedInt("ID")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
