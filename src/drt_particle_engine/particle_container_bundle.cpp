@@ -263,9 +263,12 @@ void PARTICLEENGINE::ParticleContainerBundle::PackParticleContainerBundle(
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
     {
-      ParticleStates particleStates = container->GetParticle(index);
+      int globalid(0);
+      ParticleStates particleStates;
+      container->GetParticle(index, globalid, particleStates);
+
       ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-      particleobject->Init(particleType, particleStates);
+      particleobject->Init(particleType, globalid, particleStates);
 
       // pack data for writing
       DRT::PackBuffer data;
@@ -299,9 +302,12 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
     {
-      ParticleStates particleStates = container->GetParticle(index);
+      int globalid(0);
+      ParticleStates particleStates;
+      container->GetParticle(index, globalid, particleStates);
+
       ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-      particleobject->Init(particleType, particleStates);
+      particleobject->Init(particleType, globalid, particleStates);
 
       particlesstored.push_back(particleobject);
     }

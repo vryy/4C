@@ -27,6 +27,7 @@
 
 #include <map>
 #include <set>
+#include <tuple>
 #include <vector>
 #include <memory>
 
@@ -64,6 +65,10 @@ namespace PARTICLEENGINE
   typedef std::map<TypeEnum, std::map<StatusEnum, std::set<int>>> TypeStatusIndexMap;
 
   typedef std::map<TypeEnum, std::map<int, TypeStatusIndexMap>> ParticleNeighborsMap;
+
+  typedef std::tuple<PARTICLEENGINE::TypeEnum, PARTICLEENGINE::StatusEnum, int> LocalIndexTuple;
+
+  typedef std::shared_ptr<LocalIndexTuple> LocalIndexTupleShrdPtr;
 
 }  // namespace PARTICLEENGINE
 

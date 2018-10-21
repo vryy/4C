@@ -54,6 +54,9 @@ void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
    * note: think about reserving (not resizing!) the vector particlesgenerated in advance if you
    * have a rough estimate of the total number of particles being generated
    *
+   * note: take care of setting a global id (that is unique and not used by particles potentially
+   * read in from the input file)
+   *
    * add a generated particle to the vector particlesgenerated using the function
    * AddGeneratedParticle()
    */
@@ -63,7 +66,7 @@ void PARTICLEALGORITHM::InputGenerator::GenerateParticles(
  | add generated particle                                     sfuchs 09/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<double>& position,
-    const PARTICLEENGINE::TypeEnum particletype,
+    const PARTICLEENGINE::TypeEnum particletype, int globalid,
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const
 {
   // safety check
@@ -77,7 +80,7 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
   // create and init new particle object
   PARTICLEENGINE::ParticleObjShrdPtr particleobject =
       std::make_shared<PARTICLEENGINE::ParticleObject>();
-  particleobject->Init(particletype, particlestates);
+  particleobject->Init(particletype, globalid, particlestates);
 
   // append generated particle
   particlesgenerated.push_back(particleobject);

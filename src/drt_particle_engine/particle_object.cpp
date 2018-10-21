@@ -38,7 +38,7 @@ DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<cha
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObject::ParticleObject()
-    : particletype_(PARTICLEENGINE::Phase1), bingid_(-1), containerindex_(-1)
+    : particletype_(PARTICLEENGINE::Phase1), particleglobalid_(0), bingid_(-1), containerindex_(-1)
 {
   // empty constructor
 }
@@ -46,10 +46,11 @@ PARTICLEENGINE::ParticleObject::ParticleObject()
 /*---------------------------------------------------------------------------*
  | init particle object                                       sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleObject::Init(TypeEnum particletype,
+void PARTICLEENGINE::ParticleObject::Init(TypeEnum particletype, int particleglobalid,
     const std::map<StateEnum, std::vector<double>>& particlestates, int bingid, int containerindex)
 {
   particletype_ = particletype;
+  particleglobalid_ = particleglobalid;
   particlestates_ = particlestates;
   bingid_ = bingid;
   containerindex_ = containerindex;
@@ -69,6 +70,9 @@ void PARTICLEENGINE::ParticleObject::Pack(DRT::PackBuffer& data) const
 
   // particletype_
   AddtoPack(data, particletype_);
+
+  // particleglobalid_
+  AddtoPack(data, particleglobalid_);
 
   // particle_
   AddtoPack(data, particlestates_);
@@ -94,6 +98,9 @@ void PARTICLEENGINE::ParticleObject::Unpack(const std::vector<char>& data)
 
   // particletype_
   ExtractfromPack(position, data, particletype_);
+
+  // particleglobalid_
+  ExtractfromPack(position, data, particleglobalid_);
 
   // particle_
   ExtractfromPack(position, data, particlestates_);

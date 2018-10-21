@@ -94,7 +94,10 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
     std::string tmp2;
     int filecount = 0;
 
+    int particlecounter = 0;
+
     PARTICLEENGINE::TypeEnum particleType;
+    int globalid(0);
     std::map<PARTICLEENGINE::StateEnum, std::vector<double>> particlestates;
 
     // note that the last block is special....
@@ -130,13 +133,18 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
             particlestates.clear();
             particlestates.insert(std::make_pair(PARTICLEENGINE::Position, pos));
 
+            // set global id
+            globalid = particlecounter;
+
             // construct and init particleobject
             PARTICLEENGINE::ParticleObjShrdPtr particleobject =
                 std::make_shared<PARTICLEENGINE::ParticleObject>();
-            particleobject->Init(particleType, particlestates);
+            particleobject->Init(particleType, globalid, particlestates);
 
             // store read in particles
             particles.push_back(particleobject);
+
+            ++particlecounter;
 
             ++bcount;
             if (block != nblock - 1)  // last block takes all the rest

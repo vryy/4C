@@ -69,7 +69,7 @@ namespace PARTICLEENGINE
     virtual ~ParticleObject(){};
 
     //! init particle object
-    void Init(TypeEnum particletype,
+    void Init(TypeEnum particletype, int particleglobalid,
         const std::map<StateEnum, std::vector<double>>& particlestates_, int bingid = -1,
         int containerindex = -1);
 
@@ -88,6 +88,9 @@ namespace PARTICLEENGINE
     //! return particle type
     TypeEnum ReturnParticleType() const { return particletype_; };
 
+    //! return particle global id
+    int ReturnParticleGlobalID() const { return particleglobalid_; };
+
     //! return particle states
     std::map<StateEnum, std::vector<double>> ReturnParticleStates() const
     {
@@ -103,6 +106,9 @@ namespace PARTICLEENGINE
    private:
     //! particle type enum
     TypeEnum particletype_;
+
+    //! particle global id
+    int particleglobalid_;
 
     //! maps particle state enum to state
     std::map<StateEnum, std::vector<double>> particlestates_;

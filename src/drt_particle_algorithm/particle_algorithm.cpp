@@ -532,6 +532,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // build overlapping particle to particle neighbor map
   if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
 
+  // build global id to local index map
+  particleengine_->BuildGlobalIDToLocalIndexMap();
+
   // store particle positions after transfer of particles
   StorePositionsAfterParticleTransfer();
 }
@@ -641,6 +644,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
     // build overlapping particle to particle neighbor map
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
+
+    // build global id to local index map
+    particleengine_->BuildGlobalIDToLocalIndexMap();
 
     // store particle positions after transfer of particles
     StorePositionsAfterParticleTransfer();

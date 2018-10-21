@@ -65,7 +65,7 @@ namespace PARTICLEALGORITHM
    protected:
     //! add generated particle
     void AddGeneratedParticle(const std::vector<double>& position,
-        const PARTICLEENGINE::TypeEnum particletype,
+        const PARTICLEENGINE::TypeEnum particletype, int globalid,
         std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const;
 
     //! processor id
