@@ -7,9 +7,9 @@
 <pre>
 \level 3
 
-\maintainer Volker Gravemeier
-            gravemeier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardocco@lnm.mw.tum.de
+            089 - 289-15244
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -37,7 +37,18 @@ namespace INPAR
     // Type of time integrator
     enum DynamicType
     {
-      elemag_ost  // one-step-theta time integration
+      elemag_ost,             // one-step-theta time integration
+      elemag_explicit_euler,  // explicit euler method
+      elemag_implicit_euler,  // implicit euler method
+      elemag_rk,              // runge-kutta method
+      elemag_cn               // crank-nicolson method
+    };
+
+    /// initial field for electromagnetic problems
+    enum InitialField
+    {
+      initfield_zero_field,
+      initfield_field_by_function
     };
 
     /// define all valid parameters for electromagnetic problem

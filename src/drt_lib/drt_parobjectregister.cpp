@@ -149,6 +149,7 @@
 #include "../drt_mat/fluidporo_viscosity_law.H"
 #include "../drt_mat/acoustic.H"
 #include "../drt_mat/acoustic_sol.H"
+#include "../drt_mat/electromagnetic.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_contact/contact_node.H"
@@ -159,6 +160,7 @@
 #include "../drt_opti/topopt_optimizer_ele.H"
 #include "../drt_acou/acou_ele.H"
 #include "../drt_acou/acou_sol_ele.H"
+#include "../drt_elemag/elemag_ele.H"
 #include "../drt_beaminteraction/beam_link_beam3r_lin2_pinjointed.H"
 #include "../drt_beaminteraction/beam_link_beam3r_lin2_rigidjointed.H"
 #include "../drt_beaminteraction/beam_link_truss.H"
@@ -302,6 +304,9 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::AcouSolBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::AcouIntFaceType::Instance().Name() << " "
     << DRT::ELEMENTS::AcouSolIntFaceType::Instance().Name() << " "
+    << DRT::ELEMENTS::ElemagType::Instance().Name() << " "
+    << DRT::ELEMENTS::ElemagBoundaryType::Instance().Name() << " "
+    << DRT::ELEMENTS::ElemagIntFaceType::Instance().Name() << " "
     << MAT::Cnst_1d_artType::Instance().Name() << " " << MAT::AAAgasserType::Instance().Name()
     << " " << MAT::AAAneohookeType::Instance().Name() << " "
     << MAT::AAAneohooke_stoproType::Instance().Name() << " "
@@ -356,6 +361,7 @@ std::string DRT::ParObjectList()
     << " " << MAT::DamageType::Instance().Name() << " " << MAT::TopOptDensType::Instance().Name()
     << " " << MAT::AcousticMatType::Instance().Name() << " "
     << MAT::AcousticSolMatType::Instance().Name() << " "
+    << MAT::ElectromagneticMatType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusNeoHookeanType::Instance().Name() << " "
     << MAT::Maxwell_0d_acinusExponentialType::Instance().Name() << " "

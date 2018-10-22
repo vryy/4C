@@ -497,6 +497,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/elchphase.cpp
   src/drt_mat/elchsinglemat.cpp
   src/drt_mat/electrode.cpp
+  src/drt_mat/electromagnetic.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluid_linear_density_viscosity.cpp 
   src/drt_mat/fluid_murnaghantait.cpp
@@ -1901,6 +1902,15 @@ set(OBJS_DRT_ACOU_LIB
 set(OBJS_DRT_ELEMAG
   src/drt_elemag/elemag_dyn.cpp
   src/drt_elemag/elemag_timeint.cpp
+  src/drt_elemag/elemag_resulttest.cpp
+)
+set(OBJS_DRT_ELEMAG_LIB
+  src/drt_elemag/elemag_ele_boundary_calc.cpp
+  src/drt_elemag/elemag_ele_calc.cpp
+  src/drt_elemag/elemag_ele_evaluate.cpp
+  src/drt_elemag/elemag_ele_factory.cpp
+  src/drt_elemag/elemag_ele_intfaces_calc.cpp
+  src/drt_elemag/elemag_ele.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp
@@ -2627,6 +2637,7 @@ add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
 add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
+add_library(ele_elemag ${OBJS_DRT_ELEMAG_LIB})
 
 set(ELEMENT_LIBRARIES
   ele_ale
@@ -2649,6 +2660,7 @@ set(ELEMENT_LIBRARIES
   ele_to3
   ele_w1
   ele_acou
+  ele_elemag
   )
 
 # algorithm libraries that depend on adapters

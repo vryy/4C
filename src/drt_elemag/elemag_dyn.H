@@ -7,9 +7,9 @@
 <pre>
 \level 3
 
-\maintainer Volker Gravemeier
-            gravemeier@lnm.mw.tum.de
-            089 - 289-15245
+\maintainer Luca Berardocco
+            berardocco@lnm.mw.tum.de
+            089 - 289-15244
 </pre>
 */
 /*----------------------------------------------------------------------*/

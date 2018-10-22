@@ -243,6 +243,7 @@ namespace DRT
       LINALG::Matrix<nsd_ - 1, nfn_> deriv;  /// gradients of mapping shape functions on face
       LINALG::Matrix<nsd_ - 1, nsd_ - 1> metricTensor;  /// metric tensor on face
       LINALG::Matrix<nsd_, 1> normal;                   /// normal vector
+      LINALG::Matrix<nsd_, nsd_ - 1> tangent;  /// Face reference frame wrt real one (face -> real)
 
       LINALG::SerialDenseMatrix xyzreal;  /// coordinates of face quadrature points in real space
       LINALG::SerialDenseMatrix
@@ -260,6 +261,7 @@ namespace DRT
           shfunctI;  /// evaluated shape functions on face for interior HDG polynomials
       LINALG::SerialDenseMatrix
           normals;  /// normal vectors on a single face for all quadrature points
+      LINALG::SerialDenseMatrix tangents;  /// Real reference frame wrt face one (real -> face)
 
       LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
       LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
@@ -269,6 +271,13 @@ namespace DRT
 
      private:
       LINALG::SerialDenseVector faceValues;  /// Evaluated basis functions on face
+
+      /*!
+      \brief Computes the face reference system considering the ordering of the master element
+
+      \Author: Berardocco
+       */
+      void ComputeFaceReferenceSystem(const DRT::Element &ele, const unsigned int face);
     };
 
     /*!
