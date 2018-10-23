@@ -424,17 +424,16 @@ namespace FS3I
 {
   /*! \brief
    *
-   * \todo Rename Biofilm into BIOFILM to be consistent with Baci's naming conventions.
    */
-  namespace Biofilm
+  namespace BIOFILM
   {
-    /*! \brief Utilities for Biofilm
+    /*! \brief Utilities for BIOFILM
      *
      */
     namespace UTILS
     {
     }  // namespace UTILS
-  }    // namespace Biofilm
+  }    // namespace BIOFILM
 }  // namespace FS3I
 
 /*! \brief Fluid-structure interaction

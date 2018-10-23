@@ -25,7 +25,7 @@ namespace DRT
 
 namespace FS3I
 {
-  namespace Biofilm
+  namespace BIOFILM
   {
     namespace UTILS
     {
