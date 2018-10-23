@@ -232,19 +232,13 @@ void STR::MODELEVALUATOR::Contact::PostEvaluate()
 bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
+
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           INPAR::MORTAR::algorithm_gpts ||
-      Strategy().IsPenalty())
+      Strategy().IsPenalty() || Strategy().IsCondensedSystem())
   {
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
-    // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) return true;
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
-  }
-  else if (Strategy().IsCondensedSystem())
-  {
-    // --- displ. - block ---------------------------------------------------
-    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
+
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
