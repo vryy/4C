@@ -10,8 +10,6 @@ DIM                             3
 ----------------------------------------------------CONTACT DYNAMIC
 RESTART_WITH_CONTACT            No
 FRICTION                        None
-INITCONTACTBYGAP                No
-INITCONTACTGAPVALUE             0
 LINEAR_SOLVER                   1
 PENALTYPARAM                    1.0e1
 PENALTYPARAMTAN                 1.0e1

@@ -87,8 +87,6 @@ SYSTEM                          saddlepoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1
 SEMI_SMOOTH_CT                  1
-INITCONTACTBYGAP                No
-INITCONTACTGAPVALUE             0
 ------------------------------------------CONTACT DYNAMIC/AUGMENTED
 PRINT_LINEAR_CONSERVATION       No
 PRINT_ANGULAR_CONSERVATION      No

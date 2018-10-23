@@ -75,8 +75,6 @@ FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
 SEMI_SMOOTH_CT                  1.0
-INITCONTACTBYGAP                No
-INITCONTACTGAPVALUE             0.0
 -----------------------------------------CONTACT DYNAMIC/AUGMENTED
 PRINT_LINEAR_CONSERVATION       No// Yes
 PRINT_ANGULAR_CONSERVATION      No// Yes
