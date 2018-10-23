@@ -3293,7 +3293,7 @@ void CONTACT::CoLagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
     EvaluateRelMov();
 
   // update active set
-  UpdateActiveSetSemiSmooth();
+  if (not cparams.IsPredictor()) UpdateActiveSetSemiSmooth();
 
   // apply contact forces and stiffness
   Initialize();  // init lin-matrices
