@@ -35,6 +35,7 @@
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
+  class SPHKernelHelperFunction_TestSuite;
   class SPHKernelCubicSpline_TestSuite;
   class SPHKernelQuinticSpline_TestSuite;
 }  // namespace PARTICLEINTERACTION
@@ -42,6 +43,26 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | kernel handler test suite                                  sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
+class PARTICLEINTERACTION::SPHKernelHelperFunction_TestSuite : public CxxTest::TestSuite
+{
+ public:
+  void setUp()
+  {
+    // nothing to do
+  }
+
+  void tearDown()
+  {
+    // nothing to do
+  }
+
+  void test_square() { TS_ASSERT_EQUALS(square(1.2), 1.44); }
+
+  void test_cube() { TS_ASSERT_EQUALS(cube(1.2), 1.728); }
+
+  void test_powint() { TS_ASSERT_EQUALS(powint(1.2, 5), 2.48832); }
+};
+
 class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::TestSuite
 {
  private:
@@ -133,8 +154,8 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
     const double h = 0.4;
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
-    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = M_1_PI / std::pow(h, 3);
+    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * square(h));
+    const double normalizationconstant_3D = M_1_PI / cube(h);
 
     TS_ASSERT_DELTA(kernel_1D_->NormalizationConstant(h), normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->NormalizationConstant(h), normalizationconstant_2D, 1e-14);
@@ -147,8 +168,8 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
     const double h = 0.4;
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
-    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = M_1_PI / std::pow(h, 3);
+    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * square(h));
+    const double normalizationconstant_3D = M_1_PI / cube(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -159,14 +180,14 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = 1.0 - 1.5 * std::pow(q, 2) + 0.75 * std::pow(q, 3);
+    w_unnormalized = 1.0 - 1.5 * square(q) + 0.75 * cube(q);
     TS_ASSERT_DELTA(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1e-14);
     TS_ASSERT_DELTA(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1e-14);
 
     rij = 0.6;
     q = rij / h;
-    w_unnormalized = std::pow((2.0 - q), 3) / 4.0;
+    w_unnormalized = cube(2.0 - q) / 4.0;
     TS_ASSERT_DELTA(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1e-14);
     TS_ASSERT_DELTA(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1e-14);
@@ -185,8 +206,8 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
     const double h = 0.4;
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
-    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = M_1_PI / std::pow(h, 3);
+    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * square(h));
+    const double normalizationconstant_3D = M_1_PI / cube(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -200,7 +221,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (-3.0 * q + (9.0 / 4.0) * std::pow(q, 2)) * (1.0 / h);
+    w_unnormalized = (-3.0 * q + 2.25 * square(q)) * (1.0 / h);
     TS_ASSERT_DELTA(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -210,7 +231,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
 
     rij = 0.6;
     q = rij / h;
-    w_unnormalized = (-(3.0 / 4.0) * std::pow((2.0 - q), 2)) * (1.0 / h);
+    w_unnormalized = (-0.75 * square(2.0 - q)) * (1.0 / h);
     TS_ASSERT_DELTA(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -235,12 +256,12 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
     const double h = 0.4;
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
-    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = M_1_PI / std::pow(h, 3);
+    const double normalizationconstant_2D = 10.0 * M_1_PI / (7.0 * square(h));
+    const double normalizationconstant_3D = M_1_PI / cube(h);
 
     double rij = 0.0;
     double q = rij / h;
-    double w_unnormalized = -3.0 * (1.0 / std::pow(h, 2));
+    double w_unnormalized = -3.0 * (1.0 / square(h));
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -250,7 +271,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (-3.0 + (9.0 / 2.0) * q) * (1.0 / std::pow(h, 2));
+    w_unnormalized = (-3.0 + 4.5 * q) * (1.0 / square(h));
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -260,7 +281,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
 
     rij = 0.6;
     q = rij / h;
-    w_unnormalized = ((3.0 / 2.0) * (2.0 - q)) * (1.0 / std::pow(h, 2));
+    w_unnormalized = (1.5 * (2.0 - q)) * (1.0 / square(h));
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -289,9 +310,9 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
     eij[2] = 0.0;
 
     const double h = 0.4;
-    const double normalizationconstant_3D = M_1_PI / std::pow(h, 3);
+    const double normalizationconstant_3D = M_1_PI / cube(h);
     const double q = rij / h;
-    const double w_unnormalized = (-3.0 * q + (9.0 / 4.0) * std::pow(q, 2)) * (1.0 / h);
+    const double w_unnormalized = (-3.0 * q + 2.25 * square(q)) * (1.0 / h);
 
     double gradWij_reference[3];
     for (int i = 0; i < 3; ++i)
@@ -396,8 +417,8 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     const double h = 0.3;
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
-    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * std::pow(h, 3));
+    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * square(h));
+    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * cube(h));
 
     TS_ASSERT_DELTA(kernel_1D_->NormalizationConstant(h), normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->NormalizationConstant(h), normalizationconstant_2D, 1e-14);
@@ -410,8 +431,8 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     const double h = 0.3;
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
-    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * std::pow(h, 3));
+    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * square(h));
+    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * cube(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -423,21 +444,21 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     rij = 0.2;
     q = rij / h;
     w_unnormalized =
-        std::pow((3.0 - q), 5) - 6.0 * std::pow((2.0 - q), 5) + 15.0 * std::pow((1.0 - q), 5);
+        powint((3.0 - q), 5) - 6.0 * powint((2.0 - q), 5) + 15.0 * powint((1.0 - q), 5);
     TS_ASSERT_DELTA(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1e-14);
     TS_ASSERT_DELTA(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1e-14);
 
     rij = 0.5;
     q = rij / h;
-    w_unnormalized = std::pow((3.0 - q), 5) - 6.0 * std::pow((2.0 - q), 5);
+    w_unnormalized = powint((3.0 - q), 5) - 6.0 * powint((2.0 - q), 5);
     TS_ASSERT_DELTA(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1e-14);
     TS_ASSERT_DELTA(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1e-14);
 
     rij = 0.8;
     q = rij / h;
-    w_unnormalized = std::pow((3.0 - q), 5);
+    w_unnormalized = powint((3.0 - q), 5);
     TS_ASSERT_DELTA(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1e-14);
     TS_ASSERT_DELTA(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1e-14);
@@ -456,8 +477,8 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     const double h = 0.3;
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
-    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * std::pow(h, 3));
+    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * square(h));
+    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * cube(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -471,9 +492,9 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (-5.0 * std::pow((3.0 - q), 4) + 30.0 * std::pow((2.0 - q), 4) -
-                         75.0 * std::pow((1.0 - q), 4)) *
-                     (1.0 / h);
+    w_unnormalized =
+        (-5.0 * powint((3.0 - q), 4) + 30.0 * powint((2.0 - q), 4) - 75.0 * powint((1.0 - q), 4)) *
+        (1.0 / h);
     TS_ASSERT_DELTA(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -483,7 +504,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
 
     rij = 0.5;
     q = rij / h;
-    w_unnormalized = (-5.0 * std::pow((3.0 - q), 4) + 30.0 * std::pow((2.0 - q), 4)) * (1.0 / h);
+    w_unnormalized = (-5.0 * powint((3.0 - q), 4) + 30.0 * powint((2.0 - q), 4)) * (1.0 / h);
     TS_ASSERT_DELTA(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -493,7 +514,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
 
     rij = 0.8;
     q = rij / h;
-    w_unnormalized = (-5.0 * std::pow((3.0 - q), 4)) * (1.0 / h);
+    w_unnormalized = (-5.0 * powint((3.0 - q), 4)) * (1.0 / h);
     TS_ASSERT_DELTA(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -518,12 +539,12 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     const double h = 0.3;
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
-    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * std::pow(h, 2));
-    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * std::pow(h, 3));
+    const double normalizationconstant_2D = 7.0 * M_1_PI / (478.0 * square(h));
+    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * cube(h));
 
     double rij = 0.0;
     double q = rij / h;
-    double w_unnormalized = -120.0 / 0.09;
+    double w_unnormalized = -4000.0 / 3.0;
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -533,9 +554,8 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (20.0 * std::pow((3.0 - q), 3) - 120.0 * std::pow((2.0 - q), 3) +
-                         300.0 * std::pow((1.0 - q), 3)) *
-                     (1.0 / std::pow(h, 2));
+    w_unnormalized =
+        (20.0 * cube(3.0 - q) - 120.0 * cube(2.0 - q) + 300.0 * cube(1.0 - q)) * (1.0 / square(h));
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -545,8 +565,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
 
     rij = 0.5;
     q = rij / h;
-    w_unnormalized =
-        (20.0 * std::pow((3.0 - q), 3) - 120.0 * std::pow((2.0 - q), 3)) * (1.0 / std::pow(h, 2));
+    w_unnormalized = (20.0 * cube(3.0 - q) - 120.0 * cube(2.0 - q)) * (1.0 / square(h));
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -556,7 +575,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
 
     rij = 0.8;
     q = rij / h;
-    w_unnormalized = (20.0 * std::pow((3.0 - q), 3)) * (1.0 / std::pow(h, 2));
+    w_unnormalized = (20.0 * cube(3.0 - q)) * (1.0 / square(h));
     TS_ASSERT_DELTA(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1e-14);
     TS_ASSERT_DELTA(
@@ -585,11 +604,11 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     eij[2] = 0.0;
 
     const double h = 0.3;
-    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * std::pow(h, 3));
+    const double normalizationconstant_3D = 3.0 * M_1_PI / (359.0 * cube(h));
     const double q = rij / h;
-    const double w_unnormalized = (-5.0 * std::pow((3.0 - q), 4) + 30.0 * std::pow((2.0 - q), 4) -
-                                      75.0 * std::pow((1.0 - q), 4)) *
-                                  (1.0 / h);
+    const double w_unnormalized =
+        (-5.0 * powint((3.0 - q), 4) + 30.0 * powint((2.0 - q), 4) - 75.0 * powint((1.0 - q), 4)) *
+        (1.0 / h);
 
     double gradWij_reference[3];
     for (int i = 0; i < 3; ++i)
