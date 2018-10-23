@@ -24,7 +24,7 @@ namespace ACOU
 /*! \brief Algorithm adapter classes for use in multi-field problems
  *
  * Adapters wrap single fields such that a field can be queried for its internal data by
- * a multi-physics coupling algorithm. Hence, adapters are meant to control accesss to
+ * a multi-physics coupling algorithm. Hence, adapters are meant to control access to
  * single fields when a multi-field problem is solved.
  */
 namespace ADAPTER
@@ -44,7 +44,7 @@ namespace AIRWAY
 {
 }  // namespace AIRWAY
 
-/*! \brief Mesh moving algorithms for Arbitrary Lagrangian Eulerian observer
+/*! \brief Mesh moving algorithms for Arbitrary Lagrangian Eulerian (ALE) observer
  *
  */
 namespace ALE
@@ -321,10 +321,10 @@ namespace DRT
   }    // namespace NURBS
 
   /*! \brief Parsing of expressions
-  /*!
-    We have a simple top-down expression parser. One peculiarity is, however,
-    that the expression type is templated. This way we can use the Sacado
-    library to calculate derivatives along with the actual value.
+   *
+   * We have a simple top-down expression parser. One peculiarity is, however,
+   * that the expression type is templated. This way we can use the Sacado
+   * library to calculate derivatives along with the actual value.
    */
   namespace PARSER
   {
@@ -370,14 +370,14 @@ namespace ELCH
   }  // namespace UTILS
 }  // namespace ELCH
 
-/*! \brief Pre-processing of EXODUS II to Baci
+/*! \brief Electro-magnetic problems
  *
  */
 namespace ELEMAG
 {
 }  // namespace ELEMAG
 
-/*! \brief
+/*! \brief Pre-processing of EXODUS II to Baci
  *
  */
 namespace EXODUS
@@ -404,7 +404,7 @@ namespace FLD
   }  // namespace UTILS
 }  // namespace FLD
 
-/*! \brief
+/*! \brief Interaction of fluid flow with porous solids
  *
  */
 namespace FPSI
@@ -761,6 +761,8 @@ namespace INPAR
 
   /*! \brief Input parameters for fluid-structure interaction
    *
+   * Although the input file has independent sublist for partitioned and monolithic solution
+   * strategies, we collect all FSI-specific input parameters in this namespace.
    */
   namespace FSI
   {
@@ -1440,8 +1442,11 @@ namespace MORTAR
  */
 namespace NLNSOL
 {
-  /*! \brief A Full Approximation Scheme multigrid within the NLNSOL framework
+  /*! \brief A Full Approximation Scheme (FAS) multigrid within the NLNSOL framework
    *
+   * A full approximation scheme (FAS) is implemented to allow multigrid treatment of
+   * nonlinear problems. Hierarchy construction, i.e. calculation of transfer operators
+   * etc., is done by calling Trilinos'  MueLu package.
    */
   namespace FAS
   {
@@ -1715,6 +1720,7 @@ namespace STI
 
 /*! \brief Solid/structural dynamics problems
  *
+ * Encapsulating all time integration capabilities for solid dynamics problems.
  */
 namespace STR
 {
@@ -1732,22 +1738,28 @@ namespace STR
   {
   }  // namespace ELEMENTS
 
-  /*! \brief
+  /*! \brief Explicit time integration for solid/structural dynamics
    *
    */
   namespace EXPLICIT
   {
   }  // namespace EXPLICIT
 
-  /*! \brief
+  /*! \brief Implicit time integration for solid/structural dynamics
    *
    */
   namespace IMPLICIT
   {
   }  // namespace IMPLICIT
 
-  /*! \brief
+  /*! \brief Modelevaluators for solid dynamics
    *
+   * Encapsulates all solid-related model evaluators.
+   * Model evaluators are able to evaluate a specific physical model component.
+   *
+   * If a problem consists of multiple physical effects, e.g. solid dynamics plus contact,
+   * then each effect has its own model evaluator. Evaluation of the entire problems is done
+   * by evaluating each participating model evaluator.
    */
   namespace MODELEVALUATOR
   {
@@ -1760,7 +1772,7 @@ namespace STR
   {
   }  // namespace NLN
 
-  /*! \brief
+  /*! \brief Predictors for time integration in solid dynamics
    *
    */
   namespace PREDICT
@@ -1774,20 +1786,13 @@ namespace STR
   {
   }  // namespace SOLVER
 
-  /*! \brief
+  /*! \brief Generic time integration capabilities for solid dynamics
    *
    */
   namespace TIMINT
   {
   }  // namespace TIMINT
 }  // namespace STR
-
-/*! \brief
- *
- */
-namespace ASD
-{
-}  // namespace ASD
 
 /*! \brief Structural multi-scale related algorithms
  *
@@ -1812,8 +1817,11 @@ namespace THR
   }  // namespace AUX
 }  // namespace THR
 
-/*! \brief Generic time integration capabilities and helpers
+/*! \brief Generic time integration capabilities and helpers for all fields and problems
  *
+ * This namespace provides capabilities for time integration that are not specific for any
+ * physical field or problem type. Problem-specific functionality is encapsulated in
+ * field-specific namespaces, e.g. STR, FLD, or SCATRA.
  */
 namespace TIMINT
 {
