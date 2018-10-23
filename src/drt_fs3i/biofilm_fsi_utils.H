@@ -33,7 +33,7 @@ namespace FS3I
           Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
     } /* namespace UTILS */
-  }   // namespace Biofilm
+  }   // namespace BIOFILM
 } /* namespace FS3I */
 
 #endif
