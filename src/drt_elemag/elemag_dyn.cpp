@@ -40,12 +40,13 @@ void electromagnetics_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // The function NumDofPerElementAuxiliary() of the electromagnetic elements return nsd_*2. This
-  // does not assure that the code will work in any case
+  // does not assure that the code will work in any case (more spatial dimensions might give
+  // problems)
   if (problem->NDim() != 3)
   {
     dserror(
         "The implementation of electromagnetic propagation only supports 3D problems.\n"
-        "It is necessary to change the problem size.");
+        "It is necessary to change the spatial dimension of your problem.");
   }
 
   // declare problem-specific parameter list for electromagnetics

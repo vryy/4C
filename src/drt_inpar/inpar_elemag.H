@@ -34,27 +34,34 @@ namespace INPAR
   // Input parameters for electromagnetic simulations
   namespace ELEMAG
   {
-    // Type of time integrator
+    /// Type of time integrator
     enum DynamicType
     {
-      elemag_ost,             // one-step-theta time integration
-      elemag_explicit_euler,  // explicit euler method
-      elemag_implicit_euler,  // implicit euler method
-      elemag_rk,              // runge-kutta method
-      elemag_cn               // crank-nicolson method
+      /// one-step-theta time integration
+      elemag_ost,
+      /// explicit euler method
+      elemag_explicit_euler,
+      /// implicit euler method
+      elemag_implicit_euler,
+      /// runge-kutta method
+      elemag_rk,
+      /// crank-nicolson method
+      elemag_cn
     };
 
-    /// initial field for electromagnetic problems
+    /// Initial field for electromagnetic problems.
     enum InitialField
     {
+      /// Initialize a zero field on all the components
       initfield_zero_field,
+      /// Initialize the components as specified by the function
       initfield_field_by_function
     };
 
-    /// define all valid parameters for electromagnetic problem
+    /// Define all valid parameters for electromagnetic problem.
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-    /// set specific electromagnetic conditions
+    /// Set specific electromagnetic conditions.
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace ELEMAG

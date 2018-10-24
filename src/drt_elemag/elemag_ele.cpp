@@ -317,31 +317,16 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Elemag::Volumes()
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 02/18|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(
-    DRT::Element* parent_slave,            //!< parent slave fluid3 element
-    int nnode,                             //!< number of surface nodes
-    const int* nodeids,                    //!< node ids of surface element
-    DRT::Node** nodes,                     //!< nodes of surface element
-    const int lsurface_master,             //!< local surface number w.r.t master parent element
-    const int lsurface_slave,              //!< local surface number w.r.t slave parent element
-    const std::vector<int>& localtrafomap  //! local trafo map
-)
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(DRT::Element* parent_slave,
+    int nnode, const int* nodeids, DRT::Node** nodes, const int lsurface_master,
+    const int lsurface_slave, const std::vector<int>& localtrafomap)
 {
   // dynamic cast for slave parent element
   DRT::ELEMENTS::Elemag* slave_pele = dynamic_cast<DRT::ELEMENTS::Elemag*>(parent_slave);
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1,  //!< internal face element id
-      -1,               //!< owner of internal face element
-      nnode,            //!< number of surface nodes
-      nodeids,          //!< node ids of surface element
-      nodes,            //!< nodes of surface element
-      this,             //!< master parent element
-      slave_pele,       //!< slave parent element
-      lsurface_master,  //!< local surface number w.r.t master parent element
-      lsurface_slave,   //!< local surface number w.r.t slave parent element
-      localtrafomap     //!< local trafo map
-  );
+  return DRT::UTILS::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids, nodes,
+      this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
 }
 
 //=======================================================================
@@ -565,19 +550,19 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ElemagIntFaceType::Create(const int id
 /*----------------------------------------------------------------------*
  |  ctor (public)                                       berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  ///< element id
-    int owner,                             ///< owner (= owner of parent element with smallest gid)
-    int nnode,                             ///< number of nodes
-    const int* nodeids,                    ///< node ids
-    DRT::Node** nodes,                     ///< nodes of surface
-    DRT::ELEMENTS::Elemag* parent_master,  ///< master parent element
-    DRT::ELEMENTS::Elemag* parent_slave,   ///< slave parent element
-    const int lsurface_master,  ///< local surface index with respect to master parent element
-    const int lsurface_slave,   ///< local surface index with respect to slave parent element
+DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
+    int owner,                             // owner (= owner of parent element with smallest gid)
+    int nnode,                             // number of nodes
+    const int* nodeids,                    // node ids
+    DRT::Node** nodes,                     // nodes of surface
+    DRT::ELEMENTS::Elemag* parent_master,  // master parent element
+    DRT::ELEMENTS::Elemag* parent_slave,   // slave parent element
+    const int lsurface_master,  // local surface index with respect to master parent element
+    const int lsurface_slave,   // local surface index with respect to slave parent element
     const std::vector<int>
-        localtrafomap  ///< get the transformation map between the local coordinate systems of the
-                       ///< face w.r.t the master parent element's face's coordinate system and the
-                       ///< slave element's face's coordinate system
+        localtrafomap  // get the transformation map between the local coordinate systems of the
+                       // face w.r.t the master parent element's face's coordinate system and the
+                       // slave element's face's coordinate system
     )
     : DRT::FaceElement(id, owner)
 {
@@ -655,18 +640,18 @@ DRT::ELEMENTS::ElemagIntFace::~ElemagIntFace() { return; }
  |  create the patch location vector (public)          berardocco 02/18 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
-    DRT::Discretization& discretization,     ///< discretization
-    std::vector<int>& nds_master,            ///< nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,             ///< nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,               ///< local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,             ///< local map for gdof ids for master element
-    std::vector<int>& slave_lm,              ///< local map for gdof ids for slave element
-    std::vector<int>& face_lm,               ///< local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,      ///< local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,       ///< local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,        ///< local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
+    DRT::Discretization& discretization,     // discretization
+    std::vector<int>& nds_master,            // nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,             // nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,               // local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,             // local map for gdof ids for master element
+    std::vector<int>& slave_lm,              // local map for gdof ids for slave element
+    std::vector<int>& face_lm,               // local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,      // local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,       // local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,        // local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,  // local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch    // local map between slave nodes and nodes in patch
 )
 {
   // create one patch location vector containing all dofs of master, slave and

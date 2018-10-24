@@ -232,12 +232,18 @@ namespace DRT
             (this->Faces()[face])->Degree(), completepol_);
       }
 
+      /*!
+      \brief Returns the number of unknowns to be computed in each element.
+
+      EXAMPLE: For a HEX8 element and a 3D problem the return value will be 48.
+      */
       virtual int NumDofPerElementAuxiliary() const
       {
         return (DRT::UTILS::getDimension(distype_) * 2) *
                DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
       }
 
+      /// Number of degrees of freedom per element
       virtual int NumDofPerElement() const { return 0; }
 
       /*!
@@ -336,15 +342,11 @@ namespace DRT
       // we are in a discontinuous setting here
       //! @name interior stored states
 
-      /// local values from interior solution vector (gradient, velocity) at n+1
-      // Thi variable represents the elctric field in the nodes
-      // Epetra_SerialDenseVector eleinteriorElectricnp_;
+      /// This variable represents the elctric field in the nodes
       Epetra_SerialDenseVector eleinteriorElectric_;
       // Epetra_SerialDenseVector eleinteriorElectricnm_;
 
-      // This variable represents the rotor of the electric field (or the time derivative
-      // of the magnetic field -> rot(E) = -\mu(dH/dt))
-      // Epetra_SerialDenseVector eleinteriorMagneticnp_;
+      /// This variable represents the magnetic field in thge nodes
       Epetra_SerialDenseVector eleinteriorMagnetic_;
       // Epetra_SerialDenseVector eleinteriorMagneticnm_;
 
@@ -432,7 +434,7 @@ namespace DRT
       static ElemagBoundaryType instance_;
     };
 
-    // class ElemagBoundary
+    /// class ElemagBoundary
 
     class ElemagBoundary : public DRT::FaceElement
     {
@@ -550,6 +552,7 @@ namespace DRT
         return ParentElement()->NumDofPerNode(node);
       }
 
+      /// Number of degrees of freedom per element
       virtual int NumDofPerElement() const { return 0; }
 
       /*!

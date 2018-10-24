@@ -59,6 +59,7 @@ namespace DRT
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseMatrix* elemat1) = 0;
 
+      /// Evaluate routine for boundary elements inteface
       virtual int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
@@ -99,6 +100,7 @@ namespace DRT
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
           Epetra_SerialDenseMatrix* elemat1);
 
+      /// Evaluate routine for boundary elements
       virtual int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,

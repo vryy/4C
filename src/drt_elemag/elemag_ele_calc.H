@@ -96,12 +96,15 @@ namespace DRT
       /// Private Constructor since we are a Singleton.
       ElemagEleCalc();
 
-      /// local solver that inverts local problem on an element and can solve with various vectors.
+      /// Local solver that inverts local problem on an element and can solve with various vectors.
       struct LocalSolver
       {
+        /// Number of Spatial Dimensions
         static const unsigned int nsd_ = ElemagEleCalc<distype>::nsd_;
+        /// Number of FACES
         static const unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
 
+        /// Init function for the struct members
         LocalSolver(const DRT::ELEMENTS::Elemag* ele, DRT::UTILS::ShapeValues<distype>& shapeValues,
             Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>>& shapeValuesFace,
             INPAR::ELEMAG::DynamicType& dyna);
@@ -161,18 +164,18 @@ namespace DRT
         int ProjectDirichField(DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             Epetra_SerialDenseVector& elevec1);
 
+        /// Function evaluation routine
         void EvaluateAll(const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
             Epetra_SerialDenseVector& v) const;
 
+        /// Function evaluation routine
         void EvaluateAll(const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
             LINALG::Matrix<2 * nsd_, 1>& v, double& p) const;
 
         // convention: we sort the entries in the matrices the following way:
-        // first come the electric rotor, then the electric field, and finally the trace
-        // we also build the matrix in a block-fashion, keeping the dofs for individual components
-        // closest to each other. I.e. the blocks are in 2D for g_00, g_01, g_10, g_11, v_0, v_1, p
-        // and similarly for 3D
+        // first comes the electric field then the magnetic one.
 
+        /// Number of Degrees Of Freedom
         const unsigned int ndofs_;
 
         DRT::UTILS::ShapeValues<distype>& shapes_;                       /// evaluated shape values
