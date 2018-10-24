@@ -168,31 +168,40 @@ namespace DRT
         void EvaluateAll(const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
             Epetra_SerialDenseVector& v) const;
 
-        /// Function evaluation routine
-        void EvaluateAll(const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
-            LINALG::Matrix<2 * nsd_, 1>& v, double& p) const;
-
         // convention: we sort the entries in the matrices the following way:
         // first comes the electric field then the magnetic one.
 
         /// Number of Degrees Of Freedom
         const unsigned int ndofs_;
 
-        DRT::UTILS::ShapeValues<distype>& shapes_;                       /// evaluated shape values
-        Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;  /// evaluated shape values
+        /// evaluated shape values
+        DRT::UTILS::ShapeValues<distype>& shapes_;
+        /// evaluated shape values
+        Teuchos::RCP<DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
         // System matrices
-        Epetra_SerialDenseMatrix Amat;     /// magnetic evolution
-        Epetra_SerialDenseMatrix invAmat;  /// magnetic evolution
-        Epetra_SerialDenseMatrix Cmat;     /// magnetic electric
-        Epetra_SerialDenseMatrix Dmat;     /// magnetic trace
-        Epetra_SerialDenseMatrix Emat;     /// electric evolution
-        Epetra_SerialDenseMatrix Fmat;     /// electric magnetic
-        Epetra_SerialDenseMatrix Gmat;     /// electric electric
-        Epetra_SerialDenseMatrix Hmat;     /// electric trace
-        Epetra_SerialDenseMatrix Imat;     /// trace magnetic
-        Epetra_SerialDenseMatrix Jmat;     /// trace electric
-        Epetra_SerialDenseMatrix Lmat;     /// trace trace
+        /// magnetic evolution matrix
+        Epetra_SerialDenseMatrix Amat;
+        /// Inverse of magnetic evolution matrix
+        Epetra_SerialDenseMatrix invAmat;
+        /// magnetic electric
+        Epetra_SerialDenseMatrix Cmat;
+        /// magnetic trace
+        Epetra_SerialDenseMatrix Dmat;
+        /// electric evolution
+        Epetra_SerialDenseMatrix Emat;
+        /// electric magnetic
+        Epetra_SerialDenseMatrix Fmat;
+        /// electric electric
+        Epetra_SerialDenseMatrix Gmat;
+        /// electric trace
+        Epetra_SerialDenseMatrix Hmat;
+        /// trace magnetic
+        Epetra_SerialDenseMatrix Imat;
+        /// trace electric
+        Epetra_SerialDenseMatrix Jmat;
+        /// trace trace
+        Epetra_SerialDenseMatrix Lmat;
 
         // auxiliary stuff
         Epetra_SerialDenseMatrix massMat;  // final mass matrix used for the projection
