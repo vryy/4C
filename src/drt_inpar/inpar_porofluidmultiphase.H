@@ -32,7 +32,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for solid-scatra-interaction
   namespace POROFLUIDMULTIPHASE
   {
     /// time integration schemes

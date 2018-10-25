@@ -54,7 +54,6 @@ namespace ADAPTER
   class MortarVolCoupl;
 }
 
-//! TSI: Thermo-Structure Interaction
 namespace TSI
 {
   namespace UTILS

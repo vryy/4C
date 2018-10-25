@@ -25,7 +25,6 @@
 // discrete force at given element parameter position DISCRETELINENEUMANN Default: off //for all
 // elements contained in the corresponding design line!
 
-//! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
   namespace UTILS

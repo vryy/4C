@@ -34,10 +34,6 @@ namespace MORTAR
   class MortarElement;
   class MortarNode;
 
-  /*!
-  \brief namespace of utility functions for mortar methods
-
-  */
   namespace UTILS
   {
     /*----------------------------------------------------------------------*

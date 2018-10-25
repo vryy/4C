@@ -17,7 +17,6 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 
-//! CONTACT: namespace of the BACI contact and meshtying algorithms
 namespace CONTACT
 {
   // forward declarations

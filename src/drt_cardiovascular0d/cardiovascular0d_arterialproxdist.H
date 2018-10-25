@@ -50,12 +50,12 @@ namespace DRT
   class Condition;
   class Discretization;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SparseMatrix;
   class SparseOperator;
 }  // namespace LINALG
-
 
 namespace UTILS
 {

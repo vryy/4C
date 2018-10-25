@@ -20,10 +20,9 @@
 
 namespace DRT
 {
-  /// forward declarations
+  // forward declarations
   class Discretization;
 
-  /// collection of useful and important but less central stuff
   namespace UTILS
   {
     /// redistribute a discretization using ParMetis

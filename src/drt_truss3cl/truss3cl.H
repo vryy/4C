@@ -31,10 +31,6 @@
 //#define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point -
 // intrule_line_10point is implemented
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
   namespace ELEMENTS

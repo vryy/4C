@@ -23,18 +23,21 @@
 // forward declaration
 class Epetra_FEVector;
 class Epetra_Vector;
+
 namespace LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace DRT
 {
   class Node;
   class Element;
   class Discretization;
 }  // namespace DRT
+
 namespace GEO
 {
   namespace MESHFREE
@@ -42,6 +45,7 @@ namespace GEO
     class BoundingBox;
   }
 }  // namespace GEO
+
 namespace BEAMINTERACTION
 {
   class CrosslinkingParams;

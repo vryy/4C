@@ -29,6 +29,7 @@
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
+// forward declarations
 class Epetra_IntVector;
 
 namespace IO

@@ -18,6 +18,7 @@
 #include <Epetra_Vector.h>
 #include "../linalg/linalg_utils.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class PoroFluidMultiphaseWrapper;

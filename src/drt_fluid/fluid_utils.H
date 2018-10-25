@@ -24,6 +24,7 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include <Teuchos_TimeMonitor.hpp>
 
+// forward declarations
 namespace DRT
 {
   class DofSet;
@@ -38,9 +39,6 @@ namespace LINALG
 
 namespace FLD
 {
-  /*!
-   * \brief namespace for fluid related stuff
-   */
   namespace UTILS
   {
     /// velocity-pressure block matrix split strategy

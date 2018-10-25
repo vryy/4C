@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/**
+/*!
 \file xcontact_levelset_reinit_elliptic.H
 
 \brief xcontact level-set elliptical reinitialization algorithm
@@ -20,12 +19,14 @@
 #include "../solver_nonlin_nox/nox_nln_interface_required.H"
 #include "../solver_nonlin_nox/nox_nln_interface_jacobian.H"
 
-
+// forward declarations
 class Epetra_Map;
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace NOX
 {
   namespace Solver
@@ -45,15 +46,18 @@ namespace NOX
     class Problem;
   }  // namespace NLN
 }  // namespace NOX
+
 namespace DRT
 {
   class Discretization;
 }
+
 namespace LINALG
 {
   class SparseOperator;
   class Solver;
 }  // namespace LINALG
+
 namespace XCONTACT
 {
   namespace LEVELSET

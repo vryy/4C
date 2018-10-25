@@ -37,8 +37,6 @@ namespace GEO
 {
   namespace CUT
   {
-    /*! \brief Core geometrical operations like finding the cut points,
-     *   distance calculations takes place here */
     namespace KERNEL
     {
       void FindCornerPoints(const std::vector<Point*>& points, std::vector<Point*>& corner_points);

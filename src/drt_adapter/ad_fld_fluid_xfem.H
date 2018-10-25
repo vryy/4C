@@ -24,8 +24,7 @@
 
 namespace ADAPTER
 {
-  /// forward declarations
-
+  // forward declarations
   class Coupling;
 
   /// fluid with moving interfaces implemented by the XFEM

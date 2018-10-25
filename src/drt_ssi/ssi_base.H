@@ -22,7 +22,7 @@
 
 #include "../drt_inpar/inpar_ssi.H"
 
-
+// forward declarations
 namespace ADAPTER
 {
   class Coupling;

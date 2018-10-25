@@ -30,7 +30,6 @@ namespace DRT
 
 namespace INPAR
 {
-  /// Input parameters for particle problems
   namespace PARTICLEOLD
   {
     /// Type of time integrator

@@ -23,7 +23,6 @@
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for poroelasticity
   namespace FS3I
   {
     /// Type of coupling strategy for SSI problems

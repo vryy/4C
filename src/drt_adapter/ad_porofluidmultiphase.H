@@ -37,7 +37,6 @@ namespace Teuchos
   class ParameterList;
 }
 
-// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   // forward declaration

@@ -31,10 +31,6 @@ namespace MORTAR
   class MortarElementNitscheContainer;
 };
 
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-
-*/
 namespace MORTAR
 {
   /*!

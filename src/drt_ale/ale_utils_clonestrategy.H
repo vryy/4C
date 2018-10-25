@@ -32,7 +32,6 @@ namespace DRT
 /* definition of classes */
 namespace ALE
 {
-  //! ALE::UTILS: Utilities for ALE field
   namespace UTILS
   {
     /*!

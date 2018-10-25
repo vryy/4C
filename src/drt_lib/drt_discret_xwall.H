@@ -27,11 +27,6 @@ fluid discretization for xwall
 #include <string>
 #include "Teuchos_ParameterList.hpp"
 
-
-/*!
-\brief DRT: namespace of the baci discretization module
-
-*/
 namespace DRT
 {
   class DiscretizationXWall : public DiscretizationFaces

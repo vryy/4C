@@ -59,7 +59,6 @@ namespace CONTACT
 /*----------------------------------------------------------------------*
  |                                                          farah 11/13 |
  *----------------------------------------------------------------------*/
-//! WEAR: Structure-ALE Interaction for wear
 namespace WEAR
 {
   class Algorithm : public ADAPTER::AlgorithmBase

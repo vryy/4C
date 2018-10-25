@@ -31,8 +31,6 @@ namespace ADAPTER
 
 namespace POROMULTIPHASE
 {
-  /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase
-  /// problems
   namespace UTILS
   {
     /// setup discretizations and dofsets

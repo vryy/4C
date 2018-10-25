@@ -17,7 +17,7 @@ namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
 }
-/// artery algorithms
+
 namespace ART
 {
   /*!

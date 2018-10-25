@@ -42,14 +42,17 @@ namespace DRT
   class Discretization;
   class Node;
 }  // namespace DRT
+
 namespace ADAPTER
 {
   class Particle;
 }
+
 namespace IO
 {
   class DiscretizationWriter;
 }
+
 namespace LINALG
 {
   class MapExtractor;
@@ -62,6 +65,7 @@ namespace MAT
     class ParticleMat;
   }
 }  // namespace MAT
+
 namespace BINSTRATEGY
 {
   class BinningStrategy;

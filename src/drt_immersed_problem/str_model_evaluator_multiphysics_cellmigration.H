@@ -6,8 +6,6 @@
 
 \maintainer Andreas Rauch
 
-\date Nov 28, 2016
-
 \level 3
 
 */
@@ -23,23 +21,28 @@
 // forward declaration
 class Epetra_Vector;
 class Epetra_Map;
+
 namespace LINALG
 {
   class SparseOperator;
 }  // namespace LINALG
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
 }  // namespace IO
+
 namespace DRT
 {
   class Discretization;
 }  // namespace DRT
+
 namespace STR
 {
   class Integrator;

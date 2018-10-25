@@ -17,7 +17,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for beam contact
   namespace BEAMCONTACT
   {
     /// Type of employed solving strategy

@@ -33,7 +33,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for XFEM
   namespace XFEM
   {
     /// which method is used to enforce the boundary condition

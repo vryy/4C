@@ -30,6 +30,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class MapExtractor;
 }  // namespace LINALG
+
 namespace IO
 {
   class DiscretizationWriter;

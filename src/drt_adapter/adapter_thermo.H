@@ -64,9 +64,6 @@ namespace CONTACT
   class CoNitscheStrategyTsi;
 }
 
-/*----------------------------------------------------------------------*
- | adapting adapter                                         bborn 08/09 |
- *----------------------------------------------------------------------*/
 namespace ADAPTER
 {
   /// general thermal field interface

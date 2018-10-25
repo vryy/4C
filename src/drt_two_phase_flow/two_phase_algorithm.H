@@ -24,10 +24,6 @@
 // Needed for input parameter
 #include "../drt_inpar/inpar_twophase.H"
 
-/*!
-\brief SCATRA namespace for two phase flow problems in BACI utilizing the levelset module
-
-*/
 namespace TWOPHASEFLOW
 {
   /// Two phase flow base algorithm

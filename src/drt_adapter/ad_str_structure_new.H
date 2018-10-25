@@ -19,11 +19,12 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "ad_str_structure.H"
 
-
+// forward declarations
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace STR
 {
   namespace TIMINT
@@ -38,18 +39,22 @@ namespace STR
     class Generic;
   }  // namespace MODELEVALUATOR
 }  // namespace STR
+
 namespace LINALG
 {
   class Solver;
 }  // namespace LINALG
+
 namespace DRT
 {
   class DiscretizationInterface;
 }  // namespace DRT
+
 namespace XFEM
 {
   class XFieldState;
 }  // namespace XFEM
+
 namespace ADAPTER
 {
   class StructureNew : public Structure

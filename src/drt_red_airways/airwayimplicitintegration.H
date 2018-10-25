@@ -72,8 +72,6 @@ namespace DRT
   class RedAirwayResultTest;
 }  // namespace DRT
 
-
-/// airway algorithms
 namespace AIRWAY
 {
   /*!

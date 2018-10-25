@@ -19,7 +19,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// General input parameters for materials
   namespace MAT
   {
     /// type of material

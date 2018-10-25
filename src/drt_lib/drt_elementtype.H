@@ -24,6 +24,7 @@
 #include "drt_parobjectfactory.H"
 #include "drt_element.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseOperator;

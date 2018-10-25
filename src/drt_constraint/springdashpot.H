@@ -3,11 +3,9 @@
 
 \brief Methods for spring and dashpot constraints / boundary conditions
 
-<pre>
 \level 3
 
 \maintainer Martin Pfaller
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -19,6 +17,7 @@
 
 #include "../headers/pairedvector.H"
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_MultiVector;
 

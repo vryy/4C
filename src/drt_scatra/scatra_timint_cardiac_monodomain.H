@@ -24,9 +24,6 @@
 /*==========================================================================*/
 
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for scalar transport problems: elch
-/*==========================================================================*/
 namespace SCATRA
 {
   class TimIntCardiacMonodomain : public virtual ScaTraTimIntImpl

@@ -13,23 +13,10 @@
 
 #include "wall1.H"
 
-/*!
-  \brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
-  /*!
-    \brief ELEMENTS: namespace of elements
-
-  */
-
   namespace ELEMENTS
   {
-    /*!
-      \brief NURBS: namespace of all isogeometric analysis tools
-
-    */
     namespace NURBS
     {
       class Wall1NurbsType : public DRT::ElementType

@@ -32,7 +32,6 @@ namespace DRT
   class Condition;
 }
 
-/// airway algorithms
 namespace AIRWAY
 {
   class RedAirwayImplicitTimeInt;

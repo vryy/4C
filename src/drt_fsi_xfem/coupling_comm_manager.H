@@ -20,6 +20,7 @@ transform matrixes, vectors, ...
 
 #define COUP_MANAGER_DEBUG_OUT
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

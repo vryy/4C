@@ -7,8 +7,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Mar 6, 2018
-
 \level 3
 */
 /*----------------------------------------------------------------------------*/
@@ -20,18 +18,22 @@
 #include <unordered_map>
 #include "../linalg/linalg_serialdensevector.H"
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_Map;
 class Epetra_Comm;
+
 namespace LINALG
 {
   class SerialDenseVector;
 }
+
 namespace DRT
 {
   class DiscretizationInterface;
   class Node;
 }  // namespace DRT
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -39,6 +41,7 @@ namespace STR
     class Contact;
   }
 }  // namespace STR
+
 namespace CONTACT
 {
   class ParamsInterface;

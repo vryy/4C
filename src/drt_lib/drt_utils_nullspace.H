@@ -22,7 +22,6 @@ namespace DRT
   // forward declarations
   class Discretization;
 
-  /// collection of useful and important but less central stuff
   namespace UTILS
   {
     void ComputeStructure3DNullSpace(

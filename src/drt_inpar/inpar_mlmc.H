@@ -2,11 +2,11 @@
 /*!
 \file inpar_mlmc.H
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief Input parameters for multi-level monte carlo
+
+\level 2
+
+\maintainer Jonas Biehler
 */
 
 /*----------------------------------------------------------------------*/
@@ -17,7 +17,6 @@ Maintainer: Jonas Biehler
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters used in multi level monte carlo
   namespace MLMC
   {
     enum CorrStruct

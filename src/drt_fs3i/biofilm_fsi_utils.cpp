@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::Biofilm::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
+void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
     Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
   const int numnode = (scatradis->NodeColMap())->NumMyElements();

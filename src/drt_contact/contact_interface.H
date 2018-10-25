@@ -20,23 +20,22 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Epetra_FEVector.h>
 
-
-/*!
-\brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
-*/
+// forward declarations
 namespace LINALG
 {
   class SerialDenseMatrix;
 }
+
 namespace ADAPTER
 {
   class Coupling;
 }
+
 namespace DRT
 {
   class Node;
 }
+
 namespace CONTACT
 {
   class CoInterface;

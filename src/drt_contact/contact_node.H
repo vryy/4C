@@ -17,10 +17,6 @@
 #include "../drt_contact_aug/contact_aug_utils.H"
 #include <unordered_map>
 
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
- */
 namespace CONTACT
 {
   // foward declaration

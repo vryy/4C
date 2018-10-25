@@ -59,7 +59,6 @@ namespace LINALG
 /*----------------------------------------------------------------------*
  | cavitation algorithm                                     ghamm 11/12 |
  *----------------------------------------------------------------------*/
-/// CAVITATION: Cavitation problem
 namespace CAVITATION
 {
   // forward declaration

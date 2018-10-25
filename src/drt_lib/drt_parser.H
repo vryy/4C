@@ -34,12 +34,6 @@
 
 namespace DRT
 {
-  /// all parser related classes
-  /*!
-    We have a simple top-down expression parser. One peculiarity is, however,
-    that the expression type is templated. This way we can use the Sacado
-    library to calculate derivatives along with the actual value.
-   */
   namespace PARSER
   {
     /*----------------------------------------------------------------------*/

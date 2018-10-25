@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/**
+/*!
 \file xcontact_cutwizard.H
 
 \brief Cutwizard of the xcontact algorithm ( level-set cut of the structural
@@ -26,18 +25,22 @@
 
 #include "../drt_cut/cut_cutwizard.H"
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_Map;
 class Epetra_Comm;
+
 namespace LINALG
 {
   class SerialDenseMatrix;
 }  // namespace LINALG
+
 namespace DRT
 {
   class Discretization;
   class DiscretizationInterface;
 }  // namespace DRT
+
 namespace GEO
 {
   class BoundaryIntCell;
@@ -49,6 +52,7 @@ namespace GEO
     class CombIntersection;
   }  // namespace CUT
 }  // namespace GEO
+
 namespace XCONTACT
 {
   class CutWizard : public GEO::CutWizard

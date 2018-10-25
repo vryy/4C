@@ -21,7 +21,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for Inverse Analysis
   namespace INVANA
   {
     enum StatInvRegularization

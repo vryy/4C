@@ -17,6 +17,7 @@
 
 #include "../headers/pairedvector.H"
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_MultiVector;
 

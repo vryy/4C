@@ -44,7 +44,6 @@ namespace MAT
 /* declarations */
 namespace MAT
 {
-  /// Namespace of objects holding the material input parameters.
   namespace PAR
   {
     /*----------------------------------------------------------------------*/

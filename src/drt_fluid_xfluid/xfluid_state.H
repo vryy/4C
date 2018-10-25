@@ -29,7 +29,7 @@
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 
-
+// forward declarations
 namespace DRT
 {
   class Discretization;

@@ -27,11 +27,6 @@
 #include "../drt_inpar/inpar_browniandyn.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
-
-/*!
- \brief DRT: namespace of the ccarat discretization module
-
- */
 namespace DRT
 {
   namespace ELEMENTS

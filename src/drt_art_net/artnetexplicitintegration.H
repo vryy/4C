@@ -69,9 +69,6 @@
 
 #include "art_net_timint.H"
 
-
-
-/// artery algorithms
 namespace ART
 {
   /*!

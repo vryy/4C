@@ -15,6 +15,7 @@
 #include "Epetra_Map.h"
 #include "../drt_inpar/inpar_structure.H"
 
+// forward declarations
 namespace STR
 {
   namespace TIMINT
@@ -23,10 +24,12 @@ namespace STR
     class BaseDataGlobalState;
   }  // namespace TIMINT
 }  // namespace STR
+
 namespace LINALG
 {
   class SparseMatrix;
 }
+
 namespace NOX
 {
   namespace Epetra
@@ -34,6 +37,7 @@ namespace NOX
     class Scaling;
   }
 }  // namespace NOX
+
 namespace STR
 {
   namespace NLN

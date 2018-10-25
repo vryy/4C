@@ -23,10 +23,6 @@ namespace DRT
   class Discretization;
 }
 
-/*!
- \brief MORTAR: namespace of the BACI mortar coupling algorithms
-
- */
 namespace MORTAR
 {
   // forward declarations

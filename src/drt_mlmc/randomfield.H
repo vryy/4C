@@ -1,22 +1,15 @@
 /*!----------------------------------------------------------------------
-/file randomfield.h
-Created on: May 15, 2014
-\brief Interface class for random fields
-using FFT algorithms
-
- <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
- *!----------------------------------------------------------------------*/
+\file randomfield.H
+\brief Interface class for random fields using FFT algorithms
+\level 2
+\maintainer Jonas Biehler
+ *----------------------------------------------------------------------*/
 
 #ifdef HAVE_FFTW
 #ifndef RANDOMFIELD_H_
 #define RANDOMFIELD_H_
 
-
+// headers
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_RCP.hpp>
 #include "Epetra_Comm.h"

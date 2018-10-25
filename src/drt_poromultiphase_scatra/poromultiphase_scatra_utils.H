@@ -39,8 +39,6 @@ namespace POROMULTIPHASESCATRA
   class PoroMultiPhaseScaTraBase;
   class PoroMultiPhaseScaTraArtCouplBase;
 
-  /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase
-  /// problems
   namespace UTILS
   {
     /// setup discretizations and dofsets

@@ -21,11 +21,6 @@
 #include "drt_dofset_interface.H"
 #include "drt_dofset_proxy.H"
 
-
-/*!
-\brief DRT: namespace of the baci discretization module
-
-*/
 namespace XFEM
 {
   class XFEMDofSet;

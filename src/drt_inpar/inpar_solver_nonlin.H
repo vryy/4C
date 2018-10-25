@@ -18,7 +18,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  //! Input parameters for nonlinear solver package
   namespace NLNSOL
   {
     namespace FAS

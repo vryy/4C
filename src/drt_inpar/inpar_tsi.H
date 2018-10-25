@@ -22,7 +22,6 @@
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  //! Input parameters for TSI
   namespace TSI
   {
     //! Type of coupling strategy for TSI problems

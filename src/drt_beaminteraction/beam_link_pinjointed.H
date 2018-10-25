@@ -21,8 +21,6 @@
 //#include <Teuchos_RCP.hpp>
 
 // forward declarations
-// class Epetra_Vector;
-// class Epetra_SerialDenseMatrix;
 namespace DRT
 {
   class Element;
@@ -33,6 +31,7 @@ namespace DRT
     class Beam3r;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
 namespace LINALG
 {
   class SerialDenseVector;
