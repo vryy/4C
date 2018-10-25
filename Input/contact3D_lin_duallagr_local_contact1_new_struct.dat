@@ -624,10 +624,6 @@ NODE 216 COORD -5.2000000000069813e-01 -3.9999999999999997e-01 -3.99999999999092
 98 SOLIDH8 HEX8 186 188 196 195 204 206 214 213 MAT 1 KINEM nonlinear EAS none
 99 SOLIDH8 HEX8 188 190 197 196 206 208 215 214 MAT 1 KINEM nonlinear EAS none
 100 SOLIDH8 HEX8 190 192 198 197 208 210 216 215 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 5.22358657399997397e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 6.45900648549378514e-04 TOLERANCE 1e-8

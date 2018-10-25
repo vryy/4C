@@ -1143,11 +1143,7 @@ NODE 251 COORD 1.999999911791123e+00 1.999999911791123e+00 1.000000000000000e+00
 127 SOLIDH8 HEX8 151 114 105 140 155 120 107 142 MAT 1 KINEM nonlinear EAS none
 128 SOLIDH8 HEX8 192 151 140 181 196 155 142 186 MAT 1 KINEM nonlinear EAS none
 129 SOLIDH8 HEX8 106 167 132 67 125 188 158 91 MAT 2 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6

@@ -67,10 +67,8 @@ NDLINE                          8
 NDSURF                          2
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
@@ -1122,9 +1120,6 @@ NODE 306 COORD -1.000000000000000e+01 0.000000000000000e+00 0.000000000000000e+0
 198 WALL QUAD4 141 127 126 140 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 199 WALL QUAD4 142 128 127 141 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 200 WALL QUAD4 143 129 128 142 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_MisesPlastic
 //MAT 1 MAT_MisesPlastic YOUNG 689.56 NUE 0.32 Sigy 31.0 BETAH 261.2 DENS 0.0 Hard 0.0
@@ -1132,13 +1127,7 @@ NODE 306 COORD -1.000000000000000e+01 0.000000000000000e+00 0.000000000000000e+0
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 689.56 NUE 0.32 DENS 7.8e-3 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 35*t
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 178 QUANTITY dispx VALUE 3.9704974518379865e+00 TOLERANCE 1e-6
-
 -------------------------------------------------------------------------END
 //                              END

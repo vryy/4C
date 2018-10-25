@@ -92,9 +92,6 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.5
 PARALLEL_REDIST                 No
 REDUNDANT_STORAGE               All
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -5012,11 +5009,7 @@ NODE 1440 COORD 3.750837401696085e+00 2.014457284375037e-01 0.000000000000000e+0
 1150 WALL QUAD4 275 272 278 285 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1151 WALL QUAD4 271 268 272 275 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1152 WALL QUAD4 261 259 268 271 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.01
 MAT 2 ELAST_CoupNeoHooke YOUNG 15000.0 NUE 0.125
 ----------------------------------------------------------------------FUNCT1

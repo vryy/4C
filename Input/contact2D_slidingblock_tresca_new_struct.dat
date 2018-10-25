@@ -71,94 +71,27 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
-AZOUTPUT                        0
-AZSOLVE                         CG
-AZPREC                          ML
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
-IFPACKGFILL                     0
-AZTOL                           1.0E-8
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
-IFPACKOVERLAP                   0
-AZSCAL                          infnorm
-AZCONV                          AZ_r0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 Chebychev
-ML_SMOOTHERMED                  Chebychev
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     3 3 3 3 1
-ML_DAMPFINE                     1.0
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          Amesos_KLU_nonsym
-AZOUTPUT                        0
-AZSOLVE                         CG
-AZPREC                          ML
-AZREUSE                         0
-AZDROP                          0.0
-IFPACKFILL                      1.0
-IFPACKGFILL                     0
-AZTOL                           1.0E-8
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-AZPOLY                          5
-IFPACKOVERLAP                   0
-AZSCAL                          infnorm
-AZCONV                          AZ_r0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 Chebychev
-ML_SMOOTHERMED                  Chebychev
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     3 3 3 3 1
-ML_DAMPFINE                     1.0
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8
 NDSURF                          2
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0  FUNCT 0 0
 E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0  FUNCT 0 0
 E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0  FUNCT 0 0
 E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0  FUNCT 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
 E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           1
 E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -15 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
@@ -1650,24 +1583,14 @@ NODE 463 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 383 WALL QUAD4 6 3 7 8 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 384 WALL QUAD4 5 2 3 6 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 385 WALL QUAD4 4 1 2 5 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.0 DENS 1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION t/4
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 347 QUANTITY dispx VALUE 7.76767609699509420e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 347 QUANTITY dispy VALUE -7.53369551731937048e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 347 QUANTITY velx VALUE 1.10352622000092904e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 347 QUANTITY vely VALUE 1.23577353224681944e-02 TOLERANCE 1e-6
-
 -------------------------------------------------------------------------END
 //                              END

@@ -30,15 +30,13 @@ ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DIVERCONT                       stop
-DYNAMICTYP                      Statics//OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      Statics
 ITERNORM                        L2
-K_DAMP                          0.5
 LOADLIN                         no
 MAXITER                         500
 MAXTIME                         0.5
 MINITER                         0
-M_DAMP                          0.5
-NLNSOL                          fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -65,8 +63,6 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-08
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.66
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange

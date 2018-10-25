@@ -43,13 +43,10 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        1.0
 NUMSTEP                         1
 MAXTIME                         1.0
-DAMPING                         No
-M_DAMP                          0.00001
-K_DAMP                          0.00001
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
@@ -61,20 +58,20 @@ DIVERCONT                       continue
 LINEAR_SOLVER        2
 SYSTEM               sp
 SEMI_SMOOTH_NEWTON   No
-SEMI_SMOOTH_CN       10.0//1.0
-SEMI_SMOOTH_CT       1000.0//1.0
+SEMI_SMOOTH_CN       10.0
+SEMI_SMOOTH_CT       1000.0
 STRATEGY             Lagrange
-FRICTION             none//none
+FRICTION             none
 NONSMOOTH_GEOMETRIES no
 TOLCONTCONSTR        1e-5
 TOLLAGR              1e-5
-GP_SLIP_INCR         No//yes
+GP_SLIP_INCR         No
 ---------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN          std//dual
+LM_SHAPEFCN          std
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.2
 INTTYPE              segments
-LM_DUAL_CONSISTENT   none//all
+LM_DUAL_CONSISTENT   none
 PARALLEL_REDIST      none
 ALGORITHM            mortar
 LM_QUAD              quad
@@ -90,24 +87,15 @@ NDLINE                          30
 NDSURF                          8
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          3
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 22 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 E 23 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           2
 E 9 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 E 10 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
 DPOINT                          8
 E 8 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -50 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 E 9 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -58.333333333 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
@@ -118,36 +106,8 @@ E 16 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.6666666666 0.0 0.0 0.0 0.0 FUNCT 1 
 E 17 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -5.714285714 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 E 18 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -100 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
 E 30 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -100 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           8
 E 14 - 1 Master
@@ -170,28 +130,6 @@ E 28 - 1 Slave Active
 DPOINT 1
 // nonsmooth
 E 24 -
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1  DNODE 1
 NODE 10 DNODE 2
@@ -618,7 +556,6 @@ NODE 102 COORD 9.000000000000000e+00 1.000000000000000e+01 0.000000000000000e+00
 74 WALL QUAD4 71 65 77 88 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 75 WALL QUAD4 77 89 94 88 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 -------------------------------------------------------------------MATERIALS
-//                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.4 DENS 7.8e-6 THEXPANS 0.0
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION t

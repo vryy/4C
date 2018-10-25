@@ -34,13 +34,10 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.05
 NUMSTEP                         100
 MAXTIME                         1.0
-DAMPING                         No//Yes
-M_DAMP                          0.00001
-K_DAMP                          0.00001
 TOLRES                          1.0E-6
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
