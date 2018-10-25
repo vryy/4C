@@ -34,8 +34,9 @@ Since we allow merges to `master` only for tested commits, the user has to start
 ### Output
 
 For each job certain testing output is displayed in GitLab (select job under `CI/CD - Pipelines`).
-For the minimal tests the full output can be viewed in the GitLab terminal.
-The full tests produce too much output for the web interface, only the last 200 lines of each failed test are displayed, as well as a summary of the `ctest` call.
+During the build process all lines starting with `[` are displayed and the build summary at the end is displayed.
+The final line of each testing output is also shown.
+Therefore it is always possilbe to see the current state of the testing pipeline.
 If the pipeline fails, the full `log` file is compressed and uploaded as a GitLab `artifact`.
 The `artifacts` can be found under `CI/CD - Pipelines` (on the right hand side of the failed pipeline).
 After 4 weeks the `artifacts` are deleted. 
