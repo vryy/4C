@@ -34,7 +34,7 @@ variables:
         - "echo minimal test: triggered by change in master"
         # Delete old build files.
         - rm -rf ../baci-build/
-        - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log
+        - ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -L minimal | tee ../buildtest_minimal.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         #- sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_minimal.log
@@ -69,10 +69,9 @@ variables:
         # Delete old build files.
         - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R $TEST_TAG > ../buildtest_full.log'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" -R $TEST_TAG | tee ../buildtest_full.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\," '
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
-        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_full.log
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_full.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_full.log
@@ -100,10 +99,9 @@ variables:
         # Delete old build files.
         - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" > ../buildtest_daily.log'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_release.cmake -VV -E "$CTEST_EXCLUDE_STRING" | tee ../buildtest_daily.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
-        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily.log
         # Output 200 lines for any failing test 
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily.log
@@ -130,10 +128,9 @@ variables:
         # Delete old build files.
         - rm -rf ../baci-build/
         # Output to log because it is too much for the gitlab console.
-        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" > ../buildtest_daily_debug.log'
+        - 'ctest -S $CI_PROJECT_DIR/tests/testconfig/test_debug.cmake -VV -E "$CTEST_EXCLUDE_STRING" | tee ../buildtest_daily_debug.log | grep -e "^MakeCommand" -e "^\[" -e "^\[" -e "Compiler " -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"'
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
-        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../buildtest_daily_debug.log
         # Output 200 lines for any failing test
         - grep -B 200 '*Failed\|*Timeout' ../buildtest_daily_debug.log || true
         - sed -n '/tests passed,/,//p' ../buildtest_daily_debug.log
