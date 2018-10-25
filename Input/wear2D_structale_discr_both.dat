@@ -66,7 +66,7 @@ MAXITER                         1
 LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
-PARALLEL_REDIST                 dynamic//dynamic
+PARALLEL_REDIST                 static // switch this to static for now, as dynamic is suspected to have bugs // dynamic
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar
