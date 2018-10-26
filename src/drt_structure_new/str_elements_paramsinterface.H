@@ -46,11 +46,15 @@ namespace STR
     class BeamParamsInterface;
 
     //! evaluation error flags
-    enum EvalErrorFlag
+    enum EvalErrorFlag : int
     {
-      ele_error_none = 0,                  //!< no error occurred (default)
-      ele_error_negative_def_gradient = 1  //!< a negative deformation gradient was detected
-    };                                     // EvalErrorFlag
+      ele_error_none,                   //!< no error occurred (default)
+      ele_error_negative_def_gradient,  //!< a negative deformation gradient was detected
+      ele_error_determinant_at_corner,  //!< invalid jacobian det at the corner positions
+      ele_error_material_failed,        //!< material evaluation failed
+      ele_error_determinant_analysis    /*!< this flag is use to indicate an invalid element,
+                                             which has been identified by the det analysis. */
+    };                                  // EvalErrorFlag
 
     //! Map evaluation error flag to a std::string
     static inline const std::string EvalErrorFlag2String(const enum EvalErrorFlag& errorflag)
@@ -59,10 +63,14 @@ namespace STR
       {
         case ele_error_none:
           return "ele_error_none";
-          break;
         case ele_error_negative_def_gradient:
           return "ele_error_negative_def_gradient";
-          break;
+        case ele_error_determinant_at_corner:
+          return "ele_error_determinant_at_corner";
+        case ele_error_material_failed:
+          return "ele_error_material_failed";
+        case ele_error_determinant_analysis:
+          return "ele_error_determinant_analysis";
         default:
           return "unknown";
           break;
@@ -119,6 +127,14 @@ namespace STR
 
       //! Is the current step a default step, or e.g. a line search step?
       virtual bool IsDefaultStep() const = 0;
+      //! @}
+
+      //! @name Accessors
+      //! @{
+
+      //! get the evaluation error flag
+      virtual STR::ELEMENTS::EvalErrorFlag GetEleEvalErrorFlag() const = 0;
+
       //! @}
 
       //! @name Set functions
