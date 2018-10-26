@@ -19,7 +19,7 @@
 #include "nox_nln_linesearch_generic.H"  // base class
 #include "nox_nln_inner_statustest_generic.H"
 
-#include <fenv.h>
+#include "nox_nln_floating_point_exception.H"
 #include <NOX_StatusTest_Generic.H>
 
 // forward declaration
@@ -58,13 +58,19 @@ namespace NOX
         //! Destructor
         virtual ~Backtrack(){};
 
+        /// hard reset
         bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
+        /// weak reset
         void reset();
 
         // derived
         bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
             const NOX::Solver::Generic& s);
+
+        /// derived
+        NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(const NOX::Solver::Generic& solver,
+            const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType) const override;
 
         //! @name Access functionality
         //@{
@@ -92,22 +98,13 @@ namespace NOX
         //! print inner status test results
         void PrintUpdate(std::ostream& os) const;
 
-        //! Disable the internal exception checks during the evaluation
-        void DisableInternalExceptionChecks() const;
-
-        //! Clear the internal exception storage
-        void ClearInternalExceptionChecks() const;
-
-        //! Enable the internal exception checks during the evaluation
-        void EnableInternalExceptionChecks() const;
-
        private:
         //! throw NOX error
         void throwError(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
-        //! allow exceptions during the evaluate procedure
-        bool allowExceptions_;
+        //! handle floating point exceptions
+        FloatingPointException fp_except_;
 
         //! inner iteration counter
         int lsIters_;

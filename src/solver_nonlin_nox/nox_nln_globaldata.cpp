@@ -20,6 +20,7 @@
 #include "nox_nln_solver_prepostop_generic.H"
 #include "nox_nln_linearsystem.H"
 #include "nox_nln_aux.H"
+#include "nox_nln_direction_factory.H"
 
 #include <NOX_Utils.H>
 #include <NOX_Epetra_Interface_Required.H>
@@ -147,9 +148,12 @@ void NOX::NLN::GlobalData::CheckInput() const
     if (iter->second.is_null())
     {
       std::ostringstream msg;
-      msg << "The entry \"" << SolutionType2String(iter->first)
-          << "\" of the linear solver vector is not initialized!";
-      dserror(msg.str());
+      const std::string act_msg("        WARNING: The entry \"" + SolutionType2String(iter->first) +
+                                "\" of the linear solver vector is not (yet) initialized!");
+      msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ');
+      msg << "!!! " << std::left << std::setw(100) << act_msg << " !!!";
+      msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ') << std::right;
+      if (comm_->MyPID() == 0) std::cout << msg.str() << std::endl;
     }
   return;
 }
@@ -213,6 +217,29 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
   if (not mrtFctPtr_.is_null())
     solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic>>(
         "User Defined Merit Function", mrtFctPtr_);
+
+  // Similar to the merit function we provide our own direction factory, if
+  // the direction method is set to "User Defined"
+  {
+    Teuchos::ParameterList& pdir = nlnparams_->sublist("Direction", true);
+
+    // Set the direction method to user-defined if the method is set to Newton,
+    // since we want to use our own NOX::NLN::Newton direction method and not the
+    // one provided by NOX.
+    if (pdir.get<std::string>("Method") == "Newton")
+    {
+      pdir.set("Method", "User Defined");
+      pdir.set("User Defined Method", "Newton");
+    }
+
+    // Set the associated factory
+    if (pdir.get<std::string>("Method") == "User Defined")
+    {
+      direction_factory_ = Teuchos::rcp(new NOX::NLN::Direction::Factory);
+      pdir.set<Teuchos::RCP<NOX::Direction::UserDefinedFactory>>(
+          "User Defined Direction Factory", direction_factory_);
+    }
+  }
 
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */

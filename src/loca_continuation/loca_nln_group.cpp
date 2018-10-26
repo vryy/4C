@@ -102,3 +102,11 @@ NOX::Abstract::Group::ReturnType LOCA::NLN::Group::computeFandJacobian()
 
   return NOX::NLN::Group::computeFandJacobian();
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void LOCA::NLN::Group::resetIsValid()
+{
+  NOX::NLN::Group::resetIsValid();
+  LOCA::Epetra::Group::resetIsValid();
+}

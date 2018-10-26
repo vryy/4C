@@ -68,6 +68,10 @@ namespace NOX
           Teuchos::RCP<Generic> BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 
+          /// \brief Build volume change test
+          Teuchos::RCP<Generic> BuildVolumeChangeTest(
+              Teuchos::ParameterList& p, const NOX::Utils& u) const;
+
           bool CheckAndTagTest(const Teuchos::ParameterList& p, const Teuchos::RCP<Generic>& test,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
 

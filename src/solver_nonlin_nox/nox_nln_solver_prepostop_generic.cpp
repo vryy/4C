@@ -42,7 +42,7 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreIterate(const NOX::Solver::Gene
   // Set the current number of nonlinear iterations
   // this is necessary for the linear solver in some cases (e.g. contact)
   const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->GetMutableListPtr();
-  const std::string dir_method_str = params->sublist("Direction").get<std::string>("Method");
+  const std::string dir_method_str(NOX::NLN::AUX::GetDirectionMethodListName(*params));
   if (params->sublist("Direction").isSublist(dir_method_str))
     if (params->sublist("Direction").sublist(dir_method_str).isSublist("Linear Solver"))
     {
@@ -67,7 +67,7 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(const NOX::Solver::Generi
 
   // set the wanted tolerance for the linear solver
   const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->GetMutableListPtr();
-  const std::string dir_method_str = params->sublist("Direction").get<std::string>("Method");
+  const std::string dir_method_str(NOX::NLN::AUX::GetDirectionMethodListName(*params));
   if (params->sublist("Direction").isSublist(dir_method_str))
     if (params->sublist("Direction").sublist(dir_method_str).isSublist("Linear Solver"))
     {
