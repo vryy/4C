@@ -3,7 +3,8 @@
 \brief Electromagnetic element implementations
 
 <pre>
-\level 2    (is this the correct level?)
+
+\level 2
 
 \maintainer Luca Berardocco
             berardocco@lnm.mw.tum.de
