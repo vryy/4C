@@ -58,7 +58,7 @@ namespace IO
      *                          is written.
      *
      *  @author hiermeier @date 08/17 */
-    virtual void OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const = 0;
+    virtual void OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const = 0;
 
     /** @brief Get the current time/load step number
      *

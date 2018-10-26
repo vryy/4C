@@ -1648,3 +1648,11 @@ void IO::DiscretizationWriter::ClearMapCache()
   mapstack_.clear();
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const DRT::Discretization& IO::DiscretizationWriter::GetDiscret() const
+{
+  if (dis_.is_null()) dserror("The discretization pointer has not been initialized!");
+  return *dis_;
+}
