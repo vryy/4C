@@ -472,6 +472,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
       "STRUCT_SE", "No", "Output of strain energy", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<int>("STRUCT_CURRENT_VOLUME", "No",
+      "Output of current element volume as scalar value for each structural element", yesnotuple,
+      yesnovalue, &io);
   setStringToIntegralParameter<int>("STRUCT_STRESS", "No", "Output of stress",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
       tuple<int>(INPAR::STR::stress_none, INPAR::STR::stress_none, INPAR::STR::stress_none,
@@ -511,6 +514,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT", "No", "", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
       "STRUCT_JACOBIAN_MATLAB", "No", "", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<INPAR::STR::ConditionNumber>("STRUCT_CONDITION_NUMBER", "none",
+      "Compute the condition number of the structural system matrix and write it to a text file.",
+      tuple<std::string>("gmres_estimate", "max_min_ev_ratio", "one-norm", "inf-norm", "none"),
+      tuple<INPAR::STR::ConditionNumber>(INPAR::STR::ConditionNumber::gmres_estimate,
+          INPAR::STR::ConditionNumber::max_min_ev_ratio, INPAR::STR::ConditionNumber::one_norm,
+          INPAR::STR::ConditionNumber::inf_norm, INPAR::STR::ConditionNumber::none),
+      &io);
   setStringToIntegralParameter<int>("FLUID_SOL", "Yes", "", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>("FLUID_STRESS", "No", "", yesnotuple, yesnovalue, &io);
   setStringToIntegralParameter<int>(
