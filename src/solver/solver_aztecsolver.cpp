@@ -305,7 +305,7 @@ int LINALG::SOLVER::AztecSolver::Solve()
   // if you want to get some information on eigenvalues of the Hessenberg matrix/the
   // estimated condition number of the preconditioned system, uncomment the following
   // line and set AZOUTPUT>0 in your .dat-file
-  // aztec.SetAztecOption(AZ_solver,AZ_gmres_condnum);
+  //  aztec.SetAztecOption(AZ_solver, AZ_gmres_condnum);
 
   //------------------------------- just do it----------------------------------------
   aztec.Iterate(iter, tol);
