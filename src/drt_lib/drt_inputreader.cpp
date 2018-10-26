@@ -986,6 +986,7 @@ namespace DRT
       exclude.push_back("--THERMO ELEMENTS");
       exclude.push_back("--THERMO DOMAIN");
       exclude.push_back("--ACOUSTIC ELEMENTS");
+      exclude.push_back("--ELECTROMAGNETIC ELEMENTS");
       exclude.push_back("--ACOUSTIC DOMAIN");
       exclude.push_back("--PARTICLE DOMAIN");
       exclude.push_back("--PERIODIC BOUNDINGBOX ELEMENTS");

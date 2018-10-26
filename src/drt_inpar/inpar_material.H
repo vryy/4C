@@ -77,6 +77,7 @@ namespace INPAR
       m_elchmat,                  ///< material for porous separators
       m_elchphase,                ///< material for porous phase inside porous separator
       m_electrode,                ///< electrode material
+      m_electromagneticmat,       ///< electromagnetic material
       m_elpldamage,               ///< elasto-plastic material with von Mises plasticity and damage
       m_ferech_pv,  ///< material with simplified chemical kinetics due to Ferziger and Echekki
                     ///< (1993) with a modification by Poinsot and Veynante (2005) (progress

@@ -479,6 +479,15 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
+  DRT::INPUT::LineDefinition elemag;
+  elemag.AddTag("ELECTROMAGNETIC")
+      .AddNamedString("DIS")
+      .AddNamedInt("NODE")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE")
+      .AddOptionalNamedString("NAME");
+
   DRT::INPUT::LineDefinition cardiovascular0d;
   cardiovascular0d.AddTag("CARDIOVASCULAR0D")
       .AddNamedString("DIS")
@@ -518,6 +527,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(particle);
   lines->Add(acou);
   lines->Add(invacou);
+  lines->Add(elemag);
   lines->Add(cardiovascular0d);
 
   return lines;

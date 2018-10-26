@@ -3418,6 +3418,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // electromagnetic material
+  {
+    Teuchos::RCP<MaterialDefinition> m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_Electromagnetic", "Electromagnetic material", INPAR::MAT::m_electromagneticmat));
+
+    AddNamedReal(m, "CONDUCTIVITY", "electrical conductivity");
+    AddNamedReal(m, "PERMITTIVITY", "Permittivity");
+    AddNamedReal(m, "PERMEABILITY", "Permeability");
+
+    AppendMaterialDefinition(matlist, m);
+  }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/

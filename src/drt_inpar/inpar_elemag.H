@@ -7,9 +7,9 @@
 <pre>
 \level 3
 
-\maintainer Volker Gravemeier
-            gravemeier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer Luca Berardocco
+            berardocco@lnm.mw.tum.de
+            089 - 289-15244
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -33,16 +33,34 @@ namespace INPAR
 {
   namespace ELEMAG
   {
-    // Type of time integrator
+    /// Type of time integrator
     enum DynamicType
     {
-      elemag_ost  // one-step-theta time integration
+      /// one-step-theta time integration
+      elemag_ost,
+      /// explicit euler method
+      elemag_explicit_euler,
+      /// implicit euler method
+      elemag_implicit_euler,
+      /// runge-kutta method
+      elemag_rk,
+      /// crank-nicolson method
+      elemag_cn
     };
 
-    /// define all valid parameters for electromagnetic problem
+    /// Initial field for electromagnetic problems.
+    enum InitialField
+    {
+      /// Initialize a zero field on all the components
+      initfield_zero_field,
+      /// Initialize the components as specified by the function
+      initfield_field_by_function
+    };
+
+    /// Define all valid parameters for electromagnetic problem.
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-    /// set specific electromagnetic conditions
+    /// Set specific electromagnetic conditions.
     void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace ELEMAG

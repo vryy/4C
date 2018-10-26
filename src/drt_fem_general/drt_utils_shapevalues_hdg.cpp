@@ -157,6 +157,7 @@ DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams para
   shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
   shfunct.LightShape(nfdofs_, nqpoints_);
   normals.LightShape(nsd_, nqpoints_);
+  tangents.LightShape(nsd_, nsd_);
   jfac.LightResize(nqpoints_);
 
   shfunctI.Shape(nfdofs_, nqpoints_);
@@ -228,6 +229,7 @@ void DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
   }
 
   AdjustFaceOrientation(ele, face);
+  ComputeFaceReferenceSystem(ele, face);
 
   DRT::UTILS::ShapeValuesFaceParams interiorparams = params_;
   interiorparams.degree_ = ele.Degree();
@@ -459,6 +461,78 @@ void DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation(
         dserror("Only implemented in 2D and 3D");
         break;
     }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Compute the face reference system       (private)  berardocco 09/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
+    const DRT::Element& ele, const unsigned int face)
+{
+  // In the case in which the element is not the master element for the face there is the need to
+  // find the master element and build the face reference system from the master side.
+
+  Epetra_SerialDenseVector norm(nsd_ - 1);
+  tangents.Reshape(nsd_, nsd_);
+  std::vector<double> master_normal(nsd_);
+
+  if (ele.Faces()[face]->ParentMasterElement() != &ele)
+  {
+    // This is the same that is done before for the face element but we do it from the master side
+    // get face position array from element position array
+    dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
+    const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
+
+    // LINALG::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
+    LINALG::Matrix<nsd_, nen_> xyzeMasterElement;
+    GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+        &ele, xyzeMasterElement);
+
+    // Compute the reference system from the master side
+    for (unsigned int d = 0; d < nsd_; ++d)
+    {
+      for (unsigned int i = 0; i < nsd_ - 1; ++i)
+      {
+        tangent(d, i) = xyzeMasterElement(d, faceNodeOrder[face][trafomap[i + 1]]) -
+                        xyzeMasterElement(d, faceNodeOrder[face][trafomap[0]]);
+        norm(i) += pow(tangent(d, i), 2);
+      }
+      master_normal[d] = -normals(d, 0);
+    }
+  }
+  else
+  {  // We already are on the master side
+    for (unsigned int d = 0; d < nsd_; ++d)
+    {
+      for (unsigned int i = 0; i < nsd_ - 1; ++i)
+      {
+        tangent(d, i) = xyze(d, i + 1) - xyze(d, 0);
+        norm(i) += pow(tangent(d, i), 2);
+      }
+      master_normal[d] = normals(d, 0);
+    }
+  }
+
+  // Normalizing the tangent vector
+  for (unsigned int d = 0; d < nsd_; ++d)
+    for (unsigned int i = 0; i < nsd_ - 1; ++i)
+    {
+      tangent(d, i) /= sqrt(norm(i));
+      tangents(d, i) = tangent(d, i);
+    }
+
+  // Adding the normal vector to the tangential ones to get a complete basis
+  for (unsigned int d = 0; d < nsd_; ++d) tangents(d, nsd_ - 1) = master_normal[d];
+
+  Epetra_SerialDenseSolver inver;
+  inver.SetMatrix(tangents);
+  inver.Invert();
+  tangents.Reshape(nsd_ - 1, nsd_);
+
+  return;
 }
 
 
