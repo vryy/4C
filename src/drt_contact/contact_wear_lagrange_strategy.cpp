@@ -4495,11 +4495,11 @@ void WEAR::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+bool WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc() == 1) return;
+  if (!ParRedist() || Comm().NumProc() == 1) return false;
 
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
@@ -4596,7 +4596,7 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   }
 
   // get out of here if simulation is still in balance
-  if (!doredist) return;
+  if (!doredist) return false;
 
   // time measurement
   Comm().Barrier();
@@ -4652,7 +4652,7 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
   if (Comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
 
-  return;
+  return doredist;
 }
 
 /*----------------------------------------------------------------------*
