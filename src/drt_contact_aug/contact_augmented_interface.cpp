@@ -23,6 +23,7 @@
 #include "../drt_mortar/mortar_binarytree.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/epetra_utils.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -617,8 +618,9 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
 
   // set active slave node map of this interface and start the
   // coupling evaluation
-  cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 0);
+  cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 1);
   EvaluateCoupling(*idata_.SActiveEleColMap(), NULL, cparams_ptr);
+  cparams_ptr->ClearEntry(GEN::AnyDataContainer::DataType::any, 1);
 }
 
 /*----------------------------------------------------------------------------*
@@ -687,6 +689,8 @@ void CONTACT::AUG::Interface::AssembleActiveUnitGap(Epetra_Vector& unit_gap) con
 void CONTACT::AUG::Interface::AssembleActiveGapVectors(
     Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const
 {
+  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << IO::endl;
+
   // get out of here if not participating in interface
   if (not lComm()) return;
 
@@ -1337,40 +1341,6 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
     const int numdof = cnode->NumDof();
 
     // -------------------------------------------------------------------
-    // INITIALIZATION OF THE ACTIVE SET (t=0)
-    // -------------------------------------------------------------------
-    // This is given by the CoNode member variable IsInitActive(), which
-    // has been introduced via the contact conditions in the input file.
-    // Thus, if no design line has been chosen to be active at t=0,
-    // the active node set will be empty at t=0. Yet, if one or more
-    // design lines have been specified as "Slave" AND "Active" then
-    // the corresponding CoNodes are put into an initial active set!
-    // This yields a very flexible solution for contact initialization.
-    // -------------------------------------------------------------------
-    //    if (init)
-    //    {
-    //      // flag for initialization of init active nodes with nodal gaps
-    //      bool initcontactbygap = DRT::INPUT::IntegralValue<int>(IParams(),"INITCONTACTBYGAP");
-    //      // value
-    //      double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
-    //
-    //      // Either init contact by definition or by gap
-    //      if(cnode->IsInitActive() and initcontactbygap)
-    //        dserror("Init contact either by definition in condition or by gap!");
-    //
-    //      // check if node is initially active or, if initialization with nodal gap,
-    //      // the gap is smaller than the prescribed value
-    //      if (  cnode->IsInitActive() or
-    //          ( initcontactbygap and cnode->AugData().GetWGap() < initcontactval ) )
-    //      {
-    //        cnode->Active() = true;
-    //        myactivenodegids.push_back(cnode->Id());
-    //
-    //        for (int j=0;j<numdof;++j)
-    //          myactivedofgids.push_back(cnode->Dofs()[j]);
-    //      }
-    //    }
-    // -------------------------------------------------------------------
     // RE-BUILDING OF THE ACTIVE SET
     // -------------------------------------------------------------------
     if (not init)
@@ -1412,20 +1382,26 @@ bool CONTACT::AUG::Interface::SetNodeInitiallyActive(
   const bool node_init_active = cnode.IsInitActive();
 
   // Either init contact by definition or by gap
-  if (node_init_active and init_contact_by_gap)
-    dserror("Init contact either by definition in condition or by gap!");
-  else if (node_init_active)
-    cnode.Active() = true;
-  else if (init_contact_by_gap)
-    SetNodeInitiallyActiveByGap(cnode);
-
   if (node_init_active)
-    std::cout << "Node #" << std::setw(5) << cnode.Id()
-              << " is set initially active via the condition line.\n";
+  {
+    cnode.Active() = true;
+    IO::cout(IO::debug) << "Node #" << std::setw(5) << cnode.Id()
+                        << " is set initially active via the condition line.\n";
+  }
   else if (init_contact_by_gap)
-    std::cout << "Node #" << std::setw(5) << cnode.Id() << " is set initially active by gap.\n";
+  {
+    SetNodeInitiallyActiveByGap(cnode);
+    if (cnode.Active())
+      IO::cout(IO::debug) << "Node #" << std::setw(5) << cnode.Id()
+                          << " is set initially active by gap.\n";
+    else
+      IO::cout(IO::debug) << "Node #" << std::setw(5) << cnode.Id()
+                          << " is not set initially active by gap, "
+                             "due to a too larger positive gap ["
+                          << cnode.AugData().GetWGap() << "].\n";
+  }
 
-  return (node_init_active or init_contact_by_gap);
+  return cnode.Active();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1910,131 +1886,6 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Interface::EnforceNodalComplementarityCondition(
-    const Epetra_Vector& dincr_slma, const Epetra_Vector& cn_old, Epetra_Vector& cn_new) const
-{
-  double numerator = 0.0;
-  double denominator = 0.0;
-
-  const double* displ_vals = dincr_slma.Values();
-  const double* cn_old_vals = cn_old.Values();
-
-  cn_new.Scale(1.0, cn_old);
-  double* cn_new_vals = cn_new.Values();
-
-  const unsigned my_num_anodes = activenodes_->NumMyElements();
-  const int* my_active_ngids = activenodes_->MyGlobalElements();
-
-  for (unsigned i = 0; i < my_num_anodes; ++i)
-  {
-    DRT::Node* node = idiscret_->gNode(my_active_ngids[i]);
-    CoNode& cnode = dynamic_cast<CoNode&>(*node);
-
-    const double zn = cnode.MoData().lm()[0];
-
-    const NodeDataContainer& augdata = cnode.AugData();
-    const double gapn = augdata.GetWGap();
-    const double a_inv = 1.0 / augdata.GetKappa();
-
-    // 1-st order derivative of the weighted gap multiplied by the current
-    // search direction
-    double dgapn = 0.0;
-    {
-      for (auto& dgapn_sl : augdata.GetDeriv1st_WGapSl_Complete())
-      {
-        const int lid = dincr_slma.Map().LID(dgapn_sl.first);
-        if (lid < 0) dserror("Could not find GID %d in the dincr_slma vector!", dgapn_sl.first);
-
-        dgapn -= dgapn_sl.second * displ_vals[lid];
-      }
-
-      for (auto& dgapn_ma : augdata.GetDeriv1st_WGapMa_Complete())
-      {
-        const int lid = dincr_slma.Map().LID(dgapn_ma.first);
-        if (lid < 0) dserror("Could not find GID %d in the dincr_slma vector!", dgapn_ma.first);
-
-        dgapn += dgapn_ma.second * displ_vals[lid];
-      }
-    }
-
-    // 2-nd order derivative of the weighted gap multiplied by the current
-    // search direction
-    double ddgapn = 0.0;
-    {
-      for (auto& ddgapn_sl_var : augdata.GetDeriv2nd_WGapSl())
-      {
-        const int lid_var = dincr_slma.Map().LID(ddgapn_sl_var.first);
-        if (lid_var < 0)
-          dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_sl_var.first);
-
-        for (auto& ddgapn_sl_lin : ddgapn_sl_var.second)
-        {
-          const int lid_lin = dincr_slma.Map().LID(ddgapn_sl_lin.first);
-          if (lid_lin < 0)
-            dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_sl_lin.first);
-
-          ddgapn -= displ_vals[lid_var] * displ_vals[lid_lin] * ddgapn_sl_lin.second;
-        }
-      }
-
-      for (auto& ddgapn_ma_var : augdata.GetDeriv2nd_WGapMa())
-      {
-        const int lid_var = dincr_slma.Map().LID(ddgapn_ma_var.first);
-        if (lid_var < 0)
-          dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_ma_var.first);
-
-        for (auto& ddgapn_ma_lin : ddgapn_ma_var.second)
-        {
-          const int lid_lin = dincr_slma.Map().LID(ddgapn_ma_lin.first);
-          if (lid_lin < 0)
-            dserror("Could not find GID %d in the dincr_slma vector!", ddgapn_ma_lin.first);
-
-          ddgapn += displ_vals[lid_var] * displ_vals[lid_lin] * ddgapn_ma_lin.second;
-        }
-      }
-    }
-
-    // nodal weighted gap multiplied by the nodal normal lagrange multiplier
-    const double gapn_zn = gapn * zn;
-
-    //
-    const double dgapn_zn = dgapn * zn;
-
-    //
-    const double d_ddgapn_d = 0.5 * ddgapn;
-
-    //
-    const double sc_gapn_dgapn_dgapn = (gapn + dgapn) * a_inv * dgapn;
-
-    // nodal cn value
-    const int cn_lid = cn_old.Map().LID(my_active_ngids[i]);
-    if (cn_lid < 0) dserror("Could not find GID %d in the cn vector!", my_active_ngids[i]);
-
-
-    //    std::cout << "Node-GID " << my_active_ngids[i] << ":\n"
-    //        "gapn_zn             = " << gapn_zn << "\n"
-    //        "dgapn_zn            = " << dgapn_zn << "\n"
-    //        "d_ddgapn_d          = " << d_ddgapn_d << "\n"
-    //        "sc_gapn_dgapn_dgapn = " << sc_gapn_dgapn_dgapn << std::endl;
-
-    if (std::abs(sc_gapn_dgapn_dgapn) > 1.0e-14 and gapn_zn * dgapn_zn < 0.0)
-    {
-      numerator += gapn_zn + dgapn_zn + d_ddgapn_d;
-      denominator += sc_gapn_dgapn_dgapn;
-    }
-
-    if (std::abs(sc_gapn_dgapn_dgapn) > 1.0e-14)
-    {
-      const double nodal_cn = (gapn_zn + dgapn_zn + d_ddgapn_d) / sc_gapn_dgapn_dgapn;
-      if (nodal_cn > cn_old_vals[cn_lid]) cn_new_vals[cn_lid] = nodal_cn;
-    }
-  }
-
-  return (denominator != 0.0 ? numerator / denominator : 0.0);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 template <>
 const CONTACT::AUG::Deriv1stMap&
 CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(const CoNode& cnode) const
@@ -2220,6 +2071,129 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
   }
 
   return my_max_h_ele;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::StoreSeleEvalTimes(const Epetra_Vector& gseleevaltimes)
+{
+  Teuchos::RCP<Epetra_Vector>& et_selerow = idata_.ElementEvalTimes().sele_row_;
+  Teuchos::RCP<Epetra_Vector>& et_selecol = idata_.ElementEvalTimes().sele_col_;
+
+  et_selerow = Teuchos::rcp(new Epetra_Vector(*SlaveRowElements(), true));
+  et_selecol = Teuchos::rcp(new Epetra_Vector(*SlaveColElements(), true));
+
+  const int num_gselecol = gseleevaltimes.Map().NumMyElements();
+  const int* gselecol_gids = gseleevaltimes.Map().MyGlobalElements();
+
+  for (int i = 0; i < num_gselecol; ++i)
+  {
+    const int gsele_cgid = gselecol_gids[i];
+
+    const int lsele_clid = SlaveColElements()->LID(gsele_cgid);
+    if (lsele_clid == -1) continue;
+
+    (*et_selecol)[lsele_clid] = gseleevaltimes[i];
+
+    const int lsele_rlid = SlaveRowElements()->LID(gsele_cgid);
+    if (lsele_rlid == -1) continue;
+
+    (*et_selerow)[lsele_rlid] = gseleevaltimes[i];
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::SplitIntoFarAndCloseSets(std::vector<int>& close_sele,
+    std::vector<int>& far_sele, std::vector<int>& local_close_nodes,
+    std::vector<int>& local_far_nodes) const
+{
+  const Teuchos::RCP<const Epetra_Vector>& et_selerow_ptr = idata_.ElementEvalTimes().sele_row_;
+
+  if (!et_selerow_ptr.is_null())
+  {
+    const Epetra_Vector& et_selerow = *et_selerow_ptr;
+
+    const int num_selerow = SlaveRowElements()->NumMyElements();
+
+    int num_zeros = 0;
+    int num_non_zeros = 0;
+
+    double max_non_zeros = 0.0;
+    double min_non_zeros = std::numeric_limits<double>::max();
+    double mean_non_zeros = 0.0;
+
+    for (int i = 0; i < num_selerow; ++i)
+    {
+      if (et_selerow[i] == 0)
+      {
+        ++num_zeros;
+        continue;
+      }
+
+      ++num_non_zeros;
+      max_non_zeros = std::max(max_non_zeros, et_selerow[i]);
+      min_non_zeros = std::min(min_non_zeros, et_selerow[i]);
+      mean_non_zeros += et_selerow[i];
+    }
+    mean_non_zeros /= (num_non_zeros != 0 ? num_non_zeros : 1.0);
+
+    int mypid = Comm().MyPID();
+    std::cout << "(#" << mypid << ") Number of zero evaluate times:     " << num_zeros << "\n";
+    std::cout << "(#" << mypid << ") Number of non-zero evaluate times: " << num_non_zeros << "\n";
+    std::cout << "(#" << mypid << ") Maximal evaluate time:             " << max_non_zeros << "\n";
+    std::cout << "(#" << mypid << ") Minimal non-zero evaluate time:    " << min_non_zeros << "\n";
+    std::cout << "(#" << mypid << ") Mean over non-zero evaluate times: " << mean_non_zeros << "\n";
+
+    double gmax_evaltime = 0.0;
+    Comm().MaxAll(&max_non_zeros, &gmax_evaltime, 1);
+
+    const double threshold = 0.1 * gmax_evaltime;
+
+    // loop over all row elements to gather the local information
+    for (int i = 0; i < SlaveRowElements()->NumMyElements(); ++i)
+    {
+      // get element
+      int gid = SlaveRowElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+
+      const bool close = et_selerow[i] > threshold;
+      if (close)
+      {
+        close_sele.push_back(gid);
+        for (int k = 0; k < ele->NumNode(); ++k) local_close_nodes.push_back(ele->NodeIds()[k]);
+      }
+      else
+      {
+        far_sele.push_back(gid);
+        for (int k = 0; k < ele->NumNode(); ++k) local_far_nodes.push_back(ele->NodeIds()[k]);
+      }
+    }
+  }
+  else
+    CoInterface::SplitIntoFarAndCloseSets(close_sele, far_sele, local_close_nodes, local_far_nodes);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Interface::CollectRowNodeOwners(
+    const DRT::Discretization& structure_dis) const
+{
+  Teuchos::RCP<Epetra_Map> smnodemap_ptr = LINALG::MergeMap(snoderowmap_, mnoderowmap_);
+
+  Teuchos::RCP<Epetra_Vector> gsmnodeowners =
+      Teuchos::rcp(new Epetra_Vector(*smnodemap_ptr, false));
+  const int* myrnodegids = smnodemap_ptr->MyGlobalElements();
+  const unsigned mynumrnodes = smnodemap_ptr->NumMyElements();
+
+  for (unsigned i = 0; i < mynumrnodes; ++i)
+  {
+    const DRT::Node* node = idiscret_->gNode(myrnodegids[i]);
+    (*gsmnodeowners)[i] = node->Owner();
+  }
+
+  return gsmnodeowners;
 }
 
 /*----------------------------------------------------------------------------*

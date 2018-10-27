@@ -32,13 +32,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/epetra_utils.H"
 
-#define LAGRANGE_FUNC
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-CONTACT::AUG::STEEPESTASCENT::DataContainer::DataContainer()
-{ /* intentionally left blank */
-}
+//#define LAGRANGE_FUNC
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -47,51 +41,15 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
     const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params,
     const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof)
-    : CONTACT::AUG::Strategy(data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
+    : CONTACT::AUG::STEEPESTASCENT_SP::Strategy(
+          data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, maxdof)
 {
-  Data().InitSubDataContainer(INPAR::CONTACT::solution_steepest_ascent);
-  const Teuchos::ParameterList& sa_params =
-      Params().sublist("AUGMENTED", true).sublist("STEEPESTASCENT", true);
-
-  Data().SaData().SetCnUpperBound(sa_params.get<double>("CN_UPPER_BOUND"));
-  Data().SaData().SetPenaltyCorrectionParameter(sa_params.get<double>("CORRECTION_PARAMETER"));
-
-  Data().SaData().SetUnitGapForceScale(sa_params.get<double>("UNIT_GAP_FORCE_SCALE"));
-
-  Data().SaData().LagrangeMultiplierFuncPtr() = Teuchos::rcp(new LagrangeMultiplierFunction());
-
-  Data().SaData().PenaltyUpdatePtr() = Teuchos::rcp(PenaltyUpdate::Create(sa_params));
-
   // cast to steepest ascent interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
   {
     const Teuchos::RCP<CONTACT::CoInterface>& interface = *cit;
     // test interfaces for the correct type
     Teuchos::rcp_dynamic_cast<CONTACT::AUG::STEEPESTASCENT::Interface>(interface, true);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::PostSetup(bool redistributed, bool init)
-{
-  AUG::Strategy::PostSetup(redistributed, init);
-
-  if (init)
-  {
-    Data().SaData().PenaltyUpdate().Init(this, &Data());
-
-#ifdef LAGRANGE_FUNC
-    Data().SaData().LagrangeMultiplierFunc().Init(this, Data());
-    Data().SaData().LagrangeMultiplierFunc().Setup();
-#endif
-  }
-
-  if (redistributed)
-  {
-#ifdef LAGRANGE_FUNC
-    Data().SaData().LagrangeMultiplierFunc().Redistribute();
-#endif
   }
 }
 
@@ -217,14 +175,6 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::AddContributionsToMatrixBlockDisplD
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPreComputeX(
-    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir_mutable)
-{
-  //  AugmentDirection( cparams, xold, dir_mutable );
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostApplyJacobianInverse(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& rhs, Epetra_Vector& result,
     const Epetra_Vector& xold, const NOX::NLN::Group& grp)
@@ -243,41 +193,9 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostApplyJacobianInverse(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT::Strategy::AdaptiveCn(CONTACT::ParamsInterface& cparams)
 {
-  CONTACT::AUG::AdaptiveCn ad_cn(*this, Interfaces(), Data());
-  ad_cn.Execute(AdaptiveCnType::init_nbc, cparams, &IO::cout.os(IO::verbose));
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostIterate(const CONTACT::ParamsInterface& cparams)
-{
-  UpdateCn(cparams);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::CorrectParameters(
-    CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type)
-{
-  switch (type)
-  {
-    case NOX::NLN::CorrectionType::sufficient_linear_infeasibility_reduction:
-    {
-      Teuchos::RCP<PenaltyUpdate> pu = Teuchos::rcp(
-          PenaltyUpdate::Create(INPAR::CONTACT::PenaltyUpdate::sufficient_lin_reduction,
-              &Data().SaData().PenaltyUpdate()));
-      pu->Update(cparams);
-      pu->PrintInfo(IO::cout.os());
-
-      break;
-    }
-    default:
-    {
-      dserror("Don't know what to do for NOX::NLN::CorrectionType %s|%d",
-          NOX::NLN::CorrectionType2String(type).c_str(), type);
-      exit(EXIT_FAILURE);
-    }
-  }
+  // deprecated
+  //  CONTACT::AUG::AdaptiveCn ad_cn( *this, Interfaces(), Data() );
+  //  ad_cn.Execute( AdaptiveCnType::init_nbc, cparams, &IO::cout.os( IO::verbose ) );
 }
 
 /*----------------------------------------------------------------------------*
@@ -429,21 +347,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeInactiveLagrangeIncrInNormalDirec
 void CONTACT::AUG::STEEPESTASCENT::Strategy::PostAugmentDirection(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir)
 {
-  Data().Potential().Compute();
-
-  const double infeasibility_measure = Data().Potential().Get(
-      AUG::POTENTIAL::Type::infeasibility_measure, AUG::POTENTIAL::SetType::all);
-
-  Data().SaData().SetOldInfeasibilityMeasure(infeasibility_measure);
-  Data().SaData().PenaltyUpdate().SetState(cparams, xold, dir);
-  Data().SaData().PenaltyUpdate().ScaleDirection(dir);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::UpdateCn(const CONTACT::ParamsInterface& cparams)
-{
-  Data().SaData().PenaltyUpdate().Update(cparams);
+  SetPenaltyUpdateState(cparams, xold, dir);
 }
 
 /*----------------------------------------------------------------------------*

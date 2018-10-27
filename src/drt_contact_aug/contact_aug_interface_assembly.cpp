@@ -123,8 +123,17 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
 
   if (overlapping_nodes.size() > projectable_nodes.size()) dserror("sanity check failed!");
 
-  const bool meaningful_overlap = (overlapping_nodes.size() > 0);
-  const bool any_projectable = (projectable_nodes.size() > 0);
+  const Epetra_Comm& comm = unit_gap.Map().Comm();
+  int lmeaningful_overlap = (overlapping_nodes.size() > 0);
+  int lany_projectable = (projectable_nodes.size() > 0);
+  int meaningful_overlap = 0;
+  int any_projectable = 0;
+  comm.MaxAll(&lmeaningful_overlap, &meaningful_overlap, 1);
+  comm.MaxAll(&lany_projectable, &any_projectable, 1);
+
+  //  std::cout << meaningful_overlap << std::endl;
+  //  std::cout << any_projectable << std::endl;
+
 
   double* unit_gap_values = unit_gap.Values();
   const Epetra_Map& slnoderowmap = *IData().SNodeRowMap();
@@ -134,10 +143,10 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     dserror("mismatch bewteen slave node map and slave normal dof map");
   if (not unit_gap.Map().SameAs(slnormaldofrowmap)) dserror("Unexpected map!");
 
-  if (meaningful_overlap)
+  if (static_cast<bool>(meaningful_overlap))
   {
     double gtotal_overlap = 0.0;
-    unit_gap.Map().Comm().SumAll(&total_overlap, &gtotal_overlap, 1);
+    comm.SumAll(&total_overlap, &gtotal_overlap, 1);
     const double scale = 1.0 / std::sqrt(gtotal_overlap);
 
     for (const CoNode* cnode : overlapping_nodes)
@@ -149,11 +158,11 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
       unit_gap_values[lid] = scale * cnode->AugData().GetWGap();
     }
   }
-  else if (any_projectable)
+  else if (static_cast<bool>(any_projectable))
   {
     int gnum_pnodes = 0;
     int mynum_pnodes = projectable_nodes.size();
-    unit_gap.Map().Comm().SumAll(&mynum_pnodes, &gnum_pnodes, 1);
+    comm.SumAll(&mynum_pnodes, &gnum_pnodes, 1);
     const double scale = 1.0 / std::sqrt(gnum_pnodes);
 
     for (const CoNode* cnode : projectable_nodes)

@@ -249,6 +249,32 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
     DRT::Element::DiscretizationType mastertype, class IntPolicy>
+void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Normal(
+    MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn) const
+{
+  const DRT::Node* const* snodes = sele.Nodes();
+
+  for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
+  {
+    const CoNode& snode = static_cast<const CoNode&>(*snodes[i]);
+    const double* nodal_smooth_unit_normal = snode.MoData().n();
+
+    for (unsigned j = 0; j < probdim; ++j)
+    {
+      gpn[j] += sval(i, 0) * nodal_smooth_unit_normal[j];
+    }
+  }
+
+  // unify the gauss point normal
+  LINALG::Matrix<probdim, 1> unit_gp_normal(gpn, true);
+  const double length_n_inv = 1.0 / unit_gp_normal.Norm2();
+  unit_gp_normal.Scale(length_n_inv);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <unsigned probdim, DRT::Element::DiscretizationType slavetype,
+    DRT::Element::DiscretizationType mastertype, class IntPolicy>
 void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Normal_DerivNormal(
     MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
     Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
@@ -262,7 +288,9 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
     const double* nodal_smooth_unit_normal = snode.MoData().n();
 
     const Deriv1stVecMap& nodal_d_sun = snode.AugData().GetDeriv1st_N();
+#ifndef SWITCH_2ND_DERIV_NORMAL_OFF
     const Deriv2ndVecMap& nodal_dd_sun = snode.AugData().GetDeriv2nd_N();
+#endif
 
     for (unsigned j = 0; j < probdim; ++j)
     {
@@ -275,7 +303,8 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
         d_nun_j.repetitive_access(nodal_d_sun_var.first, my::gp_id_) +=
             nodal_d_sun_var.second * sval(i, 0);
 
-      // build 2-nd order derivative of the non-unit gauss point normal
+        // build 2-nd order derivative of the non-unit gauss point normal
+#ifndef SWITCH_2ND_DERIV_NORMAL_OFF
       Deriv2ndMap& dd_nun_j = ddn_non_unit[j];
       for (auto& nodal_dd_sun_var : nodal_dd_sun[j])
       {
@@ -287,6 +316,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
               nodal_dd_sun_var_lin.second * sval(i, 0);
         }
       }
+#endif
     }
   }
 
@@ -303,8 +333,10 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Nor
       unit_gp_normal, length_n_inv, dn_non_unit, dn_unit, false);
 
   // calculate the 2-nd order derivative of the unified smooth gauss point normal
+#ifndef SWITCH_2ND_DERIV_NORMAL_OFF
   IntPolicy::Deriv2nd_UnitSlaveElementNormal(
       unit_gp_normal, length_n_inv, dn_non_unit, dn_unit, ddn_non_unit, ddn_unit);
+#endif
 }
 
 /*----------------------------------------------------------------------------*

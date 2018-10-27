@@ -103,6 +103,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_Jacobian(
     const LINALG::Matrix<probdim, 1>& unit_normal, const Deriv2ndVecMap& dd_non_unit_normal,
     Deriv2ndMap& dd_jac) const
 {
+  this->timer_.start(TimeID::Deriv2nd_Jacobian);
+
 #ifdef CONTACT_AUG_JACOBIAN_DEBUG_OUTPUT
   std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
@@ -145,6 +147,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_Jacobian(
     }
   }
 #endif
+
+  this->timer_.stop(TimeID::Deriv2nd_Jacobian);
 }
 
 /*----------------------------------------------------------------------------*
@@ -242,6 +246,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
   std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
 
+  this->timer_.start(TimeID::Deriv1st_NonUnitSlaveElementNormal);
+
   const double normal_fac = sele.NormalFac();
   GEN_DATA::reset(probdim, SLAVENUMNODE * probdim, d_non_unit_normal);
 
@@ -306,6 +312,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
   }
 
   GEN_DATA::complete(d_non_unit_normal);
+
+  this->timer_.stop(TimeID::Deriv1st_NonUnitSlaveElementNormal);
 }
 
 /*----------------------------------------------------------------------------*
@@ -319,6 +327,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlave
 #ifdef CONTACT_AUG_JACOBIAN_DEBUG_OUTPUT
   std::cout << CONTACT_FUNC_NAME << std::endl;
 #endif
+
+  this->timer_.start(TimeID::Deriv2nd_NonUnitSlaveElementNormal);
 
   const double normal_fac = sele.NormalFac();
   // loop over all components of the normal vector
@@ -371,6 +381,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_NonUnitSlave
   }
 
   GEN_DATA::complete(dd_non_unit_normal);
+
+  this->timer_.stop(TimeID::Deriv2nd_NonUnitSlaveElementNormal);
 }
 
 /*----------------------------------------------------------------------------*
@@ -381,6 +393,8 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
     const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
     const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal) const
 {
+  this->timer_.start(TimeID::Deriv2nd_UnitSlaveElementNormal);
+
   // temporal data structures
   Deriv1stMap dn_n(0);
   GEN_DATA::reset(d_non_unit_normal[0].capacity(), dn_n);
@@ -506,6 +520,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv2nd_UnitSlaveEle
   }
 
   GEN_DATA::complete(dd_unit_normal);
+  this->timer_.stop(TimeID::Deriv2nd_UnitSlaveElementNormal);
 }
 
 /*----------------------------------------------------------------------------*
@@ -613,6 +628,8 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP
     const LINALG::Matrix<MASTERNUMNODE, 1>& mval, const double alpha, Deriv1stVecMap& d_mxi,
     Deriv1stMap& d_alpha) const
 {
+  this->timer_.start(TimeID::Deriv1st_MXiGP);
+
   const DRT::Node* const* snodes = sele.Nodes();
 
   LINALG::TMatrix<int, probdim, my::SLAVENUMNODE> snodal_dofs;
@@ -670,6 +687,8 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP
 
   GEN_DATA::complete(d_mxi);
   d_alpha.complete();
+
+  this->timer_.stop(TimeID::Deriv1st_MXiGP);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1276,6 +1295,8 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
     const Deriv1stVecMap& d_mxigp, const Deriv1stVecMap& d_n_unit,
     const Deriv2ndVecMap& dd_n_unit) const
 {
+  this->timer_.start(TimeID::INCOMPLETE_Add_Jac_Deriv2nd_GapN);
+
   DRT::Node* const* snodes = sele.Nodes();
   const DRT::Node* const* mnodes = mele.Nodes();
 
@@ -1312,12 +1333,13 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
       for (unsigned d = 0; d < probdim; ++d)
       {
         GEN_DATA::increaseCapacity(dd_wgap_sl);
-        Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl[sdof[d]];
+        Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(sdof[d], my::gp_id_);
 
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
           GEN_DATA::increaseCapacity(dd_wgap_sl_var);
-          dd_wgap_sl_var(d_n_unit_lin.first) += tmp * sval(k, 0) * d_n_unit_lin.second;
+          dd_wgap_sl_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
+              tmp * sval(k, 0) * d_n_unit_lin.second;
         }
       }
     }
@@ -1328,7 +1350,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
       for (auto& d_n_unit_var : d_n_unit[d])
       {
         GEN_DATA::increaseCapacity(dd_wgap_sl);
-        Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl[d_n_unit_var.first];
+        Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(d_n_unit_var.first, my::gp_id_);
 
         const double val = tmp * d_n_unit_var.second;
 
@@ -1338,7 +1360,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
           const int* sdof = snode.Dofs();
 
           GEN_DATA::increaseCapacity(dd_wgap_sl_var);
-          dd_wgap_sl_var(sdof[d]) += sval(k, 0) * val;
+          dd_wgap_sl_var.repetitive_access(sdof[d], my::gp_id_) += sval(k, 0) * val;
         }
       }
     }
@@ -1355,14 +1377,15 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
       for (unsigned d = 0; d < probdim; ++d)
       {
         GEN_DATA::increaseCapacity(dd_wgap_ma);
-        Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma[mdof[d]];
+        Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(mdof[d], my::gp_id_);
 
         // variation of the master position multiplied with the linearized
         // smooth normal
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
           GEN_DATA::increaseCapacity(dd_wgap_ma_var);
-          dd_wgap_ma_var(d_n_unit_lin.first) += tmp * mval(k, 0) * d_n_unit_lin.second;
+          dd_wgap_ma_var.repetitive_access(d_n_unit_lin.first, my::gp_id_) +=
+              tmp * mval(k, 0) * d_n_unit_lin.second;
         }
 
         // 2-nd order derivative of the master position multiplied by the smooth
@@ -1370,12 +1393,14 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
         for (unsigned j = 0; j < my::MASTERDIM; ++j)
         {
           const double val = tmp * mderiv(j, k) * gpn[d];
-          if (val == 0) continue;
+          //          if ( val == 0 )
+          //            continue;
 
           for (auto& d_mxigp_j_lin : d_mxigp[j])
           {
             GEN_DATA::increaseCapacity(dd_wgap_ma_var);
-            dd_wgap_ma_var(d_mxigp_j_lin.first) += val * d_mxigp_j_lin.second;
+            dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
+                val * d_mxigp_j_lin.second;
           }
         }
       }
@@ -1387,7 +1412,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
       for (auto& d_n_unit_var : d_n_unit[d])
       {
         GEN_DATA::increaseCapacity(dd_wgap_ma);
-        Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma[d_n_unit_var.first];
+        Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(d_n_unit_var.first, my::gp_id_);
 
         const double val = tmp * d_n_unit_var.second;
 
@@ -1399,7 +1424,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
           const int* mdof = mnode.Dofs();
 
           GEN_DATA::increaseCapacity(dd_wgap_ma_var);
-          dd_wgap_ma_var(mdof[d]) += val * mval(k, 0);
+          dd_wgap_ma_var.repetitive_access(mdof[d], my::gp_id_) += val * mval(k, 0);
         }
 
         /* linearization of the master convective parametric coordinate
@@ -1412,7 +1437,8 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
           for (auto& d_mxigp_j_lin : d_mxigp[j])
           {
             GEN_DATA::increaseCapacity(dd_wgap_ma_var);
-            dd_wgap_ma_var(d_mxigp_j_lin.first) += d_mxigp_j_lin.second * val_1;
+            dd_wgap_ma_var.repetitive_access(d_mxigp_j_lin.first, my::gp_id_) +=
+                d_mxigp_j_lin.second * val_1;
           }
         }
       }
@@ -1421,6 +1447,7 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
     /*------------------------------------------------------------------------*/
     // 2-nd order derivative of the smooth unit normal multiplied by the
     // slave and master position, respectively.
+#ifndef SWITCH_2ND_DERIV_NORMAL_OFF
     for (unsigned d = 0; d < probdim; ++d)
     {
       const double val_sl = tmp * xs(d, 0);
@@ -1429,24 +1456,29 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype, mastertype>::Add_Jac_
       for (auto& dd_n_unit_var : dd_n_unit[d])
       {
         GEN_DATA::increaseCapacity(dd_wgap_sl);
-        Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl[dd_n_unit_var.first];
+        Deriv1stMap& dd_wgap_sl_var = dd_wgap_sl.repetitive_access(dd_n_unit_var.first, my::gp_id_);
 
         GEN_DATA::increaseCapacity(dd_wgap_ma);
-        Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma[dd_n_unit_var.first];
+        Deriv1stMap& dd_wgap_ma_var = dd_wgap_ma.repetitive_access(dd_n_unit_var.first, my::gp_id_);
 
         for (auto& dd_n_unit_var_lin : dd_n_unit_var.second)
         {
           const int gid_lin = dd_n_unit_var_lin.first;
 
           GEN_DATA::increaseCapacity(dd_wgap_sl_var);
-          dd_wgap_sl_var(gid_lin) += val_sl * dd_n_unit_var_lin.second;
+          dd_wgap_sl_var.repetitive_access(gid_lin, my::gp_id_) +=
+              val_sl * dd_n_unit_var_lin.second;
 
           GEN_DATA::increaseCapacity(dd_wgap_ma_var);
-          dd_wgap_ma_var(gid_lin) += val_ma * dd_n_unit_var_lin.second;
+          dd_wgap_ma_var.repetitive_access(gid_lin, my::gp_id_) +=
+              val_ma * dd_n_unit_var_lin.second;
         }
       }
     }
+#endif
   }
+
+  this->timer_.stop(TimeID::INCOMPLETE_Add_Jac_Deriv2nd_GapN);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1637,7 +1669,9 @@ void CONTACT::AUG::IncompleteIntPolicy<probdim, slavetype,
     const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_gapn_ma, const Deriv1stMap& d_jac) const
 {
+  this->timer_.start(TimeID::INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac);
   this->Add_Var_GapN_Lin_Jac(sele, lmval, wgt, d_gapn_sl, d_gapn_ma, d_jac);
+  this->timer_.stop(TimeID::INCOMPLETE_Add_Deriv1st_GapN_Deriv1st_Jac);
 }
 
 /*----------------------------------------------------------------------------*

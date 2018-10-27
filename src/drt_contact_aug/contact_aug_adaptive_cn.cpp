@@ -128,7 +128,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::AdaptiveCn::InitNbc::UnitGapForce() co
   {
     const CONTACT::AUG::Interface& interface = dynamic_cast<const Interface&>(*interface_ptr);
 
-    interface.AssembleActiveUnitGap(unit_interface_gap);
+    Epetra_Vector unit_igap(*interface.SlaveRowNDofs(), true);
+    interface.AssembleActiveUnitGap(unit_igap);
+
+    LINALG::AssembleMyVector(1.0, unit_interface_gap, 1.0, unit_igap);
   }
 
   Teuchos::RCP<Epetra_Vector> unit_gap_force = Teuchos::rcp(new Epetra_Vector(bmatrix.DomainMap()));

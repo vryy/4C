@@ -17,7 +17,7 @@
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_STRATEGY_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_STEEPEST_ASCENT_STRATEGY_H_
 
-#include "contact_augmented_strategy.H"
+#include "contact_aug_steepest_ascent_sp_strategy.H"
 
 namespace CONTACT
 {
@@ -31,113 +31,10 @@ namespace CONTACT
       class Interface;
 
       /*--------------------------------------------------------------------------*/
-      class DataContainer
-      {
-       public:
-        /// constructor
-        DataContainer();
-
-        /// destructor
-        virtual ~DataContainer(){};
-
-        void SetOldInfeasibilityMeasure(const double old_infeasibility_measure)
-        {
-          old_infeasibility_measure_ = old_infeasibility_measure;
-        }
-
-        double GetOldInfeasibilityMeasure() const { return old_infeasibility_measure_; }
-
-        void SetCnUpperBound(const double cn_upper_bound) { cn_upper_bound_ = cn_upper_bound; }
-
-        double GetCnUpperBound() const { return cn_upper_bound_; }
-
-        void SetPenaltyCorrectionParameter(const double correction_param)
-        {
-          if (correction_param < 0.0)
-            dserror(
-                "The correction parameter must be equal to 0.0 (default) or "
-                "larger! A value of %.4e is not allowed!",
-                correction_param);
-
-          penalty_correction_parameter_ = correction_param;
-        }
-
-        double GetPenaltyCorrectionParameter() const { return penalty_correction_parameter_; }
-
-        void SetUnitGapForceScale(const double scale)
-        {
-          if (scale <= 0.0)
-            dserror(
-                "The unit gap force scaling is not allowed to be smaller or "
-                "equal to zero.");
-
-          unit_gap_force_scale_ = scale;
-        }
-
-        double GetUnitGapForceScale() const { return unit_gap_force_scale_; }
-
-        Teuchos::RCP<const LagrangeMultiplierFunction> LagrangeMultiplierFuncPtr() const
-        {
-          return lm_func_ptr_.getConst();
-        }
-
-        Teuchos::RCP<LagrangeMultiplierFunction>& LagrangeMultiplierFuncPtr()
-        {
-          return lm_func_ptr_;
-        }
-
-        LagrangeMultiplierFunction& LagrangeMultiplierFunc()
-        {
-          if (lm_func_ptr_.is_null()) dserror("The lm_func_ptr_ is not initialized correctly!");
-
-          return *lm_func_ptr_;
-        }
-
-        Teuchos::RCP<const AUG::PenaltyUpdate> PenaltyUpdatePtr() const
-        {
-          return penalty_update_ptr_.getConst();
-        }
-
-        Teuchos::RCP<AUG::PenaltyUpdate>& PenaltyUpdatePtr() { return penalty_update_ptr_; }
-
-        AUG::PenaltyUpdate& PenaltyUpdate()
-        {
-          if (penalty_update_ptr_.is_null())
-            dserror("The lm_func_ptr_ is not initialized correctly!");
-
-          return *penalty_update_ptr_;
-        }
-
-        void SetStepLength(double steplength) { steplength_ = steplength; }
-
-        double StepLength() const { return steplength_; }
-
-       protected:
-        // don't want assignment operator and copy constructor
-        DataContainer operator=(const DataContainer& old);
-        DataContainer(const DataContainer& old);
-
-       private:
-        // old constraint violation from the last converged Newton step
-        double old_infeasibility_measure_ = 0.0;
-
-        // user provided upper bound for the cn value
-        double cn_upper_bound_ = 0.0;
-
-        double penalty_correction_parameter_ = 0.0;
-
-        double unit_gap_force_scale_ = 0.0;
-
-        double steplength_ = 1.0;
-
-        Teuchos::RCP<LagrangeMultiplierFunction> lm_func_ptr_ = Teuchos::null;
-
-        Teuchos::RCP<AUG::PenaltyUpdate> penalty_update_ptr_ = Teuchos::null;
-
-      };  // class DataContainer
-
-      /*--------------------------------------------------------------------------*/
-      class Strategy : public ::CONTACT::AUG::Strategy
+      /** \brief Condensed variant of the modified Newton approach.
+       *
+       * \author hiermeier \date 03/17 */
+      class Strategy : public ::CONTACT::AUG::STEEPESTASCENT_SP::Strategy
       {
         /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
          *  strategies and needs access to all methods. */
@@ -159,12 +56,12 @@ namespace CONTACT
         }
 
        protected:
+        // un-do changes from the base class
+        void EvalStrContactRHS() override { AUG::Strategy::EvalStrContactRHS(); }
+
         /// derived
         Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
             const enum DRT::UTILS::VecBlockType& bt) const override;
-
-        /// derived
-        void PostSetup(bool redistributed, bool init) override;
 
         /// derived
         void AddContributionsToConstrRHS(Epetra_Vector& augConstrRhs) const override;
@@ -181,38 +78,14 @@ namespace CONTACT
         /// derived
         void AdaptiveCn(CONTACT::ParamsInterface& cparams) override;
 
-        /*! \brief Derived function, which is called at the very beginning of a call to
-         *  NOX::NLN::Group::computeX()
-         *
-         *  This method is used to get access to the current direction vector and
-         *  to augment/modify the direction vector before the actual state update is
-         *  performed. One possible scenario is the steepest ascent method, where
-         *  we calculate the Lagrange multiplier increment in a post-processing
-         *  step.
-         *
-         *  \author hiermeier \date 03/17 */
-        void RunPreComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-            Epetra_Vector& dir_mutable) override;
-
         void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
             const NOX::NLN::Group& grp) override;
-
-        void RunPostIterate(const CONTACT::ParamsInterface& cparams) override;
-
-        /** \brief parameter correction during a more sophisticated non-linear
-         *  solver approach (e.g. the filter method) [derived]
-         *
-         *  \author hiermeier \date 12/17 */
-        void CorrectParameters(
-            CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type) override;
 
         /// derived
         void RemoveCondensedContributionsFromRhs(Epetra_Vector& str_rhs) const override;
 
        private:
-        void UpdateCn(const CONTACT::ParamsInterface& cparams);
-
         void AugmentDirection(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
             Epetra_Vector& dir_mutable);
 

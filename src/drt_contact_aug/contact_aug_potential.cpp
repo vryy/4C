@@ -137,7 +137,7 @@ void CONTACT::AUG::Potential::Compute()
 
   IO::cout(IO::debug) << "\n*****************************************************\n";
   IO::cout(IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << IO::endl;
-  potdata_.print(IO::cout.os(IO::debug));
+  potdata_.print(IO::cout.os(IO::debug), *this);
 }
 
 /*----------------------------------------------------------------------------*
@@ -167,7 +167,7 @@ void CONTACT::AUG::Potential::ComputeLin(const Epetra_Vector& dir)
 
   IO::cout(IO::debug) << "\n*****************************************************\n";
   IO::cout(IO::debug) << __LINE__ << " - " << __PRETTY_FUNCTION__ << IO::endl;
-  lindata_.print(IO::cout.os(IO::debug));
+  lindata_.print(IO::cout.os(IO::debug), *this);
   IO::cout(IO::debug) << "\n\n";
 }
 
@@ -247,6 +247,10 @@ void CONTACT::AUG::Potential::ComputeLinInactive(const Epetra_Vector& znincr_ina
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+double CONTACT::AUG::Potential::GetTimeIntegrationFactor() const { return data_.AlphaF(); }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::Get(
     enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const
 {
@@ -301,7 +305,7 @@ double CONTACT::AUG::Potential::GetLagrangian(enum POTENTIAL::SetType pot_set) c
   {
     case POTENTIAL::SetType::active:
     {
-      val = -potdata_.zn_gn_;
+      val = TimeIntScaleNp(-potdata_.zn_gn_);
 
       break;
     }
@@ -313,7 +317,7 @@ double CONTACT::AUG::Potential::GetLagrangian(enum POTENTIAL::SetType pot_set) c
     }
     case POTENTIAL::SetType::all:
     {
-      val = -potdata_.zn_gn_ - potdata_.zn_zn_;
+      val = TimeIntScaleNp(-potdata_.zn_gn_) - potdata_.zn_zn_;
 
       break;
     }
@@ -323,6 +327,14 @@ double CONTACT::AUG::Potential::GetLagrangian(enum POTENTIAL::SetType pot_set) c
   }
 
   return val;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double CONTACT::AUG::Potential::TimeIntScaleNp(const double static_part) const
+{
+  const double tf_np = 1.0 - GetTimeIntegrationFactor();
+  return static_part * tf_np;
 }
 
 /*----------------------------------------------------------------------------*
@@ -356,20 +368,26 @@ double CONTACT::AUG::Potential::GetLagrangianLin(
  *----------------------------------------------------------------------------*/
 double CONTACT::AUG::Potential::GetActiveLagrangianLin(const enum POTENTIAL::LinTerm lin_term) const
 {
+  double val = 0.0;
   switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_d:
-      return -lindata_.zn_dgn_;
+      val = -lindata_.zn_dgn_;
+      break;
     case POTENTIAL::LinTerm::wrt_z:
-      return -lindata_.gn_dzn_;
+      val = -lindata_.gn_dzn_;
+      break;
     case POTENTIAL::LinTerm::wrt_d_and_z:
-      return -lindata_.dzn_dgn_;
+      val = -lindata_.dzn_dgn_;
+      break;
     case POTENTIAL::LinTerm::wrt_z_and_z:
-      return 0.0;
+      val = 0.0;
+      break;
     default:
       dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
+  return TimeIntScaleNp(val);
 }
 
 /*----------------------------------------------------------------------------*
@@ -402,7 +420,7 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangian(enum POTENTIAL::SetType p
   {
     case POTENTIAL::SetType::active:
     {
-      val = -potdata_.zn_gn_ + 0.5 * potdata_.gn_gn_;
+      val = TimeIntScaleNp(-potdata_.zn_gn_ + potdata_.gn_gn_);
 
       break;
     }
@@ -414,7 +432,8 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangian(enum POTENTIAL::SetType p
     }
     case POTENTIAL::SetType::all:
     {
-      val = -potdata_.zn_gn_ + 0.5 * potdata_.gn_gn_ - 0.5 * potdata_.zn_zn_;
+      const double active_np = GetAugmentedLagrangian(POTENTIAL::SetType::active);
+      val = active_np - 0.5 * potdata_.zn_zn_;
 
       break;
     }
@@ -458,20 +477,27 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangianLin(
 double CONTACT::AUG::Potential::GetActiveAugmentedLagrangianLin(
     const enum POTENTIAL::LinTerm lin_term) const
 {
+  double val = 0;
   switch (lin_term)
   {
     case POTENTIAL::LinTerm::wrt_d:
-      return -lindata_.zn_dgn_ + lindata_.gn_dgn_;
+      val = -lindata_.zn_dgn_ + lindata_.gn_dgn_;
+      break;
     case POTENTIAL::LinTerm::wrt_z:
-      return -lindata_.gn_dzn_;
+      val = -lindata_.gn_dzn_;
+      break;
     case POTENTIAL::LinTerm::wrt_d_and_z:
-      return -lindata_.dzn_dgn_;
+      val = -lindata_.dzn_dgn_;
+      break;
     case POTENTIAL::LinTerm::wrt_z_and_z:
-      return 0.0;
+      val = 0.0;
+      break;
     default:
       dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
+
+  return TimeIntScaleNp(val);
 }
 
 /*----------------------------------------------------------------------------*
@@ -595,11 +621,16 @@ double CONTACT::AUG::Potential::GetInactiveInfeasibilityMeasureLin(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::PotData::print(std::ostream& os) const
+void CONTACT::AUG::Potential::PotData::print(std::ostream& os, const Potential& pot) const
 {
-  os << "--- Contact potential\n";
-  os << "[ACTIVE]   < z_N, wgap_N >            = " << zn_gn_ << "\n";
-  os << "[ACTIVE]   cn/2 * < wgap_N, awgap_N > = " << gn_gn_ << "\n";
+  const double tf_n = pot.GetTimeIntegrationFactor();
+  const double tf_np = 1.0 - tf_n;
+
+  os << "--- Contact potential                   " << std::string(20, ' ') << "time-int factor\n";
+  os << "[ACTIVE]   < z_N, wgap_N >            = " << std::setprecision(6) << std::setw(20)
+     << zn_gn_ << std::setw(16) << tf_np << "\n";
+  os << "[ACTIVE]   cn/2 * < wgap_N, awgap_N > = " << std::setprecision(6) << std::setw(20)
+     << gn_gn_ << std::setw(16) << tf_np << "\n";
   os << "[INACTIVE] 1/cn * < z_N, z_N >_{A}    = " << zn_zn_ << "\n";
   os << "--- Infeasibility measure:\n";
   os << "[ACTIVE]   < wgap_N, wgap_N >         = " << inf_gn_gn_ << "\n";
@@ -608,15 +639,24 @@ void CONTACT::AUG::Potential::PotData::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Potential::LinData::print(std::ostream& os) const
+void CONTACT::AUG::Potential::LinData::print(std::ostream& os, const Potential& pot) const
 {
-  os << "--- Linearization of contact potential\n";
-  os << "[ACTIVE]   D_{z_N}( < z_N, wgap_N > )            = " << gn_dzn_ << "\n";
-  os << "[ACTIVE]   D_{d}( < z_N, wgap_N > )              = " << zn_dgn_ << "\n";
-  os << "[ACTIVE]   D_{d}( cn/2 * < wgap_N, awgap_N > )   = " << gn_dgn_ << "\n";
-  os << "[ACTIVE]   DD_{d,z_N}( < z_N, wgap_N > )         = " << dzn_dgn_ << "\n";
+  const double tf_n = pot.GetTimeIntegrationFactor();
+  const double tf_np = 1.0 - tf_n;
+
+  os << "--- Linearization of contact potential             " << std::string(20, ' ')
+     << "time-int factor\n";
+  os << "[ACTIVE]   D_{z_N}( < z_N, wgap_N > )            = " << std::setprecision(6)
+     << std::setw(20) << gn_dzn_ << std::setw(16) << tf_np << "\n";
+  os << "[ACTIVE]   D_{d}( < z_N, wgap_N > )              = " << std::setprecision(6)
+     << std::setw(20) << zn_dgn_ << std::setw(16) << tf_np << "\n";
+  os << "[ACTIVE]   D_{d}( cn/2 * < wgap_N, awgap_N > )   = " << std::setprecision(6)
+     << std::setw(20) << gn_dgn_ << std::setw(16) << tf_np << "\n";
+  os << "[ACTIVE]   DD_{d,z_N}( < z_N, wgap_N > )         = " << std::setprecision(6)
+     << std::setw(20) << dzn_dgn_ << std::setw(16) << tf_np << "\n";
   os << "[INACTIVE] D_{z_N}( 1/cn * < z_N, z_N >_{A} )    = " << zn_dzn_ << "\n";
   os << "[INACTIVE] DD_{z_n}( 1/cn * < z_N, z_N >_{A} )   = " << dzn_dzn_ << "\n";
+
   os << "--- Linearization of the infeasibility measure:\n";
   os << "[ACTIVE]   < wgap_N, D_{d}(wgap_N) > )           = " << inf_gn_dgn_ << "\n";
   os << "[INACTIVE] D_{z_N}( 1/cn^2 * < z_N, z_N>_{A^2} ) = " << inf_zn_dzn_ << "\n";
