@@ -146,6 +146,9 @@ namespace STR
        *  \author hiermeier \date 06/17 */
       void PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const;
 
+      /// compute the condition number of the tangential stiffness matrix
+      void ComputeConditionNumber(const NOX::NLN::Group& grp) const;
+
      protected:
       //! returns the current solution group
       virtual const NOX::Abstract::Group& GetSolutionGroup() const;

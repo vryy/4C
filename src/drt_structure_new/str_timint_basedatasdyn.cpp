@@ -54,6 +54,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       predtype_(INPAR::STR::pred_vague),
       nlnsolvertype_(INPAR::STR::soltech_vague),
       divergenceaction_(INPAR::STR::divcont_stop),
+      mid_time_energy_type_(INPAR::STR::midavg_vague),
       maxdivconrefinementlevel_(-1),
       noxparams_(Teuchos::null),
       locaparams_(Teuchos::null),
@@ -184,6 +185,8 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
     predtype_ = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT");
     nlnsolvertype_ = DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL");
     divergenceaction_ = DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT");
+    mid_time_energy_type_ =
+        DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams, "MIDTIME_ENERGY_TYPE");
     maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
     noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
     if (xparams.isSublist("LOCA"))

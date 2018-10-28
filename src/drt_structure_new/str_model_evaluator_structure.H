@@ -118,8 +118,26 @@ namespace STR
       //! derived
       void DetermineEnergy();
 
+      //! \brief Fill energy map in EvalData
+      /**
+       *  \param disnp (in): Current displacement vector
+       *  \param velnp (in): Current velocity vector
+       *  \param global (in): If true, sum and share the result over all procs and
+       *                      save the global result. */
+      void DetermineEnergy(
+          const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global);
+
+      //! \brief determine the strain energy
+      /**
+       *  \param disnp (in): Current displacement vector
+       *  \param global (in): If true, sum the result over all procs and
+       *                      save the global result. */
+      void DetermineStrainEnergy(const Epetra_Vector& disnp, const bool global);
+
       //! derived
       void DetermineOptionalQuantity() override;
+
+      bool DetermineElementVolumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
 
       //! derived
       virtual void ResetStepState();

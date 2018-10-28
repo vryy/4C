@@ -243,6 +243,12 @@ namespace STR
        *  \author hiermeier \date 03/17 */
       virtual void RunPostIterate(const NOX::Solver::Generic& solver) = 0;
 
+      /*! \brief Executed at the beginning of the NOX::Solver::Generic::solve() method
+       *
+       *  \param solver (in) : reference to the non-linear nox solver object (read-only)
+       *
+       *  \author hiermeier */
+      virtual void RunPreSolve(const NOX::Solver::Generic& solver){};
 
       /*! \brief Executed at the end of the NOX::NLN::LinearSystem::applyJacobianInverse()
        *  method

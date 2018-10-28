@@ -260,6 +260,7 @@ void STR::TIMINT::Base::Update()
 {
   CheckInitSetup();
   int_ptr_->PreUpdate();
+  int_ptr_->UpdateStructuralEnergy();
   int_ptr_->UpdateStepState();
   UpdateStepTime();
   SetNumberOfNonlinearIterations();
@@ -434,6 +435,15 @@ void STR::TIMINT::Base::PrepareOutput()
   {
     int_ptr_->DetermineStressStrain();
     int_ptr_->DetermineOptionalQuantity();
+
+    if (dataio_->IsWriteCurrentEleVolume())
+    {
+      Teuchos::RCP<Epetra_Vector> elevolumes = Teuchos::null;
+      Teuchos::RCP<const Epetra_Vector> disnp = dataglobalstate_->GetDisNp();
+
+      int_ptr_->DetermineElementVolumes(*disnp, elevolumes);
+      int_ptr_->EvalData().SetElementVolumeData(elevolumes);
+    }
   }
 
   // --- energy calculation ---------------------------------------------------
@@ -546,6 +556,14 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
     OutputOptionalQuantity();
   }
 
+  if (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0 and
+      dataio_->IsWriteCurrentEleVolume())
+  {
+    NewIOStep(datawritten);
+    IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
+    OutputElementVolume(iowriter);
+  }
+
   // output energy
   if (dataio_->GetWriteEnergyEveryNStep() and
       (dataglobalstate_->GetStepN() % dataio_->GetWriteEnergyEveryNStep() == 0))
@@ -605,6 +623,16 @@ void STR::TIMINT::Base::OutputState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const
+{
+  OutputState(iowriter, write_owner);
+
+  // write element volumes as additional debugging information, if activated
+  if (dataio_->IsWriteCurrentEleVolume()) OutputElementVolume(iowriter);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
   // owner of elements is just written once because it does not change during
@@ -621,6 +649,20 @@ void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
   int_ptr_->RuntimeOutputStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputElementVolume(IO::DiscretizationWriter& iowriter) const
+{
+  CheckInitSetup();
+
+  STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
+
+  iowriter.WriteVector("current_ele_volumes",
+      Teuchos::rcpFromRef(evaldata.CurrentElementVolumeData()), IO::elementvector);
+
+  evaldata.SetElementVolumeData(Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*

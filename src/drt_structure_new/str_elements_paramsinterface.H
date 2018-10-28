@@ -48,13 +48,14 @@ namespace STR
     //! evaluation error flags
     enum EvalErrorFlag : int
     {
-      ele_error_none,                   //!< no error occurred (default)
-      ele_error_negative_def_gradient,  //!< a negative deformation gradient was detected
-      ele_error_determinant_at_corner,  //!< invalid jacobian det at the corner positions
-      ele_error_material_failed,        //!< material evaluation failed
-      ele_error_determinant_analysis    /*!< this flag is use to indicate an invalid element,
-                                             which has been identified by the det analysis. */
-    };                                  // EvalErrorFlag
+      ele_error_none = 0,                   //!< no error occurred (default)
+      ele_error_negative_def_gradient = 1,  //!< a negative deformation gradient was detected
+      ele_error_determinant_at_corner = 2,  /*!< invalid/negative jac determinant at the
+                                                 element corner nodes */
+      ele_error_material_failed = 3,        //!< material evaluation failed
+      ele_error_determinant_analysis = 4    /*!< this flag is used to get an idea when the det
+                                                 analysis found an invalid element */
+    };
 
     //! Map evaluation error flag to a std::string
     static inline const std::string EvalErrorFlag2String(const enum EvalErrorFlag& errorflag)
@@ -100,6 +101,7 @@ namespace STR
       //! return the predictor type
       virtual enum INPAR::STR::PredEnum GetPredictorType() const = 0;
 
+      /// Shall errors during the element evaluation be tolerated?
       virtual bool IsTolerateErrors() const = 0;
 
       //! @name General time integration parameters

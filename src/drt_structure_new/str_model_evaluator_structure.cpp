@@ -29,6 +29,7 @@
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
@@ -1079,7 +1080,8 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::DetermineEnergy()
+void STR::MODELEVALUATOR::Structure::DetermineStrainEnergy(
+    const Epetra_Vector& disnp, const bool global)
 {
   CheckInitSetup();
 
@@ -1090,7 +1092,7 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy()
 
   // set state vector values needed by elements
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GState().GetDisNp());
+  Discret().SetState(0, "displacement", Teuchos::rcpFromRef(disnp));
   Discret().SetState(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
@@ -1105,21 +1107,44 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy()
   // evaluate energy contributions on element level (row elements only)
   EvaluateInternalSpecifiedElements(p, eval_mat, eval_vec, Discret().ElementRowMap());
 
+  if (global)
+  {
+    double my_int_energy = EvalData().GetEnergyData(STR::internal_energy);
+    double gsum = 0.0;
+    Discret().Comm().SumAll(&my_int_energy, &gsum, 1);
+
+    EvalData().SetValueForEnergyType(gsum, STR::internal_energy);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::DetermineEnergy()
+{
+  DetermineEnergy(*GState().GetDisNp(), GState().GetVelNp().get(), false);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::DetermineEnergy(
+    const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global)
+{
+  DetermineStrainEnergy(disnp, global);
 
   // global calculation of kinetic energy
-  if (masslin_type_ == INPAR::STR::ml_none)
+  if (masslin_type_ == INPAR::STR::ml_none and velnp != NULL)
   {
     double kinetic_energy_times2 = 0.0;
 
     Teuchos::RCP<Epetra_Vector> linear_momentum =
         LINALG::CreateVector(*GState().DofRowMapView(), true);
 
-    Mass().Multiply(false, *GState().GetVelNp(), *linear_momentum);
+    Mass().Multiply(false, *velnp, *linear_momentum);
 
-    linear_momentum->Dot(*GState().GetVelNp(), &kinetic_energy_times2);
+    linear_momentum->Dot(*velnp, &kinetic_energy_times2);
 
     // only add the result on one processor because we sum over all procs later
-    if (GState().GetMyRank() == 0)
+    if (global or GState().GetMyRank() == 0)
     {
       EvalData().AddContributionToEnergyType(0.5 * kinetic_energy_times2, STR::kinetic_energy);
     }
@@ -1164,6 +1189,72 @@ void STR::MODELEVALUATOR::Structure::DetermineOptionalQuantity()
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat, eval_vec);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::MODELEVALUATOR::Structure::DetermineElementVolumes(
+    const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
+{
+  // set action in params-interface
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_mass_volume);
+
+  Teuchos::ParameterList p;
+  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalDataPtr());
+
+  // set vector values needed by elements
+  Discret().ClearState();
+  Teuchos::RCP<const Epetra_Vector> disnp = GState().ExtractDisplEntries(x);
+  Discret().SetState(0, "displacement", disnp);
+
+  DRT::Discretization& discret = dynamic_cast<DRT::Discretization&>(Discret());
+
+  // start evaluation
+  const Epetra_Map* relemap = Discret().ElementRowMap();
+  ele_vols = Teuchos::rcp(new Epetra_Vector(*relemap, true));
+  const unsigned my_num_reles = relemap->NumMyElements();
+
+  DRT::Element::LocationArray la(Discret().NumDofSets());
+  LINALG::SerialDenseVector ele_vol(6, true);
+
+  LINALG::SerialDenseMatrix empty_dummy_mat;
+  LINALG::SerialDenseVector empty_dummy_vec;
+
+  STR::ELEMENTS::EvalErrorFlag ele_eval_error = STR::ELEMENTS::ele_error_none;
+  for (unsigned elid = 0; elid < my_num_reles; ++elid)
+  {
+    DRT::Element* rele = Discret().lRowElement(elid);
+    rele->LocationVector(discret, la, false);
+
+    EvalData().SetActionType(DRT::ELEMENTS::analyse_jacobian_determinant);
+    rele->Evaluate(p, discret, la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
+        empty_dummy_vec);
+
+    if (not EvalData().IsEleEvalError())
+    {
+      EvalData().SetActionType(DRT::ELEMENTS::struct_calc_mass_volume);
+      rele->Evaluate(p, discret, la, empty_dummy_mat, empty_dummy_mat, ele_vol, empty_dummy_vec,
+          empty_dummy_vec);
+    }
+
+    // set a negative value, if the evaluation failed
+    if (EvalData().IsEleEvalError())
+    {
+      ele_eval_error = EvalData().GetEleEvalErrorFlag();
+      // reset for the next element
+      EvalData().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_none);
+      ele_vol(2) = -1.0;
+    }
+
+    const int rele_lid = relemap->LID(rele->Id());
+    (*ele_vols)[rele_lid] = ele_vol(2);
+    ele_vol.Zero();
+  }
+
+  Discret().ClearState();
+  EvalData().SetEleEvalErrorFlag(ele_eval_error);
+
+  return EvalErrorCheck();
 }
 
 /*----------------------------------------------------------------------------*

@@ -186,11 +186,25 @@ namespace STR
         return writevelacc_;
       };
 
+      /// Shall we write the current element volume?
+      bool IsWriteCurrentEleVolume() const
+      {
+        CheckInitSetup();
+        return writecurrentelevolume_;
+      }
+
       /// Shall we write the jacobian to MATLAB?
       bool IsWriteJacobianToMatlab() const
       {
         CheckInitSetup();
         return writejac2matlab_;
+      }
+
+      /// Shall we compute and write the condition number?
+      INPAR::STR::ConditionNumber ConditionNumberType() const
+      {
+        CheckInitSetup();
+        return conditionnumbertype_;
       }
 
       /// Is this the first output of the current run?
@@ -353,6 +367,9 @@ namespace STR
       /// flag whether this output step is the first one (restarted or not)
       bool firstoutputofrun_;
 
+      /// flag element volume on/off
+      bool writecurrentelevolume_ = false;
+
       /// print infos to standard out every n steps
       int printscreen_;
 
@@ -385,6 +402,8 @@ namespace STR
 
       /// optional quantity type
       INPAR::STR::OptQuantityType writeoptquantity_;
+
+      INPAR::STR::ConditionNumber conditionnumbertype_;
 
       Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
 

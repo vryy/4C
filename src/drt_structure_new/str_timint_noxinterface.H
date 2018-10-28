@@ -141,9 +141,19 @@ namespace STR
        *  (derived from NOX::NLN::Interface::Required) */
       virtual double CalcRefNormForce();
 
-      virtual void CreateBackupState(const Epetra_Vector& dir);
+      /// create back-up state of condensed solution variables (e.g. EAS)
+      void CreateBackupState(const Epetra_Vector& dir) override;
 
-      virtual void RecoverFromBackupState();
+      /// recover from back-up
+      void RecoverFromBackupState() override;
+
+      /// compute the current volumes for all elements
+      bool computeElementVolumes(
+          const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const override;
+
+      /// fill the sets with DOFs of the desired elements
+      void getDofsFromElements(
+          const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const override;
 
       //!@}
 

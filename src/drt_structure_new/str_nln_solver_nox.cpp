@@ -164,10 +164,13 @@ void STR::NLN::SOLVER::Nox::ResetParams()
   // safety check
   CheckInitSetup();
 
-  const std::string& method =
-      nlnglobaldata_->GetNlnParameterList().sublist("Direction", true).get<std::string>("Method");
+  const Teuchos::ParameterList& pdir =
+      nlnglobaldata_->GetNlnParameterList().sublist("Direction", true);
+  std::string method = pdir.get<std::string>("Method");
 
-  if (method == "Newton")
+  if (method == "User Defined") method = pdir.get<std::string>("User Defined Method");
+
+  if (method == "Newton" or method == "Modified Newton")
   {
     // get the linear solver sub-sub-sub-list
     Teuchos::ParameterList& lsparams = nlnglobaldata_->GetNlnParameterList()

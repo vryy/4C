@@ -66,6 +66,9 @@ namespace STR
       //! return time integration factor (derived)
       virtual double GetIntParam() const;
 
+      //! derived
+      double GetModelValue(const Epetra_Vector& x) override;
+
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)

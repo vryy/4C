@@ -22,7 +22,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include <Epetra_Comm.h>
-#include <fenv.h>
+#include "../solver_nonlin_nox/nox_nln_floating_point_exception.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -228,11 +228,27 @@ bool STR::MODELEVALUATOR::Generic::EvalErrorCheck() const
 {
   // --- Did an exception occur during the evaluation process? -----------------
   bool ok = true;
-  if (fetestexcept(FE_INVALID) or fetestexcept(FE_OVERFLOW) or fetestexcept(FE_DIVBYZERO))
+  int fp_err = NOX::NLN::FloatingPointException::checkAndPrint(std::cout);
+  if (fp_err)
+  {
     ok = false;
+    std::cout << "FLOATING POINT EXCEPTION occurred on proc "
+                 "#"
+              << gstate_ptr_->GetComm().MyPID() << ".\n";
+  }
 
   // --- Did the element evaluation detect an error? ---------------------------
   ok = (ok and (not eval_data_ptr_->IsEleEvalError()));
+
+  if (eval_data_ptr_->IsEleEvalError())
+    std::cout << "ELEMENT EVALUATION failed on proc "
+                 "#"
+              << gstate_ptr_->GetComm().MyPID() << ".\n"
+              << "(Error: "
+              << STR::ELEMENTS::EvalErrorFlag2String(eval_data_ptr_->GetEleEvalErrorFlag())
+              << ")\n";
+
+  // reset the flag
   eval_data_ptr_->SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_none);
 
   // --- check for local errors on each proc and communicate the information ---

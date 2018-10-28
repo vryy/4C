@@ -189,6 +189,9 @@ namespace STR
       //! read-only access to energy data
       std::map<enum STR::EnergyType, double> const& GetEnergyData() const;
 
+      //! read-only access to energy data
+      double GetEnergyData(enum STR::EnergyType type) const;
+
       //! set value for a specific energy type
       void SetValueForEnergyType(double value, enum STR::EnergyType type);
 
@@ -225,6 +228,20 @@ namespace STR
         return *model_ptr_;
       }
       //! @}
+
+      /// get the current non-linear solver correction type
+      NOX::NLN::CorrectionType GetCorrectionType() const
+      {
+        CheckInitSetup();
+        return corr_type_;
+      }
+
+      /// get number of system modifications in case of a mod. Newton direction method
+      int GetNumberOfModifiedNewtonCorrections() const
+      {
+        CheckInitSetup();
+        return num_corr_mod_newton_;
+      }
 
       //!@name set routines which can be called inside of the element [derived]
       //! @{
@@ -316,6 +333,12 @@ namespace STR
       //! Did an element evaluation error occur?
       bool IsEleEvalError() const;
 
+      //! access the element evaluation error flag
+      inline STR::ELEMENTS::EvalErrorFlag GetEleEvalErrorFlag() const override
+      {
+        return ele_eval_error_flag_;
+      }
+
       /*! @name set routines which are used to set the parameters of the data container
        *
        *  These functions are not allowed to be called by the elements! */
@@ -339,6 +362,18 @@ namespace STR
       inline void SetIsDefaultStep(const bool& is_default_step)
       {
         is_default_step_ = is_default_step;
+      }
+
+      /// set the number of system corrections in case of a mod. Newton direction method
+      inline void SetNumberOfModifiedNewtonCorrections(const int num_corr)
+      {
+        num_corr_mod_newton_ = num_corr;
+      }
+
+      /// set the current system correction type of the non-linear solver
+      inline void SetCorrectionType(const NOX::NLN::CorrectionType corr_type)
+      {
+        corr_type_ = corr_type;
       }
 
       //! set the total time for the evaluation call
@@ -371,6 +406,12 @@ namespace STR
         stressdata_ptr_ = stressdata;
       }
 
+      //! set element volume data vector
+      inline void SetElementVolumeData(const Teuchos::RCP<Epetra_Vector>& ele_volumes)
+      {
+        elevolumes_ptr_ = ele_volumes;
+      }
+
       //! set stress data vector
       inline void SetCouplingStressData(const Teuchos::RCP<std::vector<char>>& couplstressdata)
       {
@@ -400,6 +441,9 @@ namespace STR
 
       //! reset the partial update norm value of the current processor
       void ResetMyNorms(const bool& isdefaultstep);
+
+      //! return element volume data vector (read-only)
+      const Epetra_Vector& CurrentElementVolumeData() const;
 
       //! return the stress data (read-only)
       const std::vector<char>& StressData() const;
@@ -599,6 +643,13 @@ namespace STR
        *
        *  Only important for the internal elementwise update. */
       bool is_default_step_;
+
+      /// number of system corrections (modified Newton direction method)
+      int num_corr_mod_newton_;
+
+      /// system correction type (e.g. in case of a SOC step, see the
+      /// NOX::NLN::INNER::StatusTest::Filter method)
+      NOX::NLN::CorrectionType corr_type_;
       //! @}
 
       //! @name time integration parameters
@@ -612,6 +663,9 @@ namespace STR
 
       //! @name references to output data container
       //! @{
+      //! element volume data vector
+      Teuchos::RCP<Epetra_Vector> elevolumes_ptr_;
+
       //! stress data vector
       Teuchos::RCP<std::vector<char>> stressdata_ptr_;
 
@@ -832,6 +886,20 @@ namespace STR
         CheckInit();
         return str_data_ptr_->IsPredictor();
       };
+
+      /// derived
+      NOX::NLN::CorrectionType GetCorrectionType() const override
+      {
+        CheckInit();
+        return str_data_ptr_->GetCorrectionType();
+      }
+
+      /// derived
+      int GetNumberOfModifiedNewtonCorrections() const override
+      {
+        CheckInit();
+        return str_data_ptr_->GetNumberOfModifiedNewtonCorrections();
+      }
 
       /// \brief get the current active predictor type
       /** If no predictor is active pred_vague will be returned.
