@@ -16,7 +16,7 @@ def is_source_file(fname):
   return os.path.splitext(fname)[1] in ".c .cpp .cxx .h .H .hpp".split()
 
 def is_support_file(fname):
-  return os.path.splitext(fname)[1] in ".dat .cmake .config".split()
+  return os.path.splitext(fname)[1] in ".dat .cmake .config .md".split()
 
 def path_contains(test, path):
   head, tail = os.path.split(path)
