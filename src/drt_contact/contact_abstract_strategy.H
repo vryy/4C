@@ -1146,8 +1146,8 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
-    virtual void Evaluate(CONTACT::ParamsInterface& cparams,
+    void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
+    void Evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
     {
       Evaluate(cparams, eval_vec, NULL);
