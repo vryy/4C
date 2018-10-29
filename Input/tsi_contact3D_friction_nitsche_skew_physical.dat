@@ -56,8 +56,6 @@ INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha  // Centr_Diff, Gen_EMM, Gen_Alfa, Static, Statics, GenAlpha, OneStepTheta, GEMM, AdamsBashforth2, EulerMaruyama, EulerImpStoch
 ITERNORM                        L2

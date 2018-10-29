@@ -75,8 +75,6 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       continue
 DYNAMICTYP                      Statics

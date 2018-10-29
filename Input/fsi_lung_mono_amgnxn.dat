@@ -221,8 +221,6 @@ TIMESTEP                        1.0
 TOLDISP                         1e-06
 TOLRES                          1e-06
 LINEAR_SOLVER                   4
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DIVERCONT                       stop
 ITERNORM                        L2
 LOADLIN                         Yes
