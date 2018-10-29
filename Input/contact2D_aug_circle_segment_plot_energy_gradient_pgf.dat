@@ -82,7 +82,7 @@ NUMGP_PER_DIM                   10
 TRIANGULATION                   Delaunay
 ----------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   1
-STRATEGY                        StdLagrange // Combo
+STRATEGY                        StdLagrange
 SYSTEM                          SaddlePoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
@@ -93,9 +93,6 @@ PRINT_LINEAR_CONSERVATION       No // Yes
 PRINT_ANGULAR_CONSERVATION      No // Yes
 VARIATIONAL_APPROACH            complete // complete, incomplete
 ASSEMBLE_STRATEGY               node_based
----------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.79769e+308
-PENALTY_UPDATE                  Complementarity
 ------------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 STRATEGY_0                      SteepestAscent
 STRATEGY_1                      StdLagrange

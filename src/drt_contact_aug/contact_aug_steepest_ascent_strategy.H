@@ -76,8 +76,6 @@ namespace CONTACT
             const CONTACT::ParamsInterface* cparams = NULL) const override;
 
         /// derived
-        void AdaptiveCn(CONTACT::ParamsInterface& cparams) override;
-
         void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
             const NOX::NLN::Group& grp) override;

@@ -203,9 +203,6 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // sub-sub-list "Augmented/SteepestAscent"
   Teuchos::ParameterList& sacontact = augcontact.sublist("STEEPESTASCENT");
 
-  DoubleParameter("CN_UPPER_BOUND", std::numeric_limits<double>::max(),
-      "Upper bound for the cn value. Used during the dynamic cn update.", &sacontact);
-
   DoubleParameter("CORRECTION_PARAMETER", 0.0,
       "Some penalty update methods use a user-specified correction parameter, "
       "which accelerates the convergence. This parameter can be specified here.",
@@ -217,20 +214,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "regularization parameter in cumbersome situations.",
       &sacontact);
 
-  DoubleParameter("UNIT_GAP_FORCE_SCALE", 1.0,
-      "This parameter is optional and "
-      "can be used to scale the unit gap force in the case of an initial "
-      "Neumann boundary condition. It is used to compute an estimate for the"
-      "necessary initial regularization parameter.",
-      &sacontact);
-
   setStringToIntegralParameter<PenaltyUpdate>("PENALTY_UPDATE", "Vague",
       "Which kind of "
       "penalty update should be used?",
-      tuple<std::string>("Vague", "LMGapRatio", "Complementarity", "SufficientLinearReduction",
-          "SufficientAngle", "None"),
-      tuple<PenaltyUpdate>(PenaltyUpdate::vague, PenaltyUpdate::lm_gap_ratio,
-          PenaltyUpdate::complementarity, PenaltyUpdate::sufficient_lin_reduction,
+      tuple<std::string>("Vague", "SufficientLinearReduction", "SufficientAngle", "None"),
+      tuple<PenaltyUpdate>(PenaltyUpdate::vague, PenaltyUpdate::sufficient_lin_reduction,
           PenaltyUpdate::sufficient_angle, PenaltyUpdate::none),
       &sacontact);
 

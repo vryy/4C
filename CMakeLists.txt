@@ -2296,7 +2296,6 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
   src/drt_contact_aug/contact_aug_penalty_update.cpp
-  src/drt_contact_aug/contact_aug_adaptive_cn.cpp
   src/drt_contact_aug/contact_aug_combo_strategy.cpp
   src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
   src/drt_contact_aug/contact_aug_potential.cpp

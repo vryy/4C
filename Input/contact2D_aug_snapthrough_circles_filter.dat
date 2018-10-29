@@ -99,11 +99,6 @@ PRINT_ANGULAR_CONSERVATION      No
 VARIATIONAL_APPROACH            incomplete
 ASSEMBLE_STRATEGY               node_based
 PARALLEL_REDIST_INTERVAL        5
----------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.79769e+308
-PENALTY_UPDATE                  SufficientLinearReduction
-CORRECTION_PARAMETER            0.8
-DECREASE_CORRECTION_PARAMETER   0.95
 ------------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 STRATEGY_0                      SteepestAscent_SP
 STRATEGY_1                      StdLagrange

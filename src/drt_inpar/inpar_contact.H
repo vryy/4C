@@ -228,8 +228,6 @@ namespace INPAR
     enum class PenaltyUpdate : char
     {
       vague,                     ///< no update strategy defined (default)
-      lm_gap_ratio,              ///< use the ratio between Lagrange multiplier and weighted gap
-      complementarity,           ///< enforce the complementarity condition
       sufficient_lin_reduction,  ///< enforce sufficient reduction of the linear infeasibility model
       sufficient_angle,          ///< enforce sufficient angle
       none                       ///< perform no penalty parameter update
@@ -242,10 +240,6 @@ namespace INPAR
       {
         case PenaltyUpdate::vague:
           return "PenaltyUpdate::vague";
-        case PenaltyUpdate::lm_gap_ratio:
-          return "PenaltyUpdate::lm_gap_ratio";
-        case PenaltyUpdate::complementarity:
-          return "PenaltyUpdate::complementarity";
         case PenaltyUpdate::sufficient_lin_reduction:
           return "PenaltyUpdate::sufficient_lin_reduction";
         case PenaltyUpdate::sufficient_angle:

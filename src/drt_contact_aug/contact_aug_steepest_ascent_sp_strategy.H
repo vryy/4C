@@ -34,17 +34,6 @@ namespace CONTACT
         /// destructor
         virtual ~DataContainer(){};
 
-        void SetOldInfeasibilityMeasure(const double old_infeasibility_measure)
-        {
-          old_infeasibility_measure_ = old_infeasibility_measure;
-        }
-
-        double GetOldInfeasibilityMeasure() const { return old_infeasibility_measure_; }
-
-        void SetCnUpperBound(const double cn_upper_bound) { cn_upper_bound_ = cn_upper_bound; }
-
-        double GetCnUpperBound() const { return cn_upper_bound_; }
-
         void SetPenaltyCorrectionParameter(const double correction_param)
         {
           if (correction_param < 0.0)
@@ -74,18 +63,6 @@ namespace CONTACT
         {
           return penalty_decrease_correction_parameter_;
         }
-
-        void SetUnitGapForceScale(const double scale)
-        {
-          if (scale <= 0.0)
-            dserror(
-                "The unit gap force scaling is not allowed to be smaller or "
-                "equal to zero.");
-
-          unit_gap_force_scale_ = scale;
-        }
-
-        double GetUnitGapForceScale() const { return unit_gap_force_scale_; }
 
         Teuchos::RCP<const LagrangeMultiplierFunction> LagrangeMultiplierFuncPtr() const
         {
@@ -129,20 +106,11 @@ namespace CONTACT
         DataContainer(const DataContainer& old);
 
        private:
-        /// old constraint violation from the last converged Newton step
-        double old_infeasibility_measure_ = 0.0;
-
-        /// user provided upper bound for the cn value
-        double cn_upper_bound_ = 0.0;
-
         /// correction control parameter for a possible increase of the cn value
         double penalty_correction_parameter_ = 0.0;
 
         /// correction control parameter for a possible decrease of the cn value
         double penalty_decrease_correction_parameter_ = 1.0;
-
-        /// deprecated
-        double unit_gap_force_scale_ = 0.0;
 
         /// current step length
         double steplength_ = 1.0;

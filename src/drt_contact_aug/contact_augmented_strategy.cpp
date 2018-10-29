@@ -831,9 +831,6 @@ void CONTACT::AUG::Strategy::EvalForce(CONTACT::ParamsInterface& cparams)
   // --- Assemble the gap vectors ---------------------------------------------
   AssembleGap();
 
-  // --- Adapt the regularization parameter (optional) ------------------------
-  AdaptiveCn(cparams);
-
   // --- compute the augmented forces -----------------------------------------
   EvalAugmentedForces();
 
@@ -847,14 +844,6 @@ void CONTACT::AUG::Strategy::EvalForce(CONTACT::ParamsInterface& cparams)
   EvalConstrRHS();      // update the constrRHS
 
   PostEvalForce(cparams);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::AdaptiveCn(CONTACT::ParamsInterface& cparams)
-{
-  // not necessary for the standard/augmented Lagrangian strategy
-  return;
 }
 
 /*----------------------------------------------------------------------------*

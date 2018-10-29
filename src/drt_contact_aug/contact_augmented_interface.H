@@ -311,9 +311,6 @@ namespace CONTACT
       /// assemble the gap vector of all nodes (not only the active ones)
       void AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapAllSlNodesVec) const;
 
-      /// deprecated
-      void AssembleActiveUnitGap(Epetra_Vector& unit_gap) const;
-
       /** Add the varied tributary area contributions to the force originating
        *  from the augmented gap term */
       void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const;
@@ -877,8 +874,6 @@ namespace CONTACT
         /// destructor
         virtual ~AssembleStrategy(){};
 
-        virtual void AssembleActiveUnitGap(Epetra_Vector& unit_gap) const = 0;
-
         /** \brief Assemble Dn and Mn matrices
          *
          *  If a variational consistent formulation is used, the Dn and Mn matrices
@@ -955,9 +950,6 @@ namespace CONTACT
 
         /// destructor
         ~NodeBasedAssembleStrategy() override{};
-
-        /// derived
-        void AssembleActiveUnitGap(Epetra_Vector& unit_gap) const override;
 
         /// derived
         void AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const override;

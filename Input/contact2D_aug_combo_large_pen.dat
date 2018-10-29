@@ -83,7 +83,6 @@ PRINT_LINEAR_CONSERVATION       No// Yes
 PRINT_ANGULAR_CONSERVATION      No// Yes
 VARIATIONAL_APPROACH            incomplete
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.0e6
 PENALTY_UPDATE                  SufficientLinearReduction
 CORRECTION_PARAMETER            0.8
 -----------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO

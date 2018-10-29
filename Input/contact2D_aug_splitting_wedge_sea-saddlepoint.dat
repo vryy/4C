@@ -112,10 +112,8 @@ PRINT_ANGULAR_CONSERVATION      No
 VARIATIONAL_APPROACH            incomplete
 ASSEMBLE_STRATEGY               node_based
 ---------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.79769e+308
-PENALTY_UPDATE                  SufficientAngle // LMGapRatio // None // SufficientAngle // SufficientLinearReduction // Complementarity
+PENALTY_UPDATE                  SufficientAngle
 CORRECTION_PARAMETER            0.9
-UNIT_GAP_FORCE_SCALE            2.0
 ------------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 STRATEGY_0                      SteepestAscent
 STRATEGY_1                      StdLagrange

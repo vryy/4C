@@ -16,7 +16,6 @@
 #include "contact_aug_potential.H"
 #include "contact_aug_lagrange_multiplier_function.H"
 #include "contact_aug_penalty_update.H"
-#include "contact_aug_adaptive_cn.H"
 
 #include "../drt_contact/contact_paramsinterface.H"
 
@@ -43,13 +42,10 @@ CONTACT::AUG::STEEPESTASCENT_SP::Strategy::Strategy(
   const Teuchos::ParameterList& sa_params =
       Params().sublist("AUGMENTED", true).sublist("STEEPESTASCENT", true);
 
-  Data().SaData().SetCnUpperBound(sa_params.get<double>("CN_UPPER_BOUND"));
   Data().SaData().SetPenaltyCorrectionParameter(sa_params.get<double>("CORRECTION_PARAMETER"));
 
   Data().SaData().SetPenaltyDecreaseCorrectionParameter(
       sa_params.get<double>("DECREASE_CORRECTION_PARAMETER"));
-
-  Data().SaData().SetUnitGapForceScale(sa_params.get<double>("UNIT_GAP_FORCE_SCALE"));
 
   Data().SaData().LagrangeMultiplierFuncPtr() = Teuchos::rcp(new LagrangeMultiplierFunction());
 
@@ -151,12 +147,6 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::SetPenaltyUpdateState(
       corrtype != NOX::NLN::CorrectionType::vague)
     return;
 
-  Data().Potential().Compute();
-
-  const double infeasibility_measure = Data().Potential().Get(
-      AUG::POTENTIAL::Type::infeasibility_measure, AUG::POTENTIAL::SetType::all);
-
-  Data().SaData().SetOldInfeasibilityMeasure(infeasibility_measure);
   Data().SaData().PenaltyUpdate().SetState(cparams, xold, dir);
 }
 

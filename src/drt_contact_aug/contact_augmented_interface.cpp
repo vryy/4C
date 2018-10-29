@@ -679,13 +679,6 @@ void CONTACT::AUG::Interface::AssembleDLmNWGapLinMatrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleActiveUnitGap(Epetra_Vector& unit_gap) const
-{
-  idata_.AssembleStrategy().AssembleActiveUnitGap(unit_gap);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleActiveGapVectors(
     Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const
 {

@@ -322,53 +322,6 @@ namespace CONTACT
     };
 
     /*--------------------------------------------------------------------------*/
-    /// Deprecated. Can be deleted in a follow-up commit
-    class PenaltyUpdate_LagrMultiplierGapRatio : public PenaltyUpdate
-    {
-     public:
-      PenaltyUpdate_LagrMultiplierGapRatio() = default;
-
-      explicit PenaltyUpdate_LagrMultiplierGapRatio(const PenaltyUpdate& pu)
-          : PenaltyUpdate(pu){/* empty */};
-
-      PenaltyUpdate_LagrMultiplierGapRatio(const PenaltyUpdate_LagrMultiplierGapRatio& pu) = delete;
-
-      ~PenaltyUpdate_LagrMultiplierGapRatio() override{};
-
-      INPAR::CONTACT::PenaltyUpdate Type() const override;
-
-     protected:
-      virtual Status Execute(const CONTACT::ParamsInterface& cparams);
-
-     private:
-      void Print2Screen(const double constr_violation, const double old_constr_violation,
-          const double cn_max, const double cn_new) const;
-    };
-
-    /*--------------------------------------------------------------------------*/
-    /// Deprecated. Can be deleted in a follow-up commit
-    class PenaltyUpdate_Complementarity : public PenaltyUpdate
-    {
-     public:
-      PenaltyUpdate_Complementarity() = default;
-
-      explicit PenaltyUpdate_Complementarity(const PenaltyUpdate& pu)
-          : PenaltyUpdate(pu){/* empty */};
-
-      ~PenaltyUpdate_Complementarity() override{};
-
-      INPAR::CONTACT::PenaltyUpdate Type() const override;
-
-     protected:
-      Status Execute(const CONTACT::ParamsInterface& cparams) override;
-
-      double ScaleDirection(Epetra_Vector& dir) override;
-
-      void SetState(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-          const Epetra_Vector& dir) override;
-    };
-
-    /*--------------------------------------------------------------------------*/
     /** \brief sufficient linear reduction correction strategy
      *
      *  \author hiermeier */

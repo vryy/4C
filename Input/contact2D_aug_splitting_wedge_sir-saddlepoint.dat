@@ -99,7 +99,7 @@ LINEAR_SOLVER                   1
 RESTART_WITH_CONTACT            No
 ADHESION                        None
 GP_SLIP_INCR                    No
-STRATEGY                        SteepestAscent_SP // StdLagrange, Combo, SteepestAscent, Augmented
+STRATEGY                        SteepestAscent_SP
 SYSTEM                          saddlepoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
@@ -112,10 +112,8 @@ PRINT_ANGULAR_CONSERVATION      No
 VARIATIONAL_APPROACH            incomplete
 ASSEMBLE_STRATEGY               node_based
 ---------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
-CN_UPPER_BOUND                  1.79769e+308
-PENALTY_UPDATE                  SufficientLinearReduction // LMGapRatio // None // SufficientAngle // SufficientLinearReduction // Complementarity
+PENALTY_UPDATE                  SufficientLinearReduction
 CORRECTION_PARAMETER            0.9
-UNIT_GAP_FORCE_SCALE            2.0
 ------------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 STRATEGY_0                      SteepestAscent
 STRATEGY_1                      StdLagrange

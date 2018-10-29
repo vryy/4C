@@ -19,7 +19,6 @@
 #include "contact_aug_potential.H"
 #include "contact_aug_lagrange_multiplier_function.H"
 #include "contact_aug_penalty_update.H"
-#include "contact_aug_adaptive_cn.H"
 
 #include "../drt_contact/contact_paramsinterface.H"
 
@@ -187,15 +186,6 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::RunPostApplyJacobianInverse(
   result.Scale(-1.0);
   AugmentDirection(cparams, xold, result);
   result.Scale(-1.0);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::AUG::STEEPESTASCENT::Strategy::AdaptiveCn(CONTACT::ParamsInterface& cparams)
-{
-  // deprecated
-  //  CONTACT::AUG::AdaptiveCn ad_cn( *this, Interfaces(), Data() );
-  //  ad_cn.Execute( AdaptiveCnType::init_nbc, cparams, &IO::cout.os( IO::verbose ) );
 }
 
 /*----------------------------------------------------------------------------*

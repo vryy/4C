@@ -1088,16 +1088,6 @@ namespace CONTACT
       //! Check linear and angular momentum conservation
       void CheckConservationLaws(CONTACT::ParamsInterface& cparams);
 
-      //! \brief adapt the cn-value (optional)
-      /** The adaptive cn routine is in addition to the default regularization
-       *  parameter correction. Think of an meaningful initial choice of the
-       *  regularization parameter for example.
-       *
-       * \param(in) cparams  Contact parameter interface
-       *
-       *  \author hiermeier \date 03/18 */
-      virtual void AdaptiveCn(CONTACT::ParamsInterface& cparams);
-
       //! Finite Difference check of the augmented Lagrange terms at GP level
       void AugFDCheckGP(CONTACT::ParamsInterface& cparams);
 
