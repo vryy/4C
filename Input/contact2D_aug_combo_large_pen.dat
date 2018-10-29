@@ -84,11 +84,14 @@ PRINT_ANGULAR_CONSERVATION      No// Yes
 VARIATIONAL_APPROACH            incomplete
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
 CN_UPPER_BOUND                  1.0e6
-PENALTY_UPDATE                  Complementarity
+PENALTY_UPDATE                  SufficientLinearReduction
+CORRECTION_PARAMETER            0.8
 -----------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 SWITCHING_STRATEGY              PreAsymptotic
 STRATEGY_0                      SteepestAscent
+LINEAR_SOLVER_STRATEGY_0        4
 STRATEGY_1                      Augmented
+LINEAR_SOLVER_STRATEGY_1        2
 ------------CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION
 LINEAR_SOLVER                   1
 --------------------------------------------STRUCT NOX/Status Test
@@ -105,11 +108,142 @@ Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
 ----------------------------------------------------------SOLVER 1
-NAME                    Structure_Solver
-SOLVER                  UMFPACK
-----------------------------------------------------------SOLVER 2
-NAME                    Contact_Solver
-SOLVER                  UMFPACK
+NAME                            Structure_Solver
+SOLVER                          Aztec_MSR // Aztec_MSR // UMFPACK
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          500
+AZOMEGA                         0
+AZOUTPUT                        10
+AZPOLY                          3
+AZPREC                          MueLu_sym
+AZREUSE                         10
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+BGS2X2_FLIPORDER                block0_block1_order
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     12
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     0.8
+ML_DAMPMED                      0.8
+ML_MAXCOARSESIZE                350
+ML_MAXLEVEL                     3
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOTIMES                     1 1 1 1 1
+SIMPLE_DAMPING                  1
+STRATIMIKOS_XMLFILE             none
+VERBOSITY                       0
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
+SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        10                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          CheapSIMPLE
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      0.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           300                           // size of krylov space for gmres
+AZOMEGA                         0.67                          // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                          // none sym infnorm scaling of the system
+SUB_SOLVER1                     3
+SUB_SOLVER2                     3
+--------------------------------------------------------------------SOLVER 3
+NAME                            Contact_Simpler_Solver
+SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      0.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0E-9                        // tolerance in (un)scaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           50                            // size of krylov space for gmres
+AZOMEGA                         0.67                          // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                          // none sym infnorm scaling of the system
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                350                           // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     9                             // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.05                          // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                           // Umfpack KLU Superlu
+ML_SMOTIMES                     3 3 3 3 3                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.7                           // damping fine grid
+ML_DAMPMED                      0.7                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+--------------------------------------------------------------------SOLVER 4
+NAME                            Contact_Solver
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        10
+AZPOLY                          3
+AZPREC                          MueLu_contact                // ILU // MueLu_contact2
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+BGS2X2_FLIPORDER                block0_block1_order
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     9                            // 27 // 9
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1.0
+ML_DAMPFINE                     0.7
+ML_DAMPMED                      0.7
+ML_MAXCOARSESIZE                350
+ML_MAXLEVEL                     5                            //2
+ML_PRINT                        1                            // 10
+ML_PROLONG_SMO                  1.33
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU                          // SGS // Jacobi
+ML_SMOOTHERMED                  ILU                          // SGS // Jacobi
+ML_SMOTIMES                     6 6 6 6 1
+MueLu_INITSMOOTHER              Jacobi
+MueLu_INITSMOO_SWEEPS           3
+MueLu_INITSMOO_DAMPING          1.0
+SIMPLE_DAMPING                  1
+SOLVER                          Aztec_MSR
+VERBOSITY                       1                            // 5
+PERMUTE_SYSTEM                  local                        // algebraic // local
 ----------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3 THEXPANS 0.0
 //MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 25000 NUE 0.25 DENS 7.8e-3 THEXPANS 0.0
@@ -127,7 +261,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 5.0 VAL
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 6.11248889091607461e-01 TOLERANCE 1.0e-08
 STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 3.44648943704649380e+00 TOLERANCE 1.0e-08
-STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 12.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 11.0 TOLERANCE 1.0e-20
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  6

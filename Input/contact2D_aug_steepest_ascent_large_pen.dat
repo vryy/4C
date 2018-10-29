@@ -84,7 +84,8 @@ PRINT_ANGULAR_CONSERVATION      No// Yes
 VARIATIONAL_APPROACH            incomplete
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
 CN_UPPER_BOUND                  1.0e9
-PENALTY_UPDATE                  Complementarity // Minimal_Error // Slope_Enforcement // LMGapRatio // None
+PENALTY_UPDATE                  SufficientLinearReduction // Minimal_Error // Slope_Enforcement // LMGapRatio // None
+CORRECTION_PARAMETER            0.9
 -----------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
 STRATEGY_0                      SteepestAscent
 STRATEGY_1                      StdLagrange
@@ -128,7 +129,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 2.0 VAL
 STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 4.27030414099786648e-01 TOLERANCE 1.0e-08
 STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 2.00454241867450822e+00 TOLERANCE 1.0e-08
 STRUCTURE SPECIAL QUANTITY num_iter_step_1 VALUE 19.0 TOLERANCE 1.0e-20
-STRUCTURE SPECIAL QUANTITY num_iter_step_2 VALUE 19.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_2 VALUE 18.0 TOLERANCE 1.0e-20
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  6

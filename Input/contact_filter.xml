@@ -35,7 +35,7 @@
         <Parameter name="Test Type"          type="string" value="NormUpdate" />
         <Parameter name="Alpha"              type="double" value="1.0" />
         <Parameter name="Beta"               type="double" value="0.5" />
-        <!-- NormUpdate - Quantity 0: Check the increment of the Lagrange multipliers -->
+        <!-- NormUpdate - Quantity 0: Check the increment of the contact lagrange multiplier displacements -->
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"    type="string" value="Contact-Normal" />
           <Parameter name="Tolerance Type"   type="string" value="Relative" />
@@ -46,13 +46,13 @@
         <!-- NormUpdate - Quantity 1: Check the increment of the structural displacements -->
         <ParameterList name="Quantity 1">
           <Parameter name="Quantity Type"    type="string" value="Structure" />
-          <Parameter name="Tolerance Type"   type="string" value="Relative" />
+          <Parameter name="Tolerance Type"   type="string" value="Absolute" />
           <Parameter name="Tolerance"        type="double" value="1.0e-10" />
           <Parameter name="Norm Type"        type="string" value="Two Norm" />
           <Parameter name="Scale Type"       type="string" value="Unscaled" />
         </ParameterList>
       </ParameterList>
-      <!-- END: Combo AND - Test 2: "NormUpdate" -->
+      <!-- END: Combo AND - Test 1: "NormUpdate" -->
       <!-- BEGIN: Combo AND - Test 3: "ActiveSet" -->
       <ParameterList name="Test 2">
           <Parameter name="Test Type"          type="string" value="ActiveSet" />
@@ -65,35 +65,41 @@
   <!-- Combo OR - Test 1: "MaxIters" -->
   <ParameterList name="Test 1">
     <Parameter name="Test Type"          type="string" value="MaxIters" />
-    <Parameter name="Maximum Iterations" type="int"    value="500" />
+    <Parameter name="Maximum Iterations" type="int"    value="100" />
   </ParameterList>
 </ParameterList>
  <!-- Inner Status Test: line search stopping criteria -->
 <ParameterList name="Inner Status Test">
-  <!--
-  <Parameter name="Test Type"                     type="string" value="UpperBound" />
-  <Parameter name="Quantity Type"                 type="string" value="Structure" />
-  <Parameter name="Value"                         type="double" value="5.0" />
-  <Parameter name="Norm Type"                     type="string" value="Max Norm" />
-  -->
   <!-- At the moment only supported by backtracking line search -->
-  <!--
-  <Parameter name="Test Type"                     type="string" value="Filter" />
-  <Parameter name="Objective Function Weight"     type="double" value="1.0" />
-  <Parameter name="Ftype Condition Exponent s_f"  type="double" value="5.0" />
-  <Parameter name="Ftype Condition Exponent s_t"  type="double" value="2.0" />
-  <Parameter name="Infeasibility Function Weight" type="double" value="1.0" />
-  <Parameter name="Gamma Alpha"                   type="double" value="0.05" />
-  <Parameter name="Second Order Correction"       type="bool"   value="true" />
-  <Parameter name="SOC Type"                      type="string" value="auto" />
-  <ParameterList name="Filter-Armijo">
+  <!-- configuration of the base level (0) of "Status Test" -->
+  <Parameter name="Test Type"       type="string" value="Combo"/>
+  <Parameter name="Combo Type"      type="string" value="AND" />
+  <ParameterList name="Test 0">
+    <Parameter name="Test Type"   type="string" value="VolumeChange" />
+    <Parameter name="Upper Bound" type="double" value="2.0" />
+    <Parameter name="Lower Bound" type="double" value="0.5" />
+  </ParameterList>
+  <ParameterList name="Test 1">
+    <Parameter name="Test Type"                     type="string" value="Filter" />
+    <Parameter name="Objective Function Weight"     type="double" value="1.0" />
+    <Parameter name="Ftype Condition Exponent s_f"  type="double" value="2.3" />
+    <Parameter name="Ftype Condition Exponent s_t"  type="double" value="1.1" />
+    <Parameter name="Infeasibility Function Weight" type="double" value="1.0" />
+    <Parameter name="Gamma Alpha"                   type="double" value="0.05" />
+    <Parameter name="Second Order Correction"       type="bool"   value="true" />
+    <Parameter name="SOC Type"                      type="string" value="auto" />
+    <Parameter name="Consecutive Blocking Iterates" type="int"    value="4" />
+    <Parameter name="Consecutive Blocking LS Steps" type="int"    value="7" />
+    <Parameter name="Max Theta Blocking Reduction"  type="double" value="0.5" />
+    <Parameter name="Init Max Theta Blocking Scale" type="double" value="3.0" />
+    <ParameterList name="Filter-Armijo">
       <Parameter name="c_1"                    type="double" value="1.0e-4" />
       <Parameter name="Monotone"               type="bool"   value="true" />
       <Parameter name="Maximal History Length" type="int"    value="2" />
+    </ParameterList>
+    <ParameterList name="Infeasibility Function 0">
+      <Parameter name="Type" type="string" value="Two Norm Active" />
+    </ParameterList>
   </ParameterList>
-  <ParameterList name="Infeasibility Function 0">
-    <Parameter name="Type" type="string" value="Two Norm Active" />
-  </ParameterList>
-  -->
 </ParameterList>
 </ParameterList>
