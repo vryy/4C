@@ -11,13 +11,10 @@
 
 /*----------------------------------------------------------------------*/
 
-
-
 #include "drt_validparameters.H"
 #include "inpar_structure.H"
 #include "inpar.H"
 #include "../drt_lib/drt_conditiondefinition.H"
-
 
 namespace INPAR
 {
@@ -31,7 +28,7 @@ namespace INPAR
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adapivity",
+      setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adaptivity",
           tuple<std::string>(
               "None", "ZienkiewiczXie", "AdamsBashforth2", "ExplicitEuler", "CentralDifference"),
           tuple<int>(INPAR::STR::timada_kind_none, INPAR::STR::timada_kind_zienxie,
@@ -242,7 +239,7 @@ namespace INPAR
       setStringToIntegralParameter<int>(
           "NEGLECTINERTIA", "No", "Neglect inertia", yesnotuple, yesnovalue, &sdyn);
 
-      // Since predicor "none" would be misleading, the usage of no predictor is called vague.
+      // Since predictor "none" would be misleading, the usage of no predictor is called vague.
       setStringToIntegralParameter<int>("PREDICT", "ConstDis", "Type of predictor",
           tuple<std::string>("Vague", "ConstDis", "ConstVel", "ConstAcc", "ConstDisVelAcc",
               "TangDis", "TangDisConstFext", "ConstDisPres", "ConstDisVelAccPres"),
