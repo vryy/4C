@@ -452,73 +452,66 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
 {
   shapes_.Evaluate(*ele);
 
-  // reshape elevec2 as matrix
-  dsassert(elevec2.M() == 0 || unsigned(elevec2.M()) == nsd_ * shapes_.ndofs_,
-      "Wrong size in project vector 2");
-
   // get function
   const int* start_func = params.getPtr<int>("startfuncno");
   const double time = params.get<double>("time");
 
-  // internal variables
-  if (elevec2.M() > 0)
+  // the RHS matrix has to have the row dimension equal to the number of shape
+  // functions(so we have one coefficient for each) and a number of column
+  // equal to the overall number of component that we want to solve for.
+  // The number is nsd_*2 because we have two fields..
+  Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, nsd_ * 2);
+  for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
-    // the RHS matrix has to have the row dimension equal to the number of shape
-    // functions(so we have one coefficient for each) and a number of column
-    // equal to the overall number of component that we want to solve for.
-    // The number is nsd_*2 because we have two fields..
-    Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, nsd_ * 2);
-    for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
+    // Storing the values of the coordinates for the current quadrature point
+    // and of the jacobian computed in that point
+    const double fac = shapes_.jfac(q);
+    LINALG::Matrix<nsd_, 1> xyz;
+    for (unsigned int d = 0; d < nsd_; ++d)
+      xyz(d) = shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
+    // Creating the temporary electric and magnetic field vector intVal
+    // The vector is going to contain first the electric and then the magnetic
+    // field such that the field will be initialized as first tree component
+    // of the specified function as electric field, last three components as
+    // magnetic field. If there is only one component all the components will
+    // be initialized to the same value.
+    Epetra_SerialDenseVector intVal(2 * nsd_);
+    dsassert(start_func != NULL, "funct not set for initial value");
+    EvaluateAll(*start_func, time, xyz, intVal);
+    // now fill the components in the one-sided mass matrix and the right hand side
+    for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
     {
-      // Storing the values of the coordinates for the current quadrature point
-      // and of the jacobian computed in that point
-      const double fac = shapes_.jfac(q);
-      LINALG::Matrix<nsd_, 1> xyz;
-      for (unsigned int d = 0; d < nsd_; ++d)
-        xyz(d) = shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
-      // Creating the temporary electric and magnetic field vector intVal
-      // The vector is going to contain first the electric and then the magnetic
-      // field such that the field will be initialized as first tree component
-      // of the specified function as electric field, last three components as
-      // magnetic field. If there is only one component all the components will
-      // be initialized to the same value.
-      Epetra_SerialDenseVector intVal(2 * nsd_);
-      dsassert(start_func != NULL, "funct not set for initial value");
-      EvaluateAll(*start_func, time, xyz, intVal);
-      // now fill the components in the one-sided mass matrix and the right hand side
-      for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
-      {
-        // Mass matrix
-        massPart(i, q) = shapes_.shfunct(i, q);
-        massPartW(i, q) = shapes_.shfunct(i, q) * fac;
+      // Mass matrix
+      massPart(i, q) = shapes_.shfunct(i, q);
+      massPartW(i, q) = shapes_.shfunct(i, q) * fac;
 
-        // RHS for the electric and magnetic field
-        for (int j = 0; j < intVal.M(); ++j)
-          localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
-      }
-    }
-    // The integration is made by computing the matrix product
-    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
-    {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(massMat);
-      inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
-    }
-
-    // Here we move the values from the temporary variable to the variable
-    // contained in the element
-    for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
-    {
-      // Now we are storing the variables by component, meaning that we save for
-      // each component the value for each dof and then we move to the next component.
-      for (unsigned int d = 0; d < nsd_; ++d)
-      {
-        ele->eleinteriorElectric_(d * shapes_.ndofs_ + r) = localMat(r, d);  // Electric field
-        ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + r) = localMat(r, d + nsd_);  // magnetic
-      }
+      // RHS for the electric and magnetic field
+      for (int j = 0; j < intVal.M(); ++j)
+        localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
     }
   }
+  // The integration is made by computing the matrix product
+  massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+  {
+    Epetra_SerialDenseSolver inverseMass;
+    inverseMass.SetMatrix(massMat);
+    inverseMass.SetVectors(localMat, localMat);
+    inverseMass.Solve();
+  }
+
+  // Here we move the values from the temporary variable to the variable
+  // contained in the element
+  for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+  {
+    // Now we are storing the variables by component, meaning that we save for
+    // each component the value for each dof and then we move to the next component.
+    for (unsigned int d = 0; d < nsd_; ++d)
+    {
+      ele->eleinteriorElectric_(d * shapes_.ndofs_ + r) = localMat(r, d);         // Electric field
+      ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + r) = localMat(r, d + nsd_);  // magnetic
+    }
+  }
+
   return 0;
 }
 
@@ -578,7 +571,6 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeError(
     // magnetic field. If there is only one component all the components will
     // be initialized to the same value.
     analytical.Scale(0.0);
-    dsassert(start_func != NULL, "Function not set for error estimate");
     EvaluateAll(func, time, xyzmat, analytical);
 
     for (unsigned int d = 0; d < nsd_; ++d)
