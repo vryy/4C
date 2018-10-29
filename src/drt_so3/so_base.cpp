@@ -139,7 +139,7 @@ void DRT::ELEMENTS::So_base::ErrorHandling(const double& det_curr, Teuchos::Para
       if (det_curr == 0.0)
         dserror("ZERO DETERMINANT DETECTED in line %d", line_id);
       else if (det_curr < 0.0)
-        dserror("NEGATIVE DETERMINANT DETECTED in line %d", line_id);
+        dserror("NEGATIVE DETERMINANT DETECTED in line %d (value = %.5e)", line_id, det_curr);
     }
   }
 }

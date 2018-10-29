@@ -43,14 +43,11 @@ RESTART                         0
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
-RESTARTEVRY                     200
+RESTARTEVRY                     0
 NLNSOL                          lsnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP                        50.0
-NUMSTEP                         6
-MAXTIME                         300.0
-DAMPING                         No
-M_DAMP                          0.00001
-K_DAMP                          0.00001
+TIMESTEP                        12.5
+NUMSTEP                         8
+MAXTIME                         100.0
 TOLRES                          1.0E-7
 TOLDISP                         1.0E-7
 NORM_RESF                       Abs
@@ -64,9 +61,9 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
 -------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION t/3
+COMPONENT 0 FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.712373537764607434e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.712373537764607434e+00 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
