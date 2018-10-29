@@ -35,7 +35,8 @@ MORTAR::StratDataContainer::StratDataContainer()
       parredist_(false),
       maxdof_(0),
       systype_(INPAR::CONTACT::system_none),
-      dyntype_(INPAR::STR::dyna_statics)
+      dyntype_(INPAR::STR::dyna_statics),
+      dynparamN_(0.0)
 {
 }
 
@@ -80,10 +81,11 @@ void MORTAR::StrategyBase::SetTimeIntegrationInfo(
   switch (dyntype)
   {
     case INPAR::STR::dyna_statics:
-      Data().AlphaF() = 0.0;
+      Data().SetDynParameterN(0.0);
       break;
     case INPAR::STR::dyna_genalpha:
-      Data().AlphaF() = time_fac;
+    case INPAR::STR::dyna_onesteptheta:
+      Data().SetDynParameterN(time_fac);
       break;
     default:
       dserror(

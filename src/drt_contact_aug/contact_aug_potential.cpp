@@ -247,7 +247,10 @@ void CONTACT::AUG::Potential::ComputeLinInactive(const Epetra_Vector& znincr_ina
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Potential::GetTimeIntegrationFactor() const { return data_.AlphaF(); }
+double CONTACT::AUG::Potential::GetTimeIntegrationFactor() const
+{
+  return data_.GetDynParameterN();
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

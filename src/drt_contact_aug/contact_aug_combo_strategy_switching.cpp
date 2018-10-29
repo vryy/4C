@@ -351,7 +351,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetActiveSlMaForces(
   constr_slmaforce = LINALG::CreateVector(*gSlMaActiveForceMap, true);
   LINALG::ExtractMyVector(slmaforce, *constr_slmaforce);
   // consider time integration factor
-  constr_slmaforce->Scale(1.0 - combo_.data_.AlphaF());
+  constr_slmaforce->Scale(1.0 - combo_.data_.GetDynParameterN());
 
   str_slmaforce = LINALG::CreateVector(*gSlMaActiveForceMap, true);
   LINALG::ExtractMyVector(str_force, *str_slmaforce);

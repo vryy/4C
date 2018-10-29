@@ -98,6 +98,12 @@ namespace MORTAR
     /// get the (dynamic) time integration type
     inline INPAR::STR::DynamicType GetDynType() const { return dyntype_; };
 
+    /// return dynamic time integration parameter
+    inline double GetDynParameterN() const { return dynparamN_; }
+
+    /// set dynamic time integration parameter
+    inline void SetDynParameterN(const double dynparamN) { dynparamN_ = dynparamN; }
+
     /// set the (dynamic) time integration type
     inline void SetDynType(INPAR::STR::DynamicType dyntype) { dyntype_ = dyntype; }
 
@@ -143,6 +149,9 @@ namespace MORTAR
 
     //! time integration type
     INPAR::STR::DynamicType dyntype_;
+
+    //! time integration parameter for the contributions of the old/previous time step
+    double dynparamN_;
   };
 
   /*!
