@@ -34,7 +34,10 @@ namespace PARTICLEINTERACTION
     struct helper
     {
       static_assert(N >= 0, "The exponent must be positive!");
-      static constexpr T pow(const T x) { return helper<T, N - 1>::pow(x) * x; }
+      static constexpr T pow(const T x)
+      {
+        return ((N % 2) == 0 ? 1 : x) * helper<T, (N / 2)>::pow(x * x);
+      }
     };
 
     template <class T>
