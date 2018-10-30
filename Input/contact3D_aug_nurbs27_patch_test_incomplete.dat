@@ -72,7 +72,6 @@ STC_SCALING                     no
 STC_LAYER                       1
 NLNSOL                          fullnewton // noxnln, fullnewton
 MATERIALTANGENT                 analytical // finitedifferences, analytical
-CONTROLNODE                     -1 -1 -1
 LOADLIN                         No
 MASSLIN                         No
 NEGLECTINERTIA                  No

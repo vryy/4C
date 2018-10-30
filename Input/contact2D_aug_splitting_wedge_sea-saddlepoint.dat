@@ -58,23 +58,10 @@ TIMESTEP                        1.0
 NUMSTEP                         1
 TIMEINIT                        0
 MAXTIME                         1.0
-STC_SCALING                     no
-STC_LAYER                       1
 NLNSOL                          fullnewton // fullnewton, noxnln
 MATERIALTANGENT                 analytical
-CONTROLNODE                     -1 -1 -1
-LOADLIN                         No
-MASSLIN                         No
-NEGLECTINERTIA                  No
 PREDICT                         TangDis // TangDis
 LINEAR_SOLVER                   1
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA                            0.25
-GAMMA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
-RHO_INF                         -1
 ----------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     std
 SEARCH_ALGORITHM                Binarytree

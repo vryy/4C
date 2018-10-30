@@ -139,8 +139,6 @@ RESTARTEVRY                     500
 TOLDISP                         1e-06
 TOLRES                          1e-06
 LINEAR_SOLVER                   2
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DIVERCONT                       stop
 ITERNORM                        L2
 LOADLIN                         yes
