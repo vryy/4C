@@ -824,13 +824,21 @@ NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::automaticTypeChoice(
     const NOX::Solver::Generic& solver) const
 {
   const enum NOX::StatusTest::StatusType active_set_status = filter_.GetActiveSetStatus(solver);
+  const Point& trial_fp = *filter_.curr_fpoints_.second;
+  const bool isfeasible = trial_fp.IsFeasible(filter_.GetConstraintTolerance(solver));
 
   switch (active_set_status)
   {
     /* If the active-set seems to be converged, we will perform the cheap
-     * correction. */
+     * correction.
+     *
+     * EDIT: If the current filter point is feasible, i.e. the constraint
+     * violation is below the given tolerance, a further reduction might be
+     * hard to achieve and a full soc step is the better choice. The same is
+     * true, if the bodies are out of contact, then the cheap step won't change
+     * anything. */
     case NOX::StatusTest::Converged:
-      return CorrectionType::soc_cheap;
+      return (isfeasible ? CorrectionType::soc_full : CorrectionType::soc_cheap);
     /* If the active-set is not yet converged or the status is undefined, a full
      * step will be performed. */
     default:
