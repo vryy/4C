@@ -18,6 +18,7 @@
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_kernel.H"
+#include "particle_interaction_utils.H"
 
 #include "../drt_inpar/inpar_particle.H"
 
@@ -138,11 +139,11 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
     }
     case INPAR::PARTICLE::Kernel2D:
     {
-      return (10.0 * M_1_PI / (7.0 * square(h)));
+      return (10.0 * M_1_PI / (7.0 * UTILS::pow<2>(h)));
     }
     case INPAR::PARTICLE::Kernel3D:
     {
-      return M_1_PI / cube(h);
+      return M_1_PI / UTILS::pow<3>(h);
     }
     default:
     {
@@ -163,9 +164,9 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::W(const double& rij, const dou
   const double q = rij / h;
 
   if (q < 1.0)
-    return (1.0 - 1.5 * square(q) + 0.75 * cube(q)) * NormalizationConstant(h);
+    return (1.0 - 1.5 * UTILS::pow<2>(q) + 0.75 * UTILS::pow<3>(q)) * NormalizationConstant(h);
   else if (q < 2.0)
-    return (0.25 * cube(2.0 - q)) * NormalizationConstant(h);
+    return (0.25 * UTILS::pow<3>(2.0 - q)) * NormalizationConstant(h);
   else
     return 0.0;
 }
@@ -180,9 +181,9 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::dWdrij(
   const double q = rij / h;
 
   if (q < 1.0)
-    return (-3.0 * q + 2.25 * square(q)) * (1.0 / h) * NormalizationConstant(h);
+    return (-3.0 * q + 2.25 * UTILS::pow<2>(q)) * (1.0 / h) * NormalizationConstant(h);
   else if (q < 2.0)
-    return (-0.75 * square(2.0 - q)) * (1.0 / h) * NormalizationConstant(h);
+    return (-0.75 * UTILS::pow<2>(2.0 - q)) * (1.0 / h) * NormalizationConstant(h);
   else
     return 0.0;
 }
@@ -197,9 +198,9 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::d2Wdrij2(
   const double q = rij / h;
 
   if (q < 1.0)
-    return (-3.0 + 4.5 * q) * (1.0 / square(h)) * NormalizationConstant(h);
+    return (-3.0 + 4.5 * q) * (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
   else if (q < 2.0)
-    return (1.5 * (2.0 - q)) * (1.0 / square(h)) * NormalizationConstant(h);
+    return (1.5 * (2.0 - q)) * (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
   else
     return 0.0;
 }
@@ -235,11 +236,11 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
     }
     case INPAR::PARTICLE::Kernel2D:
     {
-      return (7.0 * M_1_PI / (478.0 * square(h)));
+      return (7.0 * M_1_PI / (478.0 * UTILS::pow<2>(h)));
     }
     case INPAR::PARTICLE::Kernel3D:
     {
-      return (3.0 * M_1_PI / (359.0 * cube(h)));
+      return (3.0 * M_1_PI / (359.0 * UTILS::pow<3>(h)));
     }
     default:
     {
@@ -261,12 +262,12 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::W(
   const double q = rij / h;
 
   if (q < 1.0)
-    return (powint((3.0 - q), 5) - 6.0 * powint((2.0 - q), 5) + 15.0 * powint((1.0 - q), 5)) *
+    return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q) + 15.0 * UTILS::pow<5>(1.0 - q)) *
            NormalizationConstant(h);
   else if (q < 2.0)
-    return (powint((3.0 - q), 5) - 6.0 * powint((2.0 - q), 5)) * NormalizationConstant(h);
+    return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q)) * NormalizationConstant(h);
   else if (q < 3.0)
-    return powint((3.0 - q), 5) * NormalizationConstant(h);
+    return UTILS::pow<5>(3.0 - q) * NormalizationConstant(h);
   else
     return 0.0;
 }
@@ -281,14 +282,14 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::dWdrij(
   const double q = rij / h;
 
   if (q < 1.0)
-    return (-5.0 * powint((3.0 - q), 4) + 30.0 * powint((2.0 - q), 4) -
-               75.0 * powint((1.0 - q), 4)) *
+    return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q) -
+               75.0 * UTILS::pow<4>(1.0 - q)) *
            (1.0 / h) * NormalizationConstant(h);
   else if (q < 2.0)
-    return (-5.0 * powint((3.0 - q), 4) + 30.0 * powint((2.0 - q), 4)) * (1.0 / h) *
+    return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q)) * (1.0 / h) *
            NormalizationConstant(h);
   else if (q < 3.0)
-    return (-5.0 * powint((3.0 - q), 4)) * (1.0 / h) * NormalizationConstant(h);
+    return (-5.0 * UTILS::pow<4>(3.0 - q)) * (1.0 / h) * NormalizationConstant(h);
   else
     return 0.0;
 }
@@ -303,14 +304,14 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::d2Wdrij2(
   const double q = rij / h;
 
   if (q < 1.0)
-    return (20.0 * powint((3.0 - q), 3) - 120.0 * powint((2.0 - q), 3) +
-               300.0 * powint((1.0 - q), 3)) *
-           (1.0 / square(h)) * NormalizationConstant(h);
+    return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q) +
+               300.0 * UTILS::pow<3>(1.0 - q)) *
+           (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
   else if (q < 2.0)
-    return (20.0 * powint((3.0 - q), 3) - 120.0 * powint((2.0 - q), 3)) * (1.0 / square(h)) *
-           NormalizationConstant(h);
+    return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q)) *
+           (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
   else if (q < 3.0)
-    return (20.0 * powint((3.0 - q), 3)) * (1.0 / square(h)) * NormalizationConstant(h);
+    return (20.0 * UTILS::pow<3>(3.0 - q)) * (1.0 / UTILS::pow<2>(h)) * NormalizationConstant(h);
   else
     return 0.0;
 }

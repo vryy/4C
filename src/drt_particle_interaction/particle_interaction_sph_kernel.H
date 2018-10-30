@@ -40,27 +40,6 @@ namespace IO
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  //! square of a double
-  static inline double square(const double& x) { return x * x; };
-
-  //! cube of a double
-  static inline double cube(const double& x) { return x * x * x; };
-
-  //! optimized version of std::pow with integer as exponent
-  static inline double powint(const double& x, const int n)
-  {
-    double yy, ww;
-
-    if (x == 0.0) return 0.0;
-    int nn = (n > 0) ? n : -n;
-    ww = x;
-
-    for (yy = 1.0; nn != 0; nn >>= 1, ww *= ww)
-      if (nn & 1) yy *= ww;
-
-    return (n > 0) ? yy : 1.0 / yy;
-  }
-
   class SPHKernelBase
   {
    public:
