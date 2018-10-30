@@ -498,8 +498,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
         dataglobalstate_->GetStepN() == DRT::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
-    if (dataio_->GetWriteResultsEveryNStep() and
-        (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0))
+    if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
     {
       AddRestartToOutputState();
       return;
@@ -522,8 +521,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output results (not necessary if restart in same step)
-  if (dataio_->IsWriteState() and dataio_->GetWriteResultsEveryNStep() and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0) and
+  if (dataio_->IsWriteState() and dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       (not datawritten))
   {
     NewIOStep(datawritten);
@@ -544,19 +542,18 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output stress, strain and optional quantity
-  if (dataio_->GetWriteResultsEveryNStep() and
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
-          (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none)) and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0))
+          (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none)))
   {
     NewIOStep(datawritten);
     OutputStressStrain();
     OutputOptionalQuantity();
   }
 
-  if (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0 and
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       dataio_->IsWriteCurrentEleVolume())
   {
     NewIOStep(datawritten);
@@ -584,8 +581,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   //    dserror("OutputMicro() is not yet implemented!"); // OutputMicro();
 
   // write patient specific output
-  if (dataio_->GetWriteResultsEveryNStep() and
-      (dataglobalstate_->GetStepN() % dataio_->GetWriteResultsEveryNStep() == 0))
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()))
   {
     // ToDo OutputPatspec()
     // ToDo OutputCell()

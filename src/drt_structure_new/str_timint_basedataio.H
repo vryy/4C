@@ -111,6 +111,9 @@ namespace STR
         return params_runtime_vtp_output_;
       };
 
+      /// \brief return TRUE if the results shall be written for this load/time \c step
+      bool WriteResultsForThisStep(const int step) const;
+
       /// @name Get printing and output parameters/files
       ///@{
       /// get the output file for energy
