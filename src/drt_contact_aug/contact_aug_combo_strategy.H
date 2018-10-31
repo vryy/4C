@@ -141,7 +141,7 @@ namespace CONTACT
       void EvalConstrRHS() override;
 
       /// function wrapper
-      void UpdateActiveSetSemiSmooth() override;
+      void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
 
       /// function wrapper
       void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,

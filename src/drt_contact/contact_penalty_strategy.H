@@ -270,7 +270,7 @@ namespace CONTACT
     }
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     bool IsPenalty() const override { return true; };
     void ResetLagrangeMultipliers(
         const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)

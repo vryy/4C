@@ -4842,10 +4842,10 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
+void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   // call base routine
-  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth();
+  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(firstStepPredictor);
 
   // for both-sided wear
   gminvolvednodes_ = Teuchos::null;

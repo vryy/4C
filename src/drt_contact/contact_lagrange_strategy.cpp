@@ -3293,7 +3293,9 @@ void CONTACT::CoLagrangeStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
     EvaluateRelMov();
 
   // update active set
-  if (not cparams.IsPredictor()) UpdateActiveSetSemiSmooth();
+  const bool firstTimeStepAndPredictor =
+      (cparams.IsPredictor() and (cparams.GetStepNp() == cparams.GetRestartStep() + 1));
+  UpdateActiveSetSemiSmooth(firstTimeStepAndPredictor);
 
   // apply contact forces and stiffness
   Initialize();  // init lin-matrices
@@ -4805,7 +4807,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
+void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   // FIXME: Here we do not consider zig-zagging yet!
   //  PrintActiveSet();
@@ -4854,6 +4856,16 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
     bool my_check = interface_[i]->UpdateActiveSetSemiSmooth();
     activesetconv_ = activesetconv_ and my_check;
   }  // loop over all interfaces
+
+  // Overwrite active set with input file information in predictor step of first time step
+  if (firstStepPredictor)
+  {
+    // loop over all interfaces
+    for (int i = 0; i < (int)interface_.size(); ++i)
+    {
+      interface_[i]->UpdateActiveSetInitialStatus();
+    }  // loop over all interfaces
+  }
 
   // broadcast convergence status among processors
   int convcheck = 0;

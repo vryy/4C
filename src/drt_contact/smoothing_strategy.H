@@ -214,16 +214,22 @@ namespace CONTACT
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
-    state, the active set is adapted accordingly and the convegence
-    flag is kept on false. Here we have the semi-smooth Newton case
+    state, the active set is adapted accordingly and the convergence
+    flag is kept on false.
+
+    Here we have the semi-smooth Newton case
     with one combined iteration loop for active set search and large
     deformations. As a consequence this method is called AFTER each
     (not yet converged) Newton step. If there is a change in the active
     set or the residual and disp norm are still above their limits,
     another Newton step has to be performed.
 
+    \note We use the flag \c firstStepPredictor to overwrite the active set status
+    for each node in the predictor of the first time step
+
+    \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth();
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
 
     /*!
     \brief Reset active set status for next time step

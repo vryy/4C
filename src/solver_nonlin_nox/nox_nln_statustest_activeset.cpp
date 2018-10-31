@@ -42,18 +42,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
     const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType)
 {
   // clear the cycling maps at the beginning of a new time step
-  if (problem.getNumIterations() == 0)
-  {
-    cycling_maps_.clear();
-
-    /* Disable status test in the predictor step
-     *
-     * We suppress the update of the active set in the predictor step. Hence, we also
-     * have to suppress the status test accordingly in order to be consistent
-     * (an to avoid segmentation faults when accessing the map of the old active set).
-     */
-    checkType = NOX::StatusTest::None;
-  }
+  if (problem.getNumIterations() == 0) cycling_maps_.clear();
 
   if (checkType == NOX::StatusTest::None)
   {

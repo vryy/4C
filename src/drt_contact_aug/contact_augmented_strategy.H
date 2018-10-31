@@ -1254,7 +1254,7 @@ namespace CONTACT
       {
         dserror("Deprecated function call! Replaced by RunPostComputeX().");
       };
-      void UpdateActiveSetSemiSmooth() override
+      void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override
       {
         dserror(
             "Deprecated function call! Replaced by "

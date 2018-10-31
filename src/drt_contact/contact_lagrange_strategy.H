@@ -266,7 +266,7 @@ namespace CONTACT
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
-    statically condensated during the setup of the global problem!
+    statically condensed during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.
 
@@ -275,8 +275,10 @@ namespace CONTACT
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *
-     *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration \param xnew    (in): new solution vector of the NOX solver*/
+     * \param cparams (in): parameter interface between the contact objects and the structural time
+     *                      integration
+     * \param xnew    (in): new solution vector of the NOX solver
+     */
     virtual void ResetLagrangeMultipliers(
         const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew);
 
@@ -308,16 +310,23 @@ namespace CONTACT
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
-    state, the active set is adapted accordingly and the convegence
-    flag is kept on false. Here we have the semi-smooth Newton case
+    state, the active set is adapted accordingly and the convergence
+    flag is kept on false.
+
+    Here we have the semi-smooth Newton case
     with one combined iteration loop for active set search and large
     deformations. As a consequence this method is called AFTER each
     (not yet converged) Newton step. If there is a change in the active
-    set or the residual and disp norm are still above their limits,
+    set or the residual and displacement increment norm are still above their limits,
     another Newton step has to be performed.
 
+    \note We use the flag \c firstStepPredictor to overwrite the active set status
+    for each node in the predictor of the first time step (or the first time step
+    after a restart).
+
+    \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth();
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
 
     /*!
     \brief Reset active set status for next time step
@@ -415,7 +424,7 @@ namespace CONTACT
     \brief Evaluate contact
 
     For a lagrangian strategy this involves heavy modification to the initial kteff and feff.
-    Hence, they are infact build from scratch here.
+    Hence, they are in fact build from scratch here.
     The application of modifications to groups of dofs (slave, master, active etc.)
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
 

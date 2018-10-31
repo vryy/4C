@@ -428,7 +428,7 @@ namespace CONTACT
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis)
     {
       return Teuchos::null;

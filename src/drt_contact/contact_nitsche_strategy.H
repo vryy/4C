@@ -151,7 +151,7 @@ namespace CONTACT
     }
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     void EvaluateRelMovPredict() {}
     void ModifyPenalty() {}
     void UpdateUzawaAugmentedLagrange() {}
