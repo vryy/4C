@@ -93,7 +93,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const
 {
   const double pressuregradient =
       -specificcoefficient_ij *
-      (press_i[0] / std::pow(dens_i[0], 2) + press_j[0] / std::pow(dens_j[0], 2));
+      (press_i[0] / (dens_i[0] * dens_i[0]) + press_j[0] / (dens_j[0] * dens_j[0]));
 
   for (int i = 0; i < 3; ++i) acc_i[i] += pressuregradient * e_ij[i];
 }
@@ -144,7 +144,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPres
     const double& specificcoefficient_ij, const double* e_ij, double* acc_i) const
 {
   const double fac = -specificcoefficient_ij * backgroundpressure *
-                     (1.0 / std::pow(dens_i[0], 2) + 1.0 / std::pow(dens_j[0], 2));
+                     (1.0 / (dens_i[0] * dens_i[0]) + 1.0 / (dens_j[0] * dens_j[0]));
 
   for (int i = 0; i < 3; ++i) acc_i[i] += fac * e_ij[i];
 }
@@ -158,7 +158,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundP
     double* acc_i) const
 {
   const double fac =
-      -backgroundpressure_tilde * (mass_j[0] / std::pow(dens_i[0], 2)) * dWdrij_tilde;
+      -backgroundpressure_tilde * (mass_j[0] / (dens_i[0] * dens_i[0])) * dWdrij_tilde;
 
   for (int i = 0; i < 3; ++i) acc_i[i] += fac * e_ij[i];
 }
@@ -185,11 +185,11 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContri
   double A_ij_e_ij[3];
   for (int i = 0; i < 3; ++i)
   {
-    A_ij_e_ij[i] = (1.0 / std::pow(dens_i[0], 2)) *
+    A_ij_e_ij[i] = (1.0 / (dens_i[0] * dens_i[0])) *
                    (A_i[i][0] * e_ij[0] + A_i[i][1] * e_ij[1] + A_i[i][2] * e_ij[2]);
 
     if (vel_j and mod_vel_j)
-      A_ij_e_ij[i] += (1.0 / std::pow(dens_j[0], 2)) *
+      A_ij_e_ij[i] += (1.0 / (dens_j[0] * dens_j[0])) *
                       (A_j[i][0] * e_ij[0] + A_j[i][1] * e_ij[1] + A_j[i][2] * e_ij[2]);
   }
 
@@ -213,9 +213,10 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
     double& specificcoefficient_ij) const
 {
-  specificcoefficient_ij =
-      (std::pow((mass_i[0] / dens_i[0]), 2) + std::pow((mass_j[0] / dens_j[0]), 2)) *
-      (dWdrij / mass_i[0]);
+  const double V_i = mass_i[0] / dens_i[0];
+  const double V_j = mass_j[0] / dens_j[0];
+
+  specificcoefficient_ij = ((V_i * V_i) + (V_j * V_j)) * (dWdrij / mass_i[0]);
 }
 
 /*---------------------------------------------------------------------------*
@@ -270,8 +271,9 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPres
     const double& backgroundpressure_tilde, const double& dWdrij_tilde, const double* e_ij,
     double* acc_i) const
 {
-  const double fac =
-      -(backgroundpressure_tilde / mass_i[0]) * std::pow((mass_i[0] / dens_i[0]), 2) * dWdrij_tilde;
+  const double V_i = mass_i[0] / dens_i[0];
+
+  const double fac = -(backgroundpressure_tilde / mass_i[0]) * (V_i * V_i) * dWdrij_tilde;
 
   for (int i = 0; i < 3; ++i) acc_i[i] += fac * e_ij[i];
 }

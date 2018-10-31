@@ -90,7 +90,7 @@ void PARTICLEINTERACTION::SPHArtificialViscosity::ArtificialViscosity(const doub
   const double epsilon = 0.01;
 
   const double fac = h_ij * c_ij * e_ij_vrel_ij * abs_rij /
-                     (dens_ij * (std::pow(abs_rij, 2) + epsilon * std::pow(h_ij, 2)));
+                     (dens_ij * (abs_rij * abs_rij + epsilon * h_ij * h_ij));
 
   for (int i = 0; i < 3; ++i) acc_i[i] += artificialviscosity * mass_j[0] * dWdrij * fac * e_ij[i];
 }
