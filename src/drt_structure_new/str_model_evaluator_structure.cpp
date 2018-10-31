@@ -1666,7 +1666,8 @@ void STR::MODELEVALUATOR::Structure::CreateBackupState(const Epetra_Vector& dir)
   // set vector values needed by elements
   Discret().ClearState();
   Discret().SetState(0, "displacement", GState().GetDisNp());
-  Discret().SetState(0, "residual displacement", Teuchos::rcpFromRef(dir));
+  Teuchos::RCP<const Epetra_Vector> dir_displ = GState().ExtractDisplEntries(dir);
+  Discret().SetState(0, "residual displacement", dir_displ);
 
   // set dummy evaluation vectors and matrices
   Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
