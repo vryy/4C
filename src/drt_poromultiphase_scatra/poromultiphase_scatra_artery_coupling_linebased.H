@@ -21,7 +21,8 @@
 
 #include <Epetra_Time.h>
 
-// forward declarations
+// forward declaration
+class Epetra_FEVector;
 namespace DRT
 {
   class Element;
@@ -82,14 +83,14 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const Epetra_Vector>& vec_cont, Teuchos::RCP<const Epetra_Vector>& vec_art);
 
     //! set solution of fields
-    void SetSolutionVectors(
-        Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
+    void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
+        Teuchos::RCP<const Epetra_Vector> phin_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
 
     /// init the strategy
     void Init();
 
     /// apply mesh movement (on artery elements)
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp);
+    void ApplyMeshMovement();
 
    private:
     //! brute force search for interacting pairs
@@ -118,16 +119,16 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_art);
 
-    //! assemble into force and stiffness matrix
-    void AssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
+    //! FE-assemble into force and stiffness matrix
+    void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
         std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
         Teuchos::RCP<LINALG::SparseMatrix> sysmat_art);
 
-    //! assemble into D, M and kappa (MP case)
-    void AssembleDMKappa(const int& ele1gid, const int& ele2gid,
+    //! FE-assemble into D, M and kappa (MP case)
+    void FEAssembleDMKappa(const int& ele1gid, const int& ele2gid,
         const LINALG::SerialDenseMatrix& D_ele, const LINALG::SerialDenseMatrix& M_ele,
         const LINALG::SerialDenseVector& Kappa_ele);
 
@@ -139,9 +140,8 @@ namespace POROMULTIPHASESCATRA
     //! invert kappa
     void InvertKappa();
 
-    //! get the element phi
-    std::vector<double> GetElePhinp(Teuchos::RCP<DRT::Discretization> dis, const int elegid,
-        Teuchos::RCP<const Epetra_Vector> phinp);
+    //! get the segment lengths of element 'artelegid'
+    std::vector<double> GetEleSegmentLengths(const int artelegid);
 
     //! check for duplicates
     bool IsDuplicateSegment(
@@ -175,6 +175,9 @@ namespace POROMULTIPHASESCATRA
     //! have the managers been set?
     bool porofluidmanagersset_;
 
+    //! is it a pure fluid problem
+    bool porofluidprob_;
+
     //! result of brute force search
     std::map<int, std::set<int>> nearbyelepairs_;
 
@@ -185,14 +188,11 @@ namespace POROMULTIPHASESCATRA
     //! phinp for continuous dis
     Teuchos::RCP<const Epetra_Vector> phinp_cont_;
 
+    //! phin for continuous dis
+    Teuchos::RCP<const Epetra_Vector> phin_cont_;
+
     //! phinp for artery dis
     Teuchos::RCP<const Epetra_Vector> phinp_art_;
-
-    //! phinp for continuous dis in col map format
-    Teuchos::RCP<Epetra_Vector> phinp_cont_colmap_;
-
-    //! phinp for artery dis in col map format
-    Teuchos::RCP<Epetra_Vector> phinp_art_colmap_;
 
     //! zeros for continuous dis
     Teuchos::RCP<const Epetra_Vector> zeros_cont_;
@@ -210,25 +210,34 @@ namespace POROMULTIPHASESCATRA
     //! mortar coupling matrices
     Teuchos::RCP<LINALG::SparseMatrix> D_;
     Teuchos::RCP<LINALG::SparseMatrix> M_;
-    Teuchos::RCP<Epetra_Vector> kappaInv_;
+    Teuchos::RCP<Epetra_FEVector> kappaInv_;
 
     //! penalty parameter
     double pp_;
 
     //! length of artery elements unaffected by deformation
-    Teuchos::RCP<Epetra_Vector> unaffected_length_artery_;
+    Teuchos::RCP<Epetra_FEVector> unaffected_seg_lengths_artery_;
 
     //! length of artery elements in current configuration
-    Teuchos::RCP<Epetra_Vector> current_length_artery_;
+    Teuchos::RCP<Epetra_FEVector> current_seg_lengths_artery_;
 
     //! gid to segment: stores [GID; [eta_a eta_b]_1, [eta_a eta_b]_2, ..., [eta_a eta_b]_n]
+    //  of artery elements in column format, i.e. fully overlapping
     std::map<int, std::vector<double>> gid_to_segment_;
 
     //! gid to segment length: stores [GID; seglength_1, seglength_2, ..., seglength_n]
+    //  of artery elements in column format, i.e. fully overlapping (only used for
+    //  porofluid-problems)
     std::map<int, std::vector<double>> gid_to_seglength_;
 
     //! timer for measurement of duration of brute force search
     Epetra_Time timersearch_;
+
+    //! coupling matrix (FE)
+    Teuchos::RCP<LINALG::SparseMatrix> FEmat_;
+
+    //! coupling rhs-vector (FE)
+    Teuchos::RCP<Epetra_FEVector> FErhs_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

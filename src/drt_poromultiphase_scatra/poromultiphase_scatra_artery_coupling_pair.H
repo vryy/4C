@@ -42,6 +42,10 @@ namespace DRT
     class VariableExprFunction;
   }
 }  // namespace DRT
+namespace MAT
+{
+  class MatList;
+}  // namespace MAT
 namespace LINALG
 {
   class SerialDenseVector;
@@ -80,9 +84,8 @@ namespace POROMULTIPHASESCATRA
         const std::vector<double>& segmentlengths) = 0;
 
     //! reset state
-    virtual void ResetState(const std::vector<double>& contelephinp,
-        const std::vector<double>& artelephinp, Teuchos::RCP<DRT::Discretization> contdis,
-        Teuchos::RCP<DRT::Discretization> artdis) = 0;
+    virtual void ResetState(
+        Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis) = 0;
 
     //! setup
     virtual void SetupFluidManagersAndMaterials(const std::string disname) = 0;
@@ -97,7 +100,7 @@ namespace POROMULTIPHASESCATRA
 
     //! apply mesh movement on artery element
     virtual double ApplyMeshMovement(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<DRT::Discretization> contdis) = 0;
+        const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis) = 0;
 
     //! set and get segment id
     virtual void SetSegmentID(const int& segmentid) = 0;
@@ -138,7 +141,7 @@ namespace POROMULTIPHASESCATRA
     void PreEvaluate();
 
     //! reset state
-    void ResetState(const std::vector<double>& contelephinp, const std::vector<double>& artelephinp,
+    void ResetState(
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
 
     //! setup
@@ -160,8 +163,7 @@ namespace POROMULTIPHASESCATRA
     int Ele2GID() const;
 
     //! apply mesh movement on artery element
-    double ApplyMeshMovement(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<DRT::Discretization> contdis);
+    double ApplyMeshMovement(const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis);
 
     //! set and get segment id
     void SetSegmentID(const int& segmentid);
@@ -176,7 +178,10 @@ namespace POROMULTIPHASESCATRA
     static const unsigned numdim_ = DRT::UTILS::DisTypeToDim<distypeCont>::dim;
 
     //! set time factor needed for evaluation of right hand side (function coupling) terms
-    void SetTimeFacRhs();
+    void SetTimeFacRhs(const double& arterydensity, Teuchos::RCP<MAT::MatList> contscatramat);
+
+    //! extract velocity of solid phase
+    void ExtractSolidVel(Teuchos::RCP<DRT::Discretization> contdis);
 
     //! recompute if deformable arteries are assumed
     void RecomputeEtaAndXiInDeformedConfiguration(const std::vector<double>& segmentlengths,
@@ -227,6 +232,11 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
+
+    //! evaluate divergence of solid velocity term (only porofluid has this term)
+    void EvaluateDivSolidVel(const std::vector<double>& eta,
+        const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
+        LINALG::SerialDenseVector& forcevec1);
 
     //! evaluate stiffness for GPTS case
     void EvaluateGPTSStiff(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
@@ -279,7 +289,7 @@ namespace POROMULTIPHASESCATRA
     void AssembleFunctionCouplingIntoForceStiffCont(const std::vector<int>& assembleInto,
         const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
         const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const int& scale,
-        const double& functval, const std::vector<double>& artderivs,
+        const double& timefacrhs_cont, const double& functval, const std::vector<double>& artderivs,
         const std::vector<double>& contderivs, LINALG::SerialDenseVector& forcevec2,
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22);
 
@@ -379,8 +389,9 @@ namespace POROMULTIPHASESCATRA
     LINALG::Matrix<numdim_ * numnodesart_, 1> ele1posref_;
     LINALG::Matrix<numdim_, numnodescont_> ele2posref_;
 
-    //! current position of element 2
+    //! current position and velocity of element 2
     LINALG::Matrix<numdim_, numnodescont_> ele2pos_;
+    LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
 
     // diameter of the artery element
     double arterydiam_;
@@ -415,7 +426,7 @@ namespace POROMULTIPHASESCATRA
     double arteryelelengthref_;
 
     //! stores initial direction of artery element
-    LINALG::Matrix<numdim_, 1> t0_;
+    LINALG::Matrix<numdim_, 1> lambda0_;
 
     //! Jacobian determinant for integration segment = L/2.0*(eta_a - eta_b)/2.0
     double jacobi_;
@@ -512,7 +523,7 @@ namespace POROMULTIPHASESCATRA
 
     //! right hand side factors
     double timefacrhs_art_;
-    double timefacrhs_cont_;
+    std::vector<double> timefacrhs_cont_;
 
     //! vector where to assemble rhs-(function) coupling into
     //  summed up phase requires special treatment

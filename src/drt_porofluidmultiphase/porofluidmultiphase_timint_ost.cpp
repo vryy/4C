@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -135,8 +135,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(
 {
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp_fluid", phinp_);
+  discret_->SetState("phin_fluid", phin_);
   discret_->SetState("phidtnp", phidtnp_);
-  discret_->SetState("valid_volfracpress_dofs", valid_volfracpress_dofs_);
 
   return;
 }

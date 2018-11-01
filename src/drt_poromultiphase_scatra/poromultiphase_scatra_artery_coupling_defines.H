@@ -20,7 +20,7 @@
 // default: 10
 #define PROJOUTPUT false /* output of projection algorithm */
 // default: false
-#define SMALLESTSEGMENT 1.0e-12 /* segments cannot be smaller than this */
+#define SMALLESTSEGMENT 1.0e-10 /* segments cannot be smaller than this */
 // default: 1.0e-12
 #define ETAABTOL 1.0e-10 /* used for check if segments are identical */
 // default: 1.0e-10
@@ -31,8 +31,8 @@
 // default: 1.0e-12
 #define CONVTOLNEWTONPROJ 1.0e-14 /* tolerance for Newton projection algorithm */
 // default: 1.0e-14
-#define NUMPROJCHECKS 11 /* number of checks performed in interval [-0.99, 0.99] */
-// default: 11
+#define NUMPROJCHECKS 1001 /* number of checks performed in interval [-0.999, 0.999] */
+// default: 51
 #define THROW_ERR_AT_DEGENERATE_CASE false /* throw error if degenerate case is detected */
 // default: false
 /************************************************************************/
@@ -48,4 +48,6 @@
 // default: 10
 #define BRUTEFORCESAFETY 1.4 /* safety factor for brute force search */
 // default: 1.4
+#define MAXNUMSEGPERELE 7 /* maximum number of segments per artery element */
+// default: 5
 #endif /* SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_DEFINES_H_ */

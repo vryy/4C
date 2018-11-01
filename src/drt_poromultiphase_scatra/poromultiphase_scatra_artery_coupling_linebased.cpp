@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include <Epetra_FEVector.h>
 
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
 #include "../linalg/linalg_multiply.H"
@@ -36,6 +37,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
           arterydis, contdis, couplingparams, condname, artcoupleddofname, contcoupleddofname),
       couplingparams_(couplingparams),
       porofluidmanagersset_(false),
+      porofluidprob_(false),
       coupling_method_(
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
@@ -62,7 +64,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
 {
   // we do not have a moving mesh
   if (DRT::Problem::Instance()->ProblemType() == prb_porofluidmultiphase)
+  {
     evaluate_in_ref_config_ = true;
+    porofluidprob_ = true;
+  }
 
   // fill the vectors
   FillFunctionAndScaleVectors();
@@ -76,25 +81,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   // pre-evaluate the pairs
   PreEvaluateCouplingPairs();
 
+  // create the GID to segment vector
+  CreateGIDToSegmentVector();
+
   // fill length of artery elements that is not influenced if the underlying
   // 2D/3D mesh moves (basically protruding artery elements or segments)
   FillUnaffectedArteryLength();
-
-  // create the GID to segment vector
-  CreateGIDToSegmentVector();
 
   // print out summary of pairs
   OutputSummary();
 
   // initialize phinp for continuous dis
   phinp_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
+  // initialize phin for continuous dis
+  phin_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
   // initialize phinp for artery dis
   phinp_art_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap(), true));
-
-  // initialize phinp for continuous dis (colmap)
-  phinp_cont_colmap_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofColMap(), true));
-  // initialize phinp for artery dis (colmap)
-  phinp_art_colmap_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofColMap(), true));
 
   // initialize phinp for continuous dis
   zeros_cont_ = Teuchos::rcp(new Epetra_Vector(*contdis_->DofRowMap(), true));
@@ -104,9 +106,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   // -------------------------------------------------------------------
   // create empty D and M matrices (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  D_ = Teuchos::rcp(new LINALG::SparseMatrix(*(arterydis_->DofRowMap()), 27, false, true));
-  M_ = Teuchos::rcp(new LINALG::SparseMatrix(*(arterydis_->DofRowMap()), 27, false, true));
-  kappaInv_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->DofRowMap(), true));
+  D_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *(arterydis_->DofRowMap()), 27, false, true, LINALG::SparseMatrix::FE_MATRIX));
+  M_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      *(arterydis_->DofRowMap()), 27, false, true, LINALG::SparseMatrix::FE_MATRIX));
+  kappaInv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(), true));
 
   // full map of continous and artery dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
@@ -117,6 +121,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   /// dof row map of coupled problem splitted in (field) blocks
   globalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
   globalex_->Setup(*fullmap_, maps);
+
+  FEmat_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*fullmap_, 81, true, true, LINALG::SparseMatrix::FE_MATRIX));
+
+  FErhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
 
   // check global map extractor
   globalex_->CheckForValidMapExtractor();
@@ -140,11 +149,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
       coupl_elepairs_[i]->SetupFluidManagersAndMaterials(contdis_->Name());
     porofluidmanagersset_ = true;
   }
-
-  // reset
-  rhs->PutScalar(0.0);
-  sysmat->Matrix(0, 1).Zero();
-  sysmat->Matrix(1, 0).Zero();
 
   // evaluate and assemble the pairs
   // note: OD terms, i.e., (0,1) and (1,0) directly assembled into sysmat
@@ -255,17 +259,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::BruteForceSear
   //  Debug output
   //  std::map<int, std::set<int>>::iterator it;
   //
-  //  for ( it = nearbyelepairs_.begin(); it != nearbyelepairs_.end(); it++ )
+  //  for (it = nearbyelepairs_.begin(); it != nearbyelepairs_.end(); it++)
   //  {
   //    std::cout << "on proc " << myrank_ << " artery ele " << it->first  // string (key)
-  //               << ": ";
-  //    for(auto f : it->second) {
+  //              << ": ";
+  //    for (auto f : it->second)
+  //    {
   //      std::cout << f << ", ";
   //    }
   //    std::cout << "\n";
   //  }
-
-
 
   // *********** time measurement ***********
   double mydtsearch = timersearch_.WallTime() - dtcpu;
@@ -333,8 +336,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
       active_coupl_elepairs;
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
+    const int contelegid = coupl_elepairs_[i]->Ele2GID();
+    DRT::Element* contele = contdis_->gElement(contelegid);
+
     if (coupl_elepairs_[i]->IsActive() &&
-        !IsDuplicateSegment(active_coupl_elepairs, coupl_elepairs_[i]))
+        !IsDuplicateSegment(active_coupl_elepairs, coupl_elepairs_[i]) &&
+        contele->Owner() == myrank_)
       active_coupl_elepairs.push_back(coupl_elepairs_[i]);
   }
 
@@ -357,58 +364,105 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
  *------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffectedArteryLength()
 {
-  // the unaffected lenght is the length of 1D elements not changed through deformation,
+  // no need to do this
+  if (porofluidprob_)
+  {
+    for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
+    {
+      const int artelegid = arterydis_->ElementColMap()->GID(i);
+      DRT::Element* artele = arterydis_->gElement(artelegid);
+
+      // TODO: this will not work for higher order artery eles
+      const double initlength = GetMaxNodalDistance(artele, arterydis_);
+      const int numseg = (int)(gid_to_segment_[artelegid].size() / 2);
+      gid_to_seglength_[artelegid].resize(numseg);
+      for (int iseg = 0; iseg < numseg; iseg++)
+      {
+        const double etaA = gid_to_segment_[artelegid][2 * iseg];
+        const double etaB = gid_to_segment_[artelegid][2 * iseg + 1];
+        gid_to_seglength_[artelegid][iseg] = initlength * (etaB - etaA) / 2.0;
+
+        int id = -1;
+        // return also id -> index in coupl_elepairs_ of this segment
+        // and set iseg as segment id of the coupling pairs
+        if (IsIdenticalSegment(coupl_elepairs_, artelegid, etaA, etaB, id))
+          coupl_elepairs_[id]->SetSegmentID(iseg);
+      }
+    }
+
+    return;
+  }
+
+  // the unaffected length is the length of 1D elements not changed through deformation,
   // basically if these elements protrude.
   // for each element this length is computed as: ele_length - sum_segments seg_length
   // if the above quantity is bigger than zero, a 1D element protrudes
 
   // initialize the unaffected and current lengths
-  unaffected_length_artery_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementRowMap(), true));
-  current_length_artery_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementRowMap(), true));
+  unaffected_seg_lengths_artery_ =
+      Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(1), true));
+  current_seg_lengths_artery_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(1)));
 
-  // initialize the unaffected length
-  for (int i = 0; i < arterydis_->ElementRowMap()->NumMyElements(); ++i)
+  // set segment ID on coupling pairs and fill the unaffected artery length
+  for (int iele = 0; iele < arterydis_->ElementColMap()->NumMyElements(); ++iele)
   {
-    const int artelegid = arterydis_->ElementRowMap()->GID(i);
-    DRT::Element* artele = arterydis_->gElement(artelegid);
+    const int artelegid = arterydis_->ElementColMap()->GID(iele);
+    DRT::Element* thisele = arterydis_->gElement(artelegid);
 
-    DRT::Node** artnodes = artele->Nodes();
+    // TODO: this will not work for higher order artery eles
+    const double initlength = GetMaxNodalDistance(thisele, arterydis_);
 
-    DRT::Node* artnode0 = artnodes[0];
+    std::vector<double> segmentboundaries = gid_to_segment_[artelegid];
+    for (unsigned int iseg = 0; iseg < segmentboundaries.size() / 2; iseg++)
+    {
+      int id = -1;
+      // get EtaA and etaB and calculate initial length
+      const double etaA = segmentboundaries[iseg * 2];
+      const double etaB = segmentboundaries[iseg * 2 + 1];
+      const double seglength = initlength * (etaB - etaA) / 2.0;
 
-    static LINALG::Matrix<3, 1> artpos0;
-    artpos0(0) = artnode0->X()[0];
-    artpos0(1) = artnode0->X()[1];
-    artpos0(2) = artnode0->X()[2];
+      // since we use an FE-vector
+      if (thisele->Owner() == myrank_)
+      {
+        // build the location array
+        std::vector<int> seglengthdofs = arterydis_->Dof(1, thisele);
+        unaffected_seg_lengths_artery_->SumIntoGlobalValues(1, &seglengthdofs[iseg], &seglength);
+      }
 
-    DRT::Node* artnode1 = artnodes[1];
-
-    static LINALG::Matrix<3, 1> artpos1;
-    artpos1(0) = artnode1->X()[0];
-    artpos1(1) = artnode1->X()[1];
-    artpos1(2) = artnode1->X()[2];
-
-    static LINALG::Matrix<3, 1> dist;
-    dist.Update(1.0, artpos0, -1.0, artpos1, 0.0);
-    const double init_length = dist.Norm2();
-
-    unaffected_length_artery_->SumIntoGlobalValues(1, &init_length, &artelegid);
+      // return also id -> index in coupl_elepairs_ of this segment
+      // and set iseg as segment id of the coupling pairs
+      if (IsIdenticalSegment(coupl_elepairs_, artelegid, etaA, etaB, id))
+        coupl_elepairs_[id]->SetSegmentID(iseg);
+    }
   }
+
+  if (unaffected_seg_lengths_artery_->GlobalAssemble(Add, false) != 0)
+    dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
 
   // subtract the segment lengths only if we evaluate in current configuration
   if (!evaluate_in_ref_config_)
   {
     for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
     {
-      double init_segment_length = coupl_elepairs_[i]->ApplyMeshMovement(Teuchos::null, contdis_);
+      // get the initial lengths
+      double init_segment_length = coupl_elepairs_[i]->ApplyMeshMovement(true, contdis_);
       init_segment_length *= -1.0;
+
       const int artelegid = coupl_elepairs_[i]->Ele1GID();
-      if ((arterydis_->gElement(artelegid))->Owner() == myrank_)
-        unaffected_length_artery_->SumIntoGlobalValues(1, &(init_segment_length), &artelegid);
+      DRT::Element* artele = arterydis_->gElement(artelegid);
+
+      std::vector<int> seglengthdofs = arterydis_->Dof(1, artele);
+      const int segid = coupl_elepairs_[i]->GetSegmentID();
+
+      unaffected_seg_lengths_artery_->SumIntoGlobalValues(
+          1, &seglengthdofs[segid], &(init_segment_length));
     }
+    if (unaffected_seg_lengths_artery_->GlobalAssemble(Add, false) != 0)
+      dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
   }
+  // the current length is simply the unaffected length
   else
-    current_length_artery_->Update(1.0, *unaffected_length_artery_, 0.0);
+    current_seg_lengths_artery_->Update(1.0, *unaffected_seg_lengths_artery_, 0.0);
 
   return;
 }
@@ -422,11 +476,33 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
     const int artelegid = coupl_elepairs_[i]->Ele1GID();
+    const int contelegid = coupl_elepairs_[i]->Ele2GID();
+
+    const DRT::Element* contele = contdis_->gElement(contelegid);
+
     const double etaA = coupl_elepairs_[i]->EtaA();
     const double etaB = coupl_elepairs_[i]->EtaB();
 
-    gid_to_segment_[artelegid].push_back(etaA);
-    gid_to_segment_[artelegid].push_back(etaB);
+    if (contele->Owner() == myrank_)
+    {
+      gid_to_segment_[artelegid].push_back(etaA);
+      gid_to_segment_[artelegid].push_back(etaB);
+    }
+    else
+      dserror(
+          "Something went wrong here, pair in coupling ele pairs where continuous-discretization "
+          "element is not owned by this proc.");
+  }
+
+  // communicate it to all procs.
+  std::vector<int> allproc(Comm().NumProc());
+  for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
+  for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
+  {
+    const int artelegid = arterydis_->ElementColMap()->GID(i);
+
+    LINALG::Gather<double>(gid_to_segment_[artelegid], gid_to_segment_[artelegid],
+        (int)allproc.size(), &allproc[0], Comm());
   }
 
   // sort and take care of special cases
@@ -459,30 +535,35 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
       gid_to_segment_[artelegid].push_back(-1.0);
       gid_to_segment_[artelegid].push_back(1.0);
     }
-    // create the gid to seglength vector
-    gid_to_seglength_[artelegid] =
-        std::vector<double>((int)(gid_to_segment_[artelegid].size() / 2), -1.0);
   }
 
-  // set segment ID on coupling pairs and fill GID-to-segment length vector
-  for (int iele = 0; iele < arterydis_->ElementColMap()->NumMyElements(); ++iele)
+  // safety checks
+  for (int i = 0; i < arterydis_->ElementColMap()->NumMyElements(); ++i)
   {
-    const int artelegid = arterydis_->ElementColMap()->GID(iele);
-    std::vector<double> segmentboundaries = gid_to_segment_[artelegid];
-    DRT::Element* thisele = arterydis_->gElement(artelegid);
-    // TODO: this will not work for higher order artery eles
-    const double initlength = GetMaxNodalDistance(thisele, arterydis_);
-    for (unsigned int iseg = 0; iseg < segmentboundaries.size() / 2; iseg++)
+    // 1) check if artery element has more than MAXNUMSEGPERELE segments
+    const int artelegid = arterydis_->ElementColMap()->GID(i);
+    if (gid_to_segment_[artelegid].size() > 2 * MAXNUMSEGPERELE)
+      dserror(
+          "Artery element %i has %i segments, which is more than the maximum allowed number of %i "
+          "segments per artery element, increase MAXNUMSEGPERELE",
+          artelegid, (int)(gid_to_segment_[artelegid].size() / 2), MAXNUMSEGPERELE);
+    // 2) check if segment has been overlooked
+    for (int iseg = 0; iseg < (int)(gid_to_segment_[artelegid].size() / 2) - 1; iseg++)
     {
-      int id = -1;
-      // get EtaA and etaB and calculate initial length
-      const double etaA = segmentboundaries[iseg * 2];
-      const double etaB = segmentboundaries[iseg * 2 + 1];
-      gid_to_seglength_[artelegid][iseg] = initlength * (etaB - etaA) / 2.0;
-
-      // return also id -> index in coupl_elepairs_ of this segment
-      if (IsIdenticalSegment(coupl_elepairs_, artelegid, etaA, etaB, id))
-        coupl_elepairs_[id]->SetSegmentID(iseg);
+      if (fabs(gid_to_segment_[artelegid][2 * iseg + 1] -
+               gid_to_segment_[artelegid][2 * iseg + 2]) > SMALLESTSEGMENT)
+      {
+        std::cout << "Problem with segments of artery-element " << artelegid << ":" << std::endl;
+        for (int jseg = 0; jseg < (int)(gid_to_segment_[artelegid].size() / 2); jseg++)
+        {
+          std::cout << "[" << gid_to_segment_[artelegid][2 * jseg] << ", "
+                    << gid_to_segment_[artelegid][2 * jseg + 1] << "]" << std::endl;
+        }
+        dserror(
+            "artery element %i has probably not found all possible segments, increase "
+            "NUMPROJCHECKS",
+            artelegid);
+      }
     }
   }
 
@@ -504,6 +585,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
     kappaInv_->PutScalar(0.0);
   }
 
+  FEmat_->Zero();
+  FErhs_->PutScalar(0.0);
+
   // resulting discrete element force vectors of the two interacting elements
   std::vector<LINALG::SerialDenseVector> eleforce(2);
 
@@ -516,41 +600,59 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
   LINALG::SerialDenseMatrix M_ele;
   LINALG::SerialDenseVector Kappa_ele;
 
-  // export from row to col
+  // set states
   if (contdis_->Name() == "porofluid")
-    contdis_->SetState("phinp_fluid", phinp_cont_colmap_);
+  {
+    contdis_->SetState("phinp_fluid", phinp_cont_);
+    contdis_->SetState("phin_fluid", phin_cont_);
+    arterydis_->SetState("one_d_artery_pressure", phinp_art_);
+    if (not evaluate_in_ref_config_ && not contdis_->HasState(1, "velocity field"))
+      dserror("evaluation in current configuration wanted but solid phase velocity not available!");
+  }
   else if (contdis_->Name() == "scatra")
-    contdis_->SetState("phinp", phinp_cont_colmap_);
+  {
+    contdis_->SetState("phinp", phinp_cont_);
+    arterydis_->SetState("one_d_artery_phinp", phinp_art_);
+  }
   else
     dserror("should not happen");
 
   // evaluate all pairs
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
   {
-    // get element quantities
-    std::vector<double> contelephinp =
-        GetElePhinp(contdis_, coupl_elepairs_[i]->Ele2GID(), phinp_cont_colmap_);
-    std::vector<double> artelephinp =
-        GetElePhinp(arterydis_, coupl_elepairs_[i]->Ele1GID(), phinp_art_colmap_);
+    // reset state on pairs
+    coupl_elepairs_[i]->ResetState(contdis_, arterydis_);
 
-    // set on pairs
-    coupl_elepairs_[i]->ResetState(contelephinp, artelephinp, contdis_, arterydis_);
+    // get the segment lengths
+    const std::vector<double> seglengths = GetEleSegmentLengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
     coupl_elepairs_[i]->Evaluate(&eleforce[0], &eleforce[1], &elestiff[0][0], &elestiff[0][1],
-        &elestiff[1][0], &elestiff[1][1], &D_ele, &M_ele, &Kappa_ele,
-        gid_to_seglength_[coupl_elepairs_[i]->Ele1GID()]);
+        &elestiff[1][0], &elestiff[1][1], &D_ele, &M_ele, &Kappa_ele, seglengths);
 
     // assemble
-    AssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
+    FEAssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
         coupl_elepairs_[i]->Ele2GID(), eleforce, elestiff, sysmat, rhs, sysmat_cont, sysmat_art);
 
     // in case of MP, assemble D, M and Kappa
     if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
         num_coupled_dofs_ > 0)
-      AssembleDMKappa(
+      FEAssembleDMKappa(
           coupl_elepairs_[i]->Ele1GID(), coupl_elepairs_[i]->Ele2GID(), D_ele, M_ele, Kappa_ele);
   }
+
+  if (FErhs_->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble of right hand side failed");
+  rhs->Update(1.0, *FErhs_, 0.0);
+
+  FEmat_->Complete();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockartery =
+      FEmat_->Split<LINALG::DefaultBlockMatrixStrategy>(*globalex_, *globalex_);
+
+  blockartery->Complete();
+  sysmat->Matrix(1, 0).Add(blockartery->Matrix(1, 0), false, 1.0, 0.0);
+  sysmat->Matrix(0, 1).Add(blockartery->Matrix(0, 1), false, 1.0, 0.0);
+  sysmat_cont->Add(blockartery->Matrix(0, 0), false, 1.0, 1.0);
+  sysmat_art->Add(blockartery->Matrix(1, 1), false, 1.0, 1.0);
 
   // assemble D and M contributions into global force and stiffness
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
@@ -561,10 +663,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
 }
 
 /*----------------------------------------------------------------------*
- | assemble into global force and stiffness            kremheller 05/18 |
+ | FE-assemble into global force and stiffness         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
-    AssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
+    FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
         std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
@@ -584,15 +686,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
   ele1->LocationVector(*arterydis_, lmrow1, lmrowowner1, lmstride);
   ele2->LocationVector(*contdis_, lmrow2, lmrowowner2, lmstride);
 
-  // assemble rhs
-  rhs->SumIntoGlobalValues(elevec[0].Length(), elevec[0].Values(), &lmrow1[0]);
-  rhs->SumIntoGlobalValues(elevec[1].Length(), elevec[1].Values(), &lmrow2[0]);
+  FEmat_->FEAssemble(elemat[0][0], lmrow1, lmrow1);
+  FEmat_->FEAssemble(elemat[0][1], lmrow1, lmrow2);
+  FEmat_->FEAssemble(elemat[1][0], lmrow2, lmrow1);
+  FEmat_->FEAssemble(elemat[1][1], lmrow2, lmrow2);
 
-  // assemble matrices
-  sysmat_art->Assemble(0, elemat[0][0], lmrow1, lmrowowner1, lmrow1);
-  sysmat->Matrix(1, 0).Assemble(0, elemat[0][1], lmrow1, lmrowowner1, lmrow2);
-  sysmat->Matrix(0, 1).Assemble(0, elemat[1][0], lmrow2, lmrowowner2, lmrow1);
-  sysmat_cont->Assemble(0, elemat[1][1], lmrow2, lmrowowner2, lmrow2);
+  FErhs_->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
+  FErhs_->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
 
   return;
 }
@@ -600,7 +700,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 /*----------------------------------------------------------------------*
  | assemble D, M and kappa into global D, M and kappa  kremheller 05/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::AssembleDMKappa(
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FEAssembleDMKappa(
     const int& ele1gid, const int& ele2gid, const LINALG::SerialDenseMatrix& D_ele,
     const LINALG::SerialDenseMatrix& M_ele, const LINALG::SerialDenseVector& Kappa_ele)
 {
@@ -617,9 +717,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::AssembleDMKapp
   ele1->LocationVector(*arterydis_, lmrow1, lmrowowner1, lmstride);
   ele2->LocationVector(*contdis_, lmrow2, lmrowowner2, lmstride);
 
-  D_->Assemble(0, D_ele, lmrow1, lmrowowner1, lmrow1);
-  M_->Assemble(0, M_ele, lmrow1, lmrowowner1, lmrow2);
-  kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(), Kappa_ele.Values(), &lmrow1[0]);
+  D_->FEAssemble(D_ele, lmrow1, lmrow1);
+  M_->FEAssemble(M_ele, lmrow1, lmrow2);
+  kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(), &lmrow1[0], Kappa_ele.Values());
 
   return;
 }
@@ -651,7 +751,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
 
   // get kappa matrix
   Teuchos::RCP<LINALG::SparseMatrix> kappaInvMat =
-      Teuchos::rcp(new LINALG::SparseMatrix(*kappaInv_));
+      Teuchos::rcp(new LINALG::SparseMatrix(*new Epetra_Vector(Copy, *kappaInv_, 0)));
   kappaInvMat->Complete();
 
   // kappa^{-1}*M
@@ -708,11 +808,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::InvertKappa()
 {
+  // global assemble
+  if (kappaInv_->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble of kappaInv_ failed");
+
   // invert (pay attention to protruding elements)
   for (int i = 0; i < arterydis_->DofRowMap()->NumMyElements(); ++i)
   {
     const int artdofgid = arterydis_->DofRowMap()->GID(i);
-    const double kappaVal = (*kappaInv_)[kappaInv_->Map().LID(artdofgid)];
+    const double kappaVal = (*kappaInv_)[0][kappaInv_->Map().LID(artdofgid)];
     if (fabs(kappaVal) > KAPPAINVTOL)
       kappaInv_->ReplaceGlobalValue(artdofgid, 0, 1.0 / kappaVal);
     else
@@ -723,22 +826,28 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::InvertKappa()
 }
 
 /*----------------------------------------------------------------------*
- | get element primary variable                        kremheller 05/18 |
+ | get element segment lengths                         kremheller 09/18 |
  *----------------------------------------------------------------------*/
-std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetElePhinp(
-    Teuchos::RCP<DRT::Discretization> dis, const int elegid,
-    Teuchos::RCP<const Epetra_Vector> phinp)
+std::vector<double>
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLengths(
+    const int artelegid)
 {
-  std::vector<int> lm, lmowner, lmstride;
-  std::vector<double> elephinp;
+  if (porofluidprob_) return gid_to_seglength_[artelegid];
 
-  (dis->gElement(elegid))->LocationVector(*dis, lm, lmowner, lmstride);
+  // safety checks
+  if (!arterydis_->HasState(1, "curr_seg_lengths")) dserror("cannot get state curr_seg_lengths");
 
-  DRT::UTILS::ExtractMyValues(*phinp, elephinp, lm);
+  // build the location array
+  DRT::Element* artele = arterydis_->gElement(artelegid);
+  std::vector<int> seglengthdofs = arterydis_->Dof(1, artele);
 
-  return elephinp;
+  Teuchos::RCP<const Epetra_Vector> curr_seg_lengths = arterydis_->GetState(1, "curr_seg_lengths");
+
+  std::vector<double> seglengths(MAXNUMSEGPERELE);
+  DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, seglengthdofs);
+
+  return seglengths;
 }
-
 /*----------------------------------------------------------------------*
  | check for duplicate segment                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
@@ -957,13 +1066,12 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::DofRowMap() const
  | set solution vectors of single fields               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetSolutionVectors(
-    Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phinp_art)
+    Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
+    Teuchos::RCP<const Epetra_Vector> phinp_art)
 {
   phinp_cont_ = phinp_cont;
+  if (phin_cont != Teuchos::null) phin_cont_ = phin_cont;
   phinp_art_ = phinp_art;
-  // export from row to col map
-  LINALG::Export(*phinp_cont, *phinp_cont_colmap_);
-  LINALG::Export(*phinp_art, *phinp_art_colmap_);
 
   return;
 }
@@ -971,38 +1079,42 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetSolutionVec
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovement(
-    Teuchos::RCP<const Epetra_Vector> disp)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovement()
 {
+  // no need to do this
+  if (porofluidprob_) return;
+
   // only if we evalute in current configuration
   if (!evaluate_in_ref_config_)
   {
-    if (disp == Teuchos::null) dserror("Received null pointer on displacement");
+    // safety
+    if (!contdis_->HasState(1, "dispnp")) dserror("cannot get displacement state");
 
-    // export from row to col map
-    Teuchos::RCP<Epetra_Vector> dispnp_col =
-        Teuchos::rcp(new Epetra_Vector(*contdis_->DofColMap(1), true));
-    LINALG::Export(*disp, *dispnp_col);
-    current_length_artery_->PutScalar(0.0);
-    // apply movement on pairs and fill gid-to-seglength and current_length_artery_
+    // update with unaffected length
+    current_seg_lengths_artery_->Update(1.0, *unaffected_seg_lengths_artery_, 0.0);
+
+    // apply movement on pairs and fill gid-to-seglength and current_seg_lengths_artery_
     for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
     {
-      const double newsegmentlength = coupl_elepairs_[i]->ApplyMeshMovement(dispnp_col, contdis_);
+      const double newsegmentlength = coupl_elepairs_[i]->ApplyMeshMovement(false, contdis_);
       const int artelegid = coupl_elepairs_[i]->Ele1GID();
       const int segid = coupl_elepairs_[i]->GetSegmentID();
 
-      gid_to_seglength_[artelegid][segid] = newsegmentlength;
+      DRT::Element* artele = arterydis_->gElement(artelegid);
+      // build the location array
+      std::vector<int> seglengthdofs = arterydis_->Dof(1, artele);
 
-      if ((arterydis_->gElement(artelegid))->Owner() == myrank_)
-        current_length_artery_->SumIntoGlobalValues(1, &(newsegmentlength), &artelegid);
+      current_seg_lengths_artery_->SumIntoGlobalValues(
+          1, &seglengthdofs[segid], &(newsegmentlength));
     }
 
-    // update with unaffected length
-    current_length_artery_->Update(1.0, *unaffected_length_artery_, 1.0);
+    if (current_seg_lengths_artery_->GlobalAssemble(Add, false) != 0)
+      dserror("GlobalAssemble of current_seg_lengths_artery_ failed");
   }
 
   // set state on artery dis
-  arterydis_->SetState(1, "curr_ele_length", current_length_artery_);
+  arterydis_->SetState(1, "curr_seg_lengths",
+      Teuchos::rcp(new Epetra_Vector(Copy, *current_seg_lengths_artery_, 0)));
 
   return;
 }

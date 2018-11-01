@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -181,6 +181,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
           true  // Jacobian at the node needed since porosity and (pressure in case of volume
                 // fractions )depends on J
       );
+      break;
+    }
+    case POROFLUIDMULTIPHASE::calc_valid_dofs:
+    {
+      // evaluate the element
+      EvaluateOnlyElement(ele, elemat, elevec, discretization, la);
       break;
     }
     default:
@@ -440,6 +446,36 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(DRT::Element* 
   }
 }
 
+/*-----------------------------------------------------------------------------*
+ | loop over nodes for evaluation                                  vuong 08/16 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateOnlyElement(DRT::Element* ele,
+    std::vector<Epetra_SerialDenseMatrix*>& elemat, std::vector<Epetra_SerialDenseVector*>& elevec,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la)
+{
+  // Note: this is an evaluation of the element where no Gauss point data and function values (from
+  //       variable and phase-managers are required
+
+  // dummy derivative matrix as zero
+  derxy_.Clear();
+  funct_.Clear();
+
+  //----------------------------------------------------------------
+  // 1) element matrix
+  //----------------------------------------------------------------
+  evaluator_->EvaluateMatrix(
+      elemat, funct_, derxy_, totalnumdofpernode_, *phasemanager_, *variablemanager_, 1.0, 1.0);
+
+  //----------------------------------------------------------------
+  // 2) element vector
+  //----------------------------------------------------------------
+  evaluator_->EvaluateVector(
+      elevec, funct_, derxy_, totalnumdofpernode_, *phasemanager_, *variablemanager_, 1.0, 1.0);
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -542,7 +578,8 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   // inverse of transposed jacobian "ds/dX"
   const double det0 = xjm0.Determinant();
 
-  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
+  // )^-1
   J_ = det_ / det0;
 
   // set integration factor: fac = Gauss weight * det(J)
@@ -620,7 +657,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(c
   // inverse of transposed jacobian "ds/dX"
   const double det0 = xjm0.Determinant();
 
-  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
+  // )^-1
   J_ = det_ / det0;
 }
 

@@ -71,7 +71,7 @@ namespace POROFLUIDMULTIPHASE
     void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const;
 
     //! apply the mesh movement
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const;
+    void ApplyMeshMovement() const;
   };
 
 }  // namespace POROFLUIDMULTIPHASE

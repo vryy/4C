@@ -247,6 +247,7 @@ namespace DRT
       PoroCoupling,
       PoroPartInt,
       PoroPresInt,
+      PoroMultiphaseScatraOxyPartPressCalcCond,
       SSICoupling,
       EHLCoupling,
       SSICouplingSolidToScatra,
