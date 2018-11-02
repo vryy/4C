@@ -1,10 +1,5 @@
 //
-// Maintainer: Moritz Frenzel
-// frenzel@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15240
-//
-// necessary defines: D_SOLID3 BINIO
+// Maintainer: Matthias Mayr
 //
 ==================================================================
 General Data File CCARAT
@@ -18,13 +13,9 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 --------------------------------------------------------------DISCRETISATION
-//                                                             // Number of meshes in ale field
 NUMALEDIS                       1
-//                                                             // Number of meshes in fluid field
 NUMFLUIDDIS                     1
-//                                                             // Number of meshes in structural field
 NUMSTRUCDIS                     1
-//                                                             // Number of meshes in thermal field
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
@@ -44,7 +35,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     0
-NLNSOL                          lsnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          lsnewton
 TIMESTEP                        12.5
 NUMSTEP                         8
 MAXTIME                         100.0
@@ -52,7 +43,7 @@ TOLRES                          1.0E-7
 TOLDISP                         1.0E-7
 NORM_RESF                       Abs
 NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              Or
+NORMCOMBI_RESFDISP              And
 MAXITER                         100
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
@@ -63,72 +54,22 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.712373537764607434e+00 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.712373537764607434e+00 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
 NDSURF                          3
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
 //node_ns1
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //node_ns3
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
 //node_ns2
 E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 FUNCT 0 1 0 Live Mid
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
-DVOL                            0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id
-DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
@@ -559,7 +500,5 @@ NODE 162 COORD 4.8000000000000e+01 6.0000000000000e+01 1.0000000000000e+00
 62 SOLIDH8 HEX8 137 139 157 155 138 140 158 156 MAT 1 KINEM nonlinear EAS full
 63 SOLIDH8 HEX8 139 141 159 157 140 142 160 158 MAT 1 KINEM nonlinear EAS full
 64 SOLIDH8 HEX8 141 143 161 159 142 144 162 160 MAT 1 KINEM nonlinear EAS full
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
 //                              END
