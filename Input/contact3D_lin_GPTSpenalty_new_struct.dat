@@ -88,6 +88,21 @@ E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1  1 2
 DSURF                           2
 E 6 - 1 Master
 E 7 - 1 Slave
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
+MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
+MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1000 VALUES 0 0 0.2 0.2
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1000 VALUES 0 1 1 1
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 1.99888269e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.94714031e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.73201730e-01 TOLERANCE 1e-8
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 249 DNODE 1
 NODE 175 DNODE 2
@@ -1143,20 +1158,5 @@ NODE 251 COORD 1.999999911791123e+00 1.999999911791123e+00 1.000000000000000e+00
 127 SOLIDH8 HEX8 151 114 105 140 155 120 107 142 MAT 1 KINEM nonlinear EAS none
 128 SOLIDH8 HEX8 192 151 140 181 196 155 142 186 MAT 1 KINEM nonlinear EAS none
 129 SOLIDH8 HEX8 106 167 132 67 125 188 158 91 MAT 2 KINEM nonlinear EAS none
--------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
-MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
-MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
-MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
-----------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1000 VALUES 0 0 0.2 0.2
-----------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1000 VALUES 0 1 1 1
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 1.99730620445507046e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.94008993434051508e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.70327050858521667e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
