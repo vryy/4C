@@ -196,7 +196,9 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
   IntParameter("PARALLEL_REDIST_INTERVAL", -1,
       "Specifies the Newton iteration interval in which the parallel "
-      "redistribution is controlled.",
+      "redistribution is controlled. An interval value equal to or smaller than "
+      "zero disables the dynamic redistribution control mechanism during the Newton"
+      " iteration.",
       &augcontact);
 
   // --------------------------------------------------------------------------

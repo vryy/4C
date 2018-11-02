@@ -161,10 +161,6 @@ namespace NOX
           /// destructor
           virtual ~Filter(){};
 
-          /// initialize the (filter) points
-          void InitPoints(const Interface::Required& interface, const NOX::Solver::Generic& solver,
-              const NOX::Abstract::Group& grp);
-
           /** \brief %Test the inner stopping criterion
            *
            *  The test can (and should, if possible) be skipped if
@@ -181,6 +177,10 @@ namespace NOX
           virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
 
          private:
+          /// initialize the (filter) points
+          void InitPoints(const Interface::Required& interface, const NOX::Solver::Generic& solver,
+              const NOX::Abstract::Group& grp);
+
           /// evaluate and set new trial point
           void SetTrialPoint(
               const NOX::MeritFunction::Generic& merit_func, const NOX::Abstract::Group& grp);

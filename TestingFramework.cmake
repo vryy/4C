@@ -542,10 +542,7 @@ baci_test(contact3D_aug_sohex8_two_beams_horizontal_complete 3 "")
 baci_test(contact3D_aug_nurbs27_patch_test_complete 1 "")
 baci_test(contact3D_aug_nurbs27_patch_test_incomplete 1 "")
 baci_test(contact3D_aug_compressed_tape 4 "")
-# This test case takes currently too long (in Debug more than 1500sec) and
-# is consequently deactivated for now. However, it would test features which are
-# not covered by other tests, yet.                                   hiermeier
-#baci_test(contact3D_aug_grazing_tori_filter 4 "")
+baci_test(contact3D_aug_grazing_tori_filter 3 "")
 baci_test(cook_original8x8x2_nstet5 1 "")
 baci_test(cook_original8x8x2_nstet5 2 "")
 baci_test(cook_original4x4x2_tet4av 2 "")
