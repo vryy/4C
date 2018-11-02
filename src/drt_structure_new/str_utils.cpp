@@ -38,6 +38,25 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+NOX::NLN::LinSystem::ConditionNumber STR::NLN::Convert2NoxConditionNumberType(
+    const INPAR::STR::ConditionNumber stype)
+{
+  switch (stype)
+  {
+    case INPAR::STR::ConditionNumber::max_min_ev_ratio:
+      return NOX::NLN::LinSystem::ConditionNumber::max_min_ev_ratio;
+    case INPAR::STR::ConditionNumber::one_norm:
+      return NOX::NLN::LinSystem::ConditionNumber::one_norm;
+    case INPAR::STR::ConditionNumber::inf_norm:
+      return NOX::NLN::LinSystem::ConditionNumber::inf_norm;
+    default:
+      dserror("No known conversion.");
+      exit(EXIT_FAILURE);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
     const enum INPAR::STR::VectorNorm& normtype)
 {

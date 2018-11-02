@@ -355,6 +355,8 @@ namespace IO
     /// set output control
     virtual void SetOutput(Teuchos::RCP<OutputControl> output);
 
+    /// access discretization
+    const DRT::Discretization& GetDiscret() const;
 
    protected:
     /// empty constructor (only used for the construction of derived classes)

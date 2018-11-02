@@ -231,7 +231,7 @@ void IO::EveryIterationWriter::InitNewtonIteration()
   every_iter_writer_->NewStep(0, 0.0);
 
   interface_->PrepareOutput();
-  interface_->OutputState(*every_iter_writer_, true);
+  interface_->OutputDebugState(*every_iter_writer_, true);
 
   isnewton_initialized_ = true;
 }
@@ -251,7 +251,7 @@ void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
   every_iter_writer_->NewStep(counter, counter);
 
   interface_->PrepareOutput();
-  interface_->OutputState(*every_iter_writer_, write_owner_each_newton_iteration_);
+  interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -276,7 +276,7 @@ void IO::EveryIterationWriter::AddLineSearchIteration(
   every_iter_writer_->NewStep(counter, counter);
 
   interface_->PrepareOutput();
-  interface_->OutputState(*every_iter_writer_, write_owner_each_newton_iteration_);
+  interface_->OutputDebugState(*every_iter_writer_, write_owner_each_newton_iteration_);
 }
 
 /*----------------------------------------------------------------------------*

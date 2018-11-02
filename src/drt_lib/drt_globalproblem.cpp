@@ -383,6 +383,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton", *list);
+  reader.ReadSection("--STRUCT NOX/Direction/Newton/Modified", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton/Linear Solver", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Steepest Descent", *list);
   reader.ReadSection("--STRUCT NOX/Line Search", *list);

@@ -21,14 +21,15 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned probdim,
-    DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type)
+    DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type,
+    const bool debug)
 {
   switch (probdim)
   {
     case 2:
-      return Get2D(ref_type, tar_type);
+      return Get2D(ref_type, tar_type, debug);
     case 3:
-      return Get3D(ref_type, tar_type);
+      return Get3D(ref_type, tar_type, debug);
     default:
       dserror("Unsupported problem dimension! (probdim=%d)", probdim);
       exit(EXIT_FAILURE);
@@ -38,16 +39,17 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get(const unsigned pro
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
-    DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type)
+    DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type,
+    const bool debug)
 {
   switch (ref_type)
   {
     case DRT::Element::line2:
-      return Get2D<DRT::Element::line2>(tar_type);
+      return Get2D<DRT::Element::line2>(tar_type, debug);
     case DRT::Element::nurbs2:
-      return Get2D<DRT::Element::nurbs2>(tar_type);
+      return Get2D<DRT::Element::nurbs2>(tar_type, debug);
     case DRT::Element::nurbs3:
-      return Get2D<DRT::Element::nurbs3>(tar_type);
+      return Get2D<DRT::Element::nurbs3>(tar_type, debug);
     default:
       dserror("Unsupported reference-type %s.", DRT::DistypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
@@ -58,16 +60,19 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType ref_type>
 CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
-    DRT::Element::DiscretizationType tar_type)
+    DRT::Element::DiscretizationType tar_type, const bool debug)
 {
   switch (tar_type)
   {
     case DRT::Element::line2:
-      return Projector<2, ref_type, DRT::Element::line2>::Instance();
+      if (debug) return Projector<ProjDebugger, 2, ref_type, DRT::Element::line2>::Instance();
+      return Projector<EmptyProjDebugger, 2, ref_type, DRT::Element::line2>::Instance();
     case DRT::Element::nurbs2:
-      return Projector<2, ref_type, DRT::Element::nurbs2>::Instance();
+      if (debug) return Projector<ProjDebugger, 2, ref_type, DRT::Element::nurbs2>::Instance();
+      return Projector<EmptyProjDebugger, 2, ref_type, DRT::Element::nurbs2>::Instance();
     case DRT::Element::nurbs3:
-      return Projector<2, ref_type, DRT::Element::nurbs3>::Instance();
+      if (debug) return Projector<ProjDebugger, 2, ref_type, DRT::Element::nurbs3>::Instance();
+      return Projector<EmptyProjDebugger, 2, ref_type, DRT::Element::nurbs3>::Instance();
     default:
       dserror("Unsupported target-type %s.", DRT::DistypeToString(tar_type).c_str());
       exit(EXIT_FAILURE);
@@ -77,18 +82,19 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
-    DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type)
+    DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type,
+    const bool debug)
 {
   switch (ref_type)
   {
     case DRT::Element::quad4:
-      return Get3D<DRT::Element::quad4>(tar_type);
+      return Get3D<DRT::Element::quad4>(tar_type, debug);
     case DRT::Element::tri3:
-      return Get3D<DRT::Element::tri3>(tar_type);
+      return Get3D<DRT::Element::tri3>(tar_type, debug);
     case DRT::Element::nurbs4:
-      return Get3D<DRT::Element::nurbs4>(tar_type);
+      return Get3D<DRT::Element::nurbs4>(tar_type, debug);
     case DRT::Element::nurbs9:
-      return Get3D<DRT::Element::nurbs9>(tar_type);
+      return Get3D<DRT::Element::nurbs9>(tar_type, debug);
     default:
       dserror("Unsupported reference-type %s.", DRT::DistypeToString(ref_type).c_str());
       exit(EXIT_FAILURE);
@@ -99,18 +105,22 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType ref_type>
 CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
-    DRT::Element::DiscretizationType tar_type)
+    DRT::Element::DiscretizationType tar_type, const bool debug)
 {
   switch (tar_type)
   {
     case DRT::Element::quad4:
-      return Projector<3, ref_type, DRT::Element::quad4>::Instance();
+      if (debug) return Projector<ProjDebugger, 3, ref_type, DRT::Element::quad4>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, DRT::Element::quad4>::Instance();
     case DRT::Element::tri3:
-      return Projector<3, ref_type, DRT::Element::tri3>::Instance();
+      if (debug) return Projector<ProjDebugger, 3, ref_type, DRT::Element::tri3>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, DRT::Element::tri3>::Instance();
     case DRT::Element::nurbs4:
-      return Projector<3, ref_type, DRT::Element::nurbs4>::Instance();
+      if (debug) return Projector<ProjDebugger, 3, ref_type, DRT::Element::nurbs4>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, DRT::Element::nurbs4>::Instance();
     case DRT::Element::nurbs9:
-      return Projector<3, ref_type, DRT::Element::nurbs9>::Instance();
+      if (debug) return Projector<ProjDebugger, 3, ref_type, DRT::Element::nurbs9>::Instance();
+      return Projector<EmptyProjDebugger, 3, ref_type, DRT::Element::nurbs9>::Instance();
     default:
       dserror("Unsupported target-type %s.", DRT::DistypeToString(tar_type).c_str());
       exit(EXIT_FAILURE);
@@ -119,10 +129,10 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-CONTACT::AUG::ProjectorBase* CONTACT::AUG::Projector<probdim, ref_type, tar_type>::Instance(
-    bool delete_me)
+CONTACT::AUG::ProjectorBase*
+CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Instance(bool delete_me)
 {
   static ProjectorBase* instance = NULL;
 
@@ -133,25 +143,25 @@ CONTACT::AUG::ProjectorBase* CONTACT::AUG::Projector<probdim, ref_type, tar_type
     return NULL;
   }
 
-  if (not instance) instance = new Projector<probdim, ref_type, tar_type>;
+  if (not instance) instance = new Projector<DebugPolicy, probdim, ref_type, tar_type>;
 
   return instance;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-void CONTACT::AUG::Projector<probdim, ref_type, tar_type>::Done()
+void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Done()
 {
   Instance(true);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-void CONTACT::AUG::Projector<probdim, ref_type, tar_type>::Setup()
+void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Setup()
 {
   ref_val_.Scale(0.0);
   x_ref_.Scale(0.0);
@@ -161,9 +171,9 @@ void CONTACT::AUG::Projector<probdim, ref_type, tar_type>::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::operator()(
+bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator()(
     MORTAR::MortarElement& ref_ele, const double* ref_xi, MORTAR::MortarElement& target_ele,
     double* target_xi, double& alpha)
 {
@@ -208,6 +218,8 @@ bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::operator()(
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
   RhsGP(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
+  DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs");
+
   const double ref_rhs_nrm2 = std::max(1.0, rhs_.Norm2());
   double dx_nrm2 = 0.0;
   double rhs_nrm2 = 0.0;
@@ -236,14 +248,18 @@ bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::operator()(
     for (unsigned i = 0; i < TAR_DIM; ++i) txi(i, 0) += dx_(i, 0);
     alpha += dx_(probdim - 1, 0);
 
+    DebugPolicy::writeVector(std::cout, TAR_DIM, txi.A(), "txi");
+
     // new right-hand side
     if (not RhsGP(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha))
     {
+      DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs (failed)");
       //      std::cout << "ShapeFunction evaluation failed @ [" << txi(0,0) << ", " <<
       //          txi(1,0) << "]" << std::endl;
       iter_ = MORTARMAXITER;
       break;
     }
+    DebugPolicy::writeVector(std::cout, probdim, rhs_.A(), "Rhs");
 
     rhs_nrm2 = rhs_.Norm2();
 
@@ -274,12 +290,13 @@ bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::operator()(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::RhsGP(LINALG::Matrix<probdim, 1>& rhs,
-    const LINALG::Matrix<probdim, 1>& x_ref, const LINALG::Matrix<probdim, 1>& n_ref,
-    MORTAR::MortarElement& target_ele, const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords,
-    const double* tar_xi, const double& alpha) const
+bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::RhsGP(
+    LINALG::Matrix<probdim, 1>& rhs, const LINALG::Matrix<probdim, 1>& x_ref,
+    const LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
+    const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+    const double& alpha) const
 {
   LINALG::Matrix<probdim, 1> x_tar(false);
   const bool status = GetGlobalPosition<tar_type>(target_ele, tar_coords, tar_xi, x_tar);
@@ -293,10 +310,10 @@ bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::RhsGP(LINALG::Matrix<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
 template <DRT::Element::DiscretizationType type, unsigned numnodes>
-bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::GetGlobalPosition(
+bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGlobalPosition(
     MORTAR::MortarElement& ele, const LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
     LINALG::Matrix<probdim, 1>& pos) const
 {
@@ -312,9 +329,9 @@ bool CONTACT::AUG::Projector<probdim, ref_type, tar_type>::GetGlobalPosition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
-void CONTACT::AUG::Projector<probdim, ref_type, tar_type>::LMatGP(
+void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::LMatGP(
     LINALG::Matrix<probdim, probdim>& lmat, LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1,
     MORTAR::MortarElement& tar_ele, const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords,
     const double* tar_xi, const LINALG::Matrix<probdim, 1>& n_ref) const
@@ -333,28 +350,67 @@ void CONTACT::AUG::Projector<probdim, ref_type, tar_type>::LMatGP(
 
 
 template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get2D<DRT::Element::line2>(
-    DRT::Element::DiscretizationType tar_type);
+    DRT::Element::DiscretizationType tar_type, const bool debug);
 template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D<DRT::Element::quad4>(
-    DRT::Element::DiscretizationType tar_type);
+    DRT::Element::DiscretizationType tar_type, const bool debug);
 template CONTACT::AUG::ProjectorBase* CONTACT::AUG::ProjectorBase::Get3D<DRT::Element::tri3>(
-    DRT::Element::DiscretizationType tar_type);
+    DRT::Element::DiscretizationType tar_type, const bool debug);
 
 // standard discretization types
-template class CONTACT::AUG::Projector<2, DRT::Element::line2, DRT::Element::line2>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 2, DRT::Element::line2,
+    DRT::Element::line2>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 2, DRT::Element::line2,
+    DRT::Element::line2>;
 
-template class CONTACT::AUG::Projector<3, DRT::Element::quad4, DRT::Element::quad4>;
-template class CONTACT::AUG::Projector<3, DRT::Element::quad4, DRT::Element::tri3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::quad4,
+    DRT::Element::quad4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::quad4,
+    DRT::Element::quad4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::quad4,
+    DRT::Element::tri3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::quad4,
+    DRT::Element::tri3>;
 
-template class CONTACT::AUG::Projector<3, DRT::Element::tri3, DRT::Element::tri3>;
-template class CONTACT::AUG::Projector<3, DRT::Element::tri3, DRT::Element::quad4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::tri3,
+    DRT::Element::tri3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::tri3,
+    DRT::Element::tri3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::tri3,
+    DRT::Element::quad4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::tri3,
+    DRT::Element::quad4>;
 
 // pure NURBS discretization types
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs2, DRT::Element::nurbs2>;
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs3, DRT::Element::nurbs3>;
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs2, DRT::Element::nurbs3>;
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs3, DRT::Element::nurbs2>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs2,
+    DRT::Element::nurbs2>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs2,
+    DRT::Element::nurbs2>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs3,
+    DRT::Element::nurbs3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs3,
+    DRT::Element::nurbs3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs2,
+    DRT::Element::nurbs3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs2,
+    DRT::Element::nurbs3>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs3,
+    DRT::Element::nurbs2>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs3,
+    DRT::Element::nurbs2>;
 
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs4, DRT::Element::nurbs4>;
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs9, DRT::Element::nurbs9>;
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs4, DRT::Element::nurbs9>;
-template class CONTACT::AUG::Projector<3, DRT::Element::nurbs9, DRT::Element::nurbs4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs4,
+    DRT::Element::nurbs4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs4,
+    DRT::Element::nurbs4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs9,
+    DRT::Element::nurbs9>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs9,
+    DRT::Element::nurbs9>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs4,
+    DRT::Element::nurbs9>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs4,
+    DRT::Element::nurbs9>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::ProjDebugger, 3, DRT::Element::nurbs9,
+    DRT::Element::nurbs4>;
+template class CONTACT::AUG::Projector<CONTACT::AUG::EmptyProjDebugger, 3, DRT::Element::nurbs9,
+    DRT::Element::nurbs4>;

@@ -221,10 +221,17 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
 CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
     const CONTACT::ParamsInterface& cparams, const std::vector<enum Status>& istatus) const
 {
+  static std::vector<std::vector<std::pair<int, bool>>> init_active_list;
+
   if (not cparams.IsPredictor() or cparams.GetStepNp() != cparams.GetRestartStep() + 1)
+  {
+    init_active_list.clear();
     return Merge(istatus);
+  }
 
   plain_interface_set& interfaces = strategy_.interface_;
+
+  if (init_active_list.size() == 0) init_active_list.resize(interfaces.size());
 
   std::vector<enum Status> new_istatus(istatus);
 
@@ -236,40 +243,80 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
         Teuchos::rcp_dynamic_cast<const CONTACT::AUG::Interface>(*cit, true);
     const CONTACT::AUG::Interface& interface = *aug_i_ptr;
 
-    bool isactive = false;
+    enum class InitStatus
+    {
+      changed,
+      unchanged,
+      undefined
+    };
+    InitStatus initstatus = InitStatus::undefined;
+    auto& my_active_node_list = init_active_list[ilid];
 
     // loop over all slave nodes of the current interface
     const int num_my_slave_row_nodes = interface.SlaveRowNodes()->NumMyElements();
-    int* my_slave_row_node_gids = interface.SlaveRowNodes()->MyGlobalElements();
-    for (int j = 0; j < num_my_slave_row_nodes; ++j)
-    {
-      const int gid = my_slave_row_node_gids[j];
-      CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(gid));
-      if (!cnode) dserror("ERROR: Cannot find node with gid %", gid);
+    const int* my_slave_gids = interface.SlaveRowNodes()->MyGlobalElements();
 
-      if (cnode->Active())
+    if (my_active_node_list.size() > 0)
+    {
+      initstatus = InitStatus::unchanged;
+      for (int j = 0; j < num_my_slave_row_nodes; ++j)
       {
-        isactive = true;
-        break;
+        const int sgid = my_slave_gids[j];
+        CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(sgid));
+        if (!cnode) dserror("ERROR: Cannot find node with gid %", sgid);
+
+        const std::pair<int, bool>& active_pair = my_active_node_list[j];
+        if (cnode->Id() != active_pair.first) dserror("GID mismatch!");
+        if (active_pair.second != cnode->Active())
+        {
+          initstatus = InitStatus::changed;
+          break;
+        }
+      }
+    }
+    else
+    {
+      my_active_node_list.resize(num_my_slave_row_nodes);
+      for (int j = 0; j < num_my_slave_row_nodes; ++j)
+      {
+        const int sgid = my_slave_gids[j];
+        CoNode& cnode = static_cast<CoNode&>(*interface.Discret().gNode(sgid));
+        std::pair<int, bool>& active_pair = my_active_node_list[j];
+        active_pair = std::make_pair(cnode.Id(), cnode.Active());
       }
     }
 
-    // nothing to do if nodes of the interface have been already naturally set active
-    if (isactive) continue;
+    /* Do not set any node initially active, if the default status identification
+     * shows a different result compared to the previous run. */
+    if (initstatus == InitStatus::changed) continue;
 
+    unsigned set_init_active = 0;
     for (int j = 0; j < num_my_slave_row_nodes; ++j)
     {
-      const int gid = my_slave_row_node_gids[j];
-      CoNode& cnode = static_cast<CoNode&>(*interface.Discret().gNode(gid));
+      const int sgid = my_slave_gids[j];
+      CoNode& cnode = static_cast<CoNode&>(*interface.Discret().gNode(sgid));
 
-      if (interface.SetNodeInitiallyActive(cparams, cnode))
+      // skip nodes which are already active
+      if (cnode.Active()) continue;
+
+      /* If this is the first attempt, the node is newly set active but the
+       * initial condition and, thus, the interface status must be set to
+       * changed. If it is already the 2nd attempt, and the previous test
+       * indicates that the active set did not change, the initial condition
+       * will lead to exactly the same active set as in the previous execution
+       * and, thus, the interface status does not change. */
+      if (interface.SetNodeInitiallyActive(cparams, cnode) and initstatus == InitStatus::undefined)
       {
-        if (istatus[ilid] == Status::changed)
-          new_istatus[ilid] = Status::unchanged;
-        else
-          new_istatus[ilid] = Status::changed;
+        new_istatus[ilid] = Status::changed;
+        ++set_init_active;
       }
     }
+
+    IO::cout << std::string(60, '*') << "\n"
+             << set_init_active << " slave nodes of interface #" << ilid
+             << " have been set initially active "
+                "via condition line or INITCONTACTBYGAP.\n"
+             << std::string(60, '*') << "\n";
   }
 
   return Merge(new_istatus);

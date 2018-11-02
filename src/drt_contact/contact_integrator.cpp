@@ -324,6 +324,11 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
               mygaussrule = DRT::UTILS::intrule_line_32point;
               break;
             }
+            case 50:
+            {
+              mygaussrule = DRT::UTILS::intrule_line_50point;
+              break;
+            }
             default:
             {
               dserror("Requested GP-Number is not implemented!");

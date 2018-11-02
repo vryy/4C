@@ -203,7 +203,7 @@ void NOX::NLN::Solver::PseudoTransient::createLinSystemPrePostOperator()
       scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
 
   // The name of the direction method and the corresponding sublist has to match!
-  const std::string& dir_str = paramsPtr->sublist("Direction").get<std::string>("Method");
+  const std::string dir_str(NOX::NLN::AUX::GetDirectionMethodListName(*paramsPtr));
   if (paramsPtr->sublist("Direction").isSublist(dir_str))
   {
     // set the new pre/post operator for the linear system in the parameter list

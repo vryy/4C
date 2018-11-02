@@ -732,9 +732,23 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     {
       ComputeAnglePosition();
 
-      X_.Reshape(angle_node_id_map_.size(), X_.N());
+      X_.Reshape(position_node_id_map_.size(), X_.N());
       unsigned i = 0;
-      for (auto an_cit = angle_node_id_map_.begin(); an_cit != angle_node_id_map_.end();
+      for (auto an_cit = position_node_id_map_.begin(); an_cit != position_node_id_map_.end();
+           ++an_cit, ++i)
+      {
+        for (unsigned j = 0; j < static_cast<unsigned>(X_.N()); ++j) X_(i, j) = an_cit->first;
+      }
+
+      break;
+    }
+    case INPAR::CONTACT::PlotSupportType::position_distance:
+    {
+      ComputeDistancePosition();
+
+      X_.Reshape(position_node_id_map_.size(), X_.N());
+      unsigned i = 0;
+      for (auto an_cit = position_node_id_map_.begin(); an_cit != position_node_id_map_.end();
            ++an_cit, ++i)
       {
         for (unsigned j = 0; j < static_cast<unsigned>(X_.N()); ++j) X_(i, j) = an_cit->first;
@@ -745,6 +759,31 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     default:
       dserror("Unknown PlotSupportType.");
       exit(EXIT_FAILURE);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Plot::ComputeDistancePosition()
+{
+  const LINALG::Matrix<3, 1> ref_pos(ref_points_[0].A(), true);
+
+  const Epetra_Map& slrownodes = strat_->SlRowNodes();
+  const unsigned num_my_nodes = slrownodes.NumMyElements();
+  const int* node_gids = slrownodes.MyGlobalElements();
+
+  for (unsigned i = 0; i < num_my_nodes; ++i)
+  {
+    const int gid = node_gids[i];
+    DRT::Node* node = discret_->gNode(gid);
+
+    if (not node) dserror("Couldn't find the node with GID %d!", gid);
+
+    LINALG::Matrix<3, 1> distance(node->X(), false);
+    distance.Update(-1.0, ref_pos, 1.0);
+
+    const double d_nrm2 = distance.Norm2();
+    position_node_id_map_.insert(std::pair<double, int>(d_nrm2, gid));
   }
 }
 
@@ -773,7 +812,7 @@ void CONTACT::AUG::Plot::ComputeAnglePosition()
     const double iproduct = ref12.Dot(ref13);
     double angle = std::acos(iproduct / (ref13.Norm2() * ref12.Norm2()));
 
-    angle_node_id_map_.insert(std::pair<double, int>(angle, gid));
+    position_node_id_map_.insert(std::pair<double, int>(angle, gid));
   }
 }
 
@@ -1191,7 +1230,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
         const std::vector<std::pair<int, double>>& nodal_jac_error =
             strat_->GetNodalGradientError_Jacobian();
 
-        return GetNodalErrorAtAngle(curr_xy, nodal_jac_error);
+        return GetNodalErrorAtPosition(curr_xy, nodal_jac_error);
       }
       case INPAR::CONTACT::PlotFuncName::weighted_gap_gradient_nodal_ma_proj_error:
       {
@@ -1199,7 +1238,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
         const std::vector<std::pair<int, double>>& nodal_ma_error =
             strat_->GetNodalGradientError_MaProj();
 
-        return GetNodalErrorAtAngle(curr_xy, nodal_ma_error);
+        return GetNodalErrorAtPosition(curr_xy, nodal_ma_error);
       }
       default:
       {
@@ -1214,15 +1253,15 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::Plot::GetNodalErrorAtAngle(
-    const double* angle, const std::vector<std::pair<int, double>>& nodal_error) const
+double CONTACT::AUG::Plot::GetNodalErrorAtPosition(
+    const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const
 {
-  if (not angle)
+  if (not pos)
     dserror(
-        "You have to provide the current x/y support value (a.k.a. angle "
-        "in this case).");
+        "You have to provide the current x/y support value (a.k.a. "
+        "angle/distance or any other scalar position value in this case).");
 
-  const int ngid = angle_node_id_map_.at(*angle);
+  const int ngid = position_node_id_map_.at(*pos);
   for (const auto& nje : nodal_error)
     if (nje.first == ngid) return nje.second;
 

@@ -17,11 +17,13 @@
 #include "str_dbc.H"
 #include "str_utils.H"
 #include "str_model_evaluator.H"
+#include "str_model_evaluator_structure.H"
 #include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
@@ -31,11 +33,11 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::IMPLICIT::GenAlpha::GenAlpha()
-    : beta_(-1.0),
-      gamma_(-1.0),
-      alphaf_(-1.0),
-      alpham_(-1.0),
-      rhoinf_(-1.0),
+    : beta_(coeffs_.beta_),
+      gamma_(coeffs_.gamma_),
+      alphaf_(coeffs_.alphaf_),
+      alpham_(coeffs_.alpham_),
+      rhoinf_(coeffs_.rhoinf_),
       const_vel_acc_update_ptr_(Teuchos::null),
       fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
@@ -60,24 +62,7 @@ void STR::IMPLICIT::GenAlpha::Setup()
   // ---------------------------------------------------------------------------
   // setup time integration parameters
   // ---------------------------------------------------------------------------
-  // get a copy of the input parameters
-  beta_ = genalpha_sdyn.GetBeta();
-  gamma_ = genalpha_sdyn.GetGamma();
-  alphaf_ = genalpha_sdyn.GetAlphaF();
-  alpham_ = genalpha_sdyn.GetAlphaM();
-  rhoinf_ = genalpha_sdyn.GetRhoInf();
-
-  // ------ rho_inf specified --> calculate optimal parameters -----------------
-  if (rhoinf_ != -1.)
-  {
-    if ((rhoinf_ < 0.0) or (rhoinf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
-    if ((beta_ != 0.25) or (gamma_ != 0.5) or (alpham_ != 0.5) or (alphaf_ != 0.5))
-      dserror("you may only specify RHO_INF or the other four parameters");
-    alpham_ = (2.0 * rhoinf_ - 1.0) / (rhoinf_ + 1.0);
-    alphaf_ = rhoinf_ / (rhoinf_ + 1.0);
-    beta_ = 0.25 * (1.0 - alpham_ + alphaf_) * (1.0 - alpham_ + alphaf_);
-    gamma_ = 0.5 - alpham_ + alphaf_;
-  }
+  SetTimeIntegrationCoefficients(coeffs_);
 
   // sanity checks and some screen output
   if (GlobalState().GetMyRank() == 0)
@@ -160,6 +145,106 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
   }
 
   EquilibrateInitialState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::GenAlpha::SetTimeIntegrationCoefficients(Coefficients& coeffs) const
+{
+  if (IsInit() and IsSetup())
+  {
+    coeffs = coeffs_;
+    return;
+  }
+
+  const STR::TIMINT::GenAlphaDataSDyn& genalpha_sdyn =
+      dynamic_cast<const STR::TIMINT::GenAlphaDataSDyn&>(TimInt().GetDataSDyn());
+
+  // get a copy of the input parameters
+  coeffs.beta_ = genalpha_sdyn.GetBeta();
+  coeffs.gamma_ = genalpha_sdyn.GetGamma();
+  coeffs.alphaf_ = genalpha_sdyn.GetAlphaF();
+  coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
+  coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
+
+  // ------ rho_inf specified --> calculate optimal parameters -----------------
+  if (coeffs.rhoinf_ != -1.)
+  {
+    if ((coeffs.rhoinf_ < 0.0) or (coeffs.rhoinf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
+    if ((coeffs.beta_ != 0.25) or (coeffs.gamma_ != 0.5) or (coeffs.alpham_ != 0.5) or
+        (coeffs.alphaf_ != 0.5))
+      dserror("you may only specify RHO_INF or the other four parameters");
+    coeffs.alpham_ = (2.0 * coeffs.rhoinf_ - 1.0) / (coeffs.rhoinf_ + 1.0);
+    coeffs.alphaf_ = coeffs.rhoinf_ / (coeffs.rhoinf_ + 1.0);
+    coeffs.beta_ =
+        0.25 * (1.0 - coeffs.alpham_ + coeffs.alphaf_) * (1.0 - coeffs.alpham_ + coeffs.alphaf_);
+    coeffs.gamma_ = 0.5 - coeffs.alpham_ + coeffs.alphaf_;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
+{
+  // --- kinetic energy increment
+  Teuchos::RCP<const Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
+  const Epetra_Vector& accnp = *accnp_ptr;
+
+  Teuchos::RCP<const Epetra_Vector> accn_ptr = GlobalState().GetAccN();
+  const Epetra_Vector& accn = *accn_ptr;
+
+  Epetra_Vector accm(accnp);
+  accm.Update(alpham_, accn, 1.0 - alpham_);
+
+  const double dt = (*GlobalState().GetDeltaTime())[0];
+  Teuchos::RCP<const LINALG::SparseOperator> mass_ptr = GlobalState().GetMassMatrix();
+  const LINALG::SparseMatrix& mass = dynamic_cast<const LINALG::SparseMatrix&>(*mass_ptr);
+  Epetra_Vector tmp(mass.RangeMap(), true);
+
+  double kin_energy_incr = 0.0;
+  mass.Multiply(false, accm, tmp);
+  tmp.Dot(accm, &kin_energy_incr);
+
+  kin_energy_incr *= 0.5 * beta_ * dt * dt / (1 - alpham_);
+
+  // --- internal energy
+  EvalData().ClearValuesForAllEnergyTypes();
+  STR::MODELEVALUATOR::Structure& str_model =
+      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
+
+  Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
+  const Epetra_Vector& disnp = *disnp_ptr;
+
+  const double af_np = 1.0 - alphaf_;
+  str_model.DetermineStrainEnergy(disnp, true);
+  const double int_energy_np = af_np * EvalData().GetEnergyData(STR::internal_energy);
+
+  // --- external energy
+  double ext_energy_np = 0.0;
+  GlobalState().GetFextNp()->Dot(disnp, &ext_energy_np);
+  ext_energy_np *= af_np;
+
+  // --- old contributions
+  // Note that all gradient/force contributions related to the previous
+  // time step are stored in the global state as FstructureOld. This includes
+  // the contact forces as well! See UpdateStepState in the different
+  // model evaluator classes.
+  double disNp_forcesN = 0.0;
+  GlobalState().GetFstructureOld()->Dot(disnp, &disNp_forcesN);
+
+  const double total = kin_energy_incr + int_energy_np + disNp_forcesN - ext_energy_np;
+
+  std::ostream& os = IO::cout.os(IO::debug);
+  os << __LINE__ << __PRETTY_FUNCTION__ << "\n";
+  os << "kin_energy_incr              = " << kin_energy_incr << "\n"
+     << "int_energy * (1-af)          = " << int_energy_np << "\n"
+     << "ext_energy * (1-af)          = " << ext_energy_np << "\n"
+     << "old_gradients * disnp * (af) = " << disNp_forcesN << "\n";
+  os << std::string(80, '-') << "\n";
+  os << "Total action integral        = " << total << "\n";
+  os << std::string(80, '-') << "\n";
+
+  return total;
 }
 
 /*----------------------------------------------------------------------------*
@@ -375,8 +460,19 @@ double STR::IMPLICIT::GenAlpha::CalcRefNormForce(const enum NOX::Abstract::Vecto
  *----------------------------------------------------------------------------*/
 double STR::IMPLICIT::GenAlpha::GetIntParam() const
 {
+  // access the alphaf value even if the time integrator has not yet been setup
+  Coefficients coeffs;
+  SetTimeIntegrationCoefficients(coeffs);
+
+  return coeffs.alphaf_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::IMPLICIT::GenAlpha::GetAccIntParam() const
+{
   CheckInitSetup();
-  return alphaf_;
+  return alpham_;
 }
 
 /*----------------------------------------------------------------------------*

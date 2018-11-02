@@ -1000,28 +1000,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   std::vector<int> closeele, noncloseele;
   std::vector<int> localcns, localfns;
 
-  // loop over all row elements to gather the local information
-  for (int i = 0; i < SlaveRowElements()->NumMyElements(); ++i)
-  {
-    // get element
-    int gid = SlaveRowElements()->GID(i);
-    DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
-    MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
-
-    // store element id and adjacent node ids
-    int close = cele->MoData().NumSearchElements();
-    if (close > 0)
-    {
-      closeele.push_back(gid);
-      for (int k = 0; k < cele->NumNode(); ++k) localcns.push_back(cele->NodeIds()[k]);
-    }
-    else
-    {
-      noncloseele.push_back(gid);
-      for (int k = 0; k < cele->NumNode(); ++k) localfns.push_back(cele->NodeIds()[k]);
-    }
-  }
+  SplitIntoFarAndCloseSets(closeele, noncloseele, localcns, localfns);
 
   // loop over all elements to reset candidates / search lists
   // (use standard slave column map)
@@ -1295,6 +1274,35 @@ bool CONTACT::CoInterface::Redistribute(int index)
   Discret().ExportColumnElements(*coleles);
 
   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
+    std::vector<int>& noncloseele, std::vector<int>& localcns, std::vector<int>& localfns) const
+{
+  // loop over all row elements to gather the local information
+  for (int i = 0; i < SlaveRowElements()->NumMyElements(); ++i)
+  {
+    // get element
+    int gid = SlaveRowElements()->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+    MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
+
+    // store element id and adjacent node ids
+    int close = cele->MoData().NumSearchElements();
+    if (close > 0)
+    {
+      closeele.push_back(gid);
+      for (int k = 0; k < cele->NumNode(); ++k) localcns.push_back(cele->NodeIds()[k]);
+    }
+    else
+    {
+      noncloseele.push_back(gid);
+      for (int k = 0; k < cele->NumNode(); ++k) localfns.push_back(cele->NodeIds()[k]);
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*

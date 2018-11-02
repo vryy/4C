@@ -49,11 +49,11 @@
 #include "contact_nitsche_strategy.H"
 // --augmented strategies and interfaces
 #include "../drt_contact_aug/contact_augmented_interface.H"
-#include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
-#include "../drt_contact_aug/contact_aug_lagrange_interface.H"
+#include "../drt_contact_aug/contact_aug_steepest_ascent_sp_strategy.H"
 #include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
+#include "../drt_contact_aug/contact_aug_lagrange_interface.H"
 #include "../drt_contact_aug/contact_aug_combo_strategy.H"
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
@@ -1335,6 +1335,27 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       break;
     }
     // ------------------------------------------------------------------------
+    // Create an augmented steepest ascent contact interface (saddlepoint)
+    // ------------------------------------------------------------------------
+    case INPAR::CONTACT::solution_steepest_ascent_sp:
+    {
+      if (idata_ptr.is_null())
+      {
+        idata_ptr = Teuchos::rcp(new CONTACT::AUG::IDataContainer());
+
+        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
+            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+      }
+      else
+      {
+        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>(idata_ptr, true);
+        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(iaugdata_ptr));
+      }
+
+      break;
+    }
+    // ------------------------------------------------------------------------
     // Create a lagrange contact interface (based on the augmented formulation)
     // ------------------------------------------------------------------------
     case INPAR::CONTACT::solution_std_lagrange:
@@ -1571,14 +1592,15 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
     const Teuchos::ParameterList& cparams, const bool& poroslave, const bool& poromaster,
-    const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const
+    const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
+    CONTACT::ParamsInterface* cparams_interface) const
 {
   const INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
   return BuildStrategy(stype, cparams, poroslave, poromaster, dof_offset, interfaces,
-      Discret().DofRowMap(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr);
+      Discret().DofRowMap(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr, cparams_interface);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1588,7 +1610,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-    Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr)
+    Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr,
+    CONTACT::ParamsInterface* cparams_interface)
 {
   if (comm_ptr->MyPID() == 0)
   {
@@ -1694,8 +1717,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
-    strategy_ptr = AUG::ComboStrategy::Create(
-        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset);
+    strategy_ptr = AUG::ComboStrategy::Create(data_ptr, dof_row_map, node_row_map, cparams,
+        interfaces, dim, comm_ptr, dof_offset, cparams_interface);
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
   {
@@ -1709,6 +1732,13 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
     strategy_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT::Strategy(
+        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
+  }
+  else if (stype == INPAR::CONTACT::solution_steepest_ascent_sp)
+  {
+    if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new AUG::DataContainer());
+
+    strategy_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT_SP::Strategy(
         data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_std_lagrange)
@@ -2027,6 +2057,13 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n";
           IO::cout << "===== Steepest Ascent strategy =================================\n";
           IO::cout << "===== (Condensed formulation) ==================================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_steepest_ascent_sp)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Steepest Ascent strategy =================================\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
           IO::cout << "================================================================\n\n";
         }
         else if (soltype == INPAR::CONTACT::solution_xcontact &&

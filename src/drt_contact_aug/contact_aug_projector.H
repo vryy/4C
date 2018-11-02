@@ -35,21 +35,24 @@ namespace CONTACT
       ProjectorBase(){};
 
      private:
+      static ProjectorBase* Get2D(DRT::Element::DiscretizationType ref_type,
+          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+
+      template <DRT::Element::DiscretizationType ref_type>
       static ProjectorBase* Get2D(
-          DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type);
+          DRT::Element::DiscretizationType tar_type, const bool debug = false);
+
+      static ProjectorBase* Get3D(DRT::Element::DiscretizationType ref_type,
+          DRT::Element::DiscretizationType tar_type, const bool debug = false);
 
       template <DRT::Element::DiscretizationType ref_type>
-      static ProjectorBase* Get2D(DRT::Element::DiscretizationType tar_type);
-
       static ProjectorBase* Get3D(
-          DRT::Element::DiscretizationType ref_type, DRT::Element::DiscretizationType tar_type);
-
-      template <DRT::Element::DiscretizationType ref_type>
-      static ProjectorBase* Get3D(DRT::Element::DiscretizationType tar_type);
+          DRT::Element::DiscretizationType tar_type, const bool debug = false);
 
      public:
+      /// access the singleton pointer of the projector object
       static ProjectorBase* Get(const unsigned probdim, DRT::Element::DiscretizationType ref_type,
-          DRT::Element::DiscretizationType tar_type);
+          DRT::Element::DiscretizationType tar_type, const bool debug = false);
 
       virtual ~ProjectorBase(){};
 
@@ -81,9 +84,9 @@ namespace CONTACT
     };  // class ProjectorBase
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probdim, DRT::Element::DiscretizationType ref_type,
+    template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
         DRT::Element::DiscretizationType tar_type>
-    class Projector : public ProjectorBase, public DRT::SingletonDestruction
+    class Projector : public ProjectorBase, public DRT::SingletonDestruction, public DebugPolicy
     {
       static const unsigned REF_DIM = DRT::UTILS::DisTypeToDim<ref_type>::dim;
       static const unsigned REF_NUMNODES =
@@ -97,16 +100,16 @@ namespace CONTACT
       static ProjectorBase* Instance(bool delete_me = false);
 
      protected:
-      virtual ~Projector(){};
+      ~Projector() override{};
 
-      virtual void Done();
-
-      /// derived
-      virtual bool operator()(MORTAR::MortarElement& ref_ele, const double* ref_xi,
-          MORTAR::MortarElement& target_ele, double* target_xi, double& alpha);
+      void Done() override;
 
       /// derived
-      virtual inline double getRelativeSolutionTolerance() const { return rel_sol_tolerance_; }
+      bool operator()(MORTAR::MortarElement& ref_ele, const double* ref_xi,
+          MORTAR::MortarElement& target_ele, double* target_xi, double& alpha) override;
+
+      /// derived
+      inline double getRelativeSolutionTolerance() const override { return rel_sol_tolerance_; }
 
      private:
       /// constructor
@@ -183,9 +186,60 @@ namespace CONTACT
 
       // relative solution tolerance
       double rel_sol_tolerance_;
-
     };  // class Projector
-  }     // namespace AUG
+
+    /*--------------------------------------------------------------------------*/
+    /// empty debugger base class of the projector
+    class EmptyProjDebugger
+    {
+     public:
+      EmptyProjDebugger() = default;
+      ~EmptyProjDebugger() = default;
+
+      inline void writeVector(std::ostream& os, ...) const {};
+      inline void writeMatrix(std::ostream& os, ...) const {};
+    };
+
+    /*--------------------------------------------------------------------------*/
+    /// concrete debugger base class of the projector
+    class ProjDebugger
+    {
+     public:
+      ProjDebugger() = default;
+      ~ProjDebugger() = default;
+
+      inline void writeVector(
+          std::ostream& os, unsigned dim, double* vals, const std::string& msg) const
+      {
+        os << msg << " (vector):\n";
+        for (unsigned i = 0; i < dim; ++i)
+        {
+          os << "(#" << i << "): " << vals[i];
+          if (i + 1 < dim) os << ", ";
+        }
+        os << "\n";
+      }
+
+      inline void writeMatrix(std::ostream& os, unsigned rows, unsigned cols, double* vals,
+          const std::string& msg) const
+      {
+        os << msg << " (matrix):\n";
+        for (unsigned int i = 0; i < rows; ++i)
+        {
+          os << "(r#" << i << "): ";
+          for (unsigned int j = 0; j < cols; ++j)
+          {
+            os << vals[i + rows * j];
+            if (j + 1 < cols) os << ", ";
+          }
+          if (i + 1 < rows)
+            os << ",\n";
+          else
+            os << "\n";
+        }
+      }
+    };
+  }  // namespace AUG
 }  // namespace CONTACT
 
 

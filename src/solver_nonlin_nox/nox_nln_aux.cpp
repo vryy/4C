@@ -382,6 +382,48 @@ int NOX::NLN::AUX::GetNormType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
+NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTestWithQuantity(
+    NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype)
+{
+  // try to cast the given test to a NOX_StatusTest_Combo
+  NOX::NLN::StatusTest::Combo* comboTest = dynamic_cast<NOX::NLN::StatusTest::Combo*>(&test);
+
+  // if it is no combo test, we just have to check for the desired type
+  if (comboTest == 0)
+  {
+    T* desiredTest = dynamic_cast<T*>(&test);
+
+    // not the desired status test...
+    if (desiredTest == 0) return NULL;
+    // yeah we found one...
+    else
+    {
+      // check for the quantity
+      if (desiredTest->IsQuantity(qtype))
+        return desiredTest;
+      else
+        return NULL;
+    }
+  }
+  // if the nox_nln_statustest_combo Test cast was successful
+  else
+  {
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
+    for (auto& ctest : tests)
+    {
+      // recursive function call
+      NOX::StatusTest::Generic* ptr = GetOuterStatusTestWithQuantity<T>(*ctest, qtype);
+      if (ptr) return ptr;
+    }
+  }
+
+  // default return
+  return NULL;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <class T>
 NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(NOX::StatusTest::Generic& otest)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
@@ -570,6 +612,40 @@ void NOX::NLN::AUX::AddToPrePostOpVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+std::string NOX::NLN::AUX::GetDirectionMethodListName(const Teuchos::ParameterList& p)
+{
+  if (not p.isSublist("Direction"))
+    dserror("There is no \"Direction\" sub-list in the parameter list!");
+  const Teuchos::ParameterList& pdir = p.sublist("Direction");
+
+  if (not pdir.isParameter("Method"))
+    dserror("There is no \"Method\" parameter in the Direction sub-list!");
+
+  const std::string* dir_str = &pdir.get<std::string>("Method");
+  if (*dir_str == "User Defined")
+  {
+    dir_str = &pdir.get<std::string>("User Defined Method");
+  }
+  if (*dir_str == "Newton" or *dir_str == "Modified Newton")
+    return "Newton";
+  else
+  {
+    dserror("Currently unsupported direction method string: %s", dir_str->c_str());
+    exit(EXIT_FAILURE);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template NOX::StatusTest::Generic*
+NOX::NLN::AUX::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormF>(
+    NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+template NOX::StatusTest::Generic*
+NOX::NLN::AUX::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormUpdate>(
+    NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+template NOX::StatusTest::Generic*
+NOX::NLN::AUX::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormWRMS>(
+    NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
 template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormF>(
     const NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
 template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormUpdate>(

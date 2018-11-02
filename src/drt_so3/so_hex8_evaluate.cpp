@@ -12,6 +12,7 @@
 #include "so_hex8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_elements.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -42,6 +43,7 @@
 #include "../drt_structure_new/str_enum_lists.H"
 
 #include "so3_defines.H"
+#include "so_hex8_determinant_analysis.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -305,18 +307,44 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         }
       }
 
+      // safety check before the actual evaluation starts
+      const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcur);
+      if (min_detJ_curr <= 0.0)
+      {
+        soh8_error_handling(
+            min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
+        elevec1_epetra(0) = 0.0;
+        return 1;
+      }
+
       const static std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
       const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
       const static std::vector<double> gpweights = soh8_weights();
 
       // MAT ------------------------
       // build new jacobian mapping with respect to the material configuration
-      if (structale_ == true) InitJacobianMapping(mydispmat);
+      int err = 0;
+      if (structale_ == true)
+      {
+        err = InitJacobianMapping(mydispmat);
+        if (err)
+        {
+          // reset class variable before leaving
+          InitJacobianMapping();
+          return err;
+        }
+      }
 
       std::vector<double> detJmat = detJ_;
       std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJmat = invJ_;
 
-      InitJacobianMapping(mydisp);
+      err = InitJacobianMapping(mydisp);
+      if (err)
+      {
+        // reset class variable before leaving
+        InitJacobianMapping();
+        return err;
+      }
 
       std::vector<double> detJcur = detJ_;
       std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJcur = invJ_;
@@ -391,6 +419,33 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       elevec1(3) = mass_ref;
       elevec1(4) = mass_mat;
       elevec1(5) = mass_cur;
+
+      break;
+    }
+
+    case ELEMENTS::analyse_jacobian_determinant:
+    {
+      // get displacements and extract values of this element
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+
+      std::vector<double> mydispmat(lm.size(), 0.0);
+      // reference and current geometry (nodal positions)
+      LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> xcurr;  // current  coord. of element
+
+      for (int k = 0; k < NUMNOD_SOH8; ++k)
+      {
+        xcurr(0, k) = Nodes()[k]->X()[0] + mydisp[k * NODDOF_SOH8 + 0];
+        xcurr(1, k) = Nodes()[k]->X()[1] + mydisp[k * NODDOF_SOH8 + 1];
+        xcurr(2, k) = Nodes()[k]->X()[2] + mydisp[k * NODDOF_SOH8 + 2];
+      }
+
+      Teuchos::RCP<So_Hex8_Determinant_Analysis> det_analyser =
+          So_Hex8_Determinant_Analysis::create();
+      if (not det_analyser->isValid(xcurr))
+        soh8_error_handling(-1.0, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
 
       break;
     }
@@ -749,6 +804,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
           xdisp(i, 2) = mydisp[i * NODDOF_SOH8 + 2];
         }
+      }
+
+      // safety check before the actual evaluation starts
+      const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
+      if (min_detJ_curr <= 0.0)
+      {
+        soh8_error_handling(
+            min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
+        elevec1_epetra(0) = 0.0;
+        return 0;
       }
 
       // prepare EAS data
@@ -1722,7 +1787,7 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
  |  init the element jacobian mapping with respect to the    farah 06/13|
  |  material configuration.                                             |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
+int DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
 {
   const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xmat;
@@ -1745,10 +1810,38 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
     // invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp], xmat);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+
+    if (detJ_[gp] <= 0.0)
+    {
+      if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
+      {
+        StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+        return 1;
+      }
+      else
+        dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    }
   }
 
-  return;
+  return 0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double DRT::ELEMENTS::So_hex8::soh8_get_min_det_jac_at_corners(
+    const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const
+{
+  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> xcurr_t(false);
+  xcurr_t.UpdateT(xcurr);
+  return DRT::UTILS::GetMinimalJacDeterminantAtNodes<DRT::Element::hex8>(xcurr_t);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_error_handling(const double& det_curr,
+    Teuchos::ParameterList& params, const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
+{
+  ErrorHandling(det_curr, params, line_id, flag);
 }
 
 /*----------------------------------------------------------------------*
@@ -1842,6 +1935,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
       //      }
     }  // if (nhyb_)
   }    // else
+
   // save the old step length
   old_step_length_ = step_length;
 
@@ -1914,6 +2008,15 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
       xdisp(i, 2) = disp[i * NODDOF_SOH8 + 2];
     }
+  }
+
+  // safety check before the actual evaluation starts
+  const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
+  if (min_detJ_curr <= 0.0)
+  {
+    soh8_error_handling(
+        min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
+    return;
   }
 
   double elediagonallength = 0.0;
@@ -2252,6 +2355,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       // calculate deformation gradient consistent with modified GL strain tensor
       if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
         CalcConsistentDefgrd(defgrd, glstrain, defgrd_mod);
+
+      const double det_defgrd_mod = defgrd_mod.Determinant();
+      if (det_defgrd_mod <= 0.0)
+      {
+        soh8_error_handling(
+            det_defgrd_mod, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+        return;
+      }
     }  // ------------------------------------------------------------------ EAS
 
     // return gp strains (only in case of stress/strain output)
@@ -2450,6 +2561,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
 
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, Id());
+
+    // stop if the material evaluation fails
+    if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
+      if (StrParamsInterface().GetEleEvalErrorFlag() != STR::ELEMENTS::ele_error_none) return;
+
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp plastic strains (only in case of plastic strain output)

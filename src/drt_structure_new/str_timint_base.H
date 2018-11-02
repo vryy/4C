@@ -834,13 +834,17 @@ namespace STR
       /// output of the current state
       void OutputState();
 
-      /** \brief output of the current state
-       *
-       *  Derived from the base class. */
-      virtual void OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const;
+      /** \brief output of the current state */
+      void OutputState(IO::DiscretizationWriter& iowriter, bool write_owner) const;
+
+      /** \brief output of the debug state */
+      void OutputDebugState(IO::DiscretizationWriter& iowriter, bool write_owner) const override;
 
       /// output during runtime
       void RuntimeOutputState();
+
+      /// output element volumes
+      void OutputElementVolume(IO::DiscretizationWriter& iowriter) const;
 
       /// output stress and/or strain state
       void OutputStressStrain();

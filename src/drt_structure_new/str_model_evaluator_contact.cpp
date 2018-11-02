@@ -86,7 +86,10 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  strategy_ptr_ = factory.BuildStrategy(cparams, poroslave, poromaster, DofOffset(), interfaces);
+  eval_contact_ptr_->Set(&Discret(), 0);
+  strategy_ptr_ = factory.BuildStrategy(
+      cparams, poroslave, poromaster, DofOffset(), interfaces, eval_contact_ptr_.get());
+  eval_contact_ptr_->ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
 
   // build the search tree
   factory.BuildSearchTree(interfaces);
@@ -104,6 +107,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   strategy_ptr_->Inttime_init();
   strategy_ptr_->RedistributeContact(GState().GetDisN());
   strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
+  SetTimeIntegrationInfo(*strategy_ptr_);
 
   CheckPseudo2D();
 
@@ -152,6 +156,17 @@ void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
               << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
 #endif  // #ifdef CONTACTPSEUDO2D
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::SetTimeIntegrationInfo(
+    CONTACT::CoAbstractStrategy& strategy) const
+{
+  const INPAR::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
+  const double time_fac = Int().GetIntParam();
+
+  strategy.SetTimeIntegrationInfo(time_fac, dyntype);
 }
 
 /*----------------------------------------------------------------------*
@@ -897,8 +912,37 @@ void STR::MODELEVALUATOR::Contact::RunPostIterate(const NOX::Solver::Generic& so
 {
   CheckInitSetup();
 
+  const NOX::Epetra::Vector& nox_x =
+      dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+
+  // displacement vector after the predictor call
+  Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
+
+  if (Strategy().DynRedistributeContact(curr_disp, solver.getNumIterations())) EvaluateForce();
+
   EvalContact().SetActionType(MORTAR::eval_run_post_iterate);
   Strategy().Evaluate(EvalData().Contact());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::RunPreSolve(const NOX::Solver::Generic& solver)
+{
+  CheckInitSetup();
+  const NOX::Epetra::Vector& nox_x =
+      dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+
+  // displacement vector after the predictor call
+  Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
+
+  std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(1, Teuchos::null);
+  eval_vec[0] = curr_disp;
+
+  EvalContact().SetActionType(MORTAR::eval_run_pre_solve);
+  Strategy().Evaluate(EvalData().Contact(), &eval_vec);
+
+  //  if ( Strategy().RedistributeContact( curr_disp ) )
+  //    EvaluateForceStiff();
 }
 
 /*----------------------------------------------------------------------------*
@@ -918,6 +962,9 @@ void STR::MODELEVALUATOR::Contact::RunPostApplyJacobianInverse(const Epetra_Vect
 
   // augment the search direction
   Strategy().Evaluate(EvalData().Contact());
+
+  // clear the set any data again
+  EvalContact().ClearAll(GEN::AnyDataContainer::DataType::any);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1003,6 +1050,8 @@ bool STR::MODELEVALUATOR::Contact::CorrectParameters(NOX::NLN::CorrectionType ty
   EvalContact().Set(&type, 0);
 
   Strategy().Evaluate(EvalContact());
+
+  EvalContact().ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
 
   return true;
 }

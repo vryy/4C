@@ -39,6 +39,7 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // contact and meshtying results
   writer_->WriteResult("activeset", "activeset", nodebased, 1);
+  writer_->WriteResult("contactowner", "contactowner", nodebased, 1);
   writer_->WriteResult(
       "norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
   writer_->WriteResult(

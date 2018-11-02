@@ -96,8 +96,7 @@ namespace NOX
       vague,          ///< undefined correction type
       soc_automatic,  ///< let the algorithm choose which SOC strategy to follow
       soc_cheap,      ///< cheap SOC step, reuse the old system of equations
-      soc_full,       ///< do full SOC step in the flavor of the watch dog method
-      sufficient_linear_infeasibility_reduction
+      soc_full        ///< do full SOC step in the flavor of the watch dog method
     };
 
     //! Map second order correction type enum to std::string
@@ -121,6 +120,28 @@ namespace NOX
 
     namespace LinSystem
     {
+      enum class ConditionNumber
+      {
+        one_norm,         ///< 1-norm condition number
+        inf_norm,         ///< inf-norm condition number
+        max_min_ev_ratio  ///< condition number as ration of largest and smallest eigenvalue
+      };
+
+      inline std::string ConditionNumber2String(const enum ConditionNumber condtype)
+      {
+        switch (condtype)
+        {
+          case ConditionNumber::one_norm:
+            return "one_norm";
+          case ConditionNumber::inf_norm:
+            return "inf_norm";
+          case ConditionNumber::max_min_ev_ratio:
+            return "max_min_ev_ratio";
+          default:
+            return "unknown_condition_number_type";
+        }
+      }
+
       //! supported LinearSystem types
       enum LinearSystemType : int
       {
@@ -183,6 +204,29 @@ namespace NOX
         exit(EXIT_FAILURE);
       };
     }  // namespace LinSystem
+
+
+    namespace Direction
+    {
+      enum class DefaultStepTest : int
+      {
+        none,                  ///< unspecified
+        volume_change_control  ///< use the volume change test
+      };
+
+      inline std::string DefaultStepTest2String(const enum DefaultStepTest test_type)
+      {
+        switch (test_type)
+        {
+          case DefaultStepTest::none:
+            return "DefaultStepTest::none";
+          case DefaultStepTest::volume_change_control:
+            return "DefaultStepTest::volume_change_control";
+          default:
+            return "UNKNOWN DefaultStepTest enumerator";
+        }
+      }
+    }  // namespace Direction
 
     namespace MeritFunction
     {

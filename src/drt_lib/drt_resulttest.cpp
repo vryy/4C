@@ -118,25 +118,25 @@ int DRT::ResultTest::CompareValues(
   if (!(fabs(fabs(actresult - givenresult) - fabs(actresult - givenresult)) < tolerance))
   {
     // Result is 'not a number'
-    IO::cout << msghead.str() << "\t is NAN!\n";
+    std::cout << msghead.str() << "\t is NAN!\n";
     ret = 1;
   }
   else if (fabs(actresult - givenresult) > tolerance)
   {
     // Result is wrong
-    IO::cout << msghead.str() << "\t is WRONG --> actresult=" << std::setw(24)
-             << std::setprecision(17) << std::scientific << actresult
-             << ", givenresult=" << std::setw(24) << givenresult << ", abs(diff)=" << std::setw(24)
-             << std::abs(actresult - givenresult) << " >" << std::setw(24) << tolerance << "\n";
+    std::cout << msghead.str() << "\t is WRONG --> actresult=" << std::setw(24)
+              << std::setprecision(17) << std::scientific << actresult
+              << ", givenresult=" << std::setw(24) << givenresult << ", abs(diff)=" << std::setw(24)
+              << std::abs(actresult - givenresult) << " >" << std::setw(24) << tolerance << "\n";
 
     ret = 1;
   }
   else
   {
     // Result is correct
-    IO::cout << msghead.str() << "\t is CORRECT"
-             << ", abs(diff)=" << std::setw(24) << std::setprecision(17) << std::scientific
-             << std::abs(actresult - givenresult) << " <" << std::setw(24) << tolerance << "\n";
+    std::cout << msghead.str() << "\t is CORRECT"
+              << ", abs(diff)=" << std::setw(24) << std::setprecision(17) << std::scientific
+              << std::abs(actresult - givenresult) << " <" << std::setw(24) << tolerance << "\n";
   }
 
   return ret;

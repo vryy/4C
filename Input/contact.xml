@@ -75,24 +75,4 @@
     <Parameter name="Maximum Iterations" type="int"    value="30" />
   </ParameterList>
 </ParameterList>
- <!-- Inner Status Test: line search stopping criteria -->
-<ParameterList name="Inner Status Test">
-  <!-- At the moment only supported by backtracking line search -->
-  <Parameter name="Test Type"                     type="string" value="Filter" />
-  <Parameter name="Objective Function Weight"     type="double" value="1.0" />
-  <Parameter name="Ftype Condition Exponent s_f"  type="double" value="5.0" />
-  <Parameter name="Ftype Condition Exponent s_t"  type="double" value="2.0" />
-  <Parameter name="Infeasibility Function Weight" type="double" value="1.0" />
-  <Parameter name="Gamma Alpha"                   type="double" value="0.5" />
-  <Parameter name="Second Order Correction"       type="bool"   value="true" />
-  <Parameter name="SOC Type"                      type="string" value="auto" />
-  <ParameterList name="Filter-Armijo">
-      <Parameter name="c_1"                    type="double" value="1.0e-4" />
-      <Parameter name="Monotone"               type="bool"   value="true" />
-      <Parameter name="Maximal History Length" type="int"    value="2" />
-  </ParameterList>
-  <ParameterList name="Infeasibility Function 0">
-    <Parameter name="Type" type="string" value="Two Norm" />
-  </ParameterList>
-</ParameterList>
 </ParameterList>
