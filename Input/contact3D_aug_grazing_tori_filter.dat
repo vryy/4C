@@ -5,13 +5,8 @@
 -------------------------------------------------------------TITLE
 Following code features are tested:
 - Filter method.
-- Modified Newton method
-  -> handling of instabilities during dynamic simulations.
-  -> regularization of the upper-left matrix block.
 - Initial velocity field.
 - Regularization of the contact block.
-- Testing of the filter blocking strategy and the filter
-  reinitialization during load step 3.
 - Testing of a special auxiliary objective function which is
   suitable for the generalized alpha method.
 - Testing of the mid-point energy routine.
@@ -24,6 +19,13 @@ Following code features are tested:
   lastly accepted (filter) point since there won't be a trial point
   which can be copied. Such a case leads to a segmentation fault
   during the minimal step length evaluation if not handled properly.
+
+Currently NOT tested (load step 3)
+- Modified Newton method [tested in snapthrough_circles]
+  -> handling of instabilities during dynamic simulations.
+  -> regularization of the upper-left matrix block.
+- Testing of the filter blocking strategy and the filter
+  reinitialization during load step 3.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3200
 //NODES       4800
