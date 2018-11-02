@@ -31,7 +31,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for Inverse Analysis
   namespace STR
   {
     /// Type of Inverse Analysis

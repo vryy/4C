@@ -15,7 +15,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// search tree type
   namespace GEO
   {
     /// specify tree type

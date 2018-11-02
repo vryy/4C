@@ -342,13 +342,6 @@ SIGMA_LS                        0.0001
 //     analytical,finitedifferences
 MATERIALTANGENT                 analytical
 //
-// load, disp, arc1, arc2 control
-//     load,Load,disp,Disp,Displacement,arc1,Arc1,arc2,Arc2
-CONTROLTYPE                     load
-//
-// for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]
-CONTROLNODE                     -1 -1 -1
-//
 // Use linearization of external follower load in Newton
 //     Yes,No,yes,no,YES,NO
 LOADLIN                         yes

@@ -18,7 +18,6 @@
 
 namespace INPAR
 {
-  /// Input parameters for Meshfree
   namespace BINSTRATEGY
   {
     //! type of gap function/projection

@@ -6,7 +6,8 @@
 \level 2
 
 \maintainer Martin Kronbichler
-*-----------------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------------*/
 
 #ifndef SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 #define SOLVER_MUELUCONTACTPRECONDITIONER2_H_

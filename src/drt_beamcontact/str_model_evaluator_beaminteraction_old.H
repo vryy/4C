@@ -23,10 +23,12 @@ namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace CONTACT
 {
   class Beam3cmanager;
 }  // namespace CONTACT
+
 namespace STR
 {
   namespace MODELEVALUATOR

@@ -20,12 +20,14 @@
 
 // forward declaration
 class Epetra_FEVector;
+
 namespace LINALG
 {
   class SparseOperator;
   class SparseMatrix;
   class MultiMapExtractor;
 }  // namespace LINALG
+
 namespace DRT
 {
   class Discretization;
@@ -34,6 +36,7 @@ namespace DRT
     class Beam3Base;
   }
 }  // namespace DRT
+
 namespace STR
 {
   namespace MODELEVALUATOR

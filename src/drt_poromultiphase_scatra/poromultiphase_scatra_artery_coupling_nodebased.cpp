@@ -373,8 +373,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::DofRowMap() const
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovement(
-    Teuchos::RCP<const Epetra_Vector> disp)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
     dserror("Evaluation in current configuration not possible for node-based coupling");

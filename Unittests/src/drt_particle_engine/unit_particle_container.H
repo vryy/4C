@@ -56,6 +56,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     container_->Setup(size, stateEnumSet);
 
     // init some particles
+    int index(0);
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
@@ -64,6 +66,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     // first particle
     {
       particle.clear();
+      globalid = 1;
       pos[0] = 1.20;
       pos[1] = 0.70;
       pos[2] = 2.10;
@@ -74,12 +77,13 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
-      container_->AddParticle(particle);
+      container_->AddParticle(index, globalid, particle);
     }
 
     // second particle
     {
       particle.clear();
+      globalid = 2;
       pos[0] = -1.05;
       pos[1] = 12.6;
       pos[2] = -8.54;
@@ -90,12 +94,13 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
-      container_->AddParticle(particle);
+      container_->AddParticle(index, globalid, particle);
     }
 
     // third particle
     {
       particle.clear();
+      globalid = 3;
       pos[0] = 61.0;
       pos[1] = -2.63;
       pos[2] = 0.11;
@@ -106,7 +111,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle.insert(std::make_pair(PARTICLEENGINE::Position, pos));
       particle.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
-      container_->AddParticle(particle);
+      container_->AddParticle(index, globalid, particle);
     }
   }
 
@@ -138,11 +143,13 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   void test_AddParticle()
   {
     // init a particle
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
 
+    globalid = 4;
     pos[0] = -1.23;
     pos[1] = 1.70;
     pos[2] = 9.10;
@@ -154,14 +161,16 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     particle.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
     particle.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
-    int index = container_->AddParticle(particle);
-
+    int index(0);
+    container_->AddParticle(index, globalid, particle);
     TS_ASSERT_EQUALS(index, 3);
+    TS_ASSERT_EQUALS(container_->ParticlesStored(), 4);
   }
 
   void test_ReplaceParticle()
   {
     // init a particle
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -180,16 +189,26 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
     int index = 0;
-    container_->ReplaceParticle(index, particle_reference);
 
+    // replace only states and leave global id untouched
+    container_->ReplaceParticle(index, -1, particle_reference);
     TS_ASSERT_EQUALS(container_->ParticlesStored(), 3);
+    container_->GetParticle(index, globalid, particle);
+    TS_ASSERT_EQUALS(globalid, 1);
+    compareParticleStates(particle_reference, particle);
 
-    particle = container_->GetParticle(index);
+    // also replace global id
+    container_->ReplaceParticle(index, 4, particle_reference);
+    TS_ASSERT_EQUALS(container_->ParticlesStored(), 3);
+    container_->GetParticle(index, globalid, particle);
+    TS_ASSERT_EQUALS(globalid, 4);
     compareParticleStates(particle_reference, particle);
   }
 
   void test_GetParticle()
   {
+    int globalid(0);
+    int globalid_reference(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -202,6 +221,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
       if (index == 0)
       {
+        globalid_reference = 1;
         pos[0] = 1.20;
         pos[1] = 0.70;
         pos[2] = 2.10;
@@ -212,6 +232,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       }
       else if (index == 1)
       {
+        globalid_reference = 2;
         pos[0] = -1.05;
         pos[1] = 12.6;
         pos[2] = -8.54;
@@ -222,6 +243,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       }
       else if (index == 2)
       {
+        globalid_reference = 3;
         pos[0] = 61.0;
         pos[1] = -2.63;
         pos[2] = 0.11;
@@ -235,13 +257,16 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
+      TS_ASSERT_EQUALS(globalid_reference, globalid);
       compareParticleStates(particle_reference, particle);
     }
   }
 
   void test_RemoveParticle()
   {
+    int globalid(0);
+    int globalid_reference(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -257,6 +282,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
       if (index == 0)
       {
+        globalid_reference = 3;
         pos[0] = 61.0;
         pos[1] = -2.63;
         pos[2] = 0.11;
@@ -267,6 +293,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       }
       else if (index == 1)
       {
+        globalid_reference = 2;
         pos[0] = -1.05;
         pos[1] = 12.6;
         pos[2] = -8.54;
@@ -280,72 +307,16 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
-      particle = container_->GetParticle(index);
-      compareParticleStates(particle_reference, particle);
-    }
-  }
-
-  void test_RemoveGetParticle()
-  {
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
-
-    particle = container_->RemoveGetParticle(0);
-    TS_ASSERT_EQUALS(container_->ParticlesStored(), 2);
-
-    pos[0] = 1.20;
-    pos[1] = 0.70;
-    pos[2] = 2.10;
-    vel[0] = 0.23;
-    vel[1] = 1.76;
-    vel[2] = 3.89;
-    mass[0] = 0.12;
-
-    particle_reference.insert(std::make_pair(PARTICLEENGINE::Position, pos));
-    particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
-    particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
-
-    compareParticleStates(particle_reference, particle);
-
-    for (int index = 0; index < 2; ++index)
-    {
-      particle_reference.clear();
-
-      if (index == 0)
-      {
-        pos[0] = 61.0;
-        pos[1] = -2.63;
-        pos[2] = 0.11;
-        vel[0] = -7.35;
-        vel[1] = -5.98;
-        vel[2] = 1.11;
-        mass[0] = 0.5;
-      }
-      else if (index == 1)
-      {
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        vel[0] = 0.25;
-        vel[1] = -21.5;
-        vel[2] = 1.0;
-        mass[0] = 12.34;
-      }
-
-      particle_reference.insert(std::make_pair(PARTICLEENGINE::Position, pos));
-      particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
-      particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
-
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
+      TS_ASSERT_EQUALS(globalid_reference, globalid);
       compareParticleStates(particle_reference, particle);
     }
   }
 
   void test_SwapParticle()
   {
+    int globalid(0);
+    int globalid_reference(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -360,6 +331,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
       if (index == 0)
       {
+        globalid_reference = 1;
         pos[0] = 1.20;
         pos[1] = 0.70;
         pos[2] = 2.10;
@@ -370,6 +342,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       }
       else if (index == 1)
       {
+        globalid_reference = 3;
         pos[0] = 61.0;
         pos[1] = -2.63;
         pos[2] = 0.11;
@@ -380,6 +353,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       }
       else if (index == 2)
       {
+        globalid_reference = 2;
         pos[0] = -1.05;
         pos[1] = 12.6;
         pos[2] = -8.54;
@@ -393,7 +367,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
+      TS_ASSERT_EQUALS(globalid_reference, globalid);
       compareParticleStates(particle_reference, particle);
     }
   }
@@ -504,6 +479,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
   void test_ScaleState()
   {
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -553,13 +529,15 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
 
   void test_UpdateState()
   {
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
     std::vector<double> pos(3);
@@ -607,13 +585,15 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
       particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
 
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
+
       compareParticleStates(particle_reference, particle);
     }
   }
 
   void test_SetState()
   {
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
 
@@ -639,13 +619,14 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
     for (int index = 0; index < 3; ++index)
     {
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
       compareParticleStates(particle_reference, particle);
     }
   }
 
   void test_ClearState()
   {
+    int globalid(0);
     std::map<StateEnum, std::vector<double>> particle;
     std::map<StateEnum, std::vector<double>> particle_reference;
 
@@ -663,7 +644,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
     for (int index = 0; index < 3; ++index)
     {
-      particle = container_->GetParticle(index);
+      container_->GetParticle(index, globalid, particle);
       compareParticleStates(particle_reference, particle);
     }
   }

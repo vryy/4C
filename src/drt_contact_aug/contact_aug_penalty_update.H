@@ -18,8 +18,10 @@ parameter cn
 
 #include <Teuchos_RCP.hpp>
 
+// forward declarations
 class Epetra_Vector;
 class Epetra_Map;
+
 namespace INPAR
 {
   namespace STR
@@ -31,14 +33,17 @@ namespace INPAR
     enum class PenaltyUpdate : char;
   }  // namespace CONTACT
 }  // namespace INPAR
+
 namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace CONTACT
 {
   class ParamsInterface;

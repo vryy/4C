@@ -28,7 +28,6 @@ namespace DRT
 
 namespace INPAR
 {
-  /// Input parameters for ELCH
   namespace ELCH
   {
     /// possible types of moving boundary simulation

@@ -6,8 +6,6 @@
 
 \maintainer Marc Hirschvogel
 
-\date Jun 29, 2016
-
 \level 3
 
 */
@@ -26,6 +24,7 @@ namespace LINALG
 {
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace STR
 {
   namespace MODELEVALUATOR

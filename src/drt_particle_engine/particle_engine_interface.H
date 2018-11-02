@@ -28,6 +28,9 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include <unordered_map>
+#include <tuple>
+
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
@@ -48,6 +51,9 @@ namespace PARTICLEENGINE
 
     //! get reference to particle neighbors map
     virtual const ParticleNeighborsMap& GetParticleNeighborsMap() const = 0;
+
+    //! get local index in specific particle container
+    virtual const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const = 0;
 
     //! return bin size
     virtual const double* BinSize() const = 0;

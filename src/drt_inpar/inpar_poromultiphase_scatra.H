@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -17,12 +17,20 @@
 #include "inpar_parameterlist_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
+// forward declaration
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for poroelasticity with scalar transport
   namespace POROMULTIPHASESCATRA
   {
     /// Type of coupling strategy for poro scatra problems
@@ -63,6 +71,13 @@ namespace INPAR
       equilibration_rowsandcolumns_maindiag
     };
 
+    //! Handling of non-converged nonlinear solver
+    enum DivContAct
+    {
+      divcont_stop,     ///< abort simulation
+      divcont_continue  ///< continue nevertheless
+    };
+
     //! map enum term to std::string
     static inline const std::string VectorNormString(
         const enum VectorNorm norm  //!< input enum term
@@ -91,8 +106,11 @@ namespace INPAR
       }
     }
 
-    /// set the poroscatra parameters
+    /// set the poromultiphasescatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set the poromultiphasescatra conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
 
   }  // namespace POROMULTIPHASESCATRA
 

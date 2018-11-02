@@ -30,7 +30,6 @@ namespace DRT
 
 namespace INPAR
 {
-  /// Input parameters for cavitation
   namespace CAVITATION
   {
     /// Type of coupling strategy for cavitation problems

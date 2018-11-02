@@ -1,5 +1,4 @@
-/*----------------------------------------------------------------------------*/
-/**
+/*!
   \file contact_aug_lagrange_multiplier_function.H
 
   \brief Lagrange multiplier function: solve a least squares problem to compute
@@ -20,6 +19,7 @@
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_lib/drt_dserror.H"
 
+// forward declarations
 class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_Comm;
@@ -30,6 +30,7 @@ namespace LINALG
   class SparseOperator;
   class SparseMatrix;
 }  // namespace LINALG
+
 namespace CONTACT
 {
   class ParamsInterface;

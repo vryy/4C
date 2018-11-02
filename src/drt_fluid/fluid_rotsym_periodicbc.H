@@ -22,22 +22,21 @@
 
 #include "fluid_rotsym_periodicbc_utils.H"
 
-
-/*!
-\brief  This class manages local transformations(rotation) of velocity fields
-
-        o used for rotationally symmetric boundary conditions
-        o used for rotationally symmetric boundary conditions
-
-\author gjb
-
- */
-
 namespace FLD
 {
   /// numdofpernode = number of dofs per node for fluid problem
   template <DRT::Element::DiscretizationType distype, int numdofpernode,
       DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+
+  /*!
+  \brief  This class manages local transformations(rotation) of velocity fields
+
+          o used for rotationally symmetric boundary conditions
+          o used for rotationally symmetric boundary conditions
+
+  \author gjb
+
+   */
   class RotationallySymmetricPeriodicBC
   {
    public:

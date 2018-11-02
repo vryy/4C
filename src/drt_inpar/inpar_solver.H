@@ -2,11 +2,11 @@
 /*!
 \file inpar_solver.H
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief Input parameters for linear solvers
+
+\level 1
+
+\maintainer Martin Kronbichler
 */
 
 /*----------------------------------------------------------------------*/
@@ -18,7 +18,6 @@ Maintainer: Martin Kronbichler
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for solver
   namespace SOLVER
   {
     /// Available solvers (a few of these are likely out-dated)

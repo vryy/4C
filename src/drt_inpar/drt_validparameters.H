@@ -4,12 +4,9 @@
 
 \brief Setup of the list of valid input parameters
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\level 1
+
+\maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 
@@ -26,27 +23,6 @@ Maintainer: Martin Kronbichler
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-
-/// Namespace for Baci enums of input parameters
-///
-/// This namespace should one day contain all the enums now still
-/// defined in the various old C-headers (enums.h, dynamic.h,...)
-/// The enums are used to represent the different values of std::string
-/// input variables within Baci. The idea behind this new namespace
-/// is twofold: first, of course, the old C-headers should go away
-/// one day and we have to establish an alternative for them.
-/// Second, it makes sense to define the valid parameters on a
-/// global level and not within the different types of problems.
-/// Of course, then drt_validparameters.H has to be included
-/// wherever we want to work with the enums!
-/// (a.popp 04/08)
-/// \date 11/08
-namespace INPAR
-{
-}
-
-
 
 namespace DRT
 {

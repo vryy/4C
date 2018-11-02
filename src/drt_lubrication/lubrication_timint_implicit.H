@@ -68,10 +68,6 @@ namespace FLD
   class Vreman;
 }  // namespace FLD
 
-
-/*==========================================================================*/
-//! Algorithm and time integration classes for lubrication problems
-/*==========================================================================*/
 namespace LUBRICATION
 {
   /*!

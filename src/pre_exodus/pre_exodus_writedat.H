@@ -16,11 +16,6 @@ Here is everything related with writing a dat-file
 
 #include "pre_exodus_readbc.H"
 
-
-/*!
-\brief EXODUS: namespace of the ExodusII-to-BACI preprocessing tool
-
-*/
 namespace EXODUS
 {
   //! write datfile

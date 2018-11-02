@@ -52,23 +52,6 @@ namespace Teuchos
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
 
-/*! \brief NLNSOL: a nonlinear solver tool box
- *
- *  A collection of nonlinear solver routines and methods to build a
- *  user-configured nonlinear solver. Configuration works via a xml-file.
- *
- *  <h3> Major algorithmic parts </h3>
- *  <ul>
- *  <li> Nonlinear solvers/operators inherit from NLNSOL::NlnOperatorBase. </li>
- *  <li> Possible line search strategies are derived from
- *       NLNSOL::LineSearchBase. </li>
- *  <li> An interface to the nonlinear problem to be solved is provided by
- *       NLNSOL::NlnProblemBase. </li>
- *  <li> A collection of helpful utilities can be found in NLNSOL::UTILS. </li>
- *  </ul>
- *
- *  \author mayr.mt \date 05/2014
- */
 namespace NLNSOL
 {
   /*! \class NlnOperatorBase

@@ -32,7 +32,6 @@ enum _FPSI_COUPLING
 
 namespace INPAR
 {
-  /// Input parameters for fluid porous structure interaction
   namespace FPSI
   {
     // type of partitioned coupling for FPSI problems

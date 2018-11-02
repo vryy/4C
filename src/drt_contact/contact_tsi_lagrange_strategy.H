@@ -18,6 +18,7 @@
 #include "contact_defines.H"
 #include <Epetra_Operator.h>
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;

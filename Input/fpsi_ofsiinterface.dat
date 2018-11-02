@@ -82,8 +82,6 @@ MINITER                         0
 ITERNORM                        L2
 DIVERCONT                       stop
 NLNSOL                          fullnewton
-CONTROLTYPE                     load
-CONTROLNODE                     -1 -1 -1
 LOADLIN                         no
 MASSLIN                         no
 PREDICT                         ConstDis

@@ -30,7 +30,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters used in statistical mechanics
   namespace BEAMINTERACTION
   {
     enum RepartitionStrategy

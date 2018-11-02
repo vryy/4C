@@ -3,13 +3,8 @@
 \file strtimint_noxgroup.H
 \brief Definitions of NOX group for non-linear solution techniques
        used within implicit structural time integration
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 1
+\maintainer Alexander Popp
 */
 
 /*----------------------------------------------------------------------------*/
@@ -33,7 +28,6 @@ namespace STR
 namespace NOX
 {
   /*--------------------------------------------------------------------------*/
-  //! NOX::STR holds local extensions to NOX for structural time integration
   namespace STR
   {
     /*==================================================================*/

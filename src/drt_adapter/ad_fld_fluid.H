@@ -24,7 +24,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
-
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
@@ -57,9 +57,6 @@ namespace FLD
   }
 }  // namespace FLD
 
-
-
-/// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   /// general fluid field interface for multiphysics (FSI, ELCH, ...)

@@ -2,12 +2,8 @@
 /*!
 \file thr_aux.cpp
 \brief various auxiliar methods needed in thermal analysis
-
 \level 1
-<pre>
 \maintainer Christoph Meier
-
-</pre>
 */
 
 

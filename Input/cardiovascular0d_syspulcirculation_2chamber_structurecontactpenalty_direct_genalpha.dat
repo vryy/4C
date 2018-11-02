@@ -105,8 +105,6 @@ V_ven_pul_u                     93000.0
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DAMPING                         Rayleigh
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha

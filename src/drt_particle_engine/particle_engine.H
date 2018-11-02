@@ -109,6 +109,9 @@ namespace PARTICLEENGINE
     //! build overlapping particle to particle neighbor map
     void BuildParticleToParticleNeighbors();
 
+    //! build global id to local index map
+    void BuildGlobalIDToLocalIndexMap();
+
     //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
@@ -120,6 +123,9 @@ namespace PARTICLEENGINE
     {
       return particletoparticleneighbors_;
     };
+
+    //! get local index in specific particle container
+    const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
 
     //! return bin size
     const double* BinSize() const override;
@@ -278,6 +284,9 @@ namespace PARTICLEENGINE
     //! maps particles of all types and statuses to its neighboring particles of all types and
     //! statuses (overlapping pairs)
     ParticleNeighborsMap particletoparticleneighbors_;
+
+    //! maps particle global ids to local index in specific particle container
+    std::unordered_map<int, LocalIndexTupleShrdPtr> globalidtolocalindex_;
 
     //! owned bins at an open boundary or a periodic boundary
     std::set<int> boundarybins_;

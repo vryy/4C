@@ -17,23 +17,17 @@ Thomas Kloeppel
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-
-
 // forward declarations
 namespace DRT
 {
   class Condition;
   class Discretization;
 }  // namespace DRT
+
 namespace LINALG
 {
   class SparseOperator;
 }
-
-/*!
-\brief UTILS: namespace containing general utils for BACI, as constraints, potentials, surface
-stress, ...
-*/
 
 namespace UTILS
 {

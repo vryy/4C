@@ -24,18 +24,13 @@
 #include "Epetra_Comm.h"
 #include <string>
 
-
+// forward declarations
 namespace LINALG
 {
   class MapExtractor;
   class SparseMatrix;
 }  // namespace LINALG
 
-
-/*!
-\brief DRT: namespace of the baci discretization module
-
-*/
 namespace DRT
 {
   class DiscretizationHDG : public DiscretizationFaces

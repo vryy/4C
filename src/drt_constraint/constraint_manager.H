@@ -19,6 +19,7 @@ Kloeppel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
+// forward declarations
 namespace IO
 {
   class DiscretizationReader;

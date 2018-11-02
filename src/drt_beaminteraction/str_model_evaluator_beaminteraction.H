@@ -25,10 +25,12 @@ namespace ADAPTER
 {
   class Coupling;
 }
+
 namespace DRT
 {
   class Discretization;
 }
+
 namespace FSI
 {
   namespace UTILS
@@ -36,18 +38,22 @@ namespace FSI
     class MatrixRowTransform;
   }
 }  // namespace FSI
+
 namespace LINALG
 {
   class SparseMatrix;
 }
+
 namespace BINSTRATEGY
 {
   class BinningStrategy;
 }
+
 namespace PARTICLE
 {
   class ParticleHandler;
 }
+
 namespace BEAMINTERACTION
 {
   class BeamInteractionParams;
@@ -57,6 +63,7 @@ namespace BEAMINTERACTION
     class Generic;
   }
 }  // namespace BEAMINTERACTION
+
 namespace STR
 {
   namespace MODELEVALUATOR

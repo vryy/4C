@@ -29,7 +29,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for SCATRA
   namespace SCATRA
   {
     /// time integration schemes for scalar transport problems

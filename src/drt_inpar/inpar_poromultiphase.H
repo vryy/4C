@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -32,7 +32,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for solid-scatra-interaction
   namespace POROMULTIPHASE
   {
     /// Type of coupling strategy for POROMULTIPHASE problems

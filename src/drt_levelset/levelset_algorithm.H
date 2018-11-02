@@ -29,7 +29,7 @@
 
 #define USE_PHIN_FOR_VEL  // TODO
 
-
+// forward declarations
 namespace PARTICLE
 {
   class ScatraParticleCoupling;

@@ -17,10 +17,9 @@
 #include "poromultiphase_scatra_monolithic.H"
 #include <Epetra_Time.h>
 
-#include "../drt_inpar/inpar_poromultiphase_scatra.H"
 #include "poromultiphase_scatra_utils.H"
 
-
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
@@ -222,6 +221,9 @@ namespace POROMULTIPHASESCATRA
 
     // do we solve the structure?
     bool solve_structure_;
+
+    // for building blocks
+    int struct_offset_;
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;

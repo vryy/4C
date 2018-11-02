@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -18,6 +18,7 @@
 #include <Epetra_Vector.h>
 #include "../linalg/linalg_utils.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class PoroFluidMultiphaseWrapper;

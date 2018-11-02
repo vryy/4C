@@ -3,9 +3,9 @@
 
 \brief A class for performing mortar search in 2D/3D based on binarytrees
 
-\maintainer Alexander Popp
-
 \level 1
+
+\maintainer Alexander Popp
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_BINARYTREE_H
@@ -23,10 +23,6 @@ namespace DRT
   class Discretization;
 }
 
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-
-*/
 namespace MORTAR
 {
   // forward declarations

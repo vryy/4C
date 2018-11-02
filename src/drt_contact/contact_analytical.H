@@ -3,12 +3,9 @@
 
 \brief A set of analytical solutions for convergence analysis of contact/meshtying methods
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
+
+\maintainer Alexander Popp
 
 *-----------------------------------------------------------------------*/
 #ifndef CONTACT_ANALYTICAL_H
@@ -16,9 +13,6 @@ Maintainer: Alexander Popp
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-/*!
-\brief CONTACT: namespace of the BACI contact and meshtying algorithms
-*/
 namespace CONTACT
 {
   /*!

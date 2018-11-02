@@ -27,7 +27,6 @@ namespace DRT
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for MORTAR coupling
   namespace MORTAR
   {
     /// Type of employed set of Lagrange multiplier shape functions

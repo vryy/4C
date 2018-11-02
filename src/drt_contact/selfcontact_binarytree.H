@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file selfcontact_binarytree.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Search tree for self-contact problems
+
+\level 2
+
+\maintainer Alexander Popp
 
 *-----------------------------------------------------------------------*/
 #ifndef SELFCONTACT_BINARYTREE_SELF_H
@@ -23,10 +22,6 @@ namespace DRT
   class Discretization;
 }
 
-/*!
-\brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
-*/
 namespace CONTACT
 {
   // forward declarations

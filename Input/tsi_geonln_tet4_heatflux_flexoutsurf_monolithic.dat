@@ -47,8 +47,6 @@ SHAPEFCT                        Polynomial
 INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DYNAMICTYP                      Statics  // GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
 ITERNORM                        L2
 LINEAR_SOLVER                   1

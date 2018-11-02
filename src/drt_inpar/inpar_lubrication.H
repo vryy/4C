@@ -4,12 +4,9 @@
 
 \brief Lubrication dynamic parameters
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 3
+
+\maintainer Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_INPAR_INPAR_LUBRICATION_H_
@@ -20,7 +17,6 @@ Maintainer: Andy Wirtz
 
 namespace INPAR
 {
-  /// Input parameters for LUBRICATION
   namespace LUBRICATION
   {
     /// compute error compared to analytical solution

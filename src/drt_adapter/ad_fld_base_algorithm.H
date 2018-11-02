@@ -29,8 +29,6 @@
 
 #include "ad_fld_fluid.H"
 
-
-// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   /// fluid field solver

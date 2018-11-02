@@ -16,6 +16,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_structure.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class Structure;
@@ -47,10 +48,6 @@ namespace IO
   class ErrorFileControl;
 }  // namespace IO
 
-/// UQ: Uncertainty Quantification
-/*!
-  This is the place where we do random stuff.
- */
 namespace UQ
 {
   class RandomField;

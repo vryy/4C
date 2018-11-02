@@ -20,7 +20,6 @@
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for vol. mortar
   namespace VOLMORTAR
   {
     // Type of integration procedure

@@ -32,10 +32,6 @@ namespace DRT
   class Element;
 }
 
-/*!
-\brief MORTAR: namespace of the BACI mortar coupling algorithms
-
-*/
 namespace MORTAR
 {
   // forward declarations

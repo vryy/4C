@@ -21,7 +21,7 @@ Since Baci is used in different environments and configurations, there are some 
 
 ### Daily tests
 
-Each night a full release and a full debug test are started by a GitLab Scheduler on all configurations. If the release test passes, `doxygen` is build and copied to a folder with constant path (if the documentation is automatically loaded to a server it is better if it is always in the same location, the path is given with a variable and can be different for the different configurations).  
+Each night a full release and a full debug test are started by a GitLab Scheduler on all configurations. If the release test passes, `doxygen` is build and copied to a folder with constant path (if the documentation is automatically loaded to a server it is better if it is always in the same location, the path is given with a variable and can be different for the different configurations).
 
 ### Minimal tests
 
@@ -34,8 +34,9 @@ Since we allow merges to `master` only for tested commits, the user has to start
 ### Output
 
 For each job certain testing output is displayed in GitLab (select job under `CI/CD - Pipelines`).
-For the minimal tests the full output can be viewed in the GitLab terminal.
-The full tests produce too much output for the web interface, only the last 200 lines of each failed test are displayed, as well as a summary of the `ctest` call.
+During the build process all lines starting with `[` are displayed and the build summary at the end is displayed.
+The final line of each testing output is also shown.
+Therefore it is always possilbe to see the current state of the testing pipeline.
 If the pipeline fails, the full `log` file is compressed and uploaded as a GitLab `artifact`.
 The `artifacts` can be found under `CI/CD - Pipelines` (on the right hand side of the failed pipeline).
-After 4 weeks the `artifacts` are deleted. 
+After 4 weeks the `artifacts` are deleted.

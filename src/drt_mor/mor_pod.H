@@ -20,6 +20,7 @@
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

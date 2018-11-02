@@ -37,7 +37,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  //! General input parameters for thermal problems
   namespace THR
   {
     //! @name Time integration

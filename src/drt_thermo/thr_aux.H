@@ -3,10 +3,7 @@
 \file thr_aux.H
 \brief Various auxiliar methods needed in thermal analysis
 \level 1
-<pre>
 \maintainer Christoph Meier
-
-</pre>
 */
 
 
@@ -32,11 +29,6 @@
 namespace THR
 {
   /*====================================================================*/
-  //! A namespace for the various unsorted auxiliar kind of
-  //! methods needed in thermal analysis
-  //!
-  //! \author bborn
-  //! \date 11/08
   namespace AUX
   {
     //! Determine norm of force residual

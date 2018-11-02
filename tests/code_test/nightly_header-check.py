@@ -16,7 +16,7 @@ def is_source_file(fname):
   return os.path.splitext(fname)[1] in ".c .cpp .cxx .h .H .hpp".split()
 
 def is_support_file(fname):
-  return os.path.splitext(fname)[1] in ".dat .cmake .config".split()
+  return os.path.splitext(fname)[1] in ".dat .cmake .config .md".split()
 
 def path_contains(test, path):
   head, tail = os.path.split(path)
@@ -48,7 +48,7 @@ def file_contents(filename):
   return output
 
 def pretty_print_error(allerrors):
-  f = open('wrong_headers.txt', 'w')
+  f = open('wrong_format.txt', 'w')
   max_width = 56
   if len(allerrors) > 0:
     max_width = max(max_width,max([len(line) for line in allerrors]))

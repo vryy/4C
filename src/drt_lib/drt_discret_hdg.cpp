@@ -25,6 +25,7 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_acou/acou_ele.H"
 #include "../drt_acou/acou_ele_action.H"
+#include "../drt_elemag/elemag_ele_action.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
@@ -545,6 +546,8 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     Teuchos::ParameterList initParams;
     if (DRT::Problem::Instance(0)->ProblemType() == prb_acou)
       initParams.set<int>("action", ACOU::project_dirich_field);
+    else if (DRT::Problem::Instance(0)->ProblemType() == prb_elemag)
+      initParams.set<int>("action", ELEMAG::project_dirich_field);
     else if (DRT::Problem::Instance(0)->ProblemType() == prb_scatra)
       initParams.set<int>("action", SCATRA::project_dirich_field);
     else

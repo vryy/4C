@@ -6,8 +6,6 @@
 
 \maintainer Andreas Rauch
 
-\date Jun 21, 2017
-
 \level 3
 
 */
@@ -19,6 +17,7 @@
 
 #include "../drt_ssi/ssi_str_model_evaluator_partitioned.H"
 
+// forward declarations
 namespace ADAPTER
 {
   class Structure;

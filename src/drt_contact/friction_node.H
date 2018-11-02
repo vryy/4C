@@ -12,10 +12,6 @@
 
 #include "contact_node.H"
 
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
- */
 namespace CONTACT
 {
   class FriNodeType : public DRT::ParObjectType

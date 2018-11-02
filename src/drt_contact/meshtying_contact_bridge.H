@@ -19,6 +19,7 @@
 #include "../drt_mortar/mortar_manager_base.H"  // TODO forward declaration!!!
 #include "../drt_lib/drt_dserror.H"
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -37,7 +37,6 @@ namespace Teuchos
   class ParameterList;
 }
 
-// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER
 {
   // forward declaration
@@ -94,6 +93,9 @@ namespace ADAPTER
     //! return primary field at time n+1
     virtual Teuchos::RCP<const Epetra_Vector> Phinp() const = 0;
 
+    //! return primary field at time n
+    virtual Teuchos::RCP<const Epetra_Vector> Phin() const = 0;
+
     //! return solid pressure field at time n+1
     virtual Teuchos::RCP<const Epetra_Vector> SolidPressure() const = 0;
 
@@ -103,8 +105,8 @@ namespace ADAPTER
     //! return saturation field at time n+1
     virtual Teuchos::RCP<const Epetra_Vector> Saturation() const = 0;
 
-    //! return pressure field at time n+1
-    virtual Teuchos::RCP<const Epetra_Vector> ValidVolFracPressDofs() const = 0;
+    //! return valid volume fraction species dof vector
+    virtual Teuchos::RCP<const Epetra_Vector> ValidVolFracSpecDofs() const = 0;
 
     //! return phase flux field at time n+1
     virtual Teuchos::RCP<const Epetra_MultiVector> Flux() const = 0;

@@ -20,6 +20,7 @@
 
 #include "../drt_inpar/inpar_poromultiphase.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;

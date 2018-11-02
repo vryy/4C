@@ -3,12 +3,9 @@
 
 \brief fluid adjoint implicit time integration for topology optimization
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\level 3
+
+\maintainer Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -19,7 +16,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_fluidAdjoint_timeint.H"
 
 
-/// forward declarations
+// forward declarations
 namespace LINALG
 {
   class SparseOperator;

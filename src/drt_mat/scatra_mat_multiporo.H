@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -81,6 +81,8 @@ namespace MAT
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
+      /// delta used for modelling dependency of diffusivity on volfrac^delta
+      const double delta_;
     };
     // class Scatra
 
@@ -262,6 +264,9 @@ namespace MAT
 
     /// return phase ID
     virtual int PhaseID() const { return params_->phaseID_; }
+
+    /// return delta
+    virtual double Delta() const { return params_->delta_; }
 
    private:
     /// my material parameters

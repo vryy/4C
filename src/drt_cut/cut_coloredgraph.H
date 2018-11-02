@@ -29,9 +29,6 @@ namespace GEO
 {
   namespace CUT
   {
-    /*!
-    \brief Graph to construct volume cells from facets and lines
-    */
     namespace COLOREDGRAPH
     {
       class Graph;

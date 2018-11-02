@@ -1,8 +1,6 @@
 //
 // Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15238
+//
 ============================================================================
 General Data File BACI
 ============================================================================
@@ -27,8 +25,6 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
 DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2

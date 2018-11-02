@@ -115,7 +115,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const = 0;
 
     //! apply the mesh movement
-    virtual void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
+    virtual void ApplyMeshMovement() const = 0;
 
    protected:
     //! porofluid multi time integrator

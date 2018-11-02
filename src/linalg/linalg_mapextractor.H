@@ -26,10 +26,6 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 
-/*!
-\brief LINALG: namespace of the ccarat linear algebra module
-
-*/
 namespace LINALG
 {
   /// Split a row map into a set of partial maps and establish the communication pattern back and

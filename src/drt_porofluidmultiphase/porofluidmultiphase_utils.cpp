@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de1
  *----------------------------------------------------------------------*/
 
@@ -147,32 +147,13 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
 }
 
 /*--------------------------------------------------------------------------*
- | redistribute cont- and artery-discretization by binning kremheller 06/18 |
+ | ghost artery on all procs.                              kremheller 06/18 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(
-    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
-    const bool ghost_artdis)
+void POROFLUIDMULTIPHASE::UTILS::GhostArteryDiscretizationOnAllProcs(
+    Teuchos::RCP<DRT::Discretization> artdis)
 {
-  contdis->FillComplete();
   artdis->FillComplete();
-  // create vector of discr.
-  std::vector<Teuchos::RCP<DRT::Discretization>> dis;
-  dis.push_back(contdis);
-  dis.push_back(artdis);
-
-  DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
-
-  // safety check
-  // TODO: fix this!
-  if (artdis->NumMyRowNodes() == 0)
-    dserror(
-        "problem with parallel redistribution of artery discretization, one or more procs. does "
-        "not have any row nodes");
-
-  // TODO: this is necessary to find all possible interactions.
-  //       presently, the artery discretization is much smaller than the
-  //       others, so it is not that much of a performance issue
-  if (ghost_artdis) DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
+  DRT::UTILS::GhostDiscretizationOnAllProcs(artdis);
 
   return;
 }

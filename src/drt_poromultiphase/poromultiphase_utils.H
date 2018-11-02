@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -31,8 +31,6 @@ namespace ADAPTER
 
 namespace POROMULTIPHASE
 {
-  /// POROMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with poromultiphase
-  /// problems
   namespace UTILS
   {
     /// setup discretizations and dofsets

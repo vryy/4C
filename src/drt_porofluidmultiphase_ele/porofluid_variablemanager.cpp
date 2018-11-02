@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -61,6 +61,18 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::CreateVaria
       if (para.IsAle())
         varmanager = Teuchos::rcp(
             new VariableManagerStruct<nsd, nen>(para.NdsVel(), para.NdsDisp(), varmanager));
+
+      break;
+    }
+    // calculate the valid dofs
+    case POROFLUIDMULTIPHASE::calc_valid_dofs:
+    {
+      // only phi values are needed
+      varmanager = Teuchos::rcp(new VariableManagerPhi<nsd, nen>(numdofpernode));
+
+      if (numvolfrac > 0)
+        varmanager = Teuchos::rcp(
+            new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
 
       break;
     }
@@ -412,6 +424,18 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<ns
   // call internal class
   this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
 
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState(dofsetnum, "phin_fluid");
+  if (phin == Teuchos::null) dserror("Cannot get state vector 'phin_fluid'");
+
+  // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
+  //                                    --> correct number has be passed if called with another
+  //                                    element (e.g. scatra)
+  const std::vector<int>& lm = la[dofsetnum].lm_;
+
+  // extract values from global vector
+  std::vector<LINALG::Matrix<nen, 1>> ephin(this->NumDofPerNode());
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen, 1>>(*phin, ephin, lm);
+
   const int numfluidphases = (int)(this->NumDofPerNode() - 2 * numvolfrac_);
 
   // loop over DOFs
@@ -422,8 +446,16 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<ns
         POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
             *multiphasemat_, k + numvolfrac_ + numfluidphases);
 
+    // this approach proved to be the most stable one
+    // we evaluate the volume fraction pressure if at least one volfrac value is bigger than
+    // minvolfrac
     ele_has_valid_volfrac_press_[k] =
-        (*this->ElementPhinp(k + numfluidphases)).MaxValue() > volfracpressmat.MinVolFrac();
+        ephin[k + numfluidphases].MaxValue() > volfracpressmat.MinVolFrac();
+
+    // and we evaluate the volume fraction species if all volfrac values are bigger than
+    // minvolfrac
+    ele_has_valid_volfrac_spec_[k] =
+        ephin[k + numfluidphases].MinValue() > volfracpressmat.MinVolFrac();
   }
 
   return;

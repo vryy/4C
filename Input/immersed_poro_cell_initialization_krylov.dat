@@ -90,8 +90,6 @@ STC_SCALING                     no
 STC_LAYER                       1
 PTCDT                           1.000e-01
 TOLCONSTR                       1.000e-08
-CONTROLTYPE                     load
-CONTROLNODE                     -1 -1 -1
 LOADLIN                         yes
 MASSLIN                         No
 UZAWAPARAM                      1.000e+00
@@ -157,8 +155,6 @@ STC_SCALING                     no
 STC_LAYER                       1
 PTCDT                           1.000e-01
 TOLCONSTR                       1.000e-08
-CONTROLTYPE                     load
-CONTROLNODE                     -1 -1 -1
 LOADLIN                         yes
 MASSLIN                         No
 UZAWAPARAM                      1.000e+00

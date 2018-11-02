@@ -10,8 +10,8 @@
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef LINALG_PROJECTED_PRECOND_H_
 #define LINALG_PROJECTED_PRECOND_H_
@@ -20,7 +20,7 @@
 #include "Epetra_Operator.h"
 #include "Teuchos_RCP.hpp"
 
-//!@name forward decarations
+// forward declarations
 class Epetra_MultiVector;
 
 namespace LINALG

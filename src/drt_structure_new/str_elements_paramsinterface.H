@@ -190,10 +190,10 @@ namespace STR
   }     // namespace ELEMENTS
 }  // namespace STR
 
-/*! \brief Parameter interface for brownian dynamic data exchange between integrator and structure
- * (beam) elements \author eichinger */
 namespace BROWNIANDYN
 {
+  /*! \brief Parameter interface for brownian dynamic data exchange between integrator and structure
+   * (beam) elements \author eichinger */
   class ParamsInterface
   {
    public:

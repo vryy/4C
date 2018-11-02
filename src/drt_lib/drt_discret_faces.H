@@ -23,17 +23,13 @@
 #include <string>
 #include "Teuchos_ParameterList.hpp"
 
+// forward declarations
 namespace LINALG
 {
   class MapExtractor;
   class SparseMatrix;
 }  // namespace LINALG
 
-
-/*!
-\brief DRT: namespace of the baci discretization module
-
-*/
 namespace DRT
 {
   class DiscretizationFaces : public Discretization

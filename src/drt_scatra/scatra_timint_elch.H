@@ -29,9 +29,6 @@ namespace FLD
   class Meshtying;
 }
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for scalar transport problems: elch
-/*==========================================================================*/
 namespace SCATRA
 {
   class ScaTraTimIntElch : public virtual ScaTraTimIntImpl

@@ -3,12 +3,9 @@
 
 \brief provides geometry methods for a search tree
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+\level 3
+
+\maintainer Andy Wirtz
 
 *----------------------------------------------------------------------*/
 #ifndef SEARCHTREE_GEOMETRY_SERVICE_H_
@@ -19,6 +16,7 @@ Maintainer: Andy Wirtz
 #include "geo_utils.H"
 #include "searchtree_nearestobject.H"
 
+// forward declarations
 namespace DRT
 {
   class Discretization;

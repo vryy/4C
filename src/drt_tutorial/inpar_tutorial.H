@@ -3,16 +3,16 @@
 \file inpar_tutorial.H
 
 \maintainer Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
 
 \brief tutorial input parameters
+
+\level 3
 */
 
 /*----------------------------------------------------------------------*/
 
-/// All header files should have #define guards to prevent multiple inclusion.
-/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
+// All header files should have #define guards to prevent multiple inclusion.
+// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef INPAR_TUTORIAL_H_
 #define INPAR_TUTORIAL_H_
 

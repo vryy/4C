@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -60,6 +60,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
   {
     // calculate true pressures and saturation
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
+    case POROFLUIDMULTIPHASE::calc_valid_dofs:
     {
       // no extensions needed
       phasemanager = corephasemanager;
@@ -575,7 +576,7 @@ bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::IncompressibleSolid() co
  *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Density(int phasenum) const
 {
-  CheckIsEvaluated();
+  CheckIsSetup();
 
   return density_[phasenum];
 }
@@ -585,7 +586,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Density(int phasenum) 
  *---------------------------------------------------------------------------*/
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::VolFracDensity(int volfracnum) const
 {
-  CheckIsEvaluated();
+  CheckIsSetup();
 
   return volfracdensity_[volfracnum];
 }

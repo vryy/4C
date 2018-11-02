@@ -53,7 +53,6 @@ namespace ADAPTER
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-/// POROELAST: namespace for all porous media problems
 namespace POROELAST
 {
   // forward declaration

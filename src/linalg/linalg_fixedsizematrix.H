@@ -29,15 +29,6 @@
 
 namespace LINALG
 {
-  /// Compile time error check for fixed size serial dense classes
-  /*!
-
-    This namespace contains the compile time error checker used by
-    Matrix and FixedSizeSerialDenseSolver.
-
-    \author Martin Kuettler
-    \date 09/08
-   */
   namespace DENSEERROR
   {
     /// Compile time error definitions
@@ -78,22 +69,6 @@ namespace LINALG
 
   }  // namespace DENSEERROR
 
-  /// Internal templated serial dense functions
-  /*!
-    This namespace contains inlined templated functions for various
-    matrix operations. They need the matrix sizes as template
-    arguments and take the matrices as Epetra_SerialDenseMatrix, or as
-    value_type*. Normally there is no need for calling them directly,
-    because Matrix provides a more convenient
-    interface.
-
-    All value_type* arguments are considered to be pointers to a matrix stored
-    in column-major mode, just like the function A() of Epetra- or
-    fixed size serial dense matrices return them.
-
-    \author Martin Kuettler
-    \date 09/08
-   */
   namespace DENSEFUNCTIONS
   {
     /*

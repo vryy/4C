@@ -138,7 +138,6 @@ dserror(
 dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
 #endif
 
-//! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
   namespace ELEMENTS

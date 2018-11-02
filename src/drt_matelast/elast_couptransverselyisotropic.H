@@ -223,21 +223,22 @@ namespace MAT
        *  tensor
        *
        *  \f{eqnarray}{
-       *  \mat{S}_{\mathrm{trn}} =& 2 \left\{ \frac{\partial \Psi_{\mathrm{trn}} }{\partial I_{3}}
-       * \frac{\partial I_{3}}{\partial \mat{C}}
+       *  \mathbf{S}_{\mathrm{trn}} =& 2 \left\{ \frac{\partial \Psi_{\mathrm{trn}} }{\partial
+       * I_{3}} \frac{\partial I_{3}}{\partial \mathbf{C}}
        *  + \frac{\partial \Psi_{\mathrm{trn}} }{\partial I_{4}} \frac{\partial I_{4}}{\partial
-       * \mat{C}}
+       * \mathbf{C}}
        *  + \frac{\partial \Psi_{\mathrm{trn}} }{\partial I_{5}} \frac{\partial I_{5}}{\partial
-       * \mat{C}} \right\} \nonumber \\
+       * \mathbf{C}} \right\} \nonumber \\
        *  =& 2 \left\{
-       *  \frac{\beta}{2 I_{3}} (I_{4}-1) I_{3} \mat{C}^{-1} + \left[\alpha + \frac{\beta}{2}
-       * \ln(I_{3}) + 2 \gamma (I_{4}-1)\right] \mat{A} \otimes \mat{A}
-       *  - \frac{\alpha}{2} ( \mat{A} \otimes \mat{C}\, \mat{A} + \mat{A}\, \mat{C} \otimes \mat{A}
+       *  \frac{\beta}{2 I_{3}} (I_{4}-1) I_{3} \mathbf{C}^{-1} + \left[\alpha + \frac{\beta}{2}
+       * \ln(I_{3}) + 2 \gamma (I_{4}-1)\right] \mathbf{A} \otimes \mathbf{A}
+       *  - \frac{\alpha}{2} ( \mathbf{A} \otimes \mathbf{C}\, \mathbf{A} + \mathbf{A}\, \mathbf{C}
+       * \otimes \mathbf{A}
        * )\right\} \nonumber \\
-       *  =& \beta (I_{4} - 1) \mat{C}^{-1} + 2\left[\alpha + \frac{\beta}{2} \ln(I_{3}) + 2 \gamma
-       * (I_{4}-1)\right] \mat{A} \otimes \mat{A}
-       *  - \alpha ( \mat{A} \otimes \mat{C}\, \mat{A} + \mat{A}\, \mat{C} \otimes \mat{A} ).
-       *  \f}
+       *  =& \beta (I_{4} - 1) \mathbf{C}^{-1} + 2\left[\alpha + \frac{\beta}{2} \ln(I_{3}) + 2
+       * \gamma (I_{4}-1)\right] \mathbf{A} \otimes \mathbf{A}
+       *  - \alpha ( \mathbf{A} \otimes \mathbf{C}\, \mathbf{A} + \mathbf{A}\, \mathbf{C} \otimes
+       * \mathbf{A} ). \f}
        *
        *  \param[out] stress     Updated second Piola Kirchhoff stress tensor
        *  \param[in]  rcg_s      right Cauchy Green strain tensor in perturbed
@@ -253,22 +254,25 @@ namespace MAT
        *
        *  \f{eqnarray}{
        *  \mathbb{C}_{\mathrm{trn}} = [\mathbb{C}_{\mathrm{trn}}]_{ABCD} =& 2 \frac{\partial
-       * [\mat{S}_{\mathrm{trn}}]_{AB}}{\partial [\mat{C}]_{CD}} =
-       *  2 \{ \beta [\mat{C}^{-1}]_{AB} [\vct{A} \otimes \vct{A}]_{CD}  \nonumber \\
-       *  & - \beta (I_{4} -1 ) \frac{1}{2} \left([\mat{C}^{-1}]_{AC}[\mat{C}^{-1}]_{BD} +
-       * [\mat{C}^{-1}]_{AD} [\mat{C}^{-1}]_{BC} \right) \nonumber \\
-       *  &+ \beta \frac{1}{I_{3}} I_{3} [\mat{C}^{-1}]_{CD} [\vct{A} \otimes \vct{A}]_{AB} + 4
-       * \gamma  [\vct{A} \otimes \vct{A} \otimes \vct{A} \otimes \vct{A}]_{ABCD} \nonumber \\
-       *  &-\frac{\alpha}{2} \left( [\vct{A}]_{A} [\vct{A}]_{D} [\mat{\delta}]_{BC} +
-       *  [\vct{A}]_{A} [\vct{A}]_{C} [\mat{\delta}]_{BD} +
-       *  [\vct{A}]_{C} [\vct{A}]_{B} [\mat{\delta}]_{AD} \right. \nonumber \\
+       * [\mathbf{S}_{\mathrm{trn}}]_{AB}}{\partial [\mathbf{C}]_{CD}} =
+       *  2 \{ \beta [\mathbf{C}^{-1}]_{AB} [\underline{A} \otimes \underline{A}]_{CD}  \nonumber \\
+       *  & - \beta (I_{4} -1 ) \frac{1}{2} \left([\mathbf{C}^{-1}]_{AC}[\mathbf{C}^{-1}]_{BD} +
+       * [\mathbf{C}^{-1}]_{AD} [\mathbf{C}^{-1}]_{BC} \right) \nonumber \\
+       *  &+ \beta \frac{1}{I_{3}} I_{3} [\mathbf{C}^{-1}]_{CD} [\underline{A} \otimes
+       * \underline{A}]_{AB} + 4
+       * \gamma  [\underline{A} \otimes \underline{A} \otimes \underline{A} \otimes
+       * \underline{A}]_{ABCD} \nonumber \\
+       *  &-\frac{\alpha}{2} \left( [\underline{A}]_{A} [\underline{A}]_{D} [\mathbf{\delta}]_{BC} +
+       *  [\underline{A}]_{A} [\underline{A}]_{C} [\mathbf{\delta}]_{BD} +
+       *  [\underline{A}]_{C} [\underline{A}]_{B} [\mathbf{\delta}]_{AD} \right. \nonumber \\
        *  &\left. +
-       *  [\vct{A}]_{D} [\vct{A}]_{B} [\mat{\delta}]_{AC} \right) \nonumber \\
-       *  =& 2 \beta \left( \mat{C}^{-1} \otimes \vct{A} \otimes \vct{A} + \vct{A} \otimes
-       * \vct{A}\otimes \mat{C}^{-1} \right) -2 \beta (I_{4}-1) \mat{C}^{-1} \odot \mat{C}^{-1}
+       *  [\underline{A}]_{D} [\underline{A}]_{B} [\mathbf{\delta}]_{AC} \right) \nonumber \\
+       *  =& 2 \beta \left( \mathbf{C}^{-1} \otimes \underline{A} \otimes \underline{A} +
+       * \underline{A} \otimes \underline{A}\otimes \mathbf{C}^{-1} \right) -2 \beta (I_{4}-1)
+       * \mathbf{C}^{-1} \odot \mathbf{C}^{-1}
        * \nonumber \\
-       *  &-2 \alpha \left( (\vct{A} \otimes \vct{A} ) \odot \mat{\delta}
-       *  + \mat{\delta} \odot (\vct{A} \otimes \vct{A} ) \right)
+       *  &-2 \alpha \left( (\underline{A} \otimes \underline{A} ) \odot \mathbf{\delta}
+       *  + \mathbf{\delta} \odot (\underline{A} \otimes \underline{A} ) \right)
        *  \f}
        *
        *  The \f$\odot\f$ symbol follows the definition given in Holzapfel's book

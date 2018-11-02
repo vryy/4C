@@ -91,10 +91,11 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Done()
 
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+    Teuchos::RCP<MAT::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -130,8 +131,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
   if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  std::vector<double> myqanp(lm.size());
-  DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
+  std::vector<double> myqanp(la[0].lm_.size());
+  DRT::UTILS::ExtractMyValues(*qanp, myqanp, la[0].lm_);
 
   // create objects for element arrays
   LINALG::Matrix<numnode, 1> eareanp;

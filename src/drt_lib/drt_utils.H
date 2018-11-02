@@ -28,6 +28,7 @@
 
 #include "../drt_inpar/inpar_scatra.H"
 
+// forward declarations
 namespace LINALG
 {
   class SparseMatrix;
@@ -35,7 +36,6 @@ namespace LINALG
 
 namespace DRT
 {
-  /// collection of useful and important but less central stuff
   namespace UTILS
   {
     /*!

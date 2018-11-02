@@ -456,9 +456,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 
   DRT::INPUT::LineDefinition particle;
   particle.AddTag("PARTICLE")
-      .AddNamedString("TYPE")
-      .AddNamedDoubleVector("POS", 3)
-      .AddNamedDouble("POSTOLERANCE")
+      .AddNamedInt("ID")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
@@ -476,6 +474,15 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   invacou.AddTag("ACOUSTIC_INVANA")
       .AddNamedString("DIS")
       .AddNamedInt("ELEMENT")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE")
+      .AddOptionalNamedString("NAME");
+
+  DRT::INPUT::LineDefinition elemag;
+  elemag.AddTag("ELECTROMAGNETIC")
+      .AddNamedString("DIS")
+      .AddNamedInt("NODE")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE")
@@ -520,6 +527,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(particle);
   lines->Add(acou);
   lines->Add(invacou);
+  lines->Add(elemag);
   lines->Add(cardiovascular0d);
 
   return lines;

@@ -32,7 +32,6 @@ namespace DRT
  *----------------------------------------------------------------------*/
 namespace INPAR
 {
-  /// Input parameters for solid-scatra-interaction
   namespace SSI
   {
     /// Type of coupling strategy for SSI problems

@@ -18,9 +18,6 @@
 
 #include "../drt_lib/drt_element.H"
 
-/*==========================================================================*/
-//! Algorithm and time integration classes for scalar transport problems
-/*==========================================================================*/
 namespace SCATRA
 {
   namespace SCATRAUTILS

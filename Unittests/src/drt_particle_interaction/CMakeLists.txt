@@ -4,4 +4,5 @@ ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_density_correction.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_equationofstate.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_kernel.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_momentum_formulation.H
+${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_utils.H
 )

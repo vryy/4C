@@ -11,13 +11,10 @@
 
 /*----------------------------------------------------------------------*/
 
-
-
 #include "drt_validparameters.H"
 #include "inpar_structure.H"
 #include "inpar.H"
 #include "../drt_lib/drt_conditiondefinition.H"
-
 
 namespace INPAR
 {
@@ -31,7 +28,7 @@ namespace INPAR
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adapivity",
+      setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adaptivity",
           tuple<std::string>(
               "None", "ZienkiewiczXie", "AdamsBashforth2", "ExplicitEuler", "CentralDifference"),
           tuple<int>(INPAR::STR::timada_kind_none, INPAR::STR::timada_kind_zienxie,
@@ -230,21 +227,6 @@ namespace INPAR
           "way of evaluating the constitutive matrix",
           tuple<std::string>("analytical", "finitedifferences"), tuple<int>(0, 1), &sdyn);
 
-      // Currently not used, but structure will be kept if someone wants to reimplement
-      // AN 2013_05
-      setStringToIntegralParameter<int>("CONTROLTYPE", "load", "load, disp, arc1, arc2 control",
-          tuple<std::string>(
-              "load", "Load", "disp", "Disp", "Displacement", "arc1", "Arc1", "arc2", "Arc2"),
-          tuple<int>(control_load, control_load, control_disp, control_disp, control_disp,
-              control_arc1, control_arc1, control_arc2, control_arc2),
-          &sdyn);
-      // Currently not used, but structure will be kept if someone wants to reimplement
-      // AN 2013_05
-      setNumericStringParameter("CONTROLNODE", "-1 -1 -1",
-          "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] "
-          "[curve(fortran numbering)]",
-          &sdyn);
-
       setStringToIntegralParameter<int>("LOADLIN", "No",
           "Use linearization of external follower load in Newton", yesnotuple, yesnovalue, &sdyn);
 
@@ -257,7 +239,7 @@ namespace INPAR
       setStringToIntegralParameter<int>(
           "NEGLECTINERTIA", "No", "Neglect inertia", yesnotuple, yesnovalue, &sdyn);
 
-      // Since predicor "none" would be misleading, the usage of no predictor is called vague.
+      // Since predictor "none" would be misleading, the usage of no predictor is called vague.
       setStringToIntegralParameter<int>("PREDICT", "ConstDis", "Type of predictor",
           tuple<std::string>("Vague", "ConstDis", "ConstVel", "ConstAcc", "ConstDisVelAcc",
               "TangDis", "TangDisConstFext", "ConstDisPres", "ConstDisVelAccPres"),
