@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_elements.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -881,6 +882,33 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       elevec1[3] = mass_ref;
       elevec1[4] = mass_mat;
       elevec1[5] = mass_cur;
+      break;
+    }
+    //==================================================================================
+    case ELEMENTS::analyse_jacobian_determinant:
+    {
+      // get displacements and extract values of this element
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
+
+      std::vector<double> mydispmat(lm.size(), 0.0);
+      // reference and current geometry (nodal positions)
+      LINALG::Matrix<2, 4> xcurr;  // current  coord. of element
+
+      for (int k = 0; k < 4; ++k)
+      {
+        xcurr(0, k) = Nodes()[k]->X()[0] + mydisp[k * 2 + 0];
+        xcurr(1, k) = Nodes()[k]->X()[1] + mydisp[k * 2 + 1];
+      }
+
+      const double min_detj =
+          DRT::UTILS::GetMinimalJacDeterminantAtNodes<DRT::Element::quad4>(xcurr);
+
+      if (min_detj < 0.0)
+        ErrorHandling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
+
       break;
     }
     //==================================================================================

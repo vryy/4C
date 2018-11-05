@@ -59,9 +59,6 @@ void NOX::NLN::Solver::LineSearchBased::init(
   // NOTE: We use different factories at this point!
   lineSearchPtr = NOX::NLN::LineSearch::BuildLineSearch(
       globalDataPtr, testPtr, innerTests, paramsPtr->sublist("Line Search"));
-
-  directionPtr =
-      NOX::NLN::Direction::BuildDirection(globalDataPtr, paramsPtr->sublist("Direction"));
 }
 
 /*----------------------------------------------------------------------------*
@@ -162,6 +159,21 @@ NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template <class T>
+NOX::StatusTest::Generic* NOX::NLN::Solver::LineSearchBased::GetOuterStatusTestWithQuantity(
+    const NOX::NLN::StatusTest::QuantityType qtype) const
+{
+  if (testPtr.is_null())
+  {
+    utilsPtr->err() << "The \"Status Test\" pointer is not initialized!" << std::endl;
+    throw "NOX Error";
+  }
+
+  return NOX::NLN::AUX::GetOuterStatusTestWithQuantity<T>(*testPtr, qtype);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::getStatus() const { return status; }
 
 /*----------------------------------------------------------------------------*
@@ -182,6 +194,15 @@ const NOX::Utils& NOX::NLN::Solver::LineSearchBased::GetUtils() const { return *
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+NOX::Direction::Generic& NOX::NLN::Solver::LineSearchBased::GetDirection() const
+{
+  if (directionPtr.is_null()) dserror("NULL ptr: The direction pointer is not yet initialized.");
+
+  return *directionPtr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 template NOX::StatusTest::StatusType
 NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormF>() const;
 template NOX::StatusTest::StatusType
@@ -193,3 +214,6 @@ NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::ActiveSet>() 
 
 template NOX::StatusTest::Generic*
 NOX::NLN::Solver::LineSearchBased::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>() const;
+template NOX::StatusTest::Generic*
+NOX::NLN::Solver::LineSearchBased::GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormF>(
+    const NOX::NLN::StatusTest::QuantityType qtype) const;

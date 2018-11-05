@@ -184,7 +184,11 @@ namespace STR
        *  \author hiermeier \date 06/17 */
       void PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const;
 
+      /// access the nox nln parameter list
       Teuchos::ParameterList& GetNoxParams();
+
+      /// compute the condition number of the structural tangential stiffness matrix if desired
+      void ConditionNumber(const NOX::NLN::Group& grp) const;
 
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
@@ -239,8 +243,8 @@ namespace NOX
            *  step.
            *
            *  \author hiermeier \date 03/17 */
-          virtual void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-              const double& step, const NOX::NLN::Group& curr_grp);
+          void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::NLN::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the end of a call to
            * NOX::NLN::Group::computeX()
@@ -253,8 +257,8 @@ namespace NOX
            *  mortar dual strategies.
            *
            *  \author hiermeier \date 07/16 */
-          virtual void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-              const double& step, const NOX::NLN::Group& curr_grp);
+          void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::NLN::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
            *  NOX::Solver::Generic::step()
@@ -264,7 +268,7 @@ namespace NOX
            *  a possible LineSearch or other globalization method has been used.
            *
            *  \author hiermeier \date 03/17 */
-          virtual void runPostIterate(const NOX::Solver::Generic& solver);
+          void runPostIterate(const NOX::Solver::Generic& solver) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
            *  NOX::NLN::Group::applyJacobianInverse()
@@ -283,9 +287,14 @@ namespace NOX
            *  \param grp    : read only access to the group object
            *
            *  \author hiermeier \date 12/17 */
-          virtual void runPostApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
+          void runPostApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
               NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
-              const NOX::NLN::Group& grp);
+              const NOX::NLN::Group& grp) override;
+
+          /// \brief Called at the very beginning of a Newton loop
+          /**
+           *  \author hiermeier \date 05/18 */
+          void runPreSolve(const NOX::Solver::Generic& solver) override;
 
           /*! \brief Derived function, which is called at the beginning of a call to
            *  NOX::NLN::Group::applyJacobianInverse()
@@ -303,6 +312,12 @@ namespace NOX
          private:
           Epetra_Vector& convert2EpetraVector(NOX::Abstract::Vector& vec) const;
           const Epetra_Vector& convert2EpetraVector(const NOX::Abstract::Vector& vec) const;
+
+          /// get the step length
+          bool getStep(double& step, const NOX::Solver::Generic& solver) const;
+
+          /// get the number of necessary system corrections in case of a mod newton direction
+          int getNumberOfModifiedNewtonCorrections(const NOX::Solver::Generic& solver) const;
 
          private:
           //! reference to the STR::IMPLICIT::Generic object (read-only)

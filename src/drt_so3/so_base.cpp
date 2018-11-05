@@ -111,3 +111,35 @@ STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::So_base::StrParamsInterface()
   if (not IsParamsInterface()) dserror("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_base::ErrorHandling(const double& det_curr, Teuchos::ParameterList& params,
+    const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
+{
+  // check, if errors are tolerated or should throw a dserror
+  if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
+  {
+    StrParamsInterface().SetEleEvalErrorFlag(flag);
+    return;
+  }
+  else
+  {
+    // === DEPRECATED (hiermeier, 11/17) ==================================
+    bool error_tol = false;
+    if (params.isParameter("tolerate_errors")) error_tol = params.get<bool>("tolerate_errors");
+    if (error_tol)
+    {
+      params.set<bool>("eval_error", true);
+      return;
+    }
+    // if the errors are not tolerated, throw a dserror
+    else
+    {
+      if (det_curr == 0.0)
+        dserror("ZERO DETERMINANT DETECTED in line %d", line_id);
+      else if (det_curr < 0.0)
+        dserror("NEGATIVE DETERMINANT DETECTED in line %d (value = %.5e)", line_id, det_curr);
+    }
+  }
+}

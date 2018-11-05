@@ -21,6 +21,8 @@
 #include "../drt_contact/contact_strategy_factory.H"
 #include "../drt_contact/contact_paramsinterface.H"
 
+#include "../drt_structure_new/str_solver_factory.H"
+
 #include "../drt_inpar/inpar_contact.H"
 
 #include "../linalg/linalg_mapextractor.H"
@@ -36,16 +38,20 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const Teuchos::ParameterList& params,
     const plain_interface_set& ref_interfaces, const int dim,
-    const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof)
+    const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof,
+    CONTACT::ParamsInterface* cparams_interface)
 {
   const Teuchos::ParameterList& p_combo = params.sublist("AUGMENTED").sublist("COMBO");
 
   plain_strategy_set strategies(0);
   plain_interface_set strat_interfaces(0);
+  plain_lin_solver_set strat_lin_solvers(0);
 
   unsigned count = 0;
   std::ostringstream strat_count;
   strat_count << "STRATEGY_" << count;
+  std::ostringstream lin_solver_count;
+  lin_solver_count << "LINEAR_SOLVER_STRATEGY_" << count;
   while (p_combo.isParameter(strat_count.str()))
   {
     const enum INPAR::CONTACT::SolvingStrategy strat_type =
@@ -56,13 +62,18 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::AUG::ComboStrategy::Create(
     strategies.push_back(STRATEGY::Factory::BuildStrategy(strat_type, params, false, false, maxdof,
         strat_interfaces, dof_row_map, node_row_map, dim, comm, data));
 
+    CreateStrategyLinearSolvers(
+        *strategies.back(), lin_solver_count.str(), params, cparams_interface, strat_lin_solvers);
+
     /// clear and increase strategy count string
     strat_count.str("");
+    lin_solver_count.str("");
     strat_count << "STRATEGY_" << ++count;
+    lin_solver_count << "LINEAR_SOLVER_STRATEGY_" << count;
   }
 
-  return Teuchos::rcp(
-      new ComboStrategy(data, dof_row_map, node_row_map, params, strategies, dim, comm, maxdof));
+  return Teuchos::rcp(new ComboStrategy(
+      data, dof_row_map, node_row_map, params, strategies, strat_lin_solvers, dim, comm, maxdof));
 }
 
 /*----------------------------------------------------------------------------*
@@ -99,13 +110,44 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyInterfaces(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
+    const CONTACT::CoAbstractStrategy& strategy, const std::string& lin_solver_id_str,
+    const Teuchos::ParameterList& params, CONTACT::ParamsInterface* cparams_interface,
+    plain_lin_solver_set& strat_lin_solvers)
+{
+  const Teuchos::ParameterList& p_combo = params.sublist("AUGMENTED").sublist("COMBO");
+
+  int ls_id = p_combo.get<int>(lin_solver_id_str);
+  ls_id = (ls_id == -1 ? params.get<int>("LINEAR_SOLVER") : ls_id);
+  if (ls_id == -1)
+    dserror(
+        "You must specify a reasonable LINEAR_SOLVER ID for the combo "
+        "%s either as CONTACT DYNAMIC/LINEAR_SOLVER or as "
+        "CONTACT DYNAMIC/AUGMENTED/COMBO/LINEAR_SOLVER_STRATEGY_%c. "
+        "However, you provided no LINEAR_SOLVER at all, thus, please fix your "
+        "INPUT file. ",
+        INPAR::CONTACT::SolvingStrategy2String(strategy.Type()).c_str(), lin_solver_id_str.back());
+
+  if (not cparams_interface)
+    dserror("You have to provide a pointer to the CONTACT::ParamsInterface!");
+
+  DRT::DiscretizationInterface* str_discret =
+      cparams_interface->Get<DRT::DiscretizationInterface>();
+
+  strat_lin_solvers.push_back(STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
+      *str_discret, strategy.Type(), strategy.SystemType(), ls_id));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 CONTACT::AUG::ComboStrategy::ComboStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const Teuchos::ParameterList& params,
-    const plain_strategy_set& strategies, const int dim,
+    const plain_strategy_set& strategies, const plain_lin_solver_set& lin_solvers, const int dim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof)
     : CONTACT::CoAbstractStrategy(data, dof_row_map, node_row_map, params, dim, comm, 0.0, maxdof),
       strategies_(strategies),
+      lin_solvers_(lin_solvers),
       interface_sets_(0),
       data_(dynamic_cast<CONTACT::AUG::DataContainer&>(*data)),
       no_dbc_(),
@@ -131,6 +173,13 @@ CONTACT::AUG::ComboStrategy::ComboStrategy(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 INPAR::CONTACT::SolvingStrategy CONTACT::AUG::ComboStrategy::Type() const { return Get().Type(); }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+LINALG::Solver* CONTACT::AUG::ComboStrategy::GetLinearSolver() const
+{
+  return lin_solvers_.at(switch_->Id()).get();
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -166,6 +215,14 @@ void CONTACT::AUG::ComboStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cpar
       dserror("Unexpected MORTAR::ActionType! ( actiontype = %s | %d )",
           MORTAR::ActionType2String(curr_eval).c_str(), curr_eval);
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::ComboStrategy::RunPreSolve(
+    const Teuchos::RCP<const Epetra_Vector>& curr_disp, const CONTACT::ParamsInterface& cparams)
+{
+  Get().RunPreSolve(curr_disp, cparams);
 }
 
 /*----------------------------------------------------------------------------*
@@ -461,6 +518,7 @@ void CONTACT::AUG::ComboStrategy::EvalStaticConstraintRHS(CONTACT::ParamsInterfa
   Get().SetCurrentEvalState(cparams);
   Get().InitEvalInterface(cparams);
 
+  Get().Initialize(cparams.GetActionType());
   Get().AssembleGap();
 
   Get().EvalConstraintForces();
@@ -482,7 +540,16 @@ void CONTACT::AUG::ComboStrategy::RunPostEvalStaticConstraintRHS(CONTACT::Params
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::SwitchUpdate(CONTACT::ParamsInterface& cparams)
 {
-  if (not cparams.IsDefaultStep()) return;
+  IO::cout(IO::debug) << std::string(40, '*') << "\n";
+  IO::cout(IO::debug) << CONTACT_FUNC_NAME << IO::endl;
+  IO::cout(IO::debug) << "Correction Type = "
+                      << NOX::NLN::CorrectionType2String(cparams.GetCorrectionType()).c_str()
+                      << "\n";
+  IO::cout(IO::debug) << std::string(40, '*') << "\n";
+
+  /* Do not perform a switch in case of a correction step, since this will lead
+   * to an error during the potential backup evaluation. */
+  if (cparams.GetCorrectionType() != NOX::NLN::CorrectionType::vague) return;
 
   switch_->Update(cparams, output_.oscreen());
 }
@@ -601,6 +668,20 @@ void CONTACT::AUG::ComboStrategy::WriteOutput(IO::DiscretizationWriter& writer) 
 void CONTACT::AUG::ComboStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec)
 {
   Get().EvaluateReferenceState(vec);
+}
+
+/*----------------------------------------------------------------------*
+ *  *----------------------------------------------------------------------*/
+bool CONTACT::AUG::ComboStrategy::DynRedistributeContact(
+    const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+{
+  const bool is_redistributed = Get().DynRedistributeContact(dis, nlniter);
+
+  // This function must be called manually, since the internal PostSetup
+  // call will not effect this wrapper class.
+  if (is_redistributed) no_dbc_.Redistribute(data_);
+
+  return is_redistributed;
 }
 
 /*----------------------------------------------------------------------------*

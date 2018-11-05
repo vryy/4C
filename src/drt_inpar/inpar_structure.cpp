@@ -289,6 +289,11 @@ namespace INPAR
           tuple<std::string>("full", "box", "file"),
           tuple<int>(INPAR::geometry_full, INPAR::geometry_box, INPAR::geometry_file), &sdyn);
 
+      setStringToIntegralParameter<int>("MIDTIME_ENERGY_TYPE", "vague",
+          "Specify the mid-averaging type for the structural energy contributions",
+          tuple<std::string>("vague", "imrLike", "trLike"),
+          tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &sdyn);
+
       /*--------------------------------------------------------------------*/
       /* parameters for time step size adaptivity in structural dynamics */
       Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY", false, "");

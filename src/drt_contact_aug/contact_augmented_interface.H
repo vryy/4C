@@ -35,6 +35,20 @@ namespace CONTACT
     }
 
     /*----------------------------------------------------------------------------*/
+    /** container for the element evaluation times */
+    struct EleEvaluateTimes
+    {
+      EleEvaluateTimes() = default;
+      ~EleEvaluateTimes() = default;
+
+      /// vector containing the evaluation times of all column slave elements
+      Teuchos::RCP<Epetra_Vector> sele_col_;
+
+      /// vector containing the evaluation times of all row slave elements
+      Teuchos::RCP<Epetra_Vector> sele_row_;
+    };
+
+    /*----------------------------------------------------------------------------*/
     /** \brief Augmented contact interface data container
      *
      *  This class is supposed to contain all relevant members for the augmented
@@ -133,6 +147,8 @@ namespace CONTACT
 
       inline Teuchos::RCP<const Epetra_Map> SActiveEleColMap() const { return aele_col_map_; }
 
+      inline EleEvaluateTimes& ElementEvalTimes() { return eletimes_; }
+
       Teuchos::RCP<const Epetra_Map> ElementRowMapPtr(const enum SideType stype) const;
 
      private:
@@ -145,18 +161,25 @@ namespace CONTACT
       //! interface penetration bound
       double penBound_;
 
+      /// ct regularization value. Currently unused.
       double ct_;
 
+      /// ratio between the maximal slave element area and the minimal master element area
       int slMaElementAreaRatio_;
 
+      /// is there a triangle shaped element on one of the interfaces?
       bool isTriangleOnMaster_;
 
+      /// has setup been called?
       bool issetup_;
 
+      /// type of the used assemble strategy
       enum INPAR::CONTACT::AssembleStrategy assemble_strat_;
 
+      /// assemble strategy for the different matrices and vectors
       Teuchos::RCP<INTERFACE::AssembleStrategy> assemble_strategy_;
 
+      /// varitional approach. Either complete or incomplete.
       enum INPAR::CONTACT::VariationalApproach var_type_;
 
       //! slave dofs in normal direction
@@ -170,6 +193,8 @@ namespace CONTACT
 
       //! column map of active slave elements
       Teuchos::RCP<Epetra_Map> aele_col_map_;
+
+      EleEvaluateTimes eletimes_;
 
     };  // class CONTACT::AUG::IDataContainer
 
@@ -230,6 +255,9 @@ namespace CONTACT
 
       //! @}
 
+      /// store the evaluation times of the interface elements
+      void StoreSeleEvalTimes(const Epetra_Vector& gseleevaltimes);
+
       //! @name Initialize and evaluate interface element contributions
       //! @{
       /*! \brief Finalize the construction of an augmented contact interface
@@ -258,8 +286,6 @@ namespace CONTACT
       void AssembleContactPotentialTerms(const Epetra_Vector& cnVec, double& zn_gn, double& gn_gn,
           double& zn_zn, double& zt_zt) const;
 
-      double EnforceNodalComplementarityCondition(const Epetra_Vector& dincr_slma,
-          const Epetra_Vector& cn_old, Epetra_Vector& cn_new) const;
       //! @}
 
       //! @name Assemble auxiliary terms
@@ -275,15 +301,15 @@ namespace CONTACT
       //! @name Assemble right hand side vectors, Dn and Mn
       //! @{
 
+      /// assemble the B-matrix (i.e. D+M)
       void AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const;
 
       /*! Assemble the averaged weighted gap vector and the weighted gap
        *  vector of all active nodes */
       void AssembleActiveGapVectors(Epetra_Vector& aWGapVec, Epetra_Vector& wGapVec) const;
 
+      /// assemble the gap vector of all nodes (not only the active ones)
       void AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapAllSlNodesVec) const;
-
-      void AssembleActiveUnitGap(Epetra_Vector& unit_gap) const;
 
       /** Add the varied tributary area contributions to the force originating
        *  from the augmented gap term */
@@ -294,6 +320,7 @@ namespace CONTACT
       void Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
+      /// assemble the inactive second order derivative matrix w.r.t. the displ.
       void AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
@@ -350,6 +377,11 @@ namespace CONTACT
        *  Linearization w.r.t. the displ. */
       void AssembleAugInactiveLinMatrix(LINALG::SparseMatrix& augInactiveLinMatrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
+
+      /// collect the owner of each interface node
+      Teuchos::RCP<Epetra_Vector> CollectRowNodeOwners(
+          const DRT::Discretization& structure_dis) const;
+
       //! @}
 
       //! @name Augmented active set functions
@@ -361,6 +393,8 @@ namespace CONTACT
       //! Split augmented active dof set for each interface
       void SplitAugActiveDofs();
 
+      /** return the map corresponding to all active contact forces, i.e. forces
+       *  unequal to zero. */
       Teuchos::RCP<Epetra_Map> BuildActiveForceMap(
           const Epetra_Vector& force, const double threshold = 0.0) const;
       //! @}
@@ -368,6 +402,7 @@ namespace CONTACT
       //! @name Basic setup (only necessary in the augmented lagrange case)
       //! @{
 
+      /// set nodes initially active (by gap and/or condition line)
       bool SetNodeInitiallyActive(
           const CONTACT::ParamsInterface& cparams, CONTACT::CoNode& cnode) const;
 
@@ -375,23 +410,43 @@ namespace CONTACT
       void SplitSlaveDofs();
       //! @}
 
+      /// return my characteristic element length of the interface elements
       double MyCharacteristicElementLength(const enum CONTACT::AUG::SideType stype) const;
 
+      /** \brief compute and return a measure for the weighted gap gradient error
+       *
+       *  This quantity indicates the difference between D and M and the actual
+       *  weighted gap gradient. */
       double GetMySquareOfWeightedGapGradientError() const;
 
      protected:
+      /** Perform a split into far and close sets
+       *
+       *  The method overrides the base class version and uses a different strategy
+       *  based on the actual necessary evaluation times of each slave interface element.
+       *  This strategy is followed, whenever possible, otherwise the base class method
+       *  is called as fallback solution.
+       *
+       *  \author hiermeier */
+      void SplitIntoFarAndCloseSets(std::vector<int>& close_sele, std::vector<int>& far_sele,
+          std::vector<int>& local_close_nodes, std::vector<int>& local_far_nodes) const override;
+
+      /// return the variational approach type (complete, incomplete, etc.)
       INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const
       {
         return idata_.VariationalApproachType();
       }
 
       /// derived
-      virtual void EvaluateNodalNormals() const;
+      void EvaluateNodalNormals() const override;
 
+      /// export the 2nd order derivatives of the nodal smooth normals
       void ExportDeriv2ndNodalNormals() const;
 
+      /// export the 1st order derivatives of the nodal smooth normals
       void ExportDeriv1stNodalNormals() const;
 
+      /// export only the nodal normals (no derivatives)
       void ExportNodalNormalsOnly() const;
 
       /** \brief Export nodal normals information from row lay-out to column
@@ -408,10 +463,18 @@ namespace CONTACT
       //! derived
       virtual void UpdateMasterSlaveSets();
 
+      /// setup the interface and internal class members
       void Setup();
 
+      /// setup the assemble strategy used to assemble specific matrices and vectors
       void SetupAssembleStrategy();
 
+      /** \brief create a node-based assemble strategy
+       *
+       *  Useful for debugging purposes. This is the default case but might be quite
+       *  slow.
+       *
+       *  \return the desired node-based assembly strategy. */
       virtual Teuchos::RCP<INTERFACE::AssembleStrategy> CreateNodeBasedAssembleStrategy();
 
      public:
@@ -419,12 +482,15 @@ namespace CONTACT
        *  see CONTACT::AUG::LagrangeMultiplierFunction for more information */
       /// @{
 
+      /// assemble the gradient of the B-matrix
       void AssembleGradientBMatrixContribution(
           const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const;
 
-
+      /// assemble the gradient of the B' B matrix
       void AssembleGradientBBMatrixContribution(
           const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const;
+
+      /// @}
 
      private:
       void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
@@ -451,10 +517,11 @@ namespace CONTACT
       template <enum CONTACT::AUG::SideType side>
       const Deriv2ndMap& GetVarWGapLinOfSide(const CoNode& cnode) const;
 
-      /// @}
+
 
      private:
       /*------------------------------------------------------------------------*/
+      /// Finite difference check for nodal quantities
       template <typename T0, typename T1, typename T2>
       class FiniteDifference
       {
@@ -470,10 +537,13 @@ namespace CONTACT
         void GPCheck2ndOrder(CONTACT::ParamsInterface& cparams);
 
        private:
+        /// get the map over all procs
         Teuchos::RCP<Epetra_Map> GetFullMap(const Epetra_Map& rowmap) const;
 
+        /// perform the actual evaluation
         void Evaluate(CONTACT::ParamsInterface& cparams);
 
+        /// set the action type
         void SetActionType(
             enum MORTAR::ActionType actiontype, CONTACT::ParamsInterface& cparams) const;
 
@@ -489,20 +559,21 @@ namespace CONTACT
         void GetNewState(T1& new_val);
 
        protected:
+        /// get the function values
         virtual const T0& GetValues(const NodeDataContainer& data) const
         {
           dserror("This method is not implemented!");
           exit(EXIT_FAILURE);
         }
 
-        /// get first order derivatives
+        /// get first order derivatives of the function
         virtual const T1& GetDeriv1st(const NodeDataContainer& data) const
         {
           dserror("This method is not implemented!");
           exit(EXIT_FAILURE);
         }
 
-        /// get second order derivatives
+        /// get second order derivatives of the function
         virtual const T2& GetDeriv2nd(const NodeDataContainer& data) const
         {
           dserror("This method is not implemented!");
@@ -510,22 +581,29 @@ namespace CONTACT
         }
 
        private:
+        /// reference state evaluation
         void RefEvaluate(CONTACT::ParamsInterface& cparams);
 
+        /// perturbed state evaluation
         void PerturbedEvaluate(CONTACT::ParamsInterface& cparams);
 
+        /// final evaluate (non-perturbed state)
         void FinalEvaluate(CONTACT::ParamsInterface& cparams);
 
+        /// apply the perturbation
         void DoPerturbation(CoNode& snode, const int fd_gid);
 
+        /// undo the perturbation (copy the reference state back, avoids numerical probs)
         void UnDoPerturbation(CoNode& snode);
 
+        /// print method for an object supporting this call
         template <typename T>
         void Print(const T& obj) const
         {
           obj.print(std::cout);
         }
 
+        /// specialization of the print method
         template <typename... Ts>
         void Print(const std::vector<GEN_DATA::pairedvector<int, Ts...>>& obj) const
         {
@@ -536,6 +614,7 @@ namespace CONTACT
           }
         }
 
+        /// resize vector
         template <typename T>
         void ResizeValues(std::vector<T>& values)
         {
@@ -545,30 +624,35 @@ namespace CONTACT
           values.resize(dim, T());
         }
 
+        /// reset object
         template <typename T>
         void ResizeValues(T& values)
         {
           values = T();
         }
 
+        /// access reference position
         template <typename T>
         const T& AtRef(const T& obj, unsigned v)
         {
           return obj;
         }
 
+        /// access reference position
         template <typename T>
         const T& AtRef(const std::vector<T>& obj, unsigned v)
         {
           return obj[v];
         }
 
+        /// access 1st order derivative
         template <typename T>
         T& AtDeriv1st(T& obj, unsigned v)
         {
           return obj;
         }
 
+        /// access 1st order derivative
         template <typename... Ts>
         GEN_DATA::pairedvector<int, Ts...>& AtDeriv1st(
             std::vector<GEN_DATA::pairedvector<int, Ts...>>& obj, unsigned v)
@@ -576,6 +660,7 @@ namespace CONTACT
           return obj[v];
         }
 
+        /// access 1st order derivative
         template <typename T>
         double AtDeriv1st(T& obj, unsigned v, unsigned var)
         {
@@ -585,6 +670,7 @@ namespace CONTACT
           return it->second;
         }
 
+        /// access 1st order derivative
         template <typename... Ts>
         double AtDeriv1st(
             std::vector<GEN_DATA::pairedvector<int, Ts...>>& obj, unsigned v, unsigned var)
@@ -592,12 +678,14 @@ namespace CONTACT
           return obj[v][var];
         }
 
+        /// access 2nd order derivative
         template <typename T>
         double& AtDeriv2nd(T& obj, unsigned v, unsigned var, unsigned lin)
         {
           return obj[var][lin];
         }
 
+        /// access 2nd order derivative
         template <typename... Ts>
         double& AtDeriv2nd(std::vector<GEN_DATA::pairedmatrix<int, Ts...>>& obj, unsigned v,
             unsigned var, unsigned lin)
@@ -605,12 +693,14 @@ namespace CONTACT
           return obj[v][var][lin];
         }
 
+        /// return the capacity of the object
         template <typename T>
         unsigned GetCapacity(T& deriv1st)
         {
           return deriv1st.capacity();
         }
 
+        /// return the capacity of the object
         template <typename... Ts>
         unsigned GetCapacity(std::vector<GEN_DATA::pairedvector<int, Ts...>>& obj)
         {
@@ -621,12 +711,14 @@ namespace CONTACT
           return max_capacity;
         }
 
+        /// return the length of the wrapping vector
         template <typename T>
         unsigned GetNumVectors(T& obj)
         {
           return 1;
         }
 
+        /// return the length of the wrapping vector
         template <typename T>
         unsigned GetNumVectors(std::vector<T>& obj)
         {
@@ -634,12 +726,16 @@ namespace CONTACT
         }
 
        private:
+        /// call back to the interface class
         Interface& inter_;
 
+        /// action type before the perturbation is the finite difference evaluation is initiated
         enum MORTAR::ActionType stored_actiontype_;
 
+        /// nodal reference coordinates (non-perturbed)
         LINALG::Matrix<3, 1> ref_x_;
 
+        /// delta for the perturbation
         const double delta_;
       };
 
@@ -654,15 +750,20 @@ namespace CONTACT
         virtual ~FD_Debug(){};
 
        protected:
+        /// derived
         virtual const std::pair<int, double>& GetValues(const NodeDataContainer& data) const;
 
+        /// derived
         virtual const Deriv1stMap& GetDeriv1st(const NodeDataContainer& data) const;
 
+        /// derived
         virtual const Deriv2ndMap& GetDeriv2nd(const NodeDataContainer& data) const;
       };
 
      public:
       /*------------------------------------------------------------------------*/
+      /** initiates and performs the actual check for first order derivatives, if
+       * the respective nodal data containers contain any values */
       void FD_Debug_GPCheck1stOrder(CONTACT::ParamsInterface& cparams)
       {
         FD_Debug fd(*this);
@@ -670,6 +771,8 @@ namespace CONTACT
       }
 
       /*------------------------------------------------------------------------*/
+      /** initiates and performs the actual check for second order derivatives, if
+       * the respective nodal data containers contain any values */
       void FD_Debug_GPCheck2ndOrder(CONTACT::ParamsInterface& cparams)
       {
         FD_Debug fd(*this);
@@ -689,16 +792,21 @@ namespace CONTACT
         virtual ~FD_DebugVec(){};
 
        protected:
+        /// derived
         virtual const std::vector<std::pair<int, double>>& GetValues(
             const NodeDataContainer& data) const;
 
+        /// derived
         virtual const Deriv1stVecMap& GetDeriv1st(const NodeDataContainer& data) const;
 
+        /// derived
         virtual const Deriv2ndVecMap& GetDeriv2nd(const NodeDataContainer& data) const;
       };
 
      public:
       /*------------------------------------------------------------------------*/
+      /** initiates and performs the actual check for first order derivatives, if
+       * the respective nodal data containers contain any values */
       void FD_DebugVec_GPCheck1stOrder(CONTACT::ParamsInterface& cparams)
       {
         FD_DebugVec fd(*this);
@@ -706,6 +814,8 @@ namespace CONTACT
       }
 
       /*------------------------------------------------------------------------*/
+      /** initiates and performs the actual check for second order derivatives, if
+       * the respective nodal data containers contain any values */
       void FD_DebugVec_GPCheck2ndOrder(CONTACT::ParamsInterface& cparams)
       {
         FD_DebugVec fd(*this);
@@ -763,8 +873,6 @@ namespace CONTACT
 
         /// destructor
         virtual ~AssembleStrategy(){};
-
-        virtual void AssembleActiveUnitGap(Epetra_Vector& unit_gap) const = 0;
 
         /** \brief Assemble Dn and Mn matrices
          *
@@ -842,9 +950,6 @@ namespace CONTACT
 
         /// destructor
         ~NodeBasedAssembleStrategy() override{};
-
-        /// derived
-        void AssembleActiveUnitGap(Epetra_Vector& unit_gap) const override;
 
         /// derived
         void AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const override;

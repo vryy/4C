@@ -232,11 +232,11 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc() == 1) return;
+  if (!ParRedist() || Comm().NumProc() == 1) return false;
 
   // decide whether redistribution should be applied or not
   double taverage = 0.0;
@@ -329,7 +329,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   }
 
   // get out of here if simulation is still in balance
-  if (!doredist) return;
+  if (!doredist) return false;
 
   // time measurement
   Comm().Barrier();
@@ -381,7 +381,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   if (Comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
 
-  return;
+  return doredist;
 }
 
 /*----------------------------------------------------------------------*
@@ -1212,6 +1212,14 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::CheckParallelDistribution(const double& t_start)
 {
+  const double my_total_time = Teuchos::Time::wallTime() - t_start;
+  UpdateParallelDistributionStatus(my_total_time);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::UpdateParallelDistributionStatus(const double& my_total_time)
+{
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
@@ -1227,8 +1235,8 @@ void CONTACT::CoAbstractStrategy::CheckParallelDistribution(const double& t_star
     Interfaces()[i]->CollectDistributionData(numloadele[i], numcrowele[i]);
 
   // time measurement (on each processor)
-  double t_end_for_minall = Teuchos::Time::wallTime() - t_start;
-  double t_end_for_maxall = t_end_for_minall;
+  double t_end_for_minall = my_total_time;
+  double t_end_for_maxall = my_total_time;
 
   // restrict time measurement to procs that own at least some part
   // of the "close" slave interface section(s) on the global level,
@@ -3079,6 +3087,19 @@ void CONTACT::CoAbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
 
       break;
     }
+    case MORTAR::eval_run_pre_solve:
+    {
+      if (not eval_vec) dserror("The read-only evaluation vector is expected!");
+      if (eval_vec->size() < 1)
+        dserror(
+            "The eval_vec is supposed to have at least a length"
+            " of 1!");
+
+      const Teuchos::RCP<const Epetra_Vector>& curr_disp = eval_vec->front();
+      RunPreSolve(curr_disp, cparams);
+
+      break;
+    }
     // -------------------------------------------------------------------
     // no suitable action could be found
     // -------------------------------------------------------------------
@@ -3178,6 +3199,14 @@ void CONTACT::CoAbstractStrategy::RunPostIterate(const CONTACT::ParamsInterface&
 {
   // do nothing
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPreSolve(
+    const Teuchos::RCP<const Epetra_Vector>& curr_disp, const CONTACT::ParamsInterface& cparams)
+{
+  // do nothing
 }
 
 /*----------------------------------------------------------------------*

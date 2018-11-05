@@ -195,6 +195,13 @@ namespace STR
         return divergenceaction_;
       };
 
+      /// Returns mid-time energy type
+      enum INPAR::STR::MidAverageEnum GetMidTimeEnergyType() const
+      {
+        CheckInitSetup();
+        return mid_time_energy_type_;
+      }
+
       /// Returns number of times you want to halve your timestep in case nonlinear solver diverges
       const int& GetMaxDivConRefineLevel() const
       {
@@ -466,6 +473,13 @@ namespace STR
         return nlnsolvertype_;
       };
 
+      /// Returns mid-time energy type
+      enum INPAR::STR::MidAverageEnum& GetMutableMidTimeEnergyType()
+      {
+        CheckInitSetup();
+        return mid_time_energy_type_;
+      }
+
       /// Returns the divergence action
       /// Short: What to do if the non-linear solver fails.
       enum INPAR::STR::DivContAct& GetMutableDivergenceAction()
@@ -707,6 +721,9 @@ namespace STR
 
       /// action to be performed when the non-linear solver diverges
       enum INPAR::STR::DivContAct divergenceaction_;
+
+      /// mid-time energy type
+      enum INPAR::STR::MidAverageEnum mid_time_energy_type_;
 
       /// how often you want to half your timestep until you give up
       int maxdivconrefinementlevel_;

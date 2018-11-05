@@ -83,7 +83,8 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver(
     : comm_(comm),
       params_(params),
       outfile_(outfile),
-      ncall_(0)
+      ncall_(0),
+      nActiveDofs_(0)
 #ifdef HAVE_MueLu
       ,
       bAllowPermutation_(false),

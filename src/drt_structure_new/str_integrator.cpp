@@ -15,13 +15,16 @@
 
 #include "str_integrator.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/epetra_utils.H"
+
+#include "../drt_io/io_pstream.H"
 
 #include "str_dbc.H"
 #include "str_timint_base.H"
 #include "str_timint_noxinterface.H"
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_data.H"
-#include "str_model_evaluator_generic.H"
+#include "str_model_evaluator_structure.H"
 #include "str_monitor_dbc.H"
 #include "nox_nln_str_linearsystem.H"
 
@@ -91,6 +94,8 @@ void STR::Integrator::Setup()
   monitor_dbc_ptr_ = Teuchos::rcp(new STR::MonitorDbc);
   monitor_dbc_ptr_->Init(*gstate_ptr_->GetMutableDiscret(), *gstate_ptr_, *dbc_ptr_);
   monitor_dbc_ptr_->Setup();
+
+  mt_energy_.Setup();
 
   // the issetup_ flag is not set here!!!
 }
@@ -204,8 +209,10 @@ void STR::Integrator::EquilibrateInitialState()
       Teuchos::rcp(new NOX::Epetra::Vector(soln_ptr, NOX::Epetra::Vector::CreateView));
 
   // Check if we are using a Newton direction
-  const std::string& dir_str = p_nox.sublist("Direction").get<std::string>("Method");
-  if (dir_str != "Newton")
+  std::string dir_str = p_nox.sublist("Direction").get<std::string>("Method");
+  if (dir_str == "User Defined")
+    dir_str = p_nox.sublist("Direction").get<std::string>("User Defined Method");
+  if (dir_str != "Newton" and dir_str != "Modified Newton")
     dserror(
         "The EquilibriateState predictor is currently only working for the "
         "direction-method \"Newton\".");
@@ -308,10 +315,82 @@ void STR::Integrator::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+double STR::Integrator::GetModelValue(const Epetra_Vector& x)
+{
+  dserror(
+      "This routine is not supported in the currently active time "
+      "integration scheme.");
+  exit(EXIT_FAILURE);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::Integrator::GetTotalMidTimeStrEnergy(const Epetra_Vector& x)
+{
+  CheckInitSetup();
+  if (not mt_energy_.IsCorrectlyConfigured())
+    dserror(
+        "You are trying to compute the mid-time energy in case of a non-static"
+        " simulation, but you have not specified the desired energy averaging type."
+        " Please add a meaningful MIDTIME_ENERGY_TYPE to the ---STRUCTURAL DYNAMIC"
+        " section of your Input file.");
+
+  Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
+  const Epetra_Vector& disnp = *disnp_ptr;
+
+  SetState(disnp);
+
+  Teuchos::RCP<const Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
+  const Epetra_Vector& velnp = *velnp_ptr;
+
+  EvalData().ClearValuesForAllEnergyTypes();
+  STR::MODELEVALUATOR::Structure& str_model =
+      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
+
+  Teuchos::RCP<const Epetra_Vector> dis_avg =
+      mt_energy_.Average(disnp, *GlobalState().GetDisN(), GetIntParam());
+  Teuchos::RCP<const Epetra_Vector> vel_avg =
+      mt_energy_.Average(velnp, *GlobalState().GetVelN(), GetIntParam());
+
+  str_model.DetermineEnergy(*dis_avg, vel_avg.get(), true);
+  mt_energy_.int_energy_np_ = EvalData().GetEnergyData(STR::internal_energy);
+  mt_energy_.kin_energy_np_ = EvalData().GetEnergyData(STR::kinetic_energy);
+  GlobalState().GetFextNp()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
+
+  IO::cout(IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
+  mt_energy_.Print(IO::cout.os(IO::debug));
+
+  return mt_energy_.GetTotal();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::UpdateStructuralEnergy()
+{
+  if (not mt_energy_.StoreEnergyN()) return;
+
+  GetTotalMidTimeStrEnergy(*GlobalState().GetDisNp());
+  mt_energy_.CopyNpToN();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::Integrator::DetermineOptionalQuantity()
 {
   CheckInitSetup();
   ModelEval().DetermineOptionalQuantity();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::Integrator::DetermineElementVolumes(
+    const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
+{
+  CheckInitSetup();
+  STR::MODELEVALUATOR::Generic& model = Evaluator(INPAR::STR::model_structure);
+  STR::MODELEVALUATOR::Structure& smodel = dynamic_cast<STR::MODELEVALUATOR::Structure&>(model);
+
+  return smodel.DetermineElementVolumes(x, ele_vols);
 }
 
 /*----------------------------------------------------------------------------*
@@ -571,4 +650,117 @@ void STR::Integrator::RecoverFromBackupState()
 {
   CheckInitSetup();
   ModelEval().RecoverFromBackupState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::Integrator::MidTimeEnergy::MidTimeEnergy(const Integrator& integrator)
+    : integrator_(integrator), avg_type_(INPAR::STR::midavg_vague)
+{
+  /* empty */
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::MidTimeEnergy::Print(std::ostream& os) const
+{
+  const double time_fac = integrator_.GetIntParam();
+
+  os << "--- Contributions of time step n+1 (current)\n";
+  os << "strain energy                         = " << int_energy_np_ << "\n";
+  os << "external energy (dead load/potential) = " << ext_energy_np_ << "\n";
+  os << "kinetic energy                        = " << kin_energy_np_ << "\n";
+
+  if (avg_type_ == INPAR::STR::midavg_trlike)
+  {
+    os << "--- Contributions of time step n   (previously accepted)\n";
+    os << "strain energy                         = " << int_energy_n_ << "\n";
+    os << "external energy (dead load/potential) = " << ext_energy_n_ << "\n";
+    os << "kinetic energy                        = " << kin_energy_n_ << "\n";
+    os << std::string(40, '-') << "\n";
+    os << "TimInt factor at t_n+1 (current)      = " << 1.0 - time_fac << "\n";
+    os << "TimInt factor at t_n   (previous)     = " << time_fac << "\n";
+  }
+  os << std::string(40, '=') << "\n";
+  os << "Total structural energy               = " << GetTotal() << "\n";
+  os << std::string(40, '=') << "\n";
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::Integrator::MidTimeEnergy::GetTotal() const
+{
+  const double fac_n = integrator_.GetIntParam();
+  const double fac_np = 1.0 - fac_n;
+
+  double total_energy = 0.0;
+  total_energy = int_energy_np_ - kin_energy_np_ - ext_energy_np_;
+  if (avg_type_ == INPAR::STR::midavg_trlike)
+  {
+    const double energy_n = int_energy_n_ - kin_energy_n_ - ext_energy_n_;
+    total_energy = fac_np * total_energy + fac_n * energy_n;
+  }
+
+  return total_energy;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::Integrator::MidTimeEnergy::Average(
+    const Epetra_Vector& state_np, const Epetra_Vector& state_n, const double fac_n) const
+{
+  const double fac_np = 1.0 - fac_n;
+
+  Teuchos::RCP<Epetra_Vector> state_avg = Teuchos::rcp(new Epetra_Vector(state_np));
+  switch (avg_type_)
+  {
+    case INPAR::STR::midavg_vague:
+    case INPAR::STR::midavg_trlike:
+      return state_avg;
+    case INPAR::STR::midavg_imrlike:
+    {
+      state_avg->Update(fac_n, state_n, fac_np);
+      return state_avg;
+    }
+    default:
+      dserror("Don't know what to do for the given MidAvg type.");
+      exit(EXIT_FAILURE);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::MidTimeEnergy::CopyNpToN()
+{
+  kin_energy_n_ = kin_energy_np_;
+  int_energy_n_ = int_energy_np_;
+  ext_energy_n_ = ext_energy_np_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::Integrator::MidTimeEnergy::IsCorrectlyConfigured() const
+{
+  if (not issetup_) dserror("Call Setup() first.");
+
+  if (avg_type_ == INPAR::STR::midavg_vague)
+  {
+    if (integrator_.SDyn().GetDynamicType() != INPAR::STR::dyna_statics) return false;
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::Integrator::MidTimeEnergy::StoreEnergyN() const
+{
+  return avg_type_ == INPAR::STR::midavg_trlike;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::MidTimeEnergy::Setup()
+{
+  avg_type_ = integrator_.SDyn().GetMidTimeEnergyType();
+  issetup_ = true;
 }

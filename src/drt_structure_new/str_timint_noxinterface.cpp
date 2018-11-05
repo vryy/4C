@@ -144,7 +144,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
 
   if (not implint_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
 
-  /* Apply the DBC on the right hand side, since we need the Dirchilet free
+  /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs, false);
   dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
@@ -174,7 +174,7 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::Cor
   if (not implint_ptr_->ApplyCorrectionSystem(type, constraint_models, x, rhs, *jac_ptr))
     return false;
 
-  /* Apply the DBC on the right hand side, since we need the Dirchilet free
+  /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
   Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcpFromRef(rhs);
   dbc_ptr_->ApplyDirichletToRhs(rhs_ptr);
@@ -476,27 +476,9 @@ double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Ep
     case NOX::NLN::MeritFunction::mrtfct_lagrangian:
     case NOX::NLN::MeritFunction::mrtfct_energy:
     {
-      // get the current displacement vector
-      Teuchos::RCP<const Epetra_Vector> disnp = gstate_ptr_->ExtractDisplEntries(x);
-
-      Teuchos::ParameterList p;
-      // parameter needed by the elements
-      p.set("action", "calc_struct_energy");
-
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr = gstate_ptr_->GetMutableDiscret();
-      // set vector values needed by elements
-      discret_ptr->ClearState();
-      discret_ptr->SetState("displacement", disnp);
-      // get internal structural energy
-      Teuchos::RCP<Epetra_SerialDenseVector> energy = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-      discret_ptr->EvaluateScalars(p, energy);
-      discret_ptr->ClearState();
-
-      omval = (*energy)(0);
-
-      IO::cout << __LINE__ << " - " << __FUNCTION__ << "\n";
-      IO::cout << "--- Structural energy\n";
-      IO::cout << "energy = " << std::setprecision(15) << std::scientific << omval << "\n";
+      IO::cout(IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
+      implint_ptr_->GetTotalMidTimeStrEnergy(x);
+      omval = implint_ptr_->GetModelValue(x);
 
       break;
     }
@@ -569,6 +551,8 @@ double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(const NOX::Abstr
           // assemble the force and exclude all constraint models
           implint_ptr_->AssembleForce(str_gradient, &constraint_models);
           str_gradient.Dot(dir, &lin_val);
+
+          IO::cout(IO::debug) << "LinEnergy   D_{d} (Energy) = " << lin_val << IO::endl;
 
           break;
         }
@@ -652,4 +636,37 @@ void STR::TIMINT::NoxInterface::RecoverFromBackupState()
 {
   CheckInitSetup();
   implint_ptr_->RecoverFromBackupState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::NoxInterface::computeElementVolumes(
+    const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
+{
+  CheckInitSetup();
+  return implint_ptr_->DetermineElementVolumes(x, ele_vols);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::NoxInterface::getDofsFromElements(
+    const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
+{
+  CheckInitSetup();
+
+  Teuchos::RCP<const DRT::DiscretizationInterface> discret_ptr = gstate_ptr_->GetDiscret();
+
+  for (int egid : my_ele_gids)
+  {
+    DRT::Element* ele = discret_ptr->gElement(egid);
+    DRT::Node** nodes = ele->Nodes();
+
+    for (int i = 0; i < ele->NumNode(); ++i)
+    {
+      if (nodes[i]->Owner() != gstate_ptr_->GetComm().MyPID()) continue;
+
+      const std::vector<int> ndofs(std::move(discret_ptr->Dof(0, nodes[i])));
+      my_ele_dofs.insert(ndofs.begin(), ndofs.end());
+    }
+  }
 }

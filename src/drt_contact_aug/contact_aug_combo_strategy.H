@@ -30,6 +30,12 @@ namespace CONTACT
     class Interface;
     class DataContainer;
 
+    /** \brief Allows the combination of different CONTACT::AUG strategies
+     *
+     *  The switch between the combined strategies is controlled by an internal
+     *  switching strategy, which can be chosen by the user.
+     *
+     *  \author hiermeier */
     class ComboStrategy : public CoAbstractStrategy
     {
      public:
@@ -38,17 +44,25 @@ namespace CONTACT
           const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map,
           const Teuchos::ParameterList& params, const plain_interface_set& ref_interfaces,
-          const int dim, const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof);
+          const int dim, const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof,
+          CONTACT::ParamsInterface* cparams_interface);
 
      private:
+      /// create the interface objects for the combined strategies
       static void CreateStrategyInterfaces(const enum INPAR::CONTACT::SolvingStrategy strat_type,
           const plain_interface_set& ref_interfaces, plain_interface_set& strat_interfaces);
+
+      /// create the linear solver objects for the different combined contact strategies
+      static void CreateStrategyLinearSolvers(const CONTACT::CoAbstractStrategy& strategy,
+          const std::string& lin_solver_id_str, const Teuchos::ParameterList& params,
+          CONTACT::ParamsInterface* cparams_interface, plain_lin_solver_set& strat_lin_solvers);
 
      public:
       /// constructor
       ComboStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& stratData,
           const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
-          const Teuchos::ParameterList& params, const plain_strategy_set& strategies, const int dim,
+          const Teuchos::ParameterList& params, const plain_strategy_set& strategies,
+          const plain_lin_solver_set& lin_solvers, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof);
 
       /// destructor
@@ -63,6 +77,10 @@ namespace CONTACT
       /// return the type of currently active wrapped contact strategy
       INPAR::CONTACT::SolvingStrategy Type() const override;
 
+      /// return the linear solver for the currently active strategy
+      LINALG::Solver* GetLinearSolver() const override;
+
+      /// function wrapper
       void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
           const Epetra_Vector& xnew) override;
 
@@ -166,6 +184,10 @@ namespace CONTACT
       /// function wrapper
       void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
 
+      /// function wrapper
+      bool DynRedistributeContact(
+          const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter) override;
+
       /// @}
 
       /// @{
@@ -216,6 +238,10 @@ namespace CONTACT
       void RunPostEvaluate(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
+      void RunPreSolve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
+          const CONTACT::ParamsInterface& cparams) override;
+
+      /// function wrapper
       void RunPostIterate(const CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
@@ -255,12 +281,16 @@ namespace CONTACT
       /// access the currently active contact strategy (read-only)
       const CONTACT::AUG::Strategy& Get() const;
 
+      /// update the strategy switching conditions
       void SwitchUpdate(CONTACT::ParamsInterface& cparams);
 
+      /// run after EvalForce
       void RunPostEvalForce(CONTACT::ParamsInterface& cparams);
 
+      /// run after EvalForceStiff
       void RunPostEvalForceStiff(CONTACT::ParamsInterface& cparams);
 
+      /// run after EvalStaticConstraontRHS
       void RunPostEvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams);
 
       /// @}
@@ -324,7 +354,7 @@ namespace CONTACT
       //! @}
 
      private:
-      // nested classes
+      // forward declaration of nested classes
       class Switching;
       class PreAsymptoticSwitching;
 
@@ -332,11 +362,19 @@ namespace CONTACT
       /// wrapped contact solution strategies
       plain_strategy_set strategies_;
 
+      /// lin solvers for the wrapped contact solution strategies
+      plain_lin_solver_set lin_solvers_;
+
       /// interface of the wrapped contact solution strategies
       plain_interface_sets interface_sets_;
 
       CONTACT::AUG::DataContainer& data_;
 
+      /*----------------------------------------------------------------------*/
+      /** \brief nested container for the non-dbc dof handling
+       *
+       *  The class members contain all entries of the counterparts without any
+       *  DBC dofs. */
       struct GlobalNoDbc
       {
         /// constructor
@@ -350,48 +388,73 @@ namespace CONTACT
         { /*do nothing*/
         }
 
+        /// assemble the maps
         void Assemble(const Epetra_Map& dbcmap, const CONTACT::AUG::DataContainer& data);
 
+        /// handle a parallel redistribution
         void Redistribute(const CONTACT::AUG::DataContainer& data);
 
+        /// reset container members
         void Reset(const Epetra_Map& slMaMap, const CONTACT::AUG::DataContainer& data);
 
+        /// slave/master DOF map without DBC
         Teuchos::RCP<Epetra_Map> slMaMap_;
+
+        /// slave DOF map without DBC
         Teuchos::RCP<Epetra_Map> slMap_;
+
+        /// master DOF map without DBC
         Teuchos::RCP<Epetra_Map> maMap_;
 
+        /// slave/master force vector without DBC
         Teuchos::RCP<Epetra_Vector> slMaForce_;
+
+        /// slave force vector without DBC
         Teuchos::RCP<Epetra_Vector> slForce_;
+
+        /// master force vector without DBC
         Teuchos::RCP<Epetra_Vector> maForce_;
       };
 
+      /*----------------------------------------------------------------------*/
+      /// nested class which controls the screen output of the surrounding class
       class Output
       {
        public:
         Output() = default;
         ~Output() = default;
 
+        /// init this class
         void initScreenOutput(bool print2screen);
 
+        /// get output screen stream
         std::ostream& oscreen() const;
 
        private:
+        /// output screen stream
         std::ostream* oscreen_ = NULL;
 
+        /// blackhole stream. This kind of stream will prevent any output if set.
         const Teuchos::RCP<Teuchos::oblackholestream> blackhole_ =
             Teuchos::rcp(new Teuchos::oblackholestream);
       };
 
+      /// non-DBC DOF container
       GlobalNoDbc no_dbc_;
+
+      /// output object for this class
       Output output_;
 
+      /// pointer to the switching strategy
       Teuchos::RCP<Switching> switch_;
     };
 
     /*--------------------------------------------------------------------------*/
+    /// Generic base class for all switching strategies
     class ComboStrategy::Switching
     {
      public:
+      /// create and return the desired switching strategy
       static Teuchos::RCP<Switching> Create(ComboStrategy& combo);
 
       /// constructor
@@ -410,6 +473,7 @@ namespace CONTACT
       virtual void Update(CONTACT::ParamsInterface& cparams, std::ostream& os) = 0;
 
      protected:
+      /// find the id corresponding to \c sol_type
       unsigned FindId(INPAR::CONTACT::SolvingStrategy sol_type) const;
 
       /// detect strategy types of the wrapped strategies
@@ -420,10 +484,19 @@ namespace CONTACT
       /// reference to the combo strategy
       ComboStrategy& combo_;
 
+      /// set of all combined contact strategy types
       plain_strattype_set strat_types_;
     };  // class SwitchingStrategy
 
     /*--------------------------------------------------------------------------*/
+    /** \brief Switching strategy for a preasymptotic/asymptotic switch
+     *
+     *  This implementation allows the consideration of two different
+     *  contact solving strategies. One for the preasymptotic phase and another
+     *  one for the asymptotic phase. In this way improved robustness in the
+     *  far field and quadratic convergence near the solution can be combined.
+     *
+     *  \author hiermeier */
     class ComboStrategy::PreAsymptoticSwitching : public ComboStrategy::Switching
     {
      public:
@@ -440,47 +513,80 @@ namespace CONTACT
       /// derived
       void Update(CONTACT::ParamsInterface& cparams, std::ostream& os) override;
 
+      /// check the current penetration (first rough test)
       bool CheckPenetration(std::ostream& os);
 
+      /** \brief perform checks based on the structure/contact force residual
+       *
+       *  All the here considered tests are based on the fact that at the solution
+       *  the gradient of all active constraints scaled by the active Lagrange multipliers
+       *  and the gradient of the structural potential must be collinear and of equal
+       *  length at all involved slave/master DOFs. In a slightly weaker form, this can
+       *  be used as a reliable indicator to initiate a switch. Therefore, the angle
+       *  between the gradients as well as the difference in magnitude must be under a
+       *  predefined relative bound.
+       *
+       *  \author hiermeier */
       bool CheckResidual(CONTACT::ParamsInterface& cparams, std::ostream& os);
 
+      /// get the penetration bound based on the element edge length
       double GetPenetrationBound() const;
 
+      /// return the structural force without DBC DOFs
       Teuchos::RCP<Epetra_Vector> GetStructuralForceWithoutDbcDofs(
           const CONTACT::ParamsInterface& cparams);
 
+      /** check the relative difference between the Lagrange multiplier contact force
+       *  and the structural force at all active contact DOFs. */
       bool CheckContactResidualNorm(const Epetra_Vector& str_slmaforce,
           const Epetra_Vector& constr_slmaforce, std::ostream& os) const;
 
+      /** check the angle between the Lagrange multiplier contact force
+       *  and the structural force at all active contact DOFs. */
       bool CheckAngleBetweenStrForceAndContactForce(const Epetra_Vector& str_slmaforce,
           const Epetra_Vector& constr_slmaforce, std::ostream& os) const;
 
+      /// check cn-bound (fall-back strategy, which is usually not activated)
+      bool CheckCnBound(std::ostream& os) const;
+
+      /// return SlMa forces over all active interfaces
       void GetActiveSlMaForces(const Epetra_Vector& str_force,
           Teuchos::RCP<Epetra_Vector>& str_slmaforce,
           Teuchos::RCP<Epetra_Vector>& constr_slmaforce) const;
 
+      /// get global dof maps for the active sl/ma force vector
       void GetGlobalSlMaActiveForceMaps(const Epetra_Vector& slforce, const Epetra_Vector& maforce,
           Teuchos::RCP<Epetra_Map>& gSlActiveForceMap,
           Teuchos::RCP<Epetra_Map>& gMaActiveForceMap) const;
 
+      /// print header
       void PrintUpdateHead(std::ostream& os) const;
 
      private:
-      struct MinAWGap
+      /*----------------------------------------------------------------------*/
+      /** container for the max. detected absolute value of all involved
+       *  active contact nodes during the preasymptotic and asymptotic phase */
+      struct MaxAbsAWGap
       {
-        MinAWGap(PreAsymptoticSwitching& switching)
-            : switch_(switching), asymptotic_(1.0e12), pre_asymptotic_(1.012){};
+        MaxAbsAWGap(PreAsymptoticSwitching& switching)
+            : switch_(switching), asymptotic_(1.0e12), pre_asymptotic_(1.0e12){};
 
-        inline void Update(const double min_awgap)
+        /// update the container variables based on the current solution phase
+        inline void Update(const double max_awgap)
         {
           if (switch_.is_asymptotic_)
-            asymptotic_ = min_awgap;
+            asymptotic_ = max_awgap;
           else
-            pre_asymptotic_ = min_awgap;
+            pre_asymptotic_ = max_awgap;
         }
 
+        /// call-back
         const PreAsymptoticSwitching& switch_;
+
+        /// max. detected absolute nodal averaged weighted gap value in the asymptotic phase
         double asymptotic_;
+
+        /// max. detected absolute nodal averaged weighted gap value in the asymptotic phase
         double pre_asymptotic_;
       };
 
@@ -493,7 +599,8 @@ namespace CONTACT
       /// which phase is currently active?
       bool is_asymptotic_;
 
-      MinAWGap minawgap_;
+      /// internal container (see container description for more info)
+      MaxAbsAWGap maxabsawgap_;
     };
   }  // namespace AUG
 }  // namespace CONTACT

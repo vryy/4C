@@ -1116,8 +1116,24 @@ namespace CONTACT
     /*! \brief Redistribute all contact interfaces in parallel
 
      We hand in the current global displacement state so that
-     a contact search can be performed and set state called. */
-    virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+     a contact search can be performed and set state called.
+
+     \return TRUE if the interface has been redistributed. Return FALSE otherwise.*/
+    virtual bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+
+    /** \brief Redistribute all contact interfaces in parallel
+     *
+     *  In contrast to RedistributeContact this routine takes place at a different
+     *  point during the simulation. For example, the redistribution can be initiated
+     *  each time a certain amount of Newton steps per load step has been reached.
+     *  In this way an adaption can be made quicker directly after a large predictor
+     *  step or another unforeseen scenario which might have changed the contact
+     *  situation severely. */
+    virtual bool DynRedistributeContact(
+        const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+    {
+      return false;
+    };
 
     //! Global evaluation method called from time integrator
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -1135,8 +1151,8 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
-    virtual void Evaluate(CONTACT::ParamsInterface& cparams,
+    void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
+    void Evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
     {
       Evaluate(cparams, eval_vec, NULL);
@@ -1180,9 +1196,11 @@ namespace CONTACT
     //! @name merit function methods
     //! @{
 
+    /// return the potential contributions of the active contact strategy
     virtual double GetPotentialValue(
         const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const;
 
+    /// return contributions of the active contact strategy to the linear model
     virtual double GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
         const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
         const enum NOX::NLN::MeritFunction::LinOrder linorder,
@@ -1512,6 +1530,10 @@ namespace CONTACT
      *  \author hiermeier \date 03/2017  */
     virtual void RunPostIterate(const CONTACT::ParamsInterface& cparams);
 
+    /// run before before the nonlinear solver starts
+    virtual void RunPreSolve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
+        const CONTACT::ParamsInterface& cparams);
+
     /*! \brief Reset the internal stored Lagrange multipliers
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
@@ -1599,6 +1621,9 @@ namespace CONTACT
     /*! check the parallel distribution and initialize a possible
      *  redistribution */
     void CheckParallelDistribution(const double& t_start);
+
+    /// update the parallel distribution status
+    void UpdateParallelDistributionStatus(const double& my_total_time);
 
     /*! \brief Update Mortar matrices D and M
 

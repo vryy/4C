@@ -41,6 +41,7 @@ namespace MORTAR
     eval_run_pre_compute_x, /*!< augment the solution direction at the very beginning of a ComputeX
                                call */
     eval_run_post_iterate,  /*!< run in the end of a NOX::Solver::Step() call */
+    eval_run_pre_solve,     /*!< run at the beginning of a NOX::Solver::solve() call */
     eval_contact_potential, /*!< Evaluate the contact potential */
     eval_wgap_gradient_error,   /*!< Evaluate the error of the weighted gap gradient */
     eval_static_constraint_rhs, /*!< Evaluate only the contributions to the constraint rhs.
@@ -88,8 +89,10 @@ namespace MORTAR
         return "eval_correct_parameters";
       case remove_condensed_contributions_from_str_rhs:
         return "remove_condensed_contributions_from_str_rhs";
+      case eval_run_pre_solve:
+        return "eval_run_pre_solve";
       default:
-        return "unknown";
+        return "unknown [enum = " + std::to_string(act) + "]";
     }
     return "";
   };

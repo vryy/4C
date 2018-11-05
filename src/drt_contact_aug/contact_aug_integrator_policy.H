@@ -15,7 +15,10 @@
 #ifndef SRC_DRT_CONTACT_AUG_CONTACT_AUG_INTEGRATOR_POLICY_H_
 #define SRC_DRT_CONTACT_AUG_CONTACT_AUG_INTEGRATOR_POLICY_H_
 
-#include "../drt_contact_aug/contact_integrator_utils.H"
+//#define SWITCH_2ND_DERIV_NORMAL_OFF
+
+#include "contact_integrator_utils.H"
+#include "contact_aug_timemonitor.H"
 
 namespace CONTACT
 {
@@ -95,6 +98,7 @@ namespace CONTACT
      protected:
       /// current Gauss point ID
       int gp_id_ = -1;
+      mutable TimeMonitor<CONTACT::AUG::TimeID> timer_ = TimeMonitor<CONTACT::AUG::TimeID>();
     };
 
     /*--------------------------------------------------------------------------*/

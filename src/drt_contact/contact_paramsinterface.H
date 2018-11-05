@@ -20,6 +20,13 @@
 
 #include "../drt_mortar/mortar_paramsinterface.H"
 
+namespace NOX
+{
+  namespace NLN
+  {
+    enum class CorrectionType : int;
+  }  // namespace NLN
+}  // namespace NOX
 namespace INPAR
 {
   namespace STR
@@ -62,8 +69,14 @@ namespace CONTACT
     //! get the current step length
     virtual double GetStepLength() const = 0;
 
+    //! get number of linear system corrections (modified Newton approach)
+    virtual int GetNumberOfModifiedNewtonCorrections() const = 0;
+
     //! get the is_default_step indicator
     virtual bool IsDefaultStep() const = 0;
+
+    //! get correction type
+    virtual NOX::NLN::CorrectionType GetCorrectionType() const = 0;
 
     //! get the current time step [derived]
     virtual double GetDeltaTime() const = 0;

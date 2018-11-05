@@ -75,6 +75,7 @@ void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
     {
       case INPAR::CONTACT::solution_augmented:
       case INPAR::CONTACT::solution_steepest_ascent:
+      case INPAR::CONTACT::solution_steepest_ascent_sp:
       case INPAR::CONTACT::solution_std_lagrange:
         strat_types.push_back(s.Type());
         break;
@@ -124,7 +125,7 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
       preasymptotic_id_(0),
       asymptotic_id_(0),
       is_asymptotic_(false),
-      minawgap_(*this)
+      maxabsawgap_(*this)
 {
   if (combo_.strategies_.size() > 2)
     dserror(
@@ -159,7 +160,8 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
 
   const bool is_predict = cparams.IsPredictor();
   const bool check_pen = CheckPenetration(os);
-  bool is_asymptotic = (not is_predict and check_pen and CheckResidual(cparams, os));
+  bool is_asymptotic =
+      (not is_predict and check_pen and (CheckResidual(cparams, os) or CheckCnBound(os)));
 
   // if the status is the same as before, do nothing
   if (is_asymptotic == is_asymptotic_) return;
@@ -175,8 +177,8 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
    * time/load step ( prediction phase ). */
   // --------------------------------------------------------------------------
   if (not is_asymptotic and
-      (is_predict or (not check_pen or std::abs(minawgap_.asymptotic_) >
-                                           2.0 * std::abs(minawgap_.pre_asymptotic_))))
+      (is_predict or
+          (not check_pen or maxabsawgap_.asymptotic_ > 2.0 * maxabsawgap_.pre_asymptotic_)))
   {
     os << "Switching back to the pre-asymptotic phase since";
     if (is_predict)
@@ -246,10 +248,11 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckContactResidualNo
   str_slmaforce.Norm2(&str_nrm);
   const bool check_res = (res_nrm <= 1.0e-3 * str_nrm);
 
-  os << "# Checking residual between str. force and contact force  ..."
+  os << std::setfill('.') << std::setw(80)
+     << "# Checking residual between str. force and contact force "
      << (check_res ? "SUCCEEDED" : "FAILED") << "\n"
-     << std::setw(14) << std::setprecision(4) << std::scientific << res_nrm
-     << " <= " << 1.0e-3 * str_nrm << "\n";
+     << std::setfill(' ') << "  rel. sl/ma residual = " << std::setw(14) << std::setprecision(4)
+     << std::scientific << res_nrm << " <= " << 1.0e-3 * str_nrm << "\n";
 
   return check_res;
 }
@@ -278,9 +281,11 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckAngleBetweenStrFo
   static const double conv_to_deg = 180 / (std::atan(1.0) * 4.0);
   static const double angle_bound = acos(1.0 - angle_tol) * conv_to_deg;
 
-  os << "# Checking angle between str. force and contact force ......."
+  os << std::setfill('.') << std::setw(80)
+     << "# Checking angle between str. force and contact force "
      << (check_angle ? "SUCCEEDED" : "FAILED") << "\n"
-     << "  0.0 <= " << std::setw(14) << std::setprecision(4) << std::scientific;
+     << std::setfill(' ') << "  angle: 0.0 <= " << std::setw(14) << std::setprecision(4)
+     << std::scientific;
   if (nrm_prod > 0.0)
   {
     const double cosine = inner_prod / nrm_prod;
@@ -294,6 +299,26 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckAngleBetweenStrFo
   os << " <= " << angle_bound << " [deg]\n";
 
   return check_angle;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckCnBound(std::ostream& os) const
+{
+  static const double cn_bound = 1.0e+15;
+  double max_cn = 0.0;
+  combo_.data_.Cn().MaxValue(&max_cn);
+
+  const bool check_bound = (max_cn > cn_bound);
+
+  os << std::setfill('.') << std::setw(80)
+     << "# Checking upper bound of the regularization parameter "
+     << (check_bound ? "SUCCEEDED" : "FAILED") << "\n"
+     << std::setfill(' ') << "  current cn [" << std::setw(14) << std::setprecision(4)
+     << std::scientific << max_cn << "] > bound [" << std::setw(14) << std::setprecision(4)
+     << std::scientific << cn_bound << "]\n";
+
+  return check_bound;
 }
 
 /*----------------------------------------------------------------------------*
@@ -325,6 +350,8 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetActiveSlMaForces(
 
   constr_slmaforce = LINALG::CreateVector(*gSlMaActiveForceMap, true);
   LINALG::ExtractMyVector(slmaforce, *constr_slmaforce);
+  // consider time integration factor
+  constr_slmaforce->Scale(1.0 - combo_.data_.GetDynParameterN());
 
   str_slmaforce = LINALG::CreateVector(*gSlMaActiveForceMap, true);
   LINALG::ExtractMyVector(str_force, *str_slmaforce);
@@ -383,25 +410,31 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::CheckPenetration(std::
   // get the overall largest penetration value
   double min_awgap = 0.0;
   combo_.data_.AWGap().MinValue(&min_awgap);
+  double max_awgap = 0.0;
+  combo_.data_.AWGap().MaxValue(&max_awgap);
 
+  const double max_abs_awgap = std::max(std::abs(min_awgap), std::abs(max_awgap));
   const double penbound = GetPenetrationBound();
 
 #ifdef DEBUG_COMBO_STRATEGY
   IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << IO::endl;
-  IO::cout << "min_awgap = " << min_awgap << " | penbound = " << penbound << IO::endl;
+  IO::cout << "max_awgap = " << min_awgap << " | penbound = " << penbound << IO::endl;
 #endif
 
-  const bool pen_check = (min_awgap > penbound);
+  const bool pen_check = (max_abs_awgap < penbound);
 
   // update minimal averaged weighted gap container
-  minawgap_.Update(min_awgap);
+  maxabsawgap_.Update(max_abs_awgap);
 
-  os << "# Checking penetration (min. avg.-w. gap < pen. bound) ......"
-     << (pen_check ? "SUCCEEDED" : "FAILED") << "\n";
-  os << std::setw(14) << std::setprecision(4) << std::scientific << min_awgap << " > "
-     << std::setw(14) << std::setprecision(4) << std::scientific << penbound << "\n";
-  os << "  ( min. pre-asymptotic = " << minawgap_.pre_asymptotic_ << ", "
-     << "min. asymptotic = " << minawgap_.asymptotic_ << " )\n";
+  os << std::setfill('.') << std::setw(80)
+     << "# Checking penetration ( max{ | avg.-w. gaps | } < pen. bound) "
+     << (pen_check ? "SUCCEEDED" : "FAILED") << "\n"
+     << std::setfill(' ');
+  os << "  max abs. gap = " << std::setw(14) << std::setprecision(4) << std::scientific
+     << max_abs_awgap << " < " << std::setw(14) << std::setprecision(4) << std::scientific
+     << penbound << "\n";
+  os << "  ( max. pre-asymptotic = " << maxabsawgap_.pre_asymptotic_ << ", "
+     << "max. asymptotic = " << maxabsawgap_.asymptotic_ << " )\n";
 
   return pen_check;
 }
@@ -422,8 +455,7 @@ double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetPenetrationBound(
   std::cout << "penbound = " << penbound << std::endl;
 #endif
 
-  // scale the penetration bound with -1.0.
-  return (penbound * -1.0);
+  return penbound;
 }
 
 /*----------------------------------------------------------------------------*

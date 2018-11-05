@@ -586,7 +586,21 @@ void STR::ModelEvaluator::RunPreComputeX(const Epetra_Vector& xold, Epetra_Vecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::RunPostIterate(
+void STR::ModelEvaluator::RunPostIterate(const NOX::Solver::Generic& solver, const double step,
+    const bool isdefaultstep, const int num_corrs) const
+{
+  eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
+  eval_data_ptr_->SetStepLength(step);
+  eval_data_ptr_->SetNumberOfModifiedNewtonCorrections(num_corrs);
+
+  Vector::iterator me_iter;
+  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
+    (*me_iter)->RunPostIterate(solver);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RunPreSolve(
     const NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const
 {
   eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
@@ -594,8 +608,9 @@ void STR::ModelEvaluator::RunPostIterate(
 
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->RunPostIterate(solver);
+    (*me_iter)->RunPreSolve(solver);
 }
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

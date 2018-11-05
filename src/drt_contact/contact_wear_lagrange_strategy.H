@@ -84,8 +84,9 @@ namespace WEAR
     We hand in the current global displacement state so that
     a contact search can be performed and set state called.
 
+    \return TRUE if a redistribution took place. Return FALSE otherwise.
     */
-    void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Build 2x2 saddle point system

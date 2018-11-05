@@ -424,7 +424,7 @@ namespace CONTACT
     void OutputStresses() {}
     void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
-    void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) {}
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override { return false; }
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}

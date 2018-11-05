@@ -29,6 +29,7 @@ namespace Teuchos
 }  // namespace Teuchos
 namespace CONTACT
 {
+  class ParamsInterface;
   class CoInterface;
   class CoElement;
   class CoAbstractStrategy;
@@ -91,7 +92,8 @@ namespace CONTACT
        * \author Popp */
       Teuchos::RCP<CONTACT::CoAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& cparams,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const;
+          std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
+          CONTACT::ParamsInterface* cparams_interface = NULL) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
@@ -105,7 +107,8 @@ namespace CONTACT
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-          Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr);
+          Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr,
+          CONTACT::ParamsInterface* cparams_interface = NULL);
 
       //! Create the desired search tree object
       void BuildSearchTree(const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const;
@@ -114,6 +117,11 @@ namespace CONTACT
       void Print(const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
           const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
           const Teuchos::ParameterList& cparams) const;
+
+      /*! \brief print strategy banner
+       *
+       *  \param soltype (in) : contact solving strategy type */
+      static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
 
      protected:
       /*! \brief Set Parent Elements for Poro Face Elements

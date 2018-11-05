@@ -24,7 +24,15 @@
 #include "mortar_interface.H"            // for the enum state type
 #include "../drt_inpar/inpar_contact.H"  // for the INPAR::CONTACT enums
 
+
 // forward declarations
+namespace INPAR
+{
+  namespace STR
+  {
+    enum DynamicType : int;
+  }  // namespace STR
+}  // namespace INPAR
 namespace DRT
 {
   class Discretization;
@@ -87,6 +95,18 @@ namespace MORTAR
     double& AlphaF() { return alphaf_; };
     const double& AlphaF() const { return alphaf_; };
 
+    /// get the (dynamic) time integration type
+    inline INPAR::STR::DynamicType GetDynType() const { return dyntype_; };
+
+    /// return dynamic time integration parameter
+    inline double GetDynParameterN() const { return dynparamN_; }
+
+    /// set dynamic time integration parameter
+    inline void SetDynParameterN(const double dynparamN) { dynparamN_ = dynparamN; }
+
+    /// set the (dynamic) time integration type
+    inline void SetDynType(INPAR::STR::DynamicType dyntype) { dyntype_ = dyntype; }
+
     //! Return flag indicating parallel redistribution status
     bool& IsParRedist() { return parredist_; };
     const bool& IsParRedist() const { return parredist_; };
@@ -126,6 +146,12 @@ namespace MORTAR
 
     //! Current used system type
     INPAR::CONTACT::SystemType systype_;
+
+    //! time integration type
+    INPAR::STR::DynamicType dyntype_;
+
+    //! time integration parameter for the contributions of the old/previous time step
+    double dynparamN_;
   };
 
   /*!
@@ -213,6 +239,9 @@ namespace MORTAR
 
     //@}
 
+    /// Set the time integration information
+    void SetTimeIntegrationInfo(const double time_fac, const INPAR::STR::DynamicType dyntype);
+
     //! @name Purely virtual functions
 
     // All these functions are defined in one or more specific derived classes,
@@ -277,7 +306,7 @@ namespace MORTAR
     virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() const = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
-    virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) = 0;
+    virtual bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void RedistributeMeshtying() = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;

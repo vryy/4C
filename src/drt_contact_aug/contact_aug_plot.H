@@ -116,6 +116,8 @@ namespace CONTACT
 
       void ComputeAnglePosition();
 
+      void ComputeDistancePosition();
+
       void PlotScalar(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
           NOX::NLN::CONSTRAINT::Group& plot_grp);
 
@@ -149,8 +151,8 @@ namespace CONTACT
           NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = NULL,
           const Epetra_Vector* curr_dir = NULL) const;
 
-      double GetNodalErrorAtAngle(
-          const double* angle, const std::vector<std::pair<int, double>>& nodal_error) const;
+      double GetNodalErrorAtPosition(
+          const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const;
 
       void GetVectorValues(const enum INPAR::CONTACT::PlotFuncName functype,
           NOX::NLN::CONSTRAINT::Group& plot_grp, const std::vector<const Epetra_Vector*>& dirs,
@@ -270,7 +272,7 @@ namespace CONTACT
 
       int wgap_node_gid_ = -1;
 
-      std::map<double, int> angle_node_id_map_;
+      std::map<double, int> position_node_id_map_;
 
       std::vector<LINALG::Matrix<3, 1>> ref_points_;
 

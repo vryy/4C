@@ -1154,6 +1154,24 @@ namespace CONTACT
     const CoInterface& GetMaSharingRefInterface() const;
 
    protected:
+    /** \brief split the interface elements into a far and a close set
+     *
+     *  This version of the method performs the split closely bound to the
+     *  information collected during the contact search. See the derived
+     *  version(s) for alternatives.
+     *
+     *  \note The here collected information mainly decides over the
+     *  distribution after the parallel redistribution.
+     *
+     *  \param closeele (out)     (slave) interface element GIDs of the close set
+     *  \param noncloseele (out)  (slave) interface element GIDs of the far set
+     *  \param localcns (out)     (slave) node GIDs of the elements in the close set
+     *  \param localfns (out)     (slave) node GIDs of the elements in the far set
+     *
+     *  All sets are restricted to the current/local processor. */
+    virtual void SplitIntoFarAndCloseSets(std::vector<int>& closeele, std::vector<int>& noncloseele,
+        std::vector<int>& localcns, std::vector<int>& localfns) const;
+
     /*!
     \brief initialize node and element data container
 

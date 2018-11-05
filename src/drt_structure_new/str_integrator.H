@@ -123,6 +123,7 @@ namespace STR
 
     //! return integration factor
     virtual double GetIntParam() const = 0;
+    virtual double GetAccIntParam() const { return GetIntParam(); }
 
     //! @name Restart and output related functions
     //! @{
@@ -163,8 +164,21 @@ namespace STR
     //! calculate the energy in the different model evaluators
     void DetermineEnergy();
 
+    //! get the model value in accordance with the currently active time integration
+    virtual double GetModelValue(const Epetra_Vector& x);
+
+    /*! return the total structural energy evaluated at the actual mid-time
+     *  in accordance to the used time integration scheme */
+    double GetTotalMidTimeStrEnergy(const Epetra_Vector& x);
+
+    /// update the structural energy variable in the end of a successful time step
+    void UpdateStructuralEnergy();
+
     //! calculate an optional quantity in the different model evaluators
     void DetermineOptionalQuantity();
+
+    /// compute the current volumes of all elements
+    bool DetermineElementVolumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
 
     /*! \brief Output to file
      *
@@ -295,6 +309,63 @@ namespace STR
 
     //! indicates if the Setup() function has been called
     bool issetup_;
+
+    //! Mid-time energy container
+    struct MidTimeEnergy
+    {
+      /// constructor
+      MidTimeEnergy(const Integrator& integrator);
+
+      /// setup
+      void Setup();
+
+      /// can this container be used?
+      bool IsCorrectlyConfigured() const;
+
+      bool StoreEnergyN() const;
+
+      /// print energy info to output stream
+      void Print(std::ostream& os) const;
+
+      /// Get total energy measure in accordance to the surrounding time integrator
+      double GetTotal() const;
+
+      /// average quantities based on the used averaging type
+      Teuchos::RCP<const Epetra_Vector> Average(
+          const Epetra_Vector& state_np, const Epetra_Vector& state_n, const double fac_n) const;
+
+      /// copy current state to old state (during update)
+      void CopyNpToN();
+
+      /// internal energy at \f$t_{n+1}\f$
+      double int_energy_np_ = 0.0;
+
+      /// external energy at \f$t_{n+1}\f$
+      double ext_energy_np_ = 0.0;
+
+      /// kinetic energy at \f$t_{n+1}\f$
+      double kin_energy_np_ = 0.0;
+
+      /// internal energy at \f$t_{n}\f$
+      double int_energy_n_ = 0.0;
+
+      /// external energy at \f$t_{n}\f$
+      double ext_energy_n_ = 0.0;
+
+      /// kinetic energy at \f$t_{n}\f$
+      double kin_energy_n_ = 0.0;
+
+     private:
+      /// call-back
+      const Integrator& integrator_;
+
+      /// mid-time energy averaging type
+      enum INPAR::STR::MidAverageEnum avg_type_;
+
+      /// setup flag
+      bool issetup_ = false;
+    };
+    MidTimeEnergy mt_energy_ = MidTimeEnergy(*this);
 
    private:
     //! pointer to the model evaluator
