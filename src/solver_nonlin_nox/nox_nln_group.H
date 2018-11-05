@@ -23,13 +23,16 @@
 #include <NOX_StatusTest_NormF.H>
 
 #include "nox_nln_statustest_normupdate.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 // forward declarations
 class Epetra_BlockMap;
+class Epetra_Map;
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class AztecOOConditionNumber;
+}  // namespace LINALG
 namespace NOX
 {
   namespace NLN
@@ -67,6 +70,7 @@ namespace NOX
       //! Destructor
       virtual ~Group(){};
 
+      /// assign operator
       NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source) override;
       NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
 
@@ -85,11 +89,35 @@ namespace NOX
       NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
           const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
 
+      /// apply one block of the jacobian to a vector
+      NOX::Abstract::Group::ReturnType applyJacobianBlock(const NOX::Epetra::Vector& input,
+          Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
+
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.
       //! contact problems.
       virtual NOX::Abstract::Group::ReturnType computeFandJacobian();
 
+      //! ToDo Move this into an extra interface
+      //! @{
+
+      /// compute element volumes
+      NOX::Abstract::Group::ReturnType computeElementVolumes(
+          Teuchos::RCP<Epetra_Vector>& ele_vols) const;
+
+      /*! get the nodal dofs from the elements corresponding to the provided
+       *  global element ids */
+      void getDofsFromElements(
+          const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const;
+
+      /// compute trial element volumes
+      NOX::Abstract::Group::ReturnType computeTrialElementVolumes(
+          Teuchos::RCP<Epetra_Vector>& ele_vols, const NOX::Abstract::Vector& dir, double step);
+
+      //! @}
+
+      /// compute the correction system of equations (e.g. in case of a second order correction
+      /// step)
       NOX::Abstract::Group::ReturnType computeCorrectionSystem(
           const enum NOX::NLN::CorrectionType type);
 
@@ -109,6 +137,21 @@ namespace NOX
        * evaluation calls of the expensive computeJacobian() routines! Afterwards
        * the base class function is called.                   hiermeier 03/2016 */
       bool isJacobian() const override;
+
+      /// are the eigenvalues valid?
+      virtual bool isEigenvalues() const;
+
+      inline NOX::NLN::CorrectionType GetCorrectionType() const { return corr_type_; }
+
+      /// @name access the eigenvalue data
+      /// @{
+
+      const LINALG::SerialDenseVector& getJacoianRealEigenvalues() const;
+      const LINALG::SerialDenseVector& getJacoianImaginaryEigenvalues() const;
+      double getJacobianMaxRealEigenvalue() const;
+      double getJacobianMinRealEigenvalue() const;
+
+      /// @}
 
       //! returns the nox_nln_interface_required pointer
       Teuchos::RCP<const NOX::NLN::Interface::Required> GetNlnReqInterfacePtr() const;
@@ -211,12 +254,41 @@ namespace NOX
       //! compute and return some energy representative
       virtual double GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const;
 
+      //! compute contributions to a linear model
       virtual double GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
           enum NOX::NLN::MeritFunction::MeritFctName mf_type,
           enum NOX::NLN::MeritFunction::LinOrder linorder,
           enum NOX::NLN::MeritFunction::LinType lintype) const;
 
+      /// return the DOF map of the solution vector
       const Epetra_BlockMap& getDofMap() const;
+
+      /// get jacobian range map from row/column block rbid/cbid
+      const Epetra_Map& getJacobianRangeMap(unsigned rbid, unsigned cbid) const;
+
+      /// return a copy of the Jacobian diagonal block \c diag_bid
+      Teuchos::RCP<Epetra_Vector> getDiagonalOfJacobian(unsigned diag_bid) const;
+
+      /// replace the Jacobian diagonal block \c diag_bid
+      void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid) const;
+
+      /// compute the condition number of the Jacobian matrix
+      NOX::Abstract::Group::ReturnType computeJacobianConditionNumber(int maxIters,
+          double tolerance, int krylovSubspaceSize = 100, bool printOutput = false) override;
+
+      /// compute the condition number of the Jacobian matrix (serial mode)
+      NOX::Abstract::Group::ReturnType computeSerialJacobianConditionNumber(
+          const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput);
+
+      /// compute the eigenvalues of the Jacobian matrix (serial mode)
+      NOX::Abstract::Group::ReturnType computeSerialJacobianEigenvalues(bool printOutput);
+
+      /// reset is valid Newton member
+      inline void resetIsValidNewton() { isValidNewton = false; };
+
+     protected:
+      //! resets the isValid flags to false
+      void resetIsValid() override;
 
      private:
       //! Throw an NOX_error
@@ -228,9 +300,43 @@ namespace NOX
        *  need a multiplicative update of some beam elements' rotation (pseudo-)vector DOFs) */
       bool skipUpdateX_;
 
+      /// correction system type
+      NOX::NLN::CorrectionType corr_type_;
+
      private:
       //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
       Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator> prePostOperatorPtr_;
+
+      /// pointer to the aztec condition number object
+      Teuchos::RCP<LINALG::AztecOOConditionNumber> azconditionnumberptr_ = Teuchos::null;
+
+      /// container for eigenvalue info
+      struct Eigenvalues
+      {
+        /// assign operator
+        Eigenvalues& operator=(const Eigenvalues& src);
+
+        /// set the aztec estimates
+        void setAztecEstimates(LINALG::AztecOOConditionNumber& azconditionnumber);
+
+        /// real part of the eigenvalues
+        LINALG::SerialDenseVector realpart_;
+
+        /// imaginary part of the eigenvalues
+        LINALG::SerialDenseVector imaginarypart_;
+
+        /// maximal real part
+        double real_max_ = 0.0;
+
+        /// minimal real part
+        double real_min_ = 0.0;
+
+        /// Are the eigenvalues valid?
+        bool isvalid_ = false;
+      };
+
+      /// instance of the Eigenvalue container
+      Eigenvalues ev_;
     };  // class Group
   }     // namespace NLN
 }  // namespace NOX

@@ -70,8 +70,8 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art) = 0;
 
     //! set solution of fields
-    virtual void SetSolutionVectors(
-        Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
+    virtual void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
+        Teuchos::RCP<const Epetra_Vector> phin_cont, Teuchos::RCP<const Epetra_Vector> phinp_art);
 
     /// setup global vector
     /// (o)    vec:      combined vector containing both artery and continuous field quantities
@@ -92,7 +92,7 @@ namespace POROMULTIPHASESCATRA
     virtual void Init() = 0;
 
     /// apply mesh movement (on artery elements)
-    virtual void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp) = 0;
+    virtual void ApplyMeshMovement() = 0;
 
 
    protected:

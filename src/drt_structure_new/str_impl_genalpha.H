@@ -23,8 +23,12 @@ namespace STR
 {
   namespace IMPLICIT
   {
+    /// Generalized alpha time integration
     class GenAlpha : public Generic
     {
+      // forwards declaration
+      struct Coefficients;
+
      public:
       //! constructor
       GenAlpha();
@@ -67,6 +71,9 @@ namespace STR
 
       //! [derived]
       virtual double GetIntParam() const;
+
+      /// access the parameter for the accelerations at \f$t_{n}\f$, i.e. alpham
+      double GetAccIntParam() const override;
 
       //! @name Monolithic update routines
       //! @{
@@ -180,21 +187,58 @@ namespace STR
        *  \date 03/2016 */
       virtual void UpdateConstantStateContributions();
 
+      /// set the time integration coefficients
+      void SetTimeIntegrationCoefficients(Coefficients& coeffs) const;
+
+      /// Return a reliable model value which can be used for line search
+      double GetModelValue(const Epetra_Vector& x) override;
+
+     private:
+      /// time integration coefficients container
+      struct Coefficients
+      {
+        /// copy operator (currently default is enough)
+        Coefficients& operator=(const Coefficients& source) = default;
+
+        //! beta factor: feasible interval (0,1/2]
+        double beta_ = -1.0;
+
+        //! gamma factor: feasible interval (0,1]
+        double gamma_ = -1.0;
+
+        //! alpha_f factor: feasible interval [0,1)
+        double alphaf_ = -1.0;
+
+        //! alpha_m factor: feasible interval [-1,1)
+        double alpham_ = -1.0;
+
+        //! rho_inf factor: feasible interval [0,1]
+        double rhoinf_ = -1.0;
+      };
+      Coefficients coeffs_;
+
      protected:
-      //! beta factor: feasible interval (0,1/2]
-      double beta_;
+      /** @name Generalized alpha parameters
+       *
+       *  \note redirection to the content of the coefficient struct */
+      /// @{
 
-      //! gamma factor: feasible interval (0,1]
-      double gamma_;
+      /// beta parameter of the Newmark method
+      double& beta_;
 
-      //! alpha_f factor: feasible interval [0,1)
-      double alphaf_;
+      /// gamma parameter of the Newmark method
+      double& gamma_;
 
-      //! alpha_m factor: feasible interval [-1,1)
-      double alpham_;
+      /// alphaf parameter of the Gen-a method (displ., vel.)
+      double& alphaf_;
 
-      //! rho_inf factor: feasible interval [0,1]
-      double rhoinf_;
+      /// alpham parameter of the Gen-a method (accelerations)
+      double& alpham_;
+
+      /// spectral radius
+      double& rhoinf_;
+
+      /// @}
 
       /*! @name New vectors for internal use only
        *

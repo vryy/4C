@@ -39,7 +39,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
 
   const unsigned msize = meles.size();
   const unsigned numGP = wrapper.nGP();
-  const unsigned reserve_size = numGP / msize;
+  const unsigned reserve_size = (msize ? numGP / msize : 0);
 
   const unsigned probdim = wrapper.Dim();
 
@@ -72,15 +72,25 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
 
       const DRT::Element::DiscretizationType mastertype = meles[m]->Shape();
       // project Gauss point onto master element
+#ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
+      CONTACT::AUG::ProjectorBase* proj_ptr = NULL;
+      if (sele.Id() == -1 or sele.Id() == -1)
+        proj_ptr = CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype, true);
+      else
+        proj_ptr = CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype);
+#else
       CONTACT::AUG::ProjectorBase* proj_ptr =
           CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype);
+#endif
+
       CONTACT::AUG::ProjectorBase& proj = *proj_ptr;
       const bool conv = proj(sele, sxi, *meles[m], mxi, projalpha);
 
       // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-      //      DRT::Node** snodes = sele.Nodes();
-      //      if ( ( snodes[0]->Id() == 174 or snodes[1]->Id() == 174 ) )
+      DRT::Node** snodes = sele.Nodes();
+      if ((snodes[0]->Id() == 248 or snodes[1]->Id() == 251))
+      //      if ( sele.Id() == 1261 )
       {
         std::cout << "Slave element #" << sele.Id() << std::endl;
         std::cout << "GP #" << gp << " | mele " << meles[m]->Id() << " [" << meles[m] << "]"
@@ -150,13 +160,40 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
   // --- DEBUGGING --------------------------------------------------------
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
   DRT::Node** snodes = sele.Nodes();
-  //  if ( ( snodes[0]->Id() == 174 or snodes[1]->Id() == 174 ) )
+  const std::vector<int> desired_nids = {247, 248, 251};
+  unsigned count = 0;
+
+  for (unsigned i = 0; i < static_cast<unsigned>(sele.NumNode()); ++i)
+  {
+    const int sid = snodes[i]->Id();
+    if (std::find(desired_nids.begin(), desired_nids.end(), sid) != desired_nids.end()) ++count;
+  }
+
+  if (count == 2)
+  //  if ( ( snodes[0]->Id() == 7731 and snodes[1]->Id() == 7733 ) )
+  //  if ( sele.Id() == 1260 or sele.Id() == 1261 )
   {
     for (auto& proj : projInfo)
     {
       std::cout << "\n---------------------------------------\n";
+      std::cout << "sele #" << sele.Id() << ":\n";
+      sele.Print(std::cout);
+      std::cout << "\nSlave-nodes: ";
+      for (unsigned i = 0; i < static_cast<unsigned>(sele.NumNode()); ++i)
+      {
+        std::cout << "#" << snodes[i]->Id() << " --> " << snodes[i]->X()[0] << ", "
+                  << snodes[i]->X()[1] << ", " << snodes[i]->X()[2] << "\n";
+      }
+      std::cout << "\n";
       std::cout << "mele " << proj.first->Id() << "[" << proj.first << "]"
                 << "\n";
+      DRT::Node** mnodes = proj.first->Nodes();
+      std::cout << "\nMaster-nodes: ";
+      for (unsigned i = 0; i < static_cast<unsigned>(proj.first->NumNode()); ++i)
+      {
+        std::cout << "#" << mnodes[i]->Id() << " --> " << mnodes[i]->X()[0] << ", "
+                  << mnodes[i]->X()[1] << ", " << mnodes[i]->X()[2] << "\n";
+      }
       proj.second.Print(std::cout);
     }
   }

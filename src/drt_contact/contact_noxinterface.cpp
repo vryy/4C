@@ -421,7 +421,8 @@ double CONTACT::NoxInterface::GetLinearizedModelTerms(const Epetra_Vector& dir,
     case NOX::NLN::MeritFunction::mrtfct_infeasibility_two_norm_active:
     {
       double lin_val = Strategy().GetLinearizedPotentialValueTerms(dir, name, linorder, lintype);
-      lin_val /= GetModelValue(name);
+      const double modelvalue = GetModelValue(name);
+      if (modelvalue != 0.0) lin_val /= modelvalue;
 
       return lin_val;
     }

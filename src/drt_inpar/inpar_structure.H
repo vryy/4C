@@ -170,14 +170,14 @@ namespace INPAR
      */
     enum IntegrationStrategy
     {
-      int_old,  ///< old structure (FixMe deprecated and should be deleted, as soon as the clean-up
-                ///< isfinished!)
+      int_old, /**< old structure (FixMe deprecated and should be deleted, as soon as the clean-up
+                * is finished!) */
       int_standard,  ///< standard time integration (implicit or explicit)
       int_loca       ///< path following with LOCA
     };
 
     /// Type of time integrator including statics
-    enum DynamicType
+    enum DynamicType : int
     {
       dyna_statics,            ///< static analysis
       dyna_genalpha,           ///< generalised-alpha time integrator (implicit)
@@ -569,6 +569,16 @@ namespace INPAR
 
     /// @name Output
     //!@{
+
+    enum class ConditionNumber : char
+    {
+      none,             ///< no condition number
+      gmres_estimate,   ///< use the GMRES method to compute an condition number estimate
+      max_min_ev_ratio, /**< compute the condition number based on the maximal and minimal
+                         *   eigenvalue */
+      one_norm,         ///< Use the 1-norm to compute the condition number
+      inf_norm          ///< Use the inf-norm to compute the condition number
+    };
 
     /// Type of structural stress output
     /// (this enum represents the input file parameter STRUCT_STRESS and

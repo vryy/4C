@@ -54,6 +54,7 @@ namespace NOX
        *   Uses dynamic casting to identify the underlying object type. */
       NOX::NLN::LinSystem::OperatorType GetOperatorType(const LINALG::SparseOperator& op);
 
+      /// return linear system type
       NOX::NLN::LinSystem::LinearSystemType GetLinearSystemType(
           const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linsolvers);
 
@@ -112,6 +113,12 @@ namespace NOX
       template <class T>
       NOX::StatusTest::Generic* GetOuterStatusTest(NOX::StatusTest::Generic& full_otest);
 
+      /** \brief Do a recursive search for a <T> status test class containing
+       *  the given quantity. */
+      template <class T>
+      NOX::StatusTest::Generic* GetOuterStatusTestWithQuantity(
+          NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+
       /*! \brief Do a recursive search for a <T> status test class and return its status.
        *
        * If more than one of the given status test objects is combined in a combination list,
@@ -137,8 +144,12 @@ namespace NOX
        */
       enum NOX::Abstract::Vector::NormType String2NormType(const std::string& name);
 
+      /// add pre/post operator to pre/post operator vector
       void AddToPrePostOpVector(Teuchos::ParameterList& p_nox_opt,
           const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr);
+
+      /// return the name of the parameter list corresponding to the set direction method
+      std::string GetDirectionMethodListName(const Teuchos::ParameterList& p);
 
     }  // namespace AUX
   }    // namespace NLN

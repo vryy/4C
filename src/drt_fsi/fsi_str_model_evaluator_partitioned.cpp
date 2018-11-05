@@ -23,6 +23,7 @@
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
+#include "../solver_nonlin_nox/nox_nln_aux.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -147,7 +148,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   // ---------------------------------------------------------------------------
   // Check if we are using a Newton direction
   // ---------------------------------------------------------------------------
-  const std::string& dir_str = noxparams.sublist("Direction").get<std::string>("Method");
+  const std::string dir_str(NOX::NLN::AUX::GetDirectionMethodListName(noxparams));
   if (dir_str != "Newton")
     dserror(
         "The RelaxationSolve is currently only working for the direction-"

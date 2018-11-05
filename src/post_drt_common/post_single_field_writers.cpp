@@ -39,6 +39,7 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // contact and meshtying results
   writer_->WriteResult("activeset", "activeset", nodebased, 1);
+  writer_->WriteResult("contactowner", "contactowner", nodebased, 1);
   writer_->WriteResult(
       "norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
   writer_->WriteResult(
@@ -464,6 +465,9 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("ionic_current_hdg_1", "ionic_current_1", elementbased, 1);
   writer_->WriteResult("ionic_current_hdg_2", "ionic_current_2", elementbased, 1);
   writer_->WriteResult("ionic_current_hdg_3", "ionic_current_3", elementbased, 1);
+
+  // oxygen output for poromultiphase-scatra problems with artery coupling
+  writer_->WriteResult("oxypartpress", "oxypartpress", nodebased, 1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

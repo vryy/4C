@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
-/**
+/*!
 \file so_sh8.H
 \brief solid shell8 element formulation
 
-<pre>
 \maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+
 \level 1
 */
 /*----------------------------------------------------------------------*/
@@ -305,11 +301,6 @@ namespace DRT
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
           LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const;
 
-      /** \brief Evaluate the determinant of the current jacobian at each element
-       *  corner and return the smallest value */
-      double sosh8_get_min_det_jac_at_corners(
-          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
-
       /** \brief Get the local B-operator */
       void sosh8_get_bop_loc(const unsigned gp,
           const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
@@ -324,9 +315,6 @@ namespace DRT
           const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
           const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_cur_sps, const double* r,
           const double* s, LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain) const;
-
-      void sosh8_error_handling(
-          const double& det_curr, Teuchos::ParameterList& params, const int line_id);
 
       void sosh8_get_deformationgradient(const unsigned gp,
           const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,

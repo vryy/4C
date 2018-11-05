@@ -60,6 +60,7 @@ namespace DRT
       struct_postprocess_stress,     //!< postprocess stresses
       struct_postprocess_thickness,  //!< postprocess thickness of membrane finite elements
       struct_update_prestress,
+      analyse_jacobian_determinant,  //!< analyze the Jacobian determinant of the element
       inversedesign_update,
       inversedesign_switch,
       multi_readrestart,      //!< multi-scale: read restart on microscale
@@ -149,6 +150,8 @@ namespace DRT
           return "struct_postprocess_thickness";
         case struct_update_prestress:
           return "struct_update_prestress";
+        case analyse_jacobian_determinant:
+          return "analyse_jacobian_determinant";
         case inversedesign_update:
           return "inversedesign_update";
         case inversedesign_switch:

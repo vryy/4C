@@ -59,7 +59,8 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writecouplstress_(INPAR::STR::stress_none),
       writestrain_(INPAR::STR::strain_none),
       writeplstrain_(INPAR::STR::strain_none),
-      writeoptquantity_(INPAR::STR::optquantity_none)
+      writeoptquantity_(INPAR::STR::optquantity_none),
+      conditionnumbertype_(INPAR::STR::ConditionNumber::none)
 {
   // empty constructor
 }
@@ -93,8 +94,12 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
     writejac2matlab_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
+    conditionnumbertype_ =
+        Teuchos::getIntegralValue<INPAR::STR::ConditionNumber>(ioparams, "STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
+    writecurrentelevolume_ =
+        (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
     writestress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
         DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
@@ -187,6 +192,14 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 
     energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
+{
+  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  return (GetWriteResultsEveryNStep() and step % GetWriteResultsEveryNStep() == 0);
 }
 
 /*----------------------------------------------------------------------------*

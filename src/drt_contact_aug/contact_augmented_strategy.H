@@ -22,6 +22,7 @@
 #include "contact_aug_enum_lists.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_singletondestruction.H"
+#include "contact_aug_timemonitor.H"
 
 // forward declaration
 namespace DRT
@@ -49,6 +50,7 @@ namespace CONTACT
     }  // namespace POTENTIAL
     class ComboStrategy;
     class ActiveSet;
+    class ParallelDistributionController;
 
     /*--------------------------------------------------------------------------*/
     class DataContainer : public ::CONTACT::AbstractStratDataContainer
@@ -176,6 +178,19 @@ namespace CONTACT
 
       CONTACT::AUG::Potential& MutablePotential() const { return *potentialPtr_; }
 
+      void SetPDController(
+          const Teuchos::RCP<CONTACT::AUG::ParallelDistributionController>& pd_control)
+      {
+        pd_control_ = pd_control;
+      }
+
+      CONTACT::AUG::ParallelDistributionController& PDController()
+      {
+        if (pd_control_.is_null()) dserror("ParallelDistributionController is not initialized!");
+
+        return *pd_control_;
+      }
+
       void SetMatrixRowColTransformer(
           const Teuchos::RCP<MORTAR::MatrixRowColTransformer>& transformer)
       {
@@ -215,6 +230,8 @@ namespace CONTACT
       {
         return grad_error_.jacobian_;
       }
+
+      Teuchos::RCP<Epetra_Vector>& GSeleEvalTimesPtr() { return gSeleEvalTimesPtr_; }
 
       //! @name Matrix accessors
       //! @{
@@ -487,6 +504,38 @@ namespace CONTACT
           dserror("The gAugOldActiveSlaveNodesPtr_ is not initialized!");
         return *gOldActiveSlaveNodesPtr_;
       }
+
+      Teuchos::RCP<Epetra_Map>& GSeleRowMapPtr() { return gSeleRowMapPtr_; }
+      Teuchos::RCP<const Epetra_Map> GSeleRowMapPtr() const { return gSeleRowMapPtr_; }
+      Epetra_Map& GSeleRowMap()
+      {
+        if (gSeleRowMapPtr_.is_null()) dserror("The gSeleRowMapPtr_ is not initialized!");
+        return *gSeleRowMapPtr_;
+      }
+
+      Teuchos::RCP<Epetra_Map>& GSeleColMapPtr() { return gSeleColMapPtr_; }
+      Teuchos::RCP<const Epetra_Map> GSeleColMapPtr() const { return gSeleColMapPtr_; }
+      Epetra_Map& GSeleColMap()
+      {
+        if (gSeleColMapPtr_.is_null()) dserror("The gSeleColMapPtr_ is not initialized!");
+        return *gSeleColMapPtr_;
+      }
+
+      Teuchos::RCP<Epetra_Map>& GMeleRowMapPtr() { return gMeleRowMapPtr_; }
+      Teuchos::RCP<const Epetra_Map> GMeleRowMapPtr() const { return gMeleRowMapPtr_; }
+      Epetra_Map& GMeleRowMap()
+      {
+        if (gMeleRowMapPtr_.is_null()) dserror("The gMeleRowMapPtr_ is not initialized!");
+        return *gMeleRowMapPtr_;
+      }
+
+      Teuchos::RCP<Epetra_Map>& GMeleColMapPtr() { return gMeleColMapPtr_; }
+      Teuchos::RCP<const Epetra_Map> GMeleColMapPtr() const { return gMeleColMapPtr_; }
+      Epetra_Map& GMeleColMap()
+      {
+        if (gMeleColMapPtr_.is_null()) dserror("The gMeleColMapPtr_ is not initialized!");
+        return *gMeleColMapPtr_;
+      }
       //! @}
       //! @}
 
@@ -524,17 +573,26 @@ namespace CONTACT
       //! constant cn value from the input file
       double cn_;
 
+      /// access the current evaluation state of the contact strategy
       enum MORTAR::ActionType eval_state_;
 
+      /// defines the type of the parallel evaluation strategy
       enum INPAR::MORTAR::ParallelStrategy parallel_strategy_;
 
+      /// which variational approach shall be followed? (complete, incomplete, ...)
       enum INPAR::CONTACT::VariationalApproach var_type_;
 
+      /// global or gp/nodal finite difference check?
       enum INPAR::CONTACT::FDCheck fd_check_type_;
 
+      /// pointer to the potential object
       Teuchos::RCP<CONTACT::AUG::Potential> potentialPtr_;
 
+      /// row column parallel transformer for matrices
       Teuchos::RCP<MORTAR::MatrixRowColTransformer> mat_row_col_transformer_;
+
+      /// parallel redistribution controller
+      Teuchos::RCP<CONTACT::AUG::ParallelDistributionController> pd_control_;
 
       //! global matrix B-matrix (slave + master)
       Teuchos::RCP<LINALG::SparseMatrix> BMatrixPtr_;
@@ -608,21 +666,44 @@ namespace CONTACT
       //! global row map of all active slave nodes of the previous Newton step
       Teuchos::RCP<Epetra_Map> gOldActiveSlaveNodesPtr_;
 
+      /// global row map of all slave elements
+      Teuchos::RCP<Epetra_Map> gSeleRowMapPtr_;
+
+      /// global column map of all slave elements
+      Teuchos::RCP<Epetra_Map> gSeleColMapPtr_;
+
+      /// global row map of all master elements
+      Teuchos::RCP<Epetra_Map> gMeleRowMapPtr_;
+
+      /// global column map of all master elements
+      Teuchos::RCP<Epetra_Map> gMeleColMapPtr_;
+
+      /// global vector containing the evaluation times of the slave elements
+      Teuchos::RCP<Epetra_Vector> gSeleEvalTimesPtr_;
+
+      /// gradient error container
       struct GradError
       {
         GradError() = default;
         ~GradError() = default;
 
+        /// total error
         double total_ = 0.0;
+
+        /// error wrt to the master parametric projection variation
         std::vector<std::pair<int, double>> master_;
+
+        /// error due to the missing jacobian determinant variation
         std::vector<std::pair<int, double>> jacobian_;
       };
 
+      /// see container description
       GradError grad_error_;
 
       /// @name sub-data container
       /// @{
 
+      /// steepest ascent data container
       Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::DataContainer> sa_data_ptr_;
 
       /// @}
@@ -639,6 +720,7 @@ namespace CONTACT
        *  strategies and needs access to all methods. */
       friend class CONTACT::AUG::ComboStrategy;
 
+      friend class CONTACT::AUG::ParallelDistributionController;
       friend class CONTACT::AUG::ActiveSet;
 
      public:
@@ -651,11 +733,13 @@ namespace CONTACT
       //! Destructor
       virtual ~Strategy(){};
 
+      /// derived
       INPAR::CONTACT::SolvingStrategy Type() const override
       {
         return INPAR::CONTACT::solution_augmented;
       }
 
+      /// derived
       bool IsSaddlePointSystem() const override;
 
       //! reset active set convergence flags
@@ -828,9 +912,11 @@ namespace CONTACT
       //! @name merit function methods
       //! @{
 
+      /// return the potential function value
       double GetPotentialValue(
           const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const override;
 
+      /// return the desired contributions to the linear model of the potential function
       double GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
           const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
@@ -857,30 +943,43 @@ namespace CONTACT
       void SplitStateVector(const Epetra_Vector& full_state, Epetra_Vector& displ_state_slma,
           Epetra_Vector& z_state_active, Epetra_Vector& z_state_inactive) const;
 
-      Teuchos::RCP<Epetra_Vector> EnforceNodalComplementarityCondition(
-          std::vector<double>& interface_cn, const Epetra_Vector& dincr_slma) const;
-
      protected:
-      virtual double InactiveScaleFactor() const { return 0.5; }
-
-      void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
-
-      void SetCurrentEvalState(const CONTACT::ParamsInterface& cparams);
-
+      /// helper function to access the right model terms
       double GetLinearizedPotentialModelTerms(const Epetra_Vector& dir,
           const enum POTENTIAL::Type pottype, const enum POTENTIAL::SetType potset,
           const enum NOX::NLN::MeritFunction::LinOrder linorder,
           const enum NOX::NLN::MeritFunction::LinType lintype) const;
 
+      /// helper function to access the correct 1st order derivative model terms
       void GetLinearizedPotentialModelTerms_1stOrder(const enum POTENTIAL::Type pottype,
           const enum POTENTIAL::SetType potset, const enum NOX::NLN::MeritFunction::LinType lintype,
           double& linval) const;
 
+      // helper function to access the correct 2nd order derivative model terms
       void GetLinearizedPotentialModelTerms_2ndOrder(const enum POTENTIAL::Type pottype,
           const enum POTENTIAL::SetType potset, const enum NOX::NLN::MeritFunction::LinType lintype,
           double& linval) const;
       //! @}
 
+      /// return the scaling factor for the inactive part
+      virtual double InactiveScaleFactor() const { return 0.5; }
+
+      /// derived
+      void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec) override;
+
+      /// set current evaluation state in the \c cparams object
+      void SetCurrentEvalState(const CONTACT::ParamsInterface& cparams);
+
+      /// perform parallel distribution check
+      void CheckParallelDistribution(const GlobalTimeMonitor& global_timer);
+
+      /// handle dynamic redistribution of the contact interface elements
+      bool DynRedistributeContact(
+          const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter) override;
+
+      /** spread the global evaluation times of the slave elements to the different
+       *  contact interfaces */
+      void SpreadGlobalSeleEvalTimesToInterfaces();
 
       /*! \brief Update routine called at the end of a load/time step [derived]
        *
@@ -901,12 +1000,16 @@ namespace CONTACT
        *   assembled over all interfaces. */
       void AssembleGlobalSlNTDofRowMaps();
 
+      /// assemble global element maps
+      void AssembleGlobalEleMaps();
+
       /*! \brief Setup the cn-vector
        *
        *  We allow theoretically different cn values for each node in the
        *  augmented Lagrangian  case. */
       void InitializeCn(const double cn_init);
 
+      /// redistribute the cn vector
       void RedistributeCn();
 
       /*! \brief Initialize and evaluate augmented Mortar stuff for the next Newton step
@@ -985,16 +1088,6 @@ namespace CONTACT
       //! Check linear and angular momentum conservation
       void CheckConservationLaws(CONTACT::ParamsInterface& cparams);
 
-      //! \brief adapt the cn-value (optional)
-      /** The adaptive cn routine is in addition to the default regularization
-       *  parameter correction. Think of an meaningful initial choice of the
-       *  regularization parameter for example.
-       *
-       * \param(in) cparams  Contact parameter interface
-       *
-       *  \author hiermeier \date 03/18 */
-      virtual void AdaptiveCn(CONTACT::ParamsInterface& cparams);
-
       //! Finite Difference check of the augmented Lagrange terms at GP level
       void AugFDCheckGP(CONTACT::ParamsInterface& cparams);
 
@@ -1008,33 +1101,48 @@ namespace CONTACT
       class FD_Debug : public DRT::SingletonDestruction
       {
        public:
+        /// singleton creation
         static FD_Debug* Instance(
             Strategy* strat, const double delta = 1.0e-8, const bool delete_me = false);
 
+        /// delete singleton pointer
         virtual void Done();
 
+        /// perform the FD evaluate calls
         void Evaluate(const Teuchos::RCP<LINALG::SparseMatrix>& derivMatrixPtr,
             Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams);
 
        private:
+        /// constructor
         FD_Debug() : strat_(NULL), delta_(0.0), is_fd_check_(false)
         { /*empty*/
         }
 
+        /// destructor
         ~FD_Debug(){};
 
+        /// initialize this object
         void Init(Strategy* strat, const double delta = 1.0e-8);
 
+        /// apply the perturbation
         void DoPerturbation(const int gid, const int dof);
 
+        /// undo the perturbation
         void UndoPerturbation(const int gid, const int dof) const;
 
         DRT::Node* FindINode(const int gid) const;
 
        private:
+        /// call back to the wrapping strategy
         Strategy* strat_;
+
+        /// finite difference delta
         double delta_;
+
+        /// avoid recursive calls
         bool is_fd_check_;
+
+        /// reference values to undo a previous perturbation
         std::map<int, LINALG::Matrix<3, 1>> ref_x_;
       };
       //@}
@@ -1072,10 +1180,13 @@ namespace CONTACT
        *  \author hiermeier \date 04/17 */
       void PostEvalForce(CONTACT::ParamsInterface& cparams);
 
+      /// evaluate augmented forces w.r.t. Lagrange multiplier and weighted gap
       void EvalAugmentedForces();
 
+      /// evaluate only the forces originating from the weight gap values
       void EvalConstraintForces();
 
+      /// set all lm forces to zero
       void ZeroizeLMForces();
 
       /*! \brief Compute force and stiffness terms
@@ -1087,6 +1198,7 @@ namespace CONTACT
        *  \author hiermeier */
       void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
+      /// evaluate only all contributions corresponding to the weighted gap
       void EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams) override;
 
       /*! \brief Run in the end of a call to EvalForceStiff
@@ -1197,7 +1309,7 @@ namespace CONTACT
        *  ROW => Lagrange Multiplier, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      void AddContributionsToMatrixBlockLmLm(LINALG::SparseMatrix& kzz) const;
+      virtual void AddContributionsToMatrixBlockLmLm(LINALG::SparseMatrix& kzz) const;
 
      protected:
       /*! \brief Get access to the internal data container of the strategy (mutable)
@@ -1312,9 +1424,11 @@ namespace CONTACT
 
     };  // class Strategy
 
+    /// compute the l2-error of the values in the \c error_map
     void L2ErrorNormPerNode(const std::unordered_map<int, Deriv1stMap>& error_map,
         std::vector<std::pair<int, double>>& error_norm_per_node);
 
+    /// return the sum of all squared errors in \c error_map_vec
     double MyTotalSquareError(
         const std::unordered_map<int, Deriv1stMap>* const* error_map_vec, const unsigned num_vecs);
 
@@ -1342,7 +1456,7 @@ namespace CONTACT
      *
      *  The routine does exactly the same as
      *  \f[
-     *                    target = diag(source) * target.
+     *                    target = diag(source) \cdot target.
      *  \f]
      *
      *  \author hiermeier */

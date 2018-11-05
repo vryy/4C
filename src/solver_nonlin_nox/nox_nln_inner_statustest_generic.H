@@ -38,7 +38,7 @@ namespace NOX
           class Required;
         }  // namespace Interface
 
-        enum StatusType
+        enum StatusType : int
         {
           //! Unevaluated
           status_unevaluated = -4,

@@ -34,7 +34,7 @@ using namespace DRT::UTILS;
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
+    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
@@ -51,14 +51,14 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     {
       return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
           ->Evaluate(
-              this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
+              this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
     case ARTERY::calc_scatra_sys_matrix_rhs:
     {
       return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
-          ->ScatraEvaluate(
-              this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
+          ->ScatraEvaluate(this, params, discretization, la[0].lm_, elemat1, elemat2, elevec1,
+              elevec2, elevec3, mat);
       break;
     }
     case ARTERY::get_initial_artery_state:
@@ -72,8 +72,8 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     case ARTERY::evaluate_scatra_analytically:
     {
       return DRT::ELEMENTS::ArtNetFactory::ProvideImpl(Shape(), impltype_, discretization.Name())
-          ->EvaluateService(this, action, params, discretization, lm, elemat1, elemat2, elevec1,
-              elevec2, elevec3, mat);
+          ->EvaluateService(this, action, params, discretization, la[0].lm_, elemat1, elemat2,
+              elevec1, elevec2, elevec3, mat);
     }
     break;
     default:

@@ -136,7 +136,9 @@ int CONTACT::AUG::NodeDataContainer::ApproximateMEntries(
     const int slMaElementAreaRatio, const bool isTriangleOnMaster) const
 {
   // number of adjacent slave elements
-  const int numSlEle = parentNode_.NumElement();
+  // The max function catches the rare case of a pure ghost node, i.e. the node
+  // belongs to a different proc than all surrounding elements/nodes on this proc
+  const int numSlEle = std::max(parentNode_.NumElement(), 1);
 
   // numSlEle slave elements project approximately into numMaEle if there is no
   // off-set
@@ -841,6 +843,12 @@ void CONTACT::CoNode::InitializeDataContainer()
       }
       linsize_ += numdof;
     }
+  }
+  // set a minimal number for pure ghost nodes
+  if (NumElement() == 0)
+  {
+    dentries_ = 3;
+    linsize_ = 3;
   }
 
   // only initialize if not yet done

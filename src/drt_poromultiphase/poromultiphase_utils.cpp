@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -29,6 +29,8 @@
 #include "../drt_inpar/inpar_bio.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
+
+#include "../drt_poromultiphase_scatra/poromultiphase_scatra_artery_coupling_defines.H"
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
@@ -58,9 +60,9 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Co
             problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
-    // curr_ele_length: defined as element-wise quantity
+    // curr_seg_lengths: defined as element-wise quantity
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, 1, 0, false));
+    dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, MAXNUMSEGPERELE, 0, false));
     // add it to artery discretization
     arterydis->AddDofSet(dofsetaux);
 
@@ -71,10 +73,8 @@ void POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(const Epetra_Co
       {
         // if we have a PoroMultiphaseScatra-Problem, we can only ghost after defining all
         // DofSets -> done in poromultiphase_scatra_utils.cpp
-        bool ghost_artery = true;
-        if (problem->ProblemType() == prb_poromultiphasescatra) ghost_artery = false;
-        // redistribute discretizations
-        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(structdis, arterydis, ghost_artery);
+        if (problem->ProblemType() != prb_poromultiphasescatra)
+          POROFLUIDMULTIPHASE::UTILS::GhostArteryDiscretizationOnAllProcs(arterydis);
         break;
       }
       default:

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
-/**
+/*!
 \file any_data_container.H
 
 \brief Any data container based on vectors of Teuchos::any data.
 
 \maintainer Michael Hiermeier
 
-\level 3
+\level 1
 */
 /*----------------------------------------------------------------------*/
 
@@ -17,6 +17,15 @@
 #include "../drt_lib/drt_dserror.H"
 #include <unordered_map>
 
+// forward declaration
+namespace CONTACT
+{
+  namespace AUG
+  {
+    template <typename enum_class>
+    class TimeMonitor;
+  }  // namespace AUG
+}  // namespace CONTACT
 
 namespace GEN
 {
@@ -43,16 +52,25 @@ namespace GEN
     template <typename... Ts>
     using Vec = std::vector<Ts...>;
 
+    //! alias for the time monitor
+    template <typename... Ts>
+    using TimeMonitor = CONTACT::AUG::TimeMonitor<Ts...>;
+
     //! @}
 
+    /// internal data container
     struct AnyData
     {
+      /// default constructor
       AnyData() = default;
 
+      /// copy constructor
       AnyData(const Teuchos::any& data) : data_(data){/* empty */};
 
+      /// destructor
       ~AnyData() = default;
 
+      /// accessor
       const Teuchos::any& get() const
       {
         if (data_.empty()) dserror("The data is empty!");
@@ -60,27 +78,42 @@ namespace GEN
         return data_;
       }
 
+      /// set any data and perform a sanity check
       template <typename T>
       void set(const T& data)
       {
-        data_ = data;
+        if (data_.empty())
+          data_ = data;
+        else
+          dserror(
+              "There are already data:\n%s\nAre you sure, that you want "
+              "to overwrite them? If yes: Clear the content first. Best practice "
+              "is to clear the content right after you finished the "
+              "respective task.",
+              data_.typeName().c_str());
       }
 
      private:
+      /// actual stored data (of any type)
       Teuchos::any data_;
     };
 
    public:
+    /// supported (more specific) data types
     enum class DataType
     {
       vague,
       any,
       vector,
-      unordered_map
+      unordered_map,
+      time_monitor
     };
 
    public:
+    /// constructor
     AnyDataContainer() = default;
+
+    /// destructor
     ~AnyDataContainer() = default;
 
     /// @name any data
@@ -152,9 +185,34 @@ namespace GEN
 
     /// @}
 
+    /// @name Time monitoring
+    /// @{
+
+    template <typename... Ts>
+    void SetTimer(const CONTACT::AUG::TimeMonitor<Ts...>* timer, const unsigned id = 0)
+    {
+      SetData<TimeMonitor<Ts...>, DataType::time_monitor>(timer, id);
+    }
+
+    template <typename... Ts>
+    TimeMonitor<Ts...>* GetTimer(const unsigned id = 0)
+    {
+      return const_cast<TimeMonitor<Ts...>*>(
+          GetData<TimeMonitor<Ts...>, DataType::time_monitor>(id));
+    }
+
+    template <typename... Ts>
+    const TimeMonitor<Ts...>* GetTimer(const unsigned id = 0) const
+    {
+      return GetData<TimeMonitor<Ts...>, DataType::time_monitor>(id);
+    }
+
+    /// @}
+
     /// @name general methods
     /// @{
 
+    /// clear an entry in the respective container
     void ClearEntry(const DataType type, const int id)
     {
       switch (type)
@@ -171,6 +229,18 @@ namespace GEN
 
           break;
         }
+        case DataType::time_monitor:
+        {
+          Clear(time_monitor_data_, id);
+
+          break;
+        }
+        case DataType::any:
+        {
+          Clear(any_data_, id);
+
+          break;
+        }
         default:
         {
           dserror("Unsupported DataType!");
@@ -179,29 +249,31 @@ namespace GEN
       }
     }
 
+    // clear all entries in the respective container
     void ClearAll(const DataType type) { ClearEntry(type, -1); }
 
     /// @}
 
    private:
+    /// helper function to clear content
     void Clear(std::vector<AnyData>& any_data_vec, const int id)
     {
       // clear all entries
       if (id < 0)
       {
-        any_data_vec.clear();
+        for (auto& any_data : any_data_vec) any_data = Teuchos::any();
+
         return;
       }
 
+      // direct return if the id exceeds the vector size
+      if (id >= static_cast<int>(any_data_vec.size())) return;
+
       // clear only one entry
-      if (id >= static_cast<int>(any_data_vec.size()))
-        dserror("Requested ID #%d exceeds the AnyData vector size (=%d).", id, any_data_vec.size());
-      else if (id == (static_cast<int>(any_data_vec.size()) - 1))
-        any_data_vec.pop_back();
-      else
-        any_data_vec[id] = Teuchos::any();
+      any_data_vec[id] = Teuchos::any();
     }
 
+    /// pack and set the data pointer
     template <typename T, DataType type>
     void SetData(const T* data, const unsigned id)
     {
@@ -209,6 +281,7 @@ namespace GEN
       SetAnyData<type>(any_data, id);
     }
 
+    /// set the data in the respective container
     template <DataType type>
     void SetAnyData(const Teuchos::any& any_data, const unsigned id)
     {
@@ -226,6 +299,12 @@ namespace GEN
 
           break;
         }
+        case DataType::time_monitor:
+        {
+          AddToAnyDataVec(any_data, id, time_monitor_data_);
+
+          break;
+        }
         case DataType::any:
         {
           AddToAnyDataVec(any_data, id, any_data_);
@@ -237,6 +316,7 @@ namespace GEN
       }
     }
 
+    /// access the data and cast the any pointer
     template <typename T, DataType type>
     const T* GetData(const unsigned id) const
     {
@@ -247,6 +327,7 @@ namespace GEN
       return Teuchos::any_cast<const T*>(any_data);
     }
 
+    /// access the data
     template <DataType type>
     const Teuchos::any& GetAnyData(const unsigned id) const
     {
@@ -260,6 +341,10 @@ namespace GEN
         {
           return GetFromAnyDataVec(id, unordered_map_data_);
         }
+        case DataType::time_monitor:
+        {
+          return GetFromAnyDataVec(id, time_monitor_data_);
+        }
         case DataType::any:
         {
           return GetFromAnyDataVec(id, any_data_);
@@ -272,6 +357,7 @@ namespace GEN
       }
     }
 
+    /// add to any data vector
     void AddToAnyDataVec(
         const Teuchos::any& any_data, const unsigned id, std::vector<AnyData>& any_data_vec) const
     {
@@ -281,6 +367,7 @@ namespace GEN
       data_id.set(any_data);
     }
 
+    /// access content of any data vector
     inline const Teuchos::any& GetFromAnyDataVec(
         const unsigned id, const std::vector<AnyData>& any_data_vec) const
     {
@@ -291,10 +378,16 @@ namespace GEN
     }
 
    private:
+    /// specific container for vector data
     std::vector<AnyData> vector_data_;
 
+    /// specific container for unordered map data
     std::vector<AnyData> unordered_map_data_;
 
+    /// specific container for time monitor data
+    std::vector<AnyData> time_monitor_data_;
+
+    /// container for any data
     std::vector<AnyData> any_data_;
   };
 }  // namespace GEN

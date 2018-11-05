@@ -21,6 +21,7 @@
 #include "str_predict_generic.H"
 #include "str_nln_solver_generic.H"
 #include "str_timint_noxinterface.H"
+#include "str_utils.H"
 
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
@@ -518,4 +519,87 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
 
   // print sparsity pattern to file
   //  LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::ComputeConditionNumber(const NOX::NLN::Group& grp) const
+{
+  std::string name_prefix;
+
+  double max_rev = -1.0;
+  double min_rev = -1.0;
+
+  const INPAR::STR::ConditionNumber cond_type = GetDataIO().ConditionNumberType();
+  switch (cond_type)
+  {
+    case INPAR::STR::ConditionNumber::gmres_estimate:
+    {
+      const_cast<NOX::NLN::Group&>(grp).computeJacobianConditionNumber(1000, 1.0e-3, 1000, true);
+
+      name_prefix = "gmres_estimated_";
+
+      break;
+    }
+    case INPAR::STR::ConditionNumber::max_min_ev_ratio:
+    case INPAR::STR::ConditionNumber::one_norm:
+    case INPAR::STR::ConditionNumber::inf_norm:
+    {
+      const NOX::NLN::LinSystem::ConditionNumber nox_cond_type =
+          STR::NLN::Convert2NoxConditionNumberType(cond_type);
+      const std::string nox_cond_type_str(
+          NOX::NLN::LinSystem::ConditionNumber2String(nox_cond_type));
+
+      const_cast<NOX::NLN::Group&>(grp).computeSerialJacobianConditionNumber(nox_cond_type, true);
+
+      name_prefix = nox_cond_type_str + "_";
+
+      if (cond_type == INPAR::STR::ConditionNumber::max_min_ev_ratio)
+      {
+        max_rev = grp.getJacobianMaxRealEigenvalue();
+        min_rev = grp.getJacobianMinRealEigenvalue();
+      }
+
+      break;
+    }
+    case INPAR::STR::ConditionNumber::none:
+      return;
+    default:
+      dserror("Unknown ConditionNumber type!");
+      exit(EXIT_FAILURE);
+  }
+
+  const double cond_num = grp.getJacobianConditionNumber();
+
+  // create file name
+  std::stringstream filebase;
+
+  const int iter = nlnsolver_ptr_->GetNumNlnIterations();
+  filebase << "str_" << name_prefix << "condition_number_step-" << GetDataGlobalState().GetStepNp();
+
+  std::stringstream filename;
+  filename << GetDataIO().GetOutputPtr()->Output()->FileName() << "_" << filebase.str() << ".data";
+
+  if (GetDataGlobalState().GetMyRank() == 0)
+  {
+    static bool first_execution = true;
+
+    std::cout << "Writing structural condition number to \"" << filename.str() << "\"\n";
+
+    if (first_execution)
+    {
+      // clear the file and write the header
+      std::ofstream of(filename.str(), std::ios_base::out);
+      of << std::setw(24) << "iter" << std::setw(24) << "cond" << std::setw(24) << "max_rev"
+         << std::setw(24) << "min_rev\n";
+      of.close();
+      first_execution = false;
+    }
+
+    std::ofstream of(filename.str(), std::ios_base::out | std::ios_base::app);
+    of << std::setw(24) << iter << std::setprecision(16);
+    of << std::setw(24) << std::scientific << cond_num << std::setw(24) << std::scientific
+       << max_rev << std::setw(24) << std::scientific << min_rev << "\n";
+    of.close();
+  }
 }

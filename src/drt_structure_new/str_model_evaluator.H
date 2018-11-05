@@ -292,7 +292,13 @@ namespace STR
     /*! \brief Executed at the end of the NOX::Solver::Step() (f.k.a. Iterate()) method
      *
      *  \author hiermeier \date 03/17 */
-    void RunPostIterate(
+    void RunPostIterate(const NOX::Solver::Generic& solver, const double step,
+        const bool isdefaultstep, const int num_corrs) const;
+
+    /*! \brief Executed at the beginning of the NOX::Solver::solve() method
+     *
+     *  \author hiermeier */
+    void RunPreSolve(
         const NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const;
 
     /*! \brief Executed at the end of the NOX::NLN::Group::applyJacobianInverse

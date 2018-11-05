@@ -16,6 +16,10 @@
  *----------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"
+#include "Sacado.hpp"
+
+// define Fad object for evaluation
+typedef Sacado::Fad::DFad<double> FAD;
 
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_FUNCTION_H_
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_FUNCTION_H_
@@ -206,7 +210,7 @@ namespace POROMULTIPHASESCATRA
     bool order_checked_;
   };
 
-  // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:
+  //! standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:
   // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | TUMOR_GROWTH_LAW_HEAVISIDE | |
   // (gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)*porosity*S2
@@ -273,7 +277,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants);
   };
 
-  // standard necrosis law for tumor growth model:
+  //! standard necrosis law for tumor growth model:
   // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | NECROSIS_LAW_HEAVISIDE | |
   // (1-phi2)*porosity*S2*(-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+
@@ -338,7 +342,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants);
   };
 
-  // standard oxygen consumption law for tumor growth model:
+  //! standard oxygen consumption law for tumor growth model:
   // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | OXYGEN_CONSUMPTION_LAW_HEAVISIDE | |
   // porosity*(1-phi2)*S2*(gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+
@@ -403,8 +407,8 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants);
   };
 
-  // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced
-  // into balance of mass of oxygen:
+  //! standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced
+  //! into balance of mass of oxygen:
   // +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | TUMOR_GROWTH_LAW_HEAVISIDE_OXY | | phi1*S2*porosity*((
   // gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)-
@@ -468,8 +472,8 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants);
   };
 
-  // standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced
-  // into balance of mass of necrotic cells:
+  //! standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as introduced
+  //! into balance of mass of necrotic cells:
   // +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
   // | TUMOR_GROWTH_LAW_HEAVISIDE_NECRO | | porosity*S2*(((
   // gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)
@@ -531,6 +535,124 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants);
+  };
+
+  //! transvascular exchange of oxygen from neovasculature into interstitial fluid based on
+  //! Welter M, Fredrich T, Rinneberg H, Rieger H (2016) Computational Model for Tumor Oxygenation
+  //! Applied to Clinical Data on Breast Tumor Hemoglobin Concentrations Suggests Vascular
+  //! Dilatation and Compression. PLoS ONE 11(8)
+  class OxygenTransvascularExchangeLawCont : public PoroMultiPhaseScaTraFunction
+  {
+   public:
+    /*!
+
+
+    \brief Default constructor creating empty object. Add the function parameters (read from the
+    input file) to the function
+
+    */
+    OxygenTransvascularExchangeLawCont(std::vector<std::pair<std::string, double>> funct_params);
+
+    /*!
+
+    \brief evaluate function for a given set of variables
+
+    \param index    (i)  For vector-valued functions, index defines the
+                         function-component which should be evaluated
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+    /*!
+
+    \brief  at given position in space for a given set of variables and constants
+
+    \param index    (i)  For vector-valued functions, index defines the
+                         function-component which should be evaluated
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+    std::vector<double> EvaluateDerivative(int index,
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+    /*!
+
+    \brief  check for correct order of input parameters variables and constants
+            this check is performed only once
+
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+  };
+
+  //! transvascular exchange of oxygen from pre-existing (1D) vasculature into interstitial fluid
+  //! based on
+  //! Welter M, Fredrich T, Rinneberg H, Rieger H (2016) Computational Model for Tumor
+  //! Oxygenation Applied to Clinical Data on Breast Tumor Hemoglobin Concentrations Suggests
+  //! Vascular Dilatation and Compression. PLoS ONE 11(8)
+  class OxygenTransvascularExchangeLawDisc : public PoroMultiPhaseScaTraFunction
+  {
+   public:
+    /*!
+
+    \brief Default constructor creating empty object. Add the function parameters (read from the
+    input file) to the function
+
+    */
+    OxygenTransvascularExchangeLawDisc(std::vector<std::pair<std::string, double>> funct_params);
+
+    /*!
+
+    \brief evaluate function for a given set of variables
+
+    \param index    (i)  For vector-valued functions, index defines the
+                         function-component which should be evaluated
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+    double Evaluate(const int index, const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+    /*!
+
+    \brief  at given position in space for a given set of variables and constants
+
+    \param index    (i)  For vector-valued functions, index defines the
+                         function-component which should be evaluated
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+    std::vector<double> EvaluateDerivative(int index,
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+    /*!
+
+    \brief  check for correct order of input parameters variables and constants
+            this check is performed only once
+
+    \param variables (i) A vector containing a pair (variablename, value) for each variable
+    \param constants (i) A vector containing a pair (variablename, value) for each constant
+
+    */
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants);
+
+   private:
+    int pos_oxy_art_;
+    int pos_diam_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

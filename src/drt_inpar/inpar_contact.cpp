@@ -63,12 +63,12 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("STRATEGY", "LagrangianMultipliers",
       "Type of employed solving strategy",
       tuple<std::string>("LagrangianMultipliers", "lagrange", "Lagrange", "PenaltyMethod",
-          "penalty", "Penalty", "UzawaAugementedLagrange", "Uzawa", "Augmented", "SteepestAscent",
+          "penalty", "Penalty", "Uzawa", "Augmented", "SteepestAscent", "SteepestAscent_SP",
           "StdLagrange", "Combo", "XContact", "Nitsche", "Ehl"),
       tuple<int>(solution_lagmult, solution_lagmult, solution_lagmult, solution_penalty,
-          solution_penalty, solution_penalty, solution_uzawa, solution_uzawa, solution_augmented,
-          solution_steepest_ascent, solution_std_lagrange, solution_combo, solution_xcontact,
-          solution_nitsche, solution_ehl),
+          solution_penalty, solution_penalty, solution_uzawa, solution_augmented,
+          solution_steepest_ascent, solution_steepest_ascent_sp, solution_std_lagrange,
+          solution_combo, solution_xcontact, solution_nitsche, solution_ehl),
       &scontact);
 
   setStringToIntegralParameter<int>("SYSTEM", "Condensed", "Type of linear system setup / solution",
@@ -189,36 +189,38 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "Type of employed assemble strategy", tuple<std::string>("node_based"),
       tuple<int>(assemble_node_based), &augcontact);
 
-  setStringToIntegralParameter<FDCheck>("FD_CHECK", "off", "Plot mode.",
+  setStringToIntegralParameter<FDCheck>("FD_CHECK", "off",
+      "Switch finite difference check on and off.",
       tuple<std::string>("off", "global", "gauss_point"),
       tuple<FDCheck>(FDCheck::off, FDCheck::global, FDCheck::gauss_point), &augcontact);
+
+  IntParameter("PARALLEL_REDIST_INTERVAL", -1,
+      "Specifies the Newton iteration interval in which the parallel "
+      "redistribution is controlled. An interval value equal to or smaller than "
+      "zero disables the dynamic redistribution control mechanism during the Newton"
+      " iteration.",
+      &augcontact);
 
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/SteepestAscent"
   Teuchos::ParameterList& sacontact = augcontact.sublist("STEEPESTASCENT");
-
-  DoubleParameter("CN_UPPER_BOUND", std::numeric_limits<double>::max(),
-      "Upper bound for the cn value. Used during the dynamic cn update.", &sacontact);
 
   DoubleParameter("CORRECTION_PARAMETER", 0.0,
       "Some penalty update methods use a user-specified correction parameter, "
       "which accelerates the convergence. This parameter can be specified here.",
       &sacontact);
 
-  DoubleParameter("UNIT_GAP_FORCE_SCALE", 1.0,
-      "This parameter is optional and "
-      "can be used to scale the unit gap force in the case of an initial "
-      "Neumann boundary condition. It is used to compute an estimate for the"
-      "necessary initial regularization parameter.",
+  DoubleParameter("DECREASE_CORRECTION_PARAMETER", 1.0,
+      "Some penalty update methods use a user-specified decrease correction "
+      "parameter, which can be used to initiate a decrease of the "
+      "regularization parameter in cumbersome situations.",
       &sacontact);
 
   setStringToIntegralParameter<PenaltyUpdate>("PENALTY_UPDATE", "Vague",
       "Which kind of "
       "penalty update should be used?",
-      tuple<std::string>("Vague", "LMGapRatio", "Complementarity", "SufficientLinearReduction",
-          "SufficientAngle", "None"),
-      tuple<PenaltyUpdate>(PenaltyUpdate::vague, PenaltyUpdate::lm_gap_ratio,
-          PenaltyUpdate::complementarity, PenaltyUpdate::sufficient_lin_reduction,
+      tuple<std::string>("Vague", "SufficientLinearReduction", "SufficientAngle", "None"),
+      tuple<PenaltyUpdate>(PenaltyUpdate::vague, PenaltyUpdate::sufficient_lin_reduction,
           PenaltyUpdate::sufficient_angle, PenaltyUpdate::none),
       &sacontact);
 
@@ -229,18 +231,26 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("STRATEGY_0", "Vague",
       "Type of"
       " first solving strategy",
-      tuple<std::string>("Vague", "Augmented", "StdLagrange", "SteepestAscent"),
-      tuple<int>(
-          solution_vague, solution_augmented, solution_std_lagrange, solution_steepest_ascent),
+      tuple<std::string>(
+          "Vague", "Augmented", "StdLagrange", "SteepestAscent", "SteepestAscent_SP"),
+      tuple<int>(solution_vague, solution_augmented, solution_std_lagrange,
+          solution_steepest_ascent, solution_steepest_ascent_sp),
       &combo_contact);
 
   setStringToIntegralParameter<int>("STRATEGY_1", "Vague",
       "Type of"
       " second solving strategy",
-      tuple<std::string>("Vague", "Augmented", "StdLagrange", "SteepestAscent"),
-      tuple<int>(
-          solution_vague, solution_augmented, solution_std_lagrange, solution_steepest_ascent),
+      tuple<std::string>(
+          "Vague", "Augmented", "StdLagrange", "SteepestAscent", "SteepestAscent_SP"),
+      tuple<int>(solution_vague, solution_augmented, solution_std_lagrange,
+          solution_steepest_ascent, solution_steepest_ascent_sp),
       &combo_contact);
+
+  IntParameter("LINEAR_SOLVER_STRATEGY_0", -1,
+      "Linear solver for STRATEGY_0 of the COMBO strategy.", &combo_contact);
+
+  IntParameter("LINEAR_SOLVER_STRATEGY_1", -1,
+      "Linear solver for STRATEGY_1 of the COMBO strategy.", &combo_contact);
 
   setStringToIntegralParameter<int>("SWITCHING_STRATEGY", "PreAsymptotic",
       "Type of"
@@ -276,11 +286,12 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   IntParameter("OUTPUT_PRECISION", 16, "Precision for scientific numbers.", &plot_contact);
 
   setStringToIntegralParameter<PlotSupportType>("X_TYPE", "vague",
-      "Support type "
-      "for the x-direction.",
-      tuple<std::string>("vague", "step_length", "characteristic_element_length", "position_angle"),
+      "Support type for the x-direction.",
+      tuple<std::string>("vague", "step_length", "characteristic_element_length", "position_angle",
+          "position_distance"),
       tuple<PlotSupportType>(PlotSupportType::vague, PlotSupportType::step_length,
-          PlotSupportType::characteristic_element_length, PlotSupportType::position_angle),
+          PlotSupportType::characteristic_element_length, PlotSupportType::position_angle,
+          PlotSupportType::position_distance),
       &plot_contact);
 
   DoubleParameter("MIN_X", 1.0, "", &plot_contact);

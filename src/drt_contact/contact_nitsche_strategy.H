@@ -60,9 +60,6 @@ namespace CONTACT
 
     virtual bool IsCondensedSystem() const { return false; }
 
-    void Evaluate(CONTACT::ParamsInterface& cparams,
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec);
-
     virtual void Integrate(CONTACT::ParamsInterface& cparams);
 
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
@@ -189,6 +186,20 @@ namespace CONTACT
     {
       return interface_;
     }
+
+    /// derived
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+
+    /// derived
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+
+    /// derived
+    void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+        const Epetra_Vector& xnew) override;
+
+    /// derived
+    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     // fill RHS vector of block
     virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(

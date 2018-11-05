@@ -18,8 +18,20 @@
 #define STR_SOLVER_FACTORY_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_inpar/inpar_structure.H"
 
+// forward declarations...
+namespace INPAR
+{
+  namespace STR
+  {
+    enum ModelType : int;
+  }
+  namespace CONTACT
+  {
+    enum SolvingStrategy : int;
+    enum SystemType : int;
+  }  // namespace CONTACT
+}  // namespace INPAR
 namespace LINALG
 {
   class Solver;
@@ -57,6 +69,11 @@ namespace STR
           const std::set<enum INPAR::STR::ModelType>& modeltypes,
           const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis) const;
 
+      //! create the meshtying/contact linear solver
+      static Teuchos::RCP<LINALG::Solver> BuildMeshtyingContactLinSolver(
+          DRT::DiscretizationInterface& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
+          enum INPAR::CONTACT::SystemType sys_type, const int lin_solver_id);
+
      private:
       //! create the structural linear solver (should be called by default)
       Teuchos::RCP<LINALG::Solver> BuildStructureLinSolver(
@@ -64,7 +81,7 @@ namespace STR
 
       //! create the meshtying/contact linear solver
       Teuchos::RCP<LINALG::Solver> BuildMeshtyingContactLinSolver(
-          const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis) const;
+          DRT::DiscretizationInterface& actdis) const;
 
       //! create the Lagrange/penalty enforced constraint linear solver
       Teuchos::RCP<LINALG::Solver> BuildLagPenConstraintLinSolver(

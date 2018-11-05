@@ -138,6 +138,10 @@ namespace STR
     enum NOX::NLN::OptimizationProblemType OptimizationType(
         const std::vector<enum NOX::NLN::SolutionType>& soltypes);
 
+    /// convert structure condition number type to a nox condition number type
+    NOX::NLN::LinSystem::ConditionNumber Convert2NoxConditionNumberType(
+        const INPAR::STR::ConditionNumber stype);
+
     //! Set the constraint interfaces
     void CreateConstraintInterfaces(
         std::map<enum NOX::NLN::SolutionType,

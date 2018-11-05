@@ -24,6 +24,10 @@
 // forward declarations...
 class Epetra_Map;
 
+namespace LINALG
+{
+  class Solver;
+}
 namespace NOX
 {
   namespace NLN
@@ -75,6 +79,9 @@ namespace NOX
           //! Get necessary maps for the preconditioner.
           virtual void FillMapsForPreconditioner(
               std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
+
+          //! Get the corresponding linear solver (optional)
+          virtual LINALG::Solver* GetLinearSolver() const { return NULL; };
         };
       }  // namespace Interface
     }    // namespace CONSTRAINT

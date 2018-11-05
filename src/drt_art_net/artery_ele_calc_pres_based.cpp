@@ -90,10 +90,11 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+    Teuchos::RCP<MAT::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -105,7 +106,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(ele, discretization, lm, elemat1, elevec1, mat);
+  Sysmat(ele, discretization, la, elemat1, elevec1, mat);
 
   return 0;
 }
@@ -147,7 +148,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
-    DRT::Discretization& discretization, std::vector<int>& lm,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
     LINALG::Matrix<my::iel_, my::iel_>& sysmat, LINALG::Matrix<my::iel_, 1>& rhs,
     Teuchos::RCP<const MAT::Material> material)
 {
@@ -164,18 +165,19 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 
   // extract local values of pressure field from global state vector
   LINALG::Matrix<my::iel_, 1> mypress(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   double L;
   // get current element length
-  if (discretization.NumDofSets() > 1 && discretization.HasState(1, "curr_ele_length"))
+  if (discretization.NumDofSets() > 1 && discretization.HasState(1, "curr_seg_lengths"))
   {
-    Teuchos::RCP<const Epetra_Vector> curr_length = discretization.GetState(1, "curr_ele_length");
+    Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
+        discretization.GetState(1, "curr_seg_lengths");
+    std::vector<double> seglengths(la[1].lm_.size());
 
-    const int lid = curr_length->Map().LID(ele->Id());
-    if (lid < 0) dserror("Cannot find gid=%d in Epetra_Vector", ele->Id());
+    DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
 
-    L = (*curr_length)[lid];
+    L = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
   }
   else
     L = my::CalculateEleLength(ele);
