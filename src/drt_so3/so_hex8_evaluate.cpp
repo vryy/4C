@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_evaluate.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Evaluate routines for Solid Hex8 element
 
 \level 1
 

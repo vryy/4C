@@ -2,7 +2,7 @@
 /*!
 \file so_hex8fbar_evaluate.cpp
 
-\brief bla bla bla
+\brief Evaluate routines for Solid Hex8 element with F-bar modification
 
 \level 1
 
