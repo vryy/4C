@@ -28,7 +28,7 @@
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include "particle_interaction_particle_pair.H"
+#include "particle_interaction_sph_particle_pair.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                       sfuchs 08/2018 |
