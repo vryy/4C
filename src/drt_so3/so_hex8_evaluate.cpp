@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_evaluate.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Evaluate routines for Solid Hex8 element
 
 \level 1
 
@@ -989,7 +989,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
           {
             StrParamsInterface().SetEleEvalErrorFlag(
-                STR::ELEMENTS::ele_error_negative_def_gradient);
+                STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
             return 0;
           }
           else
@@ -1815,7 +1815,8 @@ int DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
     {
       if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
       {
-        StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+        StrParamsInterface().SetEleEvalErrorFlag(
+            STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
         return 1;
       }
       else
@@ -2217,7 +2218,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       {
         if (StrParamsInterface().IsTolerateErrors())
         {
-          StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+          StrParamsInterface().SetEleEvalErrorFlag(
+              STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
           return;
@@ -2359,8 +2361,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       const double det_defgrd_mod = defgrd_mod.Determinant();
       if (det_defgrd_mod <= 0.0)
       {
-        soh8_error_handling(
-            det_defgrd_mod, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+        soh8_error_handling(det_defgrd_mod, params, __LINE__,
+            STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
         return;
       }
     }  // ------------------------------------------------------------------ EAS

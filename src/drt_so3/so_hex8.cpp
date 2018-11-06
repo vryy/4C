@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex8.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Solid Hex8 element
 
 \level 1
 
-\maintainer Michael Gee
+\maintainer Christoph Meier
 
 *----------------------------------------------------------------------*/
 

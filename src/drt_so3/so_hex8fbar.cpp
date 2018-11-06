@@ -1,13 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file so_hex8fbar.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Solid Hex8 element with F-bar modification
 
 \level 1
 
 \maintainer Alexander Popp
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "so_hex8fbar.H"
 #include "../drt_lib/drt_discret.H"
