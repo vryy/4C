@@ -33,11 +33,8 @@ namespace DRT
      *
      *  \author cschmidt \date 11/18 */
     template <int probdim, DRT::Element::DiscretizationType distype>
-    static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,  /// < element
-        const LINALG::Matrix<DisTypeToDim<distype>::dim, 1>& xi,  /// < position in parameter space
-        LINALG::Matrix<probdim, 1>& coord  /// < to be filled with coordinates in reference
-                                           /// configuration at parameter space position xi
-    )
+    static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,
+        const LINALG::Matrix<DisTypeToDim<distype>::dim, 1>& xi, LINALG::Matrix<probdim, 1>& coord)
     {
       static LINALG::Matrix<DisTypeToNumNodePerEle<distype>::numNodePerElement, 1> funct(true);
       static LINALG::Matrix<probdim, DisTypeToNumNodePerEle<distype>::numNodePerElement> nodecoords(
@@ -81,11 +78,8 @@ namespace DRT
      *
      *  \author cschmidt \date 11/18 */
     template <DRT::Element::DiscretizationType distype>
-    static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,  /// < element
-        const LINALG::Matrix<DisTypeToDim<distype>::dim, 1>& xi,  /// < position in parameter space
-        LINALG::Matrix<3, 1>& normal  /// < to be filled with normal in reference configuration at
-                                      /// parameter space position xi
-    )
+    static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,
+        const LINALG::Matrix<DisTypeToDim<distype>::dim, 1>& xi, LINALG::Matrix<3, 1>& normal)
     {
       static LINALG::Matrix<3, DisTypeToDim<distype>::dim> gxieta(true);
       static LINALG::Matrix<DisTypeToDim<distype>::dim,
