@@ -212,9 +212,6 @@ namespace STR
        * \note For bounds on the individual parameters, please consult the
        * original publication by Chung and Hulbert (1993). In practive however,
        * it is advised to choose the spectral radius as \f$\rho_\infty \in [0.5,1]\f$.
-       *
-       * \todo The old time integration framework has some bounds checking on the parameters.
-       * We need something similar for the new time integration.
        */
       struct Coefficients
       {
