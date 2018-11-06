@@ -2244,6 +2244,13 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_scatra_evaluate.cpp
 )
 set(OBJS_DRT_CONTACT
+  src/drt_contact_constitutivelaw/contact_coconstlaw_interface.cpp
+  src/drt_contact_constitutivelaw/coconstitutivelaw.cpp
+  src/drt_contact_constitutivelaw/coconstlaw_parameter.cpp
+  src/drt_contact_constitutivelaw/brokenrational_coconstlaw.cpp
+  src/drt_contact_constitutivelaw/cubic_coconstlaw.cpp
+  src/drt_contact_constitutivelaw/linear_coconstlaw.cpp
+  src/drt_contact_constitutivelaw/power_coconstlaw.cpp
   src/drt_contact/contact_abstract_strategy.cpp
   src/drt_contact/contact_noxinterface.cpp
   src/drt_contact/contact_coupling2d.cpp

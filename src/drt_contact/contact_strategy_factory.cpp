@@ -45,6 +45,7 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_penalty_strategy.H"
 #include "contact_wear_lagrange_strategy.H"
+#include "../drt_contact_constitutivelaw/contact_coconstlaw_interface.H"
 // --augmented strategies and interfaces
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
@@ -254,7 +255,9 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
-          INPAR::CONTACT::solution_lagmult)
+          INPAR::CONTACT::solution_lagmult &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+          INPAR::CONTACT::solution_penalty)
     dserror(
         "ERROR: Regularized Contact just available for Dual Mortar Contact with Lagrangean "
         "Multiplier!");
@@ -1384,6 +1387,11 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       else if (icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi &&
                stype == INPAR::CONTACT::solution_lagmult)
         newinterface = Teuchos::rcp(new CONTACT::CoTSIInterface(
+            idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
+      else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
+                   DRT::Problem::Instance()->ContactDynamicParams(), "CONTACT_REGULARIZATION") !=
+               INPAR::CONTACT::reg_none)
+        newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant));
       else
         newinterface = Teuchos::rcp(
