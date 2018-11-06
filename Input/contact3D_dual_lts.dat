@@ -35,10 +35,10 @@ FLUID_VIS            No
 FILESTEPS            1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER        1
-DYNAMICTYP           Statics//GenAlpha//GEMM
+DYNAMICTYP           Statics
 RESULTSEVRY          1
 RESTARTEVRY          1
-NLNSOL               fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL               fullnewton
 TIMESTEP             0.005
 NUMSTEP              20
 MAXTIME              0.1
@@ -58,17 +58,17 @@ ALPHA_F              0.5
 LINEAR_SOLVER        2
 SYSTEM               condensed
 SEMI_SMOOTH_NEWTON   Yes
-SEMI_SMOOTH_CN       1.0//1.0
+SEMI_SMOOTH_CN       1.0
 STRATEGY             Lagrange
 FRICTION             none
 ---------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN          pg//std
+LM_SHAPEFCN          pg
 SEARCH_ALGORITHM     Binarytree
 SEARCH_PARAM         0.2
 INTTYPE              segments
 LM_DUAL_CONSISTENT   none
 PARALLEL_REDIST      none
-ALGORITHM            lts//mortar
+ALGORITHM            lts
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu

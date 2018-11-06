@@ -207,7 +207,7 @@ void STR::TIMINT::Implicit::Evaluate()
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
   if (grp_ptr == NULL) dserror("Dynamic cast failed!");
 
-  // you definately have to evaluate here. You might be called from a coupled
+  // you definitely have to evaluate here. You might be called from a coupled
   // problem and the group might not be aware, that a different state than
   // the internally stored displacements may have changed.
   // This is a hack to get NOX to set IsValid to false.

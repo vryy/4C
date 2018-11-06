@@ -1,15 +1,12 @@
-/*
- \file post_drt_writer_base.H
+/*!
+ \file post_filter_base.H
 
  \brief contains base class for a generic output filter (ensight and vtk are derived from this
  class)
 
- <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/
- 089 - 289-15235
- </pre>
+ \maintainer Martin Kronbichler
+
+ \level 1
  */
 
 #ifndef POST_DRT_FILTER_BASE_H_

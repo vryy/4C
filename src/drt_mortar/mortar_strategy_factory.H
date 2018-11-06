@@ -16,6 +16,7 @@
 #define SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_
 
 #include <Teuchos_RCP.hpp>
+#include "../drt_inpar/inpar_contact.H"
 
 // forward declarations
 class Epetra_Vector;
@@ -43,6 +44,7 @@ namespace MORTAR
   class MortarNode;
   class MortarElement;
   class StrategyBase;
+  class MortarInterface;
   namespace STRATEGY
   {
     class Factory
@@ -60,6 +62,18 @@ namespace MORTAR
 
       //! setup of class variables
       void Setup();
+
+      /*! \brief print strategy banner
+       *
+       *  \param soltype (in) : contact solving strategy type */
+      static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
+
+      //! Create the desired search tree object
+      void BuildSearchTree(
+          const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const;
+
+      //! Check the problem dimension
+      void CheckDimension() const;
 
      protected:
       //! Returns true, if Init() has been called
@@ -110,6 +124,7 @@ namespace MORTAR
 
       //! returns the problem dimension
       const int& Dim() const;
+
       //! @}Manager
      protected:
       //! init flag
@@ -118,12 +133,12 @@ namespace MORTAR
       //! setup flag
       bool issetup_;
 
+      //! pointer to the structural problem discretization
+      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
+
      private:
       //! pointer to the structural global state data container
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
-
-      //! pointer to the structural problem discretization
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
 
       //! pointer to a COPY of the structural communicator
       Teuchos::RCP<Epetra_Comm> comm_ptr_;

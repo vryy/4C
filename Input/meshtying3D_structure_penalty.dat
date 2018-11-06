@@ -33,16 +33,13 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1.0
@@ -55,6 +52,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
+INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Penalty
@@ -74,12 +72,12 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 2000 VALUES 0 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92176597285693707e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 7.01434296747784236e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63600380177390536e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.97800794729877283e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.78867723044044835e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94154563642801581e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92176597285693707e-01 TOLERANCE 5e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 7.01434296747784236e-01 TOLERANCE 5e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63600380177390536e-01 TOLERANCE 5e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.97800794729877283e-01 TOLERANCE 5e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.78867723044044835e-01 TOLERANCE 5e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94154563642801581e-01 TOLERANCE 5e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          4

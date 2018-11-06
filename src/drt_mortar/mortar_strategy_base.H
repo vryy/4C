@@ -299,7 +299,7 @@ namespace MORTAR
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
     virtual Teuchos::RCP<Epetra_Vector> MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
-    virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) = 0;
     virtual int NumberOfActiveNodes() const = 0;
     virtual int NumberOfSlipNodes() const = 0;
     virtual void OutputStresses() = 0;
@@ -326,7 +326,7 @@ namespace MORTAR
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth() = 0;
+    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
     virtual void VisualizeGmsh(const int step, const int iter) = 0;
@@ -355,6 +355,7 @@ namespace MORTAR
     // constraint preconditioner functions
     virtual bool IsSaddlePointSystem() const = 0;
     virtual bool IsCondensedSystem() const = 0;
+    virtual bool IsPenalty() const = 0;
     virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
     //@}
 

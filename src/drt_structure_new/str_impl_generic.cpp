@@ -230,6 +230,16 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const NOX::Solver::Gene
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreApplyJacobianInverse(
+    const NOX::Abstract::Vector& rhs, NOX::Abstract::Vector& result,
+    const NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
+{
+  impl_.ModelEval().RunPreApplyJacobianInverse(
+      convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
     const NOX::Abstract::Vector& rhs, NOX::Abstract::Vector& result,
     const NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)

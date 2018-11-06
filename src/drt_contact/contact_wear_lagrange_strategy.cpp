@@ -43,7 +43,7 @@ WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr, const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interfaces, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
     : CoLagrangeStrategy(
           data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, alphaf, maxdof),
       weightedwear_(false),
@@ -4842,10 +4842,10 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
+void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   // call base routine
-  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth();
+  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(firstStepPredictor);
 
   // for both-sided wear
   gminvolvednodes_ = Teuchos::null;

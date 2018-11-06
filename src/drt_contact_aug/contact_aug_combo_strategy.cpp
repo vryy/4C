@@ -376,7 +376,7 @@ void CONTACT::AUG::ComboStrategy::EvalConstrRHS() { dserror("Unnecessary in this
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::UpdateActiveSetSemiSmooth()
+void CONTACT::AUG::ComboStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
   dserror(
       "Unnecessary in this Strategy. Furthermore, this method is "

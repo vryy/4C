@@ -31,7 +31,7 @@ MORTAR::StratDataContainer::StratDataContainer()
       comm_(Teuchos::null),
       scontact_(),
       dim_(0),
-      alphaf_(0),
+      alphaf_(0.0),
       parredist_(false),
       maxdof_(0),
       systype_(INPAR::CONTACT::system_none),

@@ -112,6 +112,10 @@ namespace STR
           const Epetra_Vector& xold, const NOX::NLN::Group& grp);
 
       //! [derived]
+      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+
+      //! [derived]
       virtual void UpdateStepState(const double& timefac_n);
 
       //! [derived]

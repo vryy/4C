@@ -1366,7 +1366,7 @@ namespace CONTACT
       {
         dserror("Deprecated function call! Replaced by RunPostComputeX().");
       };
-      void UpdateActiveSetSemiSmooth() override
+      void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override
       {
         dserror(
             "Deprecated function call! Replaced by "
@@ -1403,6 +1403,7 @@ namespace CONTACT
       void ModifyPenalty() override { dserror("Wrong strategy!"); };
       void UpdateUzawaAugmentedLagrange() override { dserror("Wrong strategy!"); };
       void UpdateConstraintNorm(int uzawaiter = 0) override { dserror("Wrong strategy!"); };
+      bool IsPenalty() const override { return false; };
       //! @}
       //! @}
 

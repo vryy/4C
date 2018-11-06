@@ -207,6 +207,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
   switch (checkquantity)
   {
     case NOX::NLN::StatusTest::quantity_structure:
+    case NOX::NLN::StatusTest::quantity_meshtying:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
     {
       // export the model specific solution if necessary

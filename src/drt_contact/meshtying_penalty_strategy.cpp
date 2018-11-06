@@ -33,7 +33,7 @@
 CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
     : MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
   // initialize constraint norm and initial penalty
@@ -44,7 +44,7 @@ CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* DofRowMap,
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
   // print message
   if (Comm().MyPID() == 0)
@@ -103,6 +103,17 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
     dtm_ = MORTAR::MatrixRowTransform(dtm_, pgsdofrowmap_);
     dtd_ = MORTAR::MatrixRowTransform(dtd_, pgsdofrowmap_);
   }
+
+  // full stiffness matrix
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
+  double pp = Params().get<double>("PENALTYPARAM");
+
+  // add penalty meshtying stiffness terms
+  stiff_->Add(*mtm_, false, pp, 1.0);
+  stiff_->Add(*mtd_, false, -pp, 1.0);
+  stiff_->Add(*dtm_, false, -pp, 1.0);
+  stiff_->Add(*dtd_, false, pp, 1.0);
+  stiff_->Complete();
 
   // time measurement
   Comm().Barrier();
@@ -395,4 +406,72 @@ void CONTACT::MtPenaltyStrategy::UpdateUzawaAugmentedLagrange()
   StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool CONTACT::MtPenaltyStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
+{
+  if (force_.is_null()) force_ = Teuchos::rcp(new Epetra_Vector(*gdisprowmap_));
+  if (stiff_->Multiply(false, *dis, *force_)) dserror("multiply failed");
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool CONTACT::MtPenaltyStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+{
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool CONTACT::MtPenaltyStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+{
+  EvaluateForce(dis);
+  EvaluateStiff(dis);
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
+    const enum DRT::UTILS::VecBlockType& bt) const
+{
+  Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ:
+    {
+      if (force_.is_null()) dserror("force vector not available");
+      vec_ptr = force_;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown STR::VecBlockType!");
+      break;
+    }
+  }
+
+  return vec_ptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt) const
+{
+  Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ_displ:
+      if (stiff_.is_null()) dserror("stiffness not available");
+      mat_ptr = stiff_;
+      break;
+    default:
+      dserror("Unknown STR::MatBlockType!");
+      break;
+  }
+  return mat_ptr;
 }

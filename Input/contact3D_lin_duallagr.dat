@@ -42,7 +42,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.02
 NUMSTEP                         30
 MAXTIME                         0.6
@@ -55,6 +55,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
+INT_STRATEGY                    Standard
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -1259,10 +1260,10 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.6 VALUES 0 0 0.2
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1 VALUES 0 0 0.2 0.2
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.6 VALUES 0 1 1
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 1 VALUES 0 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 2.01549143076005494e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.97001280103978549e-01 TOLERANCE 1e-8

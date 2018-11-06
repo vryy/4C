@@ -335,6 +335,19 @@ namespace NOX
            *  \author hiermeier \date 05/18 */
           void runPreSolve(const NOX::Solver::Generic& solver) override;
 
+          /*! \brief Derived function, which is called at the beginning of a call to
+           *  NOX::NLN::Group::applyJacobianInverse()
+           *
+           *  \param rhs    : read-only access to the rhs vector
+           *  \param result : full access to the result vector
+           *  \param xold   : read-only access to the old state vector
+           *  \param grp    : read only access to the group object
+           *
+           *  \author seitz \date 04/18 */
+          virtual void runPreApplyJacobianInverse(const NOX::Abstract::Vector& rhs,
+              NOX::Abstract::Vector& result, const NOX::Abstract::Vector& xold,
+              const NOX::NLN::Group& grp);
+
          private:
           /*! \brief Convert NOX::Abstract::Vector to Epetra_Vector
            *

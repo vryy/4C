@@ -30,6 +30,7 @@
 
 //// header files for different linearSystems
 #include "../drt_contact_aug/nox_nln_contact_linearsystem.H"
+#include "../drt_contact/nox_nln_meshtying_linearsystem.H"
 #include "../drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.H"
 #include "../drt_constraint/nox_nln_lagpenconstraint_linearsystem.H"
 #include "../drt_structure_new/nox_nln_str_linearsystem.H"
@@ -87,6 +88,17 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLinea
           noxNlnGlobalData.GetConstraintPrecInterfaces();
 
       linSys = Teuchos::rcp(new NOX::NLN::CONTACT::LinearSystem(printParams, lsParams, linSolvers,
+          iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject));
+      break;
+    }
+    case NOX::NLN::LinSystem::linear_system_structure_meshtying:
+    {
+      const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
+          noxNlnGlobalData.GetConstraintInterfaces();
+      const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
+          noxNlnGlobalData.GetConstraintPrecInterfaces();
+
+      linSys = Teuchos::rcp(new NOX::NLN::MESHTYING::LinearSystem(printParams, lsParams, linSolvers,
           iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject));
       break;
     }

@@ -14302,6 +14302,27 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::UpdateActiveSetInitialStatus() const
+{
+  // List of GIDs of all my slave row nodes
+  int* my_slave_row_node_gids = SlaveRowNodes()->MyGlobalElements();
+
+  // loop over all slave nodes on the current interface
+  for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
+  {
+    // Grab the current slave node
+    const int gid = my_slave_row_node_gids[j];
+    CoNode* cnode = dynamic_cast<CoNode*>(Discret().gNode(gid));
+    if (!cnode) dserror("ERROR: Cannot find node with gid %", gid);
+
+    SetNodeInitiallyActive(*cnode);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  build active set (nodes / dofs)                           popp 02/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::BuildActiveSet(bool init)
@@ -15075,4 +15096,43 @@ void CONTACT::CoInterface::UpdateSelfContactLagMultSet(
 
   lmdofmap_ =
       Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(lmdofs.size()), lmdofs.data(), 0, Comm()));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::SetNodeInitiallyActive(CONTACT::CoNode& cnode) const
+{
+  static const bool init_contact_by_gap =
+      DRT::INPUT::IntegralValue<int>(IParams(), "INITCONTACTBYGAP");
+
+  const bool node_init_active = cnode.IsInitActive();
+
+  // Either init contact by definition or by gap
+  if (node_init_active and init_contact_by_gap)
+    dserror("Init contact either by definition in condition or by gap!");
+  else if (node_init_active)
+    cnode.Active() = true;
+  else if (init_contact_by_gap)
+    SetNodeInitiallyActiveByGap(cnode);
+
+#ifdef DEBUG
+  if (node_init_active)
+    std::cout << "Node #" << std::setw(5) << cnode.Id()
+              << " is set initially active via the condition line.\n";
+  else if (init_contact_by_gap)
+    std::cout << "Node #" << std::setw(5) << cnode.Id() << " is set initially active by gap.\n";
+#endif
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoInterface::SetNodeInitiallyActiveByGap(CONTACT::CoNode& cnode) const
+{
+  static const double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
+
+  if (cnode.CoData().Getg() < initcontactval) cnode.Active() = true;
+
+  return;
 }

@@ -21,23 +21,12 @@ namespace CONTACT
   /*! \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
    This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
-   For a more general documentation of the involved functions refer to CoAbstract Strategy.
+   For a more general documentation of the involved functions refer to CoAbstractStrategy.
 
    \author popp (popp@lnm.mw.tum.de) */
   class CoLagrangeStrategy : public CoAbstractStrategy
   {
    public:
-    //    //! Standard constructor
-    //  CoLagrangeStrategy(
-    //      const Epetra_Map* DofRowMap,
-    //      const Epetra_Map* NodeRowMap,
-    //      Teuchos::ParameterList params,
-    //      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-    //      int dim,
-    //      Teuchos::RCP<const Epetra_Comm> comm,
-    //      double alphaf,
-    //      int maxdof);
-
     //! Shared data constructor
     CoLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
@@ -105,23 +94,25 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum DRT::UTILS::VecBlockType& bt) const;
 
-    virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
-        Epetra_Vector& f, const double& timefac_np) const;
-
 
     /*! \brief Recover the current state
      *
-     *  The main task of this method is to recover the Lagrange multiplier solution.
-     *  The Lagrange multiplier solution will be stored inside the corresponding strategy
-     *  and is necessary for different internal evaluation methods. If the Lagrange multiplier
-     *  is condensed, this method is the right place to recover it from the displacement solution.
-     *  If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine
+     * The main task of this method is to recover the Lagrange multiplier solution.
+     * The Lagrange multiplier solution will be stored inside the corresponding strategy
+     * and is necessary for different internal evaluation methods. If the Lagrange multiplier
+     * is condensed, this method is the right place to recover it from the displacement solution.
+     * If it is not condensed (saddle-point system) use the ResetLagrangeMultiplier routine
      * instead.
      *
-     *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration \param xold    (in): old solution vector of the NOX solver \param dir     (in):
-     * current search direction (in general NOT the actual step, keep in mind that the step length
-     * can differ from 1.0) \param xnew    (in): new solution vector of the NOX solver*/
+     * \param cparams (in): parameter interface between the contact objects and the structural time
+     *                       integration
+     * \param xold (in): old solution vector of the NOX solver
+     * \param dir (in): current search direction
+     * \param xnew (in): new solution vector of the NOX solver
+     *
+     * \note The search direction \c dir in general differs from the actual step since the step
+     * length can be differ from 1.0.
+     * */
     virtual void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
         const Epetra_Vector& dir, const Epetra_Vector& xnew);
 
@@ -136,11 +127,47 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const;
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
-        Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const;
+    /*! \brief Apply modifications (e.g. condensation) directly before linear solve
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param kteff Jacobian matrix
+     * @param rhs ?? Right-hand side of linear system or residual?
+     */
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
-    //! Evaluate contact contributions to stiff matrix
-    virtual void AssembleContactStiff();
+    /*! \brief Perform condensation of frictionless contact
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param kteff Jacobian matrix
+     * @param rhs ?? Right-hand side of linear system or residual?
+     */
+    virtual void CondenseFrictionless(Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+
+    /*! \brief Perform condensation of frictional contact
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param kteff Jacobian matrix
+     * @param rhs ?? Right-hand side of linear system or residual?
+     */
+    virtual void CondenseFriction(Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+
+    /*! Recover condensed Lagrange multiplier after linear solve
+     *
+     * \todo Complete documentation of parameters.
+     *
+     * @param cparams Parameter interface between contact and structural time integration
+     * @param rhs ?? Right-hand side of linear system or residual?
+     * @param result ??
+     * @param xold ??
+     * @param grp ??
+     */
+    virtual void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,
+        const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
+        const NOX::NLN::Group& grp);
 
     //! The contributions to the structural right-hand-side block are calculated.
     virtual void EvalStrContactRHS();
@@ -148,9 +175,14 @@ namespace CONTACT
     //! Assemble contact contributions to the rhs
     virtual void AssembleContactRHS();
 
-    //! Assemble all contact contributions for condensed contact
+    //! Assemble all contact contributions
     virtual void AssembleAllContactTerms();
-    virtual void StoreInitialContributions(CONTACT::ParamsInterface& cparams);
+
+    //! Assemble all contact contributions (frictionless contact)
+    virtual void AssembleAllContactTermsFrictionless();
+
+    //! Assemble all contact contributions (frictional contact)
+    virtual void AssembleAllContactTermsFriction();
 
     virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
     {
@@ -167,11 +199,7 @@ namespace CONTACT
     };
 
     //! Get the slip node row map of the previous Newton step
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    {
-      dserror("Currently unsupported for the Lagrangian strategies!");
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return gOldslipnodes_; };
 
     //@}
 
@@ -186,8 +214,8 @@ namespace CONTACT
     \param dbcmaps (in): map extractor to apply Dirichlet boundary conditions
     \param numiter (in): current nonlinear iteration step
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
-    \param mergedsol (out): Epetra_Vector for merged solution vector
-    \param mergedrhs (out): Epetra_Vector for merged right hand side vector
+    \param blocksol (out): Epetra_Vector for merged solution vector
+    \param blockrhs (out): Epetra_Vector for merged right hand side vector
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
@@ -198,17 +226,17 @@ namespace CONTACT
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): the displacement dof solution increment (associated with displacement dofs)
-    \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
-    vector of the full merged linear system)
+    \param sold (in): Displacement dof solution increment (associated with displacement dofs)
+    \param blocksol (in): Merged solution vector (containing the new solution vector of the full
+                          merged linear system)
     */
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
 
     /*!
-    \brief The entries of the constraint right-hand side are
-    calculated. This function is outsourced cause
-    the vector is needed for the line search algorithm.
+    \brief The entries of the constraint right-hand side are calculated.
+
+    This function is outsourced cause the vector is needed for the line search algorithm.
 
     */
     void EvalConstrRHS();
@@ -217,7 +245,7 @@ namespace CONTACT
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run at the beginning of the Evaluate() routine
      *         set force evaluation flag
@@ -227,8 +255,6 @@ namespace CONTACT
 
     /*! \brief Run in the end of the Evaluate() routine to reset
      *         force evaluation flag
-     *
-     *
      */
     virtual void PostEvaluate(CONTACT::ParamsInterface& cparams);
 
@@ -240,7 +266,7 @@ namespace CONTACT
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
-    statically condensated during the setup of the global problem!
+    statically condensed during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.
 
@@ -249,8 +275,10 @@ namespace CONTACT
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *
-     *  \param cparams (in): parameter interface between the contact objects and the structural time
-     * integration \param xnew    (in): new solution vector of the NOX solver*/
+     * \param cparams (in): parameter interface between the contact objects and the structural time
+     *                      integration
+     * \param xnew    (in): new solution vector of the NOX solver
+     */
     virtual void ResetLagrangeMultipliers(
         const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew);
 
@@ -258,7 +286,7 @@ namespace CONTACT
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    virtual void EvalForce(CONTACT::ParamsInterface& cparams);
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -282,16 +310,23 @@ namespace CONTACT
     In this function we loop over all interfaces and then over all
     slave nodes to check, whether the assumption of them being active
     or inactive respectively has been correct. If a single node changes
-    state, the active set is adapted accordingly and the convegence
-    flag is kept on false. Here we have the semi-smooth Newton case
+    state, the active set is adapted accordingly and the convergence
+    flag is kept on false.
+
+    Here we have the semi-smooth Newton case
     with one combined iteration loop for active set search and large
     deformations. As a consequence this method is called AFTER each
     (not yet converged) Newton step. If there is a change in the active
-    set or the residual and disp norm are still above their limits,
+    set or the residual and displacement increment norm are still above their limits,
     another Newton step has to be performed.
 
+    \note We use the flag \c firstStepPredictor to overwrite the active set status
+    for each node in the predictor of the first time step (or the first time step
+    after a restart).
+
+    \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth();
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
 
     /*!
     \brief Reset active set status for next time step
@@ -364,6 +399,7 @@ namespace CONTACT
     void ModifyPenalty() {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
@@ -388,7 +424,7 @@ namespace CONTACT
     \brief Evaluate contact
 
     For a lagrangian strategy this involves heavy modification to the initial kteff and feff.
-    Hence, they are infact build from scratch here.
+    Hence, they are in fact build from scratch here.
     The application of modifications to groups of dofs (slave, master, active etc.)
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
 
@@ -411,22 +447,22 @@ namespace CONTACT
     \brief Add penalty terms for LTL edge contact
 
     */
-    void AddLineToLinContributions(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void AddLineToLinContributions(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for master contact
 
     */
-    void AddMasterContributions(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void AddMasterContributions(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for LTL edge contact
 
     */
-    void AddLineToLinContributionsFriction(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void AddLineToLinContributionsFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
     CoLagrangeStrategy operator=(const CoLagrangeStrategy& old);
@@ -484,11 +520,17 @@ namespace CONTACT
 
     Teuchos::RCP<Epetra_Map> gOldActiveSlaveNodes_;  // active slave nodes from previous newton step
 
+    Teuchos::RCP<Epetra_Map> gOldslipnodes_;  // active slave nodes from previous newton step
+
     Teuchos::RCP<Epetra_Vector> fLTLOld_;        //< old line to line forces
     Teuchos::RCP<Epetra_Vector> fLTL_;           //< current line to line forces combined
     Teuchos::RCP<Epetra_Vector> fLTLn_;          //< current line to line forces normal
     Teuchos::RCP<Epetra_Vector> fLTLt_;          //< current line to line forces tangent
     Teuchos::RCP<Epetra_Vector> fconservation_;  //< current line to line forces normal
+
+    Teuchos::RCP<Epetra_Vector> nonsmooth_Penalty_force_;  //< penalty forces of non-smooth contact
+    Teuchos::RCP<LINALG::SparseMatrix>
+        nonsmooth_Penalty_stiff_;  //< tangent to penalty forces of non-smooth contact
 
   };  // class CoLagrangeStrategy
 }  // namespace CONTACT

@@ -717,7 +717,8 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     {
       for (std::size_t i = 0; i < Interfaces().size(); ++i)
         Interfaces()[i]->StoreUnredistributedMaps();
-      pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
+      if (LMDoFRowMapPtr(true) != Teuchos::null)
+        pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
       pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
       pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
       pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
@@ -1530,6 +1531,9 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 
   for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->AssembleSlaveCoord(xsmod);
 
+  // in case of 3D dual quadratic case, slave coordinates xs are modified
+  if (Dualquadslavetrafo()) invtrafo_->Apply(*xsmod, *xsmod);
+
   // ATTENTION: for EvaluateRelMov() we need the vector xsmod in
   // fully overlapping layout. Thus, export here. First, allreduce
   // slave dof row map to obtain fully overlapping slave dof map.
@@ -1537,9 +1541,6 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   Teuchos::RCP<Epetra_Vector> xsmodfull = Teuchos::rcp(new Epetra_Vector(*fullsdofs));
   LINALG::Export(*xsmod, *xsmodfull);
   xsmod = xsmodfull;
-
-  // in case of 3D dual quadratic case, slave coordinates xs are modified
-  if (Dualquadslavetrafo()) invtrafo_->Multiply(false, *xsmod, *xsmod);
 
   // evaluation of obj. invariant slip increment
   // do the evaluation on the interface
@@ -1911,13 +1912,6 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   // the auxiliary positions in binarytree contact search)
   SetState(MORTAR::state_old_displacement, *dis);
 
-  // double-check if active set is really converged
-  // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
-  // because usually active set convergence check has been integrated into
-  // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
-  if (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged())
-    dserror("ERROR: Active set not fully converged!");
-
   // reset active set status for next time step
   ResetActiveSet();
 
@@ -2097,8 +2091,14 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  if (!restartwithcontact) reader.ReadVector(LagrMult(), "lagrmultold");
-  if (!restartwithcontact) reader.ReadVector(LagrMultOld(), "lagrmultold");
+  if (!restartwithcontact)
+    if (!(DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+                "Standard" &&
+            IsPenalty()))
+    {
+      reader.ReadVector(LagrMult(), "lagrmultold");
+      reader.ReadVector(LagrMultOld(), "lagrmultold");
+    }
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
   zincr_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));

@@ -939,6 +939,20 @@ namespace CONTACT
     virtual bool UpdateActiveSetSemiSmooth();
 
     /*!
+    \brief Update active set to conform with given active set from input file
+
+    In this function we loop over all  slave nodes to check, whether the
+    current active set decision for each node still conforms with the prescribed value
+    from the input file. If not, the input file overrules the current value.
+
+    Since this just enforces prescribed information from the input file,
+    this is not to be considered as a change in the active set and, thus,
+    does not affect the convergence of the active set. So, not convergence flag
+    on return.
+    */
+    virtual void UpdateActiveSetInitialStatus() const;
+
+    /*!
     \brief Build active set (nodes / dofs) of this interface
 
     If the flag init==true, the active set is initialized (for t=0)
@@ -1430,6 +1444,24 @@ namespace CONTACT
     virtual void UpdateMasterSlaveSets();
 
    private:
+    /*! \brief Set node active if it is active in input file
+     *
+     * A given node \c cnode is set to be active if it has been specified
+     * as active in the input file.
+     *
+     * @param[in/out] cnode A single contact node
+     */
+    virtual void SetNodeInitiallyActive(CONTACT::CoNode& cnode) const;
+
+    /*! \brief Check if node \c cnode is set active by gap on input
+     *
+     * Check if the contact node \c cnode is set active using the INITCONTACTGAPVALUE
+     * mechanism. If yes, set the status of the contact node \c cnode to active.
+     *
+     * @param[in/out] cnode A single contact node
+     */
+    void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
+
     /// pointer to the interface data object
     Teuchos::RCP<CONTACT::IDataContainer> idata_ptr_;
 
