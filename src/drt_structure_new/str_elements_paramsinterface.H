@@ -48,13 +48,13 @@ namespace STR
     //! evaluation error flags
     enum EvalErrorFlag : int
     {
-      ele_error_none = 0,                   //!< no error occurred (default)
-      ele_error_negative_def_gradient = 1,  //!< a negative deformation gradient was detected
-      ele_error_determinant_at_corner = 2,  /*!< invalid/negative jac determinant at the
-                                                 element corner nodes */
-      ele_error_material_failed = 3,        //!< material evaluation failed
-      ele_error_determinant_analysis = 4    /*!< this flag is used to get an idea when the det
-                                                 analysis found an invalid element */
+      ele_error_none = 0,                          //!< no error occurred (default)
+      ele_error_negative_det_of_def_gradient = 1,  //!< negative determinant of deformation gradient
+      ele_error_determinant_at_corner = 2,         /*!< invalid/negative jac determinant at the
+                                                        element corner nodes */
+      ele_error_material_failed = 3,               //!< material evaluation failed
+      ele_error_determinant_analysis = 4 /*!< this flag is used to get an idea when the det
+                                              analysis found an invalid element */
     };
 
     //! Map evaluation error flag to a std::string
@@ -64,8 +64,8 @@ namespace STR
       {
         case ele_error_none:
           return "ele_error_none";
-        case ele_error_negative_def_gradient:
-          return "ele_error_negative_def_gradient";
+        case ele_error_negative_det_of_def_gradient:
+          return "ele_error_negative_det_of_def_gradient";
         case ele_error_determinant_at_corner:
           return "ele_error_determinant_at_corner";
         case ele_error_material_failed:

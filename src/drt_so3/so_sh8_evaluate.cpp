@@ -693,7 +693,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
       soh8_error_handling(
-          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -731,7 +731,8 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
     const double I3 = sosh8_third_invariant(glstrain);
     if (I3 <= 0.0)
     {
-      soh8_error_handling(I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+      soh8_error_handling(
+          I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -954,7 +955,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
       soh8_error_handling(
-          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->Clear();
       if (force) force->Clear();
@@ -996,7 +997,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     const double I3 = sosh8_third_invariant(glstrain);
     if (I3 <= 0.0)
     {
-      soh8_error_handling(I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+      soh8_error_handling(
+          I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->Clear();
       if (force) force->Clear();
@@ -1040,7 +1042,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     if (det_defgrd <= 0.0)
     {
       soh8_error_handling(
-          det_defgrd, params, __LINE__, STR::ELEMENTS::ele_error_negative_def_gradient);
+          det_defgrd, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return;
     }
 

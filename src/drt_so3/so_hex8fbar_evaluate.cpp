@@ -1009,7 +1009,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
       {
         if (StrParamsInterface().IsTolerateErrors())
         {
-          StrParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+          StrParamsInterface().SetEleEvalErrorFlag(
+              STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->Clear();
           force->Clear();
           return;
