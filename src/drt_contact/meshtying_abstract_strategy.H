@@ -17,6 +17,7 @@
 
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 
 // forward declarations
@@ -34,9 +35,19 @@ namespace LINALG
 {
   class SparseMatrix;
 }
+namespace NOX
+{
+  namespace NLN
+  {
+    class Group;
+  }  // namespace NLN
+}  // namespace NOX
 
 namespace CONTACT
 {
+  // forward declarations
+  class MtNoxInterface;
+
   /*! \brief Main abstract class for meshtying solution strategies
 
   This is the templating abstract class for all meshtying solution algorithms.
@@ -60,7 +71,7 @@ namespace CONTACT
     */
     MtAbstractStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -127,13 +138,13 @@ namespace CONTACT
     dual Lagrange mutliplier shape functions in any interface.
 
     */
-    virtual const bool& Dualquadslavetrafo() { return dualquadslavetrafo_; };
+    virtual const bool& Dualquadslavetrafo() const { return dualquadslavetrafo_; };
 
     /*!
     \brief Return parallel redistribution status (yes or no)
 
     */
-    bool ParRedist()
+    bool ParRedist() const
     {
       INPAR::MORTAR::ParRedist partype =
           DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(), "PARALLEL_REDIST");
@@ -227,7 +238,7 @@ namespace CONTACT
     use the overloaded function call in the derived class and refer back to this function.
 
     */
-    virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
 
     //@}
 
@@ -417,7 +428,7 @@ namespace CONTACT
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis)
     {
       return Teuchos::null;
@@ -431,6 +442,100 @@ namespace CONTACT
     const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() { return Teuchos::null; }
+    //@}
+
+    //! @name new time integration
+
+    //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
+    const Teuchos::RCP<CONTACT::MtNoxInterface>& NoxInterfacePtr() { return noxinterface_ptr_; };
+
+    /*! \brief Return the desired right-hand-side block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint, ...
+     *
+     *  \date 05/2016
+     *  \author hiermeier */
+    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const
+    {
+      dserror("Not yet implemented!");
+      exit(EXIT_FAILURE);
+    };
+
+    /*! \brief Return the desired matrix block pointer (read-only)
+     *
+     *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
+     *  contributions are present.
+     *
+     *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...
+     *
+     *  \date 05/2016
+     *  \author hiermeier */
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const
+    {
+      dserror("Not yet implemented!");
+      exit(EXIT_FAILURE);
+    };
+
+    /*! \brief Return the Lagrange multiplier dof row map
+     *
+     *  \param redist (in): If TRUE, the redistributed map is returned, otherwise the
+     *                      original map before any redistribution took place.
+     *
+     *  \date 04/2016
+     *  \author hiermeier */
+    virtual Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const
+    {
+      if ((not redist) and ParRedist()) return pglmdofrowmap_;
+
+      return glmdofrowmap_;
+    };
+
+    //! modify system before linear solve
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+    { /* do nothing */
+      ;
+    }
+
+    //! modify result after linear solve
+    virtual void RunPostApplyJacobianInverse(Epetra_Vector& result)
+    { /* do nothing */
+      ;
+    }
+
+    //! evaluate force terms
+    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
+    {
+      dserror("not yet implemented");
+      return false;
+    }
+
+    //! evaluate stiffness terms
+    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+    {
+      dserror("not yet implemented");
+      return false;
+    }
+
+    //! evaluate force and stiffness terms
+    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
+    {
+      dserror("not yet implemented");
+      return false;
+    }
+
+    //! after applying Newton increment
+    virtual void RunPostComputeX(
+        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew){};
+
+    //! get the correct RHS for covnergence check
+    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const {};
+
     //@}
 
    protected:
@@ -518,48 +623,60 @@ namespace CONTACT
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;  // meshtying interfaces
 
     Teuchos::RCP<Epetra_Map>
-        glmdofrowmap_;                      // global Lagrange mult. dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsdofrowmap_;  // global slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmdofrowmap_;  // global master dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gndofrowmap_;  // global internal dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;  // global slave and master dof row map (s+m map)
-    Teuchos::RCP<Epetra_Map> gdisprowmap_;   // global displacement dof row map (s+m+n map)
+        glmdofrowmap_;  ///< global Lagrange mult. dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsdofrowmap_;   ///< global slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmdofrowmap_;   ///< global master dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gndofrowmap_;   ///< global internal dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;  ///< global slave and master dof row map (s+m map)
+    Teuchos::RCP<Epetra_Map> gdisprowmap_;   ///< global displacement dof row map (s+m+n map)
 
-    Teuchos::RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmnoderowmap_;  // global master node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsnoderowmap_;  ///< global slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmnoderowmap_;  ///< global master node row map (of all interfaces)
 
     Teuchos::RCP<Epetra_Map>
-        pglmdofrowmap_;  // global LM dof row map (before parallel redistribution)
+        pglmdofrowmap_;  ///< global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>
-        pgsdofrowmap_;  // global slave dof row map (before parallel redistribution)
+        pgsdofrowmap_;  ///< global slave dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>
-        pgmdofrowmap_;  // global master dof row map (before parallel redistribution)
+        pgmdofrowmap_;  ///< global master dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>
-        pgsmdofrowmap_;  // global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;  // global dirichlet toggle of all slave dofs
-                                                   // (before parallel redistribution)
+        pgsmdofrowmap_;  ///< global slave and master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;  ///< global dirichlet toggle of all slave dofs
+                                                   ///< (before parallel redistribution)
 
     std::vector<Teuchos::RCP<Epetra_Map>>
-        initial_elecolmap_;  // init a col ele map for binning strategy (s m)
+        initial_elecolmap_;  ///< init a col ele map for binning strategy (s m)
 
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;  // global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;  // global Mortar matrix M
-    Teuchos::RCP<Epetra_Vector> g_;               // global weighted gap vector g
+    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;  ///< global Mortar matrix D
+    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;  ///< global Mortar matrix M
+    Teuchos::RCP<Epetra_Vector> g_;               ///< global weighted gap vector g
     Teuchos::RCP<Epetra_Vector>
-        constrrhs_;  // global constraint rhs vector (only for saddlepoint problems)
+        constrrhs_;  ///< global constraint rhs vector (only for saddlepoint problems)
 
-    Teuchos::RCP<Epetra_Vector> z_;     // current vector of Lagrange multipliers at t_n+1
-    Teuchos::RCP<Epetra_Vector> zold_;  // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector> z_;     ///< current vector of Lagrange multipliers at t_n+1
+    Teuchos::RCP<Epetra_Vector> zold_;  ///< old vector of Lagrange multipliers at t_n
     Teuchos::RCP<Epetra_Vector>
-        zincr_;  // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the
-                 // increment of z_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Epetra_Vector> zuzawa_;  // vector of Lagrange multipliers from last Uzawa step
+        zincr_;  ///< Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the
+                 ///< increment of z_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> zuzawa_;  ///< vector of Lagrange multipliers from last Uzawa step
 
-    bool dualquadslavetrafo_;                   // flag indicating whether trafo should be applied
-    Teuchos::RCP<LINALG::SparseMatrix> trafo_;  // transformation matrix T for dual quad 3D case
+    bool dualquadslavetrafo_;                   ///< flag indicating whether trafo should be applied
+    Teuchos::RCP<LINALG::SparseMatrix> trafo_;  ///< transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>
-        invtrafo_;    // inverse trafo matrix T^(-1) for dual quad 3D case
-    double inttime_;  // Integration time
+        systrafo_;  ///< transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix>
+        invtrafo_;    ///< inverse trafo matrix T^(-1) for dual quad 3D case
+    double inttime_;  ///< Integration time
+
+    Teuchos::RCP<Epetra_Vector> f_;                      ///< structural force
+    Teuchos::RCP<Epetra_Vector> fs_;                     ///< structural force (slave)
+    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_;       ///< matrix containing D and -M
+    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_t_;     ///< matrix containing D and -M. transposed
+    Teuchos::RCP<LINALG::SparseMatrix> lm_diag_matrix_;  ///< LM diagonal block
+
+   private:
+    ///< pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
+    Teuchos::RCP<CONTACT::MtNoxInterface> noxinterface_ptr_;
 
   };  // class MtAbstractStrategy
 }  // namespace CONTACT

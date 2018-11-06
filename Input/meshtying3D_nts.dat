@@ -51,6 +51,7 @@ NORMCOMBI_RESFDISP              And
 TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 MAXITER                         50
+INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange

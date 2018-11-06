@@ -191,10 +191,6 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::GetActiveLinSolver(
     const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
     Teuchos::RCP<LINALG::Solver>& currSolver)
 {
-  // check input
-  if (solvers.size() > 2)
-    throwError("GetCurrentLinSolver",
-        "There have to be exactly two LINALG::Solvers (structure + contact)!");
   // ---------------------------------------------------------------------
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
@@ -315,7 +311,8 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
     }
 
     if (block_mat(r, r).EpetraMatrix()->NumGlobalDiagonals() ==
-        block_mat(r, r).EpetraMatrix()->NumGlobalNonzeros())
+            block_mat(r, r).EpetraMatrix()->NumGlobalNonzeros() &&
+        !isempty[r][r])
       isdiagonal[r] = true;
   }
 

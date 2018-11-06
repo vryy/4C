@@ -50,15 +50,11 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   // Call the Setup() of the abstract base class first.
   Generic::Setup();
 
-  // cast to one-step-theta data
-  const STR::TIMINT::OneStepThetaDataSDyn& onesteptheta_sdyn =
-      dynamic_cast<const STR::TIMINT::OneStepThetaDataSDyn&>(TimInt().GetDataSDyn());
-
   // ---------------------------------------------------------------------------
   // setup time integration parameters
   // ---------------------------------------------------------------------------
   // get a copy of the input parameters
-  theta_ = onesteptheta_sdyn.GetTheta();
+  theta_ = GetTheta();
 
   // sanity checks and some screen output
   if (GlobalState().GetMyRank() == 0)
@@ -129,6 +125,18 @@ void STR::IMPLICIT::OneStepTheta::PostSetup()
     UpdateStepElement();
     PostUpdate();
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::IMPLICIT::OneStepTheta::GetTheta() const
+{
+  if (IsInit() and IsSetup()) return theta_;
+
+  const STR::TIMINT::OneStepThetaDataSDyn& onesteptheta_sdyn =
+      dynamic_cast<const STR::TIMINT::OneStepThetaDataSDyn&>(TimInt().GetDataSDyn());
+
+  return onesteptheta_sdyn.GetTheta();
 }
 
 /*----------------------------------------------------------------------------*
@@ -329,7 +337,7 @@ double STR::IMPLICIT::OneStepTheta::CalcRefNormForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::OneStepTheta::GetIntParam() const { return (1.0 - theta_); }
+double STR::IMPLICIT::OneStepTheta::GetIntParam() const { return (1.0 - GetTheta()); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

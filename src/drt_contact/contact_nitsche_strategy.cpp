@@ -293,10 +293,18 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bt) const
 {
   if (curr_state_eval_ == false) dserror("you didn't evaluate this contact state first");
-  if (bt == DRT::UTILS::block_displ)
-    return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
-  else
-    dserror("GetRhsBlockPtr: your type is no treated properly!");
+  switch (bt)
+  {
+    case DRT::UTILS::block_displ:
+      return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
+      break;
+    case DRT::UTILS::block_constraint:
+      return Teuchos::null;
+      break;
+    default:
+      dserror("GetRhsBlockPtr: your type is no treated properly!");
+      break;
+  }
 
   return Teuchos::null;
 }

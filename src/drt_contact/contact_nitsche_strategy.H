@@ -123,11 +123,7 @@ namespace CONTACT
 
     //! Get the active node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const { return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    {
-      dserror("Currently unsupported for the penalty strategy!");
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return Teuchos::null; };
     virtual bool IsNitsche() const { return true; }
     virtual void PrintActiveSet() const {};
     bool ActiveSetSemiSmoothConverged() const { return true; }
@@ -152,7 +148,7 @@ namespace CONTACT
     }
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     void EvaluateRelMovPredict() {}
     void ModifyPenalty() {}
     void UpdateUzawaAugmentedLagrange() {}
@@ -176,6 +172,7 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     double InitialPenalty() { return 0.0; }
     double ConstraintNorm() const { return 0.0; }
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived

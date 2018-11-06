@@ -436,7 +436,7 @@ namespace XCONTACT
     //! @{
     virtual void UpdateActiveSet() {}
     virtual void ResetActiveSet() {}
-    virtual void UpdateActiveSetSemiSmooth() {}
+    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     virtual int ActiveSetSteps() { return -1; }
     virtual bool ActiveSetConverged() { return true; }
     virtual bool ActiveSetSemiSmoothConverged() const { return true; }
@@ -461,6 +461,7 @@ namespace XCONTACT
     virtual void ModifyPenalty() { dserror("Wrong strategy!"); }
     virtual void UpdateUzawaAugmentedLagrange() { dserror("Wrong strategy!"); }
     virtual void UpdateConstraintNorm(int uzawaiter = 0) { dserror("Wrong strategy!"); }
+    bool IsPenalty() const override { return false; };
     //! @}
 
     //! @name Deprecated methods

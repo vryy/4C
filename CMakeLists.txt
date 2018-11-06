@@ -1770,6 +1770,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_structure_new/str_model_evaluator_meshtying.cpp
   src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
@@ -2044,6 +2045,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_inner_statustest_volume_change.cpp
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
+  src/drt_contact/nox_nln_meshtying_linearsystem.cpp
   src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
   src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
   src/drt_scatra/nox_nln_scatra_linearsystem.cpp
@@ -2270,7 +2272,9 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp
   src/drt_contact/contact_wear_lagrange_strategy.cpp
+  src/drt_contact/meshtying_strategy_factory.cpp
   src/drt_contact/meshtying_abstract_strategy.cpp
+  src/drt_contact/meshtying_noxinterface.cpp
   src/drt_contact/meshtying_contact_bridge.cpp
   src/drt_contact/meshtying_lagrange_strategy.cpp
   src/drt_contact/meshtying_poro_lagrange_strategy.cpp

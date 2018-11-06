@@ -146,6 +146,7 @@ namespace NOX
       enum LinearSystemType : int
       {
         linear_system_structure,
+        linear_system_structure_meshtying,
         linear_system_structure_contact,
         linear_system_structure_cardiovascular0d,
         linear_system_structure_lag_pen_constraint,

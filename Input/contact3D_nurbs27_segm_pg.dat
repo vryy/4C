@@ -43,6 +43,7 @@ NORM_DISP            Abs
 NORMCOMBI_RESFDISP   And
 MAXITER              10
 PREDICT              TangDis
+INT_STRATEGY         Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER        2
 -------------------------------------------------------------MORTAR COUPLING

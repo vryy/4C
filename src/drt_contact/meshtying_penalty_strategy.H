@@ -37,7 +37,7 @@ namespace CONTACT
     */
     MtPenaltyStrategy(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        int dim, const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof);
 
     /*!
     \brief Destructor
@@ -69,7 +69,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
 
     /*!
     \brief Mesh intialization for rotational invariance
@@ -146,6 +146,10 @@ namespace CONTACT
     */
     void UpdateUzawaAugmentedLagrange();
 
+    /*!
+    \brief Tell that this is a penalty strategy
+    */
+    bool IsPenalty() const override { return true; };
     //@}
 
     //! @name Empty functions (Lagrange meshtying)
@@ -173,18 +177,42 @@ namespace CONTACT
     }
     //@}
 
+    //! @name New time integration
+
+    //! evaluate RHS term
+    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis);
+
+    //! evaluate stiffness term
+    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis);
+
+    //! evaluate RHS and stiffness term
+    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis);
+
+    //! Return the desired right-hand-side block pointer (read-only)
+    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const;
+
+    //! Return the desired matrix block pointer (read-only))
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const;
+
+    //@}
+
    protected:
     // don't want = operator and cctor
     MtPenaltyStrategy operator=(const MtPenaltyStrategy& old);
     MtPenaltyStrategy(const MtPenaltyStrategy& old);
 
-    double constrnorm_;      // L2-norm of normal contact constraints
-    double initialpenalty_;  // initial penalty parameter
+    double constrnorm_;      ///< L2-norm of normal contact constraints
+    double initialpenalty_;  ///< initial penalty parameter
 
-    Teuchos::RCP<LINALG::SparseMatrix> mtm_;  // mortar matrix product: M(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> mtd_;  // mortar matrix product: M(^T)*D
-    Teuchos::RCP<LINALG::SparseMatrix> dtm_;  // mortar matrix product: D(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> dtd_;  // mortar matrix product: D(^T)*D
+    Teuchos::RCP<LINALG::SparseMatrix> mtm_;  ///< mortar matrix product: M(^T)*M
+    Teuchos::RCP<LINALG::SparseMatrix> mtd_;  ///< mortar matrix product: M(^T)*D
+    Teuchos::RCP<LINALG::SparseMatrix> dtm_;  ///< mortar matrix product: D(^T)*M
+    Teuchos::RCP<LINALG::SparseMatrix> dtd_;  ///< mortar matrix product: D(^T)*D
+
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_;  ///< global stiffness matrix
+    Teuchos::RCP<Epetra_Vector> force_;         ///< global RHS vector
 
 
   };  // class MtPenaltyStrategy

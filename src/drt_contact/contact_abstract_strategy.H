@@ -791,9 +791,7 @@ namespace CONTACT
     };
     virtual const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const
     {
-      // currently not supported for the abstract strategy
-      dserror("SlTangentialDoFRowMap() seems currently unsupported!");
-      exit(EXIT_FAILURE);
+      return *gslipdofs_;
     }
 
     /*! \brief Return the master dof row map
@@ -899,6 +897,13 @@ namespace CONTACT
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
     };
+
+    //! Apply modifications (e.g. condensation) directly before linear solve
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+    { /* do nothing */
+      ;
+    }
 
     /*! Return the condensed matrix block pointer (read-only)
      *
@@ -1075,7 +1080,7 @@ namespace CONTACT
 
      Returns TRUE if at least one higher-order 3d slave element with
      dual Lagrange mutliplier shape functions in any interface. */
-    virtual const bool& Dualquadslavetrafo() { return Data().IsDualQuadSlaveTrafo(); };
+    virtual bool Dualquadslavetrafo() const { return Data().IsDualQuadSlaveTrafo(); };
 
     //! Return parallel redistribution status (yes or no)
     inline bool ParRedist() const { return (Data().ParType() != INPAR::MORTAR::parredist_none); }
@@ -1360,7 +1365,7 @@ namespace CONTACT
     virtual void EvalConstrRHS() = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth() = 0;
+    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 
@@ -1380,7 +1385,7 @@ namespace CONTACT
     }
     Teuchos::RCP<Epetra_Vector> MeshInitialization() { return Teuchos::null; };
 
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) {}
     //! @}
 
    protected:
@@ -1834,6 +1839,10 @@ namespace CONTACT
     bool& dualquadslavetrafo_;  //!< ref. to flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix>&
         trafo_;  //!< ref. to transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix>
+        systrafo_;  //! transformation matrix T for dual quad 3D case (all problem dofs)
+    Teuchos::RCP<LINALG::SparseMatrix>
+        invsystrafo_;  //! inverse transformation matrix T for dual quad 3D case (all problem dofs)
     Teuchos::RCP<LINALG::SparseMatrix>&
         invtrafo_;  //!< ref. to inverse trafo matrix T^(-1) for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>& dmatrixmod_;  //!< ref. to modified global Mortar matrix D

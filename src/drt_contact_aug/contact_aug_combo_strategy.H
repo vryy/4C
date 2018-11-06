@@ -159,7 +159,7 @@ namespace CONTACT
       void EvalConstrRHS() override;
 
       /// function wrapper
-      void UpdateActiveSetSemiSmooth() override;
+      void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
 
       /// function wrapper
       void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
@@ -349,6 +349,7 @@ namespace CONTACT
       void ModifyPenalty() override { dserror("Wrong strategy!"); };
       void UpdateUzawaAugmentedLagrange() override { dserror("Wrong strategy!"); };
       void UpdateConstraintNorm(int uzawaiter = 0) override { dserror("Wrong strategy!"); };
+      bool IsPenalty() const override { return false; };
       //! @}
       //! @}
 
