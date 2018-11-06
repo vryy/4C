@@ -92,11 +92,9 @@ namespace STR
 
       /*! \brief Initialize class variables
        *
-       * \todo Complete documentation of input parameters.
-       *
        * @param discret Discretization object
        * @param sdynparams Parameter list for structural dynamics from input file
-       * @param datasdyn ??
+       * @param datasdyn Structural dynamics data container
        */
       void Init(const Teuchos::RCP<DRT::DiscretizationInterface> discret,
           const Teuchos::ParameterList& sdynparams,

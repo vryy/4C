@@ -2,8 +2,7 @@
 /*!
 \file str_model_evaluator_data.H
 
-\brief Concrete implementation of the structural and all related
-       parameter interfaces.
+\brief Concrete implementation of the structural and all related parameter interfaces.
 
 \maintainer Michael Hiermeier
 
@@ -59,12 +58,21 @@ namespace STR
      * and gives you all the functionality to interchange data between the elements and the
      * structural time integrators.
      *
-     * Consider to derive a special interface class, if you need
-     * special parameters inside your element. Keep everything else untouched and cast the
-     * interface object to the desired object at the place you need access.
+     * To add a new and more specialized data container or method
+     * that is not directly linked to the pure structure problem,
+     * but is linked to related problem classes such as contact, beam interaction or
+     * Brownian dynamics instead, please refer to these sub-containers.
+     * If these sub-containers are not sufficient for your purposes,
+     * other sub-containers can be added following the provided templates.
+     * To do so, the following basic steps should be considered:
+     * - Add a pointer pointing to your new container as a member to this class (parent class).
+     * - Initialize and setup your container in the Setup routine of this parent class.
+     * - Add an accessor such as Contact() or BrownianDyn().
+     * - Create your own data container class and use a call-back to the parent container to avoid
+     *   code redundancy.
      *
-     *  \date 03/2016
-     *  \author hiermeier */
+     * \author hiermeier \date 03/2016
+     */
     class Data : public STR::ELEMENTS::ParamsInterface
     {
       typedef std::map<enum NOX::NLN::StatusTest::QuantityType,
@@ -264,14 +272,23 @@ namespace STR
 
       /*! \brief Collects and calculates the update norm of the current processor
        *
-       * \todo Complete documentation of input parameters.
+       * These methods are used to calculate the norms for a status test
+       * w.r.t. internally, elementwise stored quantities.
        *
-       * @param[in] qtype
-       * @param[in] numentries
-       * @param my_update_values
-       * @param my_new_sol_values
-       * @param[in] step_length
-       * @param[in] owner
+       * This is supported by the EAS formulation of the HEX8 element.
+       * This specific method is used for the NormUpdate status test that tests the increments
+       * of the solution variables.
+       *
+       * @param[in] qtype Quantity type which is tested
+       * @param[in] numentries Length/size of the value arrays
+       * @param[in] my_update_values Local part of increment/direction vector (with default step
+       *                             length)
+       * @param[in] my_new_sol_values Local part of the already updated solution vector
+       * @param[in] step_length Step length of a possible active globalization strategy
+       * @param[in] owner Owner of the corresponding element (used to avoid summing up ghost
+       *                  entries)
+       *
+       * \sa SumIntoMyPreviousSolNorm
        */
       virtual void SumIntoMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_update_values, const double* my_new_sol_values,
@@ -279,12 +296,13 @@ namespace STR
 
       /*! brief Collect and calculate solution norm of previous accepted Newton step on current proc
        *
-       * \todo Complete documentation of input parameters.
+       * @param[in] qtype Quantity type which is tested
+       * @param[in] numentries Length/size of the value arrays
+       * @param[in] my_old_sol_values Local part of the previous solution vector
+       * @param[in] owner Owner of the corresponding element (used to avoid summing up ghost
+       *                  entries)
        *
-       * @param[in] qtype
-       * @param[in] numentries
-       * @param my_old_sol_values
-       * @param[in] owner
+       * \sa SumIntoMyUpdateNorm
        */
       void SumIntoMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
           const int& numentries, const double* my_old_sol_values, const int& owner);
@@ -293,9 +311,9 @@ namespace STR
 
       /*! \brief Returns the partial update norm of the given quantity on the current processor
        *
-       * \todo Complete documentation of input and return parameters.
+       * \todo Complete documentation of return parameters.
        *
-       * @param[in] qtype
+       * @param[in] qtype Quantity type which is tested
        * @return
        */
       inline double GetMyUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
@@ -310,9 +328,9 @@ namespace STR
 
       /*! \brief Return partial root-mean-squared norm of given quantity on current processor
        *
-       * \todo Complete documentation of input and return parameters.
+       * \todo Complete documentation of return parameters.
        *
-       * @param[in] qtype
+       * @param[in] qtype Quantity type which is tested
        * @return
        */
       inline double GetMyRMSNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
@@ -328,9 +346,9 @@ namespace STR
       /*! \brief Return partial solution norm of previous accepted Newton step of given quantity on
        *  current processor
        *
-       * \todo Complete documentation of input and return parameters.
+       * \todo Complete documentation of return parameters.
        *
-       * @param[in] qtype
+       * @param[in] qtype Quantity type which is tested
        * @return
        */
       inline double GetMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
@@ -345,9 +363,9 @@ namespace STR
 
       /*! brief Returns the update norm type
        *
-       * \todo Complete documentation of input and return parameters.
+       * \todo Complete documentation of return parameters.
        *
-       * @param[in] qtype
+       * @param[in] qtype Quantity type which is tested
        * @return
        */
       inline enum NOX::Abstract::Vector::NormType GetUpdateNormType(
@@ -373,9 +391,9 @@ namespace STR
 
       /*! \brief Returns the dof number
        *
-       * \todo Complete documentation of input and return parameters.
+       * \todo Complete documentation of return parameters.
        *
-       * @param[in] qtype
+       * @param[in] qtype Quantity type which is tested
        * @return
        */
       inline int GetMyDofNumber(const enum NOX::NLN::StatusTest::QuantityType& qtype) const
@@ -388,13 +406,16 @@ namespace STR
         return static_cast<int>(c_it->second);
       }
 
-      /*! Did an element evaluation error occur?
+      /*! \brief Did an element evaluation error occur?
        *
-       * @return Boolean flag to indicate occurence error during element evaluation
+       * @return Boolean flag to indicate occurrence error during element evaluation
        */
       bool IsEleEvalError() const;
 
-      //! access the element evaluation error flag
+      /*! brief Access the element evaluation error flag
+       *
+       * @return Flag describing errors during element evaluation
+       */
       inline STR::ELEMENTS::EvalErrorFlag GetEleEvalErrorFlag() const override
       {
         return ele_eval_error_flag_;
@@ -538,8 +559,8 @@ namespace STR
        *
        * \warning You are not allowed to call these functions on element level.
        */
-      //! @{
-      //!
+      //!@{
+
       //! access the beam data container, if applicable
       inline BeamData& GetBeamData()
       {
@@ -575,11 +596,11 @@ namespace STR
         if (browniandyn_data_ptr_.is_null()) dserror("The brownian dynamic model is not active!");
         return browniandyn_data_ptr_;
       }
-      //! @}
+      //!@}
 
       /*! @name Accessors to some important member variables
        *  (necessary for possible other model evaluator containers, etc.) */
-      //! @{
+      //!@{
 
       //! Time integration strategy
       inline const STR::TIMINT::Base& TimInt() const
@@ -622,7 +643,7 @@ namespace STR
        *  restarted. Equal to 0 if no restart has been performed. */
       int GetRestartStep() const;
 
-      //! @}
+      //!@}
 
      protected:
       //! returns the isinit_ flag
@@ -666,7 +687,7 @@ namespace STR
        * \todo Complete documentation of input parameters.
        *
        * @param[in] numentries
-       * @param my_values
+       * @param[in] my_values
        * @param[in] normtype
        * @param[in] step_length
        * @param[in/out] my_norm
@@ -677,9 +698,20 @@ namespace STR
 
       /*! \brief Calculate a local relative mean square sum for the global WRMS status test
        *
+       * \todo Complete documentation of input parameters.
+       *
        * (1) \f$ v_i = x_{i}^{k-1} = x_{i}^{k} - sl* \Delta x_{i}^{k} \f$
        * (2) \f$ my_rms_norm = \sum_{i} [(x_i^{k}-x_{i}^{k-1}) / (RTOL * |x_{i}^{k-1}| + ATOL)]^{2}
        * \f$
+       *
+       * \param[in] atol Absolute tolerance
+       * \param[in] rtol Relative tolerance
+       * \param[in] step_length Step length of a possible active globalization strategy
+       * \param[in] numentries Length/size of the value arrays
+       * \param[in] my_update_values Local part of increment/direction vector (with default step
+       *                             length)
+       * \param[in] my_new_sol_values Local part of the already updated solution vector
+       * \param[in/out] my_rms Root mean squared norm (to be summed into)
        */
       void SumIntoMyRelativeMeanSquare(const double& atol, const double& rtol,
           const double& step_length, const int& numentries, const double* my_update_values,
@@ -898,10 +930,10 @@ namespace STR
       //!@}
 
      protected:
-      //! returns the isinit_ flag
+      //! returns the #isinit_ flag
       inline const bool& IsInit() const { return isinit_; };
 
-      //! returns the issetup_ flag
+      //! returns the #issetup_ flag
       inline const bool& IsSetup() const { return issetup_; };
 
       //! Checks the init and setup status
