@@ -25,7 +25,7 @@ ctest_start("${HOSTNAME}")
 #ctest_update()
 ctest_configure()
 ctest_build(RETURN_VALUE testBuild NUMBER_WARNINGS numWarnings)
-#ctest_test(RETURN_VALUE testRes)
+ctest_test(RETURN_VALUE testRes)
 
 if ($ENV{CTEST_DROP_SITE_CDASH_GITLAB} EQUAL 1)
     ctest_submit()
