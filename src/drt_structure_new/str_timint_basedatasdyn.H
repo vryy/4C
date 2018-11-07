@@ -932,7 +932,8 @@ namespace STR
 
      public:
       //! @name Read-only accessors
-      //! @{
+      //!@{
+
       //! returns the mid-average type (for more information see MidAverageEnum)
       const enum INPAR::STR::MidAverageEnum& GetMidAverageType() const
       {
@@ -940,60 +941,60 @@ namespace STR
         return midavg_;
       };
 
-      //! returns beta
+      //! Return time integration parameter \f$\beta\f$
       const double& GetBeta() const
       {
         CheckInitSetup();
         return beta_;
       };
 
-      //! returns gamma
+      //! Return time integration parameter \f$\gamma\f$
       const double& GetGamma() const
       {
         CheckInitSetup();
         return gamma_;
       };
 
-      //! returns alpha_f
+      //! Return time integration parameter \f$\alpha_f\f$
       const double& GetAlphaF() const
       {
         CheckInitSetup();
         return alphaf_;
       };
 
-      //! returns alpha_m
+      //! Return time integration parameter \f$\alpha_m\f$
       const double& GetAlphaM() const
       {
         CheckInitSetup();
         return alpham_;
       };
 
-      //! returns rho_inf
+      //! Return spectral radius \f$\rho_\infty\f$
       const double& GetRhoInf() const
       {
         CheckInitSetup();
         return rhoinf_;
       };
 
-      //! @}
+      //!@}
 
      private:
       //! mid-average type more at MidAverageEnum
       enum INPAR::STR::MidAverageEnum midavg_;
 
-      //! beta factor: feasible interval (0,1/2]
+      //! Time integration parameter \f$\beta \in (0,1/2]\f$
       double beta_;
 
-      //! gamma factor: feasible interval (0,1]
+      //! Time integration parameter \f$\gamma \in (0,1]\f$
       double gamma_;
 
-      //! alpha_f factor: feasible interval [0,1)
+      //! Time integation parameter \f$\alpha_f \in [0,1)\f$
       double alphaf_;
 
-      //! alpha_m factor: feasible interval [-1,1)
+      //! Time integration parameter \f$\alpha_m \in [-1,1)\f$
       double alpham_;
 
-      //! rho_inf factor: feasible interval [0,1]
+      //! Spectral radius \f$\rho_\infty \in [0,1]\f$
       double rhoinf_;
     };
 
@@ -1019,7 +1020,7 @@ namespace STR
       //! @name Read-only accessors
       //! @{
 
-      //! returns rho_inf
+      //! Return time integration parameter \f$\theta\f$
       const double& GetTheta() const
       {
         CheckInitSetup();
@@ -1029,7 +1030,7 @@ namespace STR
       //! @}
 
      private:
-      //! theta factor: feasible interval [0,1]
+      //! Time integration parameter \f$\theta \in [0,1]\f$
       double theta_;
     };
 

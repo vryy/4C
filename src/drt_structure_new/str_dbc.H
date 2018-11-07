@@ -17,14 +17,9 @@
 #include <Teuchos_RCP.hpp>
 #include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
 
-// forward declaration ...
-class Epetra_Vector;
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
+// forward declarations
 class Epetra_Map;
+class Epetra_Vector;
 
 namespace DRT
 {
@@ -45,6 +40,11 @@ namespace LINALG
   class MapExtractor;
 }  // namespace LINALG
 
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
 namespace STR
 {
   namespace TIMINT
@@ -52,6 +52,13 @@ namespace STR
     class Base;
     class BaseDataGlobalState;
   }  // namespace TIMINT
+
+  /*! \brief Object to handle Dirichlet boundary conditions for solid dynamics
+   *
+   *  This class provides capabilities to
+   *  - handle Dirichlet boundary conditions
+   *  - rotate the coordinate system (referred to as 'locSys')
+   */
   class Dbc
   {
    public:
@@ -71,18 +78,18 @@ namespace STR
 
     /*! \brief Apply the DBC to system of equations
      *
-     *  Note: Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
+     *  \note Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
     void ApplyDirichletToLocalSystem(
         Teuchos::RCP<LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! \brief Apply the DBC to a vector
      *
-     *  Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
+     *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
     void ApplyDirichletToVector(Teuchos::RCP<Epetra_Vector>& vec) const;
 
     /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
      *
-     *  Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
+     *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
     void ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const;
 
     //! Update the locsys manager
@@ -93,16 +100,21 @@ namespace STR
 
     /*! \brief Evaluate and apply the DBC
      *
-     * Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
+     * \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
     virtual void ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap);
 
-    //! Insert non-dbc dof values of the source vector into the non-dbc dofs of the target vector
+    /*! \brief Insert non-dbc dof values of source vector into the non-dbc dofs of target vector
+     *
+     *  \param[in] source_ptr Source vector with values to be inserted
+     *  \param[in/out] target_ptr Target vector where values shall be inserted into
+     */
     void InsertVectorInNonDbcDofs(
         Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const;
 
     //! @name Access functions
     //!@{
+
     //! Get the Dirichlet Boundary Condition map extractor
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
 
@@ -112,6 +124,7 @@ namespace STR
     //! Get the zeros vector
     const Epetra_Vector& GetZeros() const;
     Teuchos::RCP<const Epetra_Vector> GetZerosPtr() const;
+
     //!@}
 
     //! Allows to expand dbc map with provided maptoadd
@@ -120,20 +133,46 @@ namespace STR
     //! Allows to contract dbc map with provided maptoremove
     void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
-    /*! Rotate the system matrix from a global to a local coordinate system,
-     *  if the locsysman_ is defined.
+    /*! \brief Rotate the system matrix from a global to a local coordinate system
      *
-     *  Works only for LINALG::SparseMatrices! */
+     *  \pre #locsysman_ has to be defined.
+     *
+     *  \note Works only for LINALG::SparseMatrices.
+     **/
     bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator>& A) const;
 
-    /*! Rotate the rhs vector from the global to the local coordinate system, if
-     *  the locsysman_ is defined. */
+    /*! \brief Rotate the rhs vector from the global to the local coordinate system
+     *
+     *  \pre #locsysman_ has to be defined.
+     *
+     *  \param[in] v Vector to be rotated
+     */
     bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const;
+
+    /*! \brief Rotate the rhs vector from the global to the local coordinate system
+     *
+     *  \pre #locsysman_ has to be defined.
+     *
+     *  \param[in] v Vector to be rotated
+     *  \param[in] offset ??
+     */
     bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
 
-    /*! Rotate a vector from the local to the global coordinate system, if
-     *  the locsysman_ is defined. */
+    /*! \brief Rotate a vector from the local to the global coordinate system
+     *
+     *  \pre #locsysman_ has to be defined.
+     *
+     *  \param[in] v Vector to be rotated
+     */
     bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const;
+
+    /*! \brief Rotate a vector from the local to the global coordinate system
+     *
+     *  \pre #locsysman_ has to be defined.
+     *
+     *  \param[in] v Vector to be rotated
+     *  \param[in] offset ??
+     */
     bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
 
    protected:
@@ -159,19 +198,28 @@ namespace STR
     //! Get the locsys transformation matrix
     Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
+    //! Get the global state
     const STR::TIMINT::BaseDataGlobalState& GState() const;
 
+    //! Has #locsysman_ be defined?
     bool IsLocSys() const { return islocsys_; };
 
-    //! Extract the reaction forces
+    /*! \brief Extract the reaction forces
+     *
+     *  \param b ??
+     */
     void ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! Apply the DBC to the right hand side in the local coordinate system and
      *  do not rotate it back to the global coordinate system. */
     void ApplyDirichletToLocalRhs(Teuchos::RCP<Epetra_Vector>& b) const;
 
-    /*! Apply the DBC to the jacobian in the local coordinate system and
-     *  do not rotate it back to the global coordinate system. */
+    /*! \brief Apply the DBC to the Jacobian in the local coordinate system
+     *
+     *  \note This does not rotate the resutl back to the global coordinate system.
+     *
+     *  \param[in/out] A Jacobian matrix
+     */
     void ApplyDirichletToLocalJacobian(Teuchos::RCP<LINALG::SparseOperator> A) const;
 
    protected:
@@ -181,7 +229,7 @@ namespace STR
     //! Flag indicating the setup status.
     bool issetup_;
 
-    //! Flag indicating if a locsysman_ was defined.
+    //! Flag indicating if a #locsysman_ was defined.
     bool islocsys_;
 
     //! Discretization pointer
@@ -202,7 +250,8 @@ namespace STR
    private:
     //! Reaction force
     Epetra_Vector* freact_ptr_;
-  };  // class  Dbc
+
+  };  // namespace STR
 }  // namespace STR
 
 namespace NOX
@@ -238,6 +287,7 @@ namespace NOX
          private:
           //! pointer to the underlying class, which provides the whole functionality
           Teuchos::RCP<const ::STR::Dbc> dbc_ptr_;
+
         };  // class Dbc (pre/post operator)
       }     // namespace PrePostOp
     }       // namespace LinSystem

@@ -19,8 +19,15 @@
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H"  // enumerators
 #include <NOX_Abstract_Vector.H>                      // enumerators
 
-// forward declaration
+// forward declarations
 class Epetra_Vector;
+
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}  // namespace IO
+
 namespace LINALG
 {
   class SparseOperator;
@@ -57,6 +64,9 @@ namespace STR
     class BaseDataIO;
   }  // namespace TIMINT
 
+  /*! \brief Base class for all structural time integrators
+   *
+   */
   class Integrator
   {
    public:
@@ -66,7 +76,14 @@ namespace STR
     //! destructor
     virtual ~Integrator(){};
 
-    //! Initialization
+    /*! \brief Initialization
+     *
+     * \param[in] sdyn_ptr Pointer to the structural dynamic data container
+     * \param[in] gstate_ptr Pointer to the global state data container
+     * \param[in] gio_ptr Pointer to the input/output data container
+     * \param[in] dpc_ptr Pointer to the dirichlet boundary condition object
+     * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
+     */
     virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
@@ -126,7 +143,7 @@ namespace STR
     virtual double GetAccIntParam() const { return GetIntParam(); }
 
     //! @name Restart and output related functions
-    //! @{
+    //!@{
 
     /*! write restart information of the different time integration schemes
      *  and model evaluators */
@@ -137,11 +154,13 @@ namespace STR
     /*! read restart information of the different time integration schemes
      *  and model evaluators */
     virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
-    //! @}
+
+    //!@}
 
     //! @name Monolithic update routines
     //!@{
-    /// things that should be done before updating
+
+    //! things that should be done before updating
     virtual void PreUpdate() = 0;
 
     /*! \brief Update configuration after time step
@@ -211,12 +230,12 @@ namespace STR
     //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
     virtual void UpdateConstantStateContributions() = 0;
 
-    /// things that should be done after output
+    //! things that should be done after output
     virtual void PostOutput();
     //!@}
 
     //! @name Accessors
-    //! @{
+    //!@{
 
     double GetCondensedUpdateNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
@@ -249,7 +268,7 @@ namespace STR
     //! Return the Dirichlet boundary condition object (read-only)
     const STR::Dbc& GetDbc() const;
 
-    //! @}
+    //!@}
 
    protected:
     //! returns init state
@@ -269,9 +288,10 @@ namespace STR
      *  \author hiermeier */
     void EquilibrateInitialState();
 
-    /*! check if current state is equilibrium (with respect to
+    /*! \brief Check if current state is equilibrium (with respect to
      *  a given tolerance of the inf-norm)
-     *  this is a sanity check in case of nonlinear mass
+     *
+     *  This is a sanity check in case of nonlinear mass
      *  and non-additive rotation pseudo-vector DoFs where
      *  determination of consistent accelerations is more intricate
      *  and not supported yet */
@@ -389,8 +409,9 @@ namespace STR
     //! pointer to the underlying time integrator (read-only)
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
+    //! pointer to the dirichlet boundary condition monitor
     Teuchos::RCP<STR::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
-  };
+  };  // namespace STR
 }  // namespace STR
 
 

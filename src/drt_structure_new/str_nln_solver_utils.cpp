@@ -2,12 +2,9 @@
 /*!
 \file str_nln_solver_utils.cpp
 
-\brief Utility routines for the structural non-linear solver
-       classes.
+\brief Utility routines for the structural non-linear solver classes.
 
 \maintainer Michael Hiermeier
-
-\date Oct 9, 2015
 
 \level 3
 
