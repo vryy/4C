@@ -95,6 +95,12 @@ namespace PARTICLEENGINE
     //! clear state of particles
     void ClearState(StateEnum stateEnum) const;
 
+    //! get minimum stored value of state
+    double GetMinValueOfState(StateEnum stateEnum) const;
+
+    //! get maximum stored value of state
+    double GetMaxValueOfState(StateEnum stateEnum) const;
+
     //! get stored particle states
     const std::set<StateEnum> GetParticleStates() const;
 

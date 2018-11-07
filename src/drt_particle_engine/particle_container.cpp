@@ -427,6 +427,50 @@ void PARTICLEENGINE::ParticleContainer::ClearState(StateEnum stateEnum) const
 }
 
 /*---------------------------------------------------------------------------*
+ | get minimum stored value of state                          sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum) const
+{
+  if (particlestored_ <= 0) return 0.0;
+
+  int stateDim = EnumToStateDim(stateEnum);
+
+  auto it = states_.find(stateEnum);
+  if (it == states_.end())
+    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+  auto state = it->second;
+
+  double min = (*state)[0];
+
+  for (int i = 0; i < (particlestored_ * stateDim); ++i)
+    if ((*state)[i] < min) min = (*state)[i];
+
+  return min;
+}
+
+/*---------------------------------------------------------------------------*
+ | get maximum stored value of state                          sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(StateEnum stateEnum) const
+{
+  if (particlestored_ <= 0) return 0.0;
+
+  int stateDim = EnumToStateDim(stateEnum);
+
+  auto it = states_.find(stateEnum);
+  if (it == states_.end())
+    dserror("particle state '%s' not found!", PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+  auto state = it->second;
+
+  double max = (*state)[0];
+
+  for (int i = 0; i < (particlestored_ * stateDim); ++i)
+    if ((*state)[i] > max) max = (*state)[i];
+
+  return max;
+}
+
+/*---------------------------------------------------------------------------*
  | get stored particle states                                 sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 const std::set<PARTICLEENGINE::StateEnum> PARTICLEENGINE::ParticleContainer::GetParticleStates()
