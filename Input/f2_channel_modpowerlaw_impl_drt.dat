@@ -14,12 +14,6 @@ NODES                           441
 DIM                             2
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid
-MAXTIME                         4
-NUMSTEP                         41
-RESULTSEVRY                     1
-TIMESTEP                        0.1
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     1
@@ -49,21 +43,21 @@ START_THETA                     0.67
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                           10
+RESULTSEVRY                     10
 PREDICTOR                       explicit_second_order_midpoint
 INCONSISTENT_RESIDUAL           yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                // no_stabilization residual_based inconsistent
-TDS                             quasistatic                   // quasistatic time_dependent
+STABTYPE                        residual_based
+TDS                             quasistatic
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                  // no_transient yes_transient
-SUPG                            yes                           // no yes
-PSPG                            yes                           // no_pspg yes
-VSTAB                           no_vstab                      // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                        yes                           // no yes cstab_td
-CROSS-STRESS                    no_cross                      // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                   // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient
+SUPG                            yes
+PSPG                            yes
+VSTAB                           no_vstab
+GRAD_DIV                        yes
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 CANONICAL_FLOW                  no
 HOMDIR                          xz
@@ -87,130 +81,24 @@ THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
 RESTART                         0
--------------------------------------------------------------CONTACT DYNAMIC
-----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              Or
-DAMPING                         No
-DYNAMICTYP                      GenAlpha
-K_DAMP                          0.5
-MAXITER                         50
-MAXTIME                         5
-M_DAMP                          0.5
-NLNSOL                          fullnewton
-NUMSTEP                         200
-PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESTARTEVRY                     1
-TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Pressure_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-IFPACKFILL                      1
-IFPACKGFILL                     0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_modpowerlaw MCONS 0.42 DELTA 0.001 AEXP 0.39 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION y*(1-y)*v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0 0.5 10000 DESCRIPTION (1-cos(2*t*pi))/2.0 1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          5
 NDSURF                          0
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // vertex left bottom
@@ -231,70 +119,10 @@ E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // bottom edge
 E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF                           0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------------SURFACTANT CONDITIONS
-DSURF                           0
--------------------------------------------------------MICROSCALE CONDITIONS
-DSURF                           0
 ------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
 DLINE                           1
 // bottom edge
 E 4 - standard
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 83 DNODE 2
@@ -1230,9 +1058,6 @@ NODE 441 COORD 5.00000000e-01 4.99999851e-01 0.00000000e+00
 398 FLUID QUAD4 437 438 439 441 MAT 1 NA Euler
 399 FLUID QUAD4 441 439 433 434 MAT 1 NA Euler
 400 FLUID QUAD4 434 435 440 441 MAT 1 NA Euler
-----------------------------------------------------------STRUCTURE ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 101 QUANTITY velx VALUE 2.2976637239e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 101 QUANTITY vely VALUE 0.000000000e+00 TOLERANCE 1e-9
