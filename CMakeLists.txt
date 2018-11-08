@@ -1847,6 +1847,9 @@ set(OBJS_DRT_PARTICLE_ALGORITHM
 set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_base.cpp
   src/drt_particle_interaction/particle_interaction_dem.cpp
+  src/drt_particle_interaction/particle_interaction_dem_neighbor_pairs.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact.cpp
+  src/drt_particle_interaction/particle_interaction_dem_contact_normal.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp

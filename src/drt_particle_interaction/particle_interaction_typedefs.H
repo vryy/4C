@@ -34,7 +34,8 @@
 namespace PARTICLEINTERACTION
 {
   struct ParticlePairSPH;
-}
+  struct ParticlePairDEM;
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
  | type definitions                                           sfuchs 08/2018 |
@@ -46,7 +47,13 @@ namespace PARTICLEINTERACTION
                         std::map<PARTICLEENGINE::StatusEnum,
                             std::map<int, PARTICLEINTERACTION::ParticlePairSPH>>>>>
       SPHNeighborPairsMap;
-}
+
+  typedef std::map<PARTICLEENGINE::TypeEnum,
+      std::map<int, std::map<PARTICLEENGINE::TypeEnum,
+                        std::map<PARTICLEENGINE::StatusEnum,
+                            std::map<int, PARTICLEINTERACTION::ParticlePairDEM>>>>>
+      DEMNeighborPairsMap;
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/
 #endif

@@ -1,0 +1,124 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file particle_interaction_dem_contact.H
+
+\brief contact handler for discrete element method (DEM) interactions
+
+\level 3
+
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
+*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*
+ | definitions                                                sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+#ifndef PARTICLE_INTERACTION_DEM_CONTACT_H
+#define PARTICLE_INTERACTION_DEM_CONTACT_H
+
+/*---------------------------------------------------------------------------*
+ | headers                                                    sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+#include "particle_interaction_typedefs.H"
+
+#include "../drt_particle_engine/particle_enums.H"
+#include "../drt_particle_engine/particle_typedefs.H"
+
+#include "../drt_inpar/inpar_particle.H"
+
+/*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+namespace IO
+{
+  class DiscretizationReader;
+}
+
+namespace PARTICLEENGINE
+{
+  class ParticleEngineInterface;
+  class ParticleContainerBundle;
+}  // namespace PARTICLEENGINE
+
+namespace PARTICLEINTERACTION
+{
+  class MaterialHandler;
+  class DEMNeighborPairs;
+  class DEMContactNormalBase;
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*
+ | class definitions                                          sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  class DEMContact
+  {
+   public:
+    //! constructor
+    explicit DEMContact(const Teuchos::ParameterList& params);
+
+    //! virtual destructor
+    virtual ~DEMContact();
+
+    //! init contact handler
+    virtual void Init();
+
+    //! setup contact handler
+    virtual void Setup(
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs);
+
+    //! write restart of contact handler
+    virtual void WriteRestart(const int step, const double time) const;
+
+    //! read restart of contact handler
+    virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
+
+    //! set current step size
+    virtual void SetCurrentStepSize(const double currentstepsize) final;
+
+    //! check critical time step (on this processor)
+    virtual void CheckCriticalTimeStep() const;
+
+    //! add contact contribution to force field
+    virtual void AddForceContribution() const;
+
+   protected:
+    //! init normal contact handler
+    virtual void InitNormalContactHandler();
+
+    //! get maximum density of all materials
+    virtual double GetMaxDensityOfAllMaterials() const final;
+
+    //! discrete element method specific parameter list
+    const Teuchos::ParameterList& params_dem_;
+
+    //! interface to particle engine
+    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+
+    //! particle container bundle
+    PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! particle material handler
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+
+    //! neighbor pair handler
+    std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
+
+    //! normal contact handler
+    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalBase> contactnormal_;
+
+    //! time step size
+    double dt_;
+  };
+
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*/
+#endif

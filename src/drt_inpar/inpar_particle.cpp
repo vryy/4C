@@ -223,6 +223,27 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& particledyndem = particledyn.sublist(
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
-  //! no DEM specific control parameters added yet
-  IntParameter("DUMMY", -1, "dummy parameter to prevent build warning", &particledyndem);
+  // type of normal contact law
+  setStringToIntegralParameter<int>("NORMALCONTACTLAW", "LinearSpring",
+      "normal contact law for particles",
+      tuple<std::string>(
+          "LinearSpring", "LinearSpringDamp", "Hertz", "LeeHerrmann", "KuwabaraKono", "Tsuji"),
+      tuple<int>(INPAR::PARTICLE::LinSpring, INPAR::PARTICLE::LinSpringDamp, INPAR::PARTICLE::Hertz,
+          INPAR::PARTICLE::LeeHerrmann, INPAR::PARTICLE::KuwabaraKono, INPAR::PARTICLE::Tsuji),
+      &particledyndem);
+
+  DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
+  DoubleParameter("MAX_VELOCITY", -1.0, "maximum expected particle velocity", &particledyndem);
+  DoubleParameter("REL_PENETRATION", -1.0,
+      "maximum allowed relative penetration (particle-particle)", &particledyndem);
+  DoubleParameter(
+      "NORMAL_STIFF", -1.0, "normal contact stiffness (particle-particle)", &particledyndem);
+  DoubleParameter(
+      "NORMAL_DAMP", -1.0, "normal contact damping parameter (particle-particle)", &particledyndem);
+  DoubleParameter(
+      "COEFF_RESTITUTION", -1.0, "coefficient of restitution (particle-particle)", &particledyndem);
+  DoubleParameter("DAMP_REG_FAC", -1.0,
+      "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
+      &particledyndem);
+  BoolParameter("TENSION_CUTOFF", "no", "switch on/off tension cutoff", &particledyndem);
 }

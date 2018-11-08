@@ -159,7 +159,16 @@ namespace INPAR
      | discrete element method (DEM) specific control parameters                 |
      *---------------------------------------------------------------------------*/
 
-    //! no DEM specific control parameters added yet
+    //! type of normal contact law
+    enum NormalContact
+    {
+      LinSpring,
+      LinSpringDamp,
+      Hertz,
+      LeeHerrmann,
+      KuwabaraKono,
+      Tsuji
+    };
 
 
     //! set the particle parameters
