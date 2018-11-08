@@ -129,12 +129,12 @@ double PARTICLEINTERACTION::ParticleInteractionBase::MaxParticleRadius() const
   // iterate over particle types
   for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
   {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
     // get maximum stored value of state
     double currmaxrad = container->GetMaxValueOfState(PARTICLEENGINE::Radius);
