@@ -173,8 +173,7 @@ namespace ELEMAG
     /*!
     \brief Write restart.
 
-    This function still has to be implemented.<br>
-    This function is supposed to allow the restart of a simulation from the result of the current
+    This function allow the restart of a simulation from the result of the current
     simulation. It is needed to write the restart values that will be read by the #ReadRestart
     function.
     */
@@ -184,8 +183,7 @@ namespace ELEMAG
     /*!
     \brief Read restart.
 
-    This function still has to be implemented.<br>
-    This function is supposed to allow the restart of a simulation from the result of a previous
+    This function allow the restart of a simulation from the result of a previous
     simulation. It is needed to read the restart values that are written by the #WriteRestart
     function.
     */

@@ -676,6 +676,9 @@ namespace
     dis.ClearState(true);
   }
 
+  /*----------------------------------------------------------------------*
+  |  Reads material properties from element for output   berardocco 03/18 |
+  *----------------------------------------------------------------------*/
   void getElementMaterialProperties(DRT::Discretization &dis,
       Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
       Teuchos::RCP<Epetra_Vector> &permeability)

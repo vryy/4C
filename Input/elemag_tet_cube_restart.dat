@@ -15,7 +15,7 @@ DIM           3
 --------------------------------------------------------PROBLEM TYP
 
 PROBLEMTYP                      Electromagnetics
-RESTART                         0
+RESTART                         10
 RESTARTTIME                     -1
 SHAPEFCT                        HDG
 RANDSEED                        -1
@@ -23,7 +23,7 @@ RANDSEED                        -1
 --------------------------------------------ELECTROMAGNETIC DYNAMIC
 TIMESTEP                        0.001
 NUMSTEP                         200000
-MAXTIME                         0.01
+MAXTIME                         0.02
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 LINEAR_SOLVER                   1
@@ -73,8 +73,8 @@ COMPONENT 4 FUNCTION 0
 COMPONENT 5 FUNCTION sqrt(3)*sin(pi*x)*sin(pi*y)*cos(pi*z)*sin(pi*t)
 
 ------------------------------------------------RESULT DESCRIPTION
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 6.81870876853713087e-02 TOLERANCE 1e-6
-ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 3.27339331372082154e-01 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2electric VALUE 6.81707558141384506e-02 TOLERANCE 1e-6
+ELECTROMAGNETIC DIS elemag NODE 1 QUANTITY L2magnetic VALUE 3.26966479141249822e-01 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

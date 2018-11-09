@@ -222,10 +222,10 @@ namespace DRT
       void ReadGlobalVectors(
           DRT::Element* ele, DRT::Discretization& discretization, const std::vector<int>& lm);
 
-      /// Writes internal field to global vectors.
+      /// Writes internal fields from elements to global vectors.
       void FillRestartVectors(DRT::Element* ele, DRT::Discretization& discretization);
 
-      /// Writes internal field to global vectors.
+      /// Reads internal field from global vectors to element vectors.
       void ElementInitFromRestart(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
