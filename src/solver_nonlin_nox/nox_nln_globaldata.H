@@ -58,6 +58,10 @@ namespace NOX
   {
     class Generic;
   }  // namespace MeritFunction
+  namespace Direction
+  {
+    class UserDefinedFactory;
+  }  // namespace Direction
 
   namespace NLN
   {
@@ -176,32 +180,49 @@ namespace NOX
       void SetStatusTestParameters();
 
      private:
+      /// communicator
       Teuchos::RCP<const Epetra_Comm> comm_;
 
+      /// complete NOX::NLN parameter list
       Teuchos::RCP<Teuchos::ParameterList> nlnparams_;
 
+      /// optimization problem type (unconstrained, constrained, etc.)
       OptimizationProblemType optType_;
 
+      /// map containing all linear solvers
       const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>> linSolvers_;
 
+      /// required interface pointer
       Teuchos::RCP<NOX::Epetra::Interface::Required> iReqPtr_;
 
+      /// jacobian interface pointer
       Teuchos::RCP<NOX::Epetra::Interface::Jacobian> iJacPtr_;
 
+      /// preconditioner interface pointer
       Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iPrecPtr_;
 
+      /// map of required interface pointer for constrained problems
       NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
 
+      /// map of preconditioner interface pointer for constrained problems
       NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
 
+      /// scaling object (for the linear system)
       Teuchos::RCP<NOX::Epetra::Scaling> iScale_;
 
+      /// merit function pointer
       Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr_;
 
+      /// user provided direction factory
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> direction_factory_;
+
+      /// pre/post operator pointer for the NOX::NLN::Solver pre/post operator
       Teuchos::RCP<NOX::Abstract::PrePostOperator> prePostOpPtr_;
 
+      /// True if it is a constrained problem
       bool isConstrained_;
 
+      /// output object
       Teuchos::RCP<NOX::Utils> noxUtils_;
     };  // namespace GlobalData
   }     // namespace NLN

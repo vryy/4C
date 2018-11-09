@@ -60,9 +60,6 @@ namespace CONTACT
 
     virtual bool IsCondensedSystem() const { return false; }
 
-    void Evaluate(CONTACT::ParamsInterface& cparams,
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec);
-
     virtual void Integrate(CONTACT::ParamsInterface& cparams);
 
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
@@ -126,11 +123,7 @@ namespace CONTACT
 
     //! Get the active node row map of the previous Newton step
     virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const { return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
-    {
-      dserror("Currently unsupported for the penalty strategy!");
-      return Teuchos::null;
-    };
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return Teuchos::null; };
     virtual bool IsNitsche() const { return true; }
     virtual void PrintActiveSet() const {};
     bool ActiveSetSemiSmoothConverged() const { return true; }
@@ -155,7 +148,7 @@ namespace CONTACT
     }
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth() {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
     void EvaluateRelMovPredict() {}
     void ModifyPenalty() {}
     void UpdateUzawaAugmentedLagrange() {}
@@ -179,6 +172,7 @@ namespace CONTACT
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     double InitialPenalty() { return 0.0; }
     double ConstraintNorm() const { return 0.0; }
+    bool IsPenalty() const override { return false; };
 
    protected:
     //! derived
@@ -189,6 +183,20 @@ namespace CONTACT
     {
       return interface_;
     }
+
+    /// derived
+    void EvalForce(CONTACT::ParamsInterface& cparams) override;
+
+    /// derived
+    void EvalForceStiff(CONTACT::ParamsInterface& cparams) override;
+
+    /// derived
+    void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
+        const Epetra_Vector& xnew) override;
+
+    /// derived
+    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
     // fill RHS vector of block
     virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(

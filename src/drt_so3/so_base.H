@@ -23,6 +23,7 @@ namespace STR
   namespace ELEMENTS
   {
     class ParamsInterface;
+    enum EvalErrorFlag : int;
   }  // namespace ELEMENTS
 }  // namespace STR
 namespace MAT
@@ -164,6 +165,12 @@ namespace DRT
        *  \author vuong
        *  \date 11/16 */
       STR::ELEMENTS::ParamsInterface& StrParamsInterface();
+
+      /** \brief error handling for structural elements
+       *
+       *  \author hiermeier \date 09/18 */
+      void ErrorHandling(const double& det_curr, Teuchos::ParameterList& params, const int line_id,
+          const STR::ELEMENTS::EvalErrorFlag flag);
 
      protected:
       //! kinematic type

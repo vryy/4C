@@ -186,12 +186,15 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
   //                                 CURRENT LENGTH
   //---------------------------------------------------------------------------------------------
   // extract element and node values of the artery
-  if (discretization.HasState(1, "curr_ele_length"))
+  if (discretization.HasState(1, "curr_seg_lengths"))
   {
-    Teuchos::RCP<const Epetra_Vector> curr_length = discretization.GetState(1, "curr_ele_length");
-    const int lid = curr_length->Map().LID(ele->Id());
-    if (lid < 0) dserror("Cannot find gid=%d in Epetra_Vector", ele->Id());
-    const double curr_ele_length = (*curr_length)[lid];
+    Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
+        discretization.GetState(1, "curr_seg_lengths");
+    std::vector<double> seglengths(la[1].lm_.size());
+
+    DRT::UTILS::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+
+    const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
 
     static LINALG::Matrix<probdim, 1> arteryrefpos0;
     for (unsigned int d = 0; d < probdim; ++d) arteryrefpos0(d) = my::xyze_(d, 0);

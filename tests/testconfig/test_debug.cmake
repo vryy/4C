@@ -24,7 +24,7 @@ set(CTEST_COMMAND "ctest -D Nightly")
 ctest_start("${HOSTNAME}")
 #ctest_update()
 ctest_configure()
-ctest_build(RETURN_VALUE testBuild)
+ctest_build(RETURN_VALUE testBuild NUMBER_WARNINGS numWarnings)
 ctest_test(RETURN_VALUE testRes)
 
 if ($ENV{CTEST_DROP_SITE_CDASH_GITLAB} EQUAL 1)
@@ -35,7 +35,11 @@ if (NOT ${testBuild} EQUAL 0)
   message( SEND_ERROR "Baci build failed!" )
 endif (NOT ${testBuild} EQUAL 0)
 
-if (NOT ${testRes} EQUAL 0)
-  message( SEND_ERROR "Baci tests failed!" )
-endif (NOT ${testRes} EQUAL 0)
+if (NOT ${numWarnings} EQUAL 0)
+  message( SEND_ERROR "Baci build issued build warnings!" )
+endif (NOT ${numWarnings} EQUAL 0)
+
+#if (NOT ${testRes} EQUAL 0)
+#  message( SEND_ERROR "Baci tests failed!" )
+#endif (NOT ${testRes} EQUAL 0)
 

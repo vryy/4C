@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Aug 13, 2015
-
 \level 3
 
 */
@@ -54,6 +52,9 @@ namespace STR
   {
     namespace SOLVER
     {
+      /*! Interface to NOX as nonlinear solver in structural dynamics
+       *
+       */
       class Nox : public Generic
       {
        public:
@@ -101,14 +102,19 @@ namespace STR
        private:
         //! @name Variables which stay constant after Init() and Setup() call
         //!@{
+
         //! pointer to the nox nln global data container
         Teuchos::RCP<NOX::NLN::GlobalData> nlnglobaldata_;
+
         //!@}
 
         //! @name variables which are reset in each Solve() call
         //!@{
-        //! NOX non-linear problem class
-        //! The main task is to manage the non-linear solver creation
+
+        /*! \brief NOX non-linear problem class
+         *
+         *  The main task is to manage the non-linear solver creation
+         */
         Teuchos::RCP<NOX::NLN::Problem> problem_;
 
         //! linear system class
@@ -122,6 +128,7 @@ namespace STR
 
         //! NOX non-linear solver
         Teuchos::RCP<NOX::Solver::Generic> nlnsolver_;
+
         //!@}
       };  // class Nox
     }     // namespace SOLVER

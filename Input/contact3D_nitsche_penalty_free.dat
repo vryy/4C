@@ -35,7 +35,7 @@ TOLDISP                         1.0e-8
 TOLRES                          1.0e4
 NORMCOMBI_DISPPRES              And
 MAXITER                         30
-DIVERCONT                       stop // continue
+DIVERCONT                       stop
 MINITER                         1
 NLNSOL                          fullnewton
 PREDICT                         TangDis
@@ -63,18 +63,18 @@ NITSCHE_PENALTY_ADAPTIVE    no
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 PARALLEL_REDIST      none
-INTTYPE              Segments // Elements // Segments
+INTTYPE              Segments
 TRIANGULATION        center
 NUMGP_PER_DIM        3
 LM_SHAPEFCN          dual
 SEARCH_ALGORITHM     BinaryTree
 SEARCH_PARAM         0.3e2
-LM_DUAL_CONSISTENT   none //  all
+LM_DUAL_CONSISTENT   none
 --------------------------------------------------------------------SOLVER 1
-NAME                            Structure_Solver
+NAME                 Structure_Solver
 SOLVER               Superlu
 AZSOLVE              GMRES
-AZPREC               MLFLUID2 // ILU
+AZPREC               MLFLUID2
 IFPACKGFILL          6
 AZOUTPUT             0
 -------------------------------------------------------------------MATERIALS

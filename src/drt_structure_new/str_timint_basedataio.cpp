@@ -2,12 +2,9 @@
 /*!
 \file str_timint_basedataio.cpp
 
-\brief Input/output data container for the structural (time)
-       integration
+\brief Input/output data container for the structural (time) integration
 
 \maintainer Michael Hiermeier
-
-\date Jan 11, 2016
 
 \level 3
 
@@ -21,6 +18,7 @@
 
 #include "../drt_io/every_iteration_writer.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_linesearch_generic.H"
@@ -59,7 +57,8 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writecouplstress_(INPAR::STR::stress_none),
       writestrain_(INPAR::STR::strain_none),
       writeplstrain_(INPAR::STR::strain_none),
-      writeoptquantity_(INPAR::STR::optquantity_none)
+      writeoptquantity_(INPAR::STR::optquantity_none),
+      conditionnumbertype_(INPAR::STR::ConditionNumber::none)
 {
   // empty constructor
 }
@@ -93,8 +92,12 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
     writejac2matlab_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
+    conditionnumbertype_ =
+        Teuchos::getIntegralValue<INPAR::STR::ConditionNumber>(ioparams, "STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
+    writecurrentelevolume_ =
+        (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
     writestress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
         DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
@@ -148,6 +151,15 @@ void STR::TIMINT::BaseDataIO::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataIO::CheckInitSetup() const
+{
+  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
     IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
 {
@@ -187,6 +199,14 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
 
     energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
+{
+  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  return (GetWriteResultsEveryNStep() and step % GetWriteResultsEveryNStep() == 0);
 }
 
 /*----------------------------------------------------------------------------*

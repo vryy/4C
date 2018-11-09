@@ -18,6 +18,7 @@
 #include "str_timint_basedatasdyn.H"
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_generic.H"
+#include "str_model_evaluator_meshtying.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_discret.H"
@@ -26,6 +27,7 @@
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_structure_new/str_utils.H"
 #include "../drt_fluid/fluid_utils.H"
+#include "../drt_contact/meshtying_abstract_strategy.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -308,6 +310,38 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       {
         model_block_id_[mt] = 0;
       }
+      break;
+    }
+    case INPAR::STR::model_meshtying:
+    {
+      const STR::MODELEVALUATOR::Meshtying& mt_me =
+          dynamic_cast<const STR::MODELEVALUATOR::Meshtying&>(me);
+
+      enum INPAR::CONTACT::SystemType systype = mt_me.Strategy().SystemType();
+
+      enum INPAR::CONTACT::SolvingStrategy soltype =
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+              mt_me.Strategy().Params(), "STRATEGY");
+
+      // systems without additional dofs
+      if (soltype == INPAR::CONTACT::solution_nitsche ||
+          soltype == INPAR::CONTACT::solution_penalty || soltype == INPAR::CONTACT::solution_uzawa)
+      {
+        model_block_id_[mt] = 0;
+      }
+      // --- saddle-point system
+      else if (systype == INPAR::CONTACT::system_saddlepoint)
+      {
+        model_block_id_[mt] = max_block_num_;
+        ++max_block_num_;
+      }
+      // --- condensed system
+      else if (systype == INPAR::CONTACT::system_condensed)
+      {
+        model_block_id_[mt] = 0;
+      }
+      else
+        dserror("I don't know what to do");
       break;
     }
     case INPAR::STR::model_cardiovascular0d:

@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Aug 13, 2015
-
 \level 3
 
 */
@@ -19,12 +17,24 @@
 #include "str_impl_generic.H"
 
 class Epetra_MultiVector;
+
 namespace STR
 {
   namespace IMPLICIT
   {
+    /*! Generalized-\f$\alpha\f$ time integration for 2nd-order ODEs
+     *
+     * <h3> References </h3>
+     * - Chung J, Hulbert GM:
+     *   A Time Integration Algorithm for Structural Dynamics With Improved Numerical Dissipation:
+     *   The Generalized-\f$\alpha\f$ Method
+     *   Journal of Applied Mechanics, 60(2):371--375 (1993)
+     */
     class GenAlpha : public Generic
     {
+      // forwards declaration
+      struct Coefficients;
+
      public:
       //! constructor
       GenAlpha();
@@ -68,8 +78,12 @@ namespace STR
       //! [derived]
       virtual double GetIntParam() const;
 
+      /// access the parameter for the accelerations at \f$t_{n}\f$, i.e. alpham
+      double GetAccIntParam() const override;
+
       //! @name Monolithic update routines
-      //! @{
+      //!@{
+
       //! Update configuration after time step [derived]
       virtual void UpdateStepState();
 
@@ -81,24 +95,26 @@ namespace STR
        *  We use in the GenAlpha case to update constant contributions (during one time step)
        *  of the SetState routine.*/
       virtual void PostUpdate();
-      //! @}
+
+      //!@}
 
       //! @name Predictor routines (dependent on the implicit integration scheme)
-      //! @{
-      /*! Predict constant displacements, consistent velocities and accelerations [derived] */
+      //!@{
+
+      //! Predict constant displacements, consistent velocities and accelerations [derived]
       virtual void PredictConstDisConsistVelAcc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
 
-      /*! Predict displacements based on constant velocities
-       *  and consistent accelerations [derived] */
+      //! Predict displacements based on constant velocities and consistent accelerations [derived]
       virtual bool PredictConstVelConsistAcc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
 
-      /*! Predict displacements based on constant accelerations
-       *  and consistent velocities [derived] */
+      //! Predict displacements based on constant accelerations and consistent velocities [derived]
       virtual bool PredictConstAcc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const;
-      //! @}
+
+      //!@}
+
      protected:
       //! run directly after the setup routine has been finished
       virtual void PostSetup();
@@ -120,6 +136,8 @@ namespace STR
        *        + (1-\alpha_f) * Res_{\mathrm{statics},n+1} + \alpha_f * Res_{\mathrm{statics},n}
        *  \f]
        *
+       *  \param[in/out] f Right-hand side vector
+       *
        *  \author hiermeier
        *  \date 03/2016 */
       virtual void AddViscoMassContributions(Epetra_Vector& f) const;
@@ -137,6 +155,8 @@ namespace STR
        *                + (1 - \frac{\alpha_f \gamma}{\beta \Delta t} \boldsymbol{C}
        *                + (1 - \alpha_f)  \boldsymbol{K}_{T}
        *  \f]
+       *
+       * \param[in/out] jac Jacobian matrix
        *
        *  \author hiermeier
        *  \date 03/2016 */
@@ -180,38 +200,83 @@ namespace STR
        *  \date 03/2016 */
       virtual void UpdateConstantStateContributions();
 
+      /// set the time integration coefficients
+      void SetTimeIntegrationCoefficients(Coefficients& coeffs) const;
+
+      /// Return a reliable model value which can be used for line search
+      double GetModelValue(const Epetra_Vector& x) override;
+
+     private:
+      /*! \brief Time integration coefficients container
+       *
+       * \note For bounds on the individual parameters, please consult the
+       * original publication by Chung and Hulbert (1993). In practive however,
+       * it is advised to choose the spectral radius as \f$\rho_\infty \in [0.5,1]\f$.
+       */
+      struct Coefficients
+      {
+        /// copy operator (currently default is enough)
+        Coefficients& operator=(const Coefficients& source) = default;
+
+        //! Parameter \f$\beta \in (0,1/2]\f$
+        double beta_ = -1.0;
+
+        //! Parameter \f$\gamma \in (0,1]\f$
+        double gamma_ = -1.0;
+
+        //! Parameter \f$\alpha_f \in [0,1)\f$
+        double alphaf_ = -1.0;
+
+        //! Parameter \f$\alpha_m \in [-1,1)\f$
+        double alpham_ = -1.0;
+
+        //! Spectral radius \f$\rho_\infty \in [0,1]\f$
+        double rhoinf_ = -1.0;
+      };
+      Coefficients coeffs_;
+
      protected:
-      //! beta factor: feasible interval (0,1/2]
-      double beta_;
+      /** @name Generalized alpha parameters
+       *
+       *  \note redirection to the content of the coefficient struct */
+      //!@{
 
-      //! gamma factor: feasible interval (0,1]
-      double gamma_;
+      //! Parameter \f$\beta \in (0,1/2]\f$
+      double& beta_;
 
-      //! alpha_f factor: feasible interval [0,1)
-      double alphaf_;
+      //! Parameter \f$\gamma \in (0,1]\f$
+      double& gamma_;
 
-      //! alpha_m factor: feasible interval [-1,1)
-      double alpham_;
+      //! Parameter \f$\alpha_f \in [0,1)\f$
+      double& alphaf_;
 
-      //! rho_inf factor: feasible interval [0,1]
-      double rhoinf_;
+      //! Parameter \f$\alpha_m \in [-1,1)\f$
+      double& alpham_;
+
+      //! Spectral radius \f$\rho_\infty \in [0,1]\f$
+      double& rhoinf_;
+
+      //!@}
 
       /*! @name New vectors for internal use only
        *
        *  If an external use seems necessary, move these vectors to the
        *  global state data container and just store a pointer to the global
        *  state variable. */
-      //! @{
+      //!@{
+
       /*! \brief Holds the during a time step constant contributions to
        *  the velocity and acceleration state update.
        *
        *  entry (0): constant velocity contribution \f$\tilde{V}_{n+1}\f$
        *  entry (1): constant acceleration contribution \f$\tilde{A}_{n+1}\f$ */
       Teuchos::RCP<Epetra_MultiVector> const_vel_acc_update_ptr_;
-      //! @}
+
+      //!@}
 
       //! @name pointers to the global state data container content
-      //! @{
+      //!@{
+
       //! viscous force vector F_viscous F_{viscous;n+1}
       Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
 
@@ -223,9 +288,10 @@ namespace STR
 
       //! pointer to inertial force vector F_{inertial,n} at last time
       Teuchos::RCP<Epetra_Vector> finertian_ptr_;
-      //! @}
-    };
-  }  // namespace IMPLICIT
+
+      //!@}
+    };  // namespace IMPLICIT
+  }     // namespace IMPLICIT
 }  // namespace STR
 
 

@@ -588,6 +588,12 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy(params));
         else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
+        else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+          vecfunc =
+              Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
+        else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
+          vecfunc =
+              Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
         else
           dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
 

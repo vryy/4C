@@ -232,11 +232,11 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::CoAbstractStrategy& st
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
+bool CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc() == 1) return;
+  if (!ParRedist() || Comm().NumProc() == 1) return false;
 
   // decide whether redistribution should be applied or not
   double taverage = 0.0;
@@ -329,7 +329,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   }
 
   // get out of here if simulation is still in balance
-  if (!doredist) return;
+  if (!doredist) return false;
 
   // time measurement
   Comm().Barrier();
@@ -381,7 +381,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<const Epetra_
   if (Comm().MyPID() == 0)
     std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
 
-  return;
+  return doredist;
 }
 
 /*----------------------------------------------------------------------*
@@ -717,7 +717,8 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     {
       for (std::size_t i = 0; i < Interfaces().size(); ++i)
         Interfaces()[i]->StoreUnredistributedMaps();
-      pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
+      if (LMDoFRowMapPtr(true) != Teuchos::null)
+        pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(LMDoFRowMap(true)));
       pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(SlDoFRowMap(true)));
       pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
       pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
@@ -1211,6 +1212,14 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface(
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::CheckParallelDistribution(const double& t_start)
 {
+  const double my_total_time = Teuchos::Time::wallTime() - t_start;
+  UpdateParallelDistributionStatus(my_total_time);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::UpdateParallelDistributionStatus(const double& my_total_time)
+{
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
@@ -1226,8 +1235,8 @@ void CONTACT::CoAbstractStrategy::CheckParallelDistribution(const double& t_star
     Interfaces()[i]->CollectDistributionData(numloadele[i], numcrowele[i]);
 
   // time measurement (on each processor)
-  double t_end_for_minall = Teuchos::Time::wallTime() - t_start;
-  double t_end_for_maxall = t_end_for_minall;
+  double t_end_for_minall = my_total_time;
+  double t_end_for_maxall = my_total_time;
 
   // restrict time measurement to procs that own at least some part
   // of the "close" slave interface section(s) on the global level,
@@ -1522,6 +1531,9 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 
   for (int i = 0; i < (int)Interfaces().size(); ++i) Interfaces()[i]->AssembleSlaveCoord(xsmod);
 
+  // in case of 3D dual quadratic case, slave coordinates xs are modified
+  if (Dualquadslavetrafo()) invtrafo_->Apply(*xsmod, *xsmod);
+
   // ATTENTION: for EvaluateRelMov() we need the vector xsmod in
   // fully overlapping layout. Thus, export here. First, allreduce
   // slave dof row map to obtain fully overlapping slave dof map.
@@ -1529,9 +1541,6 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   Teuchos::RCP<Epetra_Vector> xsmodfull = Teuchos::rcp(new Epetra_Vector(*fullsdofs));
   LINALG::Export(*xsmod, *xsmodfull);
   xsmod = xsmodfull;
-
-  // in case of 3D dual quadratic case, slave coordinates xs are modified
-  if (Dualquadslavetrafo()) invtrafo_->Multiply(false, *xsmod, *xsmod);
 
   // evaluation of obj. invariant slip increment
   // do the evaluation on the interface
@@ -1903,13 +1912,6 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   // the auxiliary positions in binarytree contact search)
   SetState(MORTAR::state_old_displacement, *dis);
 
-  // double-check if active set is really converged
-  // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
-  // because usually active set convergence check has been integrated into
-  // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
-  if (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged())
-    dserror("ERROR: Active set not fully converged!");
-
   // reset active set status for next time step
   ResetActiveSet();
 
@@ -2089,8 +2091,14 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  if (!restartwithcontact) reader.ReadVector(LagrMult(), "lagrmultold");
-  if (!restartwithcontact) reader.ReadVector(LagrMultOld(), "lagrmultold");
+  if (!restartwithcontact)
+    if (!(DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>("INT_STRATEGY") ==
+                "Standard" &&
+            IsPenalty()))
+    {
+      reader.ReadVector(LagrMult(), "lagrmultold");
+      reader.ReadVector(LagrMultOld(), "lagrmultold");
+    }
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
   zincr_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
@@ -3079,6 +3087,19 @@ void CONTACT::CoAbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
 
       break;
     }
+    case MORTAR::eval_run_pre_solve:
+    {
+      if (not eval_vec) dserror("The read-only evaluation vector is expected!");
+      if (eval_vec->size() < 1)
+        dserror(
+            "The eval_vec is supposed to have at least a length"
+            " of 1!");
+
+      const Teuchos::RCP<const Epetra_Vector>& curr_disp = eval_vec->front();
+      RunPreSolve(curr_disp, cparams);
+
+      break;
+    }
     // -------------------------------------------------------------------
     // no suitable action could be found
     // -------------------------------------------------------------------
@@ -3178,6 +3199,14 @@ void CONTACT::CoAbstractStrategy::RunPostIterate(const CONTACT::ParamsInterface&
 {
   // do nothing
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPreSolve(
+    const Teuchos::RCP<const Epetra_Vector>& curr_disp, const CONTACT::ParamsInterface& cparams)
+{
+  // do nothing
 }
 
 /*----------------------------------------------------------------------*

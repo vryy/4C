@@ -219,7 +219,8 @@ void SCATRA::MeshtyingStrategyArtery::SetupSystem(
     const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
     ) const
 {
-  arttoscatracoupling_->SetSolutionVectors(scatratimint_->Phinp(), artscatratimint_->Phinp());
+  arttoscatracoupling_->SetSolutionVectors(
+      scatratimint_->Phinp(), Teuchos::null, artscatratimint_->Phinp());
 
   arttoscatracoupling_->SetupSystem(comb_systemmatrix_, rhs_,
       Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix),
@@ -287,9 +288,9 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryPressure() const
 /*--------------------------------------------------------------------------*
  | apply mesh movement on artery coupling                  kremheller 07/18 |
  *--------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> disp)
+void SCATRA::MeshtyingStrategyArtery::ApplyMeshMovement()
 {
-  arttoscatracoupling_->ApplyMeshMovement(disp);
+  arttoscatracoupling_->ApplyMeshMovement();
   return;
 }
 

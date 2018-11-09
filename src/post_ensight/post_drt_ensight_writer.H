@@ -3,13 +3,9 @@
 
  \brief contains basis class for the Ensight filter
 
- <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/Members/kronbichler
- 089 - 289-15235
- </pre>
+ \maintainer Martin Kronbichler
 
+ \level 1
  */
 
 

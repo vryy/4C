@@ -214,7 +214,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
   artnettimint_->PrepareLinearSolve();
 
   arttoporofluidcoupling_->SetSolutionVectors(
-      porofluidmultitimint_->Phinp(), artnettimint_->Pressurenp());
+      porofluidmultitimint_->Phinp(), porofluidmultitimint_->Phin(), artnettimint_->Pressurenp());
 
   // SetupCoupledArteryPoroFluidSystem();
   arttoporofluidcoupling_->SetupSystem(comb_systemmatrix_, rhs_,
@@ -290,9 +290,8 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CheckInitialFields(
 /*----------------------------------------------------------------------*
  | apply mesh movement                                 kremheller 06/18 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ApplyMeshMovement(
-    Teuchos::RCP<const Epetra_Vector> disp) const
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ApplyMeshMovement() const
 {
-  arttoporofluidcoupling_->ApplyMeshMovement(disp);
+  arttoporofluidcoupling_->ApplyMeshMovement();
   return;
 }

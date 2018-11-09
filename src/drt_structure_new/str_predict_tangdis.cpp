@@ -99,11 +99,13 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // ---------------------------------------------------------------------------
   // Check if we are using a Newton direction
   // ---------------------------------------------------------------------------
-  const std::string& dir_str = NoxParams().sublist("Direction").get<std::string>("Method");
-  if (dir_str != "Newton")
+  std::string dir_str = NoxParams().sublist("Direction").get<std::string>("Method");
+  if (dir_str == "User Defined")
+    dir_str = NoxParams().sublist("Direction").get<std::string>("User Defined Method");
+  if (dir_str != "Newton" and dir_str != "Modified Newton")
     dserror(
         "The TangDis predictor is currently only working for the direction-"
-        "method \"Newton\".");
+        "methods \"Newton\" and \"Modified Newton\".");
 
   // ---------------------------------------------------------------------------
   // (re)set the linear solver parameters

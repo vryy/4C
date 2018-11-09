@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -201,6 +201,14 @@ namespace DRT
           DRT::Discretization& discretization,             //!< discretization
           DRT::Element::LocationArray& la,                 //!< location array
           const bool jacobian_needed  //!< necessary to compute Jacobian at node
+      );
+
+      //! evaluate just the element
+      void EvaluateOnlyElement(DRT::Element* ele,          //!< current element
+          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,             //!< discretization
+          DRT::Element::LocationArray& la                  //!< location array
       );
 
      private:

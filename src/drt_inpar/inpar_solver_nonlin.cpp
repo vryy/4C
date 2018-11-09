@@ -52,10 +52,17 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   SetPrintEqualSign(direction, true);
 
   {
-    Teuchos::Array<std::string> st =
-        Teuchos::tuple<std::string>("Newton", "Steepest Descent", "NonlinearCG", "Broyden");
-    Teuchos::setStringToIntegralParameter<int>(
-        "Method", "Newton", "", st, Teuchos::tuple<int>(0, 1, 2, 3), &direction);
+    Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
+        "Newton", "Steepest Descent", "NonlinearCG", "Broyden", "User Defined");
+    Teuchos::setStringToIntegralParameter<int>("Method", "Newton",
+        "Choose a direction method for the nonlinear solver.", st,
+        Teuchos::tuple<int>(0, 1, 2, 3, 4), &direction);
+
+    Teuchos::Array<std::string> user_methods =
+        Teuchos::tuple<std::string>("Newton", "Modified Newton");
+    Teuchos::setStringToIntegralParameter<int>("User Defined Method", "Modified Newton",
+        "Choose a user-defined direction method.", user_methods, Teuchos::tuple<int>(0, 1),
+        &direction);
   }
 
   // sub-sub-list "Newton"
@@ -90,6 +97,43 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
     Teuchos::setStringToIntegralParameter<int>(
         "Scaling Type", "None", "", scalingtype, Teuchos::tuple<int>(0, 1, 2, 3), &steepestdescent);
+  }
+
+  // sub-sub-sub-list "Modified Newton"
+  Teuchos::ParameterList& modnewton = newton.sublist("Modified", false, "");
+  {
+    DoubleParameter("Initial Primal Diagonal Correction", 1.0e-4,
+        "Initial correction factor for the diagonal of the primal block.", &modnewton);
+
+    DoubleParameter("Minimal Primal Diagonal Correction", 1.0e-20,
+        "Minimal correction factor for the diagonal of the primal block.", &modnewton);
+
+    DoubleParameter("Maximal Primal Diagonal Correction", 1.0e+40,
+        "Maximal correction factor for the diagonal of the primal block.", &modnewton);
+
+    DoubleParameter("Primal Reduction Factor", 1.0 / 3.0,
+        "Reduction factor for the adaption of the primal diagonal correction.", &modnewton);
+
+    DoubleParameter("Primal Accretion Factor", 8.0,
+        "Accretion factor for the adaption of the primal diagonal correction.", &modnewton);
+
+    DoubleParameter("Primal High Accretion Factor", 100.0,
+        "High accretion factor for the adaption of the primal diagonal correction.", &modnewton);
+
+    Teuchos::Array<std::string> defaultsteptests =
+        Teuchos::tuple<std::string>("none", "Volume Change Control");
+    Teuchos::setStringToIntegralParameter<NOX::NLN::Direction::DefaultStepTest>("Default Step Test",
+        "none", "Choose a proper default step test strategy.", defaultsteptests,
+        Teuchos::tuple<NOX::NLN::Direction::DefaultStepTest>(
+            NOX::NLN::Direction::DefaultStepTest::none,
+            NOX::NLN::Direction::DefaultStepTest::volume_change_control),
+        &modnewton);
+
+    BoolParameter("Catch Floating Point Exceptions", "No",
+        "Set to true, if"
+        "floating point exceptions during the linear solver call should be "
+        "caught by the algorithm.",
+        &modnewton);
   }
 
   // sub-list "Pseudo Transient"
@@ -141,6 +185,15 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "Full Step", "Backtrack", "Polynomial", "More'-Thuente", "User Defined");
     Teuchos::setStringToIntegralParameter<int>(
         "Method", "Full Step", "", method, Teuchos::tuple<int>(0, 1, 2, 3, 4), &linesearch);
+
+    Teuchos::Array<std::string> checktypes =
+        Teuchos::tuple<std::string>("Complete", "Minimal", "None");
+    Teuchos::setStringToIntegralParameter<NOX::StatusTest::CheckType>(
+        "Inner Status Test Check Type", "Minimal",
+        "Specify the check type for the inner status tests.", checktypes,
+        Teuchos::tuple<NOX::StatusTest::CheckType>(
+            NOX::StatusTest::Complete, NOX::StatusTest::Minimal, NOX::StatusTest::None),
+        &linesearch);
   }
 
   // sub-sub-list "Full Step"

@@ -998,7 +998,7 @@ void CONTACT::SmoothingStrategy::SetState(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration            farah 01/15|
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::SmoothingStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
@@ -1166,9 +1166,9 @@ void CONTACT::SmoothingStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 01/15|
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth()
+void CONTACT::SmoothingStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
-  // get out gof here if not in the semi-smooth Newton case
+  // get out of here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
   bool semismooth = DRT::INPUT::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
   if (!semismooth)

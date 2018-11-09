@@ -1,13 +1,10 @@
-/*-----------------------------------------------------------*/
+
 /*!
 \file str_timint_basedataglobalstate.H
 
-\brief Global state data container for the structural (time)
-       integration
+\brief Global state data container for the structural (time) integration
 
 \maintainer Michael Hiermeier
-
-\date Jan 12, 2016
 
 \level 3
 
@@ -33,20 +30,6 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration
-class Epetra_Time;
-class Epetra_Comm;
-namespace LINALG
-{
-  class SparseOperator;
-  class SparseMatrix;
-}  // namespace LINALG
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Vector;
-  }  // namespace Epetra
-}  // namespace NOX
 namespace DRT
 {
   class DiscretizationInterface;
@@ -55,6 +38,23 @@ namespace DRT
     class Beam3Base;
   }  // namespace ELEMENTS
 }  // namespace DRT
+
+class Epetra_Comm;
+class Epetra_Time;
+
+namespace LINALG
+{
+  class SparseOperator;
+  class SparseMatrix;
+}  // namespace LINALG
+
+namespace NOX
+{
+  namespace Epetra
+  {
+    class Vector;
+  }  // namespace Epetra
+}  // namespace NOX
 
 namespace STR
 {
@@ -90,7 +90,12 @@ namespace STR
        *  \date 02/17 \author hiermeier */
       virtual BaseDataGlobalState& operator=(const BaseDataGlobalState& source);
 
-      /// initialize class variables
+      /*! \brief Initialize class variables
+       *
+       * @param discret Discretization object
+       * @param sdynparams Parameter list for structural dynamics from input file
+       * @param datasdyn Structural dynamics data container
+       */
       void Init(const Teuchos::RCP<DRT::DiscretizationInterface> discret,
           const Teuchos::ParameterList& sdynparams,
           const Teuchos::RCP<const BaseDataSDyn> datasdyn);
@@ -101,6 +106,18 @@ namespace STR
       /// read initial field conditions
       void SetInitialFields();
 
+      /*! \brief Setup blocking of linear system & vectors
+       *
+       * Depending on the actual model, the linear system will exhibit a block structure,
+       * e.g. when adding imposing constraints like in contact problems.
+       * Here, we select and set a suitable blocking for each problem type by considering
+       * input data related to model, discretization, and solution strategy.
+       *
+       * @param[in] me Model evaluator
+       * @param[in] mt Model type
+       *
+       * @return Max GID in the entire problem
+       */
       int SetupBlockInformation(
           const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt);
 
@@ -110,7 +127,12 @@ namespace STR
       /// setup the map extractors for all active element technologies
       void SetupElementTechnologyMapExtractors();
 
-      /// return map extractor for element technology
+      /*! \brief Return map extractor for element technology
+       *
+       * @param[in] etech Type of element technology that is queried
+       *
+       * @return MultiMapExtractor for the required type of element technology
+       */
       const LINALG::MultiMapExtractor& GetElementTechnologyMapExtractor(
           const INPAR::STR::EleTech etech) const;
 
@@ -120,12 +142,12 @@ namespace STR
 
       void SetupPressExtractor(LINALG::MultiMapExtractor& multimapext);
 
-      /* \brief Extract the part of a vector which belongs to the displacement dofs.
+      /*! \brief Extract the part of a vector which belongs to the displacement dofs.
        *
        * \param source (in) : full vector to extract from. */
       Teuchos::RCP<Epetra_Vector> ExtractDisplEntries(const Epetra_Vector& source) const;
 
-      /* \brief Extract the part of a vector which belongs to the model dofs.
+      /*! \brief Extract the part of a vector which belongs to the model dofs.
        *
        * \param mt (in)     : model type of the desired block.
        * \param source (in) : full vector to extract from. */
@@ -630,7 +652,7 @@ namespace STR
       /// Set the number of non-linear iterations of the #stepn_
       void SetNlnIterationNumber(const int nln_iter);
 
-      /// Return time for lin solver
+      /// Return time for linear solver
       double& GetMutableLinearSolverTime()
       {
         CheckInitSetup();

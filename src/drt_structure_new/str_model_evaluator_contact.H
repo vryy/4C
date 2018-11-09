@@ -104,8 +104,15 @@ namespace STR
       //! [derived]
       virtual void RunPostIterate(const NOX::Solver::Generic& solver);
 
+      /// [derived]
+      void RunPreSolve(const NOX::Solver::Generic& solver) override;
+
       //! [derived]
       virtual void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+          const Epetra_Vector& xold, const NOX::NLN::Group& grp);
+
+      //! [derived]
+      virtual void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
           const Epetra_Vector& xold, const NOX::NLN::Group& grp);
 
       //! [derived]
@@ -193,6 +200,8 @@ namespace STR
 
      private:
       void PostSetup(Teuchos::ParameterList& cparams);
+
+      void SetTimeIntegrationInfo(CONTACT::CoAbstractStrategy& strategy) const;
 
       void PostUpdateStepState();
 

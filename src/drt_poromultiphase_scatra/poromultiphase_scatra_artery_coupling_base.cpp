@@ -120,7 +120,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::GlobalExtractor() const
  | set solution vectors of single fields               kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::SetSolutionVectors(
-    Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phinp_art)
+    Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
+    Teuchos::RCP<const Epetra_Vector> phinp_art)
 {
   // do nothing
   return;

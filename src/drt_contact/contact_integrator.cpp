@@ -324,6 +324,11 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
               mygaussrule = DRT::UTILS::intrule_line_32point;
               break;
             }
+            case 50:
+            {
+              mygaussrule = DRT::UTILS::intrule_line_50point;
+              break;
+            }
             default:
             {
               dserror("Requested GP-Number is not implemented!");
@@ -2708,9 +2713,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = lsele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mynodes)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Cannot access slave ndoes. Null pointer!");
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mnodes)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Cannot access master nodes. Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrowL);
@@ -2766,13 +2773,13 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     double globgp[3] = {0.0, 0.0, 0.0};
     cell->LocalToGlobal(eta, globgp, 0);
 
-    // para coordinate on surface slave ele
+    // coordinate in parameter space on surface slave ele
     double sxi[2] = {0.0, 0.0};
 
-    // para coordinate on surface master ele
+    // coordinate in parameter space on surface master ele
     double mxi[2] = {0.0, 0.0};
 
-    // para coordinate on line (edge) slave ele
+    // coordinate in parameter space on line (edge) slave ele
     double lxi[2] = {0.0, 0.0};
 
     // project Gauss point onto slave/master surface element

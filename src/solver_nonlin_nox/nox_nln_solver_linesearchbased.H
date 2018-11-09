@@ -39,6 +39,10 @@ namespace NOX
 {
   namespace NLN
   {
+    namespace StatusTest
+    {
+      enum QuantityType : int;
+    }  // namespace StatusTest
     namespace INNER
     {
       namespace StatusTest
@@ -83,12 +87,24 @@ namespace NOX
         template <class T>
         NOX::StatusTest::Generic* GetOuterStatusTest() const;
 
+        //! \brief Returns a pointer to one specific stopping test %T.
+        /** If there is no outer test of type T with quantity type qtype, a NULL
+         *  pointer will be returned.
+         *
+         *  \author hiermeier \date 08/18 */
+        template <class T>
+        NOX::StatusTest::Generic* GetOuterStatusTestWithQuantity(
+            const NOX::NLN::StatusTest::QuantityType qtype) const;
+
         //! Returns the NOX::Utils object
         const NOX::Utils& GetUtils() const;
 
         //! Returns the global status of the given test name
         template <class T>
         NOX::StatusTest::StatusType GetStatus() const;
+
+        /// access the direction object
+        NOX::Direction::Generic& GetDirection() const;
 
        protected:
         //! initialize additional variables or overwrite base class initialization

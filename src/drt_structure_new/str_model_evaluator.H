@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Nov 30, 2015
-
 \level 3
 
 */
@@ -18,11 +16,24 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_H_
 
 #include <Teuchos_RCP.hpp>
-// necessary due to enums
-#include "../drt_inpar/inpar_structure.H"
 
-// forward declaration ...
+#include "../drt_inpar/inpar_structure.H"  // necessary due to enums
+
+// forward declarations
 class Epetra_Vector;
+
+namespace IO
+{
+  class DiscretizationWriter;
+  class DiscretizationReader;
+}  // namespace IO
+
+namespace LINALG
+{
+  class SparseOperator;
+  class SparseMatrix;
+}  // namespace LINALG
+
 namespace NOX
 {
   namespace Solver
@@ -35,19 +46,11 @@ namespace NOX
     class Group;
   }  // namespace NLN
 }  // namespace NOX
-namespace LINALG
-{
-  class SparseOperator;
-  class SparseMatrix;
-}  // namespace LINALG
-namespace IO
-{
-  class DiscretizationWriter;
-  class DiscretizationReader;
-}  // namespace IO
+
 namespace STR
 {
   class Integrator;
+
   namespace TIMINT
   {
     class Base;
@@ -55,12 +58,19 @@ namespace STR
     class BaseDataGlobalState;
     class BaseDataIO;
   }  // namespace TIMINT
+
   namespace MODELEVALUATOR
   {
     class Data;
     class Generic;
   }  // namespace MODELEVALUATOR
-  //! Wrapper class for the STR::MODELEVALUATOR::Generic derived objects.
+
+  /*! \brief Wrapper class for the STR::MODELEVALUATOR::Generic derived objects.
+   *
+   * Manages the access to the different distinct model evaluators. Calling any routine on this
+   * evaluator basically will trigger a loop over all active model evaluators that also implement
+   * this routine.
+   */
   class ModelEvaluator
   {
    public:
@@ -73,7 +83,17 @@ namespace STR
     //! destructor
     virtual ~ModelEvaluator(){};
 
-    //! initialize
+    /*! \brief Initialize
+     *
+     * \todo Document remaining input arguments.
+     *
+     * \param[in] eval_data_ptr ??
+     * \param[in] sdyn_ptr Pointer to the structural dynamic data container
+     * \param[in] gstate_ptr Pointer to the global state data container
+     * \param[in] gio_ptr Pointer to the input/output data container
+     * \param[in] int_ptr ??
+     * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
+     */
     void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
@@ -88,34 +108,76 @@ namespace STR
     void SetupMultiMapExtractor();
 
     //! @name General evaluate routines
-    //! @{
+    //!@{
+
     bool InitializeInertiaAndDamping(const Epetra_Vector& x, LINALG::SparseOperator& jac);
 
     bool ApplyInitialForce(const Epetra_Vector& x, Epetra_Vector& f);
 
-    //! apply force
+    /*! \brie Apply force
+     *
+     * @param[in] x Current solution
+     * @param[in/out] f Residual vector (empty on input, filled on output)
+     * @param[in] timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
+     *
+     * @return Boolean flag to indicate success (true) or failure (false)
+     */
     bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const;
 
-    //! apply stiffness
+    /*! \brief Apply stiffness
+     *
+     * @param[in] x Current solution
+     * @param[in/out] jac Jacobian matrix (empty on input, filled on output)
+     * @param[in] timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
+     *
+     * @return Boolean flag to indicate success (true) or failure (false)
+     */
     bool ApplyStiff(
         const Epetra_Vector& x, LINALG::SparseOperator& jac, const double& timefac_np) const;
 
-    //! apply model specific stiff
+    /*! \brief Apply model specific stiff
+     *
+     * @param[in] mt Type of model to be evaluated
+     * @param[in] x Current solution
+     * @param[in/out] jac Jacobian matrix (empty on input, filled on output)
+     * @param[in] timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
+     *
+     * @return Boolean flag to indicate success (true) or failure (false)
+     */
     bool ApplyStiff(const INPAR::STR::ModelType& mt, const Epetra_Vector& x,
         LINALG::SparseOperator& jac, const double& timefac_np) const;
 
-    //! apply force and stiffness
+    /*! \brief Apply force and stiffness
+     *
+     * @param[in] x Current solution
+     * @param[in/out] f Residual vector (empty on input, filled on output)
+     * @param[in/out] jac Jacobian matrix (empty on input, filled on output)
+     * @param[in] timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
+     *
+     * @return Boolean flag to indicate success (true) or failure (false)
+     */
     bool ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac,
         const double& timefac_np) const;
 
-    //! compute cheap second order correction right hand side
+    /*! \brief Compute cheap second order correction right hand side
+     *
+     * \todo Document remaining input arguments.
+     *
+     * @param type ??
+     * @param constraint_models ??
+     * @param[in] x Current solution
+     * @param[in/out] f Residual vector (empty on input, filled on output)
+     * @param[in] timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
+     *
+     * @return Boolean flag to indicate success (true) or failure (false)
+     */
     bool ApplyCheapSOCRhs(const enum NOX::NLN::CorrectionType type,
         const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
         Epetra_Vector& f, const double& timefac_np) const;
 
     bool CorrectParameters(const enum NOX::NLN::CorrectionType type) const;
 
-    /*! Remove any condensed contributions from the structural rhs
+    /*! \brief Remove any condensed contributions from the structural right-hand side
      *
      *  Recover the original right hand side vector by removing any
      *  contributions stemming from the condensation algorithm. A typical
@@ -124,7 +186,10 @@ namespace STR
      *  \author hiermeier \date 03/18 */
     void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
 
-    //! predict all internal variables in model evaluators
+    /*! \brief Predict all internal variables in model evaluators
+     *
+     * @param[in] pred_type Type of predictor to be applied
+     */
     void Predict(const INPAR::STR::PredEnum& pred_type) const;
 
     /** \brief Assembly of all force contributions
@@ -134,6 +199,7 @@ namespace STR
      *  \param f                   (out) : force vector which is going to be assembled.
      *  \param without_these_models (in) : Assemble all models, except the models in this
      *                                     vector (optional)
+     *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author hiermeier \date 03/17 */
     bool AssembleForce(const double timefac_np, Epetra_Vector& f,
@@ -148,6 +214,8 @@ namespace STR
      *  \param without_these_models (in) : Assemble all models, except the models in this
      *                                     vector (optional)
      *
+     *  \return Boolean flag to indicate success (true) or failure (false)
+     *
      *  \author farah \date 07/17 */
     bool AssembleJacobian(const double timefac_np, LINALG::SparseOperator& jac,
         const std::vector<INPAR::STR::ModelType>* without_these_models) const;
@@ -157,12 +225,21 @@ namespace STR
      *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
      *  \param f         (out) : force vector which is going to be assembled.
      *
+     *  \return Boolean flag to indicate success (true) or failure (false)
+     *
      *  \author hiermeier \date 03/17 */
     inline bool AssembleForce(const double timefac_np, Epetra_Vector& f) const
     {
       return AssembleForce(*me_vec_ptr_, timefac_np, f);
     }
 
+    /** \brief Assembly of all Jacobian contributions
+     *
+     *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
+     *  \param jac        (out) : jacobian which is going to be assembled.
+     *
+     *  \return Boolean flag to indicate success (true) or failure (false)
+     */
     inline bool AssembleJacobian(const double timefac_np, LINALG::SparseOperator& jac) const
     {
       return AssembleJacobian(*me_vec_ptr_, timefac_np, jac);
@@ -174,6 +251,8 @@ namespace STR
      *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
      *  \param f         (out) : force vector which is going to be assembled.
      *
+     *  \return Boolean flag to indicate success (true) or failure (false)
+     *
      *  \author hiermeier \date 03/17 */
     inline bool AssembleForce(const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
     {
@@ -181,7 +260,15 @@ namespace STR
       AssembleForce(ok, me_vec, timefac_np, f);
       return ok;
     }
-    // assemble element contributions to global PTC scaling operator
+
+    /*! brief Assemble element contributions to global PTC scaling operator
+     *
+     * \todo Document remaining input arguments.
+     *
+     * @param me_vec User-provided vector of all models which are going to be assembled
+     * @param timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
+     * @param modjac ??
+     */
     void AssembleJacobianContributionsFromElementLevelForPTC(
         const Vector& me_vec, const double timefac_np, Teuchos::RCP<LINALG::SparseMatrix>& modjac);
 
@@ -189,7 +276,7 @@ namespace STR
      *
      *  \param me_vec     (in) : user provided vector of all models which are going to be assembled
      *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
-     *  \param jac         (out) : jacobian which is going to be assembled.
+     *  \param jac       (out) : jacobian which is going to be assembled.
      *
      *  \author farah \date 07/17 */
     inline bool AssembleJacobian(
@@ -200,7 +287,7 @@ namespace STR
       return ok;
     }
 
-    //! @}
+    //!@}
 
     void CreateBackupState(const Epetra_Vector& dir);
 
@@ -233,7 +320,8 @@ namespace STR
     void ReadRestart(IO::DiscretizationReader& ioreader);
 
     //! @name Accessors
-    //! @{
+    //!@{
+
     //! return global state (read-only)
     const STR::TIMINT::BaseDataGlobalState& GetGlobalState() const;
 
@@ -243,13 +331,18 @@ namespace STR
     //! return pointer to the underlying time integrator (read-only)
     const Teuchos::RCP<const STR::TIMINT::Base>& GetTimIntPtr() const;
 
-    //! access one specific model evaluator
+    /*! \brief Access one specific model evaluator
+     *
+     * \param[in] mt Type of model evaluator to be accessed
+     */
     STR::MODELEVALUATOR::Generic& Evaluator(const enum INPAR::STR::ModelType& mt);
     const STR::MODELEVALUATOR::Generic& Evaluator(const enum INPAR::STR::ModelType& mt) const;
-    //! @}
+
+    //!@}
 
     //! @name Monolithic update routines
-    //! @{
+    //!@{
+
     //! Update configuration after time step
     void UpdateStepState(const double& timefac_n);
 
@@ -292,7 +385,13 @@ namespace STR
     /*! \brief Executed at the end of the NOX::Solver::Step() (f.k.a. Iterate()) method
      *
      *  \author hiermeier \date 03/17 */
-    void RunPostIterate(
+    void RunPostIterate(const NOX::Solver::Generic& solver, const double step,
+        const bool isdefaultstep, const int num_corrs) const;
+
+    /*! \brief Executed at the beginning of the NOX::Solver::solve() method
+     *
+     *  \author hiermeier */
+    void RunPreSolve(
         const NOX::Solver::Generic& solver, const double step, const bool isdefaultstep) const;
 
     /*! \brief Executed at the end of the NOX::NLN::Group::applyJacobianInverse
@@ -302,7 +401,13 @@ namespace STR
     void RunPostApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
         const Epetra_Vector& xold, const NOX::NLN::Group& grp) const;
 
-    //! @}
+    /*! \brief Executed before the solution of the linear system
+     *
+     *  \author seitz \date 04/17 */
+    void RunPreApplyJacobianInverse(const Epetra_Vector& rhs, Epetra_Vector& result,
+        const Epetra_Vector& xold, const NOX::NLN::Group& grp) const;
+
+    //!@}
 
     //! computes element based scaling contributions for PTC
     void ComputeJacobianContributionsFromElementLevelForPTC(
@@ -375,8 +480,10 @@ namespace STR
         const std::vector<INPAR::STR::ModelType>& only_these_models) const;
 
    private:
+    //! Flag to indicate whether Init() has been called
     bool isinit_;
 
+    //! Flag to indicate whether Setup() has been called
     bool issetup_;
 
     Teuchos::RCP<STR::ModelEvaluator::Map> me_map_ptr_;
@@ -385,18 +492,22 @@ namespace STR
 
     Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
 
+    //! Pointer to the structural dynamic data container
     Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn_ptr_;
 
+    //! Pointer to the global state data container
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
+    //! Pointer to the input/output data container
     Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
     Teuchos::RCP<STR::Integrator> int_ptr_;
 
+    //! Pointer to the underlying time integrator (read-only)
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+
   };  // class ModelEvaluator
 }  // namespace STR
-
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_H_ */

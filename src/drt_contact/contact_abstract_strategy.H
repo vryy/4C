@@ -791,9 +791,7 @@ namespace CONTACT
     };
     virtual const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const
     {
-      // currently not supported for the abstract strategy
-      dserror("SlTangentialDoFRowMap() seems currently unsupported!");
-      exit(EXIT_FAILURE);
+      return *gslipdofs_;
     }
 
     /*! \brief Return the master dof row map
@@ -899,6 +897,13 @@ namespace CONTACT
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
     };
+
+    //! Apply modifications (e.g. condensation) directly before linear solve
+    virtual void RunPreApplyJacobianInverse(
+        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+    { /* do nothing */
+      ;
+    }
 
     /*! Return the condensed matrix block pointer (read-only)
      *
@@ -1075,7 +1080,7 @@ namespace CONTACT
 
      Returns TRUE if at least one higher-order 3d slave element with
      dual Lagrange mutliplier shape functions in any interface. */
-    virtual const bool& Dualquadslavetrafo() { return Data().IsDualQuadSlaveTrafo(); };
+    virtual bool Dualquadslavetrafo() const { return Data().IsDualQuadSlaveTrafo(); };
 
     //! Return parallel redistribution status (yes or no)
     inline bool ParRedist() const { return (Data().ParType() != INPAR::MORTAR::parredist_none); }
@@ -1111,8 +1116,24 @@ namespace CONTACT
     /*! \brief Redistribute all contact interfaces in parallel
 
      We hand in the current global displacement state so that
-     a contact search can be performed and set state called. */
-    virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+     a contact search can be performed and set state called.
+
+     \return TRUE if the interface has been redistributed. Return FALSE otherwise.*/
+    virtual bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+
+    /** \brief Redistribute all contact interfaces in parallel
+     *
+     *  In contrast to RedistributeContact this routine takes place at a different
+     *  point during the simulation. For example, the redistribution can be initiated
+     *  each time a certain amount of Newton steps per load step has been reached.
+     *  In this way an adaption can be made quicker directly after a large predictor
+     *  step or another unforeseen scenario which might have changed the contact
+     *  situation severely. */
+    virtual bool DynRedistributeContact(
+        const Teuchos::RCP<const Epetra_Vector>& dis, const int nlniter)
+    {
+      return false;
+    };
 
     //! Global evaluation method called from time integrator
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -1130,8 +1151,8 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
-    virtual void Evaluate(CONTACT::ParamsInterface& cparams,
+    void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
+    void Evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
     {
       Evaluate(cparams, eval_vec, NULL);
@@ -1175,9 +1196,11 @@ namespace CONTACT
     //! @name merit function methods
     //! @{
 
+    /// return the potential contributions of the active contact strategy
     virtual double GetPotentialValue(
         const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const;
 
+    /// return contributions of the active contact strategy to the linear model
     virtual double GetLinearizedPotentialValueTerms(const Epetra_Vector& dir,
         const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
         const enum NOX::NLN::MeritFunction::LinOrder linorder,
@@ -1342,7 +1365,7 @@ namespace CONTACT
     virtual void EvalConstrRHS() = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
-    virtual void UpdateActiveSetSemiSmooth() = 0;
+    virtual void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 
@@ -1362,7 +1385,7 @@ namespace CONTACT
     }
     Teuchos::RCP<Epetra_Vector> MeshInitialization() { return Teuchos::null; };
 
-    void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) {}
     //! @}
 
    protected:
@@ -1507,6 +1530,10 @@ namespace CONTACT
      *  \author hiermeier \date 03/2017  */
     virtual void RunPostIterate(const CONTACT::ParamsInterface& cparams);
 
+    /// run before before the nonlinear solver starts
+    virtual void RunPreSolve(const Teuchos::RCP<const Epetra_Vector>& curr_disp,
+        const CONTACT::ParamsInterface& cparams);
+
     /*! \brief Reset the internal stored Lagrange multipliers
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
@@ -1594,6 +1621,9 @@ namespace CONTACT
     /*! check the parallel distribution and initialize a possible
      *  redistribution */
     void CheckParallelDistribution(const double& t_start);
+
+    /// update the parallel distribution status
+    void UpdateParallelDistributionStatus(const double& my_total_time);
 
     /*! \brief Update Mortar matrices D and M
 
@@ -1809,6 +1839,10 @@ namespace CONTACT
     bool& dualquadslavetrafo_;  //!< ref. to flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix>&
         trafo_;  //!< ref. to transformation matrix T for dual quad 3D case
+    Teuchos::RCP<LINALG::SparseMatrix>
+        systrafo_;  //! transformation matrix T for dual quad 3D case (all problem dofs)
+    Teuchos::RCP<LINALG::SparseMatrix>
+        invsystrafo_;  //! inverse transformation matrix T for dual quad 3D case (all problem dofs)
     Teuchos::RCP<LINALG::SparseMatrix>&
         invtrafo_;  //!< ref. to inverse trafo matrix T^(-1) for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>& dmatrixmod_;  //!< ref. to modified global Mortar matrix D

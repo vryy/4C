@@ -63,7 +63,7 @@ namespace DRT
         The evaluate function for the general artery case.
        */
       virtual int Evaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
           Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
@@ -99,7 +99,7 @@ namespace DRT
         \param rhs              (o) element rhs to calculate
         \param material         (i) artery material/dimesion
         */
-      void Sysmat(Artery* ele, DRT::Discretization& discretization, std::vector<int>& lm,
+      void Sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           LINALG::Matrix<my::iel_, my::iel_>& sysmat, LINALG::Matrix<my::iel_, 1>& rhs,
           Teuchos::RCP<const MAT::Material> material);
     };

@@ -2,9 +2,9 @@
 /*!
 \file str_expl_forwardeuler.H
 
-\maintainer Michael Hiermeier
+\brief Explicit Euler time integration for solid dynamics
 
-\date Aug 13, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -20,6 +20,9 @@ namespace STR
 {
   namespace EXPLICIT
   {
+    /*! \brief Explicit Euler time integration for solid dynamics
+     *
+     */
     class ForwardEuler : public Generic
     {
      public:

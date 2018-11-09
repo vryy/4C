@@ -15,12 +15,14 @@
 
 #include "str_impl_statics.H"
 #include "str_model_evaluator.H"
+#include "str_model_evaluator_structure.H"
 #include "str_model_evaluator_data.H"
 #include "str_timint_implicit.H"
 #include "str_predict_generic.H"
 #include "str_dbc.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_sparseoperator.H"
 
 #include <Epetra_Vector.h>
@@ -146,11 +148,7 @@ double STR::IMPLICIT::Statics::CalcRefNormForce(const enum NOX::Abstract::Vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Statics::GetIntParam() const
-{
-  CheckInitSetup();
-  return 0.0;
-}
+double STR::IMPLICIT::Statics::GetIntParam() const { return 0.0; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -282,4 +280,35 @@ void STR::IMPLICIT::Statics::ResetEvalParams()
 {
   // call base class
   STR::IMPLICIT::Generic::ResetEvalParams();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
+{
+  Teuchos::RCP<const Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
+  const Epetra_Vector& disnp = *disnp_ptr;
+
+  SetState(disnp);
+
+  EvalData().ClearValuesForAllEnergyTypes();
+  STR::MODELEVALUATOR::Structure& str_model =
+      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
+
+  str_model.DetermineStrainEnergy(disnp, true);
+  const double int_energy_np = EvalData().GetEnergyData(STR::internal_energy);
+  double ext_energy_np = 0.0;
+  GlobalState().GetFextNp()->Dot(disnp, &ext_energy_np);
+  const double total = int_energy_np - ext_energy_np;
+
+  std::ostream& os = IO::cout.os(IO::debug);
+  os << __LINE__ << __PRETTY_FUNCTION__ << "\n";
+  os << "internal/strain energy       = " << int_energy_np << "\n"
+     << "external energy              = " << ext_energy_np << "\n";
+  os << std::string(80, '-') << "\n";
+  os << "Total                     = " << total << "\n";
+  os << std::string(80, '-') << "\n";
+
+
+  return total;
 }

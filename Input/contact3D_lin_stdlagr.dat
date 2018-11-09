@@ -34,16 +34,13 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton
 TIMESTEP                        0.02
 NUMSTEP                         30
 MAXTIME                         0.6
@@ -56,6 +53,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
+INT_STRATEGY                    Standard
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -82,114 +80,19 @@ NDPOINT                         16
 NDLINE                          24
 NDSURF                          12
 NDVOL                           2
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
-//E 1 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
 E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1  1 2
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master
 E 7 - 1 Slave
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-//                              DOBJECT
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-//                              DOBJECT
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-// DOBJECT Id - LocsysId
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-// DOBJECT PBC_ID ORIENTATION
-DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 249 DNODE 1
 NODE 175 DNODE 2
@@ -1256,10 +1159,10 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.6 VALUES 0 0 0.2
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1 VALUES 0 0 0.2 0.2
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 0.6 VALUES 0 1 1
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 1 VALUES 0 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 2.01550627404253280e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.97030161890316524e-01 TOLERANCE 1e-8

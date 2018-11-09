@@ -2,9 +2,9 @@
 /*!
 \file str_expl_centrdiff.H
 
-\maintainer Michael Hiermeier
+\brief Central differences time integration for solid dynamics
 
-\date Aug 13, 2015
+\maintainer Michael Hiermeier
 
 \level 3
 
@@ -20,6 +20,9 @@ namespace STR
 {
   namespace EXPLICIT
   {
+    /*! \brief Central differences time integration for solid dynamics
+     *
+     */
     class CentrDiff : public Generic
     {
      public:

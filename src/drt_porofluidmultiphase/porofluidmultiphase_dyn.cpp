@@ -6,8 +6,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -83,8 +83,8 @@ void porofluidmultiphase_dyn(int restart)
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
       {
-        // call with true -> arterydis will be ghosted on all procs.
-        POROFLUIDMULTIPHASE::UTILS::RedistributeDiscretizations(actdis, arterydis, true);
+        actdis->FillComplete();
+        POROFLUIDMULTIPHASE::UTILS::GhostArteryDiscretizationOnAllProcs(arterydis);
         break;
       }
       default:

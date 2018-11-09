@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Mar 11, 2016
-
 \level 3
 
 */
@@ -119,9 +117,6 @@ void STR::IMPLICIT::Generic::ResetEvalParams()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Generic::PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const
 {
-  // do nothing during the predictor step
-  if (EvalData().IsPredictor()) return;
-
   const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(TimInt());
 
   timint_impl.PrintJacobianInMatlabFormat(curr_grp);
@@ -137,12 +132,7 @@ bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(const enum NOX::NLN::Correcti
 
   ResetEvalParams();
 
-  /* Set the default step indicator to FALSE during the evaluation. The
-   * automatic detection via the current step length won't work in the
-   * correction case, since the correction is often performed directly after a
-   * full step, i.e. the step length is equal to the default step length.
-   * (see SOC) */
-  EvalData().SetIsDefaultStep(false);
+  EvalData().SetCorrectionType(type);
 
   bool ok = false;
   switch (type)
@@ -159,13 +149,6 @@ bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(const enum NOX::NLN::Correcti
     {
       ok = ModelEval().ApplyCheapSOCRhs(type, constraint_models, x, f, 1.0);
       if (not jac.Filled()) dserror("The jacobian is supposed to be filled at this point!");
-
-      break;
-    }
-    case NOX::NLN::CorrectionType::sufficient_linear_infeasibility_reduction:
-    {
-      ok = ModelEval().CorrectParameters(type);
-      ApplyForceStiff(x, f, jac);
 
       break;
     }
@@ -188,6 +171,15 @@ bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(const enum NOX::NLN::Correcti
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Generic::ConditionNumber(const NOX::NLN::Group& grp) const
+{
+  const STR::TIMINT::Implicit& timint_impl = dynamic_cast<const STR::TIMINT::Implicit&>(TimInt());
+
+  timint_impl.ComputeConditionNumber(grp);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::NLN::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::NLN::Group& curr_grp)
 {
@@ -198,8 +190,6 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::NLN::Grou
 
   const bool isdefaultstep = (step == default_step_);
   impl_.ModelEval().RunPreComputeX(xold, dir_mutable, step, curr_grp, isdefaultstep);
-
-  impl_.PrintJacobianInMatlabFormat(curr_grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -221,25 +211,31 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::NLN::Gro
  *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostIterate(const NOX::Solver::Generic& solver)
 {
-  // try to cast the given solver object
-  const NOX::NLN::Solver::LineSearchBased* ls_solver =
-      dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
-
   double step = 0.0;
-  bool isdefaultstep = false;
+  const bool isdefaultstep = getStep(step, solver);
+  const int num_corrs = getNumberOfModifiedNewtonCorrections(solver);
 
-  if (not ls_solver)
-  {
-    step = default_step_;
-    isdefaultstep = true;
-  }
-  else
-  {
-    step = ls_solver->getStepSize();
-    isdefaultstep = (step == default_step_);
-  }
+  impl_.ModelEval().RunPostIterate(solver, step, isdefaultstep, num_corrs);
+}
 
-  impl_.ModelEval().RunPostIterate(solver, step, isdefaultstep);
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreSolve(const NOX::Solver::Generic& solver)
+{
+  double step = 0.0;
+  const bool isdefaultstep = getStep(step, solver);
+
+  impl_.ModelEval().RunPreSolve(solver, step, isdefaultstep);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPreApplyJacobianInverse(
+    const NOX::Abstract::Vector& rhs, NOX::Abstract::Vector& result,
+    const NOX::Abstract::Vector& xold, const NOX::NLN::Group& grp)
+{
+  impl_.ModelEval().RunPreApplyJacobianInverse(
+      convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -250,6 +246,14 @@ void NOX::NLN::PrePostOp::IMPLICIT::Generic::runPostApplyJacobianInverse(
 {
   impl_.ModelEval().RunPostApplyJacobianInverse(
       convert2EpetraVector(rhs), convert2EpetraVector(result), convert2EpetraVector(xold), grp);
+
+  impl_.PrintJacobianInMatlabFormat(grp);
+  impl_.ConditionNumber(grp);
+
+  // reset any possible set correction type at this point
+  const STR::MODELEVALUATOR::Data& eval_data = impl_.EvalData();
+  const_cast<STR::MODELEVALUATOR::Data&>(eval_data).SetCorrectionType(
+      NOX::NLN::CorrectionType::vague);
 }
 
 /*----------------------------------------------------------------------------*
@@ -272,6 +276,46 @@ const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVecto
   if (epetra_vec == NULL) dserror("The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool NOX::NLN::PrePostOp::IMPLICIT::Generic::getStep(
+    double& step, const NOX::Solver::Generic& solver) const
+{
+  // try to cast the given solver object
+  const NOX::NLN::Solver::LineSearchBased* ls_solver =
+      dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
+
+  bool isdefaultstep = false;
+
+  if (not ls_solver)
+  {
+    step = default_step_;
+    isdefaultstep = true;
+  }
+  else
+  {
+    step = ls_solver->getStepSize();
+    isdefaultstep = (step == default_step_);
+  }
+
+  return isdefaultstep;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int NOX::NLN::PrePostOp::IMPLICIT::Generic::getNumberOfModifiedNewtonCorrections(
+    const NOX::Solver::Generic& solver) const
+{
+  int number_of_corr = 0;
+  const Teuchos::ParameterList& pmod =
+      solver.getList().sublist("Direction").sublist("Newton").sublist("Modified");
+
+  if (pmod.isParameter("Number of Corrections"))
+    number_of_corr = pmod.get<int>("Number of Corrections");
+
+  return number_of_corr;
 }
 
 /*----------------------------------------------------------------------------*

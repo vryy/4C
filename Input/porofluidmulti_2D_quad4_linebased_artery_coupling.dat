@@ -151,7 +151,7 @@ FUNCTION t/1.5
 // --> pi*D^4/128/\mu = 1.0
 // --> L_p = 0.125989717 = 1.0/pi/D
 ----------------------------------------------------------------------FUNCT6
-VARFUNCTION p_art-p3
+VARFUNCTION (p_art-p3)*0.001
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0

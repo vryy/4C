@@ -47,6 +47,8 @@ STR::MODELEVALUATOR::Data::Data()
       delta_time_(-1.0),
       step_length_(-1.0),
       is_default_step_(true),
+      num_corr_mod_newton_(0),
+      corr_type_(NOX::NLN::CorrectionType::vague),
       timintfactor_disp_(-1.0),
       timintfactor_vel_(-1.0),
       stressdata_ptr_(Teuchos::null),
@@ -392,6 +394,14 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableStressDataPtr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const Epetra_Vector& STR::MODELEVALUATOR::Data::CurrentElementVolumeData() const
+{
+  if (elevolumes_ptr_.is_null()) dserror("Undefined reference to element volume data!");
+  return *elevolumes_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::StressData() const
 {
   if (stressdata_ptr_.is_null()) dserror("Undefined reference to the stress data!");
@@ -511,6 +521,17 @@ std::map<enum STR::EnergyType, double> const& STR::MODELEVALUATOR::Data::GetEner
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+double STR::MODELEVALUATOR::Data::GetEnergyData(enum STR::EnergyType type) const
+{
+  auto check = GetEnergyData().find(type);
+  if (check == GetEnergyData().cend())
+    dserror("Couldn't find the energy contribution: \"%s\".", STR::EnergyType2String(type).c_str());
+
+  return check->second;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::InsertEnergyTypeToBeConsidered(enum STR::EnergyType type)
 {
   energy_data_[type] = 0.0;
@@ -535,7 +556,8 @@ void STR::MODELEVALUATOR::Data::ClearValuesForAllEnergyTypes()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(double value, enum STR::EnergyType type)
+void STR::MODELEVALUATOR::Data::AddContributionToEnergyType(
+    const double value, const enum STR::EnergyType type)
 {
   energy_data_[type] += value;
 }

@@ -954,6 +954,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8_input.cpp
   src/drt_so3/so_hex8_multiscale.cpp
   src/drt_so3/so_hex8_service.cpp
+  src/drt_so3/so_hex8_determinant_analysis.cpp
   src/drt_so3/so_hex8p1j1.cpp
   src/drt_so3/so_hex8p1j1_evaluate.cpp
   src/drt_so3/so_hex8p1j1_input.cpp
@@ -1769,6 +1770,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_structure_new/str_model_evaluator_meshtying.cpp
   src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
@@ -1971,6 +1973,7 @@ set(OBJS_SOLVER
   src/solver/solver_amgnxn_hierarchies.cpp
   src/solver/solver_amgnxn_smoothers.cpp
   src/solver/solver_amgnxn_objects.cpp
+  src/solver/solver_aztecoo_conditionnumber.cpp
 )
 
 set(OBJS_SOLVER_NONLIN
@@ -2004,6 +2007,7 @@ set(OBJS_SOLVER_NONLIN
 
 set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_aux.cpp
+  src/solver_nonlin_nox/nox_nln_floating_point_exception.cpp
   src/solver_nonlin_nox/nox_nln_globaldata.cpp
   src/solver_nonlin_nox/nox_nln_problem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem.cpp
@@ -2024,6 +2028,8 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_meritfunction_lagrangian.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_infeasibility.cpp
   src/solver_nonlin_nox/nox_nln_direction_newton.cpp
+  src/solver_nonlin_nox/nox_nln_direction_modified_newton.cpp
+  src/solver_nonlin_nox/nox_nln_direction_defaultsteptest.cpp
   src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_statustest_combo.cpp
   src/solver_nonlin_nox/nox_nln_statustest_normf.cpp
@@ -2035,8 +2041,11 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_filter.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_upperbound.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_combo.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_volume_change.cpp
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
+  src/drt_contact/nox_nln_meshtying_linearsystem.cpp
   src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
   src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
   src/drt_scatra/nox_nln_scatra_linearsystem.cpp
@@ -2263,7 +2272,9 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp
   src/drt_contact/contact_wear_lagrange_strategy.cpp
+  src/drt_contact/meshtying_strategy_factory.cpp
   src/drt_contact/meshtying_abstract_strategy.cpp
+  src/drt_contact/meshtying_noxinterface.cpp
   src/drt_contact/meshtying_contact_bridge.cpp
   src/drt_contact/meshtying_lagrange_strategy.cpp
   src/drt_contact/meshtying_poro_lagrange_strategy.cpp
@@ -2285,10 +2296,10 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_projector.cpp
   src/drt_contact_aug/contact_aug_lagrange_strategy.cpp
   src/drt_contact_aug/contact_aug_lagrange_interface.cpp
+  src/drt_contact_aug/contact_aug_steepest_ascent_sp_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
   src/drt_contact_aug/contact_aug_penalty_update.cpp
-  src/drt_contact_aug/contact_aug_adaptive_cn.cpp
   src/drt_contact_aug/contact_aug_combo_strategy.cpp
   src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
   src/drt_contact_aug/contact_aug_potential.cpp
@@ -2299,6 +2310,7 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_aug_lagrange_multiplier_function.cpp
   src/drt_contact_aug/contact_aug_interface_assembly.cpp
   src/drt_contact_aug/contact_aug_timemonitor.cpp
+  src/drt_contact_aug/contact_aug_parallel_distribution_controller.cpp
   src/drt_contact_xcontact/xcontact_strategy.cpp
   src/drt_contact_xcontact/xcontact_interface.cpp
   src/drt_contact_xcontact/xcontact_integrator.cpp

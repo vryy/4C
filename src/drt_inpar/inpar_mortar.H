@@ -21,7 +21,7 @@ namespace DRT
   namespace INPUT
   {
     class ConditionDefinition;
-  }
+  }  // namespace INPUT
 }  // namespace DRT
 
 /*----------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ namespace INPAR
       relocation_none       ///< no mesh relocation
     };
 
-    /// Type of redudancy in interface storage
+    /// Type of redundancy in interface storage
     /// (this enum represents the input file parameter REDUNDANT_STORAGE)
     enum RedundantStorage
     {

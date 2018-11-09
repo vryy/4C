@@ -17,9 +17,12 @@
 #include "str_utils.H"
 #include "str_integrator.H"
 #include "str_model_evaluator_contact.H"
+#include "str_model_evaluator_meshtying.H"
 #include "str_model_evaluator_lagpenconstraint.H"
 #include "../drt_contact/contact_abstract_strategy.H"
+#include "../drt_contact/meshtying_abstract_strategy.H"
 #include "../drt_contact/contact_noxinterface.H"
+#include "../drt_contact/meshtying_noxinterface.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/lagpenconstraint_noxinterface.H"
 
@@ -35,6 +38,25 @@
 
 #include <Epetra_Vector.h>
 #include "str_nln_linearsystem_scaling.H"
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::LinSystem::ConditionNumber STR::NLN::Convert2NoxConditionNumberType(
+    const INPAR::STR::ConditionNumber stype)
+{
+  switch (stype)
+  {
+    case INPAR::STR::ConditionNumber::max_min_ev_ratio:
+      return NOX::NLN::LinSystem::ConditionNumber::max_min_ev_ratio;
+    case INPAR::STR::ConditionNumber::one_norm:
+      return NOX::NLN::LinSystem::ConditionNumber::one_norm;
+    case INPAR::STR::ConditionNumber::inf_norm:
+      return NOX::NLN::LinSystem::ConditionNumber::inf_norm;
+    default:
+      dserror("No known conversion.");
+      exit(EXIT_FAILURE);
+  }
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -274,6 +296,14 @@ void STR::NLN::CreateConstraintInterfaces(NOX::NLN::CONSTRAINT::ReqInterfaceMap&
         iconstr[NOX::NLN::sol_contact] = contact_model.StrategyPtr()->NoxInterfacePtr();
         break;
       }
+      case NOX::NLN::sol_meshtying:
+      {
+        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_meshtying);
+        STR::MODELEVALUATOR::Meshtying& mt_model =
+            dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
+        iconstr[NOX::NLN::sol_meshtying] = mt_model.StrategyPtr()->NoxInterfacePtr();
+        break;
+      }
       case NOX::NLN::sol_lag_pen_constraint:
       {
         STR::MODELEVALUATOR::Generic& model =
@@ -312,6 +342,14 @@ void STR::NLN::CreateConstraintPreconditioner(NOX::NLN::CONSTRAINT::PrecInterfac
          * interface. Nevertheless, the implementations can differ for the
          * contact/meshtying cases. */
         iconstr_prec[NOX::NLN::sol_contact] = contact_model.StrategyPtr();
+        break;
+      }
+      case NOX::NLN::sol_meshtying:
+      {
+        STR::MODELEVALUATOR::Generic& model = integrator.Evaluator(INPAR::STR::model_meshtying);
+        STR::MODELEVALUATOR::Meshtying& mt_model =
+            dynamic_cast<STR::MODELEVALUATOR::Meshtying&>(model);
+        iconstr_prec[NOX::NLN::sol_meshtying] = mt_model.StrategyPtr();
         break;
       }
       case NOX::NLN::sol_lag_pen_constraint:

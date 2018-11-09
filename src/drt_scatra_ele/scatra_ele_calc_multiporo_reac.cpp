@@ -7,8 +7,8 @@
 
    \level 3
 
-   \maintainer  Lena Yoshihara
-                yoshihara@lnm.mw.tum.de
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
                 http://www.lnm.mw.tum.de
  *----------------------------------------------------------------------*/
 
@@ -176,6 +176,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
           VarManager()->SetPhaseIDAndSpeciesType(
               k, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
+          // set delta in the variablemanager
+          VarManager()->SetDelta(poromat->Delta(), k);
 
           break;
         }
@@ -247,6 +249,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
         VarManager()->SetPhaseIDAndSpeciesType(
             0, poromat->PhaseID(), MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac);
+        // set delta in the variablemanager
+        VarManager()->SetDelta(poromat->Delta(), 0);
 
         break;
       }
@@ -522,7 +526,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
   if (VarManager()->EvaluateScalar(k))
   {
     porosity = VarManager()->VolFrac(k);
-    d_eff = 1.0;
+    d_eff = std::pow(VarManager()->VolFrac(k), actmat->Delta());
   }
 
   {
@@ -764,14 +768,17 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
   }
   else
   {
-    // If we have zero "densities" (porosity*saturation(k)), which mostly happens for tumor
-    // cells, the whole equation will be equal to zero since it is scaled with the density
-    // In that case also the mass fraction of the species (necrotic tumor cells) has to be zero
-    // --> here we explicitly force it to be zero through a "Dirichlet" boundary condition
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    if (VarManager()->GetSpeciesType(k) == MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
     {
-      const int fvi = vi * my::numdofpernode_ + k;
-      emat(fvi, fvi) += penalty_;
+      // If we have zero "densities" (porosity*saturation(k)), which mostly happens for tumor
+      // cells, the whole equation will be equal to zero since it is scaled with the density
+      // In that case also the mass fraction of the species (necrotic tumor cells) has to be zero
+      // --> here we explicitly force it to be zero through a "Dirichlet" boundary condition
+      for (unsigned vi = 0; vi < my::nen_; ++vi)
+      {
+        const int fvi = vi * my::numdofpernode_ + k;
+        emat(fvi, fvi) += penalty_;
+      }
     }
   }
   return;

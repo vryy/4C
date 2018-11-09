@@ -2,12 +2,9 @@
 /*!
 \file str_nln_solver_utils.H
 
-\brief Utility routines for the structural non-linear solver
-       classes.
+\brief Utility routines for the structural non-linear solver classes.
 
 \maintainer Michael Hiermeier
-
-\date Oct 9, 2015
 
 \level 3
 
@@ -167,7 +164,6 @@ namespace STR
     }  // namespace SOLVER
   }    // namespace NLN
 }  // namespace STR
-
 
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_NLN_SOLVER_UTILS_H_ */

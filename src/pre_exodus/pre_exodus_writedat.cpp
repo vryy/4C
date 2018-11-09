@@ -518,6 +518,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   std::vector<EXODUS::elem_def> cell;
   std::vector<EXODUS::elem_def> cellscatra;
   std::vector<EXODUS::elem_def> elemag;
+  std::vector<EXODUS::elem_def> artery;
   std::vector<EXODUS::elem_def>::const_iterator i_et;
 
   for (i_et = eledefs.begin(); i_et != eledefs.end(); ++i_et)
@@ -545,6 +546,8 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
       cellscatra.push_back(acte);
     else if (acte.sec.compare("ELECTROMAGNETIC") == 0)
       elemag.push_back(acte);
+    else if (acte.sec.compare("ARTERY") == 0)
+      artery.push_back(acte);
     else if (acte.sec.compare("") == 0)
       ;
     else
@@ -651,6 +654,15 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   // print electromagnetic elements
   dat << "---------------------------------------------------ELECTROMAGNETIC ELEMENTS" << std::endl;
   for (i_et = elemag.begin(); i_et != elemag.end(); ++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+  }
+
+  // print artery elements
+  dat << "-------------------------------------------------------ARTERY ELEMENTS" << std::endl;
+  for (i_et = artery.begin(); i_et != artery.end(); ++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);

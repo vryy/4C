@@ -6,8 +6,6 @@
 
 \maintainer Michael Hiermeier
 
-\date Nov 30, 2015
-
 \level 3
 
 */

@@ -296,6 +296,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Artery prescribed boundary condition";
   else if (Type() == ArtPorofluidCouplingCond)
     os << "Artery-Porofluid coupling condition";
+  else if (Type() == PoroMultiphaseScatraOxyPartPressCalcCond)
+    os << "PoroMultiphaseScatra Oxygen Partial Pressure Calculation condition";
   else if (Type() == ArtScatraCouplingCond)
     os << "Artery-Scatra coupling condition";
   else if (Type() == ArtRfCond)

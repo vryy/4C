@@ -4319,7 +4319,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   // get number of nodes of present slave element
   int nnodes = SlaveElement().NumNode();
 
-  // inítialize Jacobian determinant
+  // initialize Jacobian determinant
   double detg = 0.0;
 
   // initialize matrices de and me

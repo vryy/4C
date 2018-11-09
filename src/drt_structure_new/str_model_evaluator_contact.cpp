@@ -86,7 +86,10 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  strategy_ptr_ = factory.BuildStrategy(cparams, poroslave, poromaster, DofOffset(), interfaces);
+  eval_contact_ptr_->Set(&Discret(), 0);
+  strategy_ptr_ = factory.BuildStrategy(
+      cparams, poroslave, poromaster, DofOffset(), interfaces, eval_contact_ptr_.get());
+  eval_contact_ptr_->ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
 
   // build the search tree
   factory.BuildSearchTree(interfaces);
@@ -104,6 +107,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   strategy_ptr_->Inttime_init();
   strategy_ptr_->RedistributeContact(GState().GetDisN());
   strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
+  SetTimeIntegrationInfo(*strategy_ptr_);
 
   CheckPseudo2D();
 
@@ -152,6 +156,17 @@ void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
               << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
 #endif  // #ifdef CONTACTPSEUDO2D
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::SetTimeIntegrationInfo(
+    CONTACT::CoAbstractStrategy& strategy) const
+{
+  const INPAR::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
+  const double time_fac = Int().GetIntParam();
+
+  strategy.SetTimeIntegrationInfo(time_fac, dyntype);
 }
 
 /*----------------------------------------------------------------------*
@@ -232,23 +247,19 @@ void STR::MODELEVALUATOR::Contact::PostEvaluate()
 bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
+
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
-      INPAR::MORTAR::algorithm_gpts)
+          INPAR::MORTAR::algorithm_gpts ||
+      Strategy().IsPenalty() || Strategy().IsCondensedSystem())
   {
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
-    // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) return true;
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
-  }
-  else if (Strategy().IsCondensedSystem())
-  {
-    block_vec_ptr = Strategy().GetCondensedRhsPtr(f, timefac_np);
+
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    LINALG::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
+    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
-  else if (Strategy().IsSaddlePointSystem())
+  else
   {
     // --- displ. - block ---------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
@@ -258,12 +269,10 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
 
     // --- constr. - block --------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_constraint);
-    if (block_vec_ptr.is_null())
-      dserror(
-          "The constraint vector is a NULL pointer, although \n"
-          "the structural part indicates, that contact contributions \n"
-          "are present!");
-    LINALG::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
+    if (block_vec_ptr.is_null()) return true;
+    Epetra_Vector tmp(f.Map());
+    LINALG::Export(*block_vec_ptr, tmp);
+    f.Update(1., tmp, 1.);
   }
 
   return true;
@@ -277,12 +286,14 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
   int err = 0;
   // ---------------------------------------------------------------------
-  // gpts / Nitsche system: no additional/condensed dofs
+  // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
-      INPAR::MORTAR::algorithm_gpts)
+          INPAR::MORTAR::algorithm_gpts ||
+      Strategy().IsPenalty())
   {
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ, &EvalContact());
+    if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
     Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
   }
@@ -291,14 +302,15 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   // ---------------------------------------------------------------------
   else if (Strategy().IsCondensedSystem())
   {
-    Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
-
-    block_ptr = Strategy().GetCondensedMatrixBlockPtr(jac_dd, timefac_np);
-    // if there are no active contact contributions, we can skip this...
-    if (block_ptr.is_null()) return (err == 0);
-
-    // here we should hand in the jac_dd matrix and modify it
-    jac_dd->Add(*block_ptr, false, 1.0, 0.0);
+    // --- Kdd - block ---------------------------------------------------
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ, &EvalContact());
+    if (not block_ptr.is_null())
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
+      // reset the block pointers, just to be on the safe side
+      block_ptr = Teuchos::null;
+    }
   }
   // ---------------------------------------------------------------------
   // saddle-point system of equations or no contact contributions
@@ -829,6 +841,11 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetCurrentSoluti
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Contact::GetLastTimeStepSolutionPtr() const
 {
+  DRT::Problem* problem = DRT::Problem::Instance();
+  enum INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+      problem->ContactDynamicParams(), "SYSTEM");
+  if (systype == INPAR::CONTACT::system_condensed) return Teuchos::null;
+
   if (Strategy().GetLagrMultN(false).is_null()) return Teuchos::null;
 
   Teuchos::RCP<Epetra_Vector> old_lm_ptr =
@@ -897,8 +914,49 @@ void STR::MODELEVALUATOR::Contact::RunPostIterate(const NOX::Solver::Generic& so
 {
   CheckInitSetup();
 
+  const NOX::Epetra::Vector& nox_x =
+      dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+
+  // displacement vector after the predictor call
+  Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
+
+  if (Strategy().DynRedistributeContact(curr_disp, solver.getNumIterations())) EvaluateForce();
+
   EvalContact().SetActionType(MORTAR::eval_run_post_iterate);
   Strategy().Evaluate(EvalData().Contact());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::RunPreApplyJacobianInverse(const Epetra_Vector& rhs,
+    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+{
+  Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
+  const_cast<CONTACT::CoAbstractStrategy&>(Strategy())
+      .RunPreApplyJacobianInverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::RunPreSolve(const NOX::Solver::Generic& solver)
+{
+  CheckInitSetup();
+  const NOX::Epetra::Vector& nox_x =
+      dynamic_cast<const NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
+
+  // displacement vector after the predictor call
+  Teuchos::RCP<Epetra_Vector> curr_disp = GState().ExtractDisplEntries(nox_x.getEpetraVector());
+
+  std::vector<Teuchos::RCP<const Epetra_Vector>> eval_vec(1, Teuchos::null);
+  eval_vec[0] = curr_disp;
+
+  EvalContact().SetActionType(MORTAR::eval_run_pre_solve);
+  Strategy().Evaluate(EvalData().Contact(), &eval_vec);
+
+  //  if ( Strategy().RedistributeContact( curr_disp ) )
+  //    EvaluateForceStiff();
 }
 
 /*----------------------------------------------------------------------------*
@@ -918,6 +976,9 @@ void STR::MODELEVALUATOR::Contact::RunPostApplyJacobianInverse(const Epetra_Vect
 
   // augment the search direction
   Strategy().Evaluate(EvalData().Contact());
+
+  // clear the set any data again
+  EvalContact().ClearAll(GEN::AnyDataContainer::DataType::any);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1003,6 +1064,8 @@ bool STR::MODELEVALUATOR::Contact::CorrectParameters(NOX::NLN::CorrectionType ty
   EvalContact().Set(&type, 0);
 
   Strategy().Evaluate(EvalContact());
+
+  EvalContact().ClearEntry(GEN::AnyDataContainer::DataType::any, 0);
 
   return true;
 }

@@ -20,6 +20,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 /*----------------------------------------------------------------------*
@@ -30,10 +31,12 @@ MORTAR::StratDataContainer::StratDataContainer()
       comm_(Teuchos::null),
       scontact_(),
       dim_(0),
-      alphaf_(0),
+      alphaf_(0.0),
       parredist_(false),
       maxdof_(0),
-      systype_(INPAR::CONTACT::system_none)
+      systype_(INPAR::CONTACT::system_none),
+      dyntype_(INPAR::STR::dyna_statics),
+      dynparamN_(0.0)
 {
 }
 
@@ -63,4 +66,30 @@ MORTAR::StrategyBase::StrategyBase(const Teuchos::RCP<MORTAR::StratDataContainer
   Data().AlphaF() = alphaf;
   Data().MaxDof() = maxdof;
   Data().SysType() = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact_, "SYSTEM");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MORTAR::StrategyBase::SetTimeIntegrationInfo(
+    const double time_fac, const INPAR::STR::DynamicType dyntype)
+{
+  Data().SetDynType(dyntype);
+  if (Data().AlphaF() != 0.0 and time_fac != Data().AlphaF())
+    dserror(
+        "The time integration factor has been changed already. This error is"
+        " supposed to prohibit unintended changes.");
+  switch (dyntype)
+  {
+    case INPAR::STR::dyna_statics:
+      Data().SetDynParameterN(0.0);
+      break;
+    case INPAR::STR::dyna_genalpha:
+    case INPAR::STR::dyna_onesteptheta:
+      Data().SetDynParameterN(time_fac);
+      break;
+    default:
+      dserror(
+          "Unsupported time integration detected! [\"%s\"]", DynamicTypeString(dyntype).c_str());
+      exit(EXIT_FAILURE);
+  }
 }
