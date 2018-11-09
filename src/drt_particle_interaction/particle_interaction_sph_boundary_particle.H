@@ -92,6 +92,9 @@ namespace PARTICLEINTERACTION
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! set of particle types to consider in routine
+    std::set<PARTICLEENGINE::TypeEnum> typestoconsider_;
   };
 
   class SPHBoundaryParticleAdami : public SPHBoundaryParticleBase

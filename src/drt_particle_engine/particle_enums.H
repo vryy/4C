@@ -66,7 +66,8 @@ namespace PARTICLEENGINE
   {
     Phase1,
     Phase2,
-    BoundaryPhase
+    BoundaryPhase,
+    RigidPhase
   };
 
   //! get name of particle types

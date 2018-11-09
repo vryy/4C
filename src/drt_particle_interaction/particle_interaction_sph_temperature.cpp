@@ -194,6 +194,10 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
         dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
             particlematerial_->GetPtrToParticleMatParameter(type_i));
 
+    const MAT::PAR::ParticleMaterialBase* basematerial_i = NULL;
+    if (type_i == PARTICLEENGINE::RigidPhase)
+      basematerial_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
+
     // particles of current type with neighbors
     const auto& currparticles = typeIt.second;
 
@@ -208,9 +212,13 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
       double* tempdot_i;
 
       // get pointer to particle states
-      dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
       temp_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
       tempdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+
+      if (type_i == PARTICLEENGINE::RigidPhase)
+        dens_i = &(basematerial_i->initDensity_);
+      else
+        dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
 
       // initialize sum of evaluated kernel values for particle i due to neighbor particles j
       double sumj_tempdot_ij(0.0);
@@ -230,7 +238,7 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
               particlematerial_->GetPtrToParticleMatParameter(type_j));
 
         const MAT::PAR::ParticleMaterialBase* basematerial_j = NULL;
-        if (type_j == PARTICLEENGINE::BoundaryPhase)
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
           basematerial_j = particlematerial_->GetPtrToParticleMatParameter(type_j);
 
         // iterate over particle status of neighboring particles
@@ -259,7 +267,7 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::EnergyEquation() const
             mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
             temp_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
 
-            if (type_j == PARTICLEENGINE::BoundaryPhase)
+            if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
               dens_j = &(basematerial_j->initDensity_);
             else
               dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);

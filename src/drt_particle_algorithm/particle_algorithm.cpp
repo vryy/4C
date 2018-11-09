@@ -574,10 +574,11 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
   for (auto& typeIt : particlestatestotypes_)
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // no modified velocity and acceleration for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no modified velocity and acceleration for boundary or rigid particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // get reference to set of particle states of current type
     std::set<PARTICLEENGINE::StateEnum>& stateEnumSet = typeIt.second;
@@ -913,8 +914,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
     // get type of particles
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // gravity is not set for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    // gravity is not set for boundary or rigid particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // set gravity acceleration for all particles of current type
     particlecontainerbundle->SetStateSpecificContainer(
