@@ -1340,8 +1340,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     //    std::cout << "\nx: " << FADUTILS::CastToDouble( x ) << std::endl;
     //*********************** END DEBUG *****************************************
 
-    beta =
-        FADUTILS::sqrt<T>((gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
+    beta = FADUTILS::sqrt<T>(
+        (gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
     beta_exp2 = beta * beta;
     beta_exp3 = beta_exp2 * beta;
     beta_exp4 = beta_exp2 * beta_exp2;
