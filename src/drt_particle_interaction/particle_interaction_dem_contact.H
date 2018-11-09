@@ -89,7 +89,7 @@ namespace PARTICLEINTERACTION
     //! add contact contribution to force field
     virtual void AddForceContribution() const;
 
-   protected:
+   private:
     //! init normal contact handler
     virtual void InitNormalContactHandler();
 

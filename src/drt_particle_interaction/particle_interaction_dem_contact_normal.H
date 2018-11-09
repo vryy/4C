@@ -131,7 +131,7 @@ namespace PARTICLEINTERACTION
         const double* radius_j, const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const override;
 
-   protected:
+   private:
     //! coefficient of restitution (particle-particle)
     const double e_;
 
@@ -168,7 +168,7 @@ namespace PARTICLEINTERACTION
         const double* radius_j, const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const = 0;
 
-   protected:
+   private:
     //! time step critical contact stiffness (particle-particle)
     double k_tcrit_;
   };
