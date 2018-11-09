@@ -70,6 +70,32 @@ namespace FADUTILS
   }
 
   /*!
+  \brief Calculate square root of a scalar FAD quantity
+
+  Note: do NOT try to call this method with expressions such as FADUTILS::sqrt(a+b+c)
+        as argument is then of type Sacado::Fad::Expr<T> instead of Sacado::Fad::DFad<double>
+  */
+  template <typename scalar_type>
+  inline scalar_type sqrt(scalar_type a)
+  {
+    // avoid non-differentiable point of square root function by using conditional
+    /* Todo should we use a tolerance/threshold here? */
+    if (a == 0.0)
+      return 0.0;
+    else
+      return std::sqrt(a);
+  }
+
+  /*!
+  \brief Template specialization for double
+  */
+  template <>
+  inline double sqrt(double a)
+  {
+    return std::sqrt(a);
+  }
+
+  /*!
   \brief Calculate Norm of a scalar FAD quantity, if a compiler Error is thrown then calling this
   function, check if the template argument is explicitly stated in the function call, i.e.
   FADUTILS::Norm<my_AD_type>(...)
@@ -77,7 +103,7 @@ namespace FADUTILS
   template <typename scalar_type>
   inline scalar_type Norm(scalar_type a)
   {
-    return std::sqrt(a * a);
+    return FADUTILS::sqrt<scalar_type>(a * a);
   }
 
   /*!
@@ -92,7 +118,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return std::sqrt(norm_squared);
+    return FADUTILS::sqrt<scalar_type>(norm_squared);
   }
 
   /*!

@@ -1340,7 +1340,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     //    std::cout << "\nx: " << FADUTILS::CastToDouble( x ) << std::endl;
     //*********************** END DEBUG *****************************************
 
-    beta = std::sqrt((gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
+    beta =
+        FADUTILS::sqrt<T>((gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
     beta_exp2 = beta * beta;
     beta_exp3 = beta_exp2 * beta;
     beta_exp4 = beta_exp2 * beta_exp2;
@@ -1361,7 +1362,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // interaction potential
     interaction_potential_GP =
-        rho1rho2_JacFac_GaussWeight * M_PI / std::sqrt(Delta * Delta * Delta) *
+        rho1rho2_JacFac_GaussWeight * M_PI / FADUTILS::sqrt<T>(Delta * Delta * Delta) *
         (1.0 / radius2_ + cos_alpha * cos_alpha / (gap_bl + radius2_) -
             x * x * sin_2alpha * sin_2alpha / (4.0 * (gap_bl + radius2_) * beta_exp2));
 
@@ -1403,7 +1404,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // partial derivatives of single length specific interaction potential
     pot_ia_partial_Delta =
-        -1.5 * M_PI * std::sqrt(std::pow(Delta, -5)) *
+        -1.5 * M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -5)) *
         (1.0 / radius2_ + cos_alpha * cos_alpha / (gap_bl + radius2_) -
             x * x * sin_2alpha * sin_2alpha / (4 * (gap_bl + radius2_) * beta_exp2));
 
@@ -1411,7 +1412,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         pot_ia_partial_Delta * Delta_partial_x -
         (x * sin_2alpha * sin_2alpha / (gap_bl + radius2_) / beta_exp2 -
             x * x * sin_2alpha * sin_2alpha / (gap_bl + radius2_) / beta_exp3 * beta_partial_x) *
-            M_PI_2 * std::sqrt(std::pow(Delta, -3));
+            M_PI_2 * FADUTILS::sqrt<T>(std::pow(Delta, -3));
 
     pot_ia_partial_gap_bl = pot_ia_partial_Delta * Delta_partial_gap_bl +
                             (-cos_alpha * cos_alpha / (gap_bl + radius2_) / (gap_bl + radius2_) +
@@ -1419,7 +1420,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                     (4 * (gap_bl + radius2_) * (gap_bl + radius2_) * beta_exp2) +
                                 x * x * sin_2alpha * sin_2alpha /
                                     (2 * (gap_bl + radius2_) * beta_exp3) * beta_partial_gap_bl) *
-                                M_PI * std::sqrt(std::pow(Delta, -3));
+                                M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -3));
 
     pot_ia_partial_cos_alpha =
         pot_ia_partial_Delta * Delta_partial_cos_alpha +
@@ -1428,7 +1429,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                 (gap_bl + radius2_) / beta_exp2 +
             x * x * sin_2alpha * sin_2alpha / (2.0 * (gap_bl + radius2_) * beta_exp3) *
                 beta_partial_cos_alpha) *
-            M_PI * std::sqrt(std::pow(Delta, -3));
+            M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -3));
 
     //************************** DEBUG ******************************************
     //    std::cout << "\npot_ia_partial_Delta: " << FADUTILS::CastToDouble( pot_ia_partial_Delta );
