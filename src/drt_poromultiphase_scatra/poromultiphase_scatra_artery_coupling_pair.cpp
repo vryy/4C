@@ -1545,7 +1545,7 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     // dx/dX = x * N_XYZ^T
     defGrad.MultiplyNT(ele2pos, N2_XYZ);
     Ft0.Multiply(defGrad, t0);
-    const FAD Ft0Norm = FADUTILS::VectorNorm<numdim_>(Ft0);
+    const FAD Ft0Norm = FADUTILS::VectorNorm(Ft0);
     // finally get the length
     length += Ft0Norm * w_gp * jacobi;
   }
@@ -2490,7 +2490,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     f.Clear();
     for (unsigned int i = 0; i < numdim_; i++) f(i) = x2(i) - r1(i);
 
-    residual = FADUTILS::VectorNorm<numdim_>(f);
+    residual = FADUTILS::VectorNorm(f);
 
     // Reset matrices
     for (unsigned int i = 0; i < numdim_; i++)

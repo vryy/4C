@@ -24,24 +24,32 @@ namespace FADUTILS
   /*!
   \brief Cast of FAD to double
   */
-  inline double CastToDouble(FAD a) { return a.val(); }
+  template <typename scalar_type>
+  inline double CastToDouble(scalar_type a)
+  {
+    return a.val();
+  }
 
   /*!
-  \brief Cast of double to double
+  \brief Template specialization for double
   */
-  inline double CastToDouble(double a) { return a; }
+  template <>
+  inline double CastToDouble(double a)
+  {
+    return a;
+  }
 
   /*!
   \brief Cast of a FAD matrix to a double matrix
   */
-  template <typename type, int dim1, int dim2>
+  template <typename type, unsigned int dim1, unsigned int dim2>
   LINALG::TMatrix<double, dim1, dim2> CastToDouble(LINALG::TMatrix<type, dim1, dim2> a)
   {
     LINALG::TMatrix<double, dim1, dim2> b(true);
 
-    for (int i = 0; i < dim1; i++)
+    for (unsigned int i = 0; i < dim1; i++)
     {
-      for (int j = 0; j < dim2; j++)
+      for (unsigned int j = 0; j < dim2; j++)
       {
         b(i, j) = CastToDouble(a(i, j));
       }
@@ -53,7 +61,7 @@ namespace FADUTILS
   \brief Calculate signum function of FAD or double quantity
   */
   template <typename type>
-  type Signum(type a)
+  double Signum(type a)
   {
     if (a >= 0.0)
       return 1.0;
@@ -62,58 +70,38 @@ namespace FADUTILS
   }
 
   /*!
-  \brief Calculate square root of a scalar double quantity
+  \brief Calculate Norm of a scalar FAD quantity, if a compiler Error is thrown then calling this
+  function, check if the template argument is explicitly stated in the function call, i.e.
+  FADUTILS::Norm<my_AD_type>(...)
   */
-  inline double sqrt(double a) { return std::sqrt(a); }
-
-  /*!
-  \brief Calculate square root of a scalar FAD quantity
-
-  Note: do NOT try to call this method with expressions such as FADUTILS::sqrt(a+b+c)
-        as argument is then of type Sacado::Fad::Expr<T> instead of Sacado::Fad::DFad<double>
-  */
-  inline FAD sqrt(FAD a)
+  template <typename scalar_type>
+  inline scalar_type Norm(scalar_type a)
   {
-    // avoid non-differentiable point of square root function by using conditional
-    /* Todo should we use a tolerance/threshold here? */
-    if (a == 0.0)
-      return 0.0;
-    else
-      return std::sqrt(a);
-  }
-
-  /*!
-  \brief Calculate Norm of a scalar double quantity
-  */
-  inline double Norm(double a) { return std::sqrt(a * a); }
-
-  /*!
-  \brief Calculate Norm of a scalar FAD quantity
-  */
-  inline FAD Norm(FAD a) { return FADUTILS::sqrt(a * a); }
-
-  /*!
-  \brief Calculate Norm of a double vector
-  */
-  template <int length>
-  double VectorNorm(LINALG::TMatrix<double, length, 1> v)
-  {
-    return v.Norm2();
+    return std::sqrt(a * a);
   }
 
   /*!
   \brief Calculate Norm of a FAD vector
   */
-  template <int length>
-  FAD VectorNorm(LINALG::TMatrix<FAD, length, 1> v)
+  template <typename scalar_type, unsigned int length>
+  scalar_type VectorNorm(LINALG::TMatrix<scalar_type, length, 1> v)
   {
-    FAD norm_squared = 0.0;
-    for (int i = 0; i < length; i++)
+    scalar_type norm_squared = 0.0;
+    for (unsigned int i = 0; i < length; i++)
     {
       norm_squared += v(i) * v(i);
     }
 
-    return FADUTILS::sqrt(norm_squared);
+    return std::sqrt(norm_squared);
+  }
+
+  /*!
+  \brief Template specialization for double
+  */
+  template <unsigned int length>
+  double VectorNorm(LINALG::TMatrix<double, length, 1> v)
+  {
+    return v.Norm2();
   }
 
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
@@ -127,7 +115,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return FADUTILS::sqrt(norm_squared);
+    return std::sqrt(norm_squared);
   }
 
   /*!
