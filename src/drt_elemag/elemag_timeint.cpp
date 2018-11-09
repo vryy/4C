@@ -597,9 +597,6 @@ namespace
       // owned by the processor. The vectors are zeroed.
       electric.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
       magnetic.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
-      conductivity.reset(new Epetra_Vector(*dis.ElementRowMap()));
-      permittivity.reset(new Epetra_Vector(*dis.ElementRowMap()));
-      permeability.reset(new Epetra_Vector(*dis.ElementRowMap()));
     }
 
     // Same for the trace and cell pressure.
@@ -615,7 +612,6 @@ namespace
     Epetra_SerialDenseMatrix dummyMat;
     Epetra_SerialDenseVector dummyVec;
     Epetra_SerialDenseVector interpolVec;
-    Epetra_SerialDenseVector elematerials;
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
 
     // For every element of the processor
@@ -638,17 +634,7 @@ namespace
       for (int i = 0; i < interpolVec.Length(); i++) interpolVec(i) = 0.0;
 
       // Interpolating hdg internal values to the node
-      ele->Evaluate(
-          params, dis, la[0].lm_, dummyMat, dummyMat, interpolVec, elematerials, dummyVec);
-
-      if (dis.ElementRowMap()->LID(ele->Id()) != -1)
-      {
-        const MAT::ElectromagneticMat *elemagmat =
-            static_cast<const MAT::ElectromagneticMat *>(ele->Material().get());
-        (*conductivity)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->sigma(ele->Id());
-        (*permittivity)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->epsilon(ele->Id());
-        (*permeability)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->mu(ele->Id());
-      }
+      ele->Evaluate(params, dis, la[0].lm_, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
       // Sum values on nodes into vectors and record the touch count (build average of values)
       // This average is to get a continous inteface out of the discontinous
@@ -689,6 +675,26 @@ namespace
     }
     dis.ClearState(true);
   }
+
+  void getElementMaterialProperties(DRT::Discretization &dis,
+      Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
+      Teuchos::RCP<Epetra_Vector> &permeability)
+  {
+    // For every element of the processor
+    for (int el = 0; el < dis.NumMyRowElements(); ++el)
+    {
+      // Opening the element
+      DRT::Element *ele = dis.lRowElement(el);
+
+      const MAT::ElectromagneticMat *elemagmat =
+          static_cast<const MAT::ElectromagneticMat *>(ele->Material().get());
+      (*conductivity)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->sigma(ele->Id());
+      (*permittivity)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->epsilon(ele->Id());
+      (*permeability)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->mu(ele->Id());
+    }
+
+    return;
+  }
 }  // namespace
 
 /*----------------------------------------------------------------------*
@@ -701,10 +707,7 @@ void ELEMAG::ElemagTimeInt::Output()
   electric.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   magnetic.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   trace.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
-  // These values are not necessariliy written at everyu time step but this will be done later on
-  conductivity.reset(new Epetra_Vector(*discret_->ElementRowMap()));
-  permittivity.reset(new Epetra_Vector(*discret_->ElementRowMap()));
-  permeability.reset(new Epetra_Vector(*discret_->ElementRowMap()));
+
   // Get the results from the discretization vectors to the output ones
   getNodeVectorsHDG(*discret_, trace_, numdim_, electric, magnetic, trace, conductivity,
       permittivity, permeability);
@@ -712,37 +715,84 @@ void ELEMAG::ElemagTimeInt::Output()
   // Create the new step
   output_->NewStep(step_, time_);
 
+  if (step_ == 0)
+  {
+    getElementMaterialProperties(*discret_, conductivity, permittivity, permeability);
+    output_->WriteVector("conductivity", conductivity);
+    output_->WriteVector("permittivity", permittivity);
+    output_->WriteVector("permeability", permeability);
+
+    output_->WriteElementData(true);
+
+    if (myrank_ == 0) std::cout << "======= Element properties written" << std::endl;
+  }
+
   // Output the reuslts
   output_->WriteVector("magnetic", magnetic, IO::nodevector);
   output_->WriteVector("trace", trace, IO::nodevector);
   output_->WriteVector("electric", electric, IO::nodevector);
-  output_->WriteVector("conductivity", conductivity);
-  output_->WriteVector("permittivity", permittivity);
-  output_->WriteVector("permeability", permeability);
+
+  // add restart data
+
+  if (uprestart_ != 0 && step_ % uprestart_ == 0)
+  {
+    WriteRestart();
+  }
 
   return;
 }  // Output
 
 
 /*----------------------------------------------------------------------*
- |  Write restart vectors (public)                     gravemeier 06/17 |
+ |  Write restart vectors (public)                     berardocco 11/18 |
  *----------------------------------------------------------------------*/
 void ELEMAG::ElemagTimeInt::WriteRestart()
 {
-  // if (myrank_ == 0) std::cout<<"======= Restart written in step " << step_ << std::endl;
-  // To be filled
+  if (myrank_ == 0) std::cout << "======= Restart written in step " << step_ << std::endl;
+
+  output_->WriteVector("traceRestart", trace);
+
+  // write internal field for which we need to create and fill the corresponding vectors
+  // since this requires some effort, the WriteRestart method should not be used excessively!
+  Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action", ELEMAG::fill_restart_vecs);
+  eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+
+  discret_->SetState(1, "intVar", intVar);
+  discret_->Evaluate(eleparams);
+
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1, "intVar");
+
+  intVar->PutScalar(0.0);
+  LINALG::Export(*matrix_state, *intVar);
+  output_->WriteVector("intVar", intVar);
+
+  discret_->ClearState(true);
+
   return;
 }  // WriteRestart
 
 
 /*----------------------------------------------------------------------*
- |  ReadRestart (public)                               gravemeier 06/17 |
+ |  ReadRestart (public)                               berardocco 11/18 |
  *----------------------------------------------------------------------*/
 void ELEMAG::ElemagTimeInt::ReadRestart(int step)
 {
-  // IO::DiscretizationReader reader(discret_,step);
-  // time_ = reader.ReadDouble("time");
-  // step_ = reader.ReadInt("step");
+  IO::DiscretizationReader reader(discret_, step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+  Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+  reader.ReadVector(intVar, "intVar");
+  reader.ReadMultiVector(trace, "traceRestart");
+
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action", ELEMAG::ele_init_from_restart);
+  eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  discret_->SetState(1, "intVar", intVar);
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->ClearState(true);
 
   return;
 }  // ReadRestart
