@@ -185,7 +185,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       const std::set<StateEnum> particlestates = container->GetParticleStates();
 
       // safety check
-      if (particlestates.find(PARTICLEENGINE::Position) == particlestates.end())
+      if (not particlestates.count(PARTICLEENGINE::Position))
         dserror("particle state '%s' not found!",
             PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
 

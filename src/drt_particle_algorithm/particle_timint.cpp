@@ -109,7 +109,7 @@ void PARTICLEALGORITHM::TimInt::Setup(
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
     // insert current particle type into set of particles to integrate in time
-    if (typesexludedfromtimeintegration.find(particleType) == typesexludedfromtimeintegration.end())
+    if (not typesexludedfromtimeintegration.count(particleType))
       typestointegrate_.insert(particleType);
   }
 }

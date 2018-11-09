@@ -584,10 +584,8 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
     std::set<PARTICLEENGINE::StateEnum>& stateEnumSet = typeIt.second;
 
     // check for modified velocity and acceleration of current type
-    bool modifiedvelocity =
-        (stateEnumSet.find(PARTICLEENGINE::ModifiedVelocity) != stateEnumSet.end());
-    bool modifiedacceleration =
-        (stateEnumSet.find(PARTICLEENGINE::ModifiedAcceleration) != stateEnumSet.end());
+    bool modifiedvelocity = stateEnumSet.count(PARTICLEENGINE::ModifiedVelocity);
+    bool modifiedacceleration = stateEnumSet.count(PARTICLEENGINE::ModifiedAcceleration);
 
     // safety check
     if (modifiedvelocity != modifiedacceleration)
