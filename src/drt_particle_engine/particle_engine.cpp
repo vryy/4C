@@ -43,7 +43,11 @@
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleEngine::ParticleEngine(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : comm_(comm), myrank_(comm.MyPID()), params_(params), minbinsize_(0.0)
+    : comm_(comm),
+      myrank_(comm.MyPID()),
+      params_(params),
+      minbinsize_(0.0),
+      validparticleconnectivity_(false)
 {
   // empty constructor
 }
@@ -562,11 +566,26 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
 }
 
 /*---------------------------------------------------------------------------*
+ | get reference to particle neighbors map                    sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+const PARTICLEENGINE::ParticleNeighborsMap&
+PARTICLEENGINE::ParticleEngine::GetParticleNeighborsMap() const
+{
+  // safety check
+  if (not validparticleconnectivity_) dserror("invalid particle connectivity!");
+
+  return particletoparticleneighbors_;
+}
+
+/*---------------------------------------------------------------------------*
  | get local index in specific particle container             sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
 const PARTICLEENGINE::LocalIndexTupleShrdPtr
 PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) const
 {
+  // safety check
+  if (not validparticleconnectivity_) dserror("invalid particle connectivity!");
+
   // get local index of particle in specific container
   auto globalidIt = globalidtolocalindex_.find(globalid);
   if (globalidIt == globalidtolocalindex_.end()) return nullptr;
@@ -1306,6 +1325,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
     std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
+  // safety check
+  if (not validparticleconnectivity_) dserror("invalid particle connectivity!");
+
   // iterate over particle types
   for (auto& typeIt : directghostingmap_)
   {
@@ -1348,6 +1370,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes,
     std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
+  // safety check
+  if (not validparticleconnectivity_) dserror("invalid particle connectivity!");
+
   // iterate over particle types
   for (auto& typeIt : particlestatestotypes)
   {

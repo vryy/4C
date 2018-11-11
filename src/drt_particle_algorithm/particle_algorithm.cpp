@@ -535,6 +535,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // build global id to local index map
   particleengine_->BuildGlobalIDToLocalIndexMap();
 
+  // validate particle connectivity flag
+  particleengine_->ValidateParticleConnectivity();
+
   // store particle positions after transfer of particles
   StorePositionsAfterParticleTransfer();
 }
@@ -621,7 +624,11 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
   // check particle transfer including bin size safety checks
   bool transferneeded = CheckParticleTransfer();
 
-  if (transferevery_ or transferneeded or writeresultsthisstep_ or writerestartthisstep_)
+  // check for valid particle connectivity
+  bool invalidparticleconnectivity = (not particleengine_->HaveValidParticleConnectivity());
+
+  if (transferevery_ or transferneeded or invalidparticleconnectivity or writeresultsthisstep_ or
+      writerestartthisstep_)
   {
     // transfer particles to new bins and processors
     particleengine_->TransferParticles();
@@ -646,6 +653,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 
     // build global id to local index map
     particleengine_->BuildGlobalIDToLocalIndexMap();
+
+    // validate particle connectivity flag
+    particleengine_->ValidateParticleConnectivity();
 
     // store particle positions after transfer of particles
     StorePositionsAfterParticleTransfer();

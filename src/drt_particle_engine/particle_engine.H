@@ -112,6 +112,15 @@ namespace PARTICLEENGINE
     //! build global id to local index map
     void BuildGlobalIDToLocalIndexMap();
 
+    //! validate particle connectivity flag
+    void ValidateParticleConnectivity() { validparticleconnectivity_ = true; };
+
+    //! invalidate particle connectivity flag
+    void InvalidateParticleConnectivity() { validparticleconnectivity_ = false; };
+
+    //! check for valid particle connectivity
+    bool HaveValidParticleConnectivity() const { return validparticleconnectivity_; };
+
     //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
@@ -119,10 +128,7 @@ namespace PARTICLEENGINE
     };
 
     //! get reference to particle neighbors map
-    const ParticleNeighborsMap& GetParticleNeighborsMap() const override
-    {
-      return particletoparticleneighbors_;
-    };
+    const ParticleNeighborsMap& GetParticleNeighborsMap() const override;
 
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
@@ -305,6 +311,9 @@ namespace PARTICLEENGINE
 
     //! maps local index of owned particles to other processors local index of ghosted particles
     std::map<TypeEnum, std::map<int, std::vector<std::pair<int, int>>>> directghostingmap_;
+
+    //! flag denoting validity particle connectivity
+    bool validparticleconnectivity_;
   };
 
 }  // namespace PARTICLEENGINE
