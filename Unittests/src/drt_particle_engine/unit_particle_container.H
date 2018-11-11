@@ -58,7 +58,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     // init some particles
     int index(0);
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
+    ParticleStates particle;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -144,7 +144,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   {
     // init a particle
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
+    ParticleStates particle;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -171,8 +171,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   {
     // init a particle
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -209,8 +209,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   {
     int globalid(0);
     int globalid_reference(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -267,8 +267,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   {
     int globalid(0);
     int globalid_reference(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -317,8 +317,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   {
     int globalid(0);
     int globalid_reference(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -480,8 +480,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   void test_ScaleState()
   {
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -538,8 +538,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   void test_UpdateState()
   {
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> vel(3);
     std::vector<double> mass(1);
@@ -594,8 +594,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   void test_SetState()
   {
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
 
     std::vector<double> pos(3);
     std::vector<double> vel(3);
@@ -627,8 +627,8 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   void test_ClearState()
   {
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
 
     std::vector<double> pos(3, 0.0);
     std::vector<double> vel(3, 0.0);
@@ -674,8 +674,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
 
   void test_ParticlesStored() { TS_ASSERT_EQUALS(container_->ParticlesStored(), 3); }
 
-  void compareParticleStates(std::map<StateEnum, std::vector<double>>& particle_reference,
-      std::map<StateEnum, std::vector<double>>& particle)
+  void compareParticleStates(ParticleStates& particle_reference, ParticleStates& particle)
   {
     TS_ASSERT_EQUALS(particle_reference.size(), particle.size());
 

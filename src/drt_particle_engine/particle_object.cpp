@@ -47,7 +47,7 @@ PARTICLEENGINE::ParticleObject::ParticleObject()
  | init particle object                                       sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleObject::Init(TypeEnum particletype, int particleglobalid,
-    const std::map<StateEnum, std::vector<double>>& particlestates, int bingid, int containerindex)
+    const ParticleStates& particlestates, int bingid, int containerindex)
 {
   particletype_ = particletype;
   particleglobalid_ = particleglobalid;

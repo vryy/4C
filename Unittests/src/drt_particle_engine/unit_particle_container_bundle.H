@@ -68,7 +68,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     // init some particles
     int index(0);
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
+    ParticleStates particle;
     ParticleContainerShrdPtr container = nullptr;
 
     std::vector<double> pos(3);
@@ -215,8 +215,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -271,8 +271,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -330,8 +330,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -385,8 +385,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ParticlesStored(), 3);
 
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -432,8 +432,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     ParticleContainerShrdPtr container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -532,8 +532,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     ParticleContainerShrdPtr container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> mass(1);
     std::vector<double> rad(1);
@@ -634,8 +634,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     ParticleContainerShrdPtr container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -729,8 +729,8 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
 
     ParticleContainerShrdPtr container = nullptr;
     int globalid(0);
-    std::map<StateEnum, std::vector<double>> particle;
-    std::map<StateEnum, std::vector<double>> particle_reference;
+    ParticleStates particle;
+    ParticleStates particle_reference;
     std::vector<double> pos(3);
     std::vector<double> rad(1);
 
@@ -834,8 +834,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(particlesstored.size(), 6);
   }
 
-  void compareParticleStates(std::map<StateEnum, std::vector<double>>& particle_reference,
-      std::map<StateEnum, std::vector<double>>& particle)
+  void compareParticleStates(ParticleStates& particle_reference, ParticleStates& particle)
   {
     TS_ASSERT_EQUALS(particle_reference.size(), particle.size());
 

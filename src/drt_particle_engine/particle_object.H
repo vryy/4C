@@ -69,9 +69,8 @@ namespace PARTICLEENGINE
     virtual ~ParticleObject(){};
 
     //! init particle object
-    void Init(TypeEnum particletype, int particleglobalid,
-        const std::map<StateEnum, std::vector<double>>& particlestates_, int bingid = -1,
-        int containerindex = -1);
+    void Init(TypeEnum particletype, int particleglobalid, const ParticleStates& particlestates_,
+        int bingid = -1, int containerindex = -1);
 
     //! return unique ParObject id
     virtual int UniqueParObjectId() const
@@ -92,10 +91,7 @@ namespace PARTICLEENGINE
     int ReturnParticleGlobalID() const { return particleglobalid_; };
 
     //! return particle states
-    std::map<StateEnum, std::vector<double>> ReturnParticleStates() const
-    {
-      return particlestates_;
-    };
+    ParticleStates ReturnParticleStates() const { return particlestates_; };
 
     //! return bin gid
     int ReturnBinGid() const { return bingid_; };
@@ -111,7 +107,7 @@ namespace PARTICLEENGINE
     int particleglobalid_;
 
     //! maps particle state enum to state
-    std::map<StateEnum, std::vector<double>> particlestates_;
+    ParticleStates particlestates_;
 
     //! bin gid particle is located in
     int bingid_;
