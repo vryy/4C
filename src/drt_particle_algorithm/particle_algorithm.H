@@ -170,9 +170,6 @@ namespace PARTICLEALGORITHM
     //! vector of initial or generated particles to distribute
     std::vector<PARTICLEENGINE::ParticleObjShrdPtr> particlestodistribute_;
 
-    //! particle positions of all types after last transfer of particles
-    std::map<PARTICLEENGINE::TypeEnum, std::vector<double>> positionsafterlasttransfer_;
-
     //! number of particles on this processor after last load balance
     int numparticlesafterlastloadbalance_;
 

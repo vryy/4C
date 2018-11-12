@@ -498,7 +498,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleStatesOfParticleType
   {
     // insert default particle states
     (typeIt.second)
-        .insert({PARTICLEENGINE::Position, PARTICLEENGINE::Velocity, PARTICLEENGINE::Acceleration});
+        .insert({PARTICLEENGINE::Position, PARTICLEENGINE::Velocity, PARTICLEENGINE::Acceleration,
+            PARTICLEENGINE::LastTransferPosition});
   }
 
   // insert integration dependent states of all particle types
@@ -733,29 +734,19 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     // no owned particles of current particle type
     if (particlestored == 0) continue;
 
-    // get pointer to particle position
-    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    // get pointer to particle states
+    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    const double* lasttransferpos =
+        container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
 
     // get dimension of particle position
     int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
-
-    // get vector of particle positions after last transfer for current particle type
-    auto positionTypeIt = positionsafterlasttransfer_.find(particleType);
-    if (positionTypeIt == positionsafterlasttransfer_.end())
-      dserror(
-          "particle type '%s' not found!", PARTICLEENGINE::EnumToTypeName(particleType).c_str());
-    std::vector<double>& currenttypepositionsafterlasttransfer = positionTypeIt->second;
-
-    // safety check
-    if ((statedim * particlestored) != (int)currenttypepositionsafterlasttransfer.size())
-      dserror("expected %d coordinate values, but got %d!", (statedim * particlestored),
-          currenttypepositionsafterlasttransfer.size());
 
     // iterate over coordinate values of owned particles of current type
     for (int i = 0; i < (statedim * particlestored); ++i)
     {
       // get position increment of particle in current spatial dimension since last transfer
-      double absolutpositionincrement = std::abs(pos[i] - currenttypepositionsafterlasttransfer[i]);
+      double absolutpositionincrement = std::abs(pos[i] - lasttransferpos[i]);
 
       // compare to current maximum
       maxpositionincrement = std::max(maxpositionincrement, absolutpositionincrement);
@@ -783,9 +774,6 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::ParticleAlgorithm::StorePositionsAfterParticleTransfer()
 {
-  // clear map
-  positionsafterlasttransfer_.clear();
-
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
       particleengine_->GetParticleContainerBundle();
@@ -806,25 +794,16 @@ void PARTICLEALGORITHM::ParticleAlgorithm::StorePositionsAfterParticleTransfer()
     // no owned particles of current particle type
     if (particlestored == 0) continue;
 
-    // get pointer to particle position
-    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    // get pointer to particle states
+    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    double* lasttransferpos =
+        container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
 
     // get dimension of particle position
     int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
 
-    // prepare vector to store particle positions after last transfer for current particle type
-    std::vector<double>& currenttypepositionsafterlasttransfer =
-        positionsafterlasttransfer_[particleType];
-    currenttypepositionsafterlasttransfer.reserve(statedim * particlestored);
-
     // copy particle position data
-    for (int i = 0; i < (statedim * particlestored); ++i)
-      currenttypepositionsafterlasttransfer.push_back(pos[i]);
-
-    // safety check
-    if ((statedim * particlestored) != (int)currenttypepositionsafterlasttransfer.size())
-      dserror("expected %d coordinate values, but got %d!", (statedim * particlestored),
-          currenttypepositionsafterlasttransfer.size());
+    for (int i = 0; i < (statedim * particlestored); ++i) lasttransferpos[i] = pos[i];
   }
 }
 
