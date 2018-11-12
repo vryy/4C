@@ -68,10 +68,9 @@ namespace FADUTILS
   }
 
   /*!
-  \brief Calculate square root of a scalar FAD quantity
-
-  Note: do NOT try to call this method with expressions such as FADUTILS::sqrt(a+b+c)
-        as argument is then of type Sacado::Fad::Expr<T> instead of Sacado::Fad::DFad<double>
+  \brief Calculate square root of a scalar FAD quantity. If a compiler Error is thrown then calling
+  this function, check if the template argument is explicitly stated in the function call, i.e.
+  FADUTILS::sqrt<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type sqrt(scalar_type a)
@@ -94,7 +93,7 @@ namespace FADUTILS
   }
 
   /*!
-  \brief Calculate Norm of a scalar FAD quantity, if a compiler Error is thrown then calling this
+  \brief Calculate Norm of a scalar FAD quantity. If a compiler Error is thrown then calling this
   function, check if the template argument is explicitly stated in the function call, i.e.
   FADUTILS::Norm<my_AD_type>(...)
   */
