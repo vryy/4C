@@ -217,6 +217,11 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "static contact angle in degree in continuum surface force formulation with wetting effects",
       &particledynsph);
 
+  // type of phase change
+  setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
+      tuple<std::string>("NoPhaseChange"), tuple<int>(INPAR::PARTICLE::NoPhaseChange),
+      &particledynsph);
+
   /*-------------------------------------------------------------------------*
    | discrete element method (DEM) specific control parameters               |
    *-------------------------------------------------------------------------*/

@@ -155,6 +155,12 @@ namespace INPAR
       ContinuumSurfaceForce
     };
 
+    //! type of phase change
+    enum PhaseChangeType
+    {
+      NoPhaseChange
+    };
+
     /*---------------------------------------------------------------------------*
      | discrete element method (DEM) specific control parameters                 |
      *---------------------------------------------------------------------------*/
