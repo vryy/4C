@@ -398,6 +398,25 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
 }
 
 /*---------------------------------------------------------------------------*
+ | change type of particles                                   sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
+    std::map<TypeEnum, std::set<int>>& particlestoremove,
+    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TypeChangeParticles");
+
+  // remove particles from containers
+  RemoveParticlesFromContainers(particlestoremove);
+
+  // insert owned particles undergoing a type change
+  InsertOwnedParticles(particlestoinsert);
+
+  // invalidate particle connectivity flag
+  validparticleconnectivity_ = false;
+}
+
+/*---------------------------------------------------------------------------*
  | build overlapping particle to particle neighbor map        sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()

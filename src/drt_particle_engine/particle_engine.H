@@ -106,6 +106,11 @@ namespace PARTICLEENGINE
     //! dynamic load balancing
     void DynamicLoadBalancing();
 
+    //! change type of particles
+    void TypeChangeParticles(std::map<TypeEnum, std::set<int>>& particlestoremove,
+        std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+        override;
+
     //! build overlapping particle to particle neighbor map
     void BuildParticleToParticleNeighbors();
 
