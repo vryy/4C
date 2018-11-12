@@ -17,8 +17,6 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
 
-typedef Sacado::Fad::DFad<double> FAD;
-
 namespace FADUTILS
 {
   /*!
