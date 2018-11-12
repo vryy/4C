@@ -683,7 +683,9 @@ baci_test(elch_RCE_rotsymm_pbc 2 "")
 baci_test(elch_straight_convection 2 "")
 baci_test(elch_test 2 "")
 baci_test(elemag_hex_cube 2 "" minimal)
+baci_test_restartonly(elemag_hex_cube_restart 2 5) #this one MUST be placed behind test case 'elemag_hex_cube'
 baci_test(elemag_tet_cube 2 "")
+baci_test_restartonly(elemag_tet_cube_restart 2 10) #this one MUST be placed behind test case 'elemag_tet_cube'
 baci_test(f2_channel20x20_drt_weak 2 "")
 baci_test(f2_channel20x20_drt_mixhyb 1 "")
 baci_test(f2_channel20x20_drt_mixhyb 2 8)

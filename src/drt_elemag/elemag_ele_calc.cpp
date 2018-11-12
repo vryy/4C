@@ -254,7 +254,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::PrintTrace(DRT::Element* ele)
   std::cout << "Numer of faces: " << nfaces_ << std::endl;
   std::cout << "Numer of DOF per face: " << ele->NumDofPerFace(0) << std::endl;
   unsigned int index = 0;
-  unsigned int second_index;
+  unsigned int second_index = 0;
   for (std::vector<double>::iterator iter = localtrace_.begin(); iter != localtrace_.end();
        iter++, index++, second_index++)
   {
@@ -330,49 +330,25 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::FillRestartVectors(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   // sort this back to the interior values vector
-  int size = shapes_->ndofs_ * (nsd_ + 1);
-  if (trac_with_pml_elemag) size = shapes_->ndofs_ * (nsd_ + nsd_ + 1);
+  int size = shapes_->ndofs_ * nsd_ * 2;
 
-  std::vector<double> interiorValnp(size);
-  for (unsigned int i = 0; i < interiorValnp.size(); ++i)
+  std::vector<double> interiorVar(size);
+  for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
   {
-    if (!trac_with_pml_elemag)
-    {
-      if ((i + 1) % (nsd_ + 1) == 0)
-        interiorValnp[i] = interiorMagneticnp_((i + 1) / (nsd_ + 1) - 1);
-      else
-      {
-        int xyz = i % (nsd_ + 1);  // 0 for x, 1 for y and 2 for z (for 3D)
-        interiorValnp[i] = interiorElectricnp_(xyz * shapes_->ndofs_ + i / (nsd_ + 1));
-      }
-    }
-    else  // if(trac_with_pml_elemag)
-    {
-      if ((i + 1) % (nsd_ + nsd_ + 1) == 0)
-        interiorValnp[i] = interiorMagneticnp_((i + 1) / (nsd_ + nsd_ + 1) - 1);
-      else if ((i + 1) % (nsd_ + nsd_ + 1) <= nsd_)
-      {
-        int xyz = i % (nsd_ + nsd_ + 1);  // 0 for x, 1 for y and 2 for z (for 3D)
-        interiorValnp[i] = interiorElectricnp_(xyz * shapes_->ndofs_ + i / (nsd_ + nsd_ + 1));
-      }
-      else
-      {
-        int xyz = i % (nsd_ + nsd_ + 1) - nsd_;  // 0 for x, 1 for y and 2 for z (for 3D)
-        interiorValnp[i] = interiorauxiliaryPML_(xyz * shapes_->ndofs_ + i / (nsd_ + nsd_ + 1));
-      }
-    }
+    interiorVar[i] = interiorMagneticnp_(i);
+    interiorVar[shapes_->ndofs_ * nsd_ + i] = interiorElectricnp_(i);
   }
 
   // tell this change in the interior variables the discretization
   std::vector<int> localDofs = discretization.Dof(1, ele);
   const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
   {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intVar");
     Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
     for (unsigned int i = 0; i < localDofs.size(); ++i)
     {
       const int lid = intdofcolmap->LID(localDofs[i]);
-      secondary[lid] = interiorValnp[i];
+      secondary[lid] = interiorVar[i];
     }
   }
 
@@ -387,38 +363,19 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::ElementInitFromRestart(
     DRT::Element* ele, DRT::Discretization& discretization)
 {
   DRT::ELEMENTS::Elemag* elemagele = dynamic_cast<DRT::ELEMENTS::Elemag*>(ele);
-  int size = shapes_->ndofs_ * (nsd_ + 1);
-  if (trac_with_pml_elemag) size = shapes_->ndofs_ * (nsd_ + nsd_ + 1);
-  std::vector<double> interiorValnp(size);
+  int size = shapes_->ndofs_ * nsd_ * 2;
 
-  Teuchos::RCP<const Epetra_Vector> intvel = discretization.GetState(1, "intvelnp");
+  std::vector<double> interiorVar(size);
+
+  Teuchos::RCP<const Epetra_Vector> intVar = discretization.GetState(1, "intVar");
   std::vector<int> localDofs1 = discretization.Dof(1, ele);
-  DRT::UTILS::ExtractMyValues(*intvel, interiorValnp, localDofs1);
+  DRT::UTILS::ExtractMyValues(*intVar, interiorVar, localDofs1);
 
-  // now write this in corresponding interiorElectricnp_ and interiorMagneticnp_
-  for (unsigned int i = 0; i < interiorValnp.size(); ++i)
+  // now write this in corresponding eleinteriorElectric_ and eleinteriorMagnetic_
+  for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
   {
-    if (!trac_with_pml_elemag)
-    {
-      if ((i + 1) % (nsd_ + 1) == 0)
-        elemagele->eleinteriorMagnetic_((i + 1) / (nsd_ + 1) - 1) = interiorValnp[i];
-      else
-      {
-        int xyz = i % (nsd_ + 1);
-        elemagele->eleinteriorElectric_(xyz * shapes_->ndofs_ + i / (nsd_ + 1)) = interiorValnp[i];
-      }
-    }
-    else
-    {
-      if ((i + 1) % (nsd_ + nsd_ + 1) == 0)
-        elemagele->eleinteriorMagnetic_((i + 1) / (nsd_ + nsd_ + 1) - 1) = interiorValnp[i];
-      else if ((i + 1) % (nsd_ + nsd_ + 1) <= nsd_)
-      {
-        int xyz = i % (nsd_ + nsd_ + 1);
-        elemagele->eleinteriorElectric_(xyz * shapes_->ndofs_ + i / (nsd_ + nsd_ + 1)) =
-            interiorValnp[i];
-      }
-    }
+    elemagele->eleinteriorMagnetic_(i) = interiorVar[i];
+    elemagele->eleinteriorElectric_(i) = interiorVar[shapes_->ndofs_ * nsd_ + i];
   }
 
   return;
