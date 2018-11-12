@@ -122,8 +122,8 @@ namespace PARTICLEINTERACTION
     //! surface tension ramp function number
     const int surfacetensionrampfctnumber_;
 
-    //! have boundary particles
-    bool haveboundaryparticles_;
+    //! have boundary or rigid particles
+    bool haveboundaryorrigidparticles_;
   };
 
   class SPHSurfaceTensionContinuumSurfaceForce : public SPHSurfaceTensionBase

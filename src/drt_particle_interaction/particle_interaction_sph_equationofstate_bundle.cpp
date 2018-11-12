@@ -54,8 +54,9 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
     // get type of particles
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // no equation of state for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    // no equation of state for boundary or rigid particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialSPHFluid* material =

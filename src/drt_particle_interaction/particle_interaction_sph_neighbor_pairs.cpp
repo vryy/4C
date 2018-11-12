@@ -127,8 +127,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring boundary particles
-        if (type_i == PARTICLEENGINE::BoundaryPhase and type_j == PARTICLEENGINE::BoundaryPhase)
+        // no evaluation for neighboring boundary and rigid particles
+        if (type_i == PARTICLEENGINE::BoundaryPhase and
+            (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase))
           continue;
 
         // get reference to sub-map

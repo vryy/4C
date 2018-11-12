@@ -40,7 +40,7 @@ PARTICLEINTERACTION::SPHSurfaceTensionBase::SPHSurfaceTensionBase(
     : params_sph_(params),
       time_(0.0),
       surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
-      haveboundaryparticles_(false)
+      haveboundaryorrigidparticles_(false)
 {
   // empty constructor
 }
@@ -149,8 +149,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // have boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) haveboundaryparticles_ = true;
+    // have boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase)
+      haveboundaryorrigidparticles_ = true;
   }
 
   // iterate over particle types
@@ -162,14 +163,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary phase particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // states for surface tension evaluation scheme
     particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal,
         PARTICLEENGINE::Curvature});
 
-    if (haveboundaryparticles_)
+    if (haveboundaryorrigidparticles_)
       particlestates.insert({PARTICLEENGINE::UnitWallNormal, PARTICLEENGINE::WallDistance});
   }
 }
@@ -183,7 +184,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // compute colorfield gradient
   ComputeColorfieldGradient();
 
-  if (haveboundaryparticles_)
+  if (haveboundaryorrigidparticles_)
   {
     // compute wall normal and distance
     ComputeWallNormalAndDistance();
@@ -198,7 +199,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // compute interface normal
   ComputeInterfaceNormal();
 
-  if (haveboundaryparticles_)
+  if (haveboundaryorrigidparticles_)
   {
     // correct normal vector of particles close to triple point
     CorrectTriplePointNormal();
@@ -222,8 +223,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no colorfield gradient evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no colorfield gradient evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -260,8 +261,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring boundary particles or particles of same type
-        if (type_i == type_j or type_j == PARTICLEENGINE::BoundaryPhase) continue;
+        // no evaluation for particles of same type or neighboring boundary or rigid particles
+        if (type_i == type_j or type_j == PARTICLEENGINE::BoundaryPhase or
+            type_j == PARTICLEENGINE::RigidPhase)
+          continue;
 
         // iterate over particle status of neighboring particles
         for (auto& neighborStatusIt : neighborTypeIt.second)
@@ -316,8 +319,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no colorfield gradient evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no colorfield gradient evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -365,8 +368,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring non-boundary particles
-        if (type_j != PARTICLEENGINE::BoundaryPhase) continue;
+        // no evaluation for neighboring non-boundary and non-rigid particles
+        if (type_j != PARTICLEENGINE::BoundaryPhase and type_j != PARTICLEENGINE::RigidPhase)
+          continue;
 
         // iterate over particle status of neighboring particles
         for (auto& neighborStatusIt : neighborTypeIt.second)
@@ -401,8 +405,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallNor
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring non-boundary particles
-        if (type_j != PARTICLEENGINE::BoundaryPhase) continue;
+        // no evaluation for neighboring non-boundary and non-rigid particles
+        if (type_j != PARTICLEENGINE::BoundaryPhase and type_j != PARTICLEENGINE::RigidPhase)
+          continue;
 
         // iterate over particle status of neighboring particles
         for (auto& neighborStatusIt : neighborTypeIt.second)
@@ -443,8 +448,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no refreshing of density and pressure states for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no refreshing of surface tension states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // set state enums to map
     particlestatestotypes[type] = {
@@ -475,8 +480,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no colorfield gradient extrapolation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no colorfield gradient extrapolation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get reference to sub-map of modified colorfield gradients of current types
     auto& modcolorfieldgradofcurrtype = modcolorfieldgradofalltypes[type_i];
@@ -546,8 +551,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring boundary particles
-        if (type_j == PARTICLEENGINE::BoundaryPhase) continue;
+        // no evaluation for neighboring boundary or rigid particles
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
+          continue;
 
         // get material for current particle type
         const MAT::PAR::ParticleMaterialBase* material_j = NULL;
@@ -690,8 +696,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no colorfield gradient evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no colorfield gradient evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -748,8 +754,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no curvature evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no curvature evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -868,8 +874,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no refreshing of density and pressure states for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no refreshing of surface tension states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // set state enums to map
     particlestatestotypes[type] = {
@@ -897,8 +903,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no curvature evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no curvature evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -949,8 +955,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring boundary particles
-        if (type_j == PARTICLEENGINE::BoundaryPhase) continue;
+        // no evaluation for neighboring boundary or rigid particles
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
+          continue;
 
         // change sign of interface normal for different particle types
         double signfac = (type_i == type_j) ? 1.0 : -1.0;
