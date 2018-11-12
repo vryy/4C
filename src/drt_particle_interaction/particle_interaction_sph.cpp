@@ -264,11 +264,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     int particlestored = container->ParticlesStored();

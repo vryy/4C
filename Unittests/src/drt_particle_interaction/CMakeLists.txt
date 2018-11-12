@@ -1,4 +1,5 @@
 set_property(GLOBAL APPEND PROPERTY unit_files
+${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_dem_contact_normal.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_artificialviscosity.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_density_correction.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_particle_interaction_sph_equationofstate.H

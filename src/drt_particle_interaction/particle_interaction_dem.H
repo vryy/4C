@@ -28,6 +28,15 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
+ | forward declarations                                       sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+namespace PARTICLEINTERACTION
+{
+  class DEMNeighborPairs;
+  class DEMContact;
+}  // namespace PARTICLEINTERACTION
+
+/*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
@@ -68,9 +77,33 @@ namespace PARTICLEINTERACTION
     //! maximum interaction distance (on this processor)
     virtual double MaxInteractionDistance() const override;
 
+    //! set current step size
+    virtual void SetCurrentStepSize(const double currentstepsize);
+
    private:
+    //! init neighbor pair handler
+    virtual void InitNeighborPairHandler();
+
+    //! init contact handler
+    virtual void InitContactHandler();
+
+    //! refresh initial states of ghosted particles
+    virtual void RefreshInitialStates() const;
+
+    //! clear force state of particles
+    virtual void ClearForceState() const;
+
+    //! compute acceleration from force
+    virtual void ComputeAcceleration() const;
+
     //! discrete element method specific parameter list
     const Teuchos::ParameterList& params_dem_;
+
+    //! neighbor pair handler
+    std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
+
+    //! contact handler
+    std::unique_ptr<PARTICLEINTERACTION::DEMContact> contact_;
   };
 
 }  // namespace PARTICLEINTERACTION

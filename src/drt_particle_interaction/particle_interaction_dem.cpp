@@ -20,8 +20,13 @@
 #include "particle_interaction_dem.H"
 
 #include "particle_interaction_material_handler.H"
+#include "particle_interaction_utils.H"
+
+#include "particle_interaction_dem_neighbor_pairs.H"
+#include "particle_interaction_dem_contact.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
+#include "../drt_particle_engine/particle_container.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -51,6 +56,12 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
 {
   // call base class init
   ParticleInteractionBase::Init();
+
+  // init neighbor pair handler
+  InitNeighborPairHandler();
+
+  // init contact handler
+  InitContactHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -61,6 +72,12 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
 {
   // call base class setup
   ParticleInteractionBase::Setup(particleengineinterface);
+
+  // setup neighbor pair handler
+  neighborpairs_->Setup(particleengineinterface);
+
+  // setup contact handler
+  contact_->Setup(particleengineinterface, particlematerial_, neighborpairs_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -71,6 +88,12 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::WriteRestart(
 {
   // call base class function
   ParticleInteractionBase::WriteRestart(step, time);
+
+  // write restart of neighbor pair handler
+  neighborpairs_->WriteRestart(step, time);
+
+  // write restart of contact handler
+  contact_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -81,33 +104,94 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ReadRestart(
 {
   // call base class function
   ParticleInteractionBase::ReadRestart(reader);
+
+  // read restart of neighbor pair handler
+  neighborpairs_->ReadRestart(reader);
+
+  // read restart of contact handler
+  contact_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
- | insert interaction dependent states of all particle types  sfuchs 07/2018 |
+ | insert interaction dependent states of all particle types  sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
 {
-  dserror("not implemented yet!");
+  // iterate over particle types
+  for (auto& typeIt : particlestatestotypes)
+  {
+    // set of particle states for current particle type
+    std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
+
+    // insert states of regular phase particles
+    particlestates.insert({PARTICLEENGINE::Force, PARTICLEENGINE::Mass, PARTICLEENGINE::Radius});
+  }
 }
 
 /*---------------------------------------------------------------------------*
- | set initial states                                         sfuchs 07/2018 |
+ | set initial states                                         sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
 {
-  dserror("not implemented yet!");
+  // iterate over particle types
+  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get material for current particle type
+    const MAT::PAR::ParticleMaterialBase* material =
+        particlematerial_->GetPtrToParticleMatParameter(type);
+
+    // (initial) radius of current phase
+    std::vector<double> initradius(1);
+    initradius[0] = material->initRadius_;
+
+    // (initial) mass of current phase
+    std::vector<double> initmass(1);
+    initmass[0] = material->initDensity_ * 4.0 / 3.0 * M_PI * UTILS::pow<3>(material->initRadius_);
+
+    // set initial mass and radius for all particles of current type
+    particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, type);
+    particlecontainerbundle_->SetStateSpecificContainer(initradius, PARTICLEENGINE::Radius, type);
+  }
+
+  // refresh initial states of ghosted particles
+  RefreshInitialStates();
 }
 
 /*---------------------------------------------------------------------------*
- | evaluate particle interactions                             sfuchs 05/2018 |
+ | evaluate particle interactions                             sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions");
 
-  dserror("not implemented yet!");
+  // clear force state of particles
+  ClearForceState();
+
+  // evaluate particle neighbor pairs
+  neighborpairs_->EvaluateNeighborPairs();
+
+  // check critical time step
+  contact_->CheckCriticalTimeStep();
+
+  // add contact contribution to force field
+  contact_->AddForceContribution();
+
+  // compute acceleration from force
+  ComputeAcceleration();
 }
 
 /*---------------------------------------------------------------------------*
@@ -116,4 +200,124 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
 double PARTICLEINTERACTION::ParticleInteractionDEM::MaxInteractionDistance() const
 {
   return (2.0 * MaxParticleRadius());
+}
+
+/*---------------------------------------------------------------------------*
+ | set current step size                                      sfuchs 08/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::SetCurrentStepSize(const double currentstepsize)
+{
+  // call base class method
+  ParticleInteractionBase::SetCurrentStepSize(currentstepsize);
+
+  // set current step size
+  contact_->SetCurrentStepSize(currentstepsize);
+}
+
+/*---------------------------------------------------------------------------*
+ | init neighbor pair handler                                 sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::InitNeighborPairHandler()
+{
+  // create neighbor pair handler
+  neighborpairs_ = std::make_shared<PARTICLEINTERACTION::DEMNeighborPairs>();
+
+  // init neighbor pair handler
+  neighborpairs_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init contact handler                                       sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
+{
+  // create contact handler
+  contact_ = std::unique_ptr<PARTICLEINTERACTION::DEMContact>(
+      new PARTICLEINTERACTION::DEMContact(params_dem_));
+
+  // init contact handler
+  contact_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | refresh initial states of ghosted particles                sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::RefreshInitialStates() const
+{
+  // init map
+  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
+
+  // iterate over particle types
+  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
+    // set states to refresh to map
+    particlestatestotypes[type] = {PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
+  }
+
+  // refresh specific states of particles of specific types
+  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
+}
+
+/*---------------------------------------------------------------------------*
+ | clear force state of particles                             sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::ClearForceState() const
+{
+  // iterate over particle types
+  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+
+    // clear force of all particles
+    container->ClearState(PARTICLEENGINE::Force);
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ | compute acceleration from force                            sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
+{
+  // iterate over particle types
+  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
+
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get dimension of particle state
+    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Acceleration);
+
+    // get pointer to particle state
+    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    const double* force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
+    double* acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
+
+    // iterate over owned particles of current type
+    for (int i = 0; i < particlestored; ++i)
+    {
+      // iterate over spatial dimension
+      for (int dim = 0; dim < statedim; ++dim)
+      {
+        acc[statedim * i + dim] = force[statedim * i + dim] / mass[i];
+      }
+    }
+  }
 }
