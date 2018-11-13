@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_neighbor_pairs.H
+\file particle_interaction_dem_neighbor_pairs.H
 
-\brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
+\brief neighbor pair handler for discrete element method (DEM) interactions
 
 \level 3
 
@@ -15,23 +15,23 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 08/2018 |
+ | definitions                                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_NEIGHBOR_PAIRS_H
-#define PARTICLE_INTERACTION_SPH_NEIGHBOR_PAIRS_H
+#ifndef PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIRS_H
+#define PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIRS_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_typedefs.H"
 
 #include "../drt_particle_engine/particle_enums.H"
 #include "../drt_particle_engine/particle_typedefs.H"
 
-#include "particle_interaction_sph_particle_pair.H"
+#include "particle_interaction_dem_particle_pair.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 08/2018 |
+ | forward declarations                                       sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -43,32 +43,26 @@ namespace PARTICLEENGINE
   class ParticleEngineInterface;
 }
 
-namespace PARTICLEINTERACTION
-{
-  class SPHKernelBase;
-}
-
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 08/2018 |
+ | class definitions                                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHNeighborPairs
+  class DEMNeighborPairs
   {
    public:
     //! constructor
-    explicit SPHNeighborPairs();
+    explicit DEMNeighborPairs();
 
     //! virtual destructor
-    virtual ~SPHNeighborPairs(){};
+    virtual ~DEMNeighborPairs(){};
 
     //! init neighbor pair handler
     virtual void Init();
 
     //! setup neighbor pair handler
     virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
     //! write restart of neighbor pair handler
     virtual void WriteRestart(const int step, const double time) const;
@@ -77,20 +71,17 @@ namespace PARTICLEINTERACTION
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! get reference to map holding neighbor pairs
-    const SPHNeighborPairsMap& GetRefToNeighborPairsMap() const { return neighborpairsmap_; };
+    const DEMNeighborPairsMap& GetRefToNeighborPairsMap() const { return neighborpairsmap_; };
 
     //! evaluate neighbor pairs
     virtual void EvaluateNeighborPairs();
 
    private:
-    //! map of neighbor pairs with evaluated absolute distance, versor and kernel
-    PARTICLEINTERACTION::SPHNeighborPairsMap neighborpairsmap_;
+    //! map of neighbor pairs with evaluated quantities
+    PARTICLEINTERACTION::DEMNeighborPairsMap neighborpairsmap_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
-
-    //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
   };
 
 }  // namespace PARTICLEINTERACTION

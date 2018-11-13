@@ -254,11 +254,8 @@ void PARTICLEENGINE::ParticleContainerBundle::PackParticleContainerBundle(
     TypeEnum particleType = typeIt.first;
 
     // get container of owned particles
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
@@ -293,11 +290,8 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
     TypeEnum particleType = typeIt.first;
 
     // get container of owned particles
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)

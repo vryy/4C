@@ -159,8 +159,8 @@ void PARTICLEINTERACTION::SPHMomentum::InsertParticleStatesOfParticleTypes(
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary phase particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // additional states for transport velocity formulation
     if (applytransportvelocity_)
@@ -183,8 +183,8 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no acceleration evaluation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no acceleration evaluation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -240,7 +240,8 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 
         // get material for current particle type
         const MAT::PAR::ParticleMaterialSPHFluid* material_j = NULL;
-        if ((type_i == type_j) or (type_j == PARTICLEENGINE::BoundaryPhase))
+        if (type_i == type_j or type_j == PARTICLEENGINE::BoundaryPhase or
+            type_j == PARTICLEENGINE::RigidPhase)
           material_j = material_i;
         else
           material_j = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
@@ -248,7 +249,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
 
         // determine weather viscous contribution are evaluated
         bool evaluateviscouscontributions = true;
-        if (type_j == PARTICLEENGINE::BoundaryPhase and
+        if ((type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase) and
             boundaryparticleinteraction_ == INPAR::PARTICLE::FreeSlipBoundaryParticle)
           evaluateviscouscontributions = false;
 
@@ -275,7 +276,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
             const double *vel_j, *rad_j, *mass_j, *dens_j, *press_j, *mod_vel_j;
 
             // get pointer to particle states
-            if (type_j == PARTICLEENGINE::BoundaryPhase)
+            if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
             {
               mass_j = mass_i;
               dens_j = &temp;
@@ -363,7 +364,7 @@ void PARTICLEINTERACTION::SPHMomentum::AddAccelerationContribution() const
               if (not norelativevelocitycontribution_)
               {
                 // evaluate modified velocity contribution
-                if (type_j == PARTICLEENGINE::BoundaryPhase)
+                if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
                   momentumformulation_->ModifiedVelocityContribution(dens_i, dens_j, vel_i, nullptr,
                       mod_vel_i, nullptr, specificcoefficient_ij, particlepair.e_ij_, acc_i);
                 else

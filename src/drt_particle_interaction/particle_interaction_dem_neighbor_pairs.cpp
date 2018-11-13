@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_neighbor_pairs.cpp
+\file particle_interaction_dem_neighbor_pairs.cpp
 
-\brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
+\brief neighbor pair handler for discrete element method (DEM) interactions
 
 \level 3
 
@@ -15,68 +15,60 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_sph_neighbor_pairs.H"
-
-#include "particle_interaction_sph_kernel.H"
+#include "particle_interaction_dem_neighbor_pairs.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
-#include "../drt_lib/drt_dserror.H"
-
 /*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 08/2018 |
+ | constructor                                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHNeighborPairs::SPHNeighborPairs()
+PARTICLEINTERACTION::DEMNeighborPairs::DEMNeighborPairs()
 {
   // empty constructor
 }
 
 /*---------------------------------------------------------------------------*
- | init neighbor pair handler                                 sfuchs 08/2018 |
+ | init neighbor pair handler                                 sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHNeighborPairs::Init()
+void PARTICLEINTERACTION::DEMNeighborPairs::Init()
 {
   // nothing to do
 }
 
 /*---------------------------------------------------------------------------*
- | setup neighbor pair handler                                sfuchs 08/2018 |
+ | setup neighbor pair handler                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHNeighborPairs::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel)
+void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
+    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
-
-  // set kernel handler
-  kernel_ = kernel;
 }
 
 /*---------------------------------------------------------------------------*
- | write restart of neighbor pair handler                     sfuchs 08/2018 |
+ | write restart of neighbor pair handler                     sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHNeighborPairs::WriteRestart(const int step, const double time) const
+void PARTICLEINTERACTION::DEMNeighborPairs::WriteRestart(const int step, const double time) const
 {
   // nothing to do
 }
 
 /*---------------------------------------------------------------------------*
- | read restart of neighbor pair handler                      sfuchs 08/2018 |
+ | read restart of neighbor pair handler                      sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHNeighborPairs::ReadRestart(
+void PARTICLEINTERACTION::DEMNeighborPairs::ReadRestart(
     const std::shared_ptr<IO::DiscretizationReader> reader)
 {
   // nothing to do
 }
 
 /*---------------------------------------------------------------------------*
- | evaluate neighbor pairs                                    sfuchs 08/2018 |
+ | evaluate neighbor pairs                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
+void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateNeighborPairs()
 {
   // clear map
   neighborpairsmap_.clear();
@@ -115,22 +107,18 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
       auto& currentTypeCurrentParticleMap = currentTypeMap[particle_i];
 
       // declare pointer variables for particle i
-      const double *pos_i, *rad_i;
+      const double *pos_i, *rad_i, *mass_i;
 
       // get pointer to particle states
       pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
       rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
       // iterate over particle types of neighboring particles
       for (auto& neighborTypeIt : particleIt.second)
       {
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
-
-        // no evaluation for neighboring boundary and rigid particles
-        if (type_i == PARTICLEENGINE::BoundaryPhase and
-            (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase))
-          continue;
 
         // get reference to sub-map
         auto& neighborTypeMap = currentTypeCurrentParticleMap[type_j];
@@ -142,7 +130,7 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
           PARTICLEENGINE::StatusEnum status_j = neighborStatusIt.first;
 
           // get reference to sub-map
-          std::map<int, PARTICLEINTERACTION::ParticlePairSPH>& neighborTypeStatusMap =
+          std::map<int, PARTICLEINTERACTION::ParticlePairDEM>& neighborTypeStatusMap =
               neighborTypeMap[status_j];
 
           // get container of neighboring particles of current particle type and state
@@ -155,9 +143,13 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
           // iterate over neighboring particles of current type and status
           for (const int particle_j : currtypecurrstatusneighbors)
           {
-            // get pointer to particle position
-            const double* pos_j =
-                container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
+            // declare pointer variables for particle j
+            const double *pos_j, *rad_j, *mass_j;
+
+            // get pointer to particle states
+            pos_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
+            rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
+            mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
             // vector from particle i to j
             double r_ji[3];
@@ -169,23 +161,23 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateNeighborPairs()
             const double absdist =
                 std::sqrt(r_ji[0] * r_ji[0] + r_ji[1] * r_ji[1] + r_ji[2] * r_ji[2]);
 
-            // neighboring particle out of support radius
-            if (not(absdist < rad_i[0])) continue;
+            // gap between particles
+            const double gap = absdist - rad_i[0] - rad_j[0];
+
+            // neighboring particle out of interaction distance
+            if (not(gap <= 0)) continue;
 
             // get reference to current particle pair
-            ParticlePairSPH& particlepair = neighborTypeStatusMap[particle_j];
+            ParticlePairDEM& particlepair = neighborTypeStatusMap[particle_j];
 
-            // set absolute distance between particles
-            particlepair.absdist_ = absdist;
+            // set gap between particles
+            particlepair.gap_ = gap;
 
-            // versor from particle j to i
-            for (int i = 0; i < 3; ++i) particlepair.e_ij_[i] = -r_ji[i] / absdist;
+            // versor from particle i to j
+            for (int i = 0; i < 3; ++i) particlepair.e_ji_[i] = r_ji[i] / absdist;
 
-            // evaluate kernel
-            particlepair.Wij_ = kernel_->W(absdist, rad_i[0]);
-
-            // evaluate first derivative of kernel
-            particlepair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
+            // set effective mass of particles i and j
+            particlepair.m_eff_ = mass_i[0] * mass_j[0] / (mass_i[0] + mass_j[0]);
           }
         }
       }

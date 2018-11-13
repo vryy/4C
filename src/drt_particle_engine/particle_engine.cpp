@@ -652,12 +652,12 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
   // iterate over particle types
   for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
   {
+    // get type of particles
+    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
+
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // add number of particles stored in container
     numberofparticles += container->ParticlesStored();

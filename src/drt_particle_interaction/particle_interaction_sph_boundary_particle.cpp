@@ -60,11 +60,15 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
 
+  // check if boundary and/or rigid particles are present
+  if ((particlecontainerbundle_->GetRefToAllContainersMap()).count(PARTICLEENGINE::BoundaryPhase))
+    typestoconsider_.insert(PARTICLEENGINE::BoundaryPhase);
+  if ((particlecontainerbundle_->GetRefToAllContainersMap()).count(PARTICLEENGINE::RigidPhase))
+    typestoconsider_.insert(PARTICLEENGINE::RigidPhase);
+
   // safety check
-  auto typeIt =
-      (particlecontainerbundle_->GetRefToAllContainersMap()).find(PARTICLEENGINE::BoundaryPhase);
-  if (typeIt == (particlecontainerbundle_->GetRefToAllContainersMap()).end())
-    dserror("no boundary particles defined but a boundary particle formulation is set!");
+  if (typestoconsider_.size() == 0)
+    dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
 /*---------------------------------------------------------------------------*
@@ -107,13 +111,12 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // evaluation only for boundary particles
-    if (type_i != PARTICLEENGINE::BoundaryPhase) continue;
+    // evaluation only for boundary and rigid particles
+    if (type_i != PARTICLEENGINE::BoundaryPhase and type_i != PARTICLEENGINE::RigidPhase) continue;
 
-    // get container of owned boundary particles
+    // get container of owned particles
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
-        particlecontainerbundle_->GetSpecificContainer(
-            PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
     // clear modified boundary particle states
     container_i->ClearState(PARTICLEENGINE::BoundaryPressure);
@@ -146,8 +149,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticles(
         // get type of neighboring particles
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
-        // no evaluation for neighboring boundary particles
-        if (type_j == PARTICLEENGINE::BoundaryPhase) continue;
+        // no evaluation for neighboring boundary or rigid particles
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
+          continue;
 
         // iterate over particle status of neighboring particles
         for (auto& neighborStatusIt : neighborTypeIt.second)
@@ -236,8 +240,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::RefreshModifiedStatesOfBound
   std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
 
   // set state enums to map
-  particlestatestotypes[PARTICLEENGINE::BoundaryPhase] = {
-      PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity};
+  for (auto& type : typestoconsider_)
+    particlestatestotypes[type] = {
+        PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity};
 
   // refresh specific states of particles of specific types
   particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);

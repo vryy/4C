@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_particle_pair.H
+\file particle_interaction_sph_particle_pair.H
 
-\brief particle pair structs for particle interaction handler
+\brief particle pair structs for smoothed particle hydrodynamics (SPH) interactions
 
 \level 3
 
@@ -17,23 +17,15 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_PARTICLE_PAIR_H
-#define PARTICLE_INTERACTION_PARTICLE_PAIR_H
-
-/*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 08/2018 |
- *---------------------------------------------------------------------------*/
+#ifndef PARTICLE_INTERACTION_SPH_PARTICLE_PAIR_H
+#define PARTICLE_INTERACTION_SPH_PARTICLE_PAIR_H
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 08/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  //! struct to store quantities of interacting particles in smoothed particle hydrodynamics
+  //! struct to store quantities of interacting particles
   struct ParticlePairSPH
   {
     //! absolute distance between particles
@@ -48,7 +40,6 @@ namespace PARTICLEINTERACTION
     //! first derivative of kernel
     double dWdrij_;
   };
-
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*/

@@ -574,19 +574,18 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::HaveModifiedStates()
   for (auto& typeIt : particlestatestotypes_)
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
+    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // no modified velocity and acceleration for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no modified velocity and acceleration for boundary or rigid particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // get reference to set of particle states of current type
     std::set<PARTICLEENGINE::StateEnum>& stateEnumSet = typeIt.second;
 
     // check for modified velocity and acceleration of current type
-    bool modifiedvelocity =
-        (stateEnumSet.find(PARTICLEENGINE::ModifiedVelocity) != stateEnumSet.end());
-    bool modifiedacceleration =
-        (stateEnumSet.find(PARTICLEENGINE::ModifiedAcceleration) != stateEnumSet.end());
+    bool modifiedvelocity = stateEnumSet.count(PARTICLEENGINE::ModifiedVelocity);
+    bool modifiedacceleration = stateEnumSet.count(PARTICLEENGINE::ModifiedAcceleration);
 
     // safety check
     if (modifiedvelocity != modifiedacceleration)
@@ -715,11 +714,8 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     int particlestored = container->ParticlesStored();
@@ -791,11 +787,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::StorePositionsAfterParticleTransfer()
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     int particlestored = container->ParticlesStored();
@@ -913,8 +906,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
     // get type of particles
     PARTICLEENGINE::TypeEnum particleType = typeIt.first;
 
-    // gravity is not set for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    // gravity is not set for boundary or rigid particles
+    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // set gravity acceleration for all particles of current type
     particlecontainerbundle->SetStateSpecificContainer(

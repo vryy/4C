@@ -222,9 +222,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InsertParticleStatesOfParticle
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    if (type == PARTICLEENGINE::BoundaryPhase)
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase)
     {
-      // insert states of boundary phase particles
+      // insert states of boundary and rigid particles
       particlestates.insert({PARTICLEENGINE::Mass, PARTICLEENGINE::Radius,
           PARTICLEENGINE::BoundaryPressure, PARTICLEENGINE::BoundaryVelocity});
     }
@@ -264,11 +264,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     int particlestored = container->ParticlesStored();
@@ -292,8 +289,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
     std::vector<double> initradius(1);
     initradius[0] = material->initRadius_;
 
-    // set initial density for all particles of current type
-    if (type != PARTICLEENGINE::BoundaryPhase)
+    // set initial density for all non-boundary and non-rigid particles
+    if (type != PARTICLEENGINE::BoundaryPhase and type != PARTICLEENGINE::RigidPhase)
       particlecontainerbundle_->SetStateSpecificContainer(
           initdensity, PARTICLEENGINE::Density, type);
 
@@ -639,12 +636,15 @@ double PARTICLEINTERACTION::ParticleInteractionSPH::ComputeConsistentParticleVol
   // get number of particles on this processor
   int numberofparticles = particleengineinterface_->GetNumberOfParticles();
 
-  // get number of boundary particles on this processor
+  // get number of boundary and rigid particles on this processor
   int numberofboundaryparticles =
       particleengineinterface_->GetNumberOfParticlesOfSpecificType(PARTICLEENGINE::BoundaryPhase);
+  int numberofrigidparticles =
+      particleengineinterface_->GetNumberOfParticlesOfSpecificType(PARTICLEENGINE::RigidPhase);
 
   // number of non-boundary particles on this processor
-  int numberofnonboundaryparticles = numberofparticles - numberofboundaryparticles;
+  int numberofnonboundaryparticles =
+      numberofparticles - numberofboundaryparticles - numberofrigidparticles;
 
   // get total number of non-boundary particles on all processors
   int totalnumberofnonboundaryparticles = 0;
@@ -669,7 +669,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::RefreshInitialStates() const
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
     // set states to refresh to map
-    if (type == PARTICLEENGINE::BoundaryPhase)
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase)
       particlestatestotypes[type] = {PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
     else
       particlestatestotypes[type] = {

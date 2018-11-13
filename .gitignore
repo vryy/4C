@@ -93,3 +93,6 @@ modules/contact_module/src/
 
 # Python
 *.pyc
+
+# VS Code
+*.vscode

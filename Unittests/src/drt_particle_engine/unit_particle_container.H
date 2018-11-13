@@ -649,6 +649,18 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
+  void test_GetMinValueOfState()
+  {
+    TS_ASSERT_DELTA(container_->GetMinValueOfState(PARTICLEENGINE::Mass), 0.12, 1e-14);
+    TS_ASSERT_DELTA(container_->GetMinValueOfState(PARTICLEENGINE::Position), -8.54, 1e-14);
+  }
+
+  void test_GetMaxValueOfState()
+  {
+    TS_ASSERT_DELTA(container_->GetMaxValueOfState(PARTICLEENGINE::Mass), 12.34, 1e-14);
+    TS_ASSERT_DELTA(container_->GetMaxValueOfState(PARTICLEENGINE::Position), 61.0, 1e-14);
+  }
+
   void test_GetParticleStates()
   {
     std::set<StateEnum> particleStates = container_->GetParticleStates();

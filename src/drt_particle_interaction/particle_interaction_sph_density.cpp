@@ -120,8 +120,8 @@ void PARTICLEINTERACTION::SPHDensityBase::RefreshDensity() const
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no refreshing of density states for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no refreshing of density states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // set state enums to map
     particlestatestotypes[type].insert(PARTICLEENGINE::Density);
@@ -142,8 +142,8 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no density summation for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no density summation for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -187,7 +187,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
         // get material for interacting particle type
-        if (type_j == PARTICLEENGINE::BoundaryPhase)
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
           material_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
 
         // iterate over particle status of neighboring particles
@@ -217,7 +217,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassAndColorfield() const
             {
               mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-              if (type_j == PARTICLEENGINE::BoundaryPhase)
+              if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
                 dens_j = &(material_i->initDensity_);
               else
                 dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
@@ -255,8 +255,8 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
     // get type of particles
     PARTICLEENGINE::TypeEnum type_i = typeIt.first;
 
-    // no density integration for boundary particles
-    if (type_i == PARTICLEENGINE::BoundaryPhase) continue;
+    // no density integration for boundary or rigid particles
+    if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container_i =
@@ -297,7 +297,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
         PARTICLEENGINE::TypeEnum type_j = neighborTypeIt.first;
 
         // get material for interacting particle type
-        if (type_j == PARTICLEENGINE::BoundaryPhase)
+        if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
           material_i = particlematerial_->GetPtrToParticleMatParameter(type_i);
 
         // iterate over particle status of neighboring particles
@@ -325,7 +325,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquation() const
             // get pointer to particle states
             mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
-            if (type_j == PARTICLEENGINE::BoundaryPhase)
+            if (type_j == PARTICLEENGINE::BoundaryPhase or type_j == PARTICLEENGINE::RigidPhase)
             {
               vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
 
@@ -387,8 +387,8 @@ void PARTICLEINTERACTION::SPHDensitySummation::InsertParticleStatesOfParticleTyp
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary phase particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // states for density evaluation scheme
     particlestates.insert(PARTICLEENGINE::DensitySum);
@@ -407,14 +407,14 @@ void PARTICLEINTERACTION::SPHDensitySummation::ComputeDensity() const
   for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no density integration for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    // no density integration for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // update density of all particles
     particlecontainerbundle_->UpdateStateSpecificContainer(
-        0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum, particleType);
+        0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum, type);
   }
 
   // refresh density of ghosted particles
@@ -447,8 +447,8 @@ void PARTICLEINTERACTION::SPHDensityIntegration::InsertParticleStatesOfParticleT
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary phase particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // states for density evaluation scheme
     particlestates.insert(PARTICLEENGINE::DensityDot);
@@ -467,14 +467,14 @@ void PARTICLEINTERACTION::SPHDensityIntegration::ComputeDensity() const
   for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no density integration for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    // no density integration for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // update density of all particles
     particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, particleType);
+        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, type);
   }
 
   // refresh density of ghosted particles
@@ -575,8 +575,8 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InsertParticleStatesOfPartic
     // set of particle states for current particle type
     std::set<PARTICLEENGINE::StateEnum>& particlestates = typeIt.second;
 
-    // no states for boundary phase particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no states for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // states for density evaluation scheme
     particlestates.insert(
@@ -596,14 +596,14 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::ComputeDensity() const
   for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
   {
     // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
+    PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no density integration for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    // no density integration for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // update density of all particles
     particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, particleType);
+        1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot, type);
   }
 
   // refresh density of ghosted particles
@@ -672,15 +672,12 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
     // get type of particles
     PARTICLEENGINE::TypeEnum type = typeIt.first;
 
-    // no pressure computation for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    // no pressure computation for boundary or rigid particles
+    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
 
     // get container of owned particles of current particle type
-    auto statusIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-    if (statusIt == (typeIt.second).end())
-      dserror("particle status '%s' not found!",
-          PARTICLEENGINE::EnumToStatusName(PARTICLEENGINE::Owned).c_str());
-    PARTICLEENGINE::ParticleContainerShrdPtr container = statusIt->second;
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     int particlestored = container->ParticlesStored();

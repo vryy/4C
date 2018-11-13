@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*/
 /*!
-\file particle_interaction_sph_boundary_particle.H
+\file particle_interaction_dem_contact.H
 
-\brief boundary particle handler for smoothed particle hydrodynamics (SPH) interactions
+\brief contact handler for discrete element method (DEM) interactions
 
 \level 3
 
@@ -15,13 +15,13 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*
- | definitions                                                sfuchs 08/2018 |
+ | definitions                                                sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_BOUNDARY_PARTICLE_H
-#define PARTICLE_INTERACTION_SPH_BOUNDARY_PARTICLE_H
+#ifndef PARTICLE_INTERACTION_DEM_CONTACT_H
+#define PARTICLE_INTERACTION_DEM_CONTACT_H
 
 /*---------------------------------------------------------------------------*
- | headers                                                    sfuchs 08/2018 |
+ | headers                                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_typedefs.H"
 
@@ -31,7 +31,7 @@
 #include "../drt_inpar/inpar_particle.H"
 
 /*---------------------------------------------------------------------------*
- | forward declarations                                       sfuchs 08/2018 |
+ | forward declarations                                       sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 namespace IO
 {
@@ -46,43 +46,58 @@ namespace PARTICLEENGINE
 
 namespace PARTICLEINTERACTION
 {
-  class SPHNeighborPairs;
-}
+  class MaterialHandler;
+  class DEMNeighborPairs;
+  class DEMContactNormalBase;
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
- | class definitions                                          sfuchs 08/2018 |
+ | class definitions                                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHBoundaryParticleBase
+  class DEMContact
   {
    public:
     //! constructor
-    explicit SPHBoundaryParticleBase(const Teuchos::ParameterList& params);
+    explicit DEMContact(const Teuchos::ParameterList& params);
 
     //! virtual destructor
-    virtual ~SPHBoundaryParticleBase(){};
+    virtual ~DEMContact();
 
-    //! init boundary particle handler
+    //! init contact handler
     virtual void Init();
 
-    //! setup boundary particle handler
+    //! setup contact handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+        const std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs);
 
-    //! write restart of boundary particle handler
+    //! write restart of contact handler
     virtual void WriteRestart(const int step, const double time) const;
 
-    //! read restart of boundary particle handler
+    //! read restart of contact handler
     virtual void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
-    //! init boundary particles
-    virtual void InitBoundaryParticles(std::vector<double>& gravity) const = 0;
+    //! set current step size
+    virtual void SetCurrentStepSize(const double currentstepsize) final;
 
-   protected:
-    //! smoothed particle hydrodynamics specific parameter list
-    const Teuchos::ParameterList& params_sph_;
+    //! check critical time step (on this processor)
+    virtual void CheckCriticalTimeStep() const;
+
+    //! add contact contribution to force field
+    virtual void AddForceContribution() const;
+
+   private:
+    //! init normal contact handler
+    virtual void InitNormalContactHandler();
+
+    //! get maximum density of all materials
+    virtual double GetMaxDensityOfAllMaterials() const final;
+
+    //! discrete element method specific parameter list
+    const Teuchos::ParameterList& params_dem_;
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
@@ -90,28 +105,17 @@ namespace PARTICLEINTERACTION
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
+    //! particle material handler
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<PARTICLEINTERACTION::DEMNeighborPairs> neighborpairs_;
 
-    //! set of particle types to consider in routine
-    std::set<PARTICLEENGINE::TypeEnum> typestoconsider_;
-  };
+    //! normal contact handler
+    std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalBase> contactnormal_;
 
-  class SPHBoundaryParticleAdami : public SPHBoundaryParticleBase
-  {
-   public:
-    //! constructor
-    explicit SPHBoundaryParticleAdami(const Teuchos::ParameterList& params);
-
-    //! virtual destructor
-    virtual ~SPHBoundaryParticleAdami(){};
-
-    //! init boundary particles
-    virtual void InitBoundaryParticles(std::vector<double>& gravity) const override;
-
-   protected:
-    //! refresh modified states of ghosted boundary particles
-    virtual void RefreshModifiedStatesOfBoundaryParticles() const;
+    //! time step size
+    double dt_;
   };
 
 }  // namespace PARTICLEINTERACTION
