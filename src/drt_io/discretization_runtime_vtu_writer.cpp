@@ -291,6 +291,12 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    if (beamele != NULL) continue;
+
     const std::vector<int>& numbering =
         DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
 
@@ -355,6 +361,12 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
   for (unsigned int iele = 0; iele < num_row_elements; ++iele)
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    if (beamele != NULL) continue;
 
     const int lid = discretization_->ElementColMap()->LID(ele->Id());
 
