@@ -32,7 +32,6 @@
 
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
 #include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*
@@ -4025,12 +4024,6 @@ void WEAR::WearLagrangeStrategy::OutputWear()
     Teuchos::RCP<Epetra_Vector> real_weara = Teuchos::rcp(new Epetra_Vector(*gactivedofs_, true));
     Teuchos::RCP<Epetra_Vector> real_wear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
 
-    // solver
-    Teuchos::RCP<Teuchos::ParameterList> solver_params = Teuchos::rcp(new Teuchos::ParameterList());
-    solver_params->set("solver", "umfpack");
-    solver_params->set("symmetric", false);
-    LINALG::Solver solver(solver_params, Comm(), NULL);
-
     // multiply the wear with its normal direction and store in wear_vector
     // loop over all interfaces
     for (int i = 0; i < (int)interface_.size(); ++i)
@@ -4088,11 +4081,25 @@ void WEAR::WearLagrangeStrategy::OutputWear()
     LINALG::SplitVector(
         *gsdofrowmap_, *wear_vector, gactivedofs_, wear_vectora, gidofs, wear_vectori);
 
-    // approx. undo the weighting of the wear by solving
-    // D * w = w~
-    // dmatrix_ * real_wear = wear_
+    /* approx. undo the weighting of the wear by solving D * w = w~
+     * dmatrix_ * real_wear = wear_
+     *
+     * Note: Due to dual shape functions, daa is diagonal. So we don't need an actual solver.
+     *       We rather divide by the diagonal element of daa.
+     */
     if (gactivedofs_->NumGlobalElements())
-      solver.Solve(daa->EpetraMatrix(), real_weara, wear_vectora, true);
+    {
+      // number of active DOFs on this proc
+      const int lNumActiveDOFs = wear_vectora->MyLength();
+
+      // extract diagonal of daa
+      Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+      daa->EpetraMatrix()->ExtractDiagonalCopy(*diagD);
+
+      // solve by dividing through diagonal elements of daa. Do not divide by 0.
+      for (int i = 0; i < lNumActiveDOFs; ++i)
+        if ((*diagD)[i] != 0.0) (*real_weara)[i] = (*wear_vectora)[i] / (*diagD)[i];
+    }
 
     Teuchos::RCP<Epetra_Vector> real_wearexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*real_weara, *real_wearexp);
@@ -4155,9 +4162,21 @@ void WEAR::WearLagrangeStrategy::OutputWear()
       LINALG::SplitVector(
           *gmdofrowmap_, *wear_master, gminvolveddofs_, wear2_vectori, gndofs, wear2_vectorn);
 
+      /* Note: Due to dual shape functions, d2ii is diagonal. So we don't need an actual solver.
+       *       We rather divide by the diagonal element of d2ii.
+       */
       if (gminvolveddofs_->NumGlobalElements())
       {
-        solver.Solve(d2ii->EpetraMatrix(), wear2_real, wear2_vectori, true);
+        // number of active DOFs on this proc
+        const int lNumActiveDOFs = wear2_vectori->MyLength();
+
+        // extract diagonal of d2ii
+        Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+        d2ii->EpetraMatrix()->ExtractDiagonalCopy(*diagD);
+
+        // solve by dividing through diagonal elements of daa. Do not divide by 0.
+        for (int i = 0; i < lNumActiveDOFs; ++i)
+          if ((*diagD)[i] != 0.0) (*wear2_real)[i] = (*wear2_vectori)[i] / (*diagD)[i];
       }
 
       Teuchos::RCP<Epetra_Vector> real_wear2exp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -4175,6 +4194,7 @@ void WEAR::WearLagrangeStrategy::OutputWear()
       }
     }
   }
+
   return;
 }
 
