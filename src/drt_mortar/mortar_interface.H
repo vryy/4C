@@ -915,7 +915,7 @@ namespace MORTAR
     is simply copied from the underlying problem discretization. This,
     of course, is not the optimal parallel distribution for evaluating
     the mortar coupling terms, as the interface ownership might be
-    restricted to only very fee processors. Moreover, no parallel
+    restricted to only very few processors. Moreover, no parallel
     scalability can be achieved with this procedure, because adding
     processors to the problem discretization does not automatically
     mean adding processors to the interface discretization.
@@ -1195,9 +1195,20 @@ namespace MORTAR
 
    protected:
     const MortarInterface* GetMaSharingRefInterfacePtr() const;
-    void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& mrownodes,
-        Teuchos::RCP<Epetra_Map>& mcolnodes, const Teuchos::RCP<Epetra_Map>& mroweles,
-        const Teuchos::RCP<Epetra_Comm>& comm, int parts) const;
+
+    /*!
+    \brief Redistribute the master side of the interface
+
+    \param[in] rownodes Node row map of master side
+    \param[in] colnodes Node column map of master side
+    \param[in] roweles Element row map of master side
+    \param[in] comm Communicator object
+    \param[in] parts Number of desired subdomains after redistribution
+    \param[in] imbalance Max. relative imbalance of subdomain size
+    */
+    void RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownodes,
+        Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
+        const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance = 1.1) const;
 
     /** \brief function called at the beginning of each MortarCoupling call
      *

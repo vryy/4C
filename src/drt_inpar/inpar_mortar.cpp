@@ -99,6 +99,9 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           parredist_static, parredist_dynamic, parredist_dynamic),
       &mortar);
 
+  DoubleParameter("IMBALANCE_TOL", 1.1,
+      "Max. relative imbalance of subdomain size after redistribution", &mortar);
+
   setStringToIntegralParameter<int>("ALGORITHM", "Mortar", "Type of meshtying/contact algorithm",
       tuple<std::string>("mortar", "Mortar", "nts", "NTS", "gpts", "GPTS", "lts", "LTS", "ltl",
           "LTL", "stl", "STL"),
@@ -109,6 +112,7 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   DoubleParameter("MAX_BALANCE", 2.0,
       "Maximum value of load balance measure before parallel redistribution", &mortar);
+
   IntParameter("MIN_ELEPROC", 0,
       "Minimum no. of elements per processor for parallel redistribution", &mortar);
 
