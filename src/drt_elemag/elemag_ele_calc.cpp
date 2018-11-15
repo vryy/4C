@@ -149,26 +149,27 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
       InterpolateSolutionToNodes(ele, discretization, elevec1);
       break;
     }
-    /*
     case ELEMAG::calc_abc:
     {
       int face = params.get<int>("face");
       int sumindex = 0;
       for (int i = 0; i < face; ++i)
       {
-        DRT::UTILS::PolynomialSpaceParams
-    params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,ele->Faces()[i]->Degree(),
-    usescompletepoly_); int nfdofs = DRT::UTILS::PolynomialSpaceCache<nsd_ -
-    1>::Instance().Create(params)->Size(); sumindex += nfdofs;
+        DRT::UTILS::PolynomialSpaceParams params(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,
+            ele->Faces()[i]->Degree(), usescompletepoly_);
+        int nfdofs = DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
+        sumindex += nfdofs;
       }
 
       if (!params.isParameter("nodeindices"))
-        localSolver_->ComputeAbsorbingBC(discretization, ele, params, mat, face, elemat1, sumindex);
+        localSolver_->ComputeAbsorbingBC(
+            discretization, ele, params, mat, face, elemat1, sumindex, elevec1);
       else
         dserror("why would you set an absorbing LINE in THREE dimensions?");
 
       break;
     }
+    /*
     case ELEMAG::bd_integrate:
     {
       int face = params.get<int>("face");
@@ -1255,6 +1256,47 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   return;
 }  // UpdateInteriorVariablesAndComputeResidual
+
+/*----------------------------------------------------------------------*
+ * ComputeAbsorbingBC
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
+    DRT::Discretization& discretization, DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+    Teuchos::RCP<MAT::Material>& mat, int face, Epetra_SerialDenseMatrix& elemat, int indexstart,
+    Epetra_SerialDenseVector& elevec1)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagEleCalc::ComputeAbsorbingBC");
+
+  shapesface_->EvaluateFace(*ele, face);
+
+  // bool resonly = params.get<bool>("resonly");
+
+  // const MAT::ElectromagneticMat* actmat = static_cast<const MAT::ElectromagneticMat*>(mat.get());
+  // double c = actmat->SpeedofSound(ele->Id());
+  // double rho = actmat->Density(ele->Id());
+
+  // if (!resonly)
+  //{
+  //  // loop over number of shape functions
+  //  for (unsigned int p = 0; p < shapesface_->nfdofs_; ++p)
+  //  {
+  //    // loop over number of shape functions
+  //    for (unsigned int q = 0; q <= p; ++q)
+  //    {
+  //      double tempG = 0.0;
+  //      for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
+  //        tempG += shapesface_->jfac(i) * shapesface_->shfunct(p, i) * shapesface_->shfunct(q, i);
+
+  //      elemat(indexstart + p, indexstart + q) = elemat(indexstart + q, indexstart + p) -=
+  //          tempG / c / rho;
+
+  //    }  // for (unsigned int q=0; q<nfdofs_; ++q)
+  //  }    // for (unsigned int p=0; p<nfdofs_; ++p)
+  //}      // if(!resonly)
+  for (unsigned int i = 0; i < shapesface_->nfdofs_ * (nsd_ - 1); ++i) elevec1(i) = 0.0;
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * ComputeSource

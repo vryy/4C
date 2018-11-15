@@ -121,7 +121,7 @@ namespace DRT
         /// The function still needs to be written.
         void ComputeAbsorbingBC(DRT::Discretization& discretization, DRT::ELEMENTS::Elemag* ele,
             Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat, int face,
-            Epetra_SerialDenseMatrix& elemat, int indexstart);
+            Epetra_SerialDenseMatrix& elemat, int indexstart, Epetra_SerialDenseVector& elevec1);
 
         /// Add terms corresponding to the absorbing boundary condition.
         void ComputeBoundaryIntegral(

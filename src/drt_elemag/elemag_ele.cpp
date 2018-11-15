@@ -503,7 +503,8 @@ int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
 {
-  // DRT::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(this,params,discretization,lm,elemat1,elemat2,elevec1,elevec2,elevec3);
+  DRT::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
+      this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }
 
