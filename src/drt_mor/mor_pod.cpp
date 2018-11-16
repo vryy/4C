@@ -218,6 +218,10 @@ void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_Multi
  *----------------------------------------------------------------------*/
 void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector> &projmatrix)
 {
+  // ***************************
+  // PART1: Read in Matrix Sizes
+  // ***************************
+
   // insert path to file if necessary
   if (filename[0] != '/')
   {
@@ -231,85 +235,119 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   }
 
   // open binary file
-  std::ifstream file(
+  std::ifstream file1(
       filename.c_str(), std::ifstream::in | std::ifstream::binary | std::ifstream::ate);
 
-  if (!file.good())
-    dserror("File containing the projection matrix could not be opened. Check Input-File.");
-
-  // check whether file could be opened and inform user
-  if (myrank_ == 0) std::cout << "Reading binary file containing projection matrix";
-
-  // number of bytes in file
-  std::streampos size = file.tellg();
+  if (!file1.good()) dserror("File containing the matrix could not be opened. Check Input-File.");
 
   // allocation of a memory-block to read the data
-  char *memblock = new char[size];
+  char *sizeblock = new char[8];
 
   // jump to beginning of file
-  file.seekg(0, std::ifstream::beg);
+  file1.seekg(0, std::ifstream::beg);
 
-  // read the whole file into the memory-block
-  file.read(memblock, std::streamoff(size));
+  // read the first 8 byte into the memory-block
+  file1.read(sizeblock, std::streamoff(8));
 
   // close the file
-  file.close();
+  file1.close();
 
   // union for conversion of 4 bytes to int or float
   union CharIntFloat {
     char ValueAsChars[4];
     int ValueAsInt;
     float ValueAsFloat;
-  } NumRows, NumCols, Value;
+  } NumRows, NumCols;
 
   // number of rows
-  for (int k = 0; k < 4; k++)
-    NumRows.ValueAsChars[k] =
-        memblock[k];  // Alternative (w/o union for NumRows): (unsigned char)memblock[0] | (unsigned
-                      // char)memblock[1] << 8 | (unsigned char)memblock[2] << 16 | (signed
-                      // char)memblock[3] << 24;
+  for (int k = 0; k < 4; k++) NumRows.ValueAsChars[k] = sizeblock[k];
 
   // number of columns
-  for (int k = 0; k < 4; k++)
-    NumCols.ValueAsChars[k] =
-        memblock[k + 4];  // Alternative (w/o union for NumCols): (unsigned char)memblock[4] |
-                          // (unsigned char)memblock[5] << 8 | (unsigned char)memblock[6] << 16 |
-                          // (signed char)memblock[7] << 24;
+  for (int k = 0; k < 4; k++) NumCols.ValueAsChars[k] = sizeblock[k + 4];
 
-  // global row ids of the calling processor
-  int *MyGlobalElements;
-  MyGlobalElements = actdisc_->DofRowMap()->MyGlobalElements();
+  delete[] sizeblock;
 
-  // initialize array of pointers and double arrays to each of this pointers
-  double **Values = new double *[NumCols.ValueAsInt];
-  for (int i = 0; i < NumCols.ValueAsInt; i++) Values[i] = new double[NumRows.ValueAsInt];
+  // allocate multivector according to matrix size:
+  Teuchos::RCP<Epetra_Map> mymap =
+      Teuchos::rcp(new Epetra_Map(NumRows.ValueAsInt, 0, actdisc_->Comm()));
+  projmatrix = Teuchos::rcp(new Epetra_MultiVector(*mymap, NumCols.ValueAsInt));
 
-  // loop over columns
-  for (int i = 0; i < NumCols.ValueAsInt; i++)
+
+  // ***************************
+  // PART2: Read In Matrix
+  // ***************************
+
+  // select the format we want to import matrices in
+  const int formatfactor = 4;  // 8 is double 4 is single
+
+  // union for conversion of some bytes to int or float
+  union NewCharIntFloat {
+    char VAsChar[formatfactor];
+    double VAsDbl;
+    float VAsFlt;
+  } Val;
+
+  // calculate a number of bytes that are needed to be reserved in order to fill the multivector
+  int mysize = projmatrix->NumVectors() * projmatrix->MyLength() * formatfactor;
+
+  // open binary file (again)
+  std::ifstream file2(
+      filename.c_str(), std::ifstream::in | std::ifstream::binary | std::ifstream::ate);
+
+  // number of bytes in file
+  std::streampos size = file2.tellg();
+  if (myrank_ == 0) std::cout << " (FILE SIZE is " << size << " bytes)";
+
+  // allocation of a memory-block to read the data
+  char *memblock = new char[mysize];
+
+  // calculation of starting points in matrix for each processor
+  const Epetra_Comm &comm(actdisc_->Comm());
+  const int numproc(comm.NumProc());
+  const int mypid(comm.MyPID());
+  std::vector<int> localnumbers(numproc, 0);
+  std::vector<int> globalnumbers(numproc, 0);
+  localnumbers[mypid] = mymap->NumMyElements();
+  comm.SumAll(&localnumbers[0], &globalnumbers[0], numproc);
+
+  int factor(0);
+  for (int i = 0; i < mypid; i++) factor += globalnumbers[i];
+
+  actdisc_->Comm().Barrier();
+
+  // 64 bit number necessary, as integer can overflow for large matrices
+  long long start =
+      (long long)factor * (long long)projmatrix->NumVectors() * (long long)formatfactor;
+
+  // leads to a starting point:
+  file2.seekg(8 + start, std::ifstream::beg);
+
+  // read into memory
+  file2.read(memblock, std::streamoff(mysize));
+
+  // close the file
+  file2.close();
+
+  // loop over columns and fill double array
+  for (int i = 0; i < projmatrix->NumVectors(); i++)
   {
     // loop over all rows owned by the calling processor
-    for (int j = 0; j < actdisc_->DofRowMap()->NumMyElements(); j++)
+    for (int j = 0; j < projmatrix->MyLength(); j++)
     {
       // current value
-      for (int k = 0; k < 4; k++)
-        Value.ValueAsChars[k] =
-            memblock[8 + MyGlobalElements[j] * 4 * NumCols.ValueAsInt + i * 4 + k];
+      for (int k = 0; k < formatfactor; k++)
+        Val.VAsChar[k] = memblock[j * formatfactor * NumCols.ValueAsInt + i * formatfactor + k];
 
-      // write current value to Values
-      Values[i][j] = double(Value.ValueAsFloat);
+      // write current value to Multivector
+      projmatrix->ReplaceMyValue(j, i, double(Val.VAsFlt));
     }
   }
 
   // delete memory-block
   delete[] memblock;
 
-  // write projmatrix_ as Epetra_MultiVector
-  projmatrix = Teuchos::rcp(
-      new Epetra_MultiVector(Copy, *(actdisc_->DofRowMap()), Values, NumCols.ValueAsInt));
-
-  // delete pointers in Values and Values
-  for (int i = 0; i < NumCols.ValueAsInt; i++) delete[] Values[i];
-  delete[] Values;
+  // all procs wait until proc number 0 did finish the stuff before
+  actdisc_->Comm().Barrier();
 
   // Inform user
   if (myrank_ == 0) std::cout << " --> Successful\n" << std::endl;
