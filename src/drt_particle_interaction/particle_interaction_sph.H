@@ -121,9 +121,6 @@ namespace PARTICLEINTERACTION
     //! compute initial consistent particle volume
     virtual double ComputeConsistentParticleVolume() const;
 
-    //! refresh initial states of ghosted particles
-    virtual void RefreshInitialStates() const;
-
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 

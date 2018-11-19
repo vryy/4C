@@ -87,9 +87,6 @@ namespace PARTICLEINTERACTION
     //! init contact handler
     virtual void InitContactHandler();
 
-    //! refresh initial states of ghosted particles
-    virtual void RefreshInitialStates() const;
-
     //! clear force state of particles
     virtual void ClearForceState() const;
 
