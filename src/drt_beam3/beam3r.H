@@ -35,6 +35,8 @@
 #include "beam_spatial_discretization_utils.H"
 #include "beam3_base.H"
 
+typedef Sacado::Fad::DFad<double> FAD;
+
 // forward declaration ...
 namespace LINALG
 {
