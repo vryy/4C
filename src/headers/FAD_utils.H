@@ -68,7 +68,7 @@ namespace FADUTILS
   }
 
   /*!
-  \brief Calculate square root of a scalar FAD quantity. If a compiler Error is thrown then calling
+  \brief Calculate square root of a scalar FAD quantity. If a compiler Error is thrown when calling
   this function, check if the template argument is explicitly stated in the function call, i.e.
   FADUTILS::sqrt<my_AD_type>(...)
   */
@@ -93,7 +93,7 @@ namespace FADUTILS
   }
 
   /*!
-  \brief Calculate Norm of a scalar FAD quantity. If a compiler Error is thrown then calling this
+  \brief Calculate Norm of a scalar FAD quantity. If a compiler Error is thrown when calling this
   function, check if the template argument is explicitly stated in the function call, i.e.
   FADUTILS::Norm<my_AD_type>(...)
   */
@@ -138,7 +138,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return std::sqrt(norm_squared);
+    return FADUTILS::sqrt(norm_squared);
   }
 
   /*!
