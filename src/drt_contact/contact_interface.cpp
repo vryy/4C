@@ -76,11 +76,12 @@ CONTACT::IDataContainer::IDataContainer()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(const int id,
-    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
     const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
 {
   Teuchos::RCP<MORTAR::IDataContainer> idata_ptr = Teuchos::rcp(new CONTACT::IDataContainer());
-  return Teuchos::rcp(new CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact, redundant));
+  return Teuchos::rcp(
+      new CoInterface(idata_ptr, id, comm, spatialDim, icontact, selfcontact, redundant));
 }
 
 /*----------------------------------------------------------------------------*
@@ -127,9 +128,10 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<CONTACT::IDataContainer>& i
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
-    const int id, const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
-    bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
-    : MORTAR::MortarInterface(idata_ptr, id, comm, dim, icontact, redundant),
+    const int id, const Epetra_Comm& comm, const int spatialDim,
+    const Teuchos::ParameterList& icontact, bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : MORTAR::MortarInterface(idata_ptr, id, comm, spatialDim, icontact, redundant),
       idata_ptr_(Teuchos::rcp_dynamic_cast<CONTACT::IDataContainer>(idata_ptr, true)),
       idata_(*idata_ptr_),
       selfcontact_(idata_.IsSelfContact()),
@@ -194,7 +196,7 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& id
                    "needed, as it is very expensive. But we need it e.g. for self contact."
                 << std::endl;
 
-  // init extended ghosting for RR loop
+  // initialize extended ghosting for RR loop
   eextendedghosting_ = Teuchos::null;
   nextendedghosting_ = Teuchos::null;
 

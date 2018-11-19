@@ -147,7 +147,7 @@ namespace MORTAR
     IDataContainer();
 
     /// destructor
-    virtual ~IDataContainer(){};
+    virtual ~IDataContainer() = default;
 
     /// @name accessors
     /// @{
@@ -439,7 +439,11 @@ namespace MORTAR
   class MortarInterface
   {
    protected:
-    /// constructor ( only for derived classes )
+    /*!
+    \brief Constructor (only for derived classes)
+
+    @param[in] idata_ptr Interface data container
+    */
     MortarInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr);
 
    public:
@@ -462,20 +466,21 @@ namespace MORTAR
     /*!
     \brief Standard constructor creating empty mortar interface
 
+    \param idata_ptr (in): Interface data container
     \param id (in): Unique interface id
     \param comm (in): A communicator object
-    \param dim (in): Global problem dimension
+    \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     \param redundant (in): type of redundancy in interface storage
     */
     MortarInterface(const Teuchos::RCP<IDataContainer>& idata_ptr, const int id,
-        const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& imortar,
+        const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar,
         INPAR::MORTAR::RedundantStorage redundant);
 
     /*!
     \brief Destructor
     */
-    virtual ~MortarInterface() {}
+    virtual ~MortarInterface() = default;
 
     inline int Id() const { return id_; }
 

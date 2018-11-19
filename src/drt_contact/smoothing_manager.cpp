@@ -1331,3 +1331,23 @@ void CONTACT::SmoothingManager::PostprocessQuantities(IO::DiscretizationWriter& 
 
   return;
 }
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::SmoothingManager::ReadRestart(IO::DiscretizationReader& reader,
+    Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
+{
+  dserror("Not implemented, yet.");
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::SmoothingManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
+{
+  dserror("Not implemented, yet.");
+
+  return;
+}
+

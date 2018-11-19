@@ -258,8 +258,8 @@ namespace CONTACT
     /*!
     \brief Get some nodal quantity globally and store into MortarNodes
 
-    The enum input parameter defines, which quantity is be updated.
-    Currently the possibilities "lmold", "lmcurrent", "lmupdate" and
+    The enum input parameter defines, which quantity has to be updated.
+    Currently, the possibilities "lmold", "lmcurrent", "lmupdate" and
     "lmuzawa" exist. Note that "lmold" means the converged value LM_n
     of the last time / load step, whereas "lmcurrent" adresses the current
     (not necessarily converged) value of the LM_n+1. "lmupdate" is a special
@@ -305,7 +305,7 @@ namespace CONTACT
 
     //@}
 
-    //! @name Debugging methods
+    //! @name Output
 
     /*!
     \brief Compute interface forces and moments
@@ -334,6 +334,11 @@ namespace CONTACT
     */
     void PrintActiveSet() const;
 
+    //! @}
+
+    //! @name Debugging methods
+    //! @{
+
     /*!
     \brief Visualize contact stuff with gmsh
 
@@ -343,7 +348,7 @@ namespace CONTACT
     */
     void VisualizeGmsh(const int step, const int iter);
 
-    //@}
+    //! @}
 
     //! @name Preconditioner methods
     //! @{

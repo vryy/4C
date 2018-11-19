@@ -1312,15 +1312,16 @@ namespace CONTACT
     //! Is this a condensed system?
     virtual bool IsCondensedSystem() const;
 
-    /*! Fill the maps vector for the linear solver preconditioner
-     *
-     * The following order is pre-defined:
-     * (0) masterDofMap
-     * (1) slaveDofMap
-     * (2) innerDofMap
-     * (3) activeDofMap
-     *
-     * \author hiermeier */
+    /*! \brief Fill the maps vector for the linear solver preconditioner
+
+    The following order is pre-defined:
+    (0) masterDofMap
+    (1) slaveDofMap
+    (2) innerDofMap
+    (3) activeDofMap
+
+    \author hiermeier
+    */
     virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const;
 
     //! compute the preconditioner operator

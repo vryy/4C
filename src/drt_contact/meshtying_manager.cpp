@@ -31,7 +31,6 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
@@ -659,10 +658,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
-  // write restart information for meshtying
-  //  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
-  //  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  //  LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
   output.WriteVector("mt_lagrmultold", GetStrategy().LagrMultOld());
 
   return;

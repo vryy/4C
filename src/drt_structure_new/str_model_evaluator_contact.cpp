@@ -510,7 +510,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   if (Strategy().IsNitsche()) return;
 
   // *********************************************************************
-  // print active set
+  // print summary of active set to screen
   // *********************************************************************
   Strategy().PrintActiveSet();
 

@@ -8,9 +8,6 @@
 */
 /*-----------------------------------------------------------------------*/
 
-// Epetra_SerialComm needed in non-parallel implementation only
-//#include "Epetra_SerialComm.h"
-
 #include "mortar_interface.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
@@ -163,8 +160,8 @@ Teuchos::RCP<MORTAR::MortarInterface> MORTAR::MortarInterface::Create(const int 
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<IDataContainer>& idata_ptr,
-    const int id, const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& imortar,
-    INPAR::MORTAR::RedundantStorage redundant)
+    const int id, const Epetra_Comm& comm, const int spatialDim,
+    const Teuchos::ParameterList& imortar, INPAR::MORTAR::RedundantStorage redundant)
     : idata_ptr_(idata_ptr),
       idata_(*idata_ptr_),
       id_(idata_.Id()),
@@ -212,7 +209,7 @@ MORTAR::MortarInterface::MortarInterface(const Teuchos::RCP<IDataContainer>& ida
   idata_.SetIsInit(true);
   id_ = id;
   comm_ = Teuchos::rcpFromRef(comm);
-  dim_ = dim;
+  dim_ = spatialDim;
   imortar_.setParameters(imortar);
   quadslave_ = false;
   redundant_ = redundant;
