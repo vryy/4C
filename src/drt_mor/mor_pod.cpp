@@ -49,8 +49,19 @@ UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
   // no mor? -> exit
   if (not havemor_) return;
 
+  // initialize temporary matrix
+  Teuchos::RCP<Epetra_MultiVector> tmpmat = Teuchos::null;
+
   // read projection matrix from binary file
-  ReadMatrix(morparams_.get<std::string>("POD_MATRIX"), projmatrix_);
+  ReadMatrix(morparams_.get<std::string>("POD_MATRIX"), tmpmat);
+
+  // build an importer
+  Teuchos::RCP<Epetra_Import> dofrowimporter =
+      Teuchos::rcp(new Epetra_Import(*(actdisc_->DofRowMap()), (tmpmat->Map())));
+  projmatrix_ =
+      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->DofRowMap()), tmpmat->NumVectors(), true));
+  int err = projmatrix_->Import(*tmpmat, *dofrowimporter, Insert, 0);
+  if (err != 0) dserror("POD projection matrix could not be mapped onto the dof map");
 
   // check row dimension
   if (projmatrix_->GlobalLength() != actdisc_->DofRowMap()->NumGlobalElements())
@@ -80,7 +91,8 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(Teuchos::RCP<LINAL
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
       Teuchos::rcp(new Epetra_MultiVector(M->RowMap(), projmatrix_->NumVectors(), true));
-  M->Multiply(false, *projmatrix_, *M_tmp);
+  int err = M->Multiply(false, *projmatrix_, *M_tmp);
+  if (err) dserror("Multiplication M * V failed.");
 
   // left multiply V^T * (M * V)
   Teuchos::RCP<Epetra_MultiVector> M_red_mvec =
@@ -105,7 +117,8 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
       Teuchos::rcp(new Epetra_MultiVector(M->DomainMap(), projmatrix_->NumVectors(), true));
-  M->Multiply(true, *projmatrix_, *M_tmp);
+  int err = M->Multiply(true, *projmatrix_, *M_tmp);
+  if (err) dserror("Multiplication V^T * M failed.");
 
   // convert Epetra_MultiVector to LINALG::SparseMatrix
   Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->DomainMap()));
@@ -133,7 +146,9 @@ Teuchos::RCP<Epetra_MultiVector> UTILS::MOR::ReduceRHS(Teuchos::RCP<Epetra_Multi
 Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vector> v)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_));
-  v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
+  int err = v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
+  if (err) dserror("Multiplication V^T * v failed.");
+
   Teuchos::RCP<Epetra_Vector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_));
   v_red->Import(*v_tmp, *structrimpo_, Insert, 0);
 
@@ -148,7 +163,8 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ExtendSolution(Teuchos::RCP<Epetra_Vecto
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
   v_tmp->Import(*v_red, *structrinvimpo_, Insert, 0);
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
-  v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
+  int err = v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
+  if (err) dserror("Multiplication V * v_red failed.");
 
   return v;
 }
@@ -166,7 +182,9 @@ void UTILS::MOR::MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector> mul
       Teuchos::rcp(new Epetra_MultiVector(*redmap, multivect2->NumVectors(), true));
 
   // do the multiplication: (all procs hold the full result)
-  multivect_temp->Multiply(multivect1Trans, multivect2Trans, 1.0, *multivect1, *multivect2, 0.0);
+  int err = multivect_temp->Multiply(
+      multivect1Trans, multivect2Trans, 1.0, *multivect1, *multivect2, 0.0);
+  if (err) dserror("Multiplication failed.");
 
   // import the result to a Epetra_MultiVector whose elements/rows are distributed over all procs
   result->Import(*multivect_temp, *impo, Insert, 0);
@@ -293,10 +311,6 @@ void UTILS::MOR::ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVecto
   // open binary file (again)
   std::ifstream file2(
       filename.c_str(), std::ifstream::in | std::ifstream::binary | std::ifstream::ate);
-
-  // number of bytes in file
-  std::streampos size = file2.tellg();
-  if (myrank_ == 0) std::cout << " (FILE SIZE is " << size << " bytes)";
 
   // allocation of a memory-block to read the data
   char *memblock = new char[mysize];
