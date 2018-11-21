@@ -177,37 +177,74 @@ namespace CONTACT
     FriNodeDataContainer operator=(const FriNodeDataContainer& old);
     FriNodeDataContainer(const FriNodeDataContainer& old);
 
-    double jump_[3];     // jump per time step
-    double jumpvar_[2];  // variant jump per time step
-    bool slip_;          // true if cnode slips (contact force reaches friction bound)
-    bool slipold_;  // true if cnode slips (contact force reaches friction bound) - last converged
-                    // timestep
+    //! Jump per time step
+    double jump_[3];
 
-    GEN::pairedvector<int, double> drowsold_;     // nodal rows of old D matrix
-    std::map<int, double> mrowsold_;              // nodal rows of old M matrix
-    GEN::pairedvector<int, double> drowsoldLTL_;  // nodal rows of old D matrix
-    std::map<int, double> mrowsoldLTL_;           // nodal rows of old M matrix
-    std::set<int> snodes_;                        // nodal set of according slave nodes
-    std::set<int> mnodes_;                        // nodal set of according master nodes
-    std::set<int> mnodesold_;                     // nodal set of old according masternodes
+    //! Variant jump per time step
+    double jumpvar_[2];
 
-    std::vector<std::map<int, double>>
-        derivjump_;  // directional derivative of nodal weighted jump vector
-    std::vector<std::map<int, double>>
-        derivvarjump_;  // directional derivative of obj.-variant. nodal weighted jump vector
+    /*!
+    \brief Flag set to \c true if contact node is slipping
 
-    // penalty related quantities
-    double traction_[3];     // traction vector of current time step
-    double tractionold_[3];  // traction vector of previous time step
+    Node is slipping if contact force reaches friction bound.
+    */
+    bool slip_;
 
-    // penalty related quantities
-    double tractionLTL_[3];     // traction vector of current time step
-    double tractionoldLTL_[3];  // traction vector of previous time step
+    /*!
+    \brief Flag set to \c true if contact node was slipping at last converged state
+
+    Node is slipping if contact force reaches friction bound.
+    */
+    bool slipold_;
+
+    //! Nodal rows of old D matrix
+    GEN::pairedvector<int, double> drowsold_;
+
+    //! Nodal rows of old M matrix
+    std::map<int, double> mrowsold_;
+
+    //! Nodal rows of old D matrix for line-to-line contact
+    GEN::pairedvector<int, double> drowsoldLTL_;
+
+    //! Nodal rows of old M matrix for line-to-line contact
+    std::map<int, double> mrowsoldLTL_;
+
+    //! Nodal set of according slave nodes
+    std::set<int> snodes_;
+
+    //! Nodal set of according master nodes
+    std::set<int> mnodes_;
+
+    //! nodal set of old according master nodes
+    std::set<int> mnodesold_;
+
+    //! Directional derivative of nodal weighted jump vector
+    std::vector<std::map<int, double>> derivjump_;
+
+    //! Directional derivative of obj.-variant. nodal weighted jump vector
+    std::vector<std::map<int, double>> derivvarjump_;
+
+    //! @name Penalty related quantities
+    //!@{
+
+    //! Traction vector of current time step
+    double traction_[3];
+
+    //! Traction vector of previous time step
+    double tractionold_[3];
+
+    //! Traction vector of current time step for line-to-line contact
+    double tractionLTL_[3];
+
+    //! Traction vector of previous time step for line-to-line contact
+    double tractionoldLTL_[3];
+
+    //!@}
   };
   // class FriNodeDataContainer
 
   /*!
-   \brief An additional container for wear and tsi with contact specific data
+   \brief An additional container for wear and TSI with contact specific data
 
    This class contains additional information to the data container of the
    frictional node. These additional data are needed only for contact
@@ -293,22 +330,40 @@ namespace CONTACT
     FriNodeWearDataContainer operator=(const FriNodeWearDataContainer& old);
     FriNodeWearDataContainer(const FriNodeWearDataContainer& old);
 
-    // wear related quantities
-    double weightedwear_;       // weighted wear
-    double deltaweightedwear_;  // delta weighted wear
-    double wcurr_[1];           // current pv wear value (n+1)
-    double wold_[1];            // old pv wear value (i) - for paritioned solution scheme
-    double waccu_[1];           // accumulated pv wear value (i) - for different time scales
+    //! @name Wear related quantities
+    //!@{
 
-    std::vector<std::map<int, double>> trows_;  // nodal rows of T matrix
-    std::vector<std::map<int, double>> erows_;  // nodal rows of E matrix
+    //! Weighted wear
+    double weightedwear_;
 
-    std::vector<std::map<int, double>> d2rows_;  // nodal rows of master sided D matrix
+    //! delta weighted wear
+    double deltaweightedwear_;
 
-    std::map<int, std::map<int, double>>
-        derivt_;  // directional derivative of nodal Tw-matrix values
-    std::map<int, std::map<int, double>>
-        derive_;  // directional derivative of nodal E-matrix values
+    //! Current pv wear value (n+1)
+    double wcurr_[1];
+
+    //! Old pv wear value (i) - for paritioned solution scheme
+    double wold_[1];
+
+    //! Accumulated pv wear value (i) - for different time scales
+    double waccu_[1];
+
+    //!@}
+
+    //! Nodal rows of T matrix
+    std::vector<std::map<int, double>> trows_;
+
+    //! Nodal rows of E matrix
+    std::vector<std::map<int, double>> erows_;
+
+    //! Nodal rows of master sided D matrix
+    std::vector<std::map<int, double>> d2rows_;
+
+    //! Directional derivative of nodal Tw-matrix values
+    std::map<int, std::map<int, double>> derivt_;
+
+    //! Directional derivative of nodal E-matrix values
+    std::map<int, std::map<int, double>> derive_;
   };
   // class FriNodeWearDataContainer
 

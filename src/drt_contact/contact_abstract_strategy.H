@@ -435,13 +435,7 @@ namespace CONTACT
     //!@}
 
    private:
-    //! parallel unbalance factors (time) for current time step \f$t_{n+1}\f$
-    std::vector<double> tunbalance_;
-
-    //! parallel unbalance factors (eles) for current time step \f$t_{n+1}\f$
-    std::vector<int> eunbalance_;
-
-    //! global Lagrange mult. dof row map (of all interfaces)
+    //! global Lagrange multiplier dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;
 
     //! global reference dof row map for self contact Lagrange multipliers (of all interfaces)
@@ -471,6 +465,9 @@ namespace CONTACT
     //! global displacement dof row map (s+m+n map)
     Teuchos::RCP<Epetra_Map> gdisprowmap_;
 
+    //! @name Active set
+    //!@{
+
     //! global active slave node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gactivenodes_;
 
@@ -482,7 +479,6 @@ namespace CONTACT
 
     //! global active slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> ginactivedofs_;
-
 
     //! global active slave dof row map in normal direction (of all interfaces)
     Teuchos::RCP<Epetra_Map> gactiven_;
@@ -499,6 +495,8 @@ namespace CONTACT
     //! global slip slave dof row map in tangential direction (of all interfaces)
     Teuchos::RCP<Epetra_Map> gslipt_;
 
+    //!@}
+
     //! global slave dof row map of vertex nodes
     Teuchos::RCP<Epetra_Map> gsdofVertex_;
 
@@ -507,6 +505,15 @@ namespace CONTACT
 
     //! global slave dof row map of surface nodes
     Teuchos::RCP<Epetra_Map> gsdofSurf_;
+
+    //! @name Parallel redistribution
+    //!@{
+
+    //! parallel unbalance factors (time) for current time step \f$t_{n+1}\f$
+    std::vector<double> tunbalance_;
+
+    //! parallel unbalance factors (elements) for current time step \f$t_{n+1}\f$
+    std::vector<int> eunbalance_;
 
     //! global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
@@ -523,28 +530,41 @@ namespace CONTACT
     //! global dirichlet toggle of all slave dofs (before parallel redistribution)
     Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;
 
+    //! parallel redistribution type
+    INPAR::MORTAR::ParRedist partype_;
+
+    //!@}
+
+    //! @name Binning strategy
+    //!@{
+
     //! initial col ele map for binning strategy (s m)
     std::vector<Teuchos::RCP<Epetra_Map>> initial_elecolmap_;
 
-    //! global Mortar matrix D
+    //!@}
+
+    //! global Mortar matrix \f$D\f$
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;
 
-    //! global Mortar matrix M
+    //! global Mortar matrix \f$M\f$
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;
 
-    //! global weighted gap vector g
+    //! global weighted gap vector \f$g\f$
     Teuchos::RCP<Epetra_Vector> g_;
 
-    //! global tangential rhs vector (formulation with incremental z_)
+    //! global tangential right-hand side vector (formulation with incremental #z_)
     Teuchos::RCP<Epetra_Vector> tangrhs_;
 
-    //! gloabl inactive rhs vector (formulation with incremental z_ and saddle point system)
+    /*! \brief Gloabl inactive right-hand side vector
+     *
+     * This is used for the formulation with incremental #z_ and saddle point system.
+     */
     Teuchos::RCP<Epetra_Vector> inactiverhs_;
 
     //! structural contact right-hand-side vector at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> strContactRhsPtr_;
 
-    //! global constraint rhs vector (only for saddlepoint problems)
+    //! global constraint right-hand side vector (only for saddlepoint problems)
     Teuchos::RCP<Epetra_Vector> constrrhs_;
 
     //! global Matrix LinD containing slave fc derivatives
@@ -570,7 +590,8 @@ namespace CONTACT
 
     /*! \brief Lagrange multiplier vector increment within SaddlePointSolve
      *
-     *  \remark This is NOT the increment of z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!) */
+     *  \remark This is \em not the increment of #z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!)
+     */
     Teuchos::RCP<Epetra_Vector> zincr_;
 
     //! vector of Lagrange multipliers from last Uzawa step
@@ -588,11 +609,19 @@ namespace CONTACT
     //! vector of tangential contact forces at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> forcetangential_;
 
+    //! @name Counters and indices
+    //!@{
+
     //! time step index at \f$t_{n+1}\f$
     int stepnp_;
 
-    //! nonlinear (Newton) iteration index
+    //! Nonlinear iteration index, e.g. Newton iteration
     int iter_;
+
+    //!@}
+
+    //! @name Status flags
+    //!@{
 
     //! flag indicating global contact status
     bool isincontact_;
@@ -618,6 +647,8 @@ namespace CONTACT
     //! flag indicating whether trafo should be applied
     bool dualquadslavetrafo_;
 
+    //!@}
+
     //! transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix> trafo_;
 
@@ -630,7 +661,10 @@ namespace CONTACT
     //! modified global Mortar matrix Dold
     Teuchos::RCP<LINALG::SparseMatrix> doldmod_;
 
-    //! integration time
+    /*! \brief Integration time
+     *
+     * \todo Is this the wall clock time required to perform the mortar integration?
+     */
     double inttime_;
 
     //! mean interface velocity
@@ -642,28 +676,30 @@ namespace CONTACT
     //! direction in which the contact constraints are formulated
     INPAR::CONTACT::ConstraintDirection constr_direction_;
 
-    //! parallel redistribution type
-    INPAR::MORTAR::ParRedist partype_;
-
   };  // class AbstractStratDataContainer
 
 
   /*! \brief Main abstract class for contact solution strategies
    *
-   *  This is the templating abstract class for all contact solution algorithms.
-   *  Every solution algorithm has to fit into the set of functions and calls defined herein
-   *  and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
+   * This is the templating abstract class for all contact solution algorithms.
+   * Every solution algorithm has to fit into the set of functions and calls defined herein
+   * and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
    *
-   *  This class it itself derived from the MORTAR::StrategyBase class, which is an even
-   *  more abstract framework for any solution strategies involving mortar coupling.
+   * This class it itself derived from the MORTAR::StrategyBase class, which is an even
+   * more abstract framework for any solution strategies involving mortar coupling.
    *
-   *  Refer also to the Semesterarbeit of Bernd Budich, 2009
+   * \remark Please add no new member variables to the abstract strategy! Use
+   * the corresponding data container instead (--> CONTACT::AbstractStratDataContainer).
+   * If you have any questions concerning this, do not hesitate to ask the maintainer.
    *
-   *  \author popp (popp@lnm.mw.tum.de) */
+   * Refer also to the Semesterarbeit of Bernd Budich, 2009
+   *
+   * \author popp(popp @lnm.mw.tum.de)
+   */
   class CoAbstractStrategy : public MORTAR::StrategyBase
   {
    public:
-    /*! Standard constructor
+    /*! \brief Standard constructor
      *
      *  This constructor uses the given DataContainer to store and share all its
      *  member variables. The declared member variables are just references to
@@ -1125,7 +1161,7 @@ namespace CONTACT
 
     //!@}
 
-    //! @name Evaluation methods
+    //! @name Parallel redistribution
     //!@{
 
     /*! \brief Redistribute all contact interfaces in parallel
@@ -1150,6 +1186,11 @@ namespace CONTACT
       return false;
     };
 
+    //!@}
+
+    //! @name Evaluation methods
+    //! @{
+
     //! Global evaluation method called from time integrator
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
@@ -1167,11 +1208,29 @@ namespace CONTACT
      *  \date 03/2016
      *  \author hiermeier */
     void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
+
+    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
+     *
+     *  \date 03/2016
+     *  \author hiermeier */
+
     void Evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
     {
       Evaluate(cparams, eval_vec, NULL);
     }
+
+    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
+     *
+     * This is the central place to enter contact evaluation.
+     * The actual evaluation operation is governed by the MORTAR::ActionType in the
+     * CONTACT::ParamsInterface. We use a switch on the MORTAR::ActionType to call the actual
+     * evaluation routine.
+     *
+     * \note This routine is \em not virtual as it is not supposed to be overloaded.
+     *
+     * \date 03/2016
+     * \author hiermeier */
     void Evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec,
         const std::vector<Teuchos::RCP<Epetra_Vector>>* eval_vec_mutable);
@@ -1201,14 +1260,9 @@ namespace CONTACT
      This is needed for energy-conserving time integration (Velocity-Update) */
     Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis);
 
-    /** \brief Write strategy specific output
-     *
-     *  \param(in) writer: output writer */
-    virtual void WriteOutput(IO::DiscretizationWriter& writer) const { return; }
-
     //!@}
 
-    //! @name merit function methods
+    //! @name Merit function methods
     //!@{
 
     /// return the potential contributions of the active contact strategy
@@ -1226,11 +1280,13 @@ namespace CONTACT
     //! @name Preconditioner methods
     //!@{
 
+    //! Is this a saddle-point system?
     virtual bool IsSaddlePointSystem() const;
 
+    //! Is this a condensed system?
     virtual bool IsCondensedSystem() const;
 
-    /* Fill the maps vector for the linear solver preconditioner
+    /*! Fill the maps vector for the linear solver preconditioner
      *
      * The following order is pre-defined:
      * (0) masterDofMap
@@ -1318,25 +1374,35 @@ namespace CONTACT
 
     //!@}
 
-    //! @name Debugging methods
+    //! @name Output
     //!@{
 
+    /*! \brief Write strategy specific output
+     *
+     *  \param(in) writer: output writer */
+    virtual void WriteOutput(IO::DiscretizationWriter& writer) const { return; }
+
     /*! \brief Compute interface forces and moments
-
-     Compute current interface forces and moments at n+1-alphaf using current
-     Lagrange multiplier values and current Mortar matrices D and M at n+1. When
-     doing dynamics with alpha_f > 0, this also uses the old LM and Mortar
-     matrices of the last converged time / load step n (TR-like interpolation).
-
-     \param output (in): flag indicating whether force output shall be written
+     *
+     * Compute current interface forces and moments at n+1-alphaf using current
+     * Lagrange multiplier values and current Mortar matrices D and M at n+1. When
+     * doing dynamics with alpha_f > 0, this also uses the old LM and Mortar
+     * matrices of the last converged time / load step n (TR-like interpolation).
+     *
+     *\param output (in): flag indicating whether force output shall be written
      */
     virtual void InterfaceForces(bool output = false);
 
     //! Print interfaces
     virtual void Print(std::ostream& os) const;
 
-    //! Print current active set to screen for debugging purposes
+    //! Print summary of active set status to screen
     virtual void PrintActiveSet() const;
+
+    //!@}
+
+    //! @name Debugging methods
+    //!@{
 
     /*! \brief Visualize contact stuff with gmsh
 
@@ -1354,8 +1420,8 @@ namespace CONTACT
      * As the base class MORTAR::StrategyBase is always called from the control routine
      * (time integrator), these functions need to be defined purely virtual here.
      */
-
     //!@{
+
     virtual bool ActiveSetSemiSmoothConverged() const = 0;
     virtual bool ActiveSetConverged() = 0;
     virtual int ActiveSetSteps() = 0;
@@ -1388,13 +1454,15 @@ namespace CONTACT
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 
-    //! @}
+    //!@}
 
-    //! @name Empty functions (meshtying)
-    //! @{
-    // All these functions only have functionality in meshtying simulations, thus they
-    // are defined as empty here in the case of contact. They can be called from the
-    // control routine (time integrator), whenever you like.
+    /*! @name Empty functions (meshtying)
+     *
+     * All these functions only have functionality in meshtying simulations, thus they
+     * are defined as empty here in the case of contact. They can be called from the
+     * control routine (time integrator), whenever you like.
+     */
+    //!@{
 
     void RedistributeMeshtying() {}
     void RestrictMeshtyingZone() {}
@@ -1405,7 +1473,8 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> MeshInitialization() { return Teuchos::null; };
 
     void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) {}
-    //! @}
+
+    //!@}
 
    protected:
     //! @name Pre/Postoperators
@@ -1438,6 +1507,7 @@ namespace CONTACT
 
     //! @Internal evaluate routines
     //!@{
+
     /*! \brief Evaluate only the weighted gap values
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time
@@ -1653,7 +1723,7 @@ namespace CONTACT
      is to be performed. Currently only the possibilities "old" and "current"
      exist, with "old" meaning the Mortar matrices of the last time / load step
      will be set to the current values D_n+1 and M_n+1 (this happens after
-     completion of a time / load step!). The std::string "current" adresses the
+     completion of a time / load step!). The std::string "current" addresses the
      current Mortar matrices, which when called will be reset to the last
      converged values D_n and M_n (this happens in the predictor step when
      the active set has not yet converged!).
@@ -1737,28 +1807,6 @@ namespace CONTACT
     };
 
    protected:
-    /*! @name References to the data container content
-     *
-     * \remark Please add no new member variables to the abstract strategy! Use
-     *  the corresponding data container instead (--> CONTACT::AbstractStratDataContainer).
-     *  If you have any questions concerning this, do not hesitate and ask me.
-     *                                                                   hiermeier 05/16 */
-    //! @{
-
-    /*! \brief Parallel unbalance factor of contact evaluation time
-     *
-     * Factor to indicate the unbalance of wall clock time spent in the contact evaluation on each
-     * MPI rank for the current time step \f$t_{n+1}\f$
-     */
-    std::vector<double>& tunbalance_;
-
-    /*! \brief Parallel unbalance factor of number of contact elements
-     *
-     * Factor to indicate the unbalance of number of contact elements on each MPI rank for the
-     * current time step \f$t_{n+1}\f$
-     */
-    std::vector<int>& eunbalance_;
-
     //! Global Lagrange multiplier dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& glmdofrowmap_;
 
@@ -1777,11 +1825,14 @@ namespace CONTACT
     //! Global internal dof row map
     Teuchos::RCP<Epetra_Map>& gndofrowmap_;
 
-    //! Global slave and master dof row map (s+m map)
+    //! Global slave and master dof row map (salve+master map)
     Teuchos::RCP<Epetra_Map>& gsmdofrowmap_;
 
     //! Global displacement dof row map (s+m+n map)
     Teuchos::RCP<Epetra_Map>& gdisprowmap_;
+
+    //! @name Active set and slip set
+    //!@{
 
     //! Global active slave node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gactivenodes_;
@@ -1795,10 +1846,16 @@ namespace CONTACT
     //! Global active slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& ginactivedofs_;
 
-    //! Global dof row map of matrix N (of all interfaces)
+    /*! \brief Global dof row map of matrix \f$N\f$ (of all interfaces)
+     *
+     * \todo What is the matrix N?
+     */
     Teuchos::RCP<Epetra_Map>& gactiven_;
 
-    //! Global dof row map of matrix T (of all interfaces)
+    /*! \brief Global dof row map of matrix \f$T\f$ (of all interfaces)
+     *
+     * \todo What is the matrix T?
+     */
     Teuchos::RCP<Epetra_Map>& gactivet_;
 
     //! Global slip slave node row map (of all interfaces)
@@ -1807,8 +1864,13 @@ namespace CONTACT
     //! Global slip slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gslipdofs_;
 
-    //! Global row map of matrix T for slip dofs (of all interfaces)
+    /*! \brief Global row map of matrix \f$T\f$ for slip dofs (of all interfaces)
+     *
+     * \todo What is the matrix T?
+     */
     Teuchos::RCP<Epetra_Map>& gslipt_;
+
+    //!@}
 
     //! Global slave row map of vertex nodes
     Teuchos::RCP<Epetra_Map>& gsdofVertex_;
@@ -1819,23 +1881,39 @@ namespace CONTACT
     //! Global slave row map of surface nodes
     Teuchos::RCP<Epetra_Map>& gsdofSurf_;
 
-    //! Global LM dof row map (before parallel redistribution)
+    //! @name Parallel redistribution
+    //!@{
+
+    //! Parallel unbalance factors (time) for current time step \f$t_{n+1}\f$
+    std::vector<double>& tunbalance_;
+
+    //! Parallel unbalance factors (elements) for current time step \f$t_{n+1}\f$
+    std::vector<int>& eunbalance_;
+
+    //! Global Lagrange multiplier dof row map before parallel redistribution
     Teuchos::RCP<Epetra_Map>& pglmdofrowmap_;
 
-    //! Global slave dof row map (before parallel redistribution)
+    //! Global slave dof row map before parallel redistribution
     Teuchos::RCP<Epetra_Map>& pgsdofrowmap_;
 
-    //! Global master dof row map (before parallel redistribution)
+    //! Global master dof row map before parallel redistribution
     Teuchos::RCP<Epetra_Map>& pgmdofrowmap_;
 
-    //! Global slave and master dof row map (before parallel redistribution)
+    //! Global slave and master dof row map before parallel redistribution
     Teuchos::RCP<Epetra_Map>& pgsmdofrowmap_;
 
-    //! Global dirichlet toggle of all slave dofs (before parallel redistribution)
+    //!< Global dirichlet toggle of all slave dofs before parallel redistribution
     Teuchos::RCP<Epetra_Vector>& pgsdirichtoggle_;
 
-    //! Initial element column map for binning strategy (slave+master)
+    //!@}
+
+    //! @name Binning strategy
+    //!@{
+
+    //!< Initial element columns map for binning strategy (slave and master)
     std::vector<Teuchos::RCP<Epetra_Map>>& initial_elecolmap_;
+
+    //!@}
 
     //! Global Mortar matrix \f$D\f$
     Teuchos::RCP<LINALG::SparseMatrix>& dmatrix_;
@@ -1843,37 +1921,45 @@ namespace CONTACT
     //! Global Mortar matrix \f$M\f$
     Teuchos::RCP<LINALG::SparseMatrix>& mmatrix_;
 
-    //! Global weighted gap vector g
+    //! Global weighted gap vector \f$g\f$
     Teuchos::RCP<Epetra_Vector>& g_;
 
     //! Global tangential right-hand side vector (formulation with incremental #z_)
     Teuchos::RCP<Epetra_Vector>& tangrhs_;
 
-    //! Gloabl inactive right-hand side vector (formulation with incremental #z_ and saddle point
-    //! system)
+    /*! \brief Gloabl inactive right-hand side vector
+     *
+     * This is used for the formulation with incremental #z_ and saddle point system.
+     */
     Teuchos::RCP<Epetra_Vector>& inactiverhs_;
 
-    //! Global structural contact right-hand side contributions at \f$t_{n+1}\f$
+    //! Global structural contact contributions to right-hand side vector at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>& strcontactrhs_;
 
     //! Global constraint right-hand side vector (only for saddlepoint problems)
     Teuchos::RCP<Epetra_Vector>& constrrhs_;
 
-    //! Global Matrix LinD containing derivatives of slave-side contact forces
+    /*! \brief Global Matrix LinD containing slave fc derivatives
+     *
+     * \todo What is fc?
+     */
     Teuchos::RCP<LINALG::SparseMatrix>& lindmatrix_;
 
-    //! Global Matrix LinM containing derivatives of master-side contact forces
+    /*! \brief Global Matrix LinM containing master fc derivatives
+     *
+     * \todo What is fc?
+     */
     Teuchos::RCP<LINALG::SparseMatrix>& linmmatrix_;
 
     Teuchos::RCP<LINALG::SparseMatrix>& kteffnew_;
 
-    //! Global Mortar matrix \f$D\f$ at last end-point \f$t_{n}\f$
+    //! Global Mortar matrix \f$D\f$ at end of last time step \f$t_{n}\f$
     Teuchos::RCP<LINALG::SparseMatrix>& dold_;
 
-    //! Global Mortar matrix \f$M\f$ at last end-point \f$t_{n}\f$
+    //! Global Mortar matrix \f$M\f$ at end of last time step \f$t_{n}\f$
     Teuchos::RCP<LINALG::SparseMatrix>& mold_;
 
-    //! Current vector of Lagrange multipliers at \f$t_{n+1}\f$
+    //!< Current vector of Lagrange multipliers at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>& z_;
 
     //! Old vector of Lagrange multipliers at \f$t_n\f$
@@ -1881,55 +1967,131 @@ namespace CONTACT
 
     /*! \brief Lagrange multiplier vector increment within SaddlePointSolve
      *
-     * \note This is not the increment of #z_ between time steps \f$t_{n+1}\f$ and \f$t_{n}\f$.
+     * \note This is \em not the increment of #z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!
      */
     Teuchos::RCP<Epetra_Vector>& zincr_;
 
     //! Vector of Lagrange multipliers from last Uzawa step
     Teuchos::RCP<Epetra_Vector>& zuzawa_;
 
-    //! Vector of normal contact traction at \f$t_{n+1}\f$
+    /*! \brief Vector of normal contact forces at \f$t_{n+1}\f$
+     *
+     * \todo What's the difference to #forcenormal_? Update documentation!
+     */
     Teuchos::RCP<Epetra_Vector>& stressnormal_;
 
-    //! Vector of tangential contact traction at \f$t_{n+1}\f$
+    /*! \brief Vector of tangential contact forces at \f$t_{n+1}\f$
+     *
+     * \todo What's the difference to #forcetangential_? Update documentation!
+     */
     Teuchos::RCP<Epetra_Vector>& stresstangential_;
 
-    //! Vector of normal nodal contact forces at \f$t_{n+1}\f$
+    /*! \brief Vector of normal contact forces at \f$t_{n+1}\f$
+     *
+     * \todo What's the difference to #stressnormal_? Update documentation!
+     */
     Teuchos::RCP<Epetra_Vector>& forcenormal_;
 
-    //! Vector of tangential nodal contact forces at \f$t_{n+1}\f$
+    /*! \brief Vector of tangential contact forces at \f$t_{n+1}\f$
+     *
+     * \todo What's the difference to #stresstangential_? Update documentation!
+     */
     Teuchos::RCP<Epetra_Vector>& forcetangential_;
 
-    int& step_;  //!< ref. to time step index
-    int& iter_;  //!< ref. to nonlinear (Newton) iteration index
+    //! @name Counters and indices
+    //!@{
 
-    bool& isincontact_;       //!< ref. to flag indicating global contact status
-    bool& wasincontact_;      //!< ref. to flag indicating global contact status of this time step
-                              //!< (history)
-    bool& wasincontactlts_;   //!< ref. to flag indicating global contact status of last time step
-    bool& isselfcontact_;     //!< ref. to flag indicating potential self contact
-    bool& friction_;          //!< ref. to flag for frictional contact
-    bool& nonSmoothContact_;  //!< ref. to flag for nonsmooth contact algorithm
-    bool& regularized_;       //!< ref. to flag for regularized contact
+    //! Time step index
+    int& step_;
 
-    bool& dualquadslavetrafo_;  //!< ref. to flag indicating whether trafo should be applied
-    Teuchos::RCP<LINALG::SparseMatrix>&
-        trafo_;  //!< ref. to transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix>
-        systrafo_;  //! transformation matrix T for dual quad 3D case (all problem dofs)
-    Teuchos::RCP<LINALG::SparseMatrix>
-        invsystrafo_;  //! inverse transformation matrix T for dual quad 3D case (all problem dofs)
-    Teuchos::RCP<LINALG::SparseMatrix>&
-        invtrafo_;  //!< ref. to inverse trafo matrix T^(-1) for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix>& dmatrixmod_;  //!< ref. to modified global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix>& doldmod_;  //!< ref. to modified global Mortar matrix Dold
+    //! Nonlinear iteration index, e.g. Newton iteration
+    int& iter_;
 
-    double& inttime_;            //!< ref. to integration time
-    std::vector<double>& ivel_;  //!< ref. to mean interface velocity
+    //!@}
 
-    INPAR::CONTACT::SolvingStrategy& stype_;  //!< ref. to current used solving strategy
-    INPAR::CONTACT::ConstraintDirection&
-        constr_direction_;  //!< ref. to direction in which the contact constraints are formulated
+    //! @name Status flags
+    //!@{
+
+    //! Flag indicating global contact status
+    bool& isincontact_;
+
+    //! Flag indicating global contact status of this time step (history)
+    bool& wasincontact_;
+
+    //! Flag indicating global contact status of last time step
+    bool& wasincontactlts_;
+
+    //! Flag indicating potential self contact
+    bool& isselfcontact_;
+
+    //! Flag for frictional contact
+    bool& friction_;
+
+    //! Flag for nonsmooth contact algorithm
+    bool& nonSmoothContact_;
+
+    //! Flag for regularized contact
+    bool& regularized_;
+
+    /*! \brief Flag indicating whether transformation should be applied
+     *
+     * \todo Which transformation?
+     */
+    bool& dualquadslavetrafo_;
+
+    //!@}
+
+    /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case
+     *
+     * \todo What does quad refer to? Quadratic or quadrilateral elements?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix>& trafo_;
+
+    /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case (all problem dofs)
+     *
+     * \todo What does quad refer to? Quadratic or quadrilateral elements?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;
+
+    /*! \brief Inverse transformation matrix \f$T\f$ for dual quad 3D case (all problem dofs)
+     *
+     * \todo What does quad refer to? Quadratic or quadrilateral elements?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> invsystrafo_;
+
+    /*! \brief Inverse transformation matrix \f$T^{-1}\f$ for dual quad 3D case
+     *
+     * \todo What does quad refer to? Quadratic or quadrilateral elements?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix>& invtrafo_;
+
+    /*! \brief Modified global Mortar matrix \f$D\d$
+     *
+     * \todo What modifications?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix>& dmatrixmod_;
+
+    /*! \brief Modified global Mortar matrix Dold
+     *
+     * \todo What modifciations?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix>& doldmod_;
+
+    /*! \brief Integration time
+     *
+     * \todo Is this the wall clock time required to perform the mortar integration?
+     */
+    double& inttime_;
+
+    //! Mean interface velocity
+    std::vector<double>& ivel_;
+
+    //! Current used solving strategy
+    INPAR::CONTACT::SolvingStrategy& stype_;
+
+    //! Direction in which the contact constraints are formulated
+    INPAR::CONTACT::ConstraintDirection& constr_direction_;
+
    private:
     /*! \brief Copy constructor
      *
@@ -1945,7 +2107,7 @@ namespace CONTACT
     //! pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
     Teuchos::RCP<CONTACT::NoxInterface> noxinterface_ptr_;
 
-  };  // class CoAbstractStrategy
+  };  // namespace CONTACT
 }  // namespace CONTACT
 
 // << operator

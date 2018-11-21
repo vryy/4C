@@ -40,9 +40,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
-    : tunbalance_(0),
-      eunbalance_(0),
-      glmdofrowmap_(Teuchos::null),
+    : glmdofrowmap_(Teuchos::null),
       gsnoderowmap_(Teuchos::null),
       gmnoderowmap_(Teuchos::null),
       gsdofrowmap_(Teuchos::null),
@@ -62,11 +60,14 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       gsdofVertex_(Teuchos::null),
       gsdofEdge_(Teuchos::null),
       gsdofSurf_(Teuchos::null),
+      tunbalance_(0),
+      eunbalance_(0),
       pglmdofrowmap_(Teuchos::null),
       pgsdofrowmap_(Teuchos::null),
       pgmdofrowmap_(Teuchos::null),
       pgsmdofrowmap_(Teuchos::null),
       pgsdirichtoggle_(Teuchos::null),
+      partype_(INPAR::MORTAR::parredist_none),
       initial_elecolmap_(Teuchos::null),
       dmatrix_(Teuchos::null),
       mmatrix_(Teuchos::null),
@@ -105,8 +106,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       inttime_(0.0),
       ivel_(0),
       stype_(INPAR::CONTACT::solution_vague),
-      constr_direction_(INPAR::CONTACT::constr_vague),
-      partype_(INPAR::MORTAR::parredist_none)
+      constr_direction_(INPAR::CONTACT::constr_vague)
 {
   return;
 }
@@ -118,8 +118,6 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
     const Epetra_Map* NodeRowMap, const Teuchos::ParameterList& params, int dim,
     const Teuchos::RCP<const Epetra_Comm>& comm, double alphaf, int maxdof)
     : MORTAR::StrategyBase(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
-      tunbalance_(data_ptr->UnbalanceTimeFactors()),
-      eunbalance_(data_ptr->UnbalanceElementFactors()),
       glmdofrowmap_(data_ptr->GLmDofRowMapPtr()),
       gsnoderowmap_(data_ptr->GSlNodeRowMapPtr()),
       gmnoderowmap_(data_ptr->GMaNodeRowMapPtr()),
@@ -140,6 +138,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       gsdofVertex_(data_ptr->GSDofVertexRowMapPtr()),
       gsdofEdge_(data_ptr->GSDofEdgeRowMapPtr()),
       gsdofSurf_(data_ptr->GSDofSurfRowMapPtr()),
+      tunbalance_(data_ptr->UnbalanceTimeFactors()),
+      eunbalance_(data_ptr->UnbalanceElementFactors()),
       pglmdofrowmap_(data_ptr->PGLmDofRowMapPtr()),
       pgsdofrowmap_(data_ptr->PGSlDofRowMapPtr()),
       pgmdofrowmap_(data_ptr->PGMaDofRowMapPtr()),

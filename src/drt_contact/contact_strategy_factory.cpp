@@ -73,7 +73,7 @@ void CONTACT::STRATEGY::Factory::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cparams) const
+void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& params) const
 {
   CheckInit();
   // console output at the beginning
@@ -572,10 +572,10 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cpara
   // ---------------------------------------------------------------------
   // store contents of BOTH ParameterLists in local parameter list
   // ---------------------------------------------------------------------
-  cparams.setParameters(mortar);
-  cparams.setParameters(contact);
-  cparams.setParameters(wearlist);
-  cparams.setParameters(tsic);
+  params.setParameters(mortar);
+  params.setParameters(contact);
+  params.setParameters(wearlist);
+  params.setParameters(tsic);
 
   switch (problemtype)
   {
@@ -589,12 +589,12 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cpara
             << timestep << " from DRT::Problem::Instance()->TSIDynamicParams().  \n"
             << "Anyway, you should not use the \"TIMESTEP\" variable inside of "
             << "the new structural/contact framework!" << std::endl;
-      cparams.set<double>("TIMESTEP", timestep);
+      params.set<double>("TIMESTEP", timestep);
       break;
     }
     case prb_structure:
     {
-      cparams.set<double>(
+      params.set<double>(
           "TIMESTEP", DRT::Problem::Instance()->StructuralDynamicParams().get<double>("TIMESTEP"));
       break;
     }
@@ -608,21 +608,21 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cpara
   // NURBS contact
   // ---------------------------------------------------------------------
   if (distype == "Nurbs")
-    cparams.set<bool>("NURBS", true);
+    params.set<bool>("NURBS", true);
   else
-    cparams.set<bool>("NURBS", false);
+    params.set<bool>("NURBS", false);
 
   // ---------------------------------------------------------------------
-  cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
+  params.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types
   if (problemtype == prb_tsi)
   {
-    cparams.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
+    params.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
   }
   else if (problemtype == prb_struct_ale)
   {
-    cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
+    params.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
   else if (problemtype == prb_poroelast or problemtype == prb_fpsi or problemtype == prb_fpsi_xfem)
   {
@@ -630,33 +630,33 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& cpara
         "Everything which is related to a special time integration scheme has to be moved to the"
         " related scheme. Don't do it here! -- hiermeier 02/2016");
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-    cparams.set<int>("PROBTYPE", INPAR::CONTACT::poro);
+    params.set<int>("PROBTYPE", INPAR::CONTACT::poro);
     //    //porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     //    double porotimefac = 1/(stru.sublist("ONESTEPTHETA").get<double>("THETA") *
-    //    stru.get<double>("TIMESTEP")); cparams.set<double> ("porotimefac", porotimefac);
-    cparams.set<bool>("CONTACTNOPEN",
+    //    stru.get<double>("TIMESTEP")); params.set<double> ("porotimefac", porotimefac);
+    params.set<bool>("CONTACTNOPEN",
         DRT::INPUT::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   }
   else
   {
-    cparams.set<int>("PROBTYPE", INPAR::CONTACT::other);
+    params.set<int>("PROBTYPE", INPAR::CONTACT::other);
   }
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1) cparams.set<std::string>("PARALLEL_REDIST", "None");
+  if (Comm().NumProc() == 1) params.set<std::string>("PARALLEL_REDIST", "None");
 
   // console output at the end
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // set dimension
-  cparams.set<int>("DIMENSION", dim);
+  params.set<int>("DIMENSION", dim);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& cparams,
+void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& params,
     std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, bool& poroslave,
     bool& poromaster) const
 {
@@ -683,24 +683,24 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& c
 
   // get input par.
   INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
   INPAR::CONTACT::ConstraintDirection constr_direction =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          cparams, "CONSTRAINT_DIRECTIONS");
+          params, "CONSTRAINT_DIRECTIONS");
   INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
   INPAR::CONTACT::AdhesionType ad =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(cparams, "ADHESION");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(params, "ADHESION");
   INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(cparams, "ALGORITHM");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
 
   bool friplus = false;
-  if ((wlaw != INPAR::WEAR::wear_none) || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
+  if ((wlaw != INPAR::WEAR::wear_none) || (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
   // only for poro
-  bool isporo = (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro);
+  bool isporo = (params.get<int>("PROBTYPE") == INPAR::CONTACT::poro);
   bool structmaster = false;
   bool structslave = false;
   bool isanyselfcontact = false;
@@ -745,7 +745,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& c
         Two_half_pass, Check_nonsmooth_selfcontactsurface, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
-    Teuchos::ParameterList icparams = cparams;
+    Teuchos::ParameterList icparams = params;
 
     // find out if interface-specific coefficients of friction are given
     if (ftype == INPAR::CONTACT::friction_tresca or ftype == INPAR::CONTACT::friction_coulomb or
@@ -1552,22 +1552,22 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
-    const Teuchos::ParameterList& cparams, const bool& poroslave, const bool& poromaster,
+    const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
     const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
     CONTACT::ParamsInterface* cparams_interface) const
 {
   const INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+      DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
-  return BuildStrategy(stype, cparams, poroslave, poromaster, dof_offset, interfaces,
+  return BuildStrategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
       Discret().DofRowMap(), Discret().NodeRowMap(), Dim(), CommPtr(), data_ptr, cparams_interface);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
-    const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& cparams,
+    const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
@@ -1582,14 +1582,14 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr = Teuchos::null;
 
   // get input par.
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
   INPAR::WEAR::WearType wtype =
-      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(cparams, "WEARTYPE");
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(params, "WEARTYPE");
   INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(cparams, "ALGORITHM");
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
 
   double alphaf = 0.0;
-  bool do_endtime = DRT::INPUT::IntegralValue<int>(cparams, "CONTACTFORCE_ENDTIME");
+  bool do_endtime = DRT::INPUT::IntegralValue<int>(params, "CONTACTFORCE_ENDTIME");
   if (!do_endtime)
   {
     const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -1610,17 +1610,17 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
     strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-        cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        params, interfaces, dim, comm_ptr, alphaf, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
-    if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+    if (params.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
     {
       dserror("This contact strategy is not yet considered!");
       //      strategy_ptr = Teuchos::rcp(new PoroLagrangeStrategy(
       //          dof_row_map,
       //          node_row_map,
-      //          cparams,
+      //          params,
       //          interfaces,
       //          dim,
       //          comm_ptr,
@@ -1628,24 +1628,24 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
       //          poroslave,
       //          poromaster));
     }
-    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+    else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-          cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
+          params, interfaces, dim, comm_ptr, alphaf, dof_offset));
     }
     else
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(data_ptr, dof_row_map, node_row_map,
-          cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
+          params, interfaces, dim, comm_ptr, alphaf, dof_offset));
     }
   }
   else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) &&
            stype != INPAR::CONTACT::solution_uzawa)
   {
     double alphaf = 0.0;
-    bool do_endtime = DRT::INPUT::IntegralValue<int>(cparams, "CONTACTFORCE_ENDTIME");
+    bool do_endtime = DRT::INPUT::IntegralValue<int>(params, "CONTACTFORCE_ENDTIME");
     if (!do_endtime)
     {
       const Teuchos::ParameterList& sdynparams =
@@ -1661,7 +1661,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
         alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
     }
     strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
-        dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, alphaf, dof_offset));
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_uzawa)
   {
@@ -1669,7 +1669,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     //    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
     //        dof_row_map,
     //        node_row_map,
-    //        cparams,
+    //        params,
     //        interfaces,
     //        dim,
     //        comm_ptr,
@@ -1679,7 +1679,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
-    strategy_ptr = AUG::ComboStrategy::Create(data_ptr, dof_row_map, node_row_map, cparams,
+    strategy_ptr = AUG::ComboStrategy::Create(data_ptr, dof_row_map, node_row_map, params,
         interfaces, dim, comm_ptr, dof_offset, cparams_interface);
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
@@ -1687,49 +1687,49 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
     strategy_ptr = Teuchos::rcp(new AUG::Strategy(
-        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_steepest_ascent)
   {
     if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
     strategy_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT::Strategy(
-        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_steepest_ascent_sp)
   {
     if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
     strategy_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT_SP::Strategy(
-        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_std_lagrange)
   {
     if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new AUG::DataContainer());
 
     strategy_ptr = Teuchos::rcp(new AUG::LAGRANGE::Strategy(
-        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
   }
   else if (stype == INPAR::CONTACT::solution_xcontact)
   {
     data_ptr = Teuchos::rcp(new XCONTACT::DataContainer());
     strategy_ptr = Teuchos::rcp(new XCONTACT::Strategy(
-        data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, dof_offset));
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
   }
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
            (stype == INPAR::CONTACT::solution_nitsche || stype == INPAR::CONTACT::solution_penalty))
   {
-    if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+    if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoNitscheStrategyTsi(
-          data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, 0, dof_offset));
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
     else
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoNitscheStrategy(
-          data_ptr, dof_row_map, node_row_map, cparams, interfaces, dim, comm_ptr, 0, dof_offset));
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
   }
   else
@@ -1760,14 +1760,14 @@ void CONTACT::STRATEGY::Factory::BuildSearchTree(
 void CONTACT::STRATEGY::Factory::Print(
     const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
     const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
-    const Teuchos::ParameterList& cparams) const
+    const Teuchos::ParameterList& params) const
 {
   // print friction information of interfaces
   if (Comm().MyPID() == 0)
   {
     // get input parameter
     INPAR::CONTACT::FrictionType ftype =
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
 
     for (unsigned i = 0; i < interfaces.size(); ++i)
     {

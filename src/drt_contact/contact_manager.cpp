@@ -4,7 +4,7 @@
 
 \brief BACI implementation of main class to control all contact
 
-\level 2
+\level 1
 
 \maintainer Matthias Mayr
 

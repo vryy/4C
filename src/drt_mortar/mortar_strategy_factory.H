@@ -4,23 +4,35 @@
 
 \brief Base class for the CONTACT/MESHTYING factories.
 
-\level 3
+\level 2
 
-\maintainer Michael Hiermeier
-
-\date Feb 4, 2016
-
+\maintainer Matthias Mayr
 */
 /*---------------------------------------------------------------------*/
 #ifndef SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_
 #define SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_
 
-#include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_contact.H"
 
+#include <Teuchos_RCP.hpp>
+
 // forward declarations
-class Epetra_Vector;
 class Epetra_Comm;
+class Epetra_Vector;
+
+namespace DRT
+{
+  class DiscretizationInterface;
+  class Element;
+  class Node;
+}  // namespace DRT
+
+namespace IO
+{
+  class DiscretizationReader;
+  class DiscretizationWriter;
+}  // namespace IO
+
 namespace STR
 {
   namespace TIMINT
@@ -28,25 +40,19 @@ namespace STR
     class BaseDataGlobalState;
   }  // namespace TIMINT
 }  // namespace STR
-namespace IO
-{
-  class DiscretizationWriter;
-  class DiscretizationReader;
-}  // namespace IO
-namespace DRT
-{
-  class Node;
-  class Element;
-  class DiscretizationInterface;
-}  // namespace DRT
+
 namespace MORTAR
 {
-  class MortarNode;
   class MortarElement;
-  class StrategyBase;
   class MortarInterface;
+  class MortarNode;
+  class StrategyBase;
+
   namespace STRATEGY
   {
+    /*! \brief Base class for mortar meshtying/contact factories
+     *
+     */
     class Factory
     {
      public:
@@ -60,19 +66,33 @@ namespace MORTAR
       void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
       void Init(Teuchos::RCP<DRT::DiscretizationInterface> dis);
 
-      //! setup of class variables
+      /*! \brief Setup of class variables
+       *
+       * \note Since this is an abstract class, the setup flag stays false. It has to be set by
+       * the Setup routing of the derived class.
+       */
       void Setup();
 
       /*! \brief print strategy banner
        *
-       *  \param soltype (in) : contact solving strategy type */
+       *  \param[in] soltype contact solving strategy type
+       */
       static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
 
-      //! Create the desired search tree object
+      /*! \brief Create the desired search tree object
+       *
+       * We loop over all \c interfaces and build the search tree for every interface.
+       *
+       * @param[in] interfaces All meshtying interfaces
+       */
       void BuildSearchTree(
           const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const;
 
-      //! Check the problem dimension
+      /*! \brief Check the problem dimension
+       *
+       * Mortar meshtying/contact problems are implemented for 2D and 3D only.
+       * Throw an error in case of any other spatial dimension.
+       */
       void CheckDimension() const;
 
      protected:
@@ -89,7 +109,8 @@ namespace MORTAR
       void CheckInit() const;
 
       //! @name NURBS related stuff
-      //! @{
+      //!@{
+
       /*! \brief Prepare mortar element for NURBS case
        *
        *  Stores knot vector, zerosized information and normal factor
@@ -104,11 +125,12 @@ namespace MORTAR
        *
        *  \author Farah */
       void PrepareNURBSNode(const DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode) const;
-      //! @}
-      //! @}
 
-      //! @name accessors
-      //! @{
+      //!@}
+
+      //! @name Accessors
+      //!@{
+
       //! Returns the global state data container (read-only, do not change this!!!)
       const STR::TIMINT::BaseDataGlobalState& GState() const;
 
@@ -125,13 +147,19 @@ namespace MORTAR
       //! returns the problem dimension
       const int& Dim() const;
 
-      //! @}Manager
+      //!@}
+
      protected:
+      //! @name Status flags
+      //!@{
+
       //! init flag
       bool isinit_;
 
       //! setup flag
       bool issetup_;
+
+      //!@}
 
       //! pointer to the structural problem discretization
       Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
@@ -144,9 +172,8 @@ namespace MORTAR
       Teuchos::RCP<Epetra_Comm> comm_ptr_;
 
       int dim_;
-    };  // class Factory
+    };  // namespace STRATEGY
   }     // namespace STRATEGY
 }  // namespace MORTAR
-
 
 #endif /* SRC_DRT_MORTAR_MORTAR_STRATEGY_FACTORY_H_ */

@@ -69,9 +69,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
 {
   CheckInit();
 
-  // ---------------------------------------------------------------------
-  // create the contact factory
-  // ---------------------------------------------------------------------
+  // create the meshtying factory
   MORTAR::STRATEGY::FactoryMT factory;
   factory.Init(GStatePtr());
   factory.Setup();
@@ -87,10 +85,10 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   factory.ReadAndCheckInput(cparams);
 
   // check for FillComplete of discretization
-  if (not Discret().Filled()) dserror("Discretization is not fillcomplete");
+  if (not Discret().Filled()) dserror("Discretization is not FillComplete.");
 
   // ---------------------------------------------------------------------
-  // build the contact interfaces
+  // build the meshtying interfaces
   // ---------------------------------------------------------------------
   // FixMe Would be great, if we get rid of these poro parameters...
   bool poroslave = false;
@@ -106,7 +104,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   factory.BuildSearchTree(interfaces);
 
   // ---------------------------------------------------------------------
-  // final touches to the contact strategy
+  // final touches to the meshtying strategy
   // ---------------------------------------------------------------------
   strategy_ptr_->StoreDirichletStatus(Int().GetDbc().GetDBCMapExtractor());
   strategy_ptr_->SetState(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());

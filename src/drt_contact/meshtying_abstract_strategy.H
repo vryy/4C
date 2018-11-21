@@ -139,7 +139,7 @@ namespace CONTACT
     \brief Get dual quadratic 3d slave element flag
 
     Returns TRUE if at least one higher-order 3d slave element with
-    dual Lagrange mutliplier shape functions in any interface.
+    dual Lagrange multiplier shape functions in any interface.
 
     */
     virtual const bool& Dualquadslavetrafo() const { return dualquadslavetrafo_; };
@@ -181,7 +181,7 @@ namespace CONTACT
      *
      *  \date 02/2016
      *  \author hiermeier */
-    virtual void Reset(const Epetra_Vector& dis) { dserror("Not yet considered for msht!"); };
+    virtual void Reset(const Epetra_Vector& dis) { dserror("Not yet considered for meshtying!"); };
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class [derived]
      *
@@ -228,12 +228,12 @@ namespace CONTACT
     This method calls Initialize() on all contact interfaces, which
     resets all kind of nodal quantities. It then calls Evaluate() on
     all meshtying interfaces, which does all the geometric coupling stuff.
-    Concretely, this is an evaluation of all involved quantites at nodal
+    Concretely, this is an evaluation of all involved quantities at nodal
     level. It includes the nodal normal calculations, search, projection
     and overlap detection and integration of the Mortar terms D and M.
 
     Then - on global level - it resets the Mortar matrices D and M accordingly.
-    The nodal quantites computed before are assembled to global matrices. No
+    The nodal quantities computed before are assembled to global matrices. No
     setup of the global system is to be done here yet, so there is no need to
     pass in the effective stiffness K or the effective load vector f.
 
@@ -317,6 +317,7 @@ namespace CONTACT
     /*!
     \brief Print interfaces
 
+    \param[in] os Output stream used for printing
     */
     void Print(std::ostream& os) const;
 
@@ -330,7 +331,7 @@ namespace CONTACT
     \brief Visualize contact stuff with gmsh
 
     \param step (in): current time step index
-    \param iter (in): current iteration index
+    \param iter (in): current nonlinear iteration index
 
     */
     void VisualizeGmsh(const int step, const int iter);
@@ -350,7 +351,7 @@ namespace CONTACT
      * (see NOX::NLN::CONSTRAINT::Interface::Preconditioner for more information) */
     virtual bool IsCondensedSystem() const;
 
-    /* Fill the maps vector for the linear solver preconditioner
+    /*! Fill the maps vector for the linear solver preconditioner
      *
      * The following order is defined:
      * (0) masterDofMap
@@ -367,12 +368,13 @@ namespace CONTACT
 
     //! @}
 
-    //! @name Purely virtual functions
-
-    // All these functions are defined in one or more specific derived classes,
-    // i.e CONTACT::MeshtyingLagrangeStrategy or CONTACT::MeshtyingPenaltyStrategy.
-    // As the base class MORTAR::StrategyBase is always called from the control routine
-    // (time integrator), these functions need to be defined purely virtual here.
+    /*! @name Purely virtual functions
+     *
+     * All these functions are defined in one or more specific derived classes,
+     * i.e CONTACT::MeshtyingLagrangeStrategy or CONTACT::MeshtyingPenaltyStrategy.
+     * As the base class MORTAR::StrategyBase is always called from the control routine
+     * (time integrator), these functions need to be defined purely virtual here.
+     */
 
     virtual double ConstraintNorm() const = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
@@ -392,13 +394,14 @@ namespace CONTACT
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 
-    //@}
+    //! @}
 
-    //! @name Empty functions (contact)
-
-    // All these functions only have functionality in contact simulations, thus they
-    // are defined as empty here in the case of meshtying. They can be called from the
-    // control routine (time integrator), whenever you like.
+    /*! @name Empty functions (contact)
+     *
+     * All these functions only have functionality in contact simulations, thus they
+     * are defined as empty here in the case of meshtying. They can be called from the
+     * control routine (time integrator), whenever you like.
+     */
 
     bool ActiveSetConverged() { return true; }
     bool ActiveSetSemiSmoothConverged() const { return true; }
@@ -445,9 +448,11 @@ namespace CONTACT
     const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() { return Teuchos::null; }
-    //@}
 
-    //! @name new time integration
+    //! @}
+
+    //! @name New time integration
+    //! @{
 
     //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
     const Teuchos::RCP<CONTACT::MtNoxInterface>& NoxInterfacePtr() { return noxinterface_ptr_; };
@@ -498,7 +503,7 @@ namespace CONTACT
       return glmdofrowmap_;
     };
 
-    //! modify system before linear solve
+    //! Modify system before linear solve
     virtual void RunPreApplyJacobianInverse(
         Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
@@ -539,7 +544,7 @@ namespace CONTACT
     //! get the correct RHS for covnergence check
     virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const {};
 
-    //@}
+    //!@}
 
    protected:
     /*!
@@ -557,7 +562,7 @@ namespace CONTACT
 
     Only do this ONCE for meshtying upon initialization!
     This method relocates the slave nodes such that the meshtying constraint
-    is satisifed in the reference condiguration, which is a prerequisite for
+    is satisfied in the reference configuration, which is a prerequisite for
     ensuring both rotational invariance and absence of initial stresses at the
     same time. Basically the constraint equation needs to be solved for this,
     which is specific to the applied solving strategy (dual Lagrange or Penalty).
@@ -625,7 +630,7 @@ namespace CONTACT
 
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;  // meshtying interfaces
 
-    //! Global Lagrange mult. dof row map (of all interfaces)
+    //! Global Lagrange multiplier dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;
 
     //! Global slave dof row map (of all interfaces)
@@ -637,7 +642,7 @@ namespace CONTACT
     //! Global internal dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gndofrowmap_;
 
-    //! Global slave and master dof row map (s+m map)
+    //! Global slave and master dof row map (slave+master map)
     Teuchos::RCP<Epetra_Map> gsmdofrowmap_;
 
     //! Global displacement dof row map (s+m+n map)
@@ -649,7 +654,10 @@ namespace CONTACT
     //! Global master node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gmnoderowmap_;
 
-    //! Global LM dof row map (before parallel redistribution)
+    //! @name Parallel redistribution
+    //!@{
+
+    //! Global Lagrange multiplier dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
 
     //! Global slave dof row map (before parallel redistribution)
@@ -664,41 +672,99 @@ namespace CONTACT
     //! Global dirichlet toggle of all slave dofs (before parallel redistribution)
     Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;
 
-    //! Initial element column map for binning strategy (slave + master)
+    //!@}
+
+    //! @name Binning strategy
+    //!@{
+
+    //! Initial element column map for binning strategy (slave and master)
     std::vector<Teuchos::RCP<Epetra_Map>> initial_elecolmap_;
 
-    //! Global Mortar matrix D
+    //! Global Mortar matrix \f$D\f$
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;
 
-    //! Global Mortar matrix M
+    //! Global Mortar matrix \f$M\f$
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;
 
-    //! Global weighted gap vector g
+    //! Global weighted gap vector \f$g\f$
     Teuchos::RCP<Epetra_Vector> g_;
 
-    //! Global constraint rhs vector (only for saddlepoint problems)
+    //! Global constraint right-hand side vector (only for saddlepoint problems)
     Teuchos::RCP<Epetra_Vector> constrrhs_;
 
-    Teuchos::RCP<Epetra_Vector> z_;     ///< current vector of Lagrange multipliers at t_n+1
-    Teuchos::RCP<Epetra_Vector> zold_;  ///< old vector of Lagrange multipliers at t_n
-    Teuchos::RCP<Epetra_Vector>
-        zincr_;  ///< Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the
-                 ///< increment of z_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Epetra_Vector> zuzawa_;  ///< vector of Lagrange multipliers from last Uzawa step
+    //! Current vector of Lagrange multipliers at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> z_;
 
-    bool dualquadslavetrafo_;                   ///< flag indicating whether trafo should be applied
-    Teuchos::RCP<LINALG::SparseMatrix> trafo_;  ///< transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix>
-        systrafo_;  ///< transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix>
-        invtrafo_;    ///< inverse trafo matrix T^(-1) for dual quad 3D case
-    double inttime_;  ///< Integration time
+    //! Old vector of Lagrange multipliers at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> zold_;
 
-    Teuchos::RCP<Epetra_Vector> f_;                      ///< structural force
-    Teuchos::RCP<Epetra_Vector> fs_;                     ///< structural force (slave)
-    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_;       ///< matrix containing D and -M
-    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_t_;     ///< matrix containing D and -M. transposed
-    Teuchos::RCP<LINALG::SparseMatrix> lm_diag_matrix_;  ///< LM diagonal block
+    /*! \brief Lagrange multiplier vector increment within SaddlePointSolve
+     *
+     *  \remark This is \em not the increment of #z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!)
+     */
+    Teuchos::RCP<Epetra_Vector> zincr_;
+
+    //! Vector of Lagrange multipliers from last Uzawa step
+    Teuchos::RCP<Epetra_Vector> zuzawa_;
+
+    //! @name Status flags
+    //!@{
+
+    /*! \brief Flag indicating whether transformation should be applied
+     *
+     * \todo What transformation?
+     */
+    bool dualquadslavetrafo_;
+
+    //!@}
+
+
+    /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case
+     *
+     * \todo What is matrix \f$T\f$?
+     * \todo What is quad? Quadratic shape functions or quadrilateral elements?
+     * \todo What is the difference to #systrafo_?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> trafo_;
+
+    /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case
+     *
+     * \todo What is matrix \f$T\f$?
+     * \todo What is quad? Quadratic shape functions or quadrilateral elements?
+     * \todo What is the difference to #trafo_?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;
+
+    /*! \brief Inverse trafo matrix \f$T^{-1}\f$ for dual quad 3D case
+     *
+     * \todo What is matrix \f$T\f$?
+     * \todo What is quad? Quadratic shape functions or quadrilateral elements?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> invtrafo_;
+
+    /*! \brief Integration time
+     *
+     * \todo Is this the wall clock time required to perform the mortar integration?
+     */
+    double inttime_;
+
+    //! Structural force
+    Teuchos::RCP<Epetra_Vector> f_;
+
+    //! Structural force (slave)
+    Teuchos::RCP<Epetra_Vector> fs_;
+
+    //! Matrix containing \f$D\f$ and \f$-M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_;
+
+    /*! \brief Matrix containing D and -M. transposed
+     *
+     * \todo Is it \f$D\f$ and \f$-M^T\f$ or (D and -M)^T? In latter case, why store it explicitly?
+     */
+    Teuchos::RCP<LINALG::SparseMatrix> dm_matrix_t_;
+
+    //! Lagrange multiplier diagonal block
+    Teuchos::RCP<LINALG::SparseMatrix> lm_diag_matrix_;
 
    private:
     ///< pointer to the NOX::NLN::CONSTRAINT::Interface::Required object

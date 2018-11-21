@@ -156,6 +156,20 @@ namespace CONTACT
         const enum DRT::UTILS::MatBlockType& bt) const;
 
 
+    /*! \brief Modify system before linear solve
+     *
+     * Perform the static condensation of mortar terms if a condensed formulation is used.
+     *
+     * This exploit the biorthogonality condition of the dual shape functions.
+     *
+     * @param[in/out] kteff Stiffness matrix
+     * @param[in/out] rhs right-hand side vector
+     *
+     * \warning This only works for dual shape functions. Standard shape functions are prohibited
+     * as they are too expensive.
+     *
+     * \todo Is this really the right-hand side vector or the residual?
+     */
     virtual void RunPreApplyJacobianInverse(
         Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
 
@@ -172,8 +186,35 @@ namespace CONTACT
     MtLagrangeStrategy operator=(const MtLagrangeStrategy& old);
     MtLagrangeStrategy(const MtLagrangeStrategy& old);
 
-    Teuchos::RCP<LINALG::SparseMatrix> conmatrix_;   // constraint matrix for saddle point system
-    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_;  // product of global Mortar matrices inv(D)*M
+    //! Constraint matrix for saddle point system
+    Teuchos::RCP<LINALG::SparseMatrix> conmatrix_;
+
+    //! Mortar projection matrix \f$P = D^{-1} M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_;
+
+    //! Slave side effective forces (needed for Lagrange multipliers)
+    Teuchos::RCP<Epetra_Vector> fs_;
+
+    //! Inverse \f$D^{-1}\f$ of Mortar matrix \f$D\f$ (needed for Lagrange multipliers)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_;
+
+    /*! @name Blocks for Jacobian matrix
+     *
+     * Subscripts are defined as follows
+     * - s: slave
+     * - m: master
+     * - n: non-mortar nodes (i.e. all non-interface nodes in all subdomains)
+     */
+    //!@{
+
+    //! Stiffness block \f$K_{sn}\f$ (needed for Lagrange multipliers)
+    Teuchos::RCP<LINALG::SparseMatrix> ksn_;
+
+    //! Stiffness block \f$K_{sm}\f$ (needed for Lagrange multipliers)
+    Teuchos::RCP<LINALG::SparseMatrix> ksm_;
+
+    //! Stiffness block \f$K_{ss}\f$ (needed for Lagrange multipliers)
+    Teuchos::RCP<LINALG::SparseMatrix> kss_;
 
     Teuchos::RCP<Epetra_Vector> fs_;           // slave side effective forces (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> invd_;  // inverse of Mortar matrix D (needed for LM)

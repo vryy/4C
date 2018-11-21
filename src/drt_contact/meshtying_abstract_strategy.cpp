@@ -623,7 +623,7 @@ void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<LINALG::SparseOperator>&
 }
 
 /*----------------------------------------------------------------------*
- |  Store Lagrange mulitpliers into MortarNode                popp 06/08|
+ |  Store Lagrange multipliers into MortarNode                popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)
 {

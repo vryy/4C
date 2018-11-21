@@ -4,39 +4,41 @@
 
 \brief Factory to create the desired contact strategy.
 
-\maintainer Michael Hiermeier
+\maintainer Matthias Mayr
 
-\date Feb 4, 2016
-
-\level 3
-
+\level 2
 */
 /*---------------------------------------------------------------------*/
-
-
 #ifndef SRC_DRT_CONTACT_CONTACT_STRATEGY_FACTORY_H_
 #define SRC_DRT_CONTACT_CONTACT_STRATEGY_FACTORY_H_
 
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_strategy_factory.H"
-#include "../drt_xfem/xfem_enum_lists.H"
 #include "../drt_inpar/inpar_contact.H"
 
-// forward declarations...
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_strategy_factory.H"
+
+#include "../drt_xfem/xfem_enum_lists.H"
+
+// forward declarations
 namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
+
 namespace CONTACT
 {
-  class ParamsInterface;
-  class CoInterface;
-  class CoElement;
-  class CoAbstractStrategy;
   class AbstractStratDataContainer;
+  class CoAbstractStrategy;
+  class CoElement;
+  class CoInterface;
   class IDataContainer;
+  class ParamsInterface;
+
   namespace STRATEGY
   {
+    /*! \brief Factory for contact strategies
+     *
+     */
     class Factory : public MORTAR::STRATEGY::Factory
     {
      public:
@@ -51,18 +53,27 @@ namespace CONTACT
 
       /*! \brief Read and check contact input parameters
        *
-       *  All specified contact-related input parameters are read from the
-       *  DRT::Problem::Instance() and stored into a local variable of
-       *  type Teuchos::ParameterList. Invalid parameter combinations are
-       *  sorted out and throw a dserror.
+       * All specified contact-related input parameters are read from the
+       * DRT::Problem::Instance() and stored into a local variable of
+       * type Teuchos::ParameterList. Invalid parameter combinations are
+       * sorted out and throw a dserror.
        *
-       *  \author Popp */
-      void ReadAndCheckInput(Teuchos::ParameterList& cparams) const;
+       * \param[in/out] params ParameterList with mortar/contact parameters from input file
+       *
+       * \author Popp */
+      void ReadAndCheckInput(Teuchos::ParameterList& params) const;
 
       /** \brief Create the contact interfaces
        *
-       *  \author Popp */
-      void BuildInterfaces(const Teuchos::ParameterList& cparams,
+       * \param[in/out] params ParameterList with mortar/contact parameters from input file
+       * \param[in/out] interfaces Collection of all mortar contact interfaces
+       * \param poroslave
+       * \param poromaster
+       *
+       * \todo ToDo Get rid of poroslave and poromaster parameters.
+       *
+       * \author Popp */
+      void BuildInterfaces(const Teuchos::ParameterList& params,
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
@@ -90,7 +101,7 @@ namespace CONTACT
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
        * \author Popp */
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& cparams,
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
           CONTACT::ParamsInterface* cparams_interface = NULL) const;
@@ -102,7 +113,7 @@ namespace CONTACT
        *
        * \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::CoAbstractStrategy> BuildStrategy(
-          const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& cparams,
+          const INPAR::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
@@ -116,7 +127,7 @@ namespace CONTACT
       //! print some final screen output
       void Print(const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
           const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
-          const Teuchos::ParameterList& cparams) const;
+          const Teuchos::ParameterList& params) const;
 
       /*! \brief print strategy banner
        *
@@ -160,10 +171,8 @@ namespace CONTACT
 
       int IdentifyFullSubset(const Epetra_Map& map_0, const Epetra_Map& map_1,
           bool throw_if_partial_subset_on_proc = true) const;
-    };  // class Factory
+    };  // namespace STRATEGY
   }     // namespace STRATEGY
 }  // namespace CONTACT
-
-
 
 #endif /* SRC_DRT_CONTACT_CONTACT_STRATEGY_FACTORY_H_ */

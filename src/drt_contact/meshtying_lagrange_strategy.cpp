@@ -5,9 +5,7 @@
 
 \level 1
 
-<pre>
 \maintainer Matthias Mayr
-</pre>
 
 *-----------------------------------------------------------------------*/
 
@@ -57,9 +55,9 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   // refer call to parent class
   MtAbstractStrategy::MortarCoupling(dis);
 
-  /**********************************************************************/
-  /* Multiply Mortar matrices: m^ = inv(d) * m                          */
-  /**********************************************************************/
+  //----------------------------------------------------------------------
+  // Multiply Mortar matrices: m^ = inv(d) * m
+  //----------------------------------------------------------------------
   invd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
   Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
   int err = 0;
@@ -168,14 +166,14 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
      */
   }
 
-  /**********************************************************************/
-  /* Build constraint matrix (containing D and M)                       */
-  /**********************************************************************/
+  //----------------------------------------------------------------------
+  // Build constraint matrix (containing D and M)
+  //----------------------------------------------------------------------
   // case 1: saddle point system
   //    -> constraint matrix with rowmap=Problemmap, colmap=LMmap
   // case 2: condensed system
   //    -> no explicit constraint matrix needed
-  /**********************************************************************/
+  //----------------------------------------------------------------------
   bool setup = true;
   INPAR::CONTACT::SystemType systype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
@@ -757,6 +755,8 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
@@ -858,6 +858,8 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::UpdateDisplacementsAndLMincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
@@ -1000,6 +1002,8 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (f_.is_null()) f_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
@@ -1023,6 +1027,8 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (!dm_matrix_.is_null() && !dm_matrix_t_.is_null() && !lm_diag_matrix_.is_null()) return true;
@@ -1070,6 +1076,8 @@ bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
   EvaluateForce(dis);
@@ -1077,6 +1085,8 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Ep
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
     const enum DRT::UTILS::VecBlockType& bt) const
 {
@@ -1102,7 +1112,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
   return vec_ptr;
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt) const
 {
@@ -1131,6 +1142,8 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixBlockPt
   return mat_ptr;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
     Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
@@ -1158,6 +1171,8 @@ void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::RunPostApplyJacobianInverse(Epetra_Vector& result)
 {
   INPAR::CONTACT::SystemType systype =
@@ -1191,6 +1206,8 @@ void CONTACT::MtLagrangeStrategy::RunPostComputeX(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const
 {
   INPAR::CONTACT::SystemType systype =

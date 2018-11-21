@@ -6,9 +6,7 @@
 
 \level 3
 
-\maintainer Michael Hiermeier
-
-\date Feb 4, 2016
+\maintainer Matthias Mayr
 
 */
 /*---------------------------------------------------------------------*/
@@ -19,17 +17,17 @@
 
 #include "../drt_inpar/inpar_contact.H"
 
-#include "../drt_io/io_pstream.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_nurbs_discret/drt_control_point.H"
+#include "../drt_nurbs_discret/drt_knotvector.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_dserror.H"
-
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
 
 #include <Epetra_SerialDenseVector.h>
 
@@ -88,7 +86,9 @@ void MORTAR::STRATEGY::Factory::Setup()
   // get the problem dimension
   dim_ = DRT::Problem::Instance()->NDim();
 
-  // since this is an abstract class the setup flag stays false.
+  // Note: Since this is an abstract class, the setup flag stays false.
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -176,7 +176,7 @@ const int& MORTAR::STRATEGY::Factory::Dim() const
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckDimension() const
 {
-  if (Dim() != 2 && Dim() != 3) dserror("ERROR: Contact problem must be 2D or 3D");
+  if (Dim() != 2 && Dim() != 3) dserror("Mortar meshtying/contact problems must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*
@@ -224,8 +224,9 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSNode(
 void MORTAR::STRATEGY::Factory::BuildSearchTree(
     const std::vector<Teuchos::RCP<MORTAR::MortarInterface>>& interfaces) const
 {
-  // create binary search tree
   for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
+
+  return;
 }
 
 

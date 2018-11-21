@@ -4,7 +4,7 @@
 
 \brief BACI implementation of main class to control all contact
 
-\level 2
+\level 1
 
 \maintainer Matthias Mayr
 
@@ -64,6 +64,7 @@ namespace CONTACT
     virtual ~CoManager(){};
 
     //! @name Access methods
+    //! @{
 
     /*!
     \brief Get discretization
@@ -71,9 +72,10 @@ namespace CONTACT
     */
     DRT::Discretization& Discret() const { return discret_; };
 
-    //@}
+    //! @}
 
     //! @name Evaluation methods
+    //! @{
 
     /*!
     \brief Write restart information for contact
@@ -141,7 +143,7 @@ namespace CONTACT
     void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
         bool& structslave, int& slavetype, int& mastertype);
 
-    //@}
+    //! @}
 
    private:
     /*!
@@ -160,7 +162,8 @@ namespace CONTACT
     CoManager operator=(const CoManager& old);
     CoManager(const CoManager& old);
 
-    DRT::Discretization& discret_;  // the underlying problem discretization
+    //! the underlying problem discretization
+    DRT::Discretization& discret_;
 
   };  // class CoManager
 }  // namespace CONTACT

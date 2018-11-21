@@ -29,6 +29,8 @@ namespace CONTACT
     /*!
     \brief Constructor
 
+    \param discret (in): A discretization containing contact boundary conditions
+    \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
     */
     SmoothingManager(DRT::Discretization& discret, double alphaf = 0.0);
 
@@ -108,7 +110,8 @@ namespace CONTACT
     SmoothingManager operator=(const SmoothingManager& old);
     SmoothingManager(const SmoothingManager& old);
 
-    DRT::Discretization& discret_;  // the underlying problem discretization
+    //! Underlying problem discretization
+    DRT::Discretization& discret_;
 
   };  // class SmoothingManager
 }  // namespace CONTACT
