@@ -1,62 +1,69 @@
-/*----------------------------------------------------------------------------*/
 /*!
 \file beam_to_solid_volume_meshtying_params.cpp
 
-\brief data container holding all beam to solid volume meshtying input parameters
+\brief Data container holding all beam to solid volume meshtying input parameters.
 
+<pre>
 \level 3
-
-\maintainer Alexander Popp
+\maintainer Ivo Steinbrecher
+            ivo.steinbrecher@unibw.de
+            +49 89 6004-4403
+</pre>
 */
-/*----------------------------------------------------------------------------*/
 
 
 #include "beam_to_solid_volume_meshtying_params.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+/**
+ *
+ */
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
-    : isinit_(false), issetup_(false), BTSVOLMT_penalty_param_(-1.0)
+    : isinit_(false),
+      issetup_(false),
+      penalty_parameter_(-1.0),
+      gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined)
 {
-  // Empty Constructor
+  // Empty Constructor.
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+
+/**
+ *
+ */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
 {
-  issetup_ = false;
-
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_solid_contact_params_list =
-      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT");
+      DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID VOLUME MESHTYING");
 
-  /****************************************************************************/
-  // get and check required parameters
-  /****************************************************************************/
+  // Get parameters form input file.
+  {
+    // Penalty parameter.
+    penalty_parameter_ = beam_to_solid_contact_params_list.get<double>("PENALTY_PARAMETER");
+    if (penalty_parameter_ < 0.0)
+      dserror("beam-to-volume-meshtying penalty parameter must not be negative!");
 
-  /****************************************************************************/
-  // get penalty parameter
-  BTSVOLMT_penalty_param_ =
-      beam_to_solid_contact_params_list.get<double>("BEAMS_BTSVOLMTPENALTYPARAM");
-
-  if (BTSVOLMT_penalty_param_ < 0.0)
-    dserror("beam-to-volume-meshtying penalty parameter must not be negative!");
-
+    // Gauss rule for integration along the beam.
+    gauss_rule_ = INPAR::BEAMINTERACTION::IntToGaussRule1D(
+        beam_to_solid_contact_params_list.get<int>("GAUSS_POINTS"));
+  }
 
   isinit_ = true;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+
+/**
+ *
+ */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Setup()
 {
   CheckInit();
 
-  // empty for now
+  // Empty for now.
 
   issetup_ = true;
 }

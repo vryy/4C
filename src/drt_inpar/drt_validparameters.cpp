@@ -78,6 +78,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_beaminteraction.H"
 #include "inpar_binningstrategy.H"
 #include "inpar_browniandyn.H"
+#include "inpar_geometry_pair.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
@@ -622,6 +623,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::BEAMINTERACTION::SetValidParameters(list);
   INPAR::BROWNIANDYN::SetValidParameters(list);
+  INPAR::GEOMETRYPAIR::SetValidParameters(list);
 
   INPAR::LOCA::SetValidParameters(list);
   INPAR::PLASTICITY::SetValidParameters(list);

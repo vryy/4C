@@ -21,6 +21,11 @@
 
 // forward declaration ...
 class RuntimeVtpWriter;
+namespace GEOMETRYPAIR
+{
+  class GeometryEvaluationDataGlobal;
+}
+
 
 namespace DRT
 {
@@ -202,6 +207,9 @@ namespace BEAMINTERACTION
 
       //! data container holding all beam contact related evaluation data
       Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> beam_contact_evaluation_data_ptr_;
+
+      //! data container holding all geometry related evaluation data
+      Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr_;
 
       //! element types considered for beam to ? contact
       std::vector<BINSTRATEGY::UTILS::BinContentType> contactelementtypes_;
