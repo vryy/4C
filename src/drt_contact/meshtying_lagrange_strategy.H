@@ -206,6 +206,18 @@ namespace CONTACT
     //!@}
 
    protected:
+    //! @name Accessors
+    //!@{
+
+    //! Access to #mhatmatrix_
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetMHat() { return mhatmatrix_; };
+
+    //! Access to #invd_
+    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetDInverse() { return invd_; };
+
+    //!@}
+
+   private:
     //! don't want = operator
     MtLagrangeStrategy operator=(const MtLagrangeStrategy& old);
 
