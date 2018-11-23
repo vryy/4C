@@ -535,12 +535,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 
   // build global id to local index map
   particleengine_->BuildGlobalIDToLocalIndexMap();
-
-  // validate particle connectivity flag
-  particleengine_->ValidateParticleConnectivity();
-
-  // store particle positions after transfer of particles
-  StorePositionsAfterParticleTransfer();
 }
 
 /*---------------------------------------------------------------------------*
@@ -655,12 +649,6 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     // build global id to local index map
     particleengine_->BuildGlobalIDToLocalIndexMap();
 
-    // validate particle connectivity flag
-    particleengine_->ValidateParticleConnectivity();
-
-    // store particle positions after transfer of particles
-    StorePositionsAfterParticleTransfer();
-
     // short screen output
     if (myrank_ == 0)
     {
@@ -767,44 +755,6 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
     dserror("a particle traveled more than one bin on this processor!");
 
   return transferneeded;
-}
-
-/*---------------------------------------------------------------------------*
- | store particle positions after transfer of particles       sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::ParticleAlgorithm::StorePositionsAfterParticleTransfer()
-{
-  // get particle container bundle
-  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
-      particleengine_->GetParticleContainerBundle();
-
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
-
-    // get number of particles stored in container
-    int particlestored = container->ParticlesStored();
-
-    // no owned particles of current particle type
-    if (particlestored == 0) continue;
-
-    // get pointer to particle states
-    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-    double* lasttransferpos =
-        container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
-
-    // get dimension of particle position
-    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
-
-    // copy particle position data
-    for (int i = 0; i < (statedim * particlestored); ++i) lasttransferpos[i] = pos[i];
-  }
 }
 
 /*---------------------------------------------------------------------------*

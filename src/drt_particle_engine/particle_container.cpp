@@ -187,7 +187,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     int index, int globalid, const ParticleStates& particle)
 {
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not replace particle as index out of bounds!");
+    dserror("can not replace particle as index %d out of bounds!", index);
 
   // replace global id in container
   if (globalid >= 0) globalids_[index] = globalid;
@@ -231,7 +231,7 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
     int index, int& globalid, ParticleStates& particle) const
 {
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return particle as index out of bounds!");
+    dserror("can not return particle as index %d out of bounds!", index);
 
   // get global id from container
   globalid = globalids_[index];
@@ -264,7 +264,7 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
 void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 {
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not remove particle as index out of bounds!");
+    dserror("can not remove particle as index %d out of bounds!", index);
 
   // to avoid fragmentation of memory: swap particle to be removed with last particle in container
   SwapParticle(index, (particlestored_ - 1));
@@ -283,7 +283,7 @@ void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b)
 {
   if (index_a < 0 or index_a > (particlestored_ - 1) or index_b < 0 or
       index_b > (particlestored_ - 1))
-    dserror("can not swap particles as index out of bounds!");
+    dserror("can not swap particles as pair of index (%d, %d) out of bounds!", index_a, index_b);
 
   // swap global ids of particles
   std::swap(globalids_[index_a], globalids_[index_b]);
@@ -310,7 +310,7 @@ double* PARTICLEENGINE::ParticleContainer::GetPtrToParticleState(
     StateEnum stateEnum, int index) const
 {
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return pointer to state of particle as index out of bounds!");
+    dserror("can not return pointer to state of particle as index %d out of bounds!", index);
 
   int stateDim = EnumToStateDim(stateEnum);
 
@@ -328,7 +328,7 @@ double* PARTICLEENGINE::ParticleContainer::GetPtrToParticleState(
 int* PARTICLEENGINE::ParticleContainer::GetPtrToParticleGlobalID(int index)
 {
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return pointer to global id of particle as index out of bounds!");
+    dserror("can not return pointer to global id of particle as index %d out of bounds!", index);
 
   return &(globalids_[index]);
 }
@@ -340,7 +340,7 @@ std::vector<double> PARTICLEENGINE::ParticleContainer::GetParticleState(
     StateEnum stateEnum, int index) const
 {
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return state of particle as index out of bounds!");
+    dserror("can not return state of particle as index %d out of bounds!", index);
 
   int stateDim = EnumToStateDim(stateEnum);
 

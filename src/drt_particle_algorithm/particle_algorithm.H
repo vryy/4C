@@ -128,9 +128,6 @@ namespace PARTICLEALGORITHM
     //! check particle transfer including bin size safety checks
     bool CheckParticleTransfer();
 
-    //! store particle positions after transfer of particles
-    void StorePositionsAfterParticleTransfer();
-
     //! check load balance
     bool CheckLoadBalancing();
 
