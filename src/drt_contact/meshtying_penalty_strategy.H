@@ -182,22 +182,37 @@ namespace CONTACT
 
     //! @name New time integration
 
-    //! evaluate RHS term
-    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis);
+    /*! \brief Evaluate residual
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
-    //! evaluate stiffness term
-    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis);
+    /*! \brief Evaluate stiffness term
+     *
+     * \note We assume that the stiffness matrix has already been evaluated,
+     * so we do nothing in here.
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
-    //! evaluate RHS and stiffness term
-    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis);
+    /*! \brief Evaluate residual and stiffness matrix
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
-    //! Return the desired right-hand-side block pointer (read-only)
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const;
+    //! Return the desired right-hand-side block pointer (read-only) [derived]
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
 
-    //! Return the desired matrix block pointer (read-only))
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+    //! Return the desired matrix block pointer (read-only) [derived]
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const override;
 
     //@}
 
@@ -212,13 +227,27 @@ namespace CONTACT
     //! Initial penalty parameter
     double initialpenalty_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> mtm_;  ///< mortar matrix product: M(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> mtd_;  ///< mortar matrix product: M(^T)*D
-    Teuchos::RCP<LINALG::SparseMatrix> dtm_;  ///< mortar matrix product: D(^T)*M
-    Teuchos::RCP<LINALG::SparseMatrix> dtd_;  ///< mortar matrix product: D(^T)*D
+    //! Mortar matrix product \f$M^T M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> mtm_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_;  ///< global stiffness matrix
-    Teuchos::RCP<Epetra_Vector> force_;         ///< global RHS vector
+    //! Mortar matrix product \f$M^T D\f$
+    Teuchos::RCP<LINALG::SparseMatrix> mtd_;
+
+    //! Mortar matrix product \f$D^T M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> dtm_;
+
+    //! Mortar matrix product \f$D^T D\f$
+    Teuchos::RCP<LINALG::SparseMatrix> dtd_;
+
+
+    //! Global stiffness matrix
+    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+
+    /*! \brief Global residual vector
+     *
+     * \todo Is this the residual or the right-hand side vector?
+     */
+    Teuchos::RCP<Epetra_Vector> force_;
 
 
   };  // class MtPenaltyStrategy

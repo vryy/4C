@@ -2,8 +2,7 @@
 /*!
 \file meshtying_lagrange_strategy.H
 
-\brief Mesh-tying solving strategy with (standard/dual) Lagrangian
-       multipliers.
+\brief Mesh-tying solving strategy with (standard/dual) Lagrangian multipliers
 
 \level 2
 
@@ -24,6 +23,8 @@ namespace CONTACT
 
    This is a specialization of the abstract meshtying algorithm as defined in MtAbstractStrategy.
    For a more general documentation of the involved functions refer to MtAbstractStrategy.
+
+   \sa MtAbstractStrategy
 
    \author popp (popp@lnm.mw.tum.de)
    */
@@ -125,10 +126,11 @@ namespace CONTACT
 
     //@}
 
-    //! @name Empty functions (Penalty meshtying)
-
-    // All these functions only have functionality in Penalty meshtying simulations,
-    // thus they are defined as dserror here in the case of Lagrange meshtying..
+    /*! @name Empty functions (Penalty meshtying)
+     *
+     * All these functions only have functionality in Penalty meshtying simulations,
+     * thus they are defined as dserror here in the case of Lagrange meshtying.
+     */
 
     double ConstraintNorm() const { return 0.0; }
     void InitializeUzawa(
@@ -146,15 +148,36 @@ namespace CONTACT
     //@}
 
     //! @name New time integration
+    //!@{
 
-    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis);
-    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis);
-    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis);
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const;
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+    /*! \brief Evaluate residual
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
+    /*! \brief Evaluate stiffness term
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+
+    /*! \brief Evaluate residual and stiffness matrix
+     *
+     * @param[in] dis Current displacement field
+     * @return Boolean flag indicating successfull evaluation
+     */
+    bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+
+    //! Return the desired right-hand-side block pointer (read-only) [derived]
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
+
+    //! Return the desired matrix block pointer (read-only) [derived]
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt) const override;
 
     /*! \brief Modify system before linear solve
      *
@@ -175,15 +198,18 @@ namespace CONTACT
 
     virtual void RunPostApplyJacobianInverse(Epetra_Vector& result);
 
-    virtual void RunPostComputeX(
-        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+    void RunPostComputeX(
+        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
-    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
-    //@}
+    void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const override;
+
+    //!@}
 
    protected:
-    // don't want = operator and cctor
+    //! don't want = operator
     MtLagrangeStrategy operator=(const MtLagrangeStrategy& old);
+
+    //! don't want copy constructor
     MtLagrangeStrategy(const MtLagrangeStrategy& old);
 
     //! Constraint matrix for saddle point system
@@ -216,11 +242,7 @@ namespace CONTACT
     //! Stiffness block \f$K_{ss}\f$ (needed for Lagrange multipliers)
     Teuchos::RCP<LINALG::SparseMatrix> kss_;
 
-    Teuchos::RCP<Epetra_Vector> fs_;           // slave side effective forces (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invd_;  // inverse of Mortar matrix D (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> ksn_;   // stiffness block K_sn (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> ksm_;   // stiffness block K_sm (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> kss_;   // stiffness block K_ss (needed for LM)
+    //!@}
 
   };  // class MtLagrangeStrategy
 }  // namespace CONTACT

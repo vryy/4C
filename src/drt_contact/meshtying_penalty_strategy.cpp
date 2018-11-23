@@ -414,6 +414,7 @@ bool CONTACT::MtPenaltyStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_V
 {
   if (force_.is_null()) force_ = Teuchos::rcp(new Epetra_Vector(*gdisprowmap_));
   if (stiff_->Multiply(false, *dis, *force_)) dserror("multiply failed");
+
   return true;
 }
 
@@ -428,9 +429,10 @@ bool CONTACT::MtPenaltyStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_V
  *----------------------------------------------------------------------------*/
 bool CONTACT::MtPenaltyStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  EvaluateForce(dis);
-  EvaluateStiff(dis);
-  return true;
+  bool successForce = EvaluateForce(dis);
+  bool successStiff = EvaluateStiff(dis);
+
+  return (successForce && successStiff);
 }
 
 /*----------------------------------------------------------------------------*

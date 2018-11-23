@@ -467,11 +467,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const
-    {
-      dserror("Not yet implemented!");
-      exit(EXIT_FAILURE);
-    };
+        const enum DRT::UTILS::VecBlockType& bt) const = 0;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
@@ -483,11 +479,7 @@ namespace CONTACT
      *  \date 05/2016
      *  \author hiermeier */
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const
-    {
-      dserror("Not yet implemented!");
-      exit(EXIT_FAILURE);
-    };
+        const enum DRT::UTILS::MatBlockType& bt) const = 0;
 
     /*! \brief Return the Lagrange multiplier dof row map
      *
@@ -517,31 +509,24 @@ namespace CONTACT
     }
 
     //! evaluate force terms
-    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis)
-    {
-      dserror("not yet implemented");
-      return false;
-    }
+    virtual bool EvaluateForce(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! evaluate stiffness terms
-    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis)
-    {
-      dserror("not yet implemented");
-      return false;
-    }
+    virtual bool EvaluateStiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! evaluate force and stiffness terms
-    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
-    {
-      dserror("not yet implemented");
-      return false;
-    }
+    virtual bool EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis) = 0;
 
     //! after applying Newton increment
     virtual void RunPostComputeX(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew){};
 
-    //! get the correct RHS for covnergence check
+    /*! \brief Get the correct RHS for convergence check
+     *
+     * \todo Is this really about the right-hand side vector or the residual?
+     *
+     * @param[in/out] rhs Right-hand side vector
+     */
     virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const {};
 
     //!@}

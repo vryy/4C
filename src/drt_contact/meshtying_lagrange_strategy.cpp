@@ -1024,6 +1024,7 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_
     LINALG::Export(*fm, *fmexp);
     f_->Update(-1.0, *fmexp, 1.0);
   }
+
   return true;
 }
 
@@ -1080,9 +1081,10 @@ bool CONTACT::MtLagrangeStrategy::EvaluateStiff(const Teuchos::RCP<const Epetra_
  *----------------------------------------------------------------------*/
 bool CONTACT::MtLagrangeStrategy::EvaluateForceStiff(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  EvaluateForce(dis);
-  EvaluateStiff(dis);
-  return true;
+  bool successForce = EvaluateForce(dis);
+  bool successStiff = EvaluateStiff(dis);
+
+  return (successForce && successStiff);
 }
 
 /*----------------------------------------------------------------------*
