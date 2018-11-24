@@ -145,7 +145,7 @@ Configuration files for a bunch of supported system environments are located in 
 #### Build
 
 ```bash
-make -j <numProcs> |& tee make$(date +%y%m%d%H%M%N).log
+make -j <numProcs> full |& tee make$(date +%y%m%d%H%M%N).log
 ```
 
 where `<numProcs>` is the number of processors you want to use.

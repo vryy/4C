@@ -166,9 +166,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
     particlecontainerbundle_->SetStateSpecificContainer(initmass, PARTICLEENGINE::Mass, type);
     particlecontainerbundle_->SetStateSpecificContainer(initradius, PARTICLEENGINE::Radius, type);
   }
-
-  // refresh initial states of ghosted particles
-  RefreshInitialStates();
 }
 
 /*---------------------------------------------------------------------------*
@@ -237,28 +234,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::InitContactHandler()
 
   // init contact handler
   contact_->Init();
-}
-
-/*---------------------------------------------------------------------------*
- | refresh initial states of ghosted particles                sfuchs 11/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::ParticleInteractionDEM::RefreshInitialStates() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
-    // set states to refresh to map
-    particlestatestotypes[type] = {PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }
 
 /*---------------------------------------------------------------------------*

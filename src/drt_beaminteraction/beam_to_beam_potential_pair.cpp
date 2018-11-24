@@ -351,7 +351,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
           dist = FADUTILS::DiffVector(r1, r2);
 
-          norm_dist = FADUTILS::VectorNorm<3>(dist);
+          norm_dist = FADUTILS::VectorNorm(dist);
 
           // check cutoff criterion: if specified, contributions are neglected at larger separation
           if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
@@ -753,7 +753,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
           dist = FADUTILS::DiffVector(r1, r2);
 
-          norm_dist = FADUTILS::VectorNorm<3>(dist);
+          norm_dist = FADUTILS::VectorNorm(dist);
 
           // check cutoff criterion: if specified, contributions are neglected at larger separation
           if (cutoff_radius != -1.0 and FADUTILS::CastToDouble(norm_dist) > cutoff_radius) continue;
@@ -1158,7 +1158,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     ComputeCenterlinePosition(r_slave, N_i_slave[igp], ele1pos_);
     ComputeCenterlineTangent(r_xi_slave, N_i_xi_slave[igp], ele1pos_);
 
-    T norm_r_xi_slave = FADUTILS::VectorNorm<3>(r_xi_slave);
+    T norm_r_xi_slave = FADUTILS::VectorNorm(r_xi_slave);
 
     g1_slave.Update(1.0 / norm_r_xi_slave, r_xi_slave);
 
@@ -1244,7 +1244,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     ComputeCenterlineTangent(r_xixi_master, N_i_xixi_master, ele2pos_);
 
 
-    T norm_r_xi_master = FADUTILS::VectorNorm<3>(r_xi_master);
+    T norm_r_xi_master = FADUTILS::VectorNorm(r_xi_master);
 
     g1_master.Update(1.0 / norm_r_xi_master, r_xi_master);
 
@@ -1304,7 +1304,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // there is no unique bilateral closest point pair in case of alpha=0
       // hence, we can use the current (unilateral) closest point pair
       normal_bl = dist_ul;
-      norm_normal_bl_tilde = FADUTILS::VectorNorm<3>(normal_bl);
+      norm_normal_bl_tilde = FADUTILS::VectorNorm(normal_bl);
       normal_bl.Scale(1.0 / norm_normal_bl_tilde);
 
       aux_plane_normal.Clear();
@@ -1314,14 +1314,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     {
       // normal vector at bilateral closest point Fixme
       normal_bl.CrossProduct(r_xi_slave, r_xi_master);
-      norm_normal_bl_tilde = FADUTILS::VectorNorm<3>(normal_bl);
+      norm_normal_bl_tilde = FADUTILS::VectorNorm(normal_bl);
       normal_bl.Scale(1.0 / norm_normal_bl_tilde);
 
       // distance between Gauss point and bilateral closest point on slave
       aux_plane_normal.Update(r_xi_master.Dot(r_xi_master), r_xi_slave,
           -1.0 * r_xi_master.Dot(r_xi_slave), r_xi_master);
 
-      x = FADUTILS::VectorNorm<3>(r_xi_slave) *
+      x = FADUTILS::VectorNorm(r_xi_slave) *
           (r_master.Dot(aux_plane_normal) - r_slave.Dot(aux_plane_normal)) /
           r_xi_slave.Dot(aux_plane_normal);
     }
@@ -1340,8 +1340,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     //    std::cout << "\nx: " << FADUTILS::CastToDouble( x ) << std::endl;
     //*********************** END DEBUG *****************************************
 
-    beta =
-        FADUTILS::sqrt((gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
+    beta = FADUTILS::sqrt<T>(
+        (gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
     beta_exp2 = beta * beta;
     beta_exp3 = beta_exp2 * beta;
     beta_exp4 = beta_exp2 * beta_exp2;
@@ -1362,7 +1362,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // interaction potential
     interaction_potential_GP =
-        rho1rho2_JacFac_GaussWeight * M_PI / FADUTILS::sqrt(Delta * Delta * Delta) *
+        rho1rho2_JacFac_GaussWeight * M_PI / FADUTILS::sqrt<T>(Delta * Delta * Delta) *
         (1.0 / radius2_ + cos_alpha * cos_alpha / (gap_bl + radius2_) -
             x * x * sin_2alpha * sin_2alpha / (4.0 * (gap_bl + radius2_) * beta_exp2));
 
@@ -1404,7 +1404,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // partial derivatives of single length specific interaction potential
     pot_ia_partial_Delta =
-        -1.5 * M_PI * FADUTILS::sqrt(std::pow(Delta, -5)) *
+        -1.5 * M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -5)) *
         (1.0 / radius2_ + cos_alpha * cos_alpha / (gap_bl + radius2_) -
             x * x * sin_2alpha * sin_2alpha / (4 * (gap_bl + radius2_) * beta_exp2));
 
@@ -1412,7 +1412,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         pot_ia_partial_Delta * Delta_partial_x -
         (x * sin_2alpha * sin_2alpha / (gap_bl + radius2_) / beta_exp2 -
             x * x * sin_2alpha * sin_2alpha / (gap_bl + radius2_) / beta_exp3 * beta_partial_x) *
-            M_PI_2 * FADUTILS::sqrt(std::pow(Delta, -3));
+            M_PI_2 * FADUTILS::sqrt<T>(std::pow(Delta, -3));
 
     pot_ia_partial_gap_bl = pot_ia_partial_Delta * Delta_partial_gap_bl +
                             (-cos_alpha * cos_alpha / (gap_bl + radius2_) / (gap_bl + radius2_) +
@@ -1420,7 +1420,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                                     (4 * (gap_bl + radius2_) * (gap_bl + radius2_) * beta_exp2) +
                                 x * x * sin_2alpha * sin_2alpha /
                                     (2 * (gap_bl + radius2_) * beta_exp3) * beta_partial_gap_bl) *
-                                M_PI * FADUTILS::sqrt(std::pow(Delta, -3));
+                                M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -3));
 
     pot_ia_partial_cos_alpha =
         pot_ia_partial_Delta * Delta_partial_cos_alpha +
@@ -1429,7 +1429,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                 (gap_bl + radius2_) / beta_exp2 +
             x * x * sin_2alpha * sin_2alpha / (2.0 * (gap_bl + radius2_) * beta_exp3) *
                 beta_partial_cos_alpha) *
-            M_PI * FADUTILS::sqrt(std::pow(Delta, -3));
+            M_PI * FADUTILS::sqrt<T>(std::pow(Delta, -3));
 
     //************************** DEBUG ******************************************
     //    std::cout << "\npot_ia_partial_Delta: " << FADUTILS::CastToDouble( pot_ia_partial_Delta );
@@ -1498,7 +1498,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     }
 
     cos_alpha_partial_r_xi_slave.Multiply(
-        signum_tangentsscalarproduct / FADUTILS::VectorNorm<3>(r_xi_slave), v_mat_tmp, g1_master);
+        signum_tangentsscalarproduct / FADUTILS::VectorNorm(r_xi_slave), v_mat_tmp, g1_master);
 
     v_mat_tmp.Clear();
     for (unsigned int i = 0; i < 3; ++i)
@@ -1508,7 +1508,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     }
 
     cos_alpha_partial_r_xi_master.Multiply(
-        signum_tangentsscalarproduct / FADUTILS::VectorNorm<3>(r_xi_master), v_mat_tmp, g1_slave);
+        signum_tangentsscalarproduct / FADUTILS::VectorNorm(r_xi_master), v_mat_tmp, g1_slave);
 
     cos_alpha_partial_xi_master = r_xixi_master.Dot(cos_alpha_partial_r_xi_master);
 
@@ -1536,7 +1536,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= g1_slave(i) * g1_slave(j);
       }
 
-      x_partial_r_xi_slave.Multiply(1.0 / FADUTILS::VectorNorm<3>(r_xi_slave) *
+      x_partial_r_xi_slave.Multiply(1.0 / FADUTILS::VectorNorm(r_xi_slave) *
                                         dist_ul.Dot(aux_plane_normal) /
                                         std::pow(g1_slave.Dot(aux_plane_normal), 2),
           v_mat_tmp, aux_plane_normal);

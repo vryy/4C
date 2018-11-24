@@ -140,23 +140,8 @@ void dyn_nlnstructural_drt()
     // output->WriteElementData();
   }
 
-#if 1
   // run time integration
   structadapter->Integrate();
-#else  // this is a bone optimization hack - do not touch
-  structadaptor->PrepareTimeStep();
-  structadaptor->Solve();
-  structadaptor->Update();
-  structadaptor->Output();
-
-  const Epetra_Vector* disp = structadaptor->Dispn().get();
-  const_cast<Epetra_Vector*>(disp)->PutScalar(0.0);
-
-  structadaptor->PrepareTimeStep();
-  structadaptor->Solve();
-  structadaptor->Update();
-  structadaptor->Output();
-#endif
 
   // test results
   DRT::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());

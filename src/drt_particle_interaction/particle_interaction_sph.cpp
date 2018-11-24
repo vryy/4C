@@ -328,9 +328,6 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
           inittemperature, PARTICLEENGINE::Temperature, type);
     }
   }
-
-  // refresh initial states of ghosted particles
-  RefreshInitialStates();
 }
 
 /*---------------------------------------------------------------------------*
@@ -696,33 +693,4 @@ double PARTICLEINTERACTION::ParticleInteractionSPH::ComputeConsistentParticleVol
 
   // consistent volume of non-boundary particles
   return (consistentproblemvolume / totalnumberofnonboundaryparticles);
-}
-
-/*---------------------------------------------------------------------------*
- | refresh initial states of ghosted particles                sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEINTERACTION::ParticleInteractionSPH::RefreshInitialStates() const
-{
-  // init map
-  std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
-
-  // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
-  {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
-    // set states to refresh to map
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase)
-      particlestatestotypes[type] = {PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
-    else
-      particlestatestotypes[type] = {
-          PARTICLEENGINE::Density, PARTICLEENGINE::Mass, PARTICLEENGINE::Radius};
-
-    // set temperature state to refresh to map
-    if (temperature_) particlestatestotypes[type].insert(PARTICLEENGINE::Temperature);
-  }
-
-  // refresh specific states of particles of specific types
-  particleengineinterface_->RefreshSpecificStatesOfParticlesOfSpecificTypes(particlestatestotypes);
 }
