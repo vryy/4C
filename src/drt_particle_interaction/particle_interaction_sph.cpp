@@ -31,6 +31,7 @@
 #include "particle_interaction_sph_momentum.H"
 #include "particle_interaction_sph_surface_tension.H"
 #include "particle_interaction_sph_boundary_particle.H"
+#include "particle_interaction_sph_phase_change.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
@@ -90,6 +91,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
 
   // init boundary particle handler
   InitBoundaryParticleHandler();
+
+  // init phase change handler
+  InitPhaseChangeHandler();
 }
 
 /*---------------------------------------------------------------------------*
@@ -131,6 +135,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
+
+  // setup phase change handler
+  if (phasechange_) phasechange_->Setup(particleengineinterface);
 }
 
 /*---------------------------------------------------------------------------*
@@ -168,6 +175,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::WriteRestart(
 
   // write restart of boundary particle handler
   if (boundaryparticle_) boundaryparticle_->WriteRestart(step, time);
+
+  // write restart of phase change handler
+  if (phasechange_) phasechange_->WriteRestart(step, time);
 }
 
 /*---------------------------------------------------------------------------*
@@ -205,6 +215,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::ReadRestart(
 
   // read restart of boundary particle handler
   if (boundaryparticle_) boundaryparticle_->ReadRestart(reader);
+
+  // read restart of phase change handler
+  if (phasechange_) phasechange_->ReadRestart(reader);
 }
 
 /*---------------------------------------------------------------------------*
@@ -344,6 +357,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // add surface tension contribution to acceleration field
   if (surfacetension_) surfacetension_->AddAccelerationContribution();
+
+  // evaluate phase change
+  if (phasechange_) phasechange_->EvaluatePhaseChange();
 }
 
 /*---------------------------------------------------------------------------*
@@ -618,6 +634,34 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
 
   // init boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Init();
+}
+
+/*---------------------------------------------------------------------------*
+ | init phase change handler                                  sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
+{
+  // get type phase change
+  INPAR::PARTICLE::PhaseChangeType phasechangetype =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
+
+  // create phase change handler
+  switch (phasechangetype)
+  {
+    case INPAR::PARTICLE::NoPhaseChange:
+    {
+      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase>(nullptr);
+      break;
+    }
+    default:
+    {
+      dserror("unknown boundary particle formulation type!");
+      break;
+    }
+  }
+
+  // init phase change handler
+  if (phasechange_) phasechange_->Init();
 }
 
 /*---------------------------------------------------------------------------*

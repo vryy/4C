@@ -42,6 +42,7 @@ namespace PARTICLEENGINE
     Velocity,
     Acceleration,
     Force,
+    LastTransferPosition,
     ReferencePosition,
     ModifiedVelocity,
     ModifiedAcceleration,

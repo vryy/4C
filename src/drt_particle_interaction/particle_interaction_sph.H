@@ -41,6 +41,7 @@ namespace PARTICLEINTERACTION
   class SPHMomentum;
   class SPHSurfaceTensionBase;
   class SPHBoundaryParticleBase;
+  class SPHPhaseChangeBase;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -118,6 +119,9 @@ namespace PARTICLEINTERACTION
     //! init boundary particle handler
     virtual void InitBoundaryParticleHandler();
 
+    //! init phase change handler
+    virtual void InitPhaseChangeHandler();
+
     //! compute initial consistent particle volume
     virtual double ComputeConsistentParticleVolume() const;
 
@@ -150,6 +154,9 @@ namespace PARTICLEINTERACTION
 
     //! boundary particle handler
     std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase> boundaryparticle_;
+
+    //! phase change handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase> phasechange_;
   };
 
 }  // namespace PARTICLEINTERACTION
