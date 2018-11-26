@@ -2,41 +2,39 @@
 /*!
 \file contact_strategy_factory.cpp
 
-\brief Factory to create the desired contact strategy.
+\brief Factory to create the desired contact strategy
 
-\maintainer Michael Hiermeier
-
-\date Feb 4, 2016
+\maintainer Matthias Mayr
 
 \level 3
 
 */
 /*---------------------------------------------------------------------*/
 
-#include "contact_strategy_factory.H"
-
 #include "contact_element.H"
+#include "contact_strategy_factory.H"
+#include "contact_utils.H"
 #include "friction_node.H"
-
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+
+#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "../drt_structure_new/str_utils.H"
+
+#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
-
 #include <Teuchos_ParameterList.hpp>
-
-#include "contact_utils.H"
 
 // supported strategies and interfaces
 // -- standard strategies and interfaces
@@ -60,7 +58,6 @@
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1588,21 +1585,10 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   INPAR::MORTAR::AlgorithmType algo =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
 
+  // Get weight for contribution from last time step
   double alphaf = 0.0;
   bool do_endtime = DRT::INPUT::IntegralValue<int>(params, "CONTACTFORCE_ENDTIME");
-  if (!do_endtime)
-  {
-    const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_genalpha)
-      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_gemm)
-      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-        INPAR::STR::dyna_onesteptheta)
-      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-  }
+  if (!do_endtime) alphaf = STR::TIMINT::GetTimIntFactor();
 
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wlaw != INPAR::WEAR::wear_none &&
@@ -1644,22 +1630,6 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   else if ((stype == INPAR::CONTACT::solution_penalty && algo != INPAR::MORTAR::algorithm_gpts) &&
            stype != INPAR::CONTACT::solution_uzawa)
   {
-    double alphaf = 0.0;
-    bool do_endtime = DRT::INPUT::IntegralValue<int>(params, "CONTACTFORCE_ENDTIME");
-    if (!do_endtime)
-    {
-      const Teuchos::ParameterList& sdynparams =
-          DRT::Problem::Instance()->StructuralDynamicParams();
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-          INPAR::STR::dyna_genalpha)
-        alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-          INPAR::STR::dyna_gemm)
-        alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-          INPAR::STR::dyna_onesteptheta)
-        alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-    }
     strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, alphaf, dof_offset));
   }

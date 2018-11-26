@@ -11,36 +11,35 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "contact_abstract_strategy.H"
+#include "contact_utils.H"
+#include "meshtying_abstract_strategy.H"
+#include "meshtying_lagrange_strategy.H"
+#include "meshtying_penalty_strategy.H"
 #include "meshtying_strategy_factory.H"
-
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_node.H"
-
-#include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_node.H"
+#include "../drt_mortar/mortar_utils.H"
+
+#include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "../drt_structure_new/str_utils.H"
+
+#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H"
-
 #include <Teuchos_ParameterList.hpp>
-
-#include "contact_utils.H"
-#include "../drt_mortar/mortar_utils.H"
-
-#include "contact_abstract_strategy.H"
-#include "meshtying_abstract_strategy.H"
-#include "meshtying_lagrange_strategy.H"
-#include "meshtying_penalty_strategy.H"
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -629,17 +628,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
     fflush(stdout);
   }
 
-  double alphaf = 0.0;
-  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-      INPAR::STR::dyna_genalpha)
-    alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-      INPAR::STR::dyna_gemm)
-    alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") ==
-      INPAR::STR::dyna_onesteptheta)
-    alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+  const double alphaf = STR::TIMINT::GetTimIntFactor();
 
   if (stype == INPAR::CONTACT::solution_lagmult)
   {
