@@ -65,7 +65,10 @@ void CONTACT::STRATEGY::Factory::Setup()
 {
   CheckInit();
   MORTAR::STRATEGY::Factory::Setup();
-  issetup_ = true;
+
+  SetIsSetup();
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*

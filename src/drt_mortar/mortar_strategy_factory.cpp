@@ -34,9 +34,9 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MORTAR::STRATEGY::Factory::Factory()
-    : isinit_(false),
+    : discret_ptr_(Teuchos::null),
+      isinit_(false),
       issetup_(false),
-      discret_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
       comm_ptr_(Teuchos::null),
       dim_(-1)

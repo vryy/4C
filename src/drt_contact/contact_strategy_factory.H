@@ -135,6 +135,13 @@ namespace CONTACT
       static void PrintStrategyBanner(const enum INPAR::CONTACT::SolvingStrategy soltype);
 
      protected:
+     private:
+      /*! @name Porous media
+       *
+       * \todo Move to some other place outside the pure contact factory.
+       */
+      //!@{
+
       /*! \brief Set Parent Elements for Poro Face Elements
        *
        *  \author Ager */
@@ -149,6 +156,8 @@ namespace CONTACT
       void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave, bool& structmaster,
           bool& structslave, enum MORTAR::MortarElement::PhysicalType& slavetype,
           enum MORTAR::MortarElement::PhysicalType& mastertype) const;
+
+      //!@}
 
       /*! \brief Extract the discretization belonging to the given contact
        *   condition pair/group
@@ -165,7 +174,6 @@ namespace CONTACT
           std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface>>&
               parent_dis_pair) const;
 
-     private:
       void FullyOverlappingInterfaces(
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const;
 

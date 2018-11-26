@@ -47,7 +47,8 @@ void MORTAR::STRATEGY::FactoryMT::Setup()
 {
   CheckInit();
   MORTAR::STRATEGY::Factory::Setup();
-  issetup_ = true;
+
+  SetIsSetup();
 
   return;
 }

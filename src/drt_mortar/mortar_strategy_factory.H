@@ -96,6 +96,12 @@ namespace MORTAR
       void CheckDimension() const;
 
      protected:
+      /*! \brief Set #issetup_ flag with user-given value
+       *
+       * @param[in] issetup Setup flag (default = true)
+       */
+      inline void SetIsSetup(const bool issetup = true) { issetup_ = issetup; };
+
       //! Returns true, if Init() has been called
       inline const bool& IsInit() const { return isinit_; };
 
@@ -149,7 +155,10 @@ namespace MORTAR
 
       //!@}
 
-     protected:
+      //! pointer to the structural problem discretization
+      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
+
+     private:
       //! @name Status flags
       //!@{
 
@@ -161,10 +170,6 @@ namespace MORTAR
 
       //!@}
 
-      //! pointer to the structural problem discretization
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
-
-     private:
       //! pointer to the structural global state data container
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 

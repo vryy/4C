@@ -126,6 +126,7 @@ namespace MORTAR
           Teuchos::RCP<MORTAR::StratDataContainer> data_ptr);
 
      protected:
+     private:
     };  // class FactoryMT
   }     // namespace STRATEGY
 }  // namespace MORTAR
