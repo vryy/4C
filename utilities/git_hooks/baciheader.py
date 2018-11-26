@@ -79,7 +79,7 @@ class Header(object):
             "",
             "\\level 3",
             "",
-            "\\maintainer Max Mustermann, Michaela Schaffrath",
+            "\\maintainer Max Mustermann",
             "*/",
             "/*----------------------------------------------------------------------------*/"]
 
