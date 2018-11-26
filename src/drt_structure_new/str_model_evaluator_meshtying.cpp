@@ -381,24 +381,29 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJaco
   return GState().GetJacobianBlock(Type(), bt);
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::EvaluateForce()
 {
-  Strategy().EvaluateForce(GState().GetDisNp());
-  return true;
+  return Strategy().EvaluateForce(GState().GetDisNp());
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::EvaluateForceStiff()
 {
-  Strategy().EvaluateForceStiff(GState().GetDisNp());
-  return true;
+  return Strategy().EvaluateForceStiff(GState().GetDisNp());
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::EvaluateStiff()
 {
-  Strategy().EvaluateStiff(GState().GetDisNp());
-  return true;
+  return Strategy().EvaluateStiff(GState().GetDisNp());
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
   // check modified positions vector
@@ -458,7 +463,6 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(Teuchos::RCP<Epetra
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
@@ -470,6 +474,8 @@ void STR::MODELEVALUATOR::Meshtying::RunPostComputeX(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs)
 {
   CheckInitSetup();
@@ -478,6 +484,8 @@ void STR::MODELEVALUATOR::Meshtying::RemoveCondensedContributionsFromRhs(Epetra_
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::WriteRestart(
     IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
@@ -490,6 +498,8 @@ void STR::MODELEVALUATOR::Meshtying::WriteRestart(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::ReadRestart(IO::DiscretizationReader& ioreader)
 {
   mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*Discret().DofRowMap(), true));
