@@ -27,6 +27,8 @@
 #include "../drt_particle_engine/particle_container_bundle.H"
 #include "../drt_particle_engine/particle_container.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_io/io.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -159,6 +161,9 @@ void PARTICLEALGORITHM::TimInt::InsertParticleStatesOfParticleTypes(
  *---------------------------------------------------------------------------*/
 void PARTICLEALGORITHM::TimInt::SetInitialStates()
 {
+  // add initial random noise to particle position
+  AddInitialRandomNoiseToPosition();
+
   // set particle reference position
   if (dirichletboundarycondition_) dirichletboundarycondition_->SetParticleReferencePosition();
 
@@ -222,6 +227,59 @@ void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
 }
 
 /*---------------------------------------------------------------------------*
+ | add initial random noise to particle position              sfuchs 11/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
+{
+  // get amplitude of noise added to initial position
+  const double positionamplitude = params_.get<double>("INITIAL_POSITION_AMPLITUDE");
+
+  if (not(positionamplitude > 0.0)) return;
+
+  // safety check
+  if (positionamplitude > particleengineinterface_->MinBinSize())
+    dserror("amplitude of noise added to initial position larger than minimum relevant bin size!");
+
+  // get particle container bundle
+  PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
+      particleengineinterface_->GetParticleContainerBundle();
+
+  // iterate over particle types
+  for (auto& particleType : typestointegrate_)
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainerShrdPtr container =
+        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
+    // get dimension of particle state
+    int statedim = PARTICLEENGINE::EnumToStateDim(PARTICLEENGINE::Position);
+
+    // get pointer to particle state
+    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+
+    // iterate over owned particles of current type
+    for (int i = 0; i < particlestored; ++i)
+    {
+      // iterate over spatial dimension
+      for (int dim = 0; dim < statedim; ++dim)
+      {
+        // generate random value
+        const double randomvalue = DRT::Problem::Instance()->Random()->Uni();
+
+        // update position of particle
+        pos[statedim * i + dim] += randomvalue * positionamplitude;
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
@@ -245,15 +303,6 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
     dserror(
         "modified velocity and acceleration states not implemented yet for semi-implicit Euler "
         "time integration scheme!");
-}
-
-/*---------------------------------------------------------------------------*
- | time integration scheme specific initialization routine    sfuchs 07/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEALGORITHM::TimIntSemiImplicitEuler::SetInitialStates()
-{
-  // call base class method
-  TimInt::SetInitialStates();
 }
 
 /*---------------------------------------------------------------------------*
