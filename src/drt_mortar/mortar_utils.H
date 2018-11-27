@@ -219,9 +219,15 @@ namespace MORTAR
     void MortarMatrixCondensation(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& k,
         const std::vector<Teuchos::RCP<LINALG::SparseMatrix>>& p);
 
+    /*! \brief Perform static condensation of Jacobian with mortar matrix \f$D^{-1}M\f$
+     *
+     * @param[in/out] k Matrix to be condensed
+     * @param[in] p_row Mortar projection operator for condensation of rows
+     * @param[in] p_col Mortar projection operator for condenstaion of columns
+     */
     void MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>& k,
-        const Teuchos::RCP<LINALG::SparseMatrix>& p_row,
-        const Teuchos::RCP<LINALG::SparseMatrix>& p_col);
+        const Teuchos::RCP<const LINALG::SparseMatrix>& p_row,
+        const Teuchos::RCP<const LINALG::SparseMatrix>& p_col);
 
     void MortarRhsCondensation(
         Teuchos::RCP<Epetra_Vector>& rhs, const Teuchos::RCP<LINALG::SparseMatrix>& p);
