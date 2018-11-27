@@ -1170,7 +1170,7 @@ namespace CONTACT
      a contact search can be performed and set state called.
 
      \return TRUE if the interface has been redistributed. Return FALSE otherwise.*/
-    virtual bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /** \brief Redistribute all contact interfaces in parallel
      *
@@ -1253,7 +1253,7 @@ namespace CONTACT
      configuration) before the first time step */
     virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
 
-    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel);
+    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) final;
 
     /*! \brief Evaluate matrix of nodal normals
 
@@ -1464,7 +1464,7 @@ namespace CONTACT
      */
     //!@{
 
-    void RedistributeMeshtying() {}
+    void RedistributeMeshtying() final {}
     void RestrictMeshtyingZone() {}
     void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)

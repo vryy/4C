@@ -60,7 +60,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~MtManager(){};
+    virtual ~MtManager() = default;
 
     //!@}
 
@@ -101,7 +101,7 @@ namespace CONTACT
     \param forcedrestart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -117,7 +117,7 @@ namespace CONTACT
 
     */
     void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero);
+        Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
     \brief Write interface tractions for postprocessing
@@ -125,7 +125,7 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output);
+    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
 
     //!@}
 

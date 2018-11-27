@@ -86,7 +86,7 @@ namespace WEAR
 
     \return TRUE if a redistribution took place. Return FALSE otherwise.
     */
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final;
 
     /*!
     \brief Build 2x2 saddle point system

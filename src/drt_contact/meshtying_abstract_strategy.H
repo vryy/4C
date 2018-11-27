@@ -166,7 +166,7 @@ namespace CONTACT
     \brief Redistribute all meshtying interfaces in parallel
 
     */
-    void RedistributeMeshtying();
+    void RedistributeMeshtying() final;
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -242,7 +242,7 @@ namespace CONTACT
     use the overloaded function call in the derived class and refer back to this function.
 
     */
-    virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis);
+    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
 
     //@}
 
@@ -415,7 +415,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> ContactNorForce() { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> ContactTanForce() { return Teuchos::null; }
     void AssembleMortar() {}
-    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) {}
+    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) final {}
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const
     {
@@ -430,7 +430,7 @@ namespace CONTACT
     void OutputStresses() {}
     void AugForces(Epetra_Vector& augfs_lm, Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm,
         Epetra_Vector& augfm_g){};
-    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) override { return false; }
+    bool RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) final { return false; }
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}

@@ -291,7 +291,7 @@ namespace STR
      *  Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have been set.
      */
-    virtual INPAR::STR::ConvergenceStatus Solve() = 0;
+    virtual INPAR::STR::ConvergenceStatus Solve() override = 0;
 
     //! Linear structure solve with just an interface load
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
@@ -954,31 +954,31 @@ namespace STR
     void PrepareStepContact();
 
     /// wrapper for things that should be done before PrepareTimeStep is called
-    virtual void PrePredict(){};
+    void PrePredict() final{};
 
     /// wrapper for things that should be done after PrepareTimeStep is called
-    virtual void PostPredict(){};
+    void PostPredict() final{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    virtual void PreSolve(){};
+    virtual void PreSolve() final{};
 
     /// wrapper for things that should be done after solving the nonlinear iterations
-    virtual void PostSolve();
+    virtual void PostSolve() final;
 
     /// wrapper for things that should be done before updating
-    virtual void PreUpdate(){};
+    void PreUpdate() final{};
 
     /// wrapper for things that should be done after solving the update
-    virtual void PostUpdate(){};
+    void PostUpdate() final{};
 
     /// wrapper for things that should be done before the output
-    virtual void PreOutput(){};
+    void PreOutput() final{};
 
     /// wrapper for things that should be done after convergence of Newton scheme
-    virtual void PostOutput(){};
+    void PostOutput() final{};
 
     /// wrapper for things that should be done after the actual time loop is finished
-    virtual void PostTimeLoop();
+    void PostTimeLoop() final;
 
     //@}
 

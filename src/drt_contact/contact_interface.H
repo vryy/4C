@@ -677,12 +677,11 @@ namespace CONTACT
     /*!
     \brief Integrate Mortar matrix M and gap g on slave/master overlaps
 
-    Derived verision!
+    Derived version!
 
     */
-    virtual bool MortarCoupling(MORTAR::MortarElement* sele,
-        std::vector<MORTAR::MortarElement*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool MortarCoupling(MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief evaluate coupling terms for nts coupling + lin

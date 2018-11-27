@@ -38,7 +38,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~SmoothingManager(){};
+    virtual ~SmoothingManager() = default;
 
     //! @name Access methods
 
@@ -62,7 +62,10 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) { return; };
+    void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false) final
+    {
+      return;
+    };
 
     /*!
     \brief Read restart information for contact
@@ -79,7 +82,7 @@ namespace CONTACT
 
     */
     void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero)
+        Teuchos::RCP<Epetra_Vector> zero) final
     {
       return;
     };
@@ -90,7 +93,7 @@ namespace CONTACT
     \param output (in): IO::Discretization writer for restart
 
     */
-    void PostprocessQuantities(IO::DiscretizationWriter& output);
+    void PostprocessQuantities(IO::DiscretizationWriter& output) final;
     //@}
 
 

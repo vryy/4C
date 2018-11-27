@@ -76,7 +76,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~ManagerBase(){};
+    virtual ~ManagerBase() = default;
 
     //! @name Access methods
 
