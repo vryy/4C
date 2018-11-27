@@ -1151,12 +1151,14 @@ void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
 {
   INPAR::CONTACT::SystemType systype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
-  INPAR::MORTAR::LagMultQuad lagmultquad =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
+
   if (systype == INPAR::CONTACT::system_condensed)
   {
     Teuchos::RCP<LINALG::SparseMatrix> k = Teuchos::rcp(new LINALG::SparseMatrix(*kteff));
     Teuchos::RCP<Epetra_Vector> r = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
+
+    INPAR::MORTAR::LagMultQuad lagmultquad =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
 
     if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
@@ -1171,6 +1173,8 @@ void CONTACT::MtLagrangeStrategy::RunPreApplyJacobianInverse(
 
     MORTAR::UTILS::MortarRhsCondensation(r, mhatmatrix_);
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
