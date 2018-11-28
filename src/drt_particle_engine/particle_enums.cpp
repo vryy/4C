@@ -111,6 +111,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
       break;
     case PARTICLEENGINE::Force:
       name = "force";
+      break;
     case PARTICLEENGINE::LastTransferPosition:
       name = "position last transfer";
       break;

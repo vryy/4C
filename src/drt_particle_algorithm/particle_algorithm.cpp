@@ -551,8 +551,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   // time integration scheme specific initialization routine
   particletimint_->SetInitialStates();
 
-  // refresh particles being ghosted on other processors
-  particleengine_->RefreshParticles();
+  // update connectivity
+  UpdateConnectivity();
 
   // set gravity acceleration
   if (particlegravity_) SetGravityAcceleration();
