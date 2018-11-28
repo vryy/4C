@@ -3,13 +3,10 @@
 
 \brief Utility classes for the geometry pairs.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
 
 
 #ifndef GEOMETRY_PAIR_UTILITY_CLASSES_H
@@ -32,13 +29,16 @@ namespace LINALG
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Type of solid element.
+   * \brief Geometry discretization type of volume element.
    */
   enum class DiscretizationTypeVolume
   {
-    none,      //!< none
-    hexaeder,  //!< hexaeder
-    tetraeder  //!< tetraeder
+    //! none
+    none,
+    //! hexaeder
+    hexaeder,
+    //! tetraeder
+    tetraeder
   };
 
 
@@ -47,11 +47,14 @@ namespace GEOMETRYPAIR
    */
   enum class ProjectionResult
   {
-    none,                        //! Default value
-    projection_not_found,        //! System of equations could not be solved.
-    projection_found_not_valid,  //! Projection found, but the parameter coordinates are not all
-                                 //! valid.
-    projection_found_valid       //! Projection found and the parameter coordinates are valid.
+    //! Default value
+    none,
+    //! System of equations could not be solved.
+    projection_not_found,
+    //! Projection found, but the parameter coordinates are not all valid.
+    projection_found_not_valid,
+    //! Projection found and the parameter coordinates are valid.
+    projection_found_valid
   };
 
 

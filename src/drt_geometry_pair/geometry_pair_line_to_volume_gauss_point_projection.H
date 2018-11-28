@@ -3,13 +3,10 @@
 
 \brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
 
 
 #ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_H

@@ -1,17 +1,15 @@
 /*!
-\file geometry_pair_evaluation_data_base.H
+\file geometry_pair_evaluation_data_global.H
 
 \brief Data container holding pointers to all subcontainers that in turn hold
        all evaluation data specific to their problem type,
        that can not be stored pairwise.
 
-<pre>
 \level 3
+
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
 
 
 #ifndef GEOMETRY_PAIR_EVALUATION_DATA_GLOBAL_H

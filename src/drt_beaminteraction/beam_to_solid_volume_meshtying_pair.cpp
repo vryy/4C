@@ -3,13 +3,10 @@
 
 \brief Meshtying element for meshtying between a 3D beam and a 3D solid element.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+
 
 #include "beam_to_solid_volume_meshtying_pair.H"
 

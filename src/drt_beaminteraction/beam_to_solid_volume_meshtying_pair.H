@@ -3,13 +3,11 @@
 
 \brief Meshtying element for meshtying between a 3D beam and a 3D solid element.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
+
 
 #ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_H
 #define BEAM_TO_SOLID_VOLUME_MESHTYING_H

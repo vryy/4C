@@ -3,12 +3,8 @@
 
 \brief functions to create geometry pairs.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
 
 

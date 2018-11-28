@@ -3,13 +3,10 @@
 
 \brief Data container holding all beam to solid volume meshtying input parameters.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
 
 
 #ifndef BEAM_TO_SOLID_VOLUME_MESHTYING_PARAMS_H

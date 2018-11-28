@@ -4,12 +4,8 @@
 \brief base class for two or more elements that interact geometrically, e.g. contact or meshtying
 problems.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
 
 

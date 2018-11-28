@@ -3,13 +3,10 @@
 
 \brief container for parameters for line to volume pairs, as well as global evaluation data.
 
-<pre>
 \level 3
 \maintainer Ivo Steinbrecher
-            ivo.steinbrecher@unibw.de
-            +49 89 6004-4403
-</pre>
 */
+// End doxygen header.
 
 
 #ifndef GEOMETRY_PAIR_LINE_TO_VOLUME_EVALUATION_DATA_GLOBAL_H

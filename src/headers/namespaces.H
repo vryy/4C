@@ -580,6 +580,19 @@ namespace GEO
   }  // namespace MESHFREE
 }  // namespace GEO
 
+/*!
+ * \brief Geometry interactions (projection, intersection, ...) between two or more geometries.
+ *
+ * Implement geometry related functions for geometry pairs.
+ *
+ * Includes:
+ *   - Line to volume pair
+ *     - Gauss point projection
+ */
+namespace GEOMETRYPAIR
+{
+}  // namespace GEOMETRYPAIR
+
 /*! \brief
  *
  */
