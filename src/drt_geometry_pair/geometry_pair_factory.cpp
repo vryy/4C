@@ -36,8 +36,10 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
           new GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_nodes_element_1,
               n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>());
     case INPAR::GEOMETRYPAIR::LineToVolumeStrategy::segmentation:
-      return Teuchos::rcp(new GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
-          n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>());
+    {
+      dserror("Segmentation case not yet implemented!");
+      return Teuchos::null;
+    }
     default:
       return Teuchos::null;
   }

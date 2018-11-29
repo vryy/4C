@@ -238,13 +238,9 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<numnodessol, numnodes,
           force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
                                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
       for (unsigned int i_dof = 0; i_dof < n_dof_element_2_; i_dof++)
-      {
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        {
           force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + n_dof_element_1_) *
                                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
-        }
-      }
     }
   }
 
