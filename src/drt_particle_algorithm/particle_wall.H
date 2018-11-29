@@ -23,7 +23,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-#include "../drt_particle_engine/particle_typedefs.H"
+#include "particle_wall_interface.H"
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -62,7 +62,7 @@ namespace DRT
  *---------------------------------------------------------------------------*/
 namespace PARTICLEALGORITHM
 {
-  class WallHandlerBase
+  class WallHandlerBase : public WallHandlerInterface
   {
    public:
     //! constructor
