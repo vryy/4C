@@ -119,6 +119,15 @@ namespace PARTICLEENGINE
     //! check for valid particle connectivity
     bool HaveValidParticleConnectivity() const;
 
+    //! get binning strategy
+    const std::shared_ptr<BINSTRATEGY::BinningStrategy> GetBinningStrategy() const
+    {
+      return binstrategy_;
+    };
+
+    //! get bin row map
+    const Teuchos::RCP<Epetra_Map> GetBinRowMap() const { return binrowmap_; };
+
     //! get particle container bundle
     const ParticleContainerBundleShrdPtr GetParticleContainerBundle() const override
     {
@@ -271,7 +280,7 @@ namespace PARTICLEENGINE
     const Teuchos::ParameterList& params_;
 
     //! binning strategy
-    std::unique_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
+    std::shared_ptr<BINSTRATEGY::BinningStrategy> binstrategy_;
 
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;

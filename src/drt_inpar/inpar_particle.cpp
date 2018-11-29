@@ -85,6 +85,14 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("INITIAL_POSITION_AMPLITUDE", 0.0, "amplitude of noise added to initial position",
       &particledyn);
 
+  // type of particle wall source
+  setStringToIntegralParameter<int>("PARTICLE_WALL_SOURCE", "NoParticleWall",
+      "type of particle wall source",
+      tuple<std::string>("NoParticleWall", "DiscretCondition", "BoundingBox"),
+      tuple<int>(INPAR::PARTICLE::NoParticleWall, INPAR::PARTICLE::DiscretCondition,
+          INPAR::PARTICLE::BoundingBox),
+      &particledyn);
+
   /*-------------------------------------------------------------------------*
    | control parameters for initial/boundary conditions                      |
    *-------------------------------------------------------------------------*/
