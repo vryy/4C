@@ -473,8 +473,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       {
         for (unsigned int i = 0; i < 3; i++)
         {
-          residuum(3) += xi(fixed_parameter);
-          J(3, fixed_parameter) = 1.;
+          residuum(3) += xi(i);
+          J(3, i) = 1.;
         }
         residuum(3) -= fixed_value;
       }
