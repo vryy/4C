@@ -89,6 +89,9 @@ namespace PARTICLEENGINE
 
     //! setup time of runtime vtp writer
     double setuptime_;
+
+    //! no output of particle states on black list
+    std::set<StateEnum> blackliststates_;
   };
 
 }  // namespace PARTICLEENGINE
