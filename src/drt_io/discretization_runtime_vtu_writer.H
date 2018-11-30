@@ -21,6 +21,7 @@
 /* forward declarations */
 class Epetra_Vector;
 class Epetra_MultiVector;
+class Epetra_Map;
 
 class RuntimeVtuWriter;
 
@@ -115,6 +116,10 @@ class DiscretizationRuntimeVtuWriter
 
   //! the actual vtu writer object that additionally stores the geometry and result data
   Teuchos::RCP<RuntimeVtuWriter> runtime_vtuwriter_;
+
+  //! node row and col maps the geometry of runtime vtu writer is based on
+  Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
+  Teuchos::RCP<Epetra_Map> nodecolmap_last_geometry_set_;
 };
 
 #endif
