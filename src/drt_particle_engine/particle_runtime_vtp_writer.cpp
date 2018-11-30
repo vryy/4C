@@ -51,6 +51,15 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
 {
   // set particle container bundle
   particlecontainerbundle_ = particlecontainerbundle;
+
+  // insert specific particle states in black list
+  blackliststates_.insert({PARTICLEENGINE::DensitySum, PARTICLEENGINE::DensityDot});
+  blackliststates_.insert(PARTICLEENGINE::TemperatureDot);
+  blackliststates_.insert(
+      {PARTICLEENGINE::LastTransferPosition, PARTICLEENGINE::ReferencePosition});
+  blackliststates_.insert({PARTICLEENGINE::ModifiedVelocity, PARTICLEENGINE::ModifiedAcceleration});
+  blackliststates_.insert({PARTICLEENGINE::InterfaceNormal, PARTICLEENGINE::UnitWallNormal,
+      PARTICLEENGINE::WallDistance});
 }
 
 /*---------------------------------------------------------------------------*
@@ -219,7 +228,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
             dserror("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
                 statedim * particlestored, positiondata.size());
         }
-        else
+        else if (not blackliststates_.count(particleState))
         {
           // prepare particle state data
           std::vector<double> statedata;
