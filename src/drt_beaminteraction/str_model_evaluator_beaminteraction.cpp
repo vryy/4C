@@ -256,7 +256,8 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
           DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"),
+          DRT::Problem::Instance()->BeamInteractionParams().sublist(
+              "BEAM TO SOLID VOLUME MESHTYING"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
 

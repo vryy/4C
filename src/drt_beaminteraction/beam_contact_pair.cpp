@@ -27,12 +27,20 @@
 #include "beam_to_beam_contact_params.H"
 
 #include "beam_contact_params.H"
-#include "beam_contact_evaluation_data.H"
+
+#include "../drt_geometry_pair/geometry_pair.H"
+#include "../drt_geometry_pair/geometry_pair_evaluation_data_global.H"
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamContactPair::BeamContactPair()
-    : isinit_(false), issetup_(false), params_(Teuchos::null), element1_(NULL), element2_(NULL)
+    : isinit_(false),
+      issetup_(false),
+      geometry_pair_(Teuchos::null),
+      params_(Teuchos::null),
+      element1_(NULL),
+      element2_(NULL)
 {
   // empty constructor
 }
@@ -40,18 +48,23 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Init(
-    const Teuchos::RCP<BEAMINTERACTION::BeamContactEvaluationData> evaluation_data_ptr,
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
+    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataGlobal> geometry_evaluation_data_ptr,
     std::vector<DRT::Element const*> elements)
 {
   issetup_ = false;
 
-  evaluationData_ = evaluation_data_ptr;
   params_ = params_ptr;
 
   element1_ = elements[0];
   element2_ = elements[1];
 
+  // Create the geometry pair.
+  CreateGeometryPair(geometry_evaluation_data_ptr);
+
+  // If a geometry pair is created by a derived class, call its Init function.
+  if (geometry_pair_ != Teuchos::null)
+    geometry_pair_->Init(geometry_evaluation_data_ptr, element1_, element2_);
 
   isinit_ = true;
 }
@@ -61,6 +74,9 @@ void BEAMINTERACTION::BeamContactPair::Init(
 void BEAMINTERACTION::BeamContactPair::Setup()
 {
   CheckInit();
+
+  // If a geometry pair is created by a derived class, call its Setup function.
+  if (geometry_pair_ != Teuchos::null) geometry_pair_->Setup();
 
   // the flag issetup_ will be set in the derived method!
 }
