@@ -171,10 +171,14 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(double time, unsigned int timestep)
 {
-  // parallel distribution of discretization changed (reset geometry of runtime vtu writer)
-  if ((not noderowmap_last_geometry_set_->SameAs(*discretization_->NodeRowMap())) or
-      (not nodecolmap_last_geometry_set_->SameAs(*discretization_->NodeColMap())))
-    SetGeometryFromDiscretizationStandard();
+  // check if parallel distribution of discretization changed
+  int map_changed = ((not noderowmap_last_geometry_set_->SameAs(*discretization_->NodeRowMap())) or
+                     (not nodecolmap_last_geometry_set_->SameAs(*discretization_->NodeColMap())));
+  int map_changed_allproc(0);
+  discretization_->Comm().MaxAll(&map_changed, &map_changed_allproc, 1);
+
+  // reset geometry of runtime vtu writer
+  if (map_changed_allproc) SetGeometryFromDiscretizationStandard();
 
   // Todo allow for independent setting of time/timestep and geometry name
   runtime_vtuwriter_->SetupForNewTimeStepAndGeometry(time, timestep, discretization_->Name());
