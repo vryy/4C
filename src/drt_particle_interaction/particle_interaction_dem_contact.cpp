@@ -225,37 +225,37 @@ void PARTICLEINTERACTION::DEMContact::InitNormalContactHandler()
   // create normal contact handler
   switch (contactnormaltype)
   {
-    case INPAR::PARTICLE::LinSpring:
+    case INPAR::PARTICLE::NormalLinSpring:
     {
       contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpring>(
           new PARTICLEINTERACTION::DEMContactNormalLinearSpring(params_dem_));
       break;
     }
-    case INPAR::PARTICLE::LinSpringDamp:
+    case INPAR::PARTICLE::NormalLinSpringDamp:
     {
       contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(
           new PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp(params_dem_));
       break;
     }
-    case INPAR::PARTICLE::Hertz:
+    case INPAR::PARTICLE::NormalHertz:
     {
       contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalHertz>(
           new PARTICLEINTERACTION::DEMContactNormalHertz(params_dem_));
       break;
     }
-    case INPAR::PARTICLE::LeeHerrmann:
+    case INPAR::PARTICLE::NormalLeeHerrmann:
     {
       contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann>(
           new PARTICLEINTERACTION::DEMContactNormalLeeHerrmann(params_dem_));
       break;
     }
-    case INPAR::PARTICLE::KuwabaraKono:
+    case INPAR::PARTICLE::NormalKuwabaraKono:
     {
       contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono>(
           new PARTICLEINTERACTION::DEMContactNormalKuwabaraKono(params_dem_));
       break;
     }
-    case INPAR::PARTICLE::Tsuji:
+    case INPAR::PARTICLE::NormalTsuji:
     {
       contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalTsuji>(
           new PARTICLEINTERACTION::DEMContactNormalTsuji(params_dem_));

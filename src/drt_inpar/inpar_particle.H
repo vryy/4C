@@ -185,12 +185,12 @@ namespace INPAR
     //! type of normal contact law
     enum NormalContact
     {
-      LinSpring,
-      LinSpringDamp,
-      Hertz,
-      LeeHerrmann,
-      KuwabaraKono,
-      Tsuji
+      NormalLinSpring,
+      NormalLinSpringDamp,
+      NormalHertz,
+      NormalLeeHerrmann,
+      NormalKuwabaraKono,
+      NormalTsuji
     };
 
 

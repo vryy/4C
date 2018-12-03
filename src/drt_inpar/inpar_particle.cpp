@@ -268,12 +268,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "DEM", false, "control parameters for discrete element method (DEM) simulations\n");
 
   // type of normal contact law
-  setStringToIntegralParameter<int>("NORMALCONTACTLAW", "LinearSpring",
+  setStringToIntegralParameter<int>("NORMALCONTACTLAW", "NormalLinearSpring",
       "normal contact law for particles",
-      tuple<std::string>(
-          "LinearSpring", "LinearSpringDamp", "Hertz", "LeeHerrmann", "KuwabaraKono", "Tsuji"),
-      tuple<int>(INPAR::PARTICLE::LinSpring, INPAR::PARTICLE::LinSpringDamp, INPAR::PARTICLE::Hertz,
-          INPAR::PARTICLE::LeeHerrmann, INPAR::PARTICLE::KuwabaraKono, INPAR::PARTICLE::Tsuji),
+      tuple<std::string>("NormalLinearSpring", "NormalLinearSpringDamp", "NormalHertz",
+          "NormalLeeHerrmann", "NormalKuwabaraKono", "NormalTsuji"),
+      tuple<int>(INPAR::PARTICLE::NormalLinSpring, INPAR::PARTICLE::NormalLinSpringDamp,
+          INPAR::PARTICLE::NormalHertz, INPAR::PARTICLE::NormalLeeHerrmann,
+          INPAR::PARTICLE::NormalKuwabaraKono, INPAR::PARTICLE::NormalTsuji),
       &particledyndem);
 
   DoubleParameter("MAX_RADIUS", -1.0, "maximum expected particle radius", &particledyndem);
