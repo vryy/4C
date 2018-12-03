@@ -62,7 +62,6 @@ void DiscretizationRuntimeVtuWriter::Initialize(
 
   // todo: if you want to use absolute positions, do this every time you write output
   // with current col displacements
-  // fixme: if parallel distribution changes during simulation, do this each time this is the case
   SetGeometryFromDiscretizationStandard();
 }
 
@@ -162,12 +161,25 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
     dserror("DiscretizationRuntimeVtuWriter expected %d cell offset values, but got %d",
         num_row_elements, cell_offsets.size());
   }
+
+  // store node row and col maps (needed to check for changed parallel distribution)
+  noderowmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->NodeRowMap()));
+  nodecolmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->NodeColMap()));
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(double time, unsigned int timestep)
 {
+  // check if parallel distribution of discretization changed
+  int map_changed = ((not noderowmap_last_geometry_set_->SameAs(*discretization_->NodeRowMap())) or
+                     (not nodecolmap_last_geometry_set_->SameAs(*discretization_->NodeColMap())));
+  int map_changed_allproc(0);
+  discretization_->Comm().MaxAll(&map_changed, &map_changed_allproc, 1);
+
+  // reset geometry of runtime vtu writer
+  if (map_changed_allproc) SetGeometryFromDiscretizationStandard();
+
   // Todo allow for independent setting of time/timestep and geometry name
   runtime_vtuwriter_->SetupForNewTimeStepAndGeometry(time, timestep, discretization_->Name());
 }
