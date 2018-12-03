@@ -175,7 +175,8 @@ void ELEMAG::ElemagTimeInt::Integrate()
   AssembleMatAndRHS();
 
   // apply Dirichlet boundary conditions to system of equations
-  ApplyDirichletToSystem();
+  // ApplyDirichletToSystem();
+  ComputeSilverMueller(false);
 
   // Output of the initial condition plus the boundary conditions
   Output();
@@ -190,6 +191,7 @@ void ELEMAG::ElemagTimeInt::Integrate()
     IncrementTimeAndStep();
 
     ApplyDirichletToSystem();
+    ComputeSilverMueller(true);
     Solve();
 
     UpdateInteriorVariablesAndAssembleRHS();
@@ -486,17 +488,20 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   discret_->Evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
   discret_->ClearState(true);
 
+  // ComputeSilverMueller(resonly);
+
+  // dserror("test");
   // absorbing boundary conditions
-  std::string condname = "Absorbing";
-  std::vector<DRT::Condition *> absorbingBC;
-  discret_->GetCondition(condname, absorbingBC);
-  if (absorbingBC.size())
-  {
-    eleparams.remove("action", false);
-    eleparams.set<int>("action", ELEMAG::calc_abc);
-    discret_->EvaluateCondition(
-        eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
-  }
+  // std::string condname = "Absorbing";
+  // std::vector<DRT::Condition *> absorbingBC;
+  // discret_->GetCondition(condname, absorbingBC);
+  // if (absorbingBC.size())
+  //{
+  //  eleparams.remove("action", false);
+  //  eleparams.set<int>("action", ELEMAG::calc_abc);
+  //  discret_->EvaluateCondition(
+  //      eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
+  //}
 
   sysmat_->Complete();
 
@@ -548,6 +553,32 @@ void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem()
   return;
 }  // ApplyDirichletToSystem
 
+/*----------------------------------------------------------------------*
+ |  Compute Silver-Mueller         (public)            berardocco 10/18 |
+ *----------------------------------------------------------------------*/
+void ELEMAG::ElemagTimeInt::ComputeSilverMueller(bool resonly)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("      + Compute Silver-Mueller BC");
+
+  // absorbing boundary conditions
+  std::string condname = "Silver-Mueller";
+  std::vector<DRT::Condition *> absorbingBC;
+  discret_->GetCondition(condname, absorbingBC);
+
+  // Check if there are Silver-Mueller BC
+  if (absorbingBC.size())
+  {
+    Teuchos::ParameterList eleparams;
+    eleparams.set<double>("time", time_);
+    eleparams.set<bool>("resonly", resonly);
+    eleparams.set<int>("action", ELEMAG::calc_abc);
+    // Evaluate the boundary condition
+    discret_->EvaluateCondition(
+        eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
+  }
+
+  return;
+}  // ApplyDirichletToSystem
 
 /*----------------------------------------------------------------------*
  |  Solve system for trace (public)                    berardocco 06/18 |
@@ -813,9 +844,9 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
   return;
 }  // ReadRestart
 
-void ELEMAG::ElemagTimeInt::SpySysmat()
+void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
 {
-  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(std::cout);
+  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(out);
   std::cout << "Routine has to be implemented. In the meanwhile the Print() method from the "
                "Epetra_CsrMatrix is used."
             << std::endl;
