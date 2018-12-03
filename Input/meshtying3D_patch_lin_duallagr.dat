@@ -64,6 +64,7 @@ SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 INTTYPE                         Segments
 LM_DUAL_CONSISTENT              boundary
+IMBALANCE_TOL                   1.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -1060,6 +1060,9 @@ bool CONTACT::CoInterface::Redistribute(int index)
   // minimum number of elements per proc
   int minele = IParams().get<int>("MIN_ELEPROC");
 
+  // Max. relative imbalance between subdomain sizes
+  const double imbalance_tol = IParams().get<double>("IMBALANCE_TOL");
+
   // calculate real number of procs to be used
   if (minele > 0)
   {
@@ -1133,7 +1136,8 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  DRT::UTILS::PartUsingParMetis(idiscret_, scroweles, scrownodes, sccolnodes, comm, false, scproc);
+  DRT::UTILS::PartUsingParMetis(
+      idiscret_, scroweles, scrownodes, sccolnodes, comm, false, scproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -1155,7 +1159,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
   DRT::UTILS::PartUsingParMetis(
-      idiscret_, sncroweles, sncrownodes, snccolnodes, comm, false, sncproc);
+      idiscret_, sncroweles, sncrownodes, snccolnodes, comm, false, sncproc, imbalance_tol);
   //**********************************************************************
 
   //**********************************************************************
@@ -1164,7 +1168,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc);
+  RedistributeMasterSide(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map

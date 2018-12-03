@@ -1,7 +1,7 @@
 /*!---------------------------------------------------------------------
 \file definitions.h
 \brief C-style definitions of some frequently used code idioms
-\level 3
+\level 0
 \maintainer Martin Kronbichler
 ---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -14,11 +14,6 @@
 
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
-
-/*----------------------------------------------------------------------*
- | sign of an integer (used in drt_geometry/tetrahedradecomposition.cpp)|
- *----------------------------------------------------------------------*/
-#define SIGN(x) ((x) < 0 ? (-1) : (1))
 
 /*----------------------------------------------------------------------*
  | square of a double (widely used)                                     |
@@ -43,11 +38,5 @@
 #define EPS13 (1.0E-13)
 #define EPS14 (1.0E-14)
 #define EPS15 (1.0E-15)
-
-/*----------------------------------------------------------------------*
- | a set of numbers (still used in shell8)                              |
- *----------------------------------------------------------------------*/
-#define VERYLARGEINT (1000000000)
-#define VERYLARGEREAL (1000000000.0)
 
 #endif /* DEFINITIONS_H */
