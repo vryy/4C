@@ -87,7 +87,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
       if (projection_result == ProjectionResult::projection_found_valid)
       {
         // Valid Gauss point was found, add to this segment and set tracking point to true.
-        line_segment.AddGaussPoint(
+        line_segment.AddProjectionPoint(
             ProjectionPointLineToVolume<scalar_type>(eta, xi, gauss_points.qwgt[index_gp]));
         line_projection_tracker[index_gp] = true;
 
@@ -128,7 +128,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
         segments.size());
 
   // Check if one point projected in PreEvaluate.
-  if (segments.size() == 1 && segments[0].GetNumerOfGaussPoints() > 0)
+  if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
   {
     // Flag if segmentation is needed.
     bool need_segmentation = false;
@@ -152,7 +152,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
       // Get the limits of the segmented line.
       scalar_type eta_a, eta_b, eta_intersection_point, eta_first_gauss_point;
       eta_intersection_point = intersection_points[0].GetEta();
-      eta_first_gauss_point = segments[0].GetGaussPoints()[0].GetEta();
+      eta_first_gauss_point = segments[0].GetProjectionPoints()[0].GetEta();
       if (eta_intersection_point < eta_first_gauss_point)
       {
         eta_a = eta_intersection_point;

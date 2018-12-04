@@ -49,13 +49,6 @@ namespace GEOMETRYPAIR
 }  // namespace GEOMETRYPAIR
 
 
-// Constant values.
-const unsigned int LOCALNEWTON_MAX_ITER = 20;
-const double LOCALNEWTON_RES_TOL = 1e-10;
-const double LOCALNEWTON_DET_TOL = 1e-10;
-const double PROJECTION_XI_ETA_TOL = 1e-7;
-
-
 namespace GEOMETRYPAIR
 {
   /**
@@ -112,23 +105,23 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the position along the first (line) element. This function is templated in case
      * one wants to get the position with a different type than scalar_type.
-     * @param xi (in) Parameter coordinate on the line.
+     * @param eta (in) Parameter coordinate on the line.
      * @param q (in) Degrees of freedom for the line.
      * @param r (out) Position on line.
      */
     template <typename scalar_type_get_pos>
-    void GetElement1Position(const scalar_type& xi,
+    void GetElement1Position(const scalar_type& eta,
         const LINALG::TMatrix<scalar_type_get_pos, 3 * n_nodes_element_1 * n_nodal_values_element_1,
             1>& q,
         LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
 
     /**
      * \brief Get the derivative of the position w.r.t xi along the first (line) element.
-     * @param xi (in) Parameter coordinate on the line.
+     * @param eta (in) Parameter coordinate on the line.
      * @param q (in) Degrees of freedom for the line.
      * @param dr (out) Derivative of the position on the line.
      */
-    void GetElement1PositionDerivative(const scalar_type& xi,
+    void GetElement1PositionDerivative(const scalar_type& eta,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>& q,
         LINALG::TMatrix<scalar_type, 3, 1>& dr) const;
 

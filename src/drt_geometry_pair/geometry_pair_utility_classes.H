@@ -140,7 +140,7 @@ namespace GEOMETRYPAIR
      * @param eta_b
      */
     LineSegment(scalar_type eta_a, scalar_type eta_b)
-        : eta_a_(eta_a), eta_b_(eta_b), segment_gauss_points_(){};
+        : eta_a_(eta_a), eta_b_(eta_b), segment_projection_points_(){};
 
     /**
      * \brief Get the length of the segment in parameter coordinates.
@@ -161,36 +161,39 @@ namespace GEOMETRYPAIR
     inline const scalar_type& GetEtaB() const { return eta_b_; };
 
     /**
-     * \brief Add a Gauss point to the Gauss point vector.
-     * @param gauss_point Gauss point to add to the end of the vector.
+     * \brief Add a projection point to the projection point vector.
+     * @param projection_point projection point to add to the end of the vector.
      */
-    inline void AddGaussPoint(ProjectionPointLineToVolume<scalar_type> gauss_point)
+    inline void AddProjectionPoint(ProjectionPointLineToVolume<scalar_type> projection_point)
     {
-      segment_gauss_points_.push_back(gauss_point);
+      segment_projection_points_.push_back(projection_point);
     }
 
     /**
-     * \brief Return the number of Gauss points in this segment.
-     * @return Number of Gauss points.
+     * \brief Return the number of projection points in this segment.
+     * @return Number of projection points.
      */
-    inline unsigned int GetNumerOfGaussPoints() const { return segment_gauss_points_.size(); }
-
-    /**
-     * \brief Return a const reference to the Gauss points in this segment.
-     * @return Reference to Gauss point vector.
-     */
-    inline const std::vector<ProjectionPointLineToVolume<scalar_type>>& GetGaussPoints() const
+    inline unsigned int GetNumberOfProjectionPoints() const
     {
-      return segment_gauss_points_;
+      return segment_projection_points_.size();
     }
 
     /**
-     * \brief Return a mutable reference to the Gauss points in this segment.
-     * @return Reference to Gauss point vector.
+     * \brief Return a const reference to the projection points in this segment.
+     * @return Reference to projection point vector.
      */
-    inline std::vector<ProjectionPointLineToVolume<scalar_type>>& GetGaussPointsMutable()
+    inline const std::vector<ProjectionPointLineToVolume<scalar_type>>& GetProjectionPoints() const
     {
-      return segment_gauss_points_;
+      return segment_projection_points_;
+    }
+
+    /**
+     * \brief Return a mutable reference to the projection points in this segment.
+     * @return Reference to projection point vector.
+     */
+    inline std::vector<ProjectionPointLineToVolume<scalar_type>>& GetProjectionPointsMutable()
+    {
+      return segment_projection_points_;
     }
 
    private:
@@ -200,8 +203,8 @@ namespace GEOMETRYPAIR
     //! Upper limit of segment.
     scalar_type eta_b_;
 
-    //! Vector to store Gauss points for this segment.
-    std::vector<ProjectionPointLineToVolume<scalar_type>> segment_gauss_points_;
+    //! Vector to store projection points for this segment.
+    std::vector<ProjectionPointLineToVolume<scalar_type>> segment_projection_points_;
   };
 
 }  // namespace GEOMETRYPAIR
