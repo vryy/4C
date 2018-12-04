@@ -168,39 +168,39 @@ namespace GEOMETRYPAIR
         ProjectionResult& projection_result) const;
 
     /**
-     * \brief Project multiple points on the line to the volume.
+     * \brief Project multiple points on the line to the volume. The value of eta and xi in the
+     * projection points is the start value for the iteration.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
-     * @param eta_points (in) Vector with values for eta.
-     * @param projection_points (out) Vector with found projection points.
-     * @param allow_not_valid_projections (in) If this is true, point that lie outside of the valid
-     * element range will also be returned.
+     * @param projection_points (in/out) Vector with projection points. The given values for eta and
+     * xi are the start values for the iteration.
+     * @param n_projections_valid (out) Number of valid projections.
+     * @param n_projections (out) Number of points, where the nonlinear system could be solved.
      */
     void ProjectPointsOnLineToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        const std::vector<scalar_type>& eta_points,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
-        bool allow_not_valid_projections) const;
+        unsigned int& n_projections_valid, unsigned int& n_projections) const;
 
     /**
-     * \brief Project multiple (equidistant) points on the line segment to the volume.
+     * \brief Project multiple points on the line to the volume. The value of eta and xi in the
+     * projection points is the start value for the iteration.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
-     * @param n_points (in) Number of points.
-     * @param segment (in/out) Vector with found projection points.
-     * @param allow_not_valid_projections (in) If this is true, point that lie outside of the valid
-     * element range will also be returned.
+     * @param projection_points (in/out) Vector with projection points. The given values for eta and
+     * xi are the start values for the iteration.
+     * @param n_projections_valid (out) Number of valid projections.
      */
-    void ProjectPointsOnSegmentToVolume(
+    void ProjectPointsOnLineToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        unsigned int n_points, LineSegment<scalar_type>& segment,
-        bool allow_not_valid_projections) const;
+        std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
+        unsigned int& n_projections_valid) const;
 
     /**
      * \brief Project Gauss points on the line segment to the volume. If not all points can be
@@ -210,7 +210,7 @@ namespace GEOMETRYPAIR
      * @param gauss_points (in) Gauss points to project.
      * @param segment (in/out) Vector with found projection points.
      */
-    void ProjectPointsOnSegmentToVolume(
+    void ProjectGaussPointsOnSegmentToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&

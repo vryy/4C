@@ -295,39 +295,28 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        const std::vector<scalar_type>& eta_points,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
-        bool allow_not_valid_projections) const
+        unsigned int& n_projections_valid, unsigned int& n_projections) const
 {
-  // Initialize variables for the projection.
-  LINALG::TMatrix<scalar_type, 3, 1> xi;
-  ProjectionResult projection_result;
-  bool last_point_valid = false;
-  projection_points.clear();
+  // Initialize counters.
+  n_projections_valid = 0;
+  n_projections = 0;
 
   // Loop over points and check if they project to this volume.
-  for (auto const& eta : eta_points)
+  for (auto& point : projection_points)
   {
-    // If the last projected point was valid, use that one as start point for this iteration.
-    if (!last_point_valid) SetStartValuesElement2(xi);
-
     // Project the point.
-    ProjectPointOnLineToVolume(q_line, q_volume, eta, xi, projection_result);
+    ProjectPointOnLineToVolume(
+        q_line, q_volume, point.GetEta(), point.GetXiMutable(), point.GetProjectionResultMutable());
 
-    // Check the result from projection.
-    if (projection_result == ProjectionResult::projection_found_valid ||
-        (projection_result == ProjectionResult::projection_found_not_valid &&
-            allow_not_valid_projections))
+    // Update the counters.
+    if (point.GetProjectionResult() == ProjectionResult::projection_found_valid)
     {
-      // Add point to the projection points vector.
-      projection_points.push_back(ProjectionPointLineToVolume<scalar_type>(eta, xi));
-
-      last_point_valid = true;
+      n_projections_valid++;
+      n_projections++;
     }
-    else
-    {
-      last_point_valid = false;
-    }
+    if (point.GetProjectionResult() == ProjectionResult::projection_found_not_valid)
+      n_projections++;
   }
 }
 
@@ -340,23 +329,20 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>::
-    ProjectPointsOnSegmentToVolume(
+    ProjectPointsOnLineToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        unsigned int n_points, LineSegment<scalar_type>& segment,
-        bool allow_not_valid_projections) const
+        std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
+        unsigned int& n_projections_valid) const
 {
-  // Create vector with eta values.
-  std::vector<scalar_type> eta_values(n_points);
-  for (unsigned int i = 0; i < n_points; i++)
-    eta_values[i] =
-        segment.GetEtaA() + i * (segment.GetEtaB() - segment.GetEtaA()) / (n_points - 1.);
+  // Initialize dummy variable.
+  unsigned int n_projections_dummy;
 
-  // Project the points on the segment.
-  ProjectPointsOnLineToVolume(q_line, q_volume, eta_values, segment.GetProjectionPointsMutable(),
-      allow_not_valid_projections);
+  // Project the points.
+  ProjectPointsOnLineToVolume(
+      q_line, q_volume, projection_points, n_projections_valid, n_projections_dummy);
 }
 
 
@@ -368,7 +354,7 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>::
-    ProjectPointsOnSegmentToVolume(
+    ProjectGaussPointsOnSegmentToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
@@ -376,28 +362,31 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
         const DRT::UTILS::IntegrationPoints1D& gauss_points,
         LineSegment<scalar_type>& segment) const
 {
-  // Create vector with eta values.
-  std::vector<scalar_type> eta_values(gauss_points.nquad);
+  // Set up the vector with the projection points.
+  std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points =
+      segment.GetProjectionPointsMutable();
+  projection_points.clear();
+  projection_points.reserve(gauss_points.nquad);
+  LINALG::TMatrix<scalar_type, 3, 1> xi_start;
+  this->ValidParameterElement2(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
-    eta_values[i] = segment.GetEtaA() +
-                    (segment.GetEtaB() - segment.GetEtaA()) * 0.5 * (gauss_points.qxg[i][0] + 1.);
+  {
+    scalar_type eta = segment.GetEtaA() +
+                      (segment.GetEtaB() - segment.GetEtaA()) * 0.5 * (gauss_points.qxg[i][0] + 1.);
+    projection_points.push_back(
+        ProjectionPointLineToVolume<scalar_type>(eta, xi_start, gauss_points.qwgt[i]));
+  }
 
-  // Project the points on the segment.
-  ProjectPointsOnLineToVolume(
-      q_line, q_volume, eta_values, segment.GetProjectionPointsMutable(), false);
+  // Project the Gauss points to the volume.
+  unsigned int n_valid_projections;
+  ProjectPointsOnLineToVolume(q_line, q_volume, projection_points, n_valid_projections);
 
   // Check if all points could be projected.
-  if (segment.GetProjectionPointsMutable().size() != (unsigned int)gauss_points.nquad)
+  if (n_valid_projections != (unsigned int)gauss_points.nquad)
     dserror(
         "All Gauss points need to have a valid projection. The number of Gauss points is %d, but "
         "the number of valid projections is %d!",
-        gauss_points.nquad, segment.GetProjectionPointsMutable().size());
-
-  // Set the Gauss weights for the found points.
-  for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
-  {
-    segment.GetProjectionPointsMutable()[i].SetGaussWeight(gauss_points.qwgt[i]);
-  }
+        gauss_points.nquad, n_valid_projections);
 }
 
 

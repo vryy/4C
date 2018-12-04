@@ -166,7 +166,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
 
       // Reproject the Gauss points on the segmented line.
       segments[0] = LineSegment<scalar_type>(eta_a, eta_b);
-      this->ProjectPointsOnSegmentToVolume(q_line, q_volume,
+      this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
           this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(), segments[0]);
     }
   }

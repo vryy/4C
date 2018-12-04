@@ -69,11 +69,14 @@ namespace GEOMETRYPAIR
      * \brief Constructor.
      * @param eta Parameter coordinate on line.
      * @param xi Parameter coordinates in volume.
-     * @param gauss_weight_ Gauss weight for this point.
+     * @param gauss_weight Gauss weight for this point.
      */
     ProjectionPointLineToVolume(
         scalar_type eta, LINALG::TMatrix<scalar_type, 3, 1> xi, double gauss_weight)
-        : eta_(eta), xi_(xi), gauss_weight_(gauss_weight){};
+        : eta_(eta),
+          xi_(xi),
+          projection_result_(ProjectionResult::none),
+          gauss_weight_(gauss_weight){};
 
     /**
      * \brief Constructor.
@@ -81,7 +84,12 @@ namespace GEOMETRYPAIR
      * @param xi Parameter coordinates in volume.
      */
     ProjectionPointLineToVolume(scalar_type eta, LINALG::TMatrix<scalar_type, 3, 1> xi)
-        : eta_(eta), xi_(xi), gauss_weight_(-1.){};
+        : ProjectionPointLineToVolume(eta, xi, -1.){};
+
+    /**
+     * \brief Set the parameter coordinate on the line.
+     */
+    inline void SetEta(const scalar_type& eta) { eta_ = eta; };
 
     /**
      * \brief Get the parameter coordinate on the line.
@@ -89,9 +97,38 @@ namespace GEOMETRYPAIR
     inline scalar_type GetEta() const { return eta_; };
 
     /**
+     * \brief Set the parameter coordinates in the volume.
+     */
+    inline void SetXi(const LINALG::TMatrix<scalar_type, 3, 1>& xi) { xi_ = xi; };
+
+    /**
      * \brief Get the parameter coordinates in the volume.
      */
     inline LINALG::TMatrix<scalar_type, 3, 1> GetXi() const { return xi_; };
+
+    /**
+     * \brief Get the parameter coordinates in the volume as a reference.
+     */
+    inline LINALG::TMatrix<scalar_type, 3, 1>& GetXiMutable() { return xi_; };
+
+    /**
+     * Set the projection result for this projection point.
+     * @param projection_result
+     */
+    inline void SetProjectionResult(ProjectionResult projection_result)
+    {
+      projection_result_ = projection_result;
+    }
+
+    /**
+     * Get the projection result for this projection point.
+     */
+    inline ProjectionResult GetProjectionResult() const { return projection_result_; }
+
+    /**
+     * Get the projection result for this projection point as a reference.
+     */
+    inline ProjectionResult& GetProjectionResultMutable() { return projection_result_; }
 
     /**
      * \brief Set the Gauss weight for this point.
@@ -116,6 +153,9 @@ namespace GEOMETRYPAIR
 
     //! Parameter coordinates in volume.
     LINALG::TMatrix<scalar_type, 3, 1> xi_;
+
+    //! Projection result.
+    ProjectionResult projection_result_;
 
     //! Gauss weight for this point.
     double gauss_weight_;
