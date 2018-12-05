@@ -13,6 +13,8 @@
 #define GEOMETRY_PAIR_UTILITY_CLASSES_H
 
 
+#include "geometry_pair_constants.H"
+
 #include "../drt_lib/drt_dserror.H"
 
 #include <vector>
@@ -145,6 +147,36 @@ namespace GEOMETRYPAIR
         dserror(
             "Negative Gauss weight not possible. Probably the default value was not overwritten!");
       return gauss_weight_;
+    };
+
+    /**
+     * \brief Overloaded $<$ operator.
+     * @param lhs
+     * @param rhs
+     * @return True if smaller, false if larger.
+     */
+    friend bool operator<(const ProjectionPointLineToVolume<scalar_type>& lhs,
+        const ProjectionPointLineToVolume<scalar_type>& rhs)
+    {
+      if (lhs.GetEta() < rhs.GetEta() - PROJECTION_XI_ETA_TOL)
+        return true;
+      else
+        return false;
+    };
+
+    /**
+     * \brief Overloaded $>$ operator.
+     * @param lhs
+     * @param rhs
+     * @return False if smaller, true if larger.
+     */
+    friend bool operator>(const ProjectionPointLineToVolume<scalar_type>& lhs,
+        const ProjectionPointLineToVolume<scalar_type>& rhs)
+    {
+      if (lhs.GetEta() > rhs.GetEta() + PROJECTION_XI_ETA_TOL)
+        return true;
+      else
+        return false;
     };
 
    private:
