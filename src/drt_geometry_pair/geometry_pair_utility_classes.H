@@ -15,17 +15,10 @@
 
 #include "geometry_pair_constants.H"
 
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include <vector>
-
-
-// Forward declarations.
-namespace LINALG
-{
-  template <class value_type, unsigned int rows, unsigned int cols>
-  class TMatrix;
-}
 
 
 namespace GEOMETRYPAIR
@@ -212,7 +205,15 @@ namespace GEOMETRYPAIR
      * @param eta_b
      */
     LineSegment(scalar_type eta_a, scalar_type eta_b)
-        : eta_a_(eta_a), eta_b_(eta_b), segment_projection_points_(){};
+        : eta_a_(eta_a), eta_b_(eta_b), segment_projection_points_()
+    {
+      // Sanity check that eta_a is larger than eta_b.
+      if (!(eta_a_ < eta_b_))
+        dserror(
+            "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a has "
+            "to be smaller than eta_b!",
+            eta_a_, eta_b);
+    }
 
     /**
      * \brief Get the length of the segment in parameter coordinates.
@@ -267,6 +268,56 @@ namespace GEOMETRYPAIR
     {
       return segment_projection_points_;
     }
+
+    /**
+     * \brief Overloaded $<$ operator.
+     * @param lhs
+     * @param rhs
+     * @return True if smaller, false if larger. Throw error if the segments are overlapping.
+     */
+    friend bool operator<(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
+    {
+      if (lhs.GetEtaB() < rhs.GetEtaA() + PROJECTION_XI_ETA_TOL)
+        return true;
+      else if (lhs.GetEtaA() > rhs.GetEtaB() - PROJECTION_XI_ETA_TOL)
+      {
+        // The segments do not overlap.
+      }
+      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < PROJECTION_XI_ETA_TOL &&
+               abs(lhs.GetEtaB() - rhs.GetEtaB()) < PROJECTION_XI_ETA_TOL)
+      {
+        // The segments are equal.
+      }
+      else
+        dserror("The two segments are overlapping. This is fatal!");
+
+      return false;
+    };
+
+    /**
+     * \brief Overloaded $>$ operator.
+     * @param lhs
+     * @param rhs
+     * @return False if smaller, true if larger. Throw error if the segments are overlapping.
+     */
+    friend bool operator>(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
+    {
+      if (lhs.GetEtaA() > rhs.GetEtaB() - PROJECTION_XI_ETA_TOL)
+        return true;
+      else if (lhs.GetEtaB() < rhs.GetEtaA() + PROJECTION_XI_ETA_TOL)
+      {
+        // The segments do not overlap.
+      }
+      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < PROJECTION_XI_ETA_TOL &&
+               abs(lhs.GetEtaB() - rhs.GetEtaB()) < PROJECTION_XI_ETA_TOL)
+      {
+        // The segments are equal.
+      }
+      else
+        dserror("The two segments are overlapping. This is fatal!");
+
+      return false;
+    };
 
    private:
     //! Lower limit of segment.

@@ -13,7 +13,7 @@
 #include "geometry_pair_line_to_volume_evaluation_data.H"
 #include "geometry_pair_utility_classes.H"
 
-#include "../linalg/linalg_utils.H"
+#include "../headers/FAD_utils.H"
 
 
 /**
@@ -28,6 +28,18 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, n_nodes_ele
   // Call Setup on the base class.
   GeometryPairLineToVolume<scalar_type, n_nodes_element_1, n_nodal_values_element_1,
       n_nodes_element_2, n_nodal_values_element_2>::Setup();
+
+  // Check if a segment tracker exists for this line element. If not a new one is created.
+  int line_element_id = this->Element1()->Id();
+  std::map<int, std::set<LineSegment<double>>>& segment_tracker_map =
+      this->EvaluationData()->LineToVolumeEvaluationData()->SegmentTrackerMutable();
+
+  if (segment_tracker_map.find(line_element_id) == segment_tracker_map.end())
+  {
+    std::set<LineSegment<double>> new_tracking_set;
+    new_tracking_set.clear();
+    segment_tracker_map[line_element_id] = new_tracking_set;
+  }
 }
 
 
@@ -124,6 +136,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, n_nodes_ele
       search_points.reserve(intersection_points.size() - 1);
 
       // Loop over the middle points and check if they are projected valid or not.
+      std::set<GEOMETRYPAIR::LineSegment<double>>& segment_tracker = GetSegmentTrackingSetMutable();
       ProjectionResult projection_result;
       bool last_segment_active = false;
       scalar_type eta_start;
@@ -173,10 +186,24 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, n_nodes_ele
           // This point is outside of the volume -> if current segment exists finish it.
           if (last_segment_active)
           {
-            segments.push_back(LineSegment<scalar_type>(eta_start, start_point.GetEta()));
-            this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
-                this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(),
-                segments.back());
+            // Create a segment with double as the scalar type.
+            LineSegment<scalar_type> new_segment_double(
+                FADUTILS::CastToDouble(eta_start), FADUTILS::CastToDouble(start_point.GetEta()));
+
+            // Check if the segment already exists for this line.
+            if (segment_tracker.find(new_segment_double) == segment_tracker.end())
+            {
+              // Add the new segment to this pair and to the evaluation tracker.
+              segments.push_back(LineSegment<scalar_type>(eta_start, start_point.GetEta()));
+              segment_tracker.insert(new_segment_double);
+
+              // Project the Gauss points on the segment. All points have to project valid.
+              this->ProjectGaussPointsOnSegmentToVolume(q_line, q_volume,
+                  this->EvaluationData()->LineToVolumeEvaluationData()->GetGaussPoints(),
+                  segments.back());
+            }
+
+            // Deactivate the current segment.
             last_segment_active = false;
           }
         }
@@ -186,6 +213,24 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, n_nodes_ele
       }
     }
   }
+}
+
+
+/**
+ *
+ */
+template <typename scalar_type, unsigned int n_nodes_element_1,
+    unsigned int n_nodal_values_element_1, unsigned int n_nodes_element_2,
+    unsigned int n_nodal_values_element_2>
+std::set<GEOMETRYPAIR::LineSegment<double>>& GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<
+    scalar_type, n_nodes_element_1, n_nodal_values_element_1, n_nodes_element_2,
+    n_nodal_values_element_2>::GetSegmentTrackingSetMutable() const
+{
+  // Get the segment tracker for this line element.
+  int line_element_id = this->Element1()->Id();
+  std::map<int, std::set<GEOMETRYPAIR::LineSegment<double>>>& segment_tracker_map =
+      this->EvaluationData()->LineToVolumeEvaluationData()->SegmentTrackerMutable();
+  return segment_tracker_map[line_element_id];
 }
 
 

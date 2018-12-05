@@ -13,7 +13,6 @@
 #include "geometry_pair_constants.H"
 
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_beam3/beam3.H"
 
 

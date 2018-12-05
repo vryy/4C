@@ -71,7 +71,7 @@ namespace GEOMETRYPAIR
      *
      * This approach should work for almost all possible cases. One case that can occur, is when
      * none of the search points project, but the line intersects the volume. In this case more
-     * search points are the (expensive) solution.
+     * search points are the (expensive!) solution.
      *
      * In the case where a line lies on the surface between two volumes, segments on both volumes
      * are valid. To avoid this case a global segment tracker is kept in the evaluation data, that
@@ -90,6 +90,13 @@ namespace GEOMETRYPAIR
         std::vector<LineSegment<scalar_type>>& segments) const;
 
    private:
+    /**
+     * \brief Get the segment tracking vector for the line element in this pair. The type is double
+     * for the segments there, as this is only needed for comparison purposes. The segment values of
+     * the tracker should NOT be used for further calculation.
+     * @return Reference to segment tracking vector.
+     */
+    std::set<LineSegment<double>>& GetSegmentTrackingSetMutable() const;
   };
 }  // namespace GEOMETRYPAIR
 

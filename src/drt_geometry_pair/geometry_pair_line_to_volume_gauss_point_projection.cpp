@@ -63,7 +63,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Get the Gauss point projection tracker for this line element.
-  std::vector<bool>& line_projection_tracker = GetLineProjectionVector();
+  std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
 
   // Gauss rule.
   DRT::UTILS::IntegrationPoints1D gauss_points =
@@ -134,7 +134,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
     bool need_segmentation = false;
 
     // Check if all Gauss points projected for this line.
-    const std::vector<bool>& line_projection_tracker = GetLineProjectionVector();
+    const std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
     for (auto const& projects : line_projection_tracker)
       if (!projects) need_segmentation = true;
 
@@ -181,7 +181,7 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type,
     n_nodes_element_1, n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::GetLineProjectionVector() const
+    n_nodal_values_element_2>::GetLineProjectionVectorMutable() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();

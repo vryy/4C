@@ -14,8 +14,9 @@
 
 
 #include "geometry_pair_evaluation_data_base.H"
-#include "../drt_inpar/inpar_geometry_pair.H"
+#include "geometry_pair_utility_classes.H"
 
+#include "../drt_inpar/inpar_geometry_pair.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 
@@ -95,6 +96,15 @@ namespace GEOMETRYPAIR
       return gauss_point_projection_tracker_;
     };
 
+    /**
+     * \brief Return a reference to the segment tracker.
+     * @return Segment tracker.
+     */
+    std::map<int, std::set<LineSegment<double>>>& SegmentTrackerMutable()
+    {
+      return segment_tracker_;
+    };
+
    private:
     //! Strategy to be used for contact search.
     INPAR::GEOMETRYPAIR::LineToVolumeStrategy strategy_;
@@ -107,6 +117,9 @@ namespace GEOMETRYPAIR
 
     //! Number of points for segmentation search.
     unsigned int n_search_points_;
+
+    //! Segment tracking vector for segmentation.
+    std::map<int, std::set<LineSegment<double>>> segment_tracker_;
   };
 }  // namespace GEOMETRYPAIR
 
