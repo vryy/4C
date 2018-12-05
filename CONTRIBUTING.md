@@ -14,6 +14,11 @@ To incorporate a `feature` branch into the `master` branch, BACI employs GitLab'
 
 ### Contents
 1. [Setup and Initial Configuration](#setup-and-initial-configuration)
+1. [The Baci Development Guidelines](#the-baci-development-guidelines)
+    1. [Guidelines for Merge Requests](#guidelines-for-merge-requests)
+    1. [Guidelines for Code Reviews](#guidelines-for-code-reviews)
+    1. [Guidelines for Issues](#guidelines-for-issues)
+    1. [The BACI Committee](#guidelines-for-issues)
 1. [The Baci Development Workflow](#the-baci-development-workflow)
    1. [Create a GitLab Issue](#create-a-gitlab-issue)
    1. [Work an Issue](#work-an-issue)
@@ -40,6 +45,55 @@ Double-check that your local Git repository is configured as described in [READM
 
 We recommend to use an Integrated Develoment Environment (IDE) for code development because it provides many convenient features and also eases to comply with our mandatory code style.
 Set-up instructions for various IDEs can be found on the respective [Wiki page](https://gitlab.lrz.de/baci/baci/wikis/set-up-your-integrated-development-environment).
+
+## The Baci Development Guidelines
+
+There are some general guidelines for developing in BACI. Please read them carefully before coding, submitting a merge request or creating an issue.
+
+### Guidelines for Merge Requests
+* Only a member of the [BACI committee](#the-baci-committee) can merge a merge request
+* Responsibilities of the person who submits a merge request:
+    * Make sure the maintainer of the affected files is ok with it
+    * Make sure the request is "reviewable" (split or cluster commits if necessary)
+    * Confirm with code guidelines, avoid redundancies (discuss with others), ...
+    * Mention changes in central functionality with interest to others (level 0 files etc)
+    * Assign a [BACI committee](#the-baci-committee) member as reviewer (make sure he /she is available)
+    * If there is need for larger discussion use WIP prefix (WIP: Work In Progress)
+* Responsibilities of the reviewer:
+     * Check that all automatic tests are passed and roughly check that the code complies with the [BACI guidelines](https://gitlab.lrz.de/baci/baci/blob/master/guides/code_guidelines.txt)
+    * Implementation details need not to be checked
+    * Reviewers are encouraged to give coding advice/instructions as they see fit
+
+### Guidelines for Code Reviews
+* Time frame for response after pipeline passed: 3 working days
+* The reviewer needs to comment if more time is needed
+* If there is no reply from the assigned reviewer after 3 working days, talk to people and consider assigning to another member of the BACI committee
+* Every co-worker is invited to look into open merge requests and comment on code style and algorithmic content in addition to the more formal review of committee members
+
+### Guidelines for Issues
+* All co-workers are encouraged to open issues if they encounter any problems related to BACI (you do not need to be the assignee)
+* There is no fixed time schedule for resolving an issue
+* Ask before you assign an issue to a colleague
+* If you are not sure who to assign leave the issue unassigned
+* Unassigned issues will be discussed on a regular basis by the [BACI committee](#the-baci-committee) and assigned if necessary
+* Open issues will be reviewed on a regular basis by the [BACI committee](#the-baci-committee)
+
+### The BACI Committee
+The BACI Committee is a group of experienced code developers of BACI.
+
+#### The Tasks of the BACI Committee
+* Review merge request (single committee member)
+* Keep an eye on open issues (whole committee)
+* assign responsible co-worker to issues (whole committee)
+
+#### Current Members of the BACI Committee
+* Martin Kronbichler @ne96pad
+* Christoph Ager  @ager
+* Fabian Bräu @braeu
+* Maximilian Grill @mgrill
+* Matthias Mayr @mayrmt
+* Christoph Meier @cmeier
+* Anh-Tu Vuong @avuong
 
 ## The Baci Development Workflow
 
