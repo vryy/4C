@@ -58,6 +58,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, n_nodes_ele
         q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
+  // Check if the element is initialized.
+  this->CheckInitSetup();
+
   // Only zero segments are expected.
   if (segments.size() > 0)
     dserror("There should be zero segments for the segmentation method. The actual value is %d!",

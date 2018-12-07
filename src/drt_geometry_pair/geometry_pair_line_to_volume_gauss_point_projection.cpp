@@ -62,6 +62,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
         q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
+  // Check if the element is initialized.
+  this->CheckInitSetup();
+
   // Get the Gauss point projection tracker for this line element.
   std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
 
@@ -120,6 +123,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, n_n
         q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
+  // Check if the element is initialized.
+  this->CheckInitSetup();
+
   // Only zero one segments are expected.
   if (segments.size() > 1)
     dserror(

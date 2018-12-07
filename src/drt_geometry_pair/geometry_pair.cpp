@@ -11,8 +11,6 @@ problems.
 
 #include "geometry_pair.H"
 
-#include "../drt_lib/drt_dserror.H"
-
 
 /**
  *
@@ -49,20 +47,4 @@ void GEOMETRYPAIR::GeometryPair::Setup()
   CheckInit();
 
   issetup_ = true;
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::GeometryPair::CheckInit() const
-{
-  if (!isinit_) dserror("Init() has not been called yet!");
-}
-
-/**
- *
- */
-void GEOMETRYPAIR::GeometryPair::CheckInitSetup() const
-{
-  if (!isinit_ || !issetup_) dserror("Init() and Setup() have not been called yet!");
 }
