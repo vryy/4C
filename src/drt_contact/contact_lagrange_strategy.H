@@ -215,7 +215,7 @@ namespace CONTACT
     K_{zd} & K_{zz}
     \end{array}\right]
     \left[\begin{array}{c}\Delta d\\ \Delta z\end{array}\right]
-    = - \\left[\begin{array}{c}f_d\\ f_z\end{array}\right]
+    = - \left[\begin{array}{c}f_d\\ f_z\end{array}\right]
     \f]
     with \f$d\f$ and \f$z\f$ denoting the displacement and Lagrange multiplier degrees of freedom
     (DOFs), respectively.
@@ -246,6 +246,8 @@ namespace CONTACT
     \todo Argument \c numiter not used. Can it be removed?
 
     \sa UpdateDisplacementsAndLMincrements
+
+    \author Tobias Wiesner \date 11/2014
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
@@ -272,6 +274,8 @@ namespace CONTACT
                     merged linear system, i.e. displacement and Lagrange multiplier DOFs)
 
     \sa BuildSaddlePointSystem
+
+    \author Tobias Wiesner \date 11/2014
     */
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);

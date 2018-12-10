@@ -2917,7 +2917,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 }
 
 /*----------------------------------------------------------------------*
- | Setup 2x2 saddle point system for contact problems      wiesner 11/14|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
@@ -2925,6 +2924,10 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
     Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
     Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
+  // Check for saddle-point formulation
+  if (SystemType() != INPAR::CONTACT::system_saddlepoint)
+    dserror("Invalid system type! Cannot build a saddle-point system for this system type.");
+
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
   // conditions on different matrix blocks separately.
@@ -2932,12 +2935,6 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
   temp->PutScalar(1.0);
   LINALG::Export(*temp, *dirichtoggle);
-
-  //**********************************************************************
-  // prepare saddle point system
-  //**********************************************************************
-  // the standard stiffness matrix
-  Teuchos::RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
 
   // Initialize constraint matrices
   Teuchos::RCP<LINALG::SparseMatrix> kzz =
@@ -3069,11 +3066,12 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
     trkdz = MORTAR::MatrixRowColTransform(trkdz, ProblemDofs(), pglmdofrowmap_);
   }
 
-  //**********************************************************************
-  // build and solve saddle point system
-  //**********************************************************************
-  if (SystemType() == INPAR::CONTACT::system_saddlepoint)
+  // Assemble the saddle point system
   {
+    // Get the standard stiffness matrix
+    Teuchos::RCP<LINALG::SparseMatrix> stiffmt =
+        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
+
     // Initialize merged system (matrix, rhs, sol)
     Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
     if (ParRedist())
@@ -3132,16 +3130,10 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
       dommapext = Teuchos::rcp(new LINALG::MapExtractor(*mergedmap, glmdofrowmap_, ProblemDofs()));
     }
 
-    /* Set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace
-     * has to be set explicitly) do we need this? If we set the Teuchos::nullspace when the solver
-     * is constructed?
-     */
-    // solver.Params().set<bool>("CONTACT", true);  // for simpler precond
-
     // build block matrix for SIMPLER
     blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
         *dommapext, *rowmapext, 81, false, false));
-    // ToDo (mayr.mt) Do we really need this? This cast seems not to have any effect.
+    // blockMat is declared as an Epetra_Operator, so we need to cast it to an actual block matrix
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> mat =
         Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>>(
             blockMat);
@@ -3164,20 +3156,12 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
 
     blocksol = mergedsol;
     blockrhs = mergedrhs;
-    return;
   }
-
-  //**********************************************************************
-  // invalid system types
-  //**********************************************************************
-  else
-    dserror("ERROR: Invalid system type in SaddlePointSolve");
 
   return;
 }
 
 /*------------------------------------------------------------------------*
- | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
