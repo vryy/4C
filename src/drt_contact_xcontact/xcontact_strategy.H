@@ -476,16 +476,15 @@ namespace XCONTACT
     {
       dserror("Deprecated function call!");
     }
-    virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs)
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       dserror("Deprecated function call!");
     }
     virtual void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
       dserror("Deprecated function call!");
     }

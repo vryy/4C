@@ -2920,9 +2920,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-    Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-    Teuchos::RCP<Epetra_Vector>& blockrhs)
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+    Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
   // Check for saddle-point formulation
   if (SystemType() != INPAR::CONTACT::system_saddlepoint)
@@ -3164,7 +3163,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(
-    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   // Extract results for displacement and LM increments
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::null;

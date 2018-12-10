@@ -236,7 +236,6 @@ namespace CONTACT
     \param[in] fd  Displacement dof r.h.s. (upper block)
     \param[in] sold Displacement dof solution increment
     \param[in] dbcmaps Map extractor to apply Dirichlet boundary conditions
-    \param[in] numiter Current nonlinear iteration step
     \param[out] blockMat Epetra_Operator containing the 2x2 block sparse matrix object
     \param[out] blocksol Epetra_Vector for merged solution vector
     \param[out] blockrhs Epetra_Vector for merged right hand side vector
@@ -251,9 +250,8 @@ namespace CONTACT
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs);
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
@@ -278,7 +276,7 @@ namespace CONTACT
     \author Tobias Wiesner \date 11/2014
     */
     void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
     \brief The entries of the constraint right-hand side are calculated.

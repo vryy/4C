@@ -1351,14 +1351,13 @@ namespace CONTACT
       };
       void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-          Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-          Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-          Teuchos::RCP<Epetra_Vector>& blockrhs) override
+          Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+          Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         dserror("Deprecated function call!");
       };
       void UpdateDisplacementsAndLMincrements(
-          Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) override
+          Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
       {
         dserror("Deprecated function call!");
       };
