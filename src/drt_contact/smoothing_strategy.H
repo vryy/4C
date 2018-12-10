@@ -158,7 +158,7 @@ namespace CONTACT
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): the displacement dof solution increment (associated with displacement dofs)
+    \param sold (out): the displacement dof solution increment (associated with displacement dofs)
     \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
     vector of the full merged linear system)
     */
