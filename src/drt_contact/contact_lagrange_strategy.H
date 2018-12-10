@@ -208,14 +208,44 @@ namespace CONTACT
     /*!
     \brief Build 2x2 saddle point system
 
-    \param kdd (in): the displacement dof stiffness (upper left block)
-    \param fd (in): the displacement dof r.h.s. (upper block)
-    \param sold (in): the displacement dof solution increment
-    \param dbcmaps (in): map extractor to apply Dirichlet boundary conditions
-    \param numiter (in): current nonlinear iteration step
-    \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
-    \param blocksol (out): Epetra_Vector for merged solution vector
-    \param blockrhs (out): Epetra_Vector for merged right hand side vector
+    The saddle-point system reads
+    \f[
+    \left[\begin{array}{cc}
+    K_{dd} & K_{dz}\\
+    K_{zd} & K_{zz}
+    \end{array}\right]
+    \left[\begin{array}{c}\Delta d\\ \Delta z\end{array}\right]
+    = - \\left[\begin{array}{c}f_d\\ f_z\end{array}\right]
+    \f]
+    with \f$d\f$ and \f$z\f$ denoting the displacement and Lagrange multiplier degrees of freedom
+    (DOFs), respectively.
+
+    In terms of data structures and parallel layout, the Lagrange multiplier DOFs have the same
+    parallel layout as their slave side displacement DOFs counterparts, but distinct global IDs
+    (GIDs). For evaluation of mortar matrices, the salve side DofRowMap #gsdofrowmap_ is used.
+    However, for assembling the saddle-point system, the constraint equations need their own unique
+    map, #glmdofrowmap_. To also account for the possibility of a parallel redistribution of the
+    Mortar interface discretizations, the assembly is performed in two steps:
+
+    1. Transform maps related to constraint DOFs of matrix blocks \f$K_{dz}\f$, \f$K_{zd}\f$, and
+       \f$K_{zz}\f$ to the Lagrange multiplier DofRowMap #glmdofrowmap_.
+    2. If parallel redistribution is active, do another transformation to go from the redistributed
+       constraint DofRowMap #glmdofrowmap_ to the original distribution #pglmdofrowmap_.
+
+    \param[in] kdd Displacement dof stiffness (upper left block)
+    \param[in] fd  Displacement dof r.h.s. (upper block)
+    \param[in] sold Displacement dof solution increment
+    \param[in] dbcmaps Map extractor to apply Dirichlet boundary conditions
+    \param[in] numiter Current nonlinear iteration step
+    \param[out] blockMat Epetra_Operator containing the 2x2 block sparse matrix object
+    \param[out] blocksol Epetra_Vector for merged solution vector
+    \param[out] blockrhs Epetra_Vector for merged right hand side vector
+
+    \todo Update documentation once class members have been removed and replaced by accessing the
+    data container directly.
+    \todo Argument \c numiter not used. Can it be removed?
+
+    \sa UpdateDisplacementsAndLMincrements
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
@@ -226,9 +256,22 @@ namespace CONTACT
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): Displacement dof solution increment (associated with displacement dofs)
-    \param blocksol (in): Merged solution vector (containing the new solution vector of the full
-                          merged linear system)
+    We have to extract the displacement and Lagrange multiplier solution increment from the blocked
+    solution vector. This requires to also transfer constraint GIDs back to #gsdofrowmap_ since
+    constraints internally use the same GIDs as their displacement DOF counterparts.
+
+    \note In case of parallel redistribution, we also have to transfer constraint data from the
+    undredistributed layout (used to build the saddle-point system) to the redistributed layout
+    (used to perform contact evaluations).
+
+    \note More details on handling of maps w/ and w/o parallel redistribution are given in
+    BuildSaddlePointSystem().
+
+    \param[out] sold Displacement dof solution increment (associated with displacement dofs)
+    \param[in] blocksol Merged solution vector (containing the new solution vector of the full
+                    merged linear system, i.e. displacement and Lagrange multiplier DOFs)
+
+    \sa BuildSaddlePointSystem
     */
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);

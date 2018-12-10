@@ -56,7 +56,7 @@ NORMCOMBI_RESFCONTCONSTR And
 NORMCOMBI_DISPLAGR   And
 ---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN          Dual
-PARALLEL_REDIST      None
+PARALLEL_REDIST      Static
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 AZBDIAG                         0

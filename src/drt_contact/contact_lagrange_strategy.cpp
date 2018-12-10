@@ -2939,14 +2939,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   // the standard stiffness matrix
   Teuchos::RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
 
-  // initialize merged system (matrix, rhs, sol)
-  Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(), glmdofrowmap_, false);
-  Teuchos::RCP<LINALG::SparseMatrix> mergedmt = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> mergedrhs = LINALG::CreateVector(*mergedmap);
-  Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap);
-  Teuchos::RCP<Epetra_Vector> mergedzeros = LINALG::CreateVector(*mergedmap);
-
-  // initialize constraint matrices
+  // Initialize constraint matrices
   Teuchos::RCP<LINALG::SparseMatrix> kzz =
       Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
   Teuchos::RCP<LINALG::SparseMatrix> kzd =
@@ -2954,8 +2947,10 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   Teuchos::RCP<LINALG::SparseMatrix> kdz =
       Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_, 100, false, true));
 
-  // initialize transformed constraint matrices
-  Teuchos::RCP<LINALG::SparseMatrix> trkdz, trkzd, trkzz;
+  // Declare transformed constraint matrices
+  Teuchos::RCP<LINALG::SparseMatrix> trkdz = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> trkzd = Teuchos::null;
+  Teuchos::RCP<LINALG::SparseMatrix> trkzz = Teuchos::null;
 
   //**********************************************************************
   // build matrix and vector blocks
@@ -3045,63 +3040,108 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
     kzz->Complete(*gsdofrowmap_, *gsdofrowmap_);
   }
 
-  //**********************************************************************
-  // transform matrix blocks to lm-dof-map
-  //**********************************************************************
+  /* Step 1: Transform matrix blocks to current Lagrange multiplier DofRowMap
+   *
+   * This does not change the parallel layout, but only replace the slave displacement GIDs with the
+   * Lagrange multiplier DOF GIDs. There is no communication involved.
+   */
+  {
+    // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
+    trkzd = MORTAR::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
 
-  // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-  trkzd = MORTAR::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
+    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
 
-  // transform parallel column distribution of constraint matrix kzd
-  // (only necessary in the parallel redistribution case)
-  if (ParRedist()) trkzd = MORTAR::MatrixColTransform(trkzd, ProblemDofs());
+    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+    trkdz = MORTAR::MatrixColTransformGIDs(kdz, glmdofrowmap_);
+  }
 
-  // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-  trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
-
-  // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-  trkdz = MORTAR::MatrixColTransformGIDs(kdz, glmdofrowmap_);
-
-  // transform parallel row distribution of constraint matrix kdz
-  // (only necessary in the parallel redistribution case)
-  if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz, ProblemDofs());
+  /* Step 2: Transform matrix blocks back to original DofRowMap as it was prior to the
+   * redistribution of the interface
+   *
+   * Now, we keep the GID numbering, but change the parallel layout. This actually moves data
+   * between MPI ranks.
+   */
+  if (ParRedist())
+  {
+    trkzd = MORTAR::MatrixRowColTransform(trkzd, pglmdofrowmap_, ProblemDofs());
+    trkzz = MORTAR::MatrixRowColTransform(trkzz, pglmdofrowmap_, pglmdofrowmap_);
+    trkdz = MORTAR::MatrixRowColTransform(trkdz, ProblemDofs(), pglmdofrowmap_);
+  }
 
   //**********************************************************************
   // build and solve saddle point system
   //**********************************************************************
   if (SystemType() == INPAR::CONTACT::system_saddlepoint)
   {
+    // Initialize merged system (matrix, rhs, sol)
+    Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
+    if (ParRedist())
+      mergedmap = LINALG::MergeMap(ProblemDofs(), pglmdofrowmap_, false);
+    else
+      mergedmap = LINALG::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+
+    Teuchos::RCP<Epetra_Vector> mergedrhs = LINALG::CreateVector(*mergedmap);
+    Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap);
+    Teuchos::RCP<Epetra_Vector> mergedzeros = LINALG::CreateVector(*mergedmap);
+
+    /* ToDo (mayr.mt) Is this due to symmetry BCs? Basically, slave DOFs should not carry any
+     * Dirichlet BCs.
+     */
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*dirichtoggle, *dirichtoggleexp);
-    Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*dirichtoggle, *lmDBC);
-    lmDBC->ReplaceMap(*glmdofrowmap_);
-    Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*lmDBC, *lmDBCexp);
-    dirichtoggleexp->Update(1., *lmDBCexp, 1.);
-    trkzd->ApplyDirichlet(lmDBC, false);
+    {
+      LINALG::Export(*dirichtoggle, *dirichtoggleexp);
+      Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::null;
+      if (ParRedist())
+        lmDBC = Teuchos::rcp(new Epetra_Vector(*pgsdofrowmap_, true));
+      else
+        lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*dirichtoggle, *lmDBC);
 
-    trkzz->Complete();
-    trkzz->ApplyDirichlet(lmDBC, true);
+      if (ParRedist())
+        lmDBC->ReplaceMap(*pglmdofrowmap_);
+      else
+        lmDBC->ReplaceMap(*glmdofrowmap_);
 
-    // apply Dirichlet conditions to (0,0) and (0,1) blocks
-    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
-    Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-    LINALG::ApplyDirichlettoSystem(stiffmt, sold, rhscopy, zeros, dirichtoggle);
-    trkdz->ApplyDirichlet(dirichtoggle, false);
+      Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+      LINALG::Export(*lmDBC, *lmDBCexp);
+      if (dirichtoggleexp->Update(1., *lmDBCexp, 1.)) dserror("Update failed.");
+      trkzd->ApplyDirichlet(lmDBC, false);
+
+      trkzz->Complete();
+      trkzz->ApplyDirichlet(lmDBC, true);
+
+      // apply Dirichlet conditions to (0,0) and (0,1) blocks
+      Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
+      Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
+      LINALG::ApplyDirichlettoSystem(stiffmt, sold, rhscopy, zeros, dirichtoggle);
+      trkdz->ApplyDirichlet(dirichtoggle, false);
+    }
 
     // row map (equals domain map) extractor
-    LINALG::MapExtractor rowmapext(*mergedmap, glmdofrowmap_, ProblemDofs());
-    LINALG::MapExtractor dommapext(*mergedmap, glmdofrowmap_, ProblemDofs());
+    Teuchos::RCP<LINALG::MapExtractor> rowmapext = Teuchos::null;
+    Teuchos::RCP<LINALG::MapExtractor> dommapext = Teuchos::null;
+    if (ParRedist())
+    {
+      rowmapext = Teuchos::rcp(new LINALG::MapExtractor(*mergedmap, pglmdofrowmap_, ProblemDofs()));
+      dommapext = Teuchos::rcp(new LINALG::MapExtractor(*mergedmap, pglmdofrowmap_, ProblemDofs()));
+    }
+    else
+    {
+      rowmapext = Teuchos::rcp(new LINALG::MapExtractor(*mergedmap, glmdofrowmap_, ProblemDofs()));
+      dommapext = Teuchos::rcp(new LINALG::MapExtractor(*mergedmap, glmdofrowmap_, ProblemDofs()));
+    }
 
-    // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace
-    // has to be set explicitly) do we need this? if we set the Teuchos::nullspace when the solver
-    // is constructed?
-    // solver.Params().set<bool>("CONTACT",true); // for simpler precond
+    /* Set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace
+     * has to be set explicitly) do we need this? If we set the Teuchos::nullspace when the solver
+     * is constructed?
+     */
+    // solver.Params().set<bool>("CONTACT", true);  // for simpler precond
 
     // build block matrix for SIMPLER
     blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-        dommapext, rowmapext, 81, false, false));
+        *dommapext, *rowmapext, 81, false, false));
+    // ToDo (mayr.mt) Do we really need this? This cast seems not to have any effect.
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> mat =
         Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>>(
             blockMat);
@@ -3142,19 +3182,34 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
 void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(
     Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
 {
-  //**********************************************************************
-  // extract results for displacement and LM increments
-  //**********************************************************************
-  Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
-  Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(), glmdofrowmap_, false);
-  LINALG::MapExtractor mapext(*mergedmap, ProblemDofs(), glmdofrowmap_);
-  mapext.ExtractCondVector(blocksol, sold);
-  mapext.ExtractOtherVector(blocksol, sollm);
-  sollm->ReplaceMap(*gsdofrowmap_);
+  // Extract results for displacement and LM increments
+  Teuchos::RCP<Epetra_Vector> sollm = Teuchos::null;
+  if (ParRedist())
+  {
+    Teuchos::RCP<Epetra_Vector> sollmOrig = Teuchos::rcp(new Epetra_Vector(*pglmdofrowmap_));
+    Teuchos::RCP<Epetra_Map> mergedmapOrig = LINALG::MergeMap(ProblemDofs(), pglmdofrowmap_, false);
+    LINALG::MapExtractor mapext(*mergedmapOrig, ProblemDofs(), pglmdofrowmap_);
+    mapext.ExtractCondVector(blocksol, sold);
+    mapext.ExtractOtherVector(blocksol, sollmOrig);
 
+    sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
+    LINALG::Export(*sollmOrig, *sollm);
+    sollm->ReplaceMap(*gsdofrowmap_);
+  }
+  else
+  {
+    sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
+    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(), glmdofrowmap_, false);
+    LINALG::MapExtractor mapext(*mergedmap, ProblemDofs(), glmdofrowmap_);
+    mapext.ExtractCondVector(blocksol, sold);
+    mapext.ExtractOtherVector(blocksol, sollm);
+    sollm->ReplaceMap(*gsdofrowmap_);
+  }
+
+  /* For self contact, slave and master sets may have changed, thus we have to reinitialize the LM
+   * vector map
+   */
   if (IsSelfContact())
-  // for self contact, slave and master sets may have changed,
-  // thus we have to reinitialize the LM vector map
   {
     zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
     LINALG::Export(*z_, *zincr_);  // change the map of z_
@@ -3167,6 +3222,7 @@ void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(
     zincr_->Update(1.0, *sollm, 0.0);
     z_->Update(1.0, *zincr_, 1.0);
   }
+
   return;
 }
 
