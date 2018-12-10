@@ -136,14 +136,16 @@ namespace CONTACT
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
-      std::cout << __FILE__ << ":" << __LINE__ << "WARNING: saddle point system makes no sense here"
-                << std::endl;
+      dserror(
+          "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
+          "here.");
     }
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
-      std::cout << __FILE__ << ":" << __LINE__ << "WARNING: saddle point system makes no sense here"
-                << std::endl;
+      dserror(
+          "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
+          "here.");
     }
     void EvalConstrRHS() {}
     void UpdateActiveSet() {}

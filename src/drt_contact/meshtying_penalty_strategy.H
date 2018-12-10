@@ -163,12 +163,16 @@ namespace CONTACT
         Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
-      std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;
+      dserror(
+          "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
+          "makes no sense here.");
     };
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
-      std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;
+      dserror(
+          "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
+          "makes no sense here.");
     };
     void EvalConstrRHS()
     {
