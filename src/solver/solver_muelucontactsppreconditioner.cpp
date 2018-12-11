@@ -736,7 +736,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     {
       Teuchos::ParameterList pp(mllist_);
 
-      // fine/intermedium level smoother
+      // fine/intermediate level smoother
       Teuchos::RCP<SmootherFactory> SmooFactFine = GetBlockSmootherFactory(
           pp, i);  // GetBraessSarazinSmootherFactory(pp, i, Teuchos::null /* AFact*/);
 
