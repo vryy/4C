@@ -174,8 +174,6 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
 void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  // std::cout << "call MueLuContactSpPreconditioner::Setup" << std::endl;
-
   SetupLinearProblem(matrix, x, b);
 
   Teuchos::RCP<BlockSparseMatrixBase> A =
@@ -396,9 +394,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     ///////////////////////////////////////////////////////////////////////
 
     Teuchos::RCP<AmalgamationFactory> amalgFact11 = Teuchos::rcp(new AmalgamationFactory());
-    // amalgFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory());
-    // dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 =
         Teuchos::rcp(new UncoupledAggregationFactory());
     UCAggFact11->SetParameter(
@@ -1560,12 +1556,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Write(const Teuchos::RCP<Hier
 {
   LocalOrdinal startLevel = 0;
   LocalOrdinal endLevel = H->GetNumLevels() - 1;
-
-  // TEUCHOS_TEST_FOR_EXCEPTION(startLevel > endLevel, Exceptions::RuntimeError,
-  // "MueLu::Hierarchy::Write : startLevel must be <= endLevel");
-
-  // TEUCHOS_TEST_FOR_EXCEPTION(startLevel < 0 || endLevel >= Levels_.size(),
-  // Exceptions::RuntimeError, "MueLu::Hierarchy::Write bad start or end level");
 
   for (LO i = startLevel; i < endLevel + 1; ++i)
   {

@@ -16,7 +16,6 @@
 
 #include "solver_preconditionertype.H"
 
-
 #include <Xpetra_BlockedCrsMatrix_fwd.hpp>
 
 #include <MueLu_Hierarchy.hpp>  // for MueLu
@@ -136,6 +135,5 @@ namespace LINALG
 }  // namespace LINALG
 
 #endif  // HAVE_MueLu
-
 
 #endif /* SOLVER_MUELUCONTACTSPPRECONDITIONER_H_ */
