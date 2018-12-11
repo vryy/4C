@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file MueLu_ContactSPAggregationFactory.cpp
 
-\brief MueLu contact aggregation factory class
+\brief MueLu contact aggregation factory class for saddle point formulations
 \level 2
-\maintainer Martin Kronbichler
-
-*----------------------------------------------------------------------*/
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"

@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file MueLu_ContactSPAggregationFactory_def.hpp
 
-\brief MueLu contact aggregation factory class
+\brief MueLu contact aggregation factory class for saddle point formulations
 \level 2
-\maintainer Martin Kronbichler
-
-*----------------------------------------------------------------------*/
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_

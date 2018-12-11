@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Martin Kronbichler
+\maintainer Matthias Mayr
 *----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
