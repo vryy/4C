@@ -565,7 +565,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::RCP<MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
         UCAggFact22 = Teuchos::rcp(
             new MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>(
-                UCAggFact11, amalgFact11));
+                UCAggFact11));
 
     // create amalgamation factory for (1,1) block depending on problem type (contact/meshtying)
     Teuchos::RCP<Factory> amalgFact22 = Teuchos::null;

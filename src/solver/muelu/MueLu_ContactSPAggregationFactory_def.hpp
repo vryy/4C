@@ -32,9 +32,8 @@ namespace MueLu
 {
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal,
-      Node>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact,
-      Teuchos::RCP<const FactoryBase> amalgFact)
-      : aggregatesFact_(aggregatesFact), amalgFact_(amalgFact), AFact_(MueLu::NoFactory::getRCP())
+      Node>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact)
+      : aggregatesFact_(aggregatesFact), AFact_(MueLu::NoFactory::getRCP())
   {
   }
 
@@ -52,13 +51,10 @@ namespace MueLu
     Teuchos::RCP<Teuchos::ParameterList> validParamList =
         Teuchos::rcp(new Teuchos::ParameterList());
 
-    // TODO remove aggregatesFact_, amalgFact_
     validParamList->set<Teuchos::RCP<const FactoryBase>>("A", Teuchos::null,
         "Generating factory of the matrix A used during the prolongator smoothing process");
     validParamList->set<Teuchos::RCP<const FactoryBase>>(
         "Aggregates", Teuchos::null, "Generating factory for aggregates");
-    validParamList->set<Teuchos::RCP<const FactoryBase>>(
-        "UnAmalgamationInfo", Teuchos::null, "Generating factory for UnAmalgamationInfo.");
     validParamList->set<Teuchos::RCP<const FactoryBase>>("SlaveDofMap", MueLu::NoFactory::getRCP(),
         "Generating Factory for variable \"SlaveDofMap\"");
 
@@ -71,7 +67,6 @@ namespace MueLu
   {
     currentLevel.DeclareInput("A", AFact_.get(), this);
     currentLevel.DeclareInput("Aggregates", aggregatesFact_.get(), this);
-    currentLevel.DeclareInput("UnAmalgamationInfo", amalgFact_.get(), this);
     currentLevel.DeclareInput("SlaveDofMap", MueLu::NoFactory::get(), this);
   }
 

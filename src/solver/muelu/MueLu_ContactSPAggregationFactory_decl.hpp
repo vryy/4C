@@ -52,11 +52,11 @@ namespace MueLu
      * @param[in] aggregatesFact
      * @param[in] amalgFact
      */
-    ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact = Teuchos::null,
-        Teuchos::RCP<const FactoryBase> amalgFact = Teuchos::null);
+    ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact = Teuchos::null);
 
     //! Destructor.
     virtual ~ContactSPAggregationFactory();
+
     //!@}
 
     //! Input
@@ -100,9 +100,6 @@ namespace MueLu
    private:
     //! Factory that creates aggregates
     Teuchos::RCP<const FactoryBase> aggregatesFact_;
-
-    //! Factory that creates (Un)Amalgamation info from A
-    Teuchos::RCP<const FactoryBase> amalgFact_;
 
     //! Define which matrix A is used in this factory
     Teuchos::RCP<const FactoryBase> AFact_;
