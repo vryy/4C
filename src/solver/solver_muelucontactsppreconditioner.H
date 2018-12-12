@@ -97,33 +97,104 @@ namespace LINALG
       void Write(
           const Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>& H);
 
-      //! function interprets ML parameter lists
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetBlockSmootherFactory(const Teuchos::ParameterList& paramList, int level);
+      //! @name Create block smoothers
+      //!@{
 
-      //! function interprets coarse ML parameter list
+      /*! \brief Get block smoother factory on fine and intermediate levels
+       *
+       * The parameter list stores the smoother factory configuration. We extract this information
+       * and then call subroutines to actually create a concrete instance of the smoother factory.
+       *
+       * @param paramList Parameter list with smoother configuration
+       * @param level Current level ID
+       * @return Instance of a concrete MueLu::SmootherFactory
+       *
+       * \sa GetCoarsestBlockSmootherFactory(), CreateBlockSmootherFactory()
+       */
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList& paramList);
+      GetBlockSmootherFactory(const Teuchos::ParameterList& paramList, int level) const;
 
-      //! function interprets ML parameter lists for creating a indefinite block diagonal level
-      //! smoother
+      /*! \brief Get block smoother factory on coarsest level
+       *
+       * The parameter list stores the smoother factory configuration. We extract this information
+       * and then call subroutines to actually create a concrete instance of the smoother factory.
+       *
+       * @param paramList paramList Parameter list with smoother configuration
+       * @return Instance of a concrete MueLu::SmootherFactory
+       *
+       * \sa GetBlockSmootherFactory(), CreateBlockSmootherFactory()
+       */
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetUzawaSmootherFactory(const Teuchos::ParameterList& paramList, bool bCoarse = false);
+      GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList& paramList) const;
 
-      //! function interprets ML parameter lists for creating a indefinite block diagonal level
-      //! smoother
+      /*! \brief Create block smoother factory from parameter list
+       *
+       * The parameter list stores the smoother factory configuration. We extract this information
+       * and then call subroutines to actually create a concrete instance of the smoother factory.
+       *
+       * @param type Type of block smoother to be created
+       * @param paramList Parameter list with smoother configuration
+       * @param bCoarse Boolean flag to indicate if this is the coarsest level
+       * @return
+       *
+       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory(),
+       * GetUzawaSmootherFactory(), GetIndefBlockedDiagonalSmootherFactory(),
+       * GetSIMPLESmootherFactory(), GetBraessSarazinSmootherFactory()
+       */
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
+      CreateBlockSmootherFactory(const std::string& type, const Teuchos::ParameterList& paramList,
+          const bool bCoarse) const;
+
+      /*! \brief Interpret ML parameter lists for creating an Uzawa smoother
+       *
+       * @param paramList Parameter list with smoother configuration
+       * @param bCoarse Boolean flag to indicate if this is the coarsest level
+       * @return Instance of a Uzawa smoother
+       *
+       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
+       */
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
+      GetUzawaSmootherFactory(
+          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
+
+      /*! \brief Interpret ML parameter lists for creating a indefinite block diagonal level
+       * smoother
+       *
+       * @param paramList Parameter list with smoother configuration
+       * @param bCoarse Boolean flag to indicate if this is the coarsest level
+       * @return Instance of a indefinite block diagonal level smoother
+       *
+       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
+       */
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
       GetIndefBlockedDiagonalSmootherFactory(
-          const Teuchos::ParameterList& paramList, bool bCoarse = false);
+          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
 
-      //! function interprets ML parameter lists for creating a SIMPLE level smoother
+      /*! \brief Interpret ML parameter lists for creating a SIMPLE-type level smoother
+       *
+       * @param paramList Parameter list with smoother configuration
+       * @param bCoarse Boolean flag to indicate if this is the coarsest level
+       * @return Instance of a SIMPLE-type smoother
+       *
+       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
+       */
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetSIMPLESmootherFactory(const Teuchos::ParameterList& paramList, bool bCoarse = false);
+      GetSIMPLESmootherFactory(
+          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
 
-      //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
+      /*! \brief Interprets ML parameter lists for creating a Braess Sarazin level smoother
+       *
+       * @param paramList Parameter list with smoother configuration
+       * @param bCoarse Boolean flag to indicate if this is the coarsest level
+       * @return Instance of a Braess-Sarazin smoother
+       *
+       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
+       */
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
       GetBraessSarazinSmootherFactory(
-          const Teuchos::ParameterList& paramList, bool bCoarse = false);
+          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
+
+      //!@}
 
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>

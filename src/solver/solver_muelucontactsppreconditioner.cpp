@@ -858,7 +858,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 LINALG::SOLVER::MueLuContactSpPreconditioner::GetBlockSmootherFactory(
-    const Teuchos::ParameterList& paramList, int level)
+    const Teuchos::ParameterList& paramList, int level) const
 {
   char levelchar[11];
   sprintf(levelchar, "(level %d)", level);
@@ -876,23 +876,43 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetBlockSmootherFactory(
 
   const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
 
+  return CreateBlockSmootherFactory(type, smolevelsublist, false);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
+LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(
+    const Teuchos::ParameterList& paramList) const
+{
+  std::string type = paramList.get<std::string>("coarse: type");
+  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError,
+      "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
+
+  return CreateBlockSmootherFactory(type, paramList, true);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
+LINALG::SOLVER::MueLuContactSpPreconditioner::CreateBlockSmootherFactory(
+    const std::string& type, const Teuchos::ParameterList& paramList, const bool bCoarse) const
+{
   if (type == "SIMPLE" || type == "SIMPLEC")
-  {
-    // return GetSIMPLESmootherFactory(paramList, level, AFact);
-    return GetSIMPLESmootherFactory(smolevelsublist);
+  {  // SIMPLE variant
+    return GetSIMPLESmootherFactory(paramList, bCoarse);
   }
   else if (type == "Braess-Sarazin")
-  {
-    // return GetBraessSarazinSmootherFactory(paramList, level, AFact);
-    return GetBraessSarazinSmootherFactory(smolevelsublist);
+  {  // Braess-Sarazin smoother
+    return GetBraessSarazinSmootherFactory(paramList, bCoarse);
   }
   else if (type == "IBD")
   {  // indefinite blocked diagonal preconditioner
-    return GetIndefBlockedDiagonalSmootherFactory(smolevelsublist);
+    return GetIndefBlockedDiagonalSmootherFactory(paramList, bCoarse);
   }
   else if (type == "Uzawa")
   {  // Uzawa smoother
-    return GetUzawaSmootherFactory(smolevelsublist);
+    return GetUzawaSmootherFactory(paramList, bCoarse);
   }
   else
   {
@@ -902,45 +922,7 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetBlockSmootherFactory(
         "\n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as "
         "the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
-  return Teuchos::null;
-}
 
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(
-    const Teuchos::ParameterList& paramList)
-{
-  std::string type = paramList.get<std::string>("coarse: type");
-  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError,
-      "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
-
-  if (type == "SIMPLE" || type == "SIMPLEC")
-  {
-    // return GetCoarsestSIMPLESmootherFactory(paramList, AFact);
-    return GetSIMPLESmootherFactory(paramList, true);  // build coarsest smoother
-  }
-  else if (type == "Braess-Sarazin")
-  {
-    // return GetCoarsestBraessSarazinSmootherFactory(paramList, AFact);
-    return GetBraessSarazinSmootherFactory(paramList, true);  // build coarsest smoother
-  }
-  else if (type == "IBD")
-  {
-    return GetIndefBlockedDiagonalSmootherFactory(paramList, true);  // build coarsest smoother
-  }
-  else if (type == "Uzawa")
-  {
-    return GetUzawaSmootherFactory(paramList, true);  // build coarsest smoother
-  }
-  else
-  {
-    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError,
-        "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE parameter to SIMPLE(C) "
-        "or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're "
-        "using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES "
-        "parameters for Braess-Sarazin.");
-  }
   return Teuchos::null;
 }
 
@@ -948,7 +930,7 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 LINALG::SOLVER::MueLuContactSpPreconditioner::GetUzawaSmootherFactory(
-    const Teuchos::ParameterList& paramList, bool bCoarse)
+    const Teuchos::ParameterList& paramList, const bool bCoarse) const
 {
   std::string strCoarse = "coarse";
   if (bCoarse == false) strCoarse = "smoother";
@@ -1079,7 +1061,7 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetUzawaSmootherFactory(
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 LINALG::SOLVER::MueLuContactSpPreconditioner::GetIndefBlockedDiagonalSmootherFactory(
-    const Teuchos::ParameterList& paramList, bool bCoarse)
+    const Teuchos::ParameterList& paramList, const bool bCoarse) const
 {
   std::string strCoarse = "coarse";
   if (bCoarse == false) strCoarse = "smoother";
@@ -1210,7 +1192,7 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetIndefBlockedDiagonalSmootherFac
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 LINALG::SOLVER::MueLuContactSpPreconditioner::GetSIMPLESmootherFactory(
-    const Teuchos::ParameterList& paramList, bool bCoarse)
+    const Teuchos::ParameterList& paramList, const bool bCoarse) const
 {
   std::string strCoarse = "coarse";
   if (bCoarse == false) strCoarse = "smoother";
@@ -1337,7 +1319,7 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetSIMPLESmootherFactory(
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 LINALG::SOLVER::MueLuContactSpPreconditioner::GetBraessSarazinSmootherFactory(
-    const Teuchos::ParameterList& paramList, bool bCoarse)
+    const Teuchos::ParameterList& paramList, const bool bCoarse) const
 {
   std::string strCoarse = "coarse";
   if (bCoarse == false) strCoarse = "smoother";
