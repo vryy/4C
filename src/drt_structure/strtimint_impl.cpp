@@ -3313,7 +3313,7 @@ void STR::TimIntImpl::CmtLinearSolve()
 
       // build the saddle point system
       cmtbridge_->GetStrategy().BuildSaddlePointSystem(
-          stiff_, fres_, disi_, dbcmaps_, iter_ - 1, blockMat, blocksol, blockrhs);
+          stiff_, fres_, disi_, dbcmaps_, blockMat, blocksol, blockrhs);
 
       // solve the linear system
       contactsolver_->Solve(blockMat, blocksol, blockrhs, true, iter_ == 1);

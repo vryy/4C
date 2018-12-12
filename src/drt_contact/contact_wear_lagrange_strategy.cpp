@@ -3113,9 +3113,8 @@ void WEAR::WearLagrangeStrategy::PrepareSaddlePointSystem(
  *----------------------------------------------------------------------*/
 void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-    Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-    Teuchos::RCP<Epetra_Vector>& blockrhs)
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+    Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
@@ -3918,7 +3917,7 @@ void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Spa
  | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
 void WEAR::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(
-    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+    Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol)
 {
   //**********************************************************************
   // extract results for displacement and LM increments

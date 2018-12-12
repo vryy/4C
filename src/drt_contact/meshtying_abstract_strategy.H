@@ -379,13 +379,12 @@ namespace CONTACT
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
     virtual void ModifyPenalty() = 0;
-    virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
-    virtual void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override = 0;
+    void UpdateDisplacementsAndLMincrements(
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
 

@@ -95,26 +95,24 @@ namespace WEAR
     \param fd (in): the displacement dof r.h.s. (upper block)
     \param sold (in): the displacement dof solution increment
     \param dirichtoggle (in): toggle vector for dirichlet conditions
-    \param numiter (in): current nonlinear iteration step
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
     void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,
-        Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol,
-        Teuchos::RCP<Epetra_Vector>& blockrhs);
+        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
-    \param sold (in): the displacement dof solution increment (associated with displacement dofs)
+    \param sold (out): the displacement dof solution increment (associated with displacement dofs)
     \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution
     vector of the full merged linear system)
     */
     void UpdateDisplacementsAndLMincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
+        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
     \brief Evaluate wear vector
