@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file solver_muelucontactsppreconditioner.cpp
 
-\brief Implementation
+\brief Implementation of MueLu-base contact saddle-point preconditioners
 
 \level 2
 
@@ -176,17 +176,129 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 {
   SetupLinearProblem(matrix, x, b);
 
+  // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
-  Pmatrix_ = A;  // store blocked operator
 
+  // store blocked operator
+  Pmatrix_ = A;
+
+  ///////////////////////////////////////////////////////////////////////
+  // Some preparations common for re-creating and re-using the preconditioner
+  ///////////////////////////////////////////////////////////////////////
+
+  // prepare nullspace vector for MueLu (block A11 only)
+  const int numdf = mllist_.get<int>("PDE equations", -1);
+  const int dimns = mllist_.get<int>("null space: dimension", -1);
+  if (numdf == -1) dserror("Multigrid parameter 'PDE equations' wrong. It has to be > 0.");
+  if (dimns == -1) dserror("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
+
+  // create a Teuchos::Comm from EpetraComm
+  Teuchos::RCP<const Teuchos::Comm<int>> comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
+
+  /* Extract additional maps from parameter list
+   *
+   * These maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that has access
+   * to the contact manager class
+   *
+   * Note: Baci provides Epetra_Map objects. We will transform them to Xpetra::Map later.
+   */
+  Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
+  Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
+  Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
+  if (mllist_.isSublist("Linear System properties"))
+  {
+    const Teuchos::ParameterList& linSystemProps = mllist_.sublist("Linear System properties");
+    // extract information provided by solver (e.g. PermutedAztecSolver)
+    epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact masterDofMap");
+    epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
+    epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
+    epInnerDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact innerDofMap");
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+  // Transform from epetra to xpetra
+  ///////////////////////////////////////////////////////////////////////
+
+  // Transform maps
+  Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap = Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
+
+  // Get maps and matrix blocks for blocked operator
+  Teuchos::RCP<const Map> fullrangemap = Teuchos::null;
+  Teuchos::RCP<CrsMatrix> xA11 = Teuchos::null;
+  Teuchos::RCP<CrsMatrix> xA12 = Teuchos::null;
+  Teuchos::RCP<CrsMatrix> xA21 = Teuchos::null;
+  Teuchos::RCP<CrsMatrix> xA22 = Teuchos::null;
   if (create)
   {
+    // (Re-)create the preconditioner, so extract everything from the input matrix 'A'.
+
+    // Prepare maps for blocked operator
+    fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
+
+    // Transform matrix blocks
+    xA11 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
+    xA12 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
+    xA21 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
+    xA22 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
+  }
+  else
+  {
+    // Re-use the preconditioner, so extract everything from the existing preconditioner 'Pmatrix_'.
+
+    // create maps
+    fullrangemap =
+        Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(Pmatrix_->FullRangeMap())));
+
+    xA11 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(0, 0).EpetraMatrix()));
+    xA12 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(0, 1).EpetraMatrix()));
+    xA21 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 0).EpetraMatrix()));
+    xA22 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 1).EpetraMatrix()));
+  }
+
+  /* Define strided maps
+   *
+   * We have 'numdf' Lagrange multipliers per node at the contact interface,
+   * so we also add 'numdf' entries to map of the Lagrange multipliers.
+   */
+  std::vector<size_t> stridingInfo1;
+  std::vector<size_t> stridingInfo2;
+  stridingInfo1.push_back(numdf);
+  stridingInfo2.push_back(numdf);
+  Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(), stridingInfo1,
+      xA11->getRowMap()->getIndexBase(), -1 /* stridedBlock */, 0 /*globalOffset*/));
+  Teuchos::RCP<StridedMap> strMap2 = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo2,
+      xA22->getRowMap()->getIndexBase(), -1 /* stridedBlock */, 0 /*globalOffset*/));
+
+  // build map extractor
+  std::vector<Teuchos::RCP<const Map>> xmaps;
+  xmaps.push_back(strMap1);
+  xmaps.push_back(strMap2);
+
+  Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO>> map_extractor =
+      Xpetra::MapExtractorFactory<Scalar, LO, GO>::Build(fullrangemap, xmaps);
+
+  // build blocked Xpetra operator
+  Teuchos::RCP<BlockedCrsMatrix> bOp =
+      Teuchos::rcp(new BlockedCrsMatrix(map_extractor, map_extractor, 10));
+  bOp->setMatrix(0, 0, xA11);
+  bOp->setMatrix(0, 1, xA12);
+  bOp->setMatrix(1, 0, xA21);
+  bOp->setMatrix(1, 1, xA22);
+  bOp->fillComplete();
+
+  // Re-create or re-use the preconditioner?
+  if (create)
+  {
+    // (Re-)create the preconditioner
+
     // free old matrix first
     P_ = Teuchos::null;
 
-    ///////////////////////////////////////////////////////
     // interpret ML parameters
     int maxLevels = 3;
     int verbosityLevel = 10;
@@ -235,96 +347,22 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     if (verbosityLevel > 7) eVerbLevel = Teuchos::VERB_HIGH;
     if (verbosityLevel > 9) eVerbLevel = Teuchos::VERB_EXTREME;
 
-    ////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////
-    // prepare nullspace vector for MueLu (block A11 only)
-    ///////////////////////////////////////////////////////////////////////
-    int numdf = mllist_.get<int>("PDE equations", -1);
-    int dimns = mllist_.get<int>("null space: dimension", -1);
-    if (dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
-
-    ///////////////////////////////////////////////////////////////////////
-    // create a Teuchos::Comm from EpetraComm
-    ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<const Teuchos::Comm<int>> comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
-
-
-    // extract additional maps from parameter list
-    // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
-    // has access to the contact manager class
-    Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
-    Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
-    Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
     bool bIsMeshtying = false;  // assume a contact problem
     if (mllist_.isSublist("Linear System properties"))
     {
       const Teuchos::ParameterList& linSystemProps = mllist_.sublist("Linear System properties");
-      // extract information provided by solver (e.g. PermutedAztecSolver)
-      epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact masterDofMap");
-      epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
-      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-      epInnerDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact innerDofMap");
-      /*if(linSystemProps.isParameter("non diagonal-dominant row map"))
-        xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row
-      map"); if(linSystemProps.isParameter("near-zero diagonal row map")) xNearZeroDiagMap  =
-      linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");*/
+
       if (linSystemProps.isParameter("ProblemType") &&
           linSystemProps.get<std::string>("ProblemType") == "meshtying")
         bIsMeshtying = true;
     }
 
-    // transform epetra to xpetra
-    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
-        Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
-
-    ///////////////////////////////////////////////////////////////////////
-    // prepare maps for blocked operator
-    ///////////////////////////////////////////////////////////////////////
-
-    // create maps
-    Teuchos::RCP<const Map> fullrangemap =
-        Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
-
-    Teuchos::RCP<CrsMatrix> xA11 =
-        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
-    Teuchos::RCP<CrsMatrix> xA12 =
-        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
-    Teuchos::RCP<CrsMatrix> xA21 =
-        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
-    Teuchos::RCP<CrsMatrix> xA22 =
-        Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
-
-    // define strided maps
-    std::vector<size_t> stridingInfo1;
-    std::vector<size_t> stridingInfo2;
-    stridingInfo1.push_back(numdf);
-    stridingInfo2.push_back(
-        numdf);  // we have numdf Lagrange multipliers per node at the contact interface!
-    Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(), stridingInfo1,
-        xA11->getRowMap()->getIndexBase(), -1 /* stridedBlock */, 0 /*globalOffset*/));
-    Teuchos::RCP<StridedMap> strMap2 = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo2,
-        xA22->getRowMap()->getIndexBase(), -1 /* stridedBlock */, 0 /*globalOffset*/));
-
-    // build map extractor
-    std::vector<Teuchos::RCP<const Map>> xmaps;
-    xmaps.push_back(strMap1);
-    xmaps.push_back(strMap2);
-
-    Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO>> map_extractor =
-        Xpetra::MapExtractorFactory<Scalar, LO, GO>::Build(fullrangemap, xmaps);
-
-    // build blocked Xpetra operator
-    Teuchos::RCP<BlockedCrsMatrix> bOp =
-        Teuchos::rcp(new BlockedCrsMatrix(map_extractor, map_extractor, 10));
-    bOp->setMatrix(0, 0, xA11);
-    bOp->setMatrix(0, 1, xA12);
-    bOp->setMatrix(1, 0, xA21);
-    bOp->setMatrix(1, 1, xA22);
-    bOp->fillComplete();
+    if (bIsMeshtying)
+      dserror(
+          "This is a contact preconditioner. Should we really end up here? It might be ok, but "
+          "I'm "
+          "not sure as we currently can't do saddle-point preconditioning for meshtying "
+          "problems.");
 
     ///////////////////////////////////////////////////////////////////////
     // prepare nullspace for first block
@@ -408,13 +446,13 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 
 
     Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory());
-#if 1
     Teuchos::RCP<PFactory> P11Fact;
     Teuchos::RCP<TwoLevelFactoryBase> R11Fact;
 
+    // Check for plain or smoothed aggregation
     if (agg_damping == 0.0)
     {
-      // tentative prolongation operator (PA-AMG)
+      // Plain aggregation: use tentative prolongation operator (PA-AMG)
       P11Fact = Ptent11Fact;
       R11Fact = Teuchos::rcp(new TransPFactory());
     }
@@ -423,7 +461,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
       // smoothed aggregation (SA-AMG)
       P11Fact =
           Teuchos::rcp(new MueLu::SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>());
-      // P11Fact  = Teuchos::rcp( new SaPFactory() );
       P11Fact->SetParameter("Damping factor", Teuchos::ParameterEntry(agg_damping));
       P11Fact->SetParameter("Damping strategy", Teuchos::ParameterEntry(std::string("User")));
 
@@ -457,6 +494,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
       */
       R11Fact = Teuchos::rcp(new GenericRFactory());
     }
+    // ToDo (mayr.mt) Where do we set this? Is it clear that '-2.0' means PG-AMG with R=P^T?
     else if (agg_damping == -2.0)
     {
       // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
@@ -476,11 +514,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
       // PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
       R11Fact = Teuchos::rcp(new GenericRFactory());
     }
-#else
-    Teuchos::RCP<TentativePFactory> P11Fact = Ptent11Fact;
-    Teuchos::RCP<TransPFactory> R11Fact = Teuchos::rcp(new TransPFactory());
-    R11Fact->SetFactory("P", P11Fact);
-#endif
+
     Teuchos::RCP<NullspaceFactory> nspFact11 = Teuchos::rcp(new NullspaceFactory("Nullspace1"));
     nspFact11->SetFactory("Nullspace1", Ptent11Fact /*P11Fact*/);
     Teuchos::RCP<CoarseMapFactory> coarseMapFact11 = Teuchos::rcp(new CoarseMapFactory());
@@ -507,7 +541,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     // create default nullspace for block 2
     ///////////////////////////////////////////////////////////////////////
 
-    int dimNS2 = numdf;
+    const int dimNS2 = numdf;
     Teuchos::RCP<MultiVector> nspVector22 = MultiVectorFactory::Build(xA22->getRowMap(), dimNS2);
 
     for (int i = 0; i < dimNS2; ++i)
@@ -527,11 +561,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     // set up block 2 factories
     ///////////////////////////////////////////////////////////////////////
 
-    // use special aggregation routine which reconstructs aggregates for the
-    // Lagrange multipliers using the aggregates for the displacements at the
-    // contact/meshtying interface
-    // keep correlation of interface nodes (displacements) and corresponding
-    // Lagrange multiplier DOFs
+    /* Use special aggregation routine which reconstructs aggregates for the Lagrange multipliers
+     * using the aggregates for the displacements at the contact/meshtying interface to keep
+     * correlation of interface nodes (displacements) and corresponding Lagrange multiplier DOFs
+     */
     Teuchos::RCP<MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
         UCAggFact22 = Teuchos::rcp(
             new MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>(
@@ -718,7 +751,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 #endif
 
     ///////////////////////////////////////////////////////////////////////
-    // create Braess-Sarazin smoother
+    // create block smoother for coarsest level
     ///////////////////////////////////////////////////////////////////////
     Teuchos::RCP<SmootherFactory> SmooFactCoarsest = GetCoarsestBlockSmootherFactory(mllist_);
 
@@ -733,8 +766,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
       Teuchos::ParameterList pp(mllist_);
 
       // fine/intermediate level smoother
-      Teuchos::RCP<SmootherFactory> SmooFactFine = GetBlockSmootherFactory(
-          pp, i);  // GetBraessSarazinSmootherFactory(pp, i, Teuchos::null /* AFact*/);
+      Teuchos::RCP<SmootherFactory> SmooFactFine = GetBlockSmootherFactory(pp, i);
 
       vecManager[i] = Teuchos::rcp(new FactoryManager());
       if (SmooFactFine != Teuchos::null)
@@ -744,26 +776,23 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 #ifdef HAVE_MUELU_ISORROPIA
       if (bDoRepartition)
       {
-        vecManager[i]->SetFactory("A", RebalancedAcFact);  // same RAP factory for all levels
-        vecManager[i]->SetFactory(
-            "P", RebalancedBlockPFact);  // same prolongator and restrictor factories for all levels
-        vecManager[i]->SetFactory(
-            "R", RebalancedBlockRFact);  // same prolongator and restrictor factories for all levels
+        // Same RAP, prolongator, and restrictor factories on all levels
+        vecManager[i]->SetFactory("A", RebalancedAcFact);
+        vecManager[i]->SetFactory("P", RebalancedBlockPFact);
+        vecManager[i]->SetFactory("R", RebalancedBlockRFact);
       }
       else
       {
-        vecManager[i]->SetFactory("A", AcFact);  // same RAP factory for all levels
-        vecManager[i]->SetFactory(
-            "P", PFact);  // same prolongator and restrictor factories for all levels
-        vecManager[i]->SetFactory(
-            "R", RFact);  // same prolongator and restrictor factories for all levels
+        // Same RAP, prolongator, and restrictor factories on all levels
+        vecManager[i]->SetFactory("A", AcFact);
+        vecManager[i]->SetFactory("P", PFact);
+        vecManager[i]->SetFactory("R", RFact);
       }
 #else
-      vecManager[i]->SetFactory("A", AcFact);  // same RAP factory for all levels
-      vecManager[i]->SetFactory(
-          "P", PFact);  // same prolongator and restrictor factories for all levels
-      vecManager[i]->SetFactory(
-          "R", RFact);  // same prolongator and restrictor factories for all levels
+      // Same RAP, prolongator, and restrictor factories on all levels
+      vecManager[i]->SetFactory("A", AcFact);
+      vecManager[i]->SetFactory("P", PFact);
+      vecManager[i]->SetFactory("R", RFact);
 #endif
     }
 
@@ -811,96 +840,18 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   }
   else
   {
-    // reuse existing multigrid hierarchy
-    // we have to create a new MueLu::EpetraOperator reusing the MueLu hierarchy
-    //
-
-    ///////////////////////////////////////////////////////////////////////
-    // prepare nullspace vector for MueLu (block A11 only)
-    ///////////////////////////////////////////////////////////////////////
-    int numdf = mllist_.get<int>("PDE equations", -1);
-    int dimns = mllist_.get<int>("null space: dimension", -1);
-    if (dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
-
-    ///////////////////////////////////////////////////////////////////////
-    // create a Teuchos::Comm from EpetraComm
-    ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<const Teuchos::Comm<int>> comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
-
-
-    // extract additional maps from parameter list
-    // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
-    // has access to the contact manager class
-    Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-    Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
-    Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
-    Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
-    if (mllist_.isSublist("Linear System properties"))
-    {
-      const Teuchos::ParameterList& linSystemProps = mllist_.sublist("Linear System properties");
-      // extract information provided by solver (e.g. PermutedAztecSolver)
-      epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact masterDofMap");
-      epSlaveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
-      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-      epInnerDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map>>("contact innerDofMap");
-    }
-
-    // transform epetra to xpetra
-    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap =
-        Teuchos::rcp(new Xpetra::EpetraMap(epSlaveDofMap));
-
-    ///////////////////////////////////////////////////////////////////////
-    // prepare maps for blocked operator
-    ///////////////////////////////////////////////////////////////////////
-
-    // create maps
-    Teuchos::RCP<const Map> fullrangemap =
-        Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(Pmatrix_->FullRangeMap())));
-
-    Teuchos::RCP<CrsMatrix> xA11 =
-        Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(0, 0).EpetraMatrix()));
-    Teuchos::RCP<CrsMatrix> xA12 =
-        Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(0, 1).EpetraMatrix()));
-    Teuchos::RCP<CrsMatrix> xA21 =
-        Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 0).EpetraMatrix()));
-    Teuchos::RCP<CrsMatrix> xA22 =
-        Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 1).EpetraMatrix()));
-
-    // define strided maps
-    std::vector<size_t> stridingInfo1;
-    std::vector<size_t> stridingInfo2;
-    stridingInfo1.push_back(numdf);
-    stridingInfo2.push_back(
-        numdf);  // we have numdf Lagrange multipliers per node at the contact interface!
-    Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(), stridingInfo1,
-        xA11->getRowMap()->getIndexBase(), -1 /* stridedBlock */, 0 /*globalOffset*/));
-    Teuchos::RCP<StridedMap> strMap2 = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo2,
-        xA22->getRowMap()->getIndexBase(), -1 /* stridedBlock */, 0 /*globalOffset*/));
-
-    // build map extractor
-    std::vector<Teuchos::RCP<const Map>> xmaps;
-    xmaps.push_back(strMap1);
-    xmaps.push_back(strMap2);
-
-    Teuchos::RCP<const Xpetra::MapExtractor<Scalar, LO, GO>> map_extractor =
-        Xpetra::MapExtractorFactory<Scalar, LO, GO>::Build(fullrangemap, xmaps);
-
-    // build blocked Xpetra operator
-    Teuchos::RCP<BlockedCrsMatrix> bOp =
-        Teuchos::rcp(new BlockedCrsMatrix(map_extractor, map_extractor, 10));
-    bOp->setMatrix(0, 0, xA11);
-    bOp->setMatrix(0, 1, xA12);
-    bOp->setMatrix(1, 0, xA21);
-    bOp->setMatrix(1, 1, xA22);
-    bOp->fillComplete();
+    /* Reuse existing multigrid hierarchy
+     *
+     * We use the same hierarchy, but just set the new fine level matrix.
+     */
 
     H_->setlib(Xpetra::UseEpetra);  // not very nice, but safe.
     H_->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp));
 
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
   }
+
+  return;
 }
 
 //----------------------------------------------------------------------------------

@@ -57,11 +57,22 @@ namespace LINALG
 
       /*! \brief Create and compute the preconditioner
        *
-       *  \warning The saddle-point preconditioner only works for matrices of the type
-       * BlockSparseMatrix. We check whether the input \c matrix is of proper type and throw an
+       * The saddle-point preconditioner only works for matrices of the type
+       * BlockSparseMatrix. We assume the structure and block indices to be
+       * \f[
+       * A = \left[\begin{array}{cc}
+       *       A_{11} & A_{12}\\
+       *       A_{21} & A_{22}
+       *     \end{array}\right]
+       * \f]
+       * We check whether the input \c matrix is of proper type and throw an
        * error if not.
        *
-       * @param create Boolean flag to enforce creation of the preconditioner
+       * This routine either re-create the entire preconditioner from scratch or
+       * it re-uses the existing preconditioner and only updates the fine level matrix
+       * for the Krylov solver.
+       *
+       * @param create Boolean flag to enforce (re-)creation of the preconditioner
        * @param matrix BlockSparseMatrix to be used as input for the preconditioner
        * @param x Solution of the linear system
        * @param b Right-hand side of the linear system
@@ -130,8 +141,8 @@ namespace LINALG
 
       /// MueLu hierarchy
       Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H_;
-    };
-  }  // namespace SOLVER
+    };  // class MueLuContactSpPreconditioner
+  }     // namespace SOLVER
 }  // namespace LINALG
 
 #endif  // HAVE_MueLu
