@@ -180,7 +180,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+  if (A == Teuchos::null) dserror("Matrix is not a BlockSparseMatrix");
 
   // store blocked operator
   Pmatrix_ = A;
@@ -407,11 +407,13 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     H->setlib(Xpetra::UseEpetra);  // not very nice, but safe.
     H->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
     H->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize));
-    H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp));
+    H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp, true));
     H->GetLevel(0)->Set("Nullspace1", nspVector11);
     H->GetLevel(0)->Set("coarseAggStat", aggStat);
-    H->GetLevel(0)->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(
-                                           xSlaveDofMap));  // set map with active dofs
+
+    // set map with active dofs
+    H->GetLevel(0)->Set("SlaveDofMap",
+        Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO, GO, Node>>(xSlaveDofMap, true));
 
     Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory());
     Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory());
@@ -841,7 +843,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
      */
 
     H_->setlib(Xpetra::UseEpetra);  // not very nice, but safe.
-    H_->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp));
+    H_->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp, true));
 
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
   }
