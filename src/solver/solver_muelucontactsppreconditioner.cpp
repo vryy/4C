@@ -53,6 +53,7 @@
 #include <MueLu_NullspaceFactory.hpp>
 
 #include <MueLu_Aggregates.hpp>
+#include <MueLu_AggregationAlgorithmBase.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_BlockedPFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
@@ -396,13 +397,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     // still problematic for repartitioning
     Teuchos::ArrayRCP<unsigned int> aggStat;
     if (nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows / numdf);
-    for (LocalOrdinal i = 0; i < nDofRows; ++i)
-    {
-      // The enum has been moved and renamed in MueLu, such that it is not accessible from outside
-      // (at least not with non C++11 extensions)
-      // TODO be careful to match with the enum declaration in MueLu_AggregationAlgorithmBase.hpp
-      aggStat[i / numdf] = 1;  // MueLu::NodeState::READY; // 1
-    }
+    for (LocalOrdinal i = 0; i < nDofRows; ++i) aggStat[i / numdf] = MueLu::NodeState::READY;
 
     ///////////////////////////////////////////////////////////////////////
     // create Hierarchy
