@@ -117,7 +117,7 @@ namespace LINALG
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
       Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
       InterpretBACIList2MueLuSmoother(
-          const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact);
+          const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact) const;
 
       //! ML parameter list
       Teuchos::ParameterList& mllist_;

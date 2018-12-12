@@ -1483,7 +1483,7 @@ LINALG::SOLVER::MueLuContactSpPreconditioner::GetBraessSarazinSmootherFactory(
 //----------------------------------------------------------------------------------
 Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 LINALG::SOLVER::MueLuContactSpPreconditioner::InterpretBACIList2MueLuSmoother(
-    const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact)
+    const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact) const
 {
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
   std::string type = paramList.get<std::string>("solver");
