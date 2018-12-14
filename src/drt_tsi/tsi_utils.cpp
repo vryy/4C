@@ -30,6 +30,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_thermo/thermo_element.H"
+#include "../drt_thermo/thermo_ele_impl_utils.H"
 #include "../drt_so3/so3_thermo.H"
 #include "../drt_so3/so3_plast/so3_ssn_plast.H"
 
@@ -39,6 +40,8 @@
 #include "../drt_lib/drt_periodicbc.H"
 
 #include "../drt_volmortar/volmortar_utils.H"
+
+#include "../drt_mat/fouriervar.H"
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
@@ -121,6 +124,23 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
     therm->SetMaterial(matid);
     therm->SetDisType(oldele->Shape());  // set distype as well!
     therm->SetKinematicType(kintype);    // set kintype in cloned thermal element
+    if (therm->Material()->MaterialType() == INPAR::MAT::m_th_fourier_var)
+    {
+      Teuchos::RCP<MAT::FourierVar> thermmat =
+          Teuchos::rcp_dynamic_cast<MAT::FourierVar>(therm->Material(), true);
+      // setup to create NumGP-sized history variables
+      int numgp = -1;
+      switch (therm->Shape())
+      {
+        case DRT::Element::hex8:
+          THR::DisTypeToNumGaussPoints<DRT::Element::hex8> g;
+          numgp = g.nquad;
+          break;
+        default:
+          dserror("Shape not implemented.");
+      }
+      thermmat->Setup(numgp);
+    }
   }
   else
 #endif

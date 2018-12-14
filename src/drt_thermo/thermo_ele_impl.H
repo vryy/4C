@@ -167,10 +167,12 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,  //!< conductivity matrix
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      //!< internal force
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,                      //!< external force
-          LINALG::Matrix<nquad_, nsd_>* eheatflux,  //!< heat fluxes at Gauss points
-          LINALG::Matrix<nquad_, nsd_>* etempgrad   //!< temperature gradients at Gauss points
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              ecapalin,  // linearization contribution of capacity
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efext,  //!< external force
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
+          LINALG::Matrix<nquad_, nsd_>* etempgrad  //!< temperature gradients at Gauss points
       );
 
       //! get the body force
@@ -178,9 +180,20 @@ namespace DRT
           const double time                      //!< current times
       );
 
+      // post-Newton iteration update of temperatures and source terms to account for latent heat of
+      // phase change
+      virtual void CalculatePhaseChangeIncrement(
+          DRT::Element* ele,  //!< the element whose matrix is calculated
+          LINALG::Matrix<nen_ * numdofpernode_, 1>*
+              esourceinc,  //!< artificial increment in source term
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* etempi, Teuchos::ParameterList& params);
+
+      virtual void CalculateTotalLatentHeat(DRT::Element* ele, Teuchos::ParameterList& params);
+
       //! determine heat flux and conductivity tensor
       //! based on material law
-      virtual void Materialize(const DRT::Element* ele  //!< current element
+      virtual void Materialize(const DRT::Element* ele,  //!< current element
+          const int gp                                   //!< current GP id
       );
 
       //! evaluate shape functions and their derivatives at current integration point
@@ -302,8 +315,10 @@ namespace DRT
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,  //!< conductivity matrix
           LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
-          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      //!< internal force
-          LINALG::Matrix<nquad_, nsd_>* eheatflux,    //!< heat fluxes at Gauss points
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              ecapalin,  //!< partial linearization dC/dT of capacity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
+          LINALG::Matrix<nquad_, nsd_>* eheatflux,          //!< heat fluxes at Gauss points
           LINALG::Matrix<nquad_, nsd_>* etempgrad,    //!< temperature gradients at Gauss points
           const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
           const INPAR::THR::TempGradType iotempgrad,  // tempgrad output option
@@ -371,7 +386,34 @@ namespace DRT
 
       //@}
 
-      //! actual values of temperatures
+      // extract the node based phase information
+      void ExtractPhaseInformation(DRT::Element* ele,
+          LINALG::Matrix<nen_ * numdofpernode_, 1>& ephase);  // vector to fill, view on elevec1
+
+      // FDcheck of conductivity matrix on element level
+      void FDCheckCouplNlnFintCondCapa(
+          DRT::Element* ele,          //!< the element whose matrix is calculated
+          const double& time,         //!< current time
+          std::vector<double>& disp,  //!< current displacements
+          std::vector<double>& vel,   //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              etang,                                        //!< tangent conductivity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force);)
+          Teuchos::ParameterList& params);
+
+      // FDcheck of linearized capacity matrix on element level
+      void FDCheckCapalin(DRT::Element* ele,  //!< the element whose matrix is calculated
+          const double& time,                 //!< current time
+          std::vector<double>& disp,          //!< current displacements
+          std::vector<double>& vel,           //!< current velocities
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  //!< capacity matrix
+          LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+              ecapalin,  //!< linearization term from capacity matrix
+          Teuchos::ParameterList& params);
+
+      //! actual values of temperatures T_{n+1}
+      LINALG::Matrix<nen_, 1> etempn_;
+      //! temperatures in last time step T_{n}
       LINALG::Matrix<nen_, 1> etemp_;
       //! capacity matrix
       LINALG::Matrix<nen_, nen_> ecapa_;
@@ -402,8 +444,12 @@ namespace DRT
       LINALG::Matrix<nsd_, 1> heatflux_;
       //! (global) conductivity 2-tensor
       LINALG::Matrix<nsd_, nsd_> cmat_;
+      //! (global) derivative of conductivity 2-tensor w.r.t. T
+      LINALG::Matrix<nsd_, nsd_> dercmat_;
       //! capacity density
       double capacoeff_;
+      //! deriavtive of capacity w.r.t. T
+      double dercapa_;
 
       //! @name material related stuff
 

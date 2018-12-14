@@ -295,7 +295,7 @@ void ThermoFilter::WriteHeatflux(
     writer_->WriteSpecialField(
         heatflux, result, nodebased, groupname, std::vector<std::string>(1, name), out);
   }
-  else if (kind == nodebased)
+  else if (kind == elementbased)
   {
     name = "element_" + name;
     WriteElementCenterHeatfluxStep heatflux(*this);

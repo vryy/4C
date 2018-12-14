@@ -29,6 +29,7 @@
 #include "drt_dserror.H"
 #include "drt_parser.H"
 #include "drt_functionvariables.H"
+#include "../drt_fem_general/drt_utils_polynomial.H"
 
 namespace MAT
 {
@@ -454,6 +455,28 @@ namespace DRT
 
       // Current acceleration (at t)
       LINALG::Matrix<3, 1> acc_B_;
+    };
+
+    // special implementation of a polynomial for faster derivative evaluation
+    // on Gauss point level FAD is too slow
+    class FastPolynomialFunction : public Function
+    {
+     public:
+      FastPolynomialFunction(std::vector<double>* coefficients);
+
+      double Evaluate(const double argument) const;
+
+      double EvaluateDerivative(const double argument) const;
+
+      virtual double Evaluate(const int index, const double* x, double t)
+      {
+        dserror("FastPolynomialFunction does not support this call.");
+        return 0;
+      }
+
+     private:
+      // internal polynomial representation
+      const DRT::UTILS::Polynomial* const mypoly_;
     };
 
   }  // namespace UTILS
