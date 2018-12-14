@@ -621,36 +621,59 @@ namespace CONTACT
 
     std::vector<Teuchos::RCP<MORTAR::MortarInterface>> interface_;  // meshtying interfaces
 
-    Teuchos::RCP<Epetra_Map>
-        glmdofrowmap_;  ///< global Lagrange mult. dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsdofrowmap_;   ///< global slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmdofrowmap_;   ///< global master dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gndofrowmap_;   ///< global internal dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;  ///< global slave and master dof row map (s+m map)
-    Teuchos::RCP<Epetra_Map> gdisprowmap_;   ///< global displacement dof row map (s+m+n map)
+    //! Global Lagrange mult. dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> glmdofrowmap_;
 
-    Teuchos::RCP<Epetra_Map> gsnoderowmap_;  ///< global slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmnoderowmap_;  ///< global master node row map (of all interfaces)
+    //! Global slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsdofrowmap_;
 
-    Teuchos::RCP<Epetra_Map>
-        pglmdofrowmap_;  ///< global LM dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>
-        pgsdofrowmap_;  ///< global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>
-        pgmdofrowmap_;  ///< global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>
-        pgsmdofrowmap_;  ///< global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;  ///< global dirichlet toggle of all slave dofs
-                                                   ///< (before parallel redistribution)
+    //! Global master dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmdofrowmap_;
 
-    std::vector<Teuchos::RCP<Epetra_Map>>
-        initial_elecolmap_;  ///< init a col ele map for binning strategy (s m)
+    //! Global internal dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gndofrowmap_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;  ///< global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;  ///< global Mortar matrix M
-    Teuchos::RCP<Epetra_Vector> g_;               ///< global weighted gap vector g
-    Teuchos::RCP<Epetra_Vector>
-        constrrhs_;  ///< global constraint rhs vector (only for saddlepoint problems)
+    //! Global slave and master dof row map (s+m map)
+    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;
+
+    //! Global displacement dof row map (s+m+n map)
+    Teuchos::RCP<Epetra_Map> gdisprowmap_;
+
+    //! Global slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsnoderowmap_;
+
+    //! Global master node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmnoderowmap_;
+
+    //! Global LM dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
+
+    //! Global slave dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pgsdofrowmap_;
+
+    //! Global master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pgmdofrowmap_;
+
+    //! Global slave and master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;
+
+    //! Global dirichlet toggle of all slave dofs (before parallel redistribution)
+    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;
+
+    //! Initial element column map for binning strategy (slave + master)
+    std::vector<Teuchos::RCP<Epetra_Map>> initial_elecolmap_;
+
+    //! Global Mortar matrix D
+    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;
+
+    //! Global Mortar matrix M
+    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;
+
+    //! Global weighted gap vector g
+    Teuchos::RCP<Epetra_Vector> g_;
+
+    //! Global constraint rhs vector (only for saddlepoint problems)
+    Teuchos::RCP<Epetra_Vector> constrrhs_;
 
     Teuchos::RCP<Epetra_Vector> z_;     ///< current vector of Lagrange multipliers at t_n+1
     Teuchos::RCP<Epetra_Vector> zold_;  ///< old vector of Lagrange multipliers at t_n
