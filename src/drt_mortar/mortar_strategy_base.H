@@ -263,7 +263,7 @@ namespace MORTAR
     virtual void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) = 0;
     virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-        Teuchos::RCP<Epetra_Map>& ActiveDofMap) = 0;
+        Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double ConstraintNorm() const = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;

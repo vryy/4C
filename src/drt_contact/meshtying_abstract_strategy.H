@@ -112,12 +112,16 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return zincr_; }
 
     /*!
-    \brief provides maps needed for contact/meshtying specific multigrid preconditioners
+    \brief Gather maps needed for contact/meshtying specific multigrid preconditioners
 
+    @param MasterDofMap Dof row map of master interface
+    @param SlaveDofMap Dof row map of slave interface
+    @param InnerDofMap Dof row map of interior volume
+    @param ActiveDofMap Dof row map of active slave contact interface
     */
     void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
-        Teuchos::RCP<Epetra_Map>& ActiveDofMap);
+        Teuchos::RCP<Epetra_Map>& ActiveDofMap) const override;
 
     /*!
     \brief Return mortar matrix D
