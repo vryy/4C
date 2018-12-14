@@ -71,9 +71,6 @@ namespace PARTICLEENGINE
     //! remove particle from particle container
     void RemoveParticle(int index);
 
-    //! swap particles at index a and b in particle container
-    void SwapParticle(int index_a, int index_b);
-
     //! return pointer to state of a particle at index
     double* GetPtrToParticleState(StateEnum stateEnum, int index) const;
 

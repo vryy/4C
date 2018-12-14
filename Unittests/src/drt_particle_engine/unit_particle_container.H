@@ -313,66 +313,6 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_SwapParticle()
-  {
-    int globalid(0);
-    int globalid_reference(0);
-    ParticleStates particle;
-    ParticleStates particle_reference;
-    std::vector<double> pos(3);
-    std::vector<double> vel(3);
-    std::vector<double> mass(1);
-
-    container_->SwapParticle(1, 2);
-
-    for (int index = 0; index < 3; ++index)
-    {
-      particle_reference.clear();
-
-      if (index == 0)
-      {
-        globalid_reference = 1;
-        pos[0] = 1.20;
-        pos[1] = 0.70;
-        pos[2] = 2.10;
-        vel[0] = 0.23;
-        vel[1] = 1.76;
-        vel[2] = 3.89;
-        mass[0] = 0.12;
-      }
-      else if (index == 1)
-      {
-        globalid_reference = 3;
-        pos[0] = 61.0;
-        pos[1] = -2.63;
-        pos[2] = 0.11;
-        vel[0] = -7.35;
-        vel[1] = -5.98;
-        vel[2] = 1.11;
-        mass[0] = 0.5;
-      }
-      else if (index == 2)
-      {
-        globalid_reference = 2;
-        pos[0] = -1.05;
-        pos[1] = 12.6;
-        pos[2] = -8.54;
-        vel[0] = 0.25;
-        vel[1] = -21.5;
-        vel[2] = 1.0;
-        mass[0] = 12.34;
-      }
-
-      particle_reference.insert(std::make_pair(PARTICLEENGINE::Position, pos));
-      particle_reference.insert(std::make_pair(PARTICLEENGINE::Velocity, vel));
-      particle_reference.insert(std::make_pair(PARTICLEENGINE::Mass, mass));
-
-      container_->GetParticle(index, globalid, particle);
-      TS_ASSERT_EQUALS(globalid_reference, globalid);
-      compareParticleStates(particle_reference, particle);
-    }
-  }
-
   void test_GetPtrToParticleState()
   {
     std::vector<double> pos(3);

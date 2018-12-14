@@ -266,27 +266,11 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
   if (index < 0 or index > (particlestored_ - 1))
     dserror("can not remove particle as index %d out of bounds!", index);
 
-  // to avoid fragmentation of memory: swap particle to be removed with last particle in container
-  SwapParticle(index, (particlestored_ - 1));
-
   // decrease counter of stored particles
   --particlestored_;
 
-  // decrease size of container
-  if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
-}
-
-/*---------------------------------------------------------------------------*
- | swap particles at index a and b in particle container      sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b)
-{
-  if (index_a < 0 or index_a > (particlestored_ - 1) or index_b < 0 or
-      index_b > (particlestored_ - 1))
-    dserror("can not swap particles as pair of index (%d, %d) out of bounds!", index_a, index_b);
-
-  // swap global ids of particles
-  std::swap(globalids_[index_a], globalids_[index_b]);
+  // overwrite global id in container
+  globalids_[index] = globalids_[particlestored_];
 
   int stateDim = 0;
   std::shared_ptr<std::vector<double>> state;
@@ -297,10 +281,13 @@ void PARTICLEENGINE::ParticleContainer::SwapParticle(int index_a, int index_b)
     stateDim = EnumToStateDim(it.first);
     state = it.second;
 
-    // swap current state of particles
+    // overwrite state in container
     for (int dim = 0; dim < stateDim; ++dim)
-      std::swap((*state)[index_a * stateDim + dim], (*state)[index_b * stateDim + dim]);
+      (*state)[index * stateDim + dim] = (*state)[particlestored_ * stateDim + dim];
   }
+
+  // decrease size of container
+  if (particlestored_ < 0.45 * containersize_) DecreaseContainerSize();
 }
 
 /*---------------------------------------------------------------------------*
