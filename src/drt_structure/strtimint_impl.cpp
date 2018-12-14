@@ -3303,10 +3303,6 @@ void STR::TimIntImpl::CmtLinearSolve()
     {
       // otherwise, solve the saddle point linear system
 
-      // will be removed soon
-      // contactsolver_->Params().set<bool>("CONTACT",true); // for simpler precond
-      // contactsolver_->Params().set<bool>("MESHTYING",true); // for simpler precond
-
       Teuchos::RCP<Epetra_Operator> blockMat = Teuchos::null;
       Teuchos::RCP<Epetra_Vector> blocksol = Teuchos::null;
       Teuchos::RCP<Epetra_Vector> blockrhs = Teuchos::null;

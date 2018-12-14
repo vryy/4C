@@ -184,9 +184,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   if (onlymeshtying or onlycontact or meshtyingandcontact)
     contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
 
-  // create contact/meshtying solver only if contact/meshtying problem.
-  // Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
-
   if (solver != Teuchos::null &&
       (solver->Params().isSublist("Aztec Parameters") ||
           solver->Params().isSublist("Belos Parameters")) &&
@@ -581,16 +578,18 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
             "no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
-      // plausibility check
-
-      // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
+      /* Plausibility check
+       *
+       * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver
+       * (Aztec_MSR/Belos).
+       */
       INPAR::SOLVER::SolverType sol = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
       INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu)
       {
-        // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
+        // if an iterative solver is chosen we need a block preconditioner
         if (prec != INPAR::SOLVER::azprec_CheapSIMPLE && prec != INPAR::SOLVER::azprec_TekoSIMPLE &&
             prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
           dserror(
