@@ -42,8 +42,8 @@ namespace LINALG
       virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix,  ///< matrix
           Teuchos::RCP<Epetra_MultiVector> x,                   ///< solution vector
           Teuchos::RCP<Epetra_MultiVector> b,                   ///< right hand side
-          bool refactor,                                        ///< Enforce refactorization?
-          bool reset,                                           ///< Enforce re-setup of solver?
+          const bool refactor,                                  ///< Enforce refactorization?
+          const bool reset,                                     ///< Enforce re-setup of solver?
           Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null  ///< Krylov projector
       );
 

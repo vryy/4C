@@ -84,8 +84,8 @@ LINALG::SOLVER::BelosSolver::~BelosSolver()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::BelosSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
-    bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, const bool refactor,
+    const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);

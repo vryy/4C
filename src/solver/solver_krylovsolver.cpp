@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
 \file solver_krylovsolver.cpp
-\brief Declaration
 
-<pre>
-\brief Declaration
+\brief Implementation of Baci's interface to Krylov solvers
+
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+*/
+/*---------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 #include <MueLu_ConfigDefs.hpp>
@@ -122,10 +119,7 @@ int LINALG::SOLVER::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
-    int reuse,  // reuse flag from Aztec/Belos parameter list (AZREUSE)
-    bool reset  // reset flag (user given from outside)
-)
+bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(const int reuse, const bool reset)
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
 
@@ -198,7 +192,7 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& azlist,
-    bool isCrsMatrix, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    const bool isCrsMatrix, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
 

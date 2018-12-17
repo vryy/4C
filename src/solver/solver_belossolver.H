@@ -35,7 +35,7 @@ namespace LINALG
       virtual ~BelosSolver();
 
       virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-          Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
+          Teuchos::RCP<Epetra_MultiVector> b, const bool refactor, const bool reset,
           Teuchos::RCP<LINALG::KrylovProjector> projector);
       ;
       virtual int Solve();
