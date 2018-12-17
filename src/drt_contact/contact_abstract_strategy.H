@@ -1737,9 +1737,6 @@ namespace CONTACT
     };
 
    protected:
-    // don't want cctor (= operator impossible anyway for abstract class)
-    CoAbstractStrategy(const CoAbstractStrategy& old);
-
     /*! @name References to the data container content
      *
      * \remark Please add no new member variables to the abstract strategy! Use
@@ -1934,6 +1931,14 @@ namespace CONTACT
     INPAR::CONTACT::ConstraintDirection&
         constr_direction_;  //!< ref. to direction in which the contact constraints are formulated
    private:
+    /*! \brief Copy constructor
+     *
+     * \note We don't want to provide a copy constructor, so we make it protected.
+     *
+     * @param old Instance of this class to be copied
+     */
+    CoAbstractStrategy(const CoAbstractStrategy& old);
+
     //! pointer to the data container object
     Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr_;
 
