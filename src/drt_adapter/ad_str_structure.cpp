@@ -7,10 +7,7 @@
 
 \level 1
 
-<pre>
-\maintainer Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-</pre>
+\maintainer Matthias Mayr
 */
 /*----------------------------------------------------------------------*/
 
@@ -27,38 +24,34 @@
 #include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_invana.H"
 
-#include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// further includes for StructureBaseAlgorithm:
-#include "../drt_inpar/inpar_fsi.H"
-#include "../drt_inpar/inpar_structure.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_inpar/inpar_binningstrategy.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
-#include "../drt_io/io_control.H"
-#include "../drt_structure/strtimint_create.H"
-#include "../drt_structure/strtimada_create.H"
-#include "../drt_structure/strtimint_impl.H"
-#include "../drt_patspec/patspec.H"
-#include "../drt_io/io.H"
-#include "../linalg/linalg_solver.H"
-
-#include "../drt_io/io_pstream.H"
 
 #include "../drt_comm/comm_utils.H"
 
-#include "../drt_contact/meshtying_contact_bridge.H"
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_binningstrategy.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/inpar_structure.H"
+
+#include "../drt_structure/strtimada_create.H"
+#include "../drt_structure/strtimint_create.H"
+#include "../drt_structure/strtimint_impl.H"
+
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
+
+#include "../linalg/linalg_solver.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Structure::~Structure() {}
@@ -552,32 +545,34 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-  // get mortar information
-  std::vector<DRT::Condition*> mtcond(0);
-  std::vector<DRT::Condition*> ccond(0);
-  actdis->GetCondition("Mortar", mtcond);
-  actdis->GetCondition("Contact", ccond);
+  // Get mortar information: contact or meshtying or both?
   bool onlymeshtying = false;
   bool onlycontact = false;
   bool meshtyingandcontact = false;
-  if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;
-  if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
-  if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
-
+  {
+    std::vector<DRT::Condition*> mtcond(0);
+    std::vector<DRT::Condition*> ccond(0);
+    actdis->GetCondition("Mortar", mtcond);
+    actdis->GetCondition("Contact", ccond);
+    if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;
+    if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
+    if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
+  }
   const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+
+  // Get the solver number used for meshtying/contact problems
+  const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
+  // check if the meshtying/contact solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror(
+        "No linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in "
+        "CONTACT DYNAMIC to a valid number!");
+
+  // Distinguish the system type, i.e. condensed vs. saddle-point
   switch (DRT::INPUT::IntegralValue<int>(mcparams, "SYSTEM"))
   {
     case INPAR::CONTACT::system_saddlepoint:
     {
-      // meshtying/contact for structure
-      // get the solver number used for meshtying/contact problems
-      const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-      // check if the meshtying/contact solver has a valid solver number
-      if (linsolvernumber == (-1))
-        dserror(
-            "no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in "
-            "CONTACT DYNAMIC to a valid number!");
-
       /* Plausibility check
        *
        * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver
@@ -591,12 +586,13 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != INPAR::SOLVER::azprec_CheapSIMPLE && prec != INPAR::SOLVER::azprec_TekoSIMPLE &&
-            prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
+            prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)
           dserror(
-              "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
-              "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
-              "CheapSIMPLE, TekoSIMPLE (if Teko is available) or MueLu_contactSP (if MueLu is "
-              "available) in the SOLVER %i block in your dat file.",
+              "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
+              "in saddle-point formulation, a block preconditioner is required. Choose an "
+              "appropriate block preconditioner such as CheapSIMPLE, TekoSIMPLE (if Teko is "
+              "available) or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in "
+              "your input file.",
               linsolvernumber);
       }
 
@@ -614,7 +610,9 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         solver->Params().set<bool>("MESHTYING", true);
       else
         dserror(
-            "this cannot be: no saddlepoint problem for beamcontact or pure structure problem.");
+            "Saddle-point formulations are only supported for solid CONTACT or MESHTYING problems. "
+            "Problems like beamcontact or pure structure problem w/o contact do not support a "
+            "saddle-point formulation.");
 
       INPAR::CONTACT::SolvingStrategy soltype =
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams, "STRATEGY");
@@ -625,7 +623,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         // check if the structural solver has a valid solver number
         if (linsolvernumber == (-1))
           dserror(
-              "no linear solver defined for structural field. Please set LINEAR_SOLVER in "
+              "No linear solver defined for structural field. Please set LINEAR_SOLVER in "
               "STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
@@ -644,15 +642,6 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
     break;
     default:
     {
-      // meshtying/contact for structure
-      // get the solver number used for meshtying/contact problems
-      const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-      // check if the meshtying/contact solver has a valid solver number
-      if (linsolvernumber == (-1))
-        dserror(
-            "no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in "
-            "CONTACT DYNAMIC to a valid number!");
-
       // build meshtying solver
       solver =
           Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
@@ -664,5 +653,3 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 
   return solver;
 }
-
-/*----------------------------------------------------------------------*/
