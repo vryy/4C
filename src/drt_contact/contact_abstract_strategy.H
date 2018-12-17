@@ -847,6 +847,8 @@ namespace CONTACT
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
+
+      return Teuchos::null;
     };
 
     /*! \brief Return the desired right-hand side block pointer for norm check
@@ -881,6 +883,8 @@ namespace CONTACT
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
+
+      return Teuchos::null;
     };
 
     /*! \brief Return the desired matrix block pointer (read-only)
@@ -898,6 +902,8 @@ namespace CONTACT
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
+
+      return Teuchos::null;
     };
 
     //! Apply modifications (e.g. condensation) directly before linear solve
@@ -917,6 +923,8 @@ namespace CONTACT
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
+
+      return Teuchos::null;
     };
 
     //! Return global slave node row map
