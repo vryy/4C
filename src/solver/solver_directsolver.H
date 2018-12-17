@@ -35,10 +35,18 @@ namespace LINALG
       //! Constructor
       explicit DirectSolver(std::string solvertype);
 
-      //! Desctructor
+      //! Destructor
       virtual ~DirectSolver();
 
-      //! Setup
+      /*! \brief Setup the solver object
+       *
+       * @param matrix Matrix of the linear system
+       * @param x Solution vector of the linear system
+       * @param b Right-hand side vector of the linear system
+       * @param refactor Boolean flag to enforce a refactorization of the matrix
+       * @param reset Boolean flag to enforce a full reset of the solver object
+       * @param projector Krylov projector
+       */
       virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix,  ///< matrix
           Teuchos::RCP<Epetra_MultiVector> x,                   ///< solution vector
           Teuchos::RCP<Epetra_MultiVector> b,                   ///< right hand side

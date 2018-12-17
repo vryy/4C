@@ -1,16 +1,13 @@
 /*!----------------------------------------------------------------------
 \file solver_aztecsolver.cpp
-\brief Declaration
 
-<pre>
-\brief Declaration
+\brief Implementation to AztecOO solver package
+
 \level 0
-\maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+*/
+/*---------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 

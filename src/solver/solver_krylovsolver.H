@@ -40,10 +40,21 @@ namespace LINALG
     class KrylovSolver : public SolverType
     {
      public:
+      //! Constructor
       KrylovSolver(const Epetra_Comm& comm, Teuchos::ParameterList& params, FILE* outfile);
 
+      //! Destructor
       virtual ~KrylovSolver();
 
+      /*! \brief Setup the solver object
+       *
+       * @param matrix Matrix of the linear system
+       * @param x Solution vector of the linear system
+       * @param b Right-hand side vector of the linear system
+       * @param refactor Boolean flag to enforce a refactorization of the matrix
+       * @param reset Boolean flag to enforce a full reset of the solver object
+       * @param projector Krylov projector
+       */
       virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
           Teuchos::RCP<Epetra_MultiVector> b, const bool refactor, const bool reset,
           Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
@@ -52,14 +63,13 @@ namespace LINALG
 
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
-      /// get plain pointer to underlaying preconditioner object (of type PreconditionerType)
-      /// note: using this function outside the solver object is dangerous, since there's no
-      /// guarantee, that the preconditioner object still exists (but usually it should exist
-      /// as long it's needed/used within the solver object)
-      virtual PreconditionerType* Preconditioner()
-      {
-        return preconditioner_.get(); /*&*preconditioner_;*/
-      }
+      /*! \brief Get plain pointer to underlying preconditioner object of type PreconditionerType
+       *
+       * \warning Using this function outside the solver object is dangerous, since there's no
+       * guarantee, that the preconditioner object still exists (but usually it should exist
+       * as long it's needed/used within the solver object)
+       */
+      virtual PreconditionerType* Preconditioner() { return preconditioner_.get(); }
 
       int Ncall() { return ncall_; }
 

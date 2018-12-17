@@ -1,15 +1,13 @@
 /*!----------------------------------------------------------------------
 \file solver_belossolver.cpp
 
-<pre>
-\brief Declaration
+\brief Implementation of interface to Belos solver package
+
 \level 1
+
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-Created on: Jul 4, 2011
-</pre>
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 
