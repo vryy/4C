@@ -3,7 +3,7 @@
 
 \brief base class for geometry pair evaluation data subcontainers.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 

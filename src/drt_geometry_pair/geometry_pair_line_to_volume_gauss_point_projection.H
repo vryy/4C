@@ -3,7 +3,7 @@
 
 \brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.

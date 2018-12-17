@@ -4,7 +4,7 @@
 \brief base class for two or more elements that interact geometrically, e.g. contact or meshtying
 problems.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 

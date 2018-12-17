@@ -3,7 +3,7 @@
 
 \brief Class for interaction of lines and volumes.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.
@@ -16,23 +16,19 @@
 namespace GEOMETRYPAIR
 {
   //! Parameter coordinates are considered equal if they are within this tolerance.
-  const double PROJECTION_XI_ETA_TOL = 1e-8;
-
+  const double projection_xi_eta_tol = 1e-8;
 
   //! Maximum number of iterations in the local Newton.
-  const unsigned int LOCALNEWTON_ITER_MAX = 10;
+  const unsigned int local_newton_iter_max = 10;
 
   //! Residuum is considered converged if its absolute value is smaller than this tolerance.
-  const double LOCALNEWTON_RES_TOL = 1e-10;
+  const double local_newton_res_tol = 1e-10;
 
-  //! If the residuum is larger than this value, the local Newton is considered unsolvable.
-  const double LOCALNEWTON_RES_MAX = 1e+10;
+  //! Newton iteration is considered non solvable if the residuum is larger than this value.
+  const double local_newton_res_max = 1e+10;
 
   //! Jacobian is considered non invertible if it is smaller than this value.
-  const double LOCALNEWTON_DET_TOL = 1e-10;
-
-  //! If the determinant is larger than this value, the local Newton is considered unsolvable.
-  const double LOCALNEWTON_DET_MAX = 1e+10;
+  const double local_newton_det_tol = 1e-8;
 }  // namespace GEOMETRYPAIR
 
 

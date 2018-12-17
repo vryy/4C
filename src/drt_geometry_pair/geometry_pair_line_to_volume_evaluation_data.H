@@ -3,7 +3,7 @@
 
 \brief container for parameters for line to volume pairs, as well as global evaluation data.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.

@@ -3,7 +3,7 @@
 
 \brief Class for interaction of lines and volumes.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 
@@ -243,7 +243,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     GetElement1Position(eta, q_line, r_line);
 
     unsigned int counter = 0;
-    while (counter < LOCALNEWTON_ITER_MAX)
+    while (counter < local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
       GetElement2Position(xi, q_volume, r_volume);
@@ -253,7 +253,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       residuum -= r_line;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < LOCALNEWTON_RES_TOL)
+      if (residuum.Norm2() < local_newton_res_tol)
       {
         // We only check xi, as eta is given by the user and is assumed to be correct.
         if (ValidParameterElement2(xi))
@@ -263,11 +263,14 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
         break;
       }
 
+      // Check if residuum is in a sensible range where we still expect to find a solution.
+      if (residuum.Norm2() > local_newton_res_max) break;
+
       // Get the jacobian.
       GetElement2PositionDerivative(xi, q_volume, J);
 
       // Check the determinant of the jacobian.
-      if (J.Determinant() < LOCALNEWTON_DET_TOL) break;
+      if (J.Determinant() < local_newton_det_tol) break;
 
       // Solve the linearized system.
       J_inverse.Invert(J);
@@ -441,7 +444,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
   {
     // Local Newton iteration.
     unsigned int counter = 0;
-    while (counter < LOCALNEWTON_ITER_MAX)
+    while (counter < local_newton_iter_max)
     {
       // Get the point coordinates on the line and volume.
       GetElement1Position(eta, q_line, r_line);
@@ -470,7 +473,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < LOCALNEWTON_RES_TOL)
+      if (residuum.Norm2() < local_newton_res_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameterElement1(eta) && ValidParameterElement2(xi))
@@ -479,6 +482,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
           projection_result = ProjectionResult::projection_found_not_valid;
         break;
       }
+
+      // Check if residuum is in a sensible range where we still expect to find a solution.
+      if (residuum.Norm2() > local_newton_res_max) break;
 
       // Get the positional derivatives.
       GetElement1PositionDerivative(eta, q_line, dr_line);
@@ -495,7 +501,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       }
 
       // Solve the linearized system.
-      if (abs(J.Determinant()) < 1e-10) break;
+      if (abs(J.Determinant()) < local_newton_det_tol) break;
       matrix_solver.SetMatrix(J);
       matrix_solver.SetVectors(delta_x, residuum);
       int err = matrix_solver.Solve();
@@ -629,7 +635,7 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2,
     n_nodal_values_element_2>::ValidParameterElement1(const scalar_type& eta) const
 {
-  double xi_limit = 1.0 + PROJECTION_XI_ETA_TOL;
+  double xi_limit = 1.0 + projection_xi_eta_tol;
   if (fabs(eta) < xi_limit) return true;
 
   // Default value.
@@ -648,15 +654,15 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_2>::ValidParameterElement2(const LINALG::TMatrix<scalar_type, 3, 1>& xi)
     const
 {
-  double xi_limit = 1.0 + PROJECTION_XI_ETA_TOL;
+  double xi_limit = 1.0 + projection_xi_eta_tol;
   if (GetVolumeType() == DiscretizationTypeVolume::hexaeder)
   {
     if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
   }
   else
   {
-    if (xi(0) > -PROJECTION_XI_ETA_TOL && xi(1) > -PROJECTION_XI_ETA_TOL &&
-        xi(2) > -PROJECTION_XI_ETA_TOL && xi(0) + xi(1) + xi(2) < 1.0 + PROJECTION_XI_ETA_TOL)
+    if (xi(0) > -projection_xi_eta_tol && xi(1) > -projection_xi_eta_tol &&
+        xi(2) > -projection_xi_eta_tol && xi(0) + xi(1) + xi(2) < 1.0 + projection_xi_eta_tol)
       return true;
   }
 

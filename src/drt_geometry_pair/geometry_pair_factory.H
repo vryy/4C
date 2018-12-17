@@ -3,7 +3,7 @@
 
 \brief functions to create geometry pairs.
 
-\level 3
+\level 1
 
 \maintainer Ivo Steinbrecher
 */

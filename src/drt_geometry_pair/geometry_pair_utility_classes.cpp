@@ -3,7 +3,7 @@
 
 \brief Utility classes for the geometry pairs.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 

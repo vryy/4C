@@ -3,7 +3,7 @@
 
 \brief Class for interaction of lines and volumes.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.
