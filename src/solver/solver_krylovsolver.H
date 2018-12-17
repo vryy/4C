@@ -78,10 +78,17 @@ namespace LINALG
      protected:
       /*! \brief Check whether preconditioner will be reused
        *
+       * The user can control reuse/recomputation of the preconditioner by setting appropriate input
+       * arguments \c reuse and \c reset. In addition, contact mechanics problems perform some
+       * additional checks since they require to rebuild the preconditioner when the active set has
+       * changed.
+       *
        * @param[in] reuse Parameter AZREUSE from parameter list
        * @param reset Force preconditioner to be rebuilt
        * @return Boolean flag to indicate whether preconditioner is reused (\c true) or has to be
        * re-computed (\c false)
+       *
+       * \sa CheckReuseStatusOfActiveSet()
        */
       bool AllowReusePreconditioner(const int reuse, const bool reset);
 
@@ -119,20 +126,38 @@ namespace LINALG
       Teuchos::RCP<PreconditionerType> preconditioner_;
 
      private:
-      /*! \brief Number of active DOFs in structural contact simulations.
+      /*! \brief Check if active set has changed. If yes, enforce to rebuild the preconditioner.
+       *
+       * We only can reuse the preconditioner if the active set in contact problems has not changed.
+       * Therefore, we compare the current map of active DOFs with #activeDofMap_, i.e. the one
+       * stored from the previous application of the preconditioner.
+       *
+       * The comparison is done in multiple stages:
+       * 1. Check if number of active DOFs has changed:
+       *   - If yes, we need to rebuild the preconditioner.
+       *   - If not, then check 2.
+       * 2. Compare current and stored map of active DOFs using a PointSameAs() comparison.
+       *   - If map has changed, we need to rebuild the preconditioner.
+       *
+       * \param[in/out] bAllowReuse Boolean flag to indicate reuse (true) or rebuild
+       * (false) of the preconditioner
+       * \param[in] linSysParams Parameter list with some linear system information
+       */
+      virtual void CheckReuseStatusOfActiveSet(
+          bool& bAllowReuse, const Teuchos::ParameterList* linSysParams);
+
+      /*! \brief Map of active DOFs in structural contact simulations.
        *
        * This is used to check whether preconditioner can be reused or not.
        * We cannot reuse the preconditioner if the active set has changed.
        *
-       * \todo Having the same number of active nodes does not guarantee that the active set has
-       * not changed. We should rather store and compare to the map of active nodes or use a flag
-       * 'bool activeSetChanged' passed in by the application.
-       *
        * \note Member variable only used for structural contact problems with the
        * "contact activeDofMap" parameter in the "Linear System properties"
        * parameter list set.
+       *
+       * \sa CheckReuseStatusOfActiveSet()
        */
-      int nActiveDofs_;
+      Teuchos::RCP<Epetra_Map> activeDofMap_;
 
 #ifdef HAVE_MueLu
 
