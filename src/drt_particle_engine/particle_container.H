@@ -25,10 +25,6 @@
  *---------------------------------------------------------------------------*/
 #include "particle_enums.H"
 #include "particle_typedefs.H"
-#include <map>
-#include <set>
-#include <vector>
-#include <memory>
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 03/2018 |
@@ -57,7 +53,7 @@ namespace PARTICLEENGINE
     void DecreaseContainerSize();
 
     //! clear particle container
-    void ClearContainer();
+    inline void ClearContainer() { particlestored_ = 0; };
 
     //! add particle to particle container and get index
     void AddParticle(int& index, int globalid, const ParticleStates& particle);
@@ -72,7 +68,7 @@ namespace PARTICLEENGINE
     void RemoveParticle(int index);
 
     //! return pointer to state of a particle at index
-    double* GetPtrToParticleState(StateEnum stateEnum, int index) const;
+    double* GetPtrToParticleState(StateEnum stateEnum, int index);
 
     //! return pointer to global id of a particle at index
     int* GetPtrToParticleGlobalID(int index);
@@ -81,16 +77,16 @@ namespace PARTICLEENGINE
     std::vector<double> GetParticleState(StateEnum stateEnum, int index) const;
 
     //! scale state of particles
-    void ScaleState(double fac, StateEnum stateEnum) const;
+    void ScaleState(double fac, StateEnum stateEnum);
 
     //! scale and add states to update state of particles
-    void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB) const;
+    void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB);
 
     //! set state to particles
-    void SetState(std::vector<double> val, StateEnum stateEnum) const;
+    void SetState(std::vector<double> val, StateEnum stateEnum);
 
     //! clear state of particles
-    void ClearState(StateEnum stateEnum) const;
+    void ClearState(StateEnum stateEnum);
 
     //! get minimum stored value of state
     double GetMinValueOfState(StateEnum stateEnum) const;
@@ -99,13 +95,13 @@ namespace PARTICLEENGINE
     double GetMaxValueOfState(StateEnum stateEnum) const;
 
     //! get stored particle states
-    const std::set<StateEnum> GetParticleStates() const;
+    inline const std::set<StateEnum> GetParticleStates() const { return storedstates_; };
 
     //! get size of particle container
-    int ContainerSize() const { return containersize_; };
+    inline int ContainerSize() const { return containersize_; };
 
     //! get number of particles stored in container
-    int ParticlesStored() const { return particlestored_; };
+    inline int ParticlesStored() const { return particlestored_; };
 
    private:
     //! size of particles container
@@ -114,11 +110,17 @@ namespace PARTICLEENGINE
     //! number of particles stored in container
     int particlestored_;
 
+    //! set of stored particle states
+    std::set<StateEnum> storedstates_;
+
     //! global ids of stored particles
     std::vector<int> globalids_;
 
-    //! maps type of particle state to corresponding data type
-    std::map<StateEnum, std::shared_ptr<std::vector<double>>> states_;
+    //! particle states in container indexed by state enum
+    std::vector<std::vector<double>> states_;
+
+    //! particle state dimension indexed by state enum
+    std::vector<int> statedim_;
   };
 
 }  // namespace PARTICLEENGINE
