@@ -67,32 +67,63 @@ namespace PARTICLEENGINE
     //! remove particle from particle container
     void RemoveParticle(int index);
 
-    //! return pointer to state of a particle at index
-    double* GetPtrToParticleState(StateEnum stateEnum, int index);
-
-    //! return pointer to global id of a particle at index
-    int* GetPtrToParticleGlobalID(int index);
-
     //! get state of a particle at index
     std::vector<double> GetParticleState(StateEnum stateEnum, int index) const;
 
+    //! return pointer to state of a particle at index
+    inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
+    {
+      if (index < 0 or index > (particlestored_ - 1))
+        dserror("can not return pointer to state of particle as index %d out of bounds!", index);
+
+      return &((states_[stateEnum])[index * statedim_[stateEnum]]);
+    };
+
+    //! return pointer to global id of a particle at index
+    inline int* GetPtrToParticleGlobalID(int index)
+    {
+      if (index < 0 or index > (particlestored_ - 1))
+        dserror(
+            "can not return pointer to global id of particle as index %d out of bounds!", index);
+
+      return &(globalids_[index]);
+    };
+
     //! scale state of particles
-    void ScaleState(double fac, StateEnum stateEnum);
+    inline void ScaleState(double fac, StateEnum stateEnum)
+    {
+      for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
+        (states_[stateEnum])[i] *= fac;
+    };
 
     //! scale and add states to update state of particles
-    void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB);
+    inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
+    {
+      if (statedim_[stateEnumA] != statedim_[stateEnumB])
+        dserror("dimensions of states do not match!");
+
+      for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
+        (states_[stateEnumA])[i] =
+            facA * (states_[stateEnumA])[i] + facB * (states_[stateEnumB])[i];
+    };
 
     //! set state to particles
-    void SetState(std::vector<double> val, StateEnum stateEnum);
+    inline void SetState(std::vector<double> val, StateEnum stateEnum)
+    {
+      if (statedim_[stateEnum] != static_cast<int>(val.size()))
+        dserror("dimensions of states do not match!");
+
+      for (int i = 0; i < particlestored_; ++i)
+        for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
+          (states_[stateEnum])[i * statedim_[stateEnum] + dim] = val[dim];
+    };
 
     //! clear state of particles
-    void ClearState(StateEnum stateEnum);
-
-    //! get minimum stored value of state
-    double GetMinValueOfState(StateEnum stateEnum) const;
-
-    //! get maximum stored value of state
-    double GetMaxValueOfState(StateEnum stateEnum) const;
+    inline void ClearState(StateEnum stateEnum)
+    {
+      for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
+        (states_[stateEnum])[i] = 0.0;
+    };
 
     //! get stored particle states
     inline const std::set<StateEnum> GetParticleStates() const { return storedstates_; };
@@ -102,6 +133,12 @@ namespace PARTICLEENGINE
 
     //! get number of particles stored in container
     inline int ParticlesStored() const { return particlestored_; };
+
+    //! get minimum stored value of state
+    double GetMinValueOfState(StateEnum stateEnum) const;
+
+    //! get maximum stored value of state
+    double GetMaxValueOfState(StateEnum stateEnum) const;
 
    private:
     //! size of particles container

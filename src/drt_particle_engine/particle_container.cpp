@@ -21,8 +21,6 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-#include <iostream>
-
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
@@ -261,28 +259,6 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 }
 
 /*---------------------------------------------------------------------------*
- | return pointer to state of a particle at index             sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-double* PARTICLEENGINE::ParticleContainer::GetPtrToParticleState(StateEnum stateEnum, int index)
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return pointer to state of particle as index %d out of bounds!", index);
-
-  return &((states_[stateEnum])[index * statedim_[stateEnum]]);
-}
-
-/*---------------------------------------------------------------------------*
- | return pointer to global id of a particle at index         sfuchs 10/2018 |
- *---------------------------------------------------------------------------*/
-int* PARTICLEENGINE::ParticleContainer::GetPtrToParticleGlobalID(int index)
-{
-  if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return pointer to global id of particle as index %d out of bounds!", index);
-
-  return &(globalids_[index]);
-}
-
-/*---------------------------------------------------------------------------*
  | get state of a particle at index                           sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 std::vector<double> PARTICLEENGINE::ParticleContainer::GetParticleState(
@@ -296,47 +272,6 @@ std::vector<double> PARTICLEENGINE::ParticleContainer::GetParticleState(
     particleState[dim] = (states_[stateEnum])[index * statedim_[stateEnum] + dim];
 
   return particleState;
-}
-
-/*---------------------------------------------------------------------------*
- | scale state of particles                                   sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::ScaleState(double fac, StateEnum stateEnum)
-{
-  for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i) (states_[stateEnum])[i] *= fac;
-}
-
-/*---------------------------------------------------------------------------*
- | scale and add states to update state of particles          sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::UpdateState(
-    double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
-{
-  if (statedim_[stateEnumA] != statedim_[stateEnumB]) dserror("dimensions of states do not match!");
-
-  for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
-    (states_[stateEnumA])[i] = facA * (states_[stateEnumA])[i] + facB * (states_[stateEnumB])[i];
-}
-
-/*---------------------------------------------------------------------------*
- | set state to particles                                     sfuchs 04/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::SetState(std::vector<double> val, StateEnum stateEnum)
-{
-  if (statedim_[stateEnum] != static_cast<int>(val.size()))
-    dserror("dimensions of states do not match!");
-
-  for (int i = 0; i < particlestored_; ++i)
-    for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
-      (states_[stateEnum])[i * statedim_[stateEnum] + dim] = val[dim];
-}
-
-/*---------------------------------------------------------------------------*
- | clear state of particles                                   sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainer::ClearState(StateEnum stateEnum)
-{
-  for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i) (states_[stateEnum])[i] = 0.0;
 }
 
 /*---------------------------------------------------------------------------*

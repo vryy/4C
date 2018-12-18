@@ -14,18 +14,14 @@
 */
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 #include "particle_container_bundle.H"
 
-#include "particle_container.H"
 #include "particle_object.H"
 
 #include "../drt_lib/drt_dserror.H"
-
-#include <iostream>
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 05/2018 |
@@ -91,106 +87,6 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
     // set container of ghosted particles
     (containers_[typeEnum])[PARTICLEENGINE::Ghosted] = container;
   }
-}
-
-/*---------------------------------------------------------------------------*
- | scale state of owned particles in specific containers      sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::ScaleStateSpecificContainer(
-    double fac, StateEnum stateEnum, TypeEnum typeEnum) const
-{
-  ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ScaleState(fac, stateEnum);
-}
-
-/*---------------------------------------------------------------------------*
- | update state of owned particles in specific container      sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::UpdateStateSpecificContainer(
-    double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB, TypeEnum typeEnum) const
-{
-  ((containers_[typeEnum])[PARTICLEENGINE::Owned])->UpdateState(facA, stateEnumA, facB, stateEnumB);
-}
-
-/*---------------------------------------------------------------------------*
- | set state of owned particles in specific container         sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::SetStateSpecificContainer(
-    std::vector<double> val, StateEnum stateEnum, TypeEnum typeEnum) const
-{
-  ((containers_[typeEnum])[PARTICLEENGINE::Owned])->SetState(val, stateEnum);
-}
-
-/*---------------------------------------------------------------------------*
- | clear state of owned particles in specific container       sfuchs 06/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::ClearStateSpecificContainer(
-    StateEnum stateEnum, TypeEnum typeEnum) const
-{
-  ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ClearState(stateEnum);
-}
-
-/*---------------------------------------------------------------------------*
- | scale state of owned particles in all containers           sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::ScaleStateAllContainers(
-    double fac, StateEnum stateEnum) const
-{
-  // iterate over particle types
-  for (auto& typeEnum : storedtypes_)
-    ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ScaleState(fac, stateEnum);
-}
-
-/*---------------------------------------------------------------------------*
- | update state of owned particles in all containers          sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::UpdateStateAllContainers(
-    double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB) const
-{
-  // iterate over particle types
-  for (auto& typeEnum : storedtypes_)
-    ((containers_[typeEnum])[PARTICLEENGINE::Owned])
-        ->UpdateState(facA, stateEnumA, facB, stateEnumB);
-}
-
-/*---------------------------------------------------------------------------*
- | set state of owned particles in all containers             sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::SetStateAllContainers(
-    std::vector<double> val, StateEnum stateEnum) const
-{
-  // iterate over particle types
-  for (auto& typeEnum : storedtypes_)
-    ((containers_[typeEnum])[PARTICLEENGINE::Owned])->SetState(val, stateEnum);
-}
-
-/*---------------------------------------------------------------------------*
- | clear state of owned particles in all containers           sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::ClearStateAllContainers(StateEnum stateEnum) const
-{
-  // iterate over particle types
-  for (auto& typeEnum : storedtypes_)
-    ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ClearState(stateEnum);
-}
-
-/*---------------------------------------------------------------------------*
- | get specific particle container                            sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-PARTICLEENGINE::ParticleContainerShrdPtr
-PARTICLEENGINE::ParticleContainerBundle::GetSpecificContainer(
-    TypeEnum typeEnum, StatusEnum statusEnum) const
-{
-  return ((containers_[typeEnum])[statusEnum]);
-}
-
-/*---------------------------------------------------------------------------*
- | clear all containers of specific status                    sfuchs 05/2018 |
- *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleContainerBundle::ClearAllContainersOfSpecificStatus(
-    StatusEnum statusEnum) const
-{
-  // iterate over particle types
-  for (auto& typeEnum : storedtypes_) ((containers_[typeEnum])[statusEnum])->ClearContainer();
 }
 
 /*---------------------------------------------------------------------------*
