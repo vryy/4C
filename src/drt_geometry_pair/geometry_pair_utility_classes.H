@@ -151,7 +151,7 @@ namespace GEOMETRYPAIR
     friend bool operator<(const ProjectionPointLineToVolume<scalar_type>& lhs,
         const ProjectionPointLineToVolume<scalar_type>& rhs)
     {
-      if (lhs.GetEta() < rhs.GetEta() - projection_xi_eta_tol)
+      if (lhs.GetEta() < rhs.GetEta() - CONSTANTS::projection_xi_eta_tol)
         return true;
       else
         return false;
@@ -166,7 +166,7 @@ namespace GEOMETRYPAIR
     friend bool operator>(const ProjectionPointLineToVolume<scalar_type>& lhs,
         const ProjectionPointLineToVolume<scalar_type>& rhs)
     {
-      if (lhs.GetEta() > rhs.GetEta() + projection_xi_eta_tol)
+      if (lhs.GetEta() > rhs.GetEta() + CONSTANTS::projection_xi_eta_tol)
         return true;
       else
         return false;
@@ -277,14 +277,14 @@ namespace GEOMETRYPAIR
      */
     friend bool operator<(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
     {
-      if (lhs.GetEtaB() < rhs.GetEtaA() + projection_xi_eta_tol)
+      if (lhs.GetEtaB() < rhs.GetEtaA() + CONSTANTS::projection_xi_eta_tol)
         return true;
-      else if (lhs.GetEtaA() > rhs.GetEtaB() - projection_xi_eta_tol)
+      else if (lhs.GetEtaA() > rhs.GetEtaB() - CONSTANTS::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < projection_xi_eta_tol &&
-               abs(lhs.GetEtaB() - rhs.GetEtaB()) < projection_xi_eta_tol)
+      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < CONSTANTS::projection_xi_eta_tol &&
+               abs(lhs.GetEtaB() - rhs.GetEtaB()) < CONSTANTS::projection_xi_eta_tol)
       {
         // The segments are equal.
       }
@@ -302,14 +302,14 @@ namespace GEOMETRYPAIR
      */
     friend bool operator>(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
     {
-      if (lhs.GetEtaA() > rhs.GetEtaB() - projection_xi_eta_tol)
+      if (lhs.GetEtaA() > rhs.GetEtaB() - CONSTANTS::projection_xi_eta_tol)
         return true;
-      else if (lhs.GetEtaB() < rhs.GetEtaA() + projection_xi_eta_tol)
+      else if (lhs.GetEtaB() < rhs.GetEtaA() + CONSTANTS::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < projection_xi_eta_tol &&
-               abs(lhs.GetEtaB() - rhs.GetEtaB()) < projection_xi_eta_tol)
+      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < CONSTANTS::projection_xi_eta_tol &&
+               abs(lhs.GetEtaB() - rhs.GetEtaB()) < CONSTANTS::projection_xi_eta_tol)
       {
         // The segments are equal.
       }

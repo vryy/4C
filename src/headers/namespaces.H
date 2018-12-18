@@ -588,9 +588,16 @@ namespace GEO
  * Includes:
  *   - Line to volume pair
  *     - Gauss point projection
+ *     - Segmentation
  */
 namespace GEOMETRYPAIR
 {
+  /*!
+   * \brief Constants used in geometry pair.
+   */
+  namespace CONSTANTS
+  {
+  }  // namespace CONSTANTS
 }  // namespace GEOMETRYPAIR
 
 /*! \brief
@@ -1110,8 +1117,8 @@ namespace LINALG
    * ANA comes with no performance loss and can therefore be used wherever sparse parallel linear
    * algebra is needed. It is also good for rapid prototyping of some methods, as it has a very
    * clear and easy syntax. Especially for younger collegues, it eliminates the need to tediously
-   * learn or lookup Epetra syntax. Using the statement \code using namespace LINALG::ANA; \endcode
-   * inside a function allows for an extremely simplified linear algebra syntax:
+   * learn or lookup Epetra syntax. Using the statement \code using namespace LINALG::ANA;
+   * \endcode inside a function allows for an extremely simplified linear algebra syntax:
    *
    * <b>Example 1:</b>
    *
@@ -1183,12 +1190,13 @@ namespace LINALG
    * c = trans(A) * b;                   // implicit transposed Operator
    * c = inverse(A) * b;                 // Operator inverse (uses serial Amesos_KLU)
    * c = inverse(A,solver,true) * b;     // Operator inverse (with user supplied LINALG::Solver
-   * instance) c = 2.0 * B * b;                    // implicit Operator scaling s = c * c; // inner
-   * product (results is scalar) s = 0.5 * c * A * c;                // inner product with linear
-   * combinations s += 0.5 * c * trans(A+B) * c;      // combine stuff as you wish.... s = norm2(c);
-   * // norms of vectors (norm2, norm1, norminf) s = norm2(2.0*A*c);                 // norms of any
-   * linear combinations (norm2, norm1, norminf) c = pw(a,b);                        // pointwise
-   * multiplication (results is vector) c = pw( a , A * b);                 // pointwise
+   * instance) c = 2.0 * B * b;                    // implicit Operator scaling s = c * c; //
+   * inner product (results is scalar) s = 0.5 * c * A * c;                // inner product with
+   * linear combinations s += 0.5 * c * trans(A+B) * c;      // combine stuff as you wish.... s =
+   * norm2(c);
+   * // norms of vectors (norm2, norm1, norminf) s = norm2(2.0*A*c);                 // norms of
+   * any linear combinations (norm2, norm1, norminf) c = pw(a,b);                        //
+   * pointwise multiplication (results is vector) c = pw( a , A * b);                 // pointwise
    * multiplication (results is vector) c = pw( 2.0*a + b , A * b);         // pointwise
    * multiplication of generic linear combinations \endcode
    *
@@ -1249,15 +1257,15 @@ namespace LINALG
    *   \code
    *   c = 2.0*a - 3.0*d + A*b;
    *   \endcode
-   *   do have the same result, but the latter is slightly faster. The reason is, that ANA tries to
-   * squeeze as large of a junk of the operation into ONE Epetra call. The first is three Epetra
-   * methods, the second is two because ANA recognizes \code 2.0*a - 3.0*d \endcode as one Epetra
-   * operation. ANA can only recognize operations that are directly next to each other to be
-   * squeezable into one Epetra call. If you are an Epetra expert, you can help ANA by being more
-   * explicit: \code c = (2.0*a - 3.0*d) + A*b; // ANA would have done this anyway even without
-   * brackets c = A*b + (2.0*a - 3.0*d); // Here, ANA actually benefits from your help (hard to
-   * understand why) \endcode A statement like \code c = 2.0*a - (3.0*d - A*b); \endcode would still
-   * have the same result, but would be slightly slower.
+   *   do have the same result, but the latter is slightly faster. The reason is, that ANA tries
+   * to squeeze as large of a junk of the operation into ONE Epetra call. The first is three
+   * Epetra methods, the second is two because ANA recognizes \code 2.0*a - 3.0*d \endcode as one
+   * Epetra operation. ANA can only recognize operations that are directly next to each other to
+   * be squeezable into one Epetra call. If you are an Epetra expert, you can help ANA by being
+   * more explicit: \code c = (2.0*a - 3.0*d) + A*b; // ANA would have done this anyway even
+   * without brackets c = A*b + (2.0*a - 3.0*d); // Here, ANA actually benefits from your help
+   * (hard to understand why) \endcode A statement like \code c = 2.0*a - (3.0*d - A*b); \endcode
+   * would still have the same result, but would be slightly slower.
    *
    * - ANA never allocates extra memory unless needed by Epetra to perform the operation.<br>
    *   This does not need extra memory:
@@ -1272,15 +1280,17 @@ namespace LINALG
    *   ANA can as well.
    *
    * - ANA works with Teuchos::RCPed Vectors on the right hand side of the "=" operator as well.
-   *   It does not work with Teuchos::RCPed Operators and does not accept Teuchos::RCPed quantities
-   * on the left hand side of the "=" operator: \code Teuchos::RCP<LINALG::ANA::Vector>  a =
-   * Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false)); Teuchos::RCP<LINALG::ANA::Vector>  b =
-   * Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false)); Teuchos::RCP<LINALG::ANA::Vector>  c =
-   * Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false)); Teuchos::RCP<LINALG::SparseMatrix> A =
-   * Teuchos::rcp(Amatrix)); *a = 3.141;              // Always need to dereference on the left of
+   *   It does not work with Teuchos::RCPed Operators and does not accept Teuchos::RCPed
+   * quantities on the left hand side of the "=" operator: \code Teuchos::RCP<LINALG::ANA::Vector>
+   * a = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+   * Teuchos::RCP<LINALG::ANA::Vector>  b = Teuchos::rcp(new
+   * LINALG::ANA::Vector(A.RowMap(),false)); Teuchos::RCP<LINALG::ANA::Vector>  c =
+   * Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false)); Teuchos::RCP<LINALG::SparseMatrix> A
+   * = Teuchos::rcp(Amatrix)); *a = 3.141;              // Always need to dereference on the left
+   * of
    * "=" *b = 1.0; *c = 2.0*a + 3.0*b;      // no need to dereference on the right side of "=" *c
-   * += 2.0 * (*A) * b;    // ANA will not accept Teuchos::RCPed Operator objects -> always need to
-   * dereference \endcode The compiler will tell you when its ok to use Teuchos::RCPed objects.
+   * += 2.0 * (*A) * b;    // ANA will not accept Teuchos::RCPed Operator objects -> always need
+   * to dereference \endcode The compiler will tell you when its ok to use Teuchos::RCPed objects.
    *
    *   - Of course you are free to mix with classical Epetra calls (not on the same line, though).
    *     You can also continue using classical Epetra style programming, you can use ANA but you
@@ -1288,23 +1298,23 @@ namespace LINALG
    *
    *   - Obey the important warning below.
    *
-   * \warning Unless you are an Epetra and ANA expert user, your objects on the left and right side
-   * of the
+   * \warning Unless you are an Epetra and ANA expert user, your objects on the left and right
+   * side of the
    *          "=" operator should not coincide.
    *          A construct
    *          \code
    *          c += 2.0*c + A*c; // this is NOT deterministic
    *          \endcode
    *          might or might NOT lead to the desired result...<br>
-   *          It is very hard to fully understand the order in which operations are done and whether
-   *          they are ok to be performed 'in place' without going through the mines of Moria:
+   *          It is very hard to fully understand the order in which operations are done and
+   * whether they are ok to be performed 'in place' without going through the mines of Moria:
    *          \code
    *          c = A*c;            // this is ok, but hard to understand why
    *          c = 2.0*c;          // this is ok as well.
    *          c += 2.0*c;         // this is unclear
    *          c += B*c - 2.0*A*c; // this is definitely going to lead to wrong results without
-   * message! \endcode ANA does not check or safeguard against illegal in-place operations! You will
-   * NOT receive notification of failure but just wrong results. Safeguarding against illegal
+   * message! \endcode ANA does not check or safeguard against illegal in-place operations! You
+   * will NOT receive notification of failure but just wrong results. Safeguarding against illegal
    * in-place operations is yet to be implemented.
    */
   namespace ANA
