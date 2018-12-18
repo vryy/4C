@@ -158,7 +158,7 @@ namespace PARTICLEENGINE
     int GetNumberOfParticles() const override;
 
     //! get number of particles on this processor of specific type
-    int GetNumberOfParticlesOfSpecificType(const TypeEnum particleType) const override;
+    int GetNumberOfParticlesOfSpecificType(const TypeEnum typeEnum) const override;
 
     //! write binning discretization output (debug feature)
     void WriteBinDisOutput(const int step, const double time) const;

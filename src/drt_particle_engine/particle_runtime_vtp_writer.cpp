@@ -86,23 +86,23 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
   std::map<StatusEnum, std::shared_ptr<RuntimeVtpWriter>> statusMap;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // clear particle status map
     statusMap.clear();
 
     // iterate over particle statuses
-    for (auto& statusIt : typeIt.second)
+    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
     {
-      if (statusIt.first == PARTICLEENGINE::Ghosted and write_ghosted_particles == false) continue;
+      if (statusEnum == PARTICLEENGINE::Ghosted and write_ghosted_particles == false) continue;
 
       // construct vtp writer object for current particle type and status
       runtime_vtpwriter = std::make_shared<RuntimeVtpWriter>();
 
       // particle field name
       std::ostringstream particlefieldname;
-      particlefieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeIt.first) << "-"
-                        << PARTICLEENGINE::EnumToStatusName(statusIt.first);
+      particlefieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeEnum) << "-"
+                        << PARTICLEENGINE::EnumToStatusName(statusEnum);
 
       // initialize vtp writer object
       runtime_vtpwriter->Initialize(comm_.MyPID(), comm_.NumProc(),
@@ -111,12 +111,12 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
           particlefieldname.str(), DRT::Problem::Instance()->OutputControlFile()->RestartName(),
           setuptime_, write_binary_output);
 
-      // insert into status map holding vtp writer object ofr each particle status
-      statusMap.insert(std::make_pair(statusIt.first, runtime_vtpwriter));
+      // insert into status map holding vtp writer object for each particle status
+      statusMap.insert(std::make_pair(statusEnum, runtime_vtpwriter));
     }
 
     // insert into map that holds all vtp writer objects for each particle type and status
-    runtime_vtpwriters_.insert(std::make_pair(typeIt.first, statusMap));
+    runtime_vtpwriters_.insert(std::make_pair(typeEnum, statusMap));
   }
 }
 

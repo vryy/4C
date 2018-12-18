@@ -443,16 +443,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // no refreshing of surface tension states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // set state enums to map
-    particlestatestotypes[type] = {
+    particlestatestotypes[typeEnum] = {
         PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::WallDistance};
   }
 
@@ -869,16 +867,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // no refreshing of surface tension states for boundary or rigid particles
-    if (type == PARTICLEENGINE::BoundaryPhase or type == PARTICLEENGINE::RigidPhase) continue;
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
+      continue;
 
     // set state enums to map
-    particlestatestotypes[type] = {
+    particlestatestotypes[typeEnum] = {
         PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal};
   }
 

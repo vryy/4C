@@ -61,9 +61,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
   neighborpairs_ = neighborpairs;
 
   // check if boundary and/or rigid particles are present
-  if ((particlecontainerbundle_->GetRefToAllContainersMap()).count(PARTICLEENGINE::BoundaryPhase))
+  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::BoundaryPhase))
     typestoconsider_.insert(PARTICLEENGINE::BoundaryPhase);
-  if ((particlecontainerbundle_->GetRefToAllContainersMap()).count(PARTICLEENGINE::RigidPhase))
+  if ((particlecontainerbundle_->GetParticleTypes()).count(PARTICLEENGINE::RigidPhase))
     typestoconsider_.insert(PARTICLEENGINE::RigidPhase);
 
   // safety check

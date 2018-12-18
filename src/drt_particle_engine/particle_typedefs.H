@@ -60,7 +60,7 @@ namespace PARTICLEENGINE
 
   typedef std::map<StateEnum, std::vector<double>> ParticleStates;
 
-  typedef std::map<TypeEnum, std::map<StatusEnum, ParticleContainerShrdPtr>> TypeStatusContainerMap;
+  typedef std::vector<std::vector<ParticleContainerShrdPtr>> TypeStatusContainers;
 
   typedef std::map<TypeEnum, std::map<StatusEnum, std::set<int>>> TypeStatusIndexMap;
 

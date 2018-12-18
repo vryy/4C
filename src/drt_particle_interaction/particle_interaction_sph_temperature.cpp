@@ -100,16 +100,13 @@ void PARTICLEINTERACTION::SPHTemperatureBase::RefreshTemperature() const
   std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>> particlestatestotypes;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // no refreshing of temperature states for boundary particles
-    if (type == PARTICLEENGINE::BoundaryPhase) continue;
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase) continue;
 
     // set state enums to map
-    particlestatestotypes[type].insert(PARTICLEENGINE::Temperature);
+    particlestatestotypes[typeEnum].insert(PARTICLEENGINE::Temperature);
   }
 
   // refresh specific states of particles of specific types
@@ -154,17 +151,14 @@ void PARTICLEINTERACTION::SPHTemperatureIntegration::ComputeTemperature() const
   EnergyEquation();
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
     // no temperature calculation for boundary particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase) continue;
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase) continue;
 
     // update temperature of all particles
     particlecontainerbundle_->UpdateStateSpecificContainer(
-        1.0, PARTICLEENGINE::Temperature, dt_, PARTICLEENGINE::TemperatureDot, particleType);
+        1.0, PARTICLEENGINE::Temperature, dt_, PARTICLEENGINE::TemperatureDot, typeEnum);
   }
 
   // refresh temperature of ghosted particles

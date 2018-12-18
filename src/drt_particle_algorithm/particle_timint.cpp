@@ -104,16 +104,9 @@ void PARTICLEALGORITHM::TimInt::Setup(
       typesexludedfromtimeintegration.insert(currtype);
   }
 
-  // determine set of particle types to integrate in time
-  for (auto typeIt : particlecontainerbundle->GetRefToAllContainersMap())
-  {
-    // get enum of particle types
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
-    // insert current particle type into set of particles to integrate in time
-    if (not typesexludedfromtimeintegration.count(particleType))
-      typestointegrate_.insert(particleType);
-  }
+  // determine set of particle types to be integrated in time
+  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
+    if (not typesexludedfromtimeintegration.count(typeEnum)) typestointegrate_.insert(typeEnum);
 }
 
 /*---------------------------------------------------------------------------*

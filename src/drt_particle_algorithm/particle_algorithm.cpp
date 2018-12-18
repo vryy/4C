@@ -710,14 +710,11 @@ bool PARTICLEALGORITHM::ParticleAlgorithm::CheckParticleTransfer()
       particleengine_->GetParticleContainerBundle();
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle->GetSpecificContainer(particleType, PARTICLEENGINE::Owned);
+        particlecontainerbundle->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
     int particlestored = container->ParticlesStored();
@@ -843,18 +840,15 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetGravityAcceleration()
       particleengine_->GetParticleContainerBundle();
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum particleType = typeIt.first;
-
     // gravity is not set for boundary or rigid particles
-    if (particleType == PARTICLEENGINE::BoundaryPhase or particleType == PARTICLEENGINE::RigidPhase)
+    if (typeEnum == PARTICLEENGINE::BoundaryPhase or typeEnum == PARTICLEENGINE::RigidPhase)
       continue;
 
     // set gravity acceleration for all particles of current type
     particlecontainerbundle->SetStateSpecificContainer(
-        scaled_gravity, PARTICLEENGINE::Acceleration, particleType);
+        scaled_gravity, PARTICLEENGINE::Acceleration, typeEnum);
   }
 
   // set scaled gravity in particle interaction handler

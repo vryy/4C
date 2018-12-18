@@ -118,14 +118,11 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   double minmass = 0.0;
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainerShrdPtr container =
-        particlecontainerbundle_->GetSpecificContainer(type, PARTICLEENGINE::Owned);
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // get minimum stored value of state
     double currminmass = container->GetMinValueOfState(PARTICLEENGINE::Mass);
@@ -308,14 +305,11 @@ double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
   double maxdensity(0.0);
 
   // iterate over particle types
-  for (auto& typeIt : particlecontainerbundle_->GetRefToAllContainersMap())
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    PARTICLEENGINE::TypeEnum type = typeIt.first;
-
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =
-        particlematerial_->GetPtrToParticleMatParameter(type);
+        particlematerial_->GetPtrToParticleMatParameter(typeEnum);
 
     if (material->initDensity_ > maxdensity) maxdensity = material->initDensity_;
   }
