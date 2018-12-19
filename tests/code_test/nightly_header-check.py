@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bin/env python2
 " Baci header check to be executed along with the Git pre-commit hook. "
 
 import os
