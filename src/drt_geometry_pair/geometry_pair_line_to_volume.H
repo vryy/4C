@@ -3,7 +3,7 @@
 
 \brief Class for interaction of lines and volumes.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.
@@ -47,13 +47,6 @@ namespace GEOMETRYPAIR
 
   class GeometryEvaluationDataGlobal;
 }  // namespace GEOMETRYPAIR
-
-
-// Constant values.
-const unsigned int LOCALNEWTON_MAX_ITER = 20;
-const double LOCALNEWTON_RES_TOL = 1e-10;
-const double LOCALNEWTON_DET_TOL = 1e-10;
-const double PROJECTION_XI_ETA_TOL = 1e-7;
 
 
 namespace GEOMETRYPAIR
@@ -112,23 +105,23 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the position along the first (line) element. This function is templated in case
      * one wants to get the position with a different type than scalar_type.
-     * @param xi (in) Parameter coordinate on the line.
+     * @param eta (in) Parameter coordinate on the line.
      * @param q (in) Degrees of freedom for the line.
      * @param r (out) Position on line.
      */
     template <typename scalar_type_get_pos>
-    void GetElement1Position(const scalar_type& xi,
+    void GetElement1Position(const scalar_type& eta,
         const LINALG::TMatrix<scalar_type_get_pos, 3 * n_nodes_element_1 * n_nodal_values_element_1,
             1>& q,
         LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const;
 
     /**
      * \brief Get the derivative of the position w.r.t xi along the first (line) element.
-     * @param xi (in) Parameter coordinate on the line.
+     * @param eta (in) Parameter coordinate on the line.
      * @param q (in) Degrees of freedom for the line.
      * @param dr (out) Derivative of the position on the line.
      */
-    void GetElement1PositionDerivative(const scalar_type& xi,
+    void GetElement1PositionDerivative(const scalar_type& eta,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>& q,
         LINALG::TMatrix<scalar_type, 3, 1>& dr) const;
 
@@ -175,39 +168,39 @@ namespace GEOMETRYPAIR
         ProjectionResult& projection_result) const;
 
     /**
-     * \brief Project multiple points on the line to the volume.
+     * \brief Project multiple points on the line to the volume. The value of eta and xi in the
+     * projection points is the start value for the iteration.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
-     * @param eta_points (in) Vector with values for eta.
-     * @param projection_points (out) Vector with found projection points.
-     * @param allow_not_valid_projections (in) If this is true, point that lie outside of the valid
-     * element range will also be returned.
+     * @param projection_points (in/out) Vector with projection points. The given values for eta and
+     * xi are the start values for the iteration.
+     * @param n_projections_valid (out) Number of valid projections.
+     * @param n_projections (out) Number of points, where the nonlinear system could be solved.
      */
     void ProjectPointsOnLineToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        const std::vector<scalar_type>& eta_points,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
-        bool allow_not_valid_projections) const;
+        unsigned int& n_projections_valid, unsigned int& n_projections) const;
 
     /**
-     * \brief Project multiple (equidistant) points on the line segment to the volume.
+     * \brief Project multiple points on the line to the volume. The value of eta and xi in the
+     * projection points is the start value for the iteration.
      * @param q_line (in) Degrees of freedom for the line.
      * @param q_volume (in) Degrees of freedom for the volume.
-     * @param n_points (in) Number of points.
-     * @param segment (in/out) Vector with found projection points.
-     * @param allow_not_valid_projections (in) If this is true, point that lie outside of the valid
-     * element range will also be returned.
+     * @param projection_points (in/out) Vector with projection points. The given values for eta and
+     * xi are the start values for the iteration.
+     * @param n_projections_valid (out) Number of valid projections.
      */
-    void ProjectPointsOnSegmentToVolume(
+    void ProjectPointsOnLineToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        unsigned int n_points, LineSegment<scalar_type>& segment,
-        bool allow_not_valid_projections) const;
+        std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
+        unsigned int& n_projections_valid) const;
 
     /**
      * \brief Project Gauss points on the line segment to the volume. If not all points can be
@@ -217,7 +210,7 @@ namespace GEOMETRYPAIR
      * @param gauss_points (in) Gauss points to project.
      * @param segment (in/out) Vector with found projection points.
      */
-    void ProjectPointsOnSegmentToVolume(
+    void ProjectGaussPointsOnSegmentToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&

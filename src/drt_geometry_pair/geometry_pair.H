@@ -4,7 +4,7 @@
 \brief base class for two or more elements that interact geometrically, e.g. contact or meshtying
 problems.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 // End doxygen header.
@@ -13,6 +13,8 @@ problems.
 #ifndef GEOMETRY_PAIR_H
 #define GEOMETRY_PAIR_H
 
+
+#include "../drt_lib/drt_dserror.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -73,12 +75,18 @@ namespace GEOMETRYPAIR
     /**
      * \brief Check if Init was already called.
      */
-    inline void CheckInit() const;
+    inline void CheckInit() const
+    {
+      if (!isinit_) dserror("Init() has not been called yet!");
+    };
 
     /**
      * \brief Check if Init and Setup were already called.
      */
-    inline void CheckInitSetup() const;
+    inline void CheckInitSetup() const
+    {
+      if (!isinit_ || !issetup_) dserror("Init() and Setup() have not been called yet!");
+    };
 
     /**
      * \brief  Pointer to the first element.

@@ -3,16 +3,16 @@
 
 \brief Class for interaction of lines and volumes.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
 
 
 #include "geometry_pair_line_to_volume.H"
 #include "geometry_pair_utility_classes.H"
+#include "geometry_pair_constants.H"
 
 #include "../drt_lib/drt_dserror.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_beam3/beam3.H"
 
 
@@ -25,7 +25,7 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
 template <typename scalar_type_get_pos>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::GetElement1Position(const scalar_type& xi,
+    n_nodal_values_element_2>::GetElement1Position(const scalar_type& eta,
     const LINALG::TMatrix<scalar_type_get_pos, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
         q,
     LINALG::TMatrix<scalar_type_get_pos, 3, 1>& r) const
@@ -39,7 +39,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
   if (n_nodal_values_element_1 == 1)
   {
     dserror("One nodal value for line elements not yet implemented!");
-    DRT::UTILS::shape_function_1D(N, xi, distype);
+    DRT::UTILS::shape_function_1D(N, eta, distype);
   }
   else if (n_nodal_values_element_1 == 2)
   {
@@ -47,7 +47,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
 
     // Get values of shape functions.
-    DRT::UTILS::shape_function_hermite_1D(N, xi, length, distype1herm);
+    DRT::UTILS::shape_function_hermite_1D(N, eta, length, distype1herm);
 
     // Calculate the position.
     r.Clear();
@@ -78,7 +78,7 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2,
-    n_nodal_values_element_2>::GetElement1PositionDerivative(const scalar_type& xi,
+    n_nodal_values_element_2>::GetElement1PositionDerivative(const scalar_type& eta,
     const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>& q,
     LINALG::TMatrix<scalar_type, 3, 1>& dr) const
 {
@@ -91,7 +91,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
   if (n_nodal_values_element_1 == 1)
   {
     dserror("One nodal value for line elements not yet implemented!");
-    DRT::UTILS::shape_function_1D_deriv1(dN, xi, distype);
+    DRT::UTILS::shape_function_1D_deriv1(dN, eta, distype);
   }
   else if (n_nodal_values_element_1 == 2)
   {
@@ -99,7 +99,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
 
     // Get values of shape functions.
-    DRT::UTILS::shape_function_hermite_1D_deriv1(dN, xi, length, distype1herm);
+    DRT::UTILS::shape_function_hermite_1D_deriv1(dN, eta, length, distype1herm);
 
     // Calculate the position.
     dr.Clear();
@@ -243,7 +243,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     GetElement1Position(eta, q_line, r_line);
 
     unsigned int counter = 0;
-    while (counter < LOCALNEWTON_MAX_ITER)
+    while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
       GetElement2Position(xi, q_volume, r_volume);
@@ -253,7 +253,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       residuum -= r_line;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < LOCALNEWTON_RES_TOL)
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
         // We only check xi, as eta is given by the user and is assumed to be correct.
         if (ValidParameterElement2(xi))
@@ -263,11 +263,14 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
         break;
       }
 
+      // Check if residuum is in a sensible range where we still expect to find a solution.
+      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+
       // Get the jacobian.
       GetElement2PositionDerivative(xi, q_volume, J);
 
       // Check the determinant of the jacobian.
-      if (J.Determinant() < LOCALNEWTON_DET_TOL) break;
+      if (J.Determinant() < CONSTANTS::local_newton_det_tol) break;
 
       // Solve the linearized system.
       J_inverse.Invert(J);
@@ -294,39 +297,28 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        const std::vector<scalar_type>& eta_points,
         std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
-        bool allow_not_valid_projections) const
+        unsigned int& n_projections_valid, unsigned int& n_projections) const
 {
-  // Initialize variables for the projection.
-  LINALG::TMatrix<scalar_type, 3, 1> xi;
-  ProjectionResult projection_result;
-  bool last_point_valid = false;
-  projection_points.clear();
+  // Initialize counters.
+  n_projections_valid = 0;
+  n_projections = 0;
 
   // Loop over points and check if they project to this volume.
-  for (auto const& eta : eta_points)
+  for (auto& point : projection_points)
   {
-    // If the last projected point was valid, use that one as start point for this itereation.
-    if (!last_point_valid) SetStartValuesElement2(xi);
-
     // Project the point.
-    ProjectPointOnLineToVolume(q_line, q_volume, eta, xi, projection_result);
+    ProjectPointOnLineToVolume(
+        q_line, q_volume, point.GetEta(), point.GetXiMutable(), point.GetProjectionResultMutable());
 
-    // Check the result from projection.
-    if (projection_result == ProjectionResult::projection_found_valid ||
-        (projection_result == ProjectionResult::projection_found_not_valid &&
-            allow_not_valid_projections))
+    // Update the counters.
+    if (point.GetProjectionResult() == ProjectionResult::projection_found_valid)
     {
-      // Add point to the projection points vector.
-      projection_points.push_back(ProjectionPointLineToVolume<scalar_type>(eta, xi));
-
-      last_point_valid = true;
+      n_projections_valid++;
+      n_projections++;
     }
-    else
-    {
-      last_point_valid = false;
-    }
+    if (point.GetProjectionResult() == ProjectionResult::projection_found_not_valid)
+      n_projections++;
   }
 }
 
@@ -339,23 +331,20 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>::
-    ProjectPointsOnSegmentToVolume(
+    ProjectPointsOnLineToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
             q_volume,
-        unsigned int n_points, LineSegment<scalar_type>& segment,
-        bool allow_not_valid_projections) const
+        std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points,
+        unsigned int& n_projections_valid) const
 {
-  // Create vector with eta values.
-  std::vector<scalar_type> eta_values(n_points);
-  for (unsigned int i = 0; i < n_points; i++)
-    eta_values[i] =
-        segment.GetEtaA() + i * (segment.GetEtaB() - segment.GetEtaA()) / (n_points - 1.);
+  // Initialize dummy variable.
+  unsigned int n_projections_dummy;
 
-  // Project the points on the segment.
+  // Project the points.
   ProjectPointsOnLineToVolume(
-      q_line, q_volume, eta_values, segment.GetGaussPointsMutable(), allow_not_valid_projections);
+      q_line, q_volume, projection_points, n_projections_valid, n_projections_dummy);
 }
 
 
@@ -367,7 +356,7 @@ template <typename scalar_type, unsigned int n_nodes_element_1,
     unsigned int n_nodal_values_element_2>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2, n_nodal_values_element_2>::
-    ProjectPointsOnSegmentToVolume(
+    ProjectGaussPointsOnSegmentToVolume(
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_1 * n_nodal_values_element_1, 1>&
             q_line,
         const LINALG::TMatrix<scalar_type, 3 * n_nodes_element_2 * n_nodal_values_element_2, 1>&
@@ -375,27 +364,31 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
         const DRT::UTILS::IntegrationPoints1D& gauss_points,
         LineSegment<scalar_type>& segment) const
 {
-  // Create vector with eta values.
-  std::vector<scalar_type> eta_values(gauss_points.nquad);
+  // Set up the vector with the projection points.
+  std::vector<ProjectionPointLineToVolume<scalar_type>>& projection_points =
+      segment.GetProjectionPointsMutable();
+  projection_points.clear();
+  projection_points.reserve(gauss_points.nquad);
+  LINALG::TMatrix<scalar_type, 3, 1> xi_start;
+  this->ValidParameterElement2(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
-    eta_values[i] = segment.GetEtaA() +
-                    (segment.GetEtaB() - segment.GetEtaA()) * 0.5 * (gauss_points.qxg[i][0] + 1.);
+  {
+    scalar_type eta = segment.GetEtaA() +
+                      (segment.GetEtaB() - segment.GetEtaA()) * 0.5 * (gauss_points.qxg[i][0] + 1.);
+    projection_points.push_back(
+        ProjectionPointLineToVolume<scalar_type>(eta, xi_start, gauss_points.qwgt[i]));
+  }
 
-  // Project the points on the segment.
-  ProjectPointsOnLineToVolume(q_line, q_volume, eta_values, segment.GetGaussPointsMutable(), false);
+  // Project the Gauss points to the volume.
+  unsigned int n_valid_projections;
+  ProjectPointsOnLineToVolume(q_line, q_volume, projection_points, n_valid_projections);
 
   // Check if all points could be projected.
-  if (segment.GetGaussPointsMutable().size() != (unsigned int)gauss_points.nquad)
+  if (n_valid_projections != (unsigned int)gauss_points.nquad)
     dserror(
         "All Gauss points need to have a valid projection. The number of Gauss points is %d, but "
         "the number of valid projections is %d!",
-        gauss_points.nquad, segment.GetGaussPointsMutable().size());
-
-  // Set the Gauss weights for the found points.
-  for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
-  {
-    segment.GetGaussPointsMutable()[i].SetGaussWeight(gauss_points.qwgt[i]);
-  }
+        gauss_points.nquad, n_valid_projections);
 }
 
 
@@ -451,7 +444,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
   {
     // Local Newton iteration.
     unsigned int counter = 0;
-    while (counter < LOCALNEWTON_MAX_ITER)
+    while (counter < CONSTANTS::local_newton_iter_max)
     {
       // Get the point coordinates on the line and volume.
       GetElement1Position(eta, q_line, r_line);
@@ -480,7 +473,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < LOCALNEWTON_RES_TOL)
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameterElement1(eta) && ValidParameterElement2(xi))
@@ -489,6 +482,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
           projection_result = ProjectionResult::projection_found_not_valid;
         break;
       }
+
+      // Check if residuum is in a sensible range where we still expect to find a solution.
+      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
 
       // Get the positional derivatives.
       GetElement1PositionDerivative(eta, q_line, dr_line);
@@ -505,7 +501,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
       }
 
       // Solve the linearized system.
-      if (abs(J.Determinant()) < 1e-10) break;
+      if (abs(J.Determinant()) < CONSTANTS::local_newton_det_tol) break;
       matrix_solver.SetMatrix(J);
       matrix_solver.SetVectors(delta_x, residuum);
       int err = matrix_solver.Solve();
@@ -639,7 +635,7 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_1, n_nodes_element_2,
     n_nodal_values_element_2>::ValidParameterElement1(const scalar_type& eta) const
 {
-  double xi_limit = 1.0 + PROJECTION_XI_ETA_TOL;
+  double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
   if (fabs(eta) < xi_limit) return true;
 
   // Default value.
@@ -658,15 +654,16 @@ bool GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, n_nodes_element_1,
     n_nodal_values_element_2>::ValidParameterElement2(const LINALG::TMatrix<scalar_type, 3, 1>& xi)
     const
 {
-  double xi_limit = 1.0 + PROJECTION_XI_ETA_TOL;
+  double xi_limit = 1.0 + CONSTANTS::projection_xi_eta_tol;
   if (GetVolumeType() == DiscretizationTypeVolume::hexaeder)
   {
     if (fabs(xi(0)) < xi_limit && fabs(xi(1)) < xi_limit && fabs(xi(2)) < xi_limit) return true;
   }
   else
   {
-    if (xi(0) > -PROJECTION_XI_ETA_TOL && xi(1) > -PROJECTION_XI_ETA_TOL &&
-        xi(2) > -PROJECTION_XI_ETA_TOL && xi(0) + xi(1) + xi(2) < 1.0 + PROJECTION_XI_ETA_TOL)
+    if (xi(0) > -CONSTANTS::projection_xi_eta_tol && xi(1) > -CONSTANTS::projection_xi_eta_tol &&
+        xi(2) > -CONSTANTS::projection_xi_eta_tol &&
+        xi(0) + xi(1) + xi(2) < 1.0 + CONSTANTS::projection_xi_eta_tol)
       return true;
   }
 

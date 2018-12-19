@@ -5,7 +5,7 @@
        all evaluation data specific to their problem type,
        that can not be stored pairwise.
 
-\level 3
+\level 1
 
 \maintainer Ivo Steinbrecher
 */

@@ -3,10 +3,9 @@
 
 \brief container for parameters for line to volume pairs, as well as global evaluation data.
 
-\level 3
+\level 1
 \maintainer Ivo Steinbrecher
 */
-
 
 
 #include "geometry_pair_line_to_volume_evaluation_data.H"
@@ -21,7 +20,8 @@ GEOMETRYPAIR::LineToVolumeEvaluationData::LineToVolumeEvaluationData()
     : strategy_(INPAR::GEOMETRYPAIR::LineToVolumeStrategy::none),
       gauss_rule_(DRT::UTILS::GaussRule1D::intrule1D_undefined),
       gauss_point_projection_tracker_(),
-      n_search_points_(0)
+      n_search_points_(0),
+      segment_tracker_()
 {
   // Empty Constructor
 }
@@ -53,6 +53,9 @@ void GEOMETRYPAIR::LineToVolumeEvaluationData::Init()
   {
     // Tracker for gauss point projection method.
     gauss_point_projection_tracker_.clear();
+
+    // Segment tracker for segmentation.
+    segment_tracker_.clear();
   }
 
   // Set init flag.

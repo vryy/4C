@@ -195,6 +195,9 @@ namespace BEAMINTERACTION
     //! Type to be used for scalar AD variables.
     typedef Sacado::ELRFad::SLFad<double, n_dof_element_1_ + n_dof_element_2_> TYPE_BTS_VMT_AD;
 
+    //! Flag if the meshtying has been evaluated already.
+    bool meshtying_is_evaluated_;
+
     //! Current nodal positions (and tangents) of the two elements.
     LINALG::TMatrix<TYPE_BTS_VMT_AD, n_dof_element_1_, 1> ele1pos_;
     LINALG::TMatrix<TYPE_BTS_VMT_AD, n_dof_element_2_, 1> ele2pos_;
