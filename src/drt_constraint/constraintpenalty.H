@@ -3,7 +3,7 @@
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \level 2
 

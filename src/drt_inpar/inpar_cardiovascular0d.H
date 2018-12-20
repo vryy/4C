@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 */
 
 /*----------------------------------------------------------------------*/

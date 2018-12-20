@@ -8,10 +8,7 @@ growth laws.
 \level 2
 
 <pre>
-   \maintainer Marc Hirschvogel, Moritz Thon
-               hirschvogel@mhpc.mw.tum.de
-               http://www.mhpc.mw.tum.de
-               089 - 289-10363
+   \maintainer Amadeus Gebauer
 </pre>
  *----------------------------------------------------------------------*/
 

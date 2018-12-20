@@ -5,7 +5,7 @@
 
 \level 2
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 
 *----------------------------------------------------------------------*/
 

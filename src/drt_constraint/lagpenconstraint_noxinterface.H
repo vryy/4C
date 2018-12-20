@@ -7,7 +7,7 @@
 
 \level 3
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \date July 29, 2016
 

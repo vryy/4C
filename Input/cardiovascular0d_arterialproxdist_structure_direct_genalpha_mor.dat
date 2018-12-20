@@ -1,4 +1,4 @@
-// Maintainer: Martin Pfaller
+// Maintainer: Amadeus Gebauer
 // setup: simple symmetric pseudo 2D biventricular heart
 // test: model order reduction to 100 dofs
 -------------------------------------------------------------------------MOR

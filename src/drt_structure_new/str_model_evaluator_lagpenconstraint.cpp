@@ -4,7 +4,7 @@
 
 \brief Evaluation and assembly of all constraint terms
 
-\maintainer Marc Hirschvogel
+\maintainer Amadeus Gebauer
 
 \date Jun 29, 2016
 
