@@ -601,9 +601,9 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(container_->GetMaxValueOfState(PARTICLEENGINE::Position), 61.0, 1e-14);
   }
 
-  void test_GetParticleStates()
+  void test_GetStoredStates()
   {
-    std::set<StateEnum> particleStates = container_->GetParticleStates();
+    std::set<StateEnum> particleStates = container_->GetStoredStates();
     TS_ASSERT_EQUALS(particleStates.size(), 3);
     TS_ASSERT(particleStates.find(PARTICLEENGINE::Position) != particleStates.end());
     TS_ASSERT(particleStates.find(PARTICLEENGINE::Velocity) != particleStates.end());

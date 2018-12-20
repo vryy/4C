@@ -191,7 +191,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       int particlestored = container->ParticlesStored();
 
       // get particle states stored in container
-      const std::set<StateEnum> particlestates = container->GetParticleStates();
+      const std::set<StateEnum> particlestates = container->GetStoredStates();
 
       // safety check
       if (not particlestates.count(PARTICLEENGINE::Position))

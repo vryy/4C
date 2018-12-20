@@ -126,7 +126,7 @@ namespace PARTICLEENGINE
     };
 
     //! get stored particle states
-    inline const std::set<StateEnum> GetParticleStates() const { return storedstates_; };
+    inline const std::set<StateEnum> GetStoredStates() const { return storedstates_; };
 
     //! get size of particle container
     inline int ContainerSize() const { return containersize_; };
