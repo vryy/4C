@@ -52,7 +52,8 @@ namespace GEOMETRYPAIR
 namespace GEOMETRYPAIR
 {
   /**
-   * \brief Class that handles the geometrical interactions of a line and a volume.
+   * \brief Class that handles the geometrical interactions of a line (element 1) and a volume
+   * (element 2).
    * @param scalar_type Type that will be used for scalar values.
    * @param line Type of line element.
    * @param volume Type of volume element.

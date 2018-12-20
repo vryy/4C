@@ -154,9 +154,30 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::ParameterList& beam_to_solid_volume_mestying =
       beaminteraction.sublist("BEAM TO SOLID VOLUME MESHTYING", false, "");
 
-  setStringToIntegralParameter<int>("STRATEGY", "None", "Type of employed solving strategy",
-      tuple<std::string>("None", "none", "Penalty", "penalty"),
-      tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beam_to_solid_volume_mestying);
+  setStringToIntegralParameter<BeamToSolidVolumeContactDiscretization>("CONTACT_DISCRETIZATION",
+      "None", "Type of employed contact discretization",
+      tuple<std::string>("None", "none", "gauss_point_to_segment", "mortar"),
+      tuple<BeamToSolidVolumeContactDiscretization>(BeamToSolidVolumeContactDiscretization::none,
+          BeamToSolidVolumeContactDiscretization::none,
+          BeamToSolidVolumeContactDiscretization::gauss_point_to_segment,
+          BeamToSolidVolumeContactDiscretization::mortar),
+      &beam_to_solid_volume_mestying);
+
+  setStringToIntegralParameter<BeamToSolidVolumeConstraintEnforcement>("CONSTRAINT_STRATEGY",
+      "None", "Type of employed constraint enforcement strategy",
+      tuple<std::string>("None", "none", "penalty"),
+      tuple<BeamToSolidVolumeConstraintEnforcement>(BeamToSolidVolumeConstraintEnforcement::none,
+          BeamToSolidVolumeConstraintEnforcement::none,
+          BeamToSolidVolumeConstraintEnforcement::penalty),
+      &beam_to_solid_volume_mestying);
+
+  setStringToIntegralParameter<BeamToSolidVolumeMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
+      "None", "Shape function for the mortar Lagrange-multiplicators",
+      tuple<std::string>("None", "none", "line2", "line3"),
+      tuple<BeamToSolidVolumeMortarShapefunctions>(BeamToSolidVolumeMortarShapefunctions::none,
+          BeamToSolidVolumeMortarShapefunctions::none, BeamToSolidVolumeMortarShapefunctions::line2,
+          BeamToSolidVolumeMortarShapefunctions::line3),
+      &beam_to_solid_volume_mestying);
 
   DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-solid volume meshtying",
       &beam_to_solid_volume_mestying);

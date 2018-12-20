@@ -197,7 +197,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair<beam, solid>::Evaluate(
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;
-  double penalty_parameter = Params()->BeamToSolidVolumeMeshtyingParams()->PenaltyParameter();
+  double penalty_parameter = Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
 
   // Calculate the meshtying forces.
   // Loop over segments.

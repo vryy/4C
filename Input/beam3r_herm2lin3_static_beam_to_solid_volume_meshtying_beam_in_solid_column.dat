@@ -58,7 +58,8 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY             Everydt
 ----------------------------------------------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING
-STRATEGY                        Penalty
+CONTACT_DISCRETIZATION          gauss_point_to_segment
+CONSTRAINT_STRATEGY             penalty
 PENALTY_PARAMETER               1.0e+10
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard

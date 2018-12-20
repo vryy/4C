@@ -108,10 +108,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
     beam_contact_params_ptr_->BuildBeamToSphereContactParams();
   }
 
-  if (DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization>(
           DRT::Problem::Instance()->BeamInteractionParams().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
+          "CONTACT_DISCRETIZATION") !=
+      INPAR::BEAMINTERACTION::BeamToSolidVolumeContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -121,7 +122,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
     // Set the Gauss rule for the pair.
     geometry_evaluation_data_ptr_->LineToVolumeEvaluationData()->SetGaussRule(
-        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GaussRule());
+        beam_contact_params_ptr_->BeamToSolidVolumeMeshtyingParams()->GetGaussRule());
   }
 
 

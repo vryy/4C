@@ -91,7 +91,7 @@ namespace GEOMETRYPAIR
      * \brief Return a reference to the gauss point projection tracker.
      * @return Projection tracker.
      */
-    inline std::map<int, std::vector<bool>>& GaussPointProjectionTrackerMutable()
+    inline std::map<int, std::vector<bool>>& GetGaussPointProjectionTrackerMutable()
     {
       return gauss_point_projection_tracker_;
     };
@@ -100,7 +100,7 @@ namespace GEOMETRYPAIR
      * \brief Return a reference to the segment tracker.
      * @return Segment tracker.
      */
-    std::map<int, std::set<LineSegment<double>>>& SegmentTrackerMutable()
+    std::map<int, std::set<LineSegment<double>>>& GetSegmentTrackerMutable()
     {
       return segment_tracker_;
     };
