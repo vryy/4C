@@ -1319,11 +1319,10 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
 }
 
 /*----------------------------------------------------------------------*
- | collect maps for preconditioner (AMG)                   wiesner 01/12|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(
     Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap,
-    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap)
+    Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap) const
 {
   InnerDofMap = gndofrowmap_;  // global internal dof row map
 
@@ -1343,6 +1342,8 @@ void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(
     MasterDofMap = pgmdofrowmap_;
   else
     MasterDofMap = gmdofrowmap_;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -1,43 +1,39 @@
 /*!----------------------------------------------------------------------
 \file MueLu_ContactSPAggregationFactory_def.hpp
 
-\brief MueLu contact aggregation factory class
+\brief MueLu contact aggregation factory class for saddle point formulations
 \level 2
-\maintainer Martin Kronbichler
-
-*----------------------------------------------------------------------*/
+\maintainer Matthias Mayr
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_
 #define MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
 
+
+#include <MueLu_Aggregates.hpp>
+#include <MueLu_AmalgamationFactory.hpp>
 #include "MueLu_ContactSPAggregationFactory_decl.hpp"
 
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_CrsMatrixWrap.hpp>
-#include <Xpetra_BlockedCrsMatrix.hpp>
-#include <Xpetra_MapFactory.hpp>
-#include <Xpetra_VectorFactory.hpp>
-#include <Xpetra_Vector.hpp>
 
-#include <MueLu_AmalgamationFactory.hpp>
-#include <MueLu_Aggregates.hpp>
+#include <Xpetra_BlockedCrsMatrix.hpp>
+#include <Xpetra_CrsMatrixWrap.hpp>
+#include <Xpetra_MapFactory.hpp>
+#include <Xpetra_Matrix.hpp>
+#include <Xpetra_Vector.hpp>
+#include <Xpetra_VectorFactory.hpp>
 
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
-
-// already defined in MueLu_Utilities_decl.hpp
-/*#define sumAll(rcpComm, in, out)                                        \
-  Teuchos::reduceAll(*rcpComm, Teuchos::REDUCE_SUM, in, Teuchos::outArg(out));*/
 
 namespace MueLu
 {
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal,
-      Node>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact,
-      Teuchos::RCP<const FactoryBase> amalgFact)
-      : aggregatesFact_(aggregatesFact), amalgFact_(amalgFact), AFact_(MueLu::NoFactory::getRCP())
+      Node>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact)
+      : aggregatesFact_(aggregatesFact), AFact_(MueLu::NoFactory::getRCP())
   {
   }
 
@@ -55,13 +51,10 @@ namespace MueLu
     Teuchos::RCP<Teuchos::ParameterList> validParamList =
         Teuchos::rcp(new Teuchos::ParameterList());
 
-    // TODO remove aggregatesFact_, amalgFact_
     validParamList->set<Teuchos::RCP<const FactoryBase>>("A", Teuchos::null,
         "Generating factory of the matrix A used during the prolongator smoothing process");
     validParamList->set<Teuchos::RCP<const FactoryBase>>(
         "Aggregates", Teuchos::null, "Generating factory for aggregates");
-    validParamList->set<Teuchos::RCP<const FactoryBase>>(
-        "UnAmalgamationInfo", Teuchos::null, "Generating factory for UnAmalgamationInfo.");
     validParamList->set<Teuchos::RCP<const FactoryBase>>("SlaveDofMap", MueLu::NoFactory::getRCP(),
         "Generating Factory for variable \"SlaveDofMap\"");
 
@@ -74,9 +67,6 @@ namespace MueLu
   {
     currentLevel.DeclareInput("A", AFact_.get(), this);
     currentLevel.DeclareInput("Aggregates", aggregatesFact_.get(), this);
-    currentLevel.DeclareInput("UnAmalgamationInfo", amalgFact_.get(), this);
-    // currentLevel.DeclareInput("MasterDofMap", MueLu::NoFactory::get(),this); // TODO don't forget
-    // to transfer these maps!
     currentLevel.DeclareInput("SlaveDofMap", MueLu::NoFactory::get(), this);
   }
 
@@ -112,11 +102,13 @@ namespace MueLu
     Teuchos::RCP<CrsMatrix> A00 = bOp->getMatrix(0, 0);
     Teuchos::RCP<CrsMatrix> A01 = bOp->getMatrix(0, 1);
 
-    // determine block information for displacement blocks
-    // disp_offset usually is zero (default),
-    // disp_blockdim is 2 or 3 (for 2d or 3d problems) on the finest level (# displacement dofs per
-    // node) and disp_blockdim is 3 or 6 (for 2d or 3d problems) on coarser levels (# nullspace
-    // vectors)
+    /* Determine block information for displacement blocks
+     *
+     * disp_offset: usually is zero (default)
+     * disp_blockdim:
+     * - is 2 or 3 (for 2d or 3d problems) on the finest level (# displacement dofs per node)
+     * - is 3 or 6 (for 2d or 3d problems) on coarser levels (# nullspace vectors)
+     */
     LocalOrdinal disp_blockdim = 1;  // block dim for fixed size blocks
     GlobalOrdinal disp_offset = 0;   // global offset of dof gids
     if (Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0)) != Teuchos::null)
@@ -125,18 +117,29 @@ namespace MueLu
           Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
       TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null, Exceptions::BadCast,
           "MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
+
       disp_blockdim = strMap->getFixedBlockSize();
       disp_offset = strMap->getOffset();
+
       // GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim="
       // << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
-    }  // else GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding
-       // information for displacement Dofs available. Use blockdim=1 with offset=0" << std::endl;
+    }
+    else
+    {
+      GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for "
+                              "displacement Dofs available. Use blockdim=1 with offset=0"
+                           << std::endl;
+    }
 
-    // determine block information for Lagrange multipliers
-    // lagr_offset usually > zero (set by domainOffset for Ptent11Fact)
-    // lagr_blockdim is disp_blockdim (for 2d or 3d problems) on the finest level (1 Lagrange
-    // multiplier per displacement dof) and lagr_blockdim is 2 or 3 (for 2d or 3d problems) on
-    // coarser levels (same as on finest level, whereas there are 3 or 6 displacement dofs per node)
+    /* Determine block information for Lagrange multipliers
+     *
+     * lagr_offset: usually > zero (set by domainOffset for Ptent11Fact)
+     * lagr_blockdim:
+     * - is disp_blockdim (for 2d or 3d problems) on the finest level (1 Lagrange multiplier per
+     *   displacement dof)
+     * - is 2 or 3 (for 2d or 3d problems) on coarser levels (same as on finest level, whereas there
+     *   are 3 or 6 displacement dofs per node)
+     */
     LocalOrdinal lagr_blockdim = disp_blockdim;  // block dim for fixed size blocks
     GlobalOrdinal lagr_offset = 1000;            // global offset of dof gids (TODO fix this)
     if (Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1)) != Teuchos::null)
@@ -152,9 +155,9 @@ namespace MueLu
     }
     else
     {
-      // GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for
-      // Lagrange multipliers available. Use lagr_blockdim=disp_blockdim=" << lagr_blockdim << "
-      // with lagr_offset=" << lagr_offset << std::endl;
+      GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build(): no striding information for "
+                              "Lagrange multipliers available. Use lagr_blockdim = disp_blockdim = "
+                           << lagr_blockdim << " with lagr_offset = " << lagr_offset << std::endl;
     }
 
     // extract aggregates built using the displacement DOFs (from matrix block A00)
@@ -188,6 +191,7 @@ namespace MueLu
     std::vector<GlobalOrdinal> lagrNodeId2dispAggId(gMaxLagrNodeId - gMinLagrNodeId + 1, -1);
     std::vector<GlobalOrdinal> local_lagrNodeId2dispAggId(gMaxLagrNodeId - gMinLagrNodeId + 1, -1);
 
+    // Fill mapping of Lagrange Node IDs to displacement aggregate IDs
     for (size_t r = 0; r < slaveDofMap->getNodeNumElements(); r++)
     {  // todo improve me: loop only over node (skip all dofs in between..)
       // obtain global slave displacement DOF id
@@ -224,13 +228,14 @@ namespace MueLu
               "lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
           if (lagrNodeId2dispNodeId[lagr_nodeId - gMinLagrNodeId] == -1)
             local_lagrNodeId2dispNodeId[lagr_nodeId - gMinLagrNodeId] = disp_nodeId;
-          // else std::cout << "PROC: " << myRank << " lagr_nodeId " << lagr_nodeId << " is already
-          // connected to lagrange nodeId " <<  lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] <<
-          // ". Ignore new dispNodeId: " << disp_nodeId << std::endl;
+          else
+            std::cout << "PROC: " << myRank << " lagr_nodeId " << lagr_nodeId
+                      << " is already connected to lagrange nodeId "
+                      << lagrNodeId2dispNodeId[lagr_nodeId - gMinLagrNodeId]
+                      << ". Ignore new dispNodeId: " << disp_nodeId << std::endl;
 
-          local_lagrNodeId2dispAggId[lagr_nodeId - gMinLagrNodeId] =
-              dispAggId;  // todo: only if dispAggId belongs to current proc. these are local agg
-                          // ids!
+          // todo: only if dispAggId belongs to current proc. these are local agg ids!
+          local_lagrNodeId2dispAggId[lagr_nodeId - gMinLagrNodeId] = dispAggId;
         }
       }
     }
@@ -267,7 +272,7 @@ namespace MueLu
 
 
     // build processor local map: dispAggId2lagrAggId
-    // generate new aggregegate ids if necessary (independent on each processor)
+    // generate new aggregate ids if necessary (independent on each processor)
 
     // Build aggregates using the lagrange multiplier node map
     Teuchos::RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
@@ -298,8 +303,6 @@ namespace MueLu
   }
 }  // namespace MueLu
 
-
 #endif  // HAVE_MueLu
-
 
 #endif /* MUELU_CONTACTSPAGGREGATIONFACTORY_DEF_HPP_ */

@@ -1,15 +1,13 @@
 /*!----------------------------------------------------------------------
 \file solver_belossolver.cpp
 
-<pre>
-\brief Declaration
+\brief Implementation of interface to Belos solver package
+
 \level 1
+
 \maintainer Martin Kronbichler
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-Created on: Jul 4, 2011
-</pre>
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 
@@ -84,8 +82,8 @@ LINALG::SOLVER::BelosSolver::~BelosSolver()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::BelosSolver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
-    bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, const bool refactor,
+    const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
