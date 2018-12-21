@@ -326,6 +326,7 @@ namespace MAT
 
     /// Return material density (if provided by the specific material)
     virtual double Density() const;
+    virtual double InitDensity() const;
 
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material

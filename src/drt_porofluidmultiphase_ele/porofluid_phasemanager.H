@@ -15,6 +15,7 @@
 #define SRC_DRT_POROFLUIDMULTPHASE_ELE_POROFLUID_PHASEMANAGER_H_
 
 #include "porofluidmultiphase_ele_action.H"
+#include "../drt_mat/scatra_mat_multiporo.H"
 
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_dserror.H"
@@ -113,8 +114,8 @@ namespace DRT
         //! check for reactions
         virtual bool IsReactive(int phasenum) const = 0;
 
-        //! get scalar to phase ID
-        virtual int ScalarToPhaseID(int iscal) const = 0;
+        //! get scalar to phase mapping
+        virtual MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const = 0;
 
         //! check if EvaluateGPState() was called
         virtual void CheckIsEvaluated() const = 0;
@@ -184,6 +185,18 @@ namespace DRT
 
         //! get density of phase 'phasenum'
         virtual double VolFracDensity(int volfracnum) const = 0;
+
+        //! get the density of solid phase
+        virtual double SolidDensity() const = 0;
+
+        //! get the heat capacity of phase 'phasenum'
+        virtual double HeatCapacity(int phasenum) const = 0;
+
+        //! get the thermal diffusivity of phase 'phasenum'
+        virtual double ThermalDiffusivity(int phasenum) const = 0;
+
+        //! get the effective heat capacity
+        virtual double HeatCapacityEff() const = 0;
 
         //! get the current element the manager was set up with
         virtual const DRT::Element* Element() const = 0;
@@ -436,6 +449,18 @@ namespace DRT
 
         //! get density of phase 'phasenum'
         double VolFracDensity(int volfracnum) const;
+
+        //! get the density of the solid phase
+        double SolidDensity() const;
+
+        //! get heat capacity of phase 'phasenum'
+        double HeatCapacity(int phasenum) const;
+
+        //! get thermal diffusivity of phase 'phasenum'
+        double ThermalDiffusivity(int phasenum) const;
+
+        //! get the effctive heat capacity
+        double HeatCapacityEff() const;
 
         //! get the current element the manager was set up with
         virtual const DRT::Element* Element() const { return ele_; };
@@ -769,11 +794,12 @@ namespace DRT
           return 0.0;
         };
 
-        //! get scalar to phase ID
-        virtual int ScalarToPhaseID(int iscal) const
+        //! get scalar to phase mapping
+        virtual MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const
         {
-          dserror("ScalarToPhaseID not available for this phase manager!");
-          return 0;
+          dserror("ScalarToPhase not available for this phase manager!");
+          MAT::ScatraMatMultiPoro::ScalarToPhaseMap null_map;
+          return null_map;
         };
 
        private:
@@ -800,6 +826,14 @@ namespace DRT
         std::vector<double> density_;
         //! densities of volume fractions
         std::vector<double> volfracdensity_;
+        //! solid density
+        double soliddensity_;
+        //! heat capacities
+        std::vector<double> heatcapacity_;
+        //! thermaldiffusivity
+        std::vector<double> thermaldiffusivity_;
+        //! effective heat capacity
+        double heatcapacityeff_;
         //! solid pressure
         double solidpressure_;
         //! inverse bulk moduli of the fluid phases
@@ -913,11 +947,11 @@ namespace DRT
         //! check if the current phase is involved in a reaction
         virtual bool IsReactive(int phasenum) const { return phasemanager_->IsReactive(phasenum); };
 
-        //! get scalar to phase ID
-        virtual int ScalarToPhaseID(int iscal) const
+        //! get scalar to phase mapping
+        virtual MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const
         {
-          return phasemanager_->ScalarToPhaseID(iscal);
-        };
+          return phasemanager_->ScalarToPhase(iscal);
+        }
 
         //! get the number of phases
         virtual int NumFluidPhases() const { return phasemanager_->NumFluidPhases(); };
@@ -1015,6 +1049,24 @@ namespace DRT
         {
           return phasemanager_->VolFracDensity(volfracnum);
         };
+
+        //! get density of solid phase
+        virtual double SolidDensity() const { return phasemanager_->SolidDensity(); };
+
+        //! get the heat capacity of phase 'phasenum'
+        virtual double HeatCapacity(int phasenum) const
+        {
+          return phasemanager_->HeatCapacity(phasenum);
+        };
+
+        //! get thermal diffusivity of phase 'phasenum'
+        virtual double ThermalDiffusivity(int phasenum) const
+        {
+          return phasemanager_->ThermalDiffusivity(phasenum);
+        };
+
+        //! get effective heat capacity
+        virtual double HeatCapacityEff() const { return phasemanager_->HeatCapacityEff(); };
 
         //! get the current element the manager was set up with
         virtual const DRT::Element* Element() const { return phasemanager_->Element(); };
@@ -1413,8 +1465,8 @@ namespace DRT
           return isreactive_[phasenum];
         };
 
-        //! get scalar to phase ID
-        int ScalarToPhaseID(int iscal) const;
+        //! get scalar to phase mapping
+        MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const;
 
         //! get total number of scalars in system
         int NumScal() const;
@@ -1449,6 +1501,10 @@ namespace DRT
         std::vector<bool> isreactive_;
         //! scalar to phase ids
         std::vector<int> scalartophaseid_;
+        //! species types
+        std::vector<MAT::ScatraMatMultiPoro::SpeciesType> species_type_;
+        //! scalar to phase map
+        std::vector<MAT::ScatraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
         //! number of scalars
         int numscal_;
       };

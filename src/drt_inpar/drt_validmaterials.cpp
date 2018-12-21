@@ -387,6 +387,47 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+  /*----------------------------------------------------------------------*/
+  // scalar transport reaction material (species in solid)
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_solid",
+            "advanced reaction material for multiphase "
+            "porous flow (species in solid)",
+            INPAR::MAT::m_scatra_multiporo_solid));
+
+    AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity");
+    // no phaseID because only one solid phase
+    AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
+    AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
+    AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+    AddNamedReal(m, "DELTA", "delta", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+  /*----------------------------------------------------------------------*/
+  // scalar transport reaction material (temperature)
+  {
+    Teuchos::RCP<MaterialDefinition> m =
+        Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiporo_temperature",
+            "advanced reaction material for multiphase porous flow (temperature)",
+            INPAR::MAT::m_scatra_multiporo_temperature));
+
+    AddNamedInt(m, "NUMFLUIDPHASES", "number of fluid dofs");
+    AddNamedRealVector(m, "CP_FLUID", "heat capacity fluid phases", "NUMFLUIDPHASES");
+    AddNamedInt(m, "NUMVOLFRAC", "number of volfrac dofs");
+    AddNamedRealVector(m, "CP_VOLFRAC", "heat capacity volfrac", "NUMVOLFRAC");
+    AddNamedReal(m, "CP_SOLID", "heat capacity solid");
+    AddNamedRealVector(m, "KAPPA_FLUID", "thermal diffusivity fluid phases", "NUMFLUIDPHASES");
+    AddNamedRealVector(m, "KAPPA_VOLFRAC", "thermal diffusivity volfrac", "NUMVOLFRAC");
+    AddNamedReal(m, "KAPPA_SOLID", "heat capacity solid");
+    AddNamedReal(m, "DIFFUSIVITY", "kinematic diffusivity", 1.0, true);
+    AddNamedReal(m, "REACOEFF", "reaction coefficient", 0.0, true);
+    AddNamedReal(m, "SCNUM", "schmidt number", 0.0, true);
+    AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
 
   /*----------------------------------------------------------------------*/
   // scalar transport chemotaxis material

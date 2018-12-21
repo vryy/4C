@@ -170,6 +170,8 @@ double MAT::StructPoro::Density() const
     return ((1.0 - params_->initporosity_) * mat_->Density());
 }
 
+double MAT::StructPoro::InitDensity() const { return mat_->Density(); }
+
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
 *----------------------------------------------------------------------*/

@@ -242,7 +242,8 @@ namespace DRT
       /*========================================================================*/
 
       //! return convective velocity
-      virtual const LINALG::Matrix<NSD, 1>& ConVel(const int k) const {//    if(k<NO_CONVECTION_NR)
+      virtual const LINALG::Matrix<NSD, 1>& ConVel(const int k) const {
+          //    if(k<NO_CONVECTION_NR)/if(scalartophaseID_[k]!=-1)
           {return my::convelint_;
     }
     //    else

@@ -184,15 +184,19 @@ namespace INPAR
       m_scatra,                    ///< scalar transport material
       m_scatra_multiporo_fluid,  ///< scalar transport material for multiphase porous flow (species
                                  ///< in fluid)
-      m_scatra_multiporo_volfrac,  ///< scalar transport material for multiphase porous flow
-                                   ///< (species in volume fraction)
-      m_scatra_aniso,              ///< anisotropic scalar transport material
-      m_scatra_multiscale,         ///< scalar transport material for multi-scale approach
-      m_scatra_reaction_poroECM,   ///< reaction definition and parameters for reaction model in
-                                   ///< porous ECM
-      m_scatra_reaction,           ///< reaction definition and parameters
-      m_scatra_bondreac,           ///< biochemical bond reactions in cell migration context
-      m_scatra_chemotaxis,         ///< chemotaxis definition parameters
+      m_scatra_multiporo_volfrac,      ///< scalar transport material for multiphase porous flow
+                                       ///< (species in volume fraction)
+      m_scatra_multiporo_solid,        ///< scalar transport material for multiphase porous flow
+                                       ///< (species in solid)
+      m_scatra_multiporo_temperature,  ///< scalar transport material for multiphase porous flow
+                                       ///< (temperature)
+      m_scatra_aniso,                  ///< anisotropic scalar transport material
+      m_scatra_multiscale,             ///< scalar transport material for multi-scale approach
+      m_scatra_reaction_poroECM,       ///< reaction definition and parameters for reaction model in
+                                       ///< porous ECM
+      m_scatra_reaction,               ///< reaction definition and parameters
+      m_scatra_bondreac,               ///< biochemical bond reactions in cell migration context
+      m_scatra_chemotaxis,             ///< chemotaxis definition parameters
       m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                  ///< Soret effect
       m_spring,  ///< elastic spring (translational or rotational)
