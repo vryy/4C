@@ -171,7 +171,7 @@ namespace PARTICLEENGINE
     void SetupBinningStrategy();
 
     //! setup ghosting of bins
-    void SetupBinGhosting() const;
+    void SetupBinGhosting();
 
     //! init particle container bundle
     void InitParticleContainerBundle();
@@ -246,8 +246,8 @@ namespace PARTICLEENGINE
     //! store particle positions after transfer of particles
     void StorePositionsAfterParticleTransfer();
 
-    //! rebuild index of owned particles in bin content map
-    void RebuildIndexOfOwnedParticlesInBinContentMap();
+    //! relate owned particles to bins
+    void RelateOwnedParticlesToBins();
 
     //! determine minimum relevant bin size
     void DetermineMinRelevantBinSize();
@@ -273,6 +273,9 @@ namespace PARTICLEENGINE
     //! distribution of row bins
     Teuchos::RCP<Epetra_Map> binrowmap_;
 
+    //! distribution of col bins
+    Teuchos::RCP<Epetra_Map> bincolmap_;
+
     //! minimum relevant bin size
     double minbinsize_;
 
@@ -288,8 +291,8 @@ namespace PARTICLEENGINE
     //! particle runtime vtp writer
     std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
 
-    //! maps bins to its containing (owned and ghosted) particles
-    std::map<int, TypeStatusIndexMap> binstocontainingparticles_;
+    //! relate (owned and ghosted) particles to bins
+    std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
 
     //! maps particles of all types to neighboring particles of all types and statuses (overlapping)
     ParticleNeighborsMap particleneighbors_;
@@ -300,10 +303,10 @@ namespace PARTICLEENGINE
     //! maps local index of owned particles to other processors local index of ghosted particles
     std::map<TypeEnum, std::map<int, std::vector<std::pair<int, int>>>> directghostingmap_;
 
-    //! flag denoting validity of map relating owned particles to bins
+    //! flag denoting valid relation of owned particles to bins
     bool validownedparticles_;
 
-    //! flag denoting validity of map relating ghosted particles to bins
+    //! flag denoting valid relation of ghosted particles to bins
     bool validghostedparticles_;
 
     //! flag denoting validity of particle neighbors map

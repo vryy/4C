@@ -261,8 +261,8 @@ void PARTICLEENGINE::ParticleEngine::DistributeParticles(
   // store particle positions after transfer of particles
   StorePositionsAfterParticleTransfer();
 
-  // rebuild index of owned particles in bin content map
-  RebuildIndexOfOwnedParticlesInBinContentMap();
+  // relate owned particles to bins
+  RelateOwnedParticlesToBins();
 }
 
 /*---------------------------------------------------------------------------*
@@ -277,8 +277,8 @@ void PARTICLEENGINE::ParticleEngine::TransferParticles()
   std::map<int, std::vector<ParticleObjShrdPtr>> particlestosend;
   std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert;
 
-  // rebuild index of owned particles in bin content map
-  if (not validownedparticles_) RebuildIndexOfOwnedParticlesInBinContentMap();
+  // relate owned particles to bins
+  if (not validownedparticles_) RelateOwnedParticlesToBins();
 
   // check particles for periodic boundaries/leaving domain
   CheckParticlesAtBoundaries(particlestoremove);
@@ -298,8 +298,8 @@ void PARTICLEENGINE::ParticleEngine::TransferParticles()
   // store particle positions after transfer of particles
   StorePositionsAfterParticleTransfer();
 
-  // rebuild index of owned particles in bin content map
-  RebuildIndexOfOwnedParticlesInBinContentMap();
+  // relate owned particles to bins
+  RelateOwnedParticlesToBins();
 }
 
 /*---------------------------------------------------------------------------*
@@ -443,7 +443,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 
   // safety check
   if ((not validownedparticles_) or (not validghostedparticles_))
-    dserror("invalid map relating particles to bins!");
+    dserror("invalid relation of particles to bins!");
 
   // clear map
   particleneighbors_.clear();
@@ -451,109 +451,91 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
   // invalidate flag denoting validity of particle neighbors map
   validparticleneighbors_ = false;
 
-  // iterate over bins containing particles
-  for (auto& binIt : binstocontainingparticles_)
+  // loop over row bins
+  for (int rowlidofbin = 0; rowlidofbin < binrowmap_->NumMyElements(); ++rowlidofbin)
   {
     // get global id of bin
-    const int gidofbin = binIt.first;
+    const int gidofbin = binrowmap_->GID(rowlidofbin);
+
+    // get local id of bin
+    const int collidofbin = bincolmap_->LID(gidofbin);
+
+    // check if current bin contains owned particles
+    if (particlestobins_[collidofbin].empty()) continue;
 
     // get neighboring bins
     std::vector<int> binvec;
     binstrategy_->GetNeighborAndOwnBinIds(gidofbin, binvec);
 
-    // iterate over particle types
-    for (auto& typeIt : binIt.second)
+    // iterate over owned particles in current bin
+    for (auto& particleIt : particlestobins_[collidofbin])
     {
-      auto ownedIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-      // check if current bin contains owned particles of current type
-      if (ownedIt == (typeIt.second).end()) continue;
+      // get type of particle
+      TypeEnum typeEnum = particleIt.first;
 
-      // get type of particles
-      TypeEnum typeEnum = typeIt.first;
+      // get local index of owned particle
+      const int ownedindex = particleIt.second;
 
-      // get reference to sub-map
-      std::map<int, TypeStatusIndexMap>& currentTypeMap = particleneighbors_[typeEnum];
-
-      // get set of owned particles of current type
-      std::set<int>& setofownedparticles = ownedIt->second;
-
-      // get container of owned particles of current type
-      ParticleContainerShrdPtr ownedcontainer =
+      // get container of owned particles of current particle type
+      ParticleContainerShrdPtr container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-      // iterate over owned particles of current type
-      for (int ownedparticle : setofownedparticles)
+      // get position of particle
+      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+
+      // get reference to sub-map
+      TypeStatusIndexMap& currentTypeCurrentParticleMap =
+          (particleneighbors_[typeEnum])[ownedindex];
+
+      // iterate over neighboring bins (including current bin)
+      for (int gidofneighborbin : binvec)
       {
-        // get position of owned particle
-        const double* ownedcurrpos =
-            ownedcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, ownedparticle);
+        // get local id of neighboring bin
+        const int collidofneighboringbin = bincolmap_->LID(gidofneighborbin);
 
-        // get reference to sub-map
-        TypeStatusIndexMap& currentTypeCurrentParticleMap = currentTypeMap[ownedparticle];
+        // check if current neighboring bin contains particles
+        if (particlestobins_[collidofneighboringbin].empty()) continue;
 
-        // iterate over neighboring bins (including current bin)
-        for (int neighboringbin : binvec)
+        // get status of neighboring particles
+        StatusEnum neighborStatusEnum = (binrowmap_->LID(gidofneighborbin) < 0)
+                                            ? PARTICLEENGINE::Ghosted
+                                            : PARTICLEENGINE::Owned;
+
+        // iterate over particles in current neighboring bin
+        for (auto& neighborParticleIt : particlestobins_[collidofneighboringbin])
         {
-          auto neighborBinIt = binstocontainingparticles_.find(neighboringbin);
-          // check if neighboring bin contains particles
-          if (neighborBinIt == binstocontainingparticles_.end()) continue;
+          // get type of neighboring particle
+          TypeEnum neighborTypeEnum = neighborParticleIt.first;
 
-          // iterate over particle types in neighboring bin
-          for (auto& neighborTypeIt : neighborBinIt->second)
-          {
-            // get type of neighboring particles
-            TypeEnum neighborTypeEnum = neighborTypeIt.first;
+          // get local index of neighboring particle
+          const int neighborindex = neighborParticleIt.second;
 
-            // get reference to sub-map
-            std::map<StatusEnum, std::set<int>>& neighborTypeMap =
-                currentTypeCurrentParticleMap[neighborTypeEnum];
+          // get container of neighboring particle of current particle type
+          ParticleContainerShrdPtr neighborcontainer =
+              particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
 
-            // iterate over particle statuses
-            for (auto& neighborStatusIt : neighborTypeIt.second)
-            {
-              // get status of neighboring particles of current type
-              StatusEnum neighborStatusEnum = neighborStatusIt.first;
+          // no self-neighboring
+          if (gidofbin == gidofneighborbin and typeEnum == neighborTypeEnum and
+              neighborStatusEnum == PARTICLEENGINE::Owned and ownedindex == neighborindex)
+            continue;
 
-              // get reference to sub-set
-              std::set<int>& neighborTypeStatusSet = neighborTypeMap[neighborStatusEnum];
+          // get position of neighboring particle
+          const double* neighborcurrpos =
+              neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex);
 
-              // get set of neighboring particles of current type and status
-              const std::set<int>& currentTypeCurrentStatusNeighbors = neighborStatusIt.second;
+          // distance vector from owned particle to neighboring particle
+          double dist[3];
 
-              // get container of neighboring particles of current type and status
-              ParticleContainerShrdPtr neighborcontainer =
-                  particlecontainerbundle_->GetSpecificContainer(
-                      neighborTypeEnum, neighborStatusEnum);
+          // distance between particles considering periodic boundaries
+          DistanceBetweenParticles(currpos, neighborcurrpos, dist);
 
-              // iterate over neighboring particles of current type and status
-              for (int neighborparticle : currentTypeCurrentStatusNeighbors)
-              {
-                // no self-neighboring
-                if (typeEnum == neighborTypeEnum and gidofbin == neighboringbin and
-                    neighborStatusEnum == PARTICLEENGINE::Owned and
-                    ownedparticle == neighborparticle)
-                  continue;
+          // distance between particles larger than minimum bin size
+          if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) > minbinsize_)
+            continue;
 
-                // get position of neighboring particle
-                const double* neighborcurrpos = neighborcontainer->GetPtrToParticleState(
-                    PARTICLEENGINE::Position, neighborparticle);
-
-                // distance vector from owned particle to neighboring particle
-                double dist[3];
-
-                // distance between particles considering periodic boundaries
-                DistanceBetweenParticles(ownedcurrpos, neighborcurrpos, dist);
-
-                // distance between particles larger than minimum bin size
-                if (std::sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]) >
-                    minbinsize_)
-                  continue;
-
-                // insert neighboring particle of current type and status
-                neighborTypeStatusSet.insert(neighborparticle);
-              }
-            }
-          }
+          // insert neighboring particle of current type and status
+          ((currentTypeCurrentParticleMap[neighborTypeEnum])[neighborStatusEnum])
+              .insert(neighborindex);
         }
       }
     }
@@ -824,7 +806,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinningStrategy()
 /*---------------------------------------------------------------------------*
  | setup ghosting of bins                                     sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::SetupBinGhosting() const
+void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
 {
   // gather bins of rowmap and all its neighbors (row + ghost)
   std::set<int> bins;
@@ -867,19 +849,19 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting() const
     }
   }
 
-  // copy bingids to a vector and create bincolmap
+  // copy bin gids to a vector and create bincolmap
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  Teuchos::RCP<Epetra_Map> bincolmap = Teuchos::rcp(
+  bincolmap_ = Teuchos::rcp(
       new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), &bincolmapvec[0], 0, comm_));
 
-  if (bincolmap->NumGlobalElements() == 1 && comm_.NumProc() > 1)
+  if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
     dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
 
   // make sure that all processors are either filled or unfilled
   binstrategy_->BinDiscret()->CheckFilledGlobally();
 
   // create ghosting for bins
-  binstrategy_->BinDiscret()->ExtendedGhosting(*bincolmap, true, false, true, false);
+  binstrategy_->BinDiscret()->ExtendedGhosting(*bincolmap_, true, false, true, false);
 }
 
 /*---------------------------------------------------------------------------*
@@ -944,9 +926,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
     dserror("construction of binning discretization not finalized!");
 
   // loop over row bins
-  for (int lid = 0; lid < binrowmap_->NumMyElements(); ++lid)
+  for (int rowlidofbin = 0; rowlidofbin < binrowmap_->NumMyElements(); ++rowlidofbin)
   {
-    int currbin = binrowmap_->GID(lid);
+    int currbin = binrowmap_->GID(rowlidofbin);
 
     // first insert all owned bins
     boundarybins_.insert(currbin);
@@ -1014,19 +996,17 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   if (binstrategy_->BinDiscret()->Filled() == false)
     dserror("construction of binning discretization not finalized!");
 
-  const Epetra_Map* bincolmap = binstrategy_->BinDiscret()->ElementColMap();
-
   // -----------------------------------------------------------------------
   // determine set ghostedbins_
   // -----------------------------------------------------------------------
 
   // loop over col bins
-  for (int lid = 0; lid < bincolmap->NumMyElements(); ++lid)
+  for (int collidofbin = 0; collidofbin < bincolmap_->NumMyElements(); ++collidofbin)
   {
-    int colbinid = bincolmap->GID(lid);
+    int currbin = bincolmap_->GID(collidofbin);
 
     // current bin not owned by this processor
-    if (binrowmap_->LID(colbinid) < 0) ghostedbins_.insert(colbinid);
+    if (binrowmap_->LID(currbin) < 0) ghostedbins_.insert(currbin);
   }
 
   // -----------------------------------------------------------------------
@@ -1093,7 +1073,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
     std::map<TypeEnum, std::set<int>>& particlestoremove) const
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid map relating owned particles to bins!");
+  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
   LINALG::Matrix<3, 2> xaabb = binstrategy_->XAABB();
@@ -1104,60 +1084,57 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
   // iterate over owned bins at the boundary
   for (int bdrybin : boundarybins_)
   {
-    auto binIt = binstocontainingparticles_.find(bdrybin);
-    // check if current bin contains particles
-    if (binIt == binstocontainingparticles_.end()) continue;
+    // get local id of bin
+    const int collidofbin = bincolmap_->LID(bdrybin);
 
-    // iterate over particle types
-    for (auto& typeIt : binIt->second)
+    // check if current bin contains owned particles
+    if (particlestobins_[collidofbin].empty()) continue;
+
+    // iterate over owned particles in current bin
+    for (auto& particleIt : particlestobins_[collidofbin])
     {
-      auto ownedIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-      // check if current bin contains owned particles of current type
-      if (ownedIt == (typeIt.second).end()) continue;
+      // get type of particle
+      TypeEnum typeEnum = particleIt.first;
 
-      // get type of particles
-      TypeEnum typeEnum = typeIt.first;
+      // get local index of owned particle
+      const int ownedindex = particleIt.second;
 
-      // get container of owned particles of current particle type
+      // get container of owned particle of current particle type
       ParticleContainerShrdPtr container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-      // iterate over owned particles of current type in current bin
-      for (int ownedindex : ownedIt->second)
+      // get position of particle
+      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+
+      // get global id of bin
+      const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
+
+      // particle left computational domain
+      if (gidofbin == -1)
       {
-        // get position of particle
-        double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+        (particlestoremove[typeEnum]).insert(ownedindex);
 
-        // get global id of bin
-        const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
+        ++numparticlesoutside;
 
-        // particle left computational domain
-        if (gidofbin == -1)
+        continue;
+      }
+
+      // no periodic boundary conditions
+      if (not binstrategy_->HavePBC()) continue;
+
+      // check for periodic boundary in each spatial directions
+      for (int dim = 0; dim < 3; ++dim)
+      {
+        if (binstrategy_->HavePBC(dim))
         {
-          (particlestoremove[typeEnum]).insert(ownedindex);
+          // periodic length in current spatial direction
+          double pbc_length = binstrategy_->PBCDelta(dim);
 
-          ++numparticlesoutside;
-
-          continue;
-        }
-
-        // no periodic boundary conditions
-        if (not binstrategy_->HavePBC()) continue;
-
-        // check for periodic boundary in each spatial directions
-        for (int dim = 0; dim < 3; ++dim)
-        {
-          if (binstrategy_->HavePBC(dim))
-          {
-            // periodic length in current spatial direction
-            double pbc_length = binstrategy_->PBCDelta(dim);
-
-            // shift position by periodic length
-            if (currpos[dim] < xaabb(dim, 0))
-              currpos[dim] += pbc_length;
-            else if (currpos[dim] > xaabb(dim, 1))
-              currpos[dim] -= pbc_length;
-          }
+          // shift position by periodic length
+          if (currpos[dim] < xaabb(dim, 0))
+            currpos[dim] += pbc_length;
+          else if (currpos[dim] > xaabb(dim, 1))
+            currpos[dim] -= pbc_length;
         }
       }
     }
@@ -1269,63 +1246,62 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
     std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid map relating owned particles to bins!");
+  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // iterate over this processors bins being touched by other processors
   for (int touchedbin : touchedbins_)
   {
-    auto binIt = binstocontainingparticles_.find(touchedbin);
-    // check if current bin contains particles
-    if (binIt == binstocontainingparticles_.end()) continue;
+    // get local id of bin
+    const int collidofbin = bincolmap_->LID(touchedbin);
 
-    // iterate over particle types
-    for (auto& typeIt : binIt->second)
+    // check if current bin contains owned particles
+    if (particlestobins_[collidofbin].empty()) continue;
+
+    // iterate over owned particles in current bin
+    for (auto& particleIt : particlestobins_[collidofbin])
     {
-      auto ownedIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-      // check if current bin contains owned particles of current type
-      if (ownedIt == (typeIt.second).end()) continue;
+      // get type of particle
+      TypeEnum typeEnum = particleIt.first;
 
-      // get type of particles
-      TypeEnum typeEnum = typeIt.first;
+      // get local index of owned particle
+      const int ownedindex = particleIt.second;
 
-      // get container of owned particles of current particle type
+      // get container of owned particle of current particle type
       ParticleContainerShrdPtr container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-      // iterate over owned particles of current type in current bin
-      for (int ownedindex : ownedIt->second)
-      {
-        // get position of particle
-        double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      // get position of particle
+      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
 
-        // get global id of bin
-        const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
+      // get global id of bin
+      const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
 
-        // particle left computational domain
-        if (gidofbin == -1) continue;
+      // particle left computational domain
+      if (gidofbin == -1)
+        dserror("on processor %d a particle left the computational domain without being detected!",
+            myrank_);
 
-        // particle remains owned on this processor
-        if (binrowmap_->LID(gidofbin) >= 0) continue;
+      // particle remains owned on this processor
+      if (binrowmap_->LID(gidofbin) >= 0) continue;
 
-        // get owning processor
-        auto targetIt = firstlayerbinsownedby_.find(gidofbin);
-        if (targetIt == firstlayerbinsownedby_.end())
-          dserror("particle not owned on this proc but target processor is unknown!");
-        int sendtoproc = targetIt->second;
+      // get owning processor
+      auto targetIt = firstlayerbinsownedby_.find(gidofbin);
+      if (targetIt == firstlayerbinsownedby_.end())
+        dserror("particle not owned on this proc but target processor is unknown!");
+      int sendtoproc = targetIt->second;
 
-        int globalid(0);
-        ParticleStates particleStates;
-        container->GetParticle(ownedindex, globalid, particleStates);
+      int globalid(0);
+      ParticleStates particleStates;
+      container->GetParticle(ownedindex, globalid, particleStates);
 
-        ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-        particleobject->Init(typeEnum, globalid, particleStates, gidofbin);
+      ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
+      particleobject->Init(typeEnum, globalid, particleStates, gidofbin);
 
-        // append particle to be send
-        particlestosend[sendtoproc].push_back(particleobject);
+      // append particle to be send
+      particlestosend[sendtoproc].push_back(particleobject);
 
-        // store index of particle to be removed from containers after particle transfer
-        (particlestoremove[typeEnum]).insert(ownedindex);
-      }
+      // store index of particle to be removed from containers after particle transfer
+      (particlestoremove[typeEnum]).insert(ownedindex);
     }
   }
 }
@@ -1337,48 +1313,45 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
     std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid map relating owned particles to bins!");
+  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // iterate over this processors bins being ghosted by other processors
   for (auto& targetIt : thisbinsghostedby_)
   {
     // bin being ghosted on other processors
-    int ghostedbin = targetIt.first;
+    const int ghostedbin = targetIt.first;
 
-    auto binIt = binstocontainingparticles_.find(ghostedbin);
-    // check if current bin contains particles
-    if (binIt == binstocontainingparticles_.end()) continue;
+    // get local id of bin
+    const int collidofbin = bincolmap_->LID(ghostedbin);
 
-    // iterate over particle types
-    for (auto& typeIt : binIt->second)
+    // check if current bin contains owned particles
+    if (particlestobins_[collidofbin].empty()) continue;
+
+    // iterate over owned particles in current bin
+    for (auto& particleIt : particlestobins_[collidofbin])
     {
-      auto ownedIt = (typeIt.second).find(PARTICLEENGINE::Owned);
-      // check if current bin contains owned particles of current type
-      if (ownedIt == (typeIt.second).end()) continue;
+      // get type of particle
+      TypeEnum typeEnum = particleIt.first;
 
-      // get type of particles
-      TypeEnum typeEnum = typeIt.first;
+      // get local index of owned particle
+      const int ownedindex = particleIt.second;
 
-      // get container of owned particles of current particle type
+      // get container of owned particle of current particle type
       ParticleContainerShrdPtr container =
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-      // iterate over owned particles of current type in current bin
-      for (int ownedindex : ownedIt->second)
+      int globalid(0);
+      ParticleStates particleStates;
+      container->GetParticle(ownedindex, globalid, particleStates);
+
+      ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
+      particleobject->Init(typeEnum, globalid, particleStates, ghostedbin, ownedindex);
+
+      // iterate over target processors
+      for (int sendtoproc : targetIt.second)
       {
-        int globalid(0);
-        ParticleStates particleStates;
-        container->GetParticle(ownedindex, globalid, particleStates);
-
-        ParticleObjShrdPtr particleobject = std::make_shared<PARTICLEENGINE::ParticleObject>();
-        particleobject->Init(typeEnum, globalid, particleStates, ghostedbin, ownedindex);
-
-        // iterate over target processors
-        for (int sendtoproc : targetIt.second)
-        {
-          // append particle to be send
-          particlestosend[sendtoproc].push_back(particleobject);
-        }
+        // append particle to be send
+        particlestosend[sendtoproc].push_back(particleobject);
       }
     }
   }
@@ -1717,9 +1690,8 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
       int ghostedindex(0);
       container->AddParticle(ghostedindex, globalid, particleStates);
 
-      // add index to bin content map
-      (((binstocontainingparticles_[gidofbin])[typeEnum])[PARTICLEENGINE::Ghosted])
-          .insert(ghostedindex);
+      // add index to list relating (owned and ghosted) particles to col bins
+      particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, ghostedindex));
 
       // get local index of particle in container of owned particles of sending processor
       int ownedindex = particleobject->ReturnContainerIndex();
@@ -1734,7 +1706,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
   // clear map after all particles are inserted
   particlestoinsert.clear();
 
-  // validate flag denoting validity of map relating ghosted particles to bins
+  // validate flag denoting valid relation of ghosted particles to bins
   validghostedparticles_ = true;
 
   // invalidate safety flags dependent on ghosting
@@ -1841,12 +1813,13 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
 }
 
 /*---------------------------------------------------------------------------*
- | rebuild index of owned particles in bin content map        sfuchs 03/2018 |
+ | relate owned particles to bins                             sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::RebuildIndexOfOwnedParticlesInBinContentMap()
+void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
 {
-  // clear map
-  binstocontainingparticles_.clear();
+  // clear list relating (owned and ghosted) particles to col bins
+  particlestobins_.resize(bincolmap_->NumMyElements());
+  for (auto& binIt : particlestobins_) binIt.clear();
 
   // invalidate all safety flags
   InvalidateAllSafetyFlags();
@@ -1885,12 +1858,12 @@ void PARTICLEENGINE::ParticleEngine::RebuildIndexOfOwnedParticlesInBinContentMap
           dserror("particle not owned by this proc but not removed from container!");
       }
 
-      // add index to bin content map
-      (((binstocontainingparticles_[gidofbin])[typeEnum])[PARTICLEENGINE::Owned]).insert(index);
+      // add index to list relating (owned and ghosted) particles to col bins
+      particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, index));
     }
   }
 
-  // validate flag denoting validity of map relating owned particles to bins
+  // validate flag denoting valid relation of owned particles to bins
   validownedparticles_ = true;
 }
 
@@ -1919,33 +1892,22 @@ void PARTICLEENGINE::ParticleEngine::DetermineMinRelevantBinSize()
 void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid map relating particles to bins!");
+  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // initialize weights of all bins
   binweights_->PutScalar(1.0e-05);
 
-  // iterate over bins containing particles
-  for (auto& binIt : binstocontainingparticles_)
+  // loop over row bins
+  for (int rowlidofbin = 0; rowlidofbin < binrowmap_->NumMyElements(); ++rowlidofbin)
   {
     // get global id of bin
-    const int gidofbin = binIt.first;
+    const int gidofbin = binrowmap_->GID(rowlidofbin);
 
     // number of particles in current bin
-    int particlecounter = 0;
-
-    // iterate over particle types
-    for (auto& typeIt : binIt.second)
-    {
-      // iterate over particle statuses
-      for (auto& statusIt : typeIt.second)
-      {
-        // only insert owned particles as weights
-        if (statusIt.first == PARTICLEENGINE::Owned) particlecounter += (statusIt.second).size();
-      }
-    }
+    const int numparticlesbin = particlestobins_[bincolmap_->LID(gidofbin)].size();
 
     // add number of particles in current bin to weights
-    binweights_->SumIntoGlobalValue(gidofbin, 0, particlecounter);
+    binweights_->SumIntoGlobalValue(gidofbin, 0, numparticlesbin);
   }
 }
 
