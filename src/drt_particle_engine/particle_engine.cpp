@@ -379,9 +379,6 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing");
 
-  // init maps
-  std::vector<ParticleObjShrdPtr> particlestodistribute;
-
   // determine bin weights needed for repartitioning
   DetermineBinWeights();
 
@@ -399,6 +396,10 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
 
   // determine ghosting dependent maps/sets for communication
   DetermineGhostingDependentMapsAndSets();
+
+  // prepare storage for particle objects
+  std::vector<ParticleObjShrdPtr> particlestodistribute;
+  particlestodistribute.reserve(GetNumberOfParticles());
 
   // get vector of particle objects of all containers
   particlecontainerbundle_->GetVectorOfParticleObjectsOfAllContainers(particlestodistribute);
@@ -1234,7 +1235,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
               << " particles are outside of the computational domain and therefore removed!"
               << std::endl;
 
-  // clear map after all particles are prepared for distribution
+  // clear after all particles are prepared for distribution
   particlestodistribute.clear();
 }
 
@@ -1480,7 +1481,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
     }
   }
 
-  // clear map after all particles are packed
+  // clear after all particles are packed
   particlestosend.clear();
 
   // communicate data via non-buffered send from proc to proc
@@ -1541,7 +1542,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
     std::swap(sdata[p.first], data());
   }
 
-  // clear map after all ghosting information is packed
+  // clear after all ghosting information is packed
   directghosting.clear();
 
   // communicate data via non-buffered send from proc to proc
@@ -1642,7 +1643,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
     }
   }
 
-  // clear map after all particles are inserted
+  // clear after all particles are inserted
   particlestoinsert.clear();
 
   // invalidate all safety flags
@@ -1703,7 +1704,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
     }
   }
 
-  // clear map after all particles are inserted
+  // clear after all particles are inserted
   particlestoinsert.clear();
 
   // validate flag denoting valid relation of ghosted particles to bins
@@ -1748,7 +1749,7 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
     }
   }
 
-  // clear map after all particles are inserted
+  // clear after all particles are inserted
   particlestoinsert.clear();
 }
 
@@ -1774,7 +1775,7 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
       container->RemoveParticle(*rit);
   }
 
-  // clear map after all particles are removed
+  // clear after all particles are removed
   particlestoremove.clear();
 
   // invalidate all safety flags
