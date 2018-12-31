@@ -530,7 +530,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
   // ghost particles on other processors
   particleengine_->GhostParticles();
 
-  // build overlapping particle to particle neighbor map
+  // build overlapping particle to particle neighbors
   if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
 
   // build global id to local index map
@@ -646,7 +646,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
     // ghost particles on other processors
     particleengine_->GhostParticles();
 
-    // build overlapping particle to particle neighbor map
+    // build overlapping particle to particle neighbors
     if (particleinteraction_) particleengine_->BuildParticleToParticleNeighbors();
 
     // build global id to local index map

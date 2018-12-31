@@ -41,7 +41,8 @@ namespace IO
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
-}
+  class ParticleContainerBundle;
+}  // namespace PARTICLEENGINE
 
 namespace PARTICLEINTERACTION
 {
@@ -88,6 +89,9 @@ namespace PARTICLEINTERACTION
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+
+    //! particle container bundle
+    PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;

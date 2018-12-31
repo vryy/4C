@@ -62,14 +62,11 @@ namespace PARTICLEENGINE
 
   typedef std::vector<std::vector<ParticleContainerShrdPtr>> TypeStatusContainers;
 
-  typedef std::map<TypeEnum, std::map<StatusEnum, std::set<int>>> TypeStatusIndexMap;
-
-  typedef std::map<TypeEnum, std::map<int, TypeStatusIndexMap>> ParticleNeighborsMap;
-
   typedef std::tuple<PARTICLEENGINE::TypeEnum, PARTICLEENGINE::StatusEnum, int> LocalIndexTuple;
 
   typedef std::shared_ptr<LocalIndexTuple> LocalIndexTupleShrdPtr;
 
+  typedef std::vector<std::vector<std::vector<LocalIndexTuple>>> ParticleNeighbors;
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/

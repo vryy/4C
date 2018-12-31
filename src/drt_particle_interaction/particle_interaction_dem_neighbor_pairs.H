@@ -41,7 +41,8 @@ namespace IO
 namespace PARTICLEENGINE
 {
   class ParticleEngineInterface;
-}
+  class ParticleContainerBundle;
+}  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 11/2018 |
@@ -82,6 +83,9 @@ namespace PARTICLEINTERACTION
 
     //! interface to particle engine
     std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+
+    //! particle container bundle
+    PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
   };
 
 }  // namespace PARTICLEINTERACTION

@@ -92,6 +92,9 @@ void PARTICLEENGINE::ParticleEngine::Setup(
   // setup particle container bundle
   SetupParticleContainerBundle(particlestatestotypes);
 
+  // setup particle neighbors
+  SetupParticleNeighbors(particlestatestotypes);
+
   // setup particle runtime vtp writer
   SetupParticleVtpWriter();
 }
@@ -436,7 +439,7 @@ void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
 }
 
 /*---------------------------------------------------------------------------*
- | build overlapping particle to particle neighbor map        sfuchs 05/2018 |
+ | build overlapping particle to particle neighbors           sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 {
@@ -446,8 +449,19 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
   if ((not validownedparticles_) or (not validghostedparticles_))
     dserror("invalid relation of particles to bins!");
 
-  // clear map
-  particleneighbors_.clear();
+  // iterate over particle types
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+  {
+    // get container of owned particles of current particle type
+    ParticleContainerShrdPtr container =
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+
+    // get number of particles stored in container
+    int particlestored = container->ParticlesStored();
+
+    // allocate memory for neighbors of owned particles of current particle type
+    particleneighbors_[typeEnum].assign(particlestored, std::vector<LocalIndexTuple>(0));
+  }
 
   // invalidate flag denoting validity of particle neighbors map
   validparticleneighbors_ = false;
@@ -484,9 +498,8 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
       // get position of particle
       double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
 
-      // get reference to sub-map
-      TypeStatusIndexMap& currentTypeCurrentParticleMap =
-          (particleneighbors_[typeEnum])[ownedindex];
+      // get reference to vector of neighbors of current particle
+      std::vector<LocalIndexTuple>& currentNeighbors = (particleneighbors_[typeEnum])[ownedindex];
 
       // iterate over neighboring bins (including current bin)
       for (int gidofneighborbin : binvec)
@@ -535,8 +548,8 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
             continue;
 
           // insert neighboring particle of current type and status
-          ((currentTypeCurrentParticleMap[neighborTypeEnum])[neighborStatusEnum])
-              .insert(neighborindex);
+          currentNeighbors.push_back(
+              std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex));
         }
       }
     }
@@ -611,10 +624,10 @@ bool PARTICLEENGINE::ParticleEngine::HaveValidParticleConnectivity() const
 }
 
 /*---------------------------------------------------------------------------*
- | get reference to particle neighbors map                    sfuchs 11/2018 |
+ | get reference to particle neighbors                        sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-const PARTICLEENGINE::ParticleNeighborsMap&
-PARTICLEENGINE::ParticleEngine::GetParticleNeighborsMap() const
+const PARTICLEENGINE::ParticleNeighbors& PARTICLEENGINE::ParticleEngine::GetParticleNeighbors()
+    const
 {
   // safety check
   if (not validparticleneighbors_) dserror("invalid particle neighbors!");
@@ -883,6 +896,19 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
 {
   // setup particle container bundle
   particlecontainerbundle_->Setup(particlestatestotypes);
+}
+
+/*---------------------------------------------------------------------------*
+ | setup particle neighbors                                   sfuchs 12/2018 |
+ *---------------------------------------------------------------------------*/
+void PARTICLEENGINE::ParticleEngine::SetupParticleNeighbors(
+    const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
+{
+  // determine necessary size of vector for particle types
+  const int typevectorsize = ((--particlestatestotypes.end())->first) + 1;
+
+  // allocate memory to hold particle types
+  particleneighbors_.resize(typevectorsize);
 }
 
 /*---------------------------------------------------------------------------*
@@ -1691,7 +1717,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
       int ghostedindex(0);
       container->AddParticle(ghostedindex, globalid, particleStates);
 
-      // add index to list relating (owned and ghosted) particles to col bins
+      // add index relating (owned and ghosted) particles to col bins
       particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, ghostedindex));
 
       // get local index of particle in container of owned particles of sending processor
@@ -1818,7 +1844,7 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
 {
-  // clear list relating (owned and ghosted) particles to col bins
+  // clear vector relating (owned and ghosted) particles to col bins
   particlestobins_.resize(bincolmap_->NumMyElements());
   for (auto& binIt : particlestobins_) binIt.clear();
 
@@ -1859,7 +1885,7 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
           dserror("particle not owned by this proc but not removed from container!");
       }
 
-      // add index to list relating (owned and ghosted) particles to col bins
+      // add index relating (owned and ghosted) particles to col bins
       particlestobins_[bincolmap_->LID(gidofbin)].push_back(std::make_pair(typeEnum, index));
     }
   }

@@ -111,7 +111,7 @@ namespace PARTICLEENGINE
         std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
         override;
 
-    //! build overlapping particle to particle neighbor map
+    //! build overlapping particle to particle neighbors
     void BuildParticleToParticleNeighbors();
 
     //! build global id to local index map
@@ -126,8 +126,8 @@ namespace PARTICLEENGINE
       return particlecontainerbundle_;
     };
 
-    //! get reference to particle neighbors map
-    const ParticleNeighborsMap& GetParticleNeighborsMap() const override;
+    //! get reference to particle neighbors
+    const ParticleNeighbors& GetParticleNeighbors() const override;
 
     //! get local index in specific particle container
     const LocalIndexTupleShrdPtr GetLocalIndexInSpecificContainer(int globalid) const override;
@@ -179,6 +179,10 @@ namespace PARTICLEENGINE
     //! setup particle container bundle
     void SetupParticleContainerBundle(
         const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
+
+    //! setup particle neighbors
+    void SetupParticleNeighbors(
+        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
 
     //! init particle runtime vtp writer
     void InitParticleVtpWriter();
@@ -295,7 +299,7 @@ namespace PARTICLEENGINE
     std::vector<std::vector<std::pair<PARTICLEENGINE::ParticleType, int>>> particlestobins_;
 
     //! maps particles of all types to neighboring particles of all types and statuses (overlapping)
-    ParticleNeighborsMap particleneighbors_;
+    ParticleNeighbors particleneighbors_;
 
     //! maps particle global ids to local index in specific particle container
     std::unordered_map<int, LocalIndexTupleShrdPtr> globalidtolocalindex_;
