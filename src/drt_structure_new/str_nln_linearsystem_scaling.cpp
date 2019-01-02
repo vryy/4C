@@ -4,7 +4,7 @@
 
 \brief
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 
 \level 3
 

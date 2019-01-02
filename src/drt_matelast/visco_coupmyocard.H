@@ -10,12 +10,9 @@ The input line should read
 
 \level 2
 
-<pre>
-\maintainer Martin Pfaller
-            pfaller@lnm.mw.tum.de
-</pre>
-
-*----------------------------------------------------------------------*/
+\maintainer Amadeus Gebauer
+*/
+/*---------------------------------------------------------------------*/
 #ifndef VISCO_COUPMYOCARD_H_
 #define VISCO_COUPMYOCARD_H_
 

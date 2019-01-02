@@ -7,11 +7,9 @@ material
 
 \level 3
 
-\maintainer Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            089/289 15264
-
-*----------------------------------------------------------------------*/
+\maintainer Amadeus Gebauer
+*/
+/*---------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOPOW_H_
 #define ELAST_COUPANISOPOW_H_
 

@@ -4,7 +4,7 @@
 
 \brief dummy 3D boundary element without any physics
 
-\maintainer Martin Pfaller
+\maintainer Amadeus Gebauer
 
 \level 2
 */
