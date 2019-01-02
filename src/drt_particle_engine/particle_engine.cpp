@@ -47,6 +47,7 @@ PARTICLEENGINE::ParticleEngine::ParticleEngine(
       myrank_(comm.MyPID()),
       params_(params),
       minbinsize_(0.0),
+      typevectorsize_(0),
       validownedparticles_(false),
       validghostedparticles_(false),
       validparticleneighbors_(false),
@@ -92,8 +93,8 @@ void PARTICLEENGINE::ParticleEngine::Setup(
   // setup particle container bundle
   SetupParticleContainerBundle(particlestatestotypes);
 
-  // setup particle neighbors
-  SetupParticleNeighbors(particlestatestotypes);
+  // setup data storage
+  SetupDataStorage(particlestatestotypes);
 
   // setup particle runtime vtp writer
   SetupParticleVtpWriter();
@@ -248,9 +249,8 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
 void PARTICLEENGINE::ParticleEngine::DistributeParticles(
     std::vector<ParticleObjShrdPtr>& particlestodistribute)
 {
-  // init maps
-  std::map<int, std::vector<ParticleObjShrdPtr>> particlestosend;
-  std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert;
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // determine particles that need to be distributed
   DetermineParticlesToBeDistributed(particlestodistribute, particlestosend, particlestoinsert);
@@ -275,10 +275,9 @@ void PARTICLEENGINE::ParticleEngine::TransferParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TransferParticles");
 
-  // init maps
-  std::map<TypeEnum, std::set<int>> particlestoremove;
-  std::map<int, std::vector<ParticleObjShrdPtr>> particlestosend;
-  std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert;
+  std::vector<std::set<int>> particlestoremove(typevectorsize_);
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // relate owned particles to bins
   if (not validownedparticles_) RelateOwnedParticlesToBins();
@@ -312,9 +311,8 @@ void PARTICLEENGINE::ParticleEngine::GhostParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::GhostParticles");
 
-  // init maps
-  std::map<int, std::vector<ParticleObjShrdPtr>> particlestosend;
-  std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert;
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
   std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>> directghosting;
 
   // clear all containers of ghosted particles
@@ -340,9 +338,8 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::RefreshParticles");
 
-  // init maps
-  std::map<int, std::vector<ParticleObjShrdPtr>> particlestosend;
-  std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert;
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // determine particles that need to be refreshed
   DetermineParticlesToBeRefreshed(particlestosend);
@@ -360,9 +357,8 @@ void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
 void PARTICLEENGINE::ParticleEngine::RefreshSpecificStatesOfParticlesOfSpecificTypes(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const
 {
-  // init maps
-  std::map<int, std::vector<ParticleObjShrdPtr>> particlestosend;
-  std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert;
+  std::vector<std::vector<ParticleObjShrdPtr>> particlestosend(comm_.NumProc());
+  std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>> particlestoinsert(typevectorsize_);
 
   // determine particles that need to be refreshed
   DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
@@ -421,14 +417,14 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
  | change type of particles                                   sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::TypeChangeParticles(
-    std::map<TypeEnum, std::set<int>>& particlestoremove,
-    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+    std::vector<std::set<int>>& particlestoremove,
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEENGINE::ParticleEngine::TypeChangeParticles");
 
   // skip if no particles undergo a type change on this processor
   int numparticlestoremove = 0;
-  for (auto typeIt : particlestoremove) numparticlestoremove += (typeIt.second).size();
+  for (auto typeIt : particlestoremove) numparticlestoremove += typeIt.size();
   if (not numparticlestoremove) return;
 
   // remove particles from containers
@@ -899,16 +895,17 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
 }
 
 /*---------------------------------------------------------------------------*
- | setup particle neighbors                                   sfuchs 12/2018 |
+ | setup data storage                                         sfuchs 12/2018 |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::ParticleEngine::SetupParticleNeighbors(
+void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
 {
-  // determine necessary size of vector for particle types
-  const int typevectorsize = ((--particlestatestotypes.end())->first) + 1;
+  // determine size of vectors indexed by particle types
+  typevectorsize_ = ((--particlestatestotypes.end())->first) + 1;
 
   // allocate memory to hold particle types
-  particleneighbors_.resize(typevectorsize);
+  particleneighbors_.resize(typevectorsize_);
+  directghostingtargets_.resize(typevectorsize_);
 }
 
 /*---------------------------------------------------------------------------*
@@ -1044,9 +1041,6 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
-  // number of processors
-  int const numproc = comm_.NumProc();
-
   // pack data for sending
   DRT::PackBuffer data;
   DRT::ParObject::AddtoPack(data, ghostedbins_);
@@ -1054,7 +1048,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   DRT::ParObject::AddtoPack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
-  for (int torank = 0; torank < numproc; ++torank)
+  for (int torank = 0; torank < comm_.NumProc(); ++torank)
   {
     if (torank == myrank_) continue;
 
@@ -1097,7 +1091,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
  | check particles for periodic boundaries/leaving domain     sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
-    std::map<TypeEnum, std::set<int>>& particlestoremove) const
+    std::vector<std::set<int>>& particlestoremove) const
 {
   // safety check
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
@@ -1178,8 +1172,8 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     std::vector<ParticleObjShrdPtr>& particlestodistribute,
-    std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend,
-    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestokeep) const
 {
   // number of particles to distribute
   int numparticles = particlestodistribute.size();
@@ -1269,8 +1263,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
  | determine particles that need to be transfered             sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
-    std::map<TypeEnum, std::set<int>>& particlestoremove,
-    std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
+    std::vector<std::set<int>>& particlestoremove,
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
@@ -1337,7 +1331,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
  | determine particles that need to be ghosted                sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
-    std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
@@ -1388,23 +1382,23 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
  | determine particles that need to be refreshed              sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
-    std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
   if (not validdirectghosting_) dserror("invalid direct ghosting!");
 
   // iterate over particle types
-  for (auto& typeIt : directghostingmap_)
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    TypeEnum typeEnum = typeIt.first;
+    // check for particles of current type to be sent
+    if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
     ParticleContainerShrdPtr container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-    // iterate over owned particles of current type to be sent
-    for (auto& indexIt : typeIt.second)
+    // iterate over owned particles of current type
+    for (auto& indexIt : directghostingtargets_[typeEnum])
     {
       int ownedindex = indexIt.first;
 
@@ -1433,7 +1427,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecificTypesToBeRefreshed(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes,
-    std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
   if (not validdirectghosting_) dserror("invalid direct ghosting!");
@@ -1447,17 +1441,15 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
     // get state enum set
     const std::set<StateEnum>& stateEnumSet = typeIt.second;
 
-    // get iterator to current particle type
-    auto ghostingTypeIt = directghostingmap_.find(typeEnum);
-    // check if owned particles of current type need to be refreshed
-    if (ghostingTypeIt == directghostingmap_.end()) continue;
+    // check for particles of current type to be sent
+    if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
     ParticleContainerShrdPtr container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-    // iterate over owned particles of current type to be sent
-    for (auto& indexIt : ghostingTypeIt->second)
+    // iterate over owned particles of current type
+    for (auto& indexIt : directghostingtargets_[typeEnum])
     {
       int ownedindex = indexIt.first;
 
@@ -1487,23 +1479,25 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
  | communicate particles                                      sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
-    std::map<int, std::vector<ParticleObjShrdPtr>>& particlestosend,
-    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const
+    std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend,
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoreceive) const
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
   std::map<int, std::vector<char>> rdata;
 
   // ---- pack data for sending ----
-  for (auto& p : particlestosend)
+  for (int torank = 0; torank < comm_.NumProc(); ++torank)
   {
-    for (auto& iter : p.second)
+    if (particlestosend[torank].empty()) continue;
+
+    for (auto& iter : particlestosend[torank])
     {
       DRT::PackBuffer data;
       iter->Pack(data);
       data.StartPacking();
       iter->Pack(data);
-      sdata[p.first].insert(sdata[p.first].end(), data().begin(), data().end());
+      sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
   }
 
@@ -1548,8 +1542,9 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
 void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
     std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting)
 {
-  // clear map
-  directghostingmap_.clear();
+  // iterate over particle types
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
+    directghostingtargets_[typeEnum].clear();
 
   // invalidate flags denoting validity of direct ghosting
   validdirectghosting_ = false;
@@ -1601,7 +1596,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
           // get index of owned particle
           int ownedindex = indexIt.first;
 
-          (directghostingmap_[typeEnum])[ownedindex].push_back(indexIt.second);
+          (directghostingtargets_[typeEnum])[ownedindex].push_back(indexIt.second);
         }
       }
     }
@@ -1619,20 +1614,20 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
  | insert owned particles received from other processors      sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
-    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert)
 {
   // iterate over particle types
-  for (auto& typeIt : particlestoinsert)
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    TypeEnum typeEnum = typeIt.first;
+    // check for particles of current type
+    if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
     ParticleContainerShrdPtr container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
     // iterate over particle objects pairs
-    for (auto& objectpair : typeIt.second)
+    for (auto& objectpair : particlestoinsert[typeEnum])
     {
       // get particle object
       ParticleObjShrdPtr particleobject = objectpair.second;
@@ -1680,21 +1675,21 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
  | insert ghosted particles received from other processors    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
-    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
     std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting)
 {
   // iterate over particle types
-  for (auto& typeIt : particlestoinsert)
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    TypeEnum typeEnum = typeIt.first;
+    // check for particles of current type
+    if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of ghosted particles of current particle type
     ParticleContainerShrdPtr container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
 
     // iterate over particle objects pairs
-    for (auto& objectpair : typeIt.second)
+    for (auto& objectpair : particlestoinsert[typeEnum])
     {
       // get owner of sending processor
       int sendingproc = objectpair.first;
@@ -1723,8 +1718,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
       // get local index of particle in container of owned particles of sending processor
       int ownedindex = particleobject->ReturnContainerIndex();
 
-      // insert necessary information into map being communicated to other processors needed for
-      // direct ghosting
+      // insert necessary information being communicated to other processors for direct ghosting
       (((directghosting[sendingproc])[typeEnum])[ownedindex]) =
           std::make_pair(myrank_, ghostedindex);
     }
@@ -1746,20 +1740,20 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
  | insert refreshed particles received from other processors  sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
-    std::map<TypeEnum, std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const
+    std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert) const
 {
   // iterate over particle types
-  for (auto& typeIt : particlestoinsert)
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    TypeEnum typeEnum = typeIt.first;
+    // check for particles of current type
+    if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of ghosted particles of current particle type
     ParticleContainerShrdPtr container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
 
     // iterate over particle objects pairs
-    for (auto& objectpair : typeIt.second)
+    for (auto& objectpair : particlestoinsert[typeEnum])
     {
       // get particle object
       ParticleObjShrdPtr particleobject = objectpair.second;
@@ -1783,13 +1777,13 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
  | remove particles from containers                           sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
-    std::map<TypeEnum, std::set<int>>& particlestoremove)
+    std::vector<std::set<int>>& particlestoremove)
 {
   // iterate over particle types
-  for (auto& typeIt : particlestoremove)
+  for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
-    // get type of particles
-    TypeEnum typeEnum = typeIt.first;
+    // check for particles of current type
+    if (particlestoremove[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
     ParticleContainerShrdPtr container =
@@ -1797,7 +1791,8 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
 
     // iterate in reversed order over particles to be removed
     std::set<int>::reverse_iterator rit;
-    for (rit = (typeIt.second).rbegin(); rit != (typeIt.second).rend(); ++rit)
+    for (rit = particlestoremove[typeEnum].rbegin(); rit != particlestoremove[typeEnum].rend();
+         ++rit)
       container->RemoveParticle(*rit);
   }
 
